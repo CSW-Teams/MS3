@@ -1,0 +1,202 @@
+\ProvidesPackage{unislides}[]
+
+% ---------- %
+%  PACKAGES  %
+% ---------- %
+\RequirePackage[english]{babel}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{amsthm}
+\RequirePackage{animate}
+\RequirePackage[center]{caption}
+\RequirePackage{csquotes}
+\RequirePackage{graphicx}
+\RequirePackage{hyperref}
+\RequirePackage[export]{adjustbox}
+\RequirePackage{ragged2e}
+\RequirePackage{siunitx} % See its docs for usage instructions!
+\RequirePackage{svg}
+\RequirePackage{kvoptions}
+% ------------------ %
+%  DOCUMENT OPTIONS  %
+% ------------------ %
+\SetupKeyvalOptions{
+    family=UNISLIDES,
+    prefix=UNISLIDES@
+}
+\DeclareStringOption[]{title}[Title]
+\newcommand*{\SetupTitle}{
+    \expandafter\@SetupTitle\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupTitle}[1]{
+    \setkeys{UNISLIDES}{title={#1}}
+}
+\DeclareStringOption[]{subtitle}[Subtitle]
+\newcommand*{\SetupSubtitle}{
+    \expandafter\@SetupSubtitle\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupSubtitle}[1]{
+    \setkeys{UNISLIDES}{subtitle={#1}}
+}
+\DeclareStringOption[]{event}[Event]
+\newcommand*{\SetupEvent}{
+    \expandafter\@SetupEvent\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupEvent}[1]{
+    \setkeys{UNISLIDES}{event={#1}}
+}
+\DeclareStringOption[]{author}[Author]
+\newcommand*{\SetupAuthor}{
+    \expandafter\@SetupAuthor\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupAuthor}[1]{
+    \setkeys{UNISLIDES}{author={#1}}
+}
+\DeclareStringOption[]{longauthor}[Long Author]
+\newcommand*{\SetupLongAuthor}{
+    \expandafter\@SetupLongAuthor\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupLongAuthor}[1]{
+    \setkeys{UNISLIDES}{longauthor={#1}}
+}
+\DeclareStringOption[]{email}[author@email.com]
+\newcommand*{\SetupEmail}{
+    \expandafter\@SetupEmail\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupEmail}[1]{
+    \setkeys{UNISLIDES}{email={#1}}
+}
+\DeclareStringOption[]{institute}[Institute]
+\newcommand*{\SetupInstitute}{
+    \expandafter\@SetupInstitute\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupInstitute}[1]{
+    \setkeys{UNISLIDES}{institute={#1}}
+}
+\DeclareStringOption[]{longinstitute}[Long Institute]
+\newcommand*{\SetupLongInstitute}{
+    \expandafter\@SetupLongInstitute\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupLongInstitute}[1]{
+    \setkeys{UNISLIDES}{longinstitute={#1}}
+}
+\DeclareStringOption[]{department}[Department]
+\newcommand*{\SetupDepartment}{
+    \expandafter\@SetupDepartment\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupDepartment}[1]{
+    \setkeys{UNISLIDES}{department={#1}}
+}
+\DeclareStringOption[]{researchgroup}[Research Group]
+\newcommand*{\SetupResearchGroup}{
+    \expandafter\@SetupResearchGroup\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupResearchGroup}[1]{
+    \setkeys{UNISLIDES}{researchgroup={#1}}
+}
+\DeclareStringOption[]{date}[Month Day, Year]
+\newcommand*{\SetupDate}{
+    \expandafter\@SetupDate\expandafter{\CurrentOption}
+}
+\newcommand*{\@SetupDate}[1]{
+    \setkeys{UNISLIDES}{date={#1}}
+}
+\ProcessKeyvalOptions*
+
+% ----------------- %
+%  BEAMER SETTINGS  %
+% ----------------- %
+\pdfstringdefDisableCommands{
+    \def\\{}
+    \def\texttt#1{<#1>}
+}
+\usetheme{Madrid}
+\usefonttheme[onlymath]{serif}
+\let\tempone\itemize
+\let\temptwo\enditemize
+\renewenvironment{itemize}{\tempone\addtolength{\itemsep}{0.5\baselineskip}}{\temptwo}
+\title[\UNISLIDES@event]{\UNISLIDES@title}
+\subtitle{\UNISLIDES@subtitle}
+\author[\UNISLIDES@author]{\texorpdfstring{\UNISLIDES@longauthor\newline\href{mailto:\UNISLIDES@email}{\url{\UNISLIDES@email}}}{\UNISLIDES@longauthor}}
+\institute[\UNISLIDES@institute]{\UNISLIDES@longinstitute\newline\UNISLIDES@department\newline\UNISLIDES@researchgroup}
+\date{\UNISLIDES@date}
+\titlegraphic{\includegraphics[height=1.75cm]{figs/title_logo.png}}
+\AtBeginSection[]
+{
+    \begin{frame}
+    \frametitle{Roadmap}
+    \tableofcontents[currentsection]
+    \end{frame}
+}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{section in toc}[square]
+\setbeamertemplate{section in toc shaded}[square]
+\setbeamertemplate{subsection in toc}[square]
+\setbeamertemplate{subsection in toc shaded}[square]
+\setbeamertemplate{itemize item}[ball]
+\setbeamertemplate{itemize subitem}[triangle]
+\setbeamercovered{invisible}
+
+\useoutertheme[subsection=false]{miniframes}
+
+% ----------------- %
+%  CUSTOM COMMANDS  %
+% ----------------- %
+\newcommand{\nolistindent}{\hspace{-3.5pt}}
+
+% --------------- %
+%  TIKZ SETTINGS  %
+% --------------- %
+\RequirePackage{tikz}
+\usetikzlibrary{
+                arrows,
+                arrows.meta,
+                fit,
+                positioning,
+                shapes,
+                automata
+}
+\tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=4em]
+\tikzstyle{sum} = [draw, circle, node distance=0.8cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-, thin, black}]
+
+% -------- %
+%  COLORS  %
+% -------- %
+\definecolor{white}{rgb}{1.0,1.0,1.0}
+\definecolor{black}{rgb}{0.0,0.0,0.0}
+\definecolor{darkgray}{rgb}{0.3,0.3,0.3}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{lightgray}{rgb}{0.8,0.8,0.8}
+\definecolor{darkred}{rgb}{0.8,0.0,0.0}
+\definecolor{red} {rgb}{1.0,0.0,0.0}
+\definecolor{darkgreen}{rgb}{0.0,0.6,0.0}
+\definecolor{green}{rgb}{0.0,1.0,0.0}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.8}
+\definecolor{blue}{rgb}{0.0,0.0,1.0}
+\definecolor{darkyellow}{rgb}{0.8,0.8,0.6}
+\definecolor{yellow}{rgb}{1.0,1.0,0.0}
+\definecolor{darkcyan}{rgb}{0.6,0.8,0.8}
+\definecolor{cyan}{rgb}{0.0,1.0,1.0}
+\definecolor{darkmagenta}{rgb}{0.8,0.6,0.8}
+\definecolor{magenta}{rgb}{1.0,0.0,1.0}
+
+% ------------------- %
+%  MATH ENVIRONMENTS  %
+% ------------------- %
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{ex}{Example}
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{conjec}[thm]{Conjecture}
+\theoremstyle{remark}
+\newtheorem*{rem}{Remark}
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{ass}{Assumption}[section]
+\newtheorem{alg}{Algorithm}

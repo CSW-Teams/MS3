@@ -1,0 +1,6 @@
+*
+!*.tex
+!*.sty
+!figs/
+!.gitignore
+!*.drawio

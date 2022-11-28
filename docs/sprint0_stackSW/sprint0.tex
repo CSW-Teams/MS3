@@ -1,0 +1,91 @@
+\documentclass[compress]{beamer}
+\usepackage[
+    title={Stack Sotware},
+    subtitle={Sprint 0},
+    event={Sprint 0},
+    author={Daniele La Prova},
+    longauthor={Daniele La Prova 0320429},
+    email={daniele.laprova@students.uniroma2.eu},
+    institute={CSW 2022-2023},
+    longinstitute={Universita' degli Studi di Roma Tor Vergata},
+]{unislides}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{minted}
+
+\begin{document}
+    
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+\section{Github}
+\subsection{Organizzazione}
+\begin{frame}{\subsecname}
+    \begin{itemize}
+        \item La nostra organizzazione si chiama \href{https://github.com/CSW-Teams}{CSW-Teams}
+        sotto alla quale è registrato il nostro team \href{https://github.com/orgs/CSW-Teams/teams/sprintfloyd}{SprintFloyd};
+        \item È stata creata una repository per \href{https://github.com/CSW-Teams/MS3}{MS3}
+        a cui sono stati assegnati tutti i membri di SprintFloyd;
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{\subsecname}
+    \begin{itemize}
+        \item In futuro, altri frequentanti al corso potranno essere invitati
+        all'organizzazione con pieni poteri amministrativi (Owner) e creare così un loro
+        team;
+        \begin{itemize}
+            \item[\checkmark] Ciò permette a ogni team di personalizzarsi come vuole e sviluppare così cameratismo;
+            \item[\checkmark] È molto facile assegnare le persone di un team a una repository;   
+        \end{itemize}
+        \item È necessario che un membro del corso che non sia un alunno sia iscritto all'organizzazione in modo
+        che possa aggiungere alunni futuri all'organizzazione e creare così un loro team.
+    \end{itemize}
+\end{frame}
+
+\section{Spring Boot}
+\begin{frame}{\secname}
+    \begin{itemize}
+        \item È possibile usare \texttt{application.properties} per configurare il
+        progetto con valori base delle proprietà, e farne l'override o aggiungerne di nuove
+        specificando altri profili come ad esempio \texttt{application-debug.properties};
+        \item È necessario specificare valori per entità sensibili attraverso le variabili
+        d'ambiente.
+    \end{itemize}
+\end{frame}
+\begin{frame}[fragile]
+    \frametitle{\secname}
+    \begin{minted}[autogobble, fontsize=\scriptsize, linenos, numbersep=3pt]{json}
+        {
+            "version": "0.2.0",
+            "configurations": [
+                {
+                    "type": "java",
+                    "name": "Debug Ms3Application",
+                    "request": "launch",
+                    "mainClass": "org.cswteams.ms3.Ms3Application",
+                    "projectName": "ms3",
+                    "env": {
+                        "SPRING_PROFILES_ACTIVE": "debug",
+                        "MYSQL_HOST": "localhost",
+                        "MYSQL_SCHEMA": "hibernate_db",
+                        "SPRING_DATASOURCE_USERNAME": "testhibernatespring",
+                        "SPRING_DATASOURCE_PASSWORD": "mypassword",
+                    }
+                }
+            ]
+        }
+    \end{minted}  
+\end{frame}
+
+\section{React}
+
+\begin{frame}
+    \frametitle{\secname}
+
+    %TODO: Document minimal working example with react
+
+\end{frame}
+
+\end{document}
