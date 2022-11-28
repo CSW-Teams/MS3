@@ -4,3 +4,4 @@
 !figs/
 !.gitignore
 !*.drawio
+!figs/*
