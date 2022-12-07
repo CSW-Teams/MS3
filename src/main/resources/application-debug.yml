@@ -1,7 +1,0 @@
-# https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config.files.profile-specific
-
-spring:
-    jpa:
-        hibernate:
-            ddl-auto: update
-        show-sql: true
