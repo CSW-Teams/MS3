@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.turni.IControllerTurni;
+import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/turni/")
@@ -17,7 +19,7 @@ public class TurnoRestEndpoint {
     private IControllerTurni controllerTurni;
 
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaTurno(@RequestBody(required = true) AssegnazioneTurno c) {
+    public ResponseEntity<?> creaTurno(@RequestBody(required = true) AssegnazioneTurnoDTO c) {
         if (c != null) {
             return new ResponseEntity<>(controllerTurni.creaTurno(c), HttpStatus.ACCEPTED);
         }
@@ -27,7 +29,7 @@ public class TurnoRestEndpoint {
     @RequestMapping(method = RequestMethod.GET, path = "/utente_id={idUtente}")
     public ResponseEntity<?> leggiTurniUtente(@PathVariable Long idUtente) {
         if (idUtente != null) {
-            List <AssegnazioneTurno> c = controllerTurni.leggiTurniUtente(idUtente);
+            Set <AssegnazioneTurnoDTO> c = controllerTurni.leggiTurniUtente(idUtente);
             if (c == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -40,7 +42,7 @@ public class TurnoRestEndpoint {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiTurni() {
-        List<AssegnazioneTurno> tuttiITurni = controllerTurni.leggiTurni();
+        Set<AssegnazioneTurnoDTO> tuttiITurni = controllerTurni.leggiTurni();
         return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
     }
 
