@@ -42,4 +42,24 @@ public class Turno {
     public Turno() {
 
     }
+
+    public LocalTime getOraInizio(){
+        return this.oraInizio;
+    }
+
+    public LocalTime getOraFine(){
+        return this.oraFine;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public TipologiaTurno getTipologiaTurno() {
+        return tipologiaTurno;
+    }
+
+    public Servizio getServizio() {
+        return servizio;
+    }
 }
