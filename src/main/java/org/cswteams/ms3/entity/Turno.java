@@ -38,4 +38,8 @@ public class Turno {
             this.tipologiaTurno = tipologia;
         }
     }
+
+    public Turno() {
+
+    }
 }
