@@ -29,7 +29,7 @@ public class AssegnazioneTurno {
     @ManyToOne
     private Turno turno;
 
-    protected AssegnazioneTurno() {
+    public AssegnazioneTurno() {
 
     }
 

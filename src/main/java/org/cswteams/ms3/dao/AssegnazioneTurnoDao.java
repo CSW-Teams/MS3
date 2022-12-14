@@ -7,11 +7,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 
 
 public interface AssegnazioneTurnoDao extends JpaRepository<AssegnazioneTurno,Long> {
 
     @Query(nativeQuery = true, value = "SELECT * FROM TURNO_UTENTI AS TU, TURNO AS T WHERE TU.TURNO_ID=T.ID AND TU.utenti_id=:idPersona")
-    List<AssegnazioneTurno> findTurniUtente(@Param("idPersona") Long id);
-
+    Set<AssegnazioneTurno> findTurniUtente(@Param("idPersona") Long id);
 }
+
+

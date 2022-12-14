@@ -9,19 +9,34 @@ import java.util.Set;
 
 public class MappaUtenti {
 
-    public static Utente utenteDTOtoENTITY(UtenteDTO utenteDTO) {
-        return null;
+    public static Utente utenteDTOtoEntity(UtenteDTO utenteDTO) {
+        return new Utente(utenteDTO.getNome(),utenteDTO.getCognome(),utenteDTO.getCodiceFiscale(),utenteDTO.getDataNascita(),utenteDTO.getEmail());
     }
 
-    public static UtenteDTO utenteENTITYtoDTO(Utente utente) {
-        UtenteDTO dto = new UtenteDTO(utente.getId(),utente.getNome(),utente.getCognome(),utente.getDataNascita(), utente.getCodiceFiscale(), utente.getRuoloEnum(), utente.getEmail());
-        return dto;
+    public static Set<Utente> utenteDTOtoEntity(Set<UtenteDTO> utentiDto) {
+        Set<Utente> utenti = new HashSet<>();
+        for (UtenteDTO dto: utentiDto){
+            utenti.add(utenteDTOtoEntity(dto));
+        }
+        return utenti;
     }
 
-    public static Set<UtenteDTO> utenteENTITYtoDTO(List<Utente> utenti){
+    public static UtenteDTO utenteEntitytoDTO(Utente utente) {
+        return new UtenteDTO(utente.getId(),utente.getNome(),utente.getCognome(),utente.getDataNascita(), utente.getCodiceFiscale(), utente.getRuoloEnum(), utente.getEmail());
+    }
+
+    public static Set<UtenteDTO> utenteEntitytoDTO(Set<Utente> utenti){
         Set<UtenteDTO> utenteDTOS = new HashSet<>();
         for (Utente entity: utenti){
-            utenteDTOS.add(utenteENTITYtoDTO(entity));
+            utenteDTOS.add(utenteEntitytoDTO(entity));
+        }
+        return utenteDTOS;
+    }
+
+    public static Set<UtenteDTO> utenteEntitytoDTO(List<Utente> utenti){
+        Set<UtenteDTO> utenteDTOS = new HashSet<>();
+        for (Utente entity: utenti){
+            utenteDTOS.add(utenteEntitytoDTO(entity));
         }
         return utenteDTOS;
     }

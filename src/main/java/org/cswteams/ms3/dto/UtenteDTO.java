@@ -29,4 +29,32 @@ public class UtenteDTO {
         this.ruoloEnum = ruoloEnum;
         this.email = email;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getCognome() {
+        return cognome;
+    }
+
+    public LocalDate getDataNascita() {
+        return dataNascita;
+    }
+
+    public String getCodiceFiscale() {
+        return codiceFiscale;
+    }
+
+    public RuoloEnum getRuoloEnum() {
+        return ruoloEnum;
+    }
+
+    public String getEmail() {
+        return email;
+    }
 }

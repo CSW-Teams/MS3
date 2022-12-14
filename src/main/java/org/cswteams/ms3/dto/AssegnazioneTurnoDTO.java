@@ -36,4 +36,32 @@ public class AssegnazioneTurnoDTO {
         this.tipologiaTurno = turno;
         this.servizio = servizio;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Timestamp getInizio() {
+        return inizio;
+    }
+
+    public Timestamp getFine() {
+        return fine;
+    }
+
+    public Set<UtenteDTO> getUtentiDiGuardia() {
+        return utentiDiGuardia;
+    }
+
+    public Set<UtenteDTO> getUtentiReperibili() {
+        return utentiReperibili;
+    }
+
+    public Servizio getServizio() {
+        return servizio;
+    }
+
+    public TipologiaTurno getTipologiaTurno() {
+        return tipologiaTurno;
+    }
 }
