@@ -26,14 +26,41 @@ public class AssegnazioneTurno {
 
     private LocalDate data;
 
+    @ManyToOne
+    private Turno turno;
+
     protected AssegnazioneTurno() {
 
     }
 
-    public AssegnazioneTurno(LocalDate data, Set<Utente> utentiReperibili, Set<Utente> utentiDiGuardia) {
+    public AssegnazioneTurno(LocalDate data, Turno turno, Set<Utente> utentiReperibili, Set<Utente> utentiDiGuardia) {
         this.data = data;
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
+        this.turno = turno;
     }
 
+    public LocalDate getDate(){
+        return this.data;
+    }
+
+    public Turno getTurno(){
+        return this.turno;
+    }
+
+    public Set<Utente> getUtentiDiGuardia() {
+        return utentiDiGuardia;
+    }
+
+    public Set<Utente> getUtentiReperibili() {
+        return utentiReperibili;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public Long getId() {
+        return id;
+    }
 }
