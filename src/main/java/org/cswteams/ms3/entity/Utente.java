@@ -24,7 +24,7 @@ public class Utente {
 
     @ManyToMany(cascade = CascadeType.MERGE)
     @JsonIgnore
-    private List<Turno> turni = new java.util.ArrayList<>();
+    private List<AssegnazioneTurno> turni = new java.util.ArrayList<>();
 
 
     protected Utente() {

@@ -31,6 +31,7 @@ public class UtentiRestEndpoint {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiUtente() {
         List<Utente> tuttiITurni = controllerUtente.leggiUtenti();
+        System.out.println(tuttiITurni);
         return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
     }
 }
