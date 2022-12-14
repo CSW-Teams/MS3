@@ -1,11 +1,10 @@
 package org.cswteams.ms3.config;
 
-import org.cswteams.ms3.control.turni.ControllerTurni;
 import org.cswteams.ms3.dao.RuoloDao;
-import org.cswteams.ms3.dao.TurnoDao;
+import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.Ruolo;
-import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,7 +35,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private UtenteDao utenteDao;
 
     @Autowired
-    private TurnoDao turnoDao;
+    private AssegnazioneTurnoDao turnoDao;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
@@ -71,8 +69,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         List<Utente> utenti =  new ArrayList<Utente>();
         utenti.add(u1);
         utenti.add(u2);
-        Turno t1 = new Turno(inizio,fine,utenti);
-        t1 = turnoDao.save(t1);
+        //AssegnazioneTurno t1 = new AssegnazioneTurno(inizio,fine,utenti);
+        //t1 = turnoDao.save(t1);
 
     }
 }
