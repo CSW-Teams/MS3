@@ -27,7 +27,7 @@ public class Turno {
     protected Turno() {
 
     }
-
+   //Set di utenti
     public Turno(Timestamp inizio, Timestamp fine, List<Utente> utenti) {
         this.inizio = inizio;
         this.fine = fine;
