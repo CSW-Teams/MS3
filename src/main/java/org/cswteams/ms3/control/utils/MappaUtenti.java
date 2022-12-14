@@ -4,6 +4,7 @@ import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.Utente;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class MappaUtenti {
@@ -17,7 +18,7 @@ public class MappaUtenti {
         return dto;
     }
 
-    public static Set<UtenteDTO> utenteENTITYtoDTO(Set<Utente> utenti){
+    public static Set<UtenteDTO> utenteENTITYtoDTO(List<Utente> utenti){
         Set<UtenteDTO> utenteDTOS = new HashSet<>();
         for (Utente entity: utenti){
             utenteDTOS.add(utenteENTITYtoDTO(entity));
