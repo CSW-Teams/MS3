@@ -3,8 +3,10 @@ package org.cswteams.ms3.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import org.cswteams.ms3.enums.RuoloEnum;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -17,26 +19,28 @@ public class Utente {
     private Long id;
 
     private String nome;
+
     private String cognome;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    private Ruolo ruolo;
+    private LocalDate dataNascita;
 
-    @ManyToMany(cascade = CascadeType.MERGE)
-    @JsonIgnore
-    private List<AssegnazioneTurno> turni = new java.util.ArrayList<>();
+    private String codiceFiscale;
+
+    private RuoloEnum ruoloEnum;
+
+    private String email;
 
 
     protected Utente() {
 
     }
 
-    public Utente(String nome, String cognome, Ruolo role) {
+    public Utente(String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email) {
         this.nome = nome;
         this.cognome = cognome;
-        this.ruolo = role;
+        this.codiceFiscale = codiceFiscale;
+        this.dataNascita = dataNascita;
+        this.email = email;
     }
-
-
 
 }
