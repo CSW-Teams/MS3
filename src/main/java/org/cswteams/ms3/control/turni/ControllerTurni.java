@@ -32,9 +32,5 @@ public class ControllerTurni implements IControllerTurni {
     }
 
 
-    @Override
-    public List<AssegnazioneTurno> leggiTurnoDaSlot(Timestamp inizio, Timestamp fine) {
-        return turnoDao.findByInizioAndFine(inizio, fine);
-    }
 
 }

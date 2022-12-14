@@ -13,5 +13,4 @@ public interface IControllerTurni {
 
     List <AssegnazioneTurno> leggiTurniUtente(Long idUtente);
 
-    List <AssegnazioneTurno> leggiTurnoDaSlot(Timestamp inizio, Timestamp fine);
 }

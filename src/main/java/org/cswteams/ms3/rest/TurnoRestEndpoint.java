@@ -45,14 +45,4 @@ public class TurnoRestEndpoint {
     }
 
 
-    /** TO FIX
-
-    @RequestMapping(method = RequestMethod.GET, path = "search")
-    public ResponseEntity<?> cercaTurnoPerSlot(@RequestParam(name = "inizio", required = false) String inizio, @RequestParam(name = "fine", required = false) String fine) {
-
-        List <Turno> turni = controllerTurni.leggiTurnoDaSlot( Timestamp.valueOf(inizio), Timestamp.valueOf(fine));
-        return new ResponseEntity<>(turni, HttpStatus.FOUND);
-    }
-    */
-
 }
