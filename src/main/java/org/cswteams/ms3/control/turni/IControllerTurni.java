@@ -1,17 +1,17 @@
 package org.cswteams.ms3.control.turni;
 
-import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.entity.AssegnazioneTurno;
 import java.sql.Timestamp;
 import java.util.List;
 
 
 public interface IControllerTurni {
 
-    List<Turno> leggiTurni();
+    List<AssegnazioneTurno> leggiTurni();
 
-    Object creaTurno(Turno c);
+    Object creaTurno(AssegnazioneTurno c);
 
-    List <Turno> leggiTurniUtente(Long idUtente);
+    List <AssegnazioneTurno> leggiTurniUtente(Long idUtente);
 
-    List <Turno> leggiTurnoDaSlot(Timestamp inizio, Timestamp fine);
+    List <AssegnazioneTurno> leggiTurnoDaSlot(Timestamp inizio, Timestamp fine);
 }

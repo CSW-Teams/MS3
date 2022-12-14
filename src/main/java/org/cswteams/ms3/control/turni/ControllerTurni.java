@@ -12,28 +12,28 @@ import java.util.List;
 public class ControllerTurni implements IControllerTurni {
 
     @Autowired
-    private TurnoDao turnoDao;
+    private AssegnazioneTurnoDao turnoDao;
 
 
     @Override
-    public List<Turno> leggiTurni() {
+    public List<AssegnazioneTurno> leggiTurni() {
         return turnoDao.findAll();
     }
 
     @Override
-    public Object creaTurno(@NotNull Turno c) {
+    public Object creaTurno(@NotNull AssegnazioneTurno c) {
         return turnoDao.save(c);
     }
 
 
     @Override
-    public List<Turno> leggiTurniUtente(@NotNull Long idPersona) {
+    public List<AssegnazioneTurno> leggiTurniUtente(@NotNull Long idPersona) {
         return turnoDao.findTurniUtente(idPersona);
     }
 
 
     @Override
-    public List<Turno> leggiTurnoDaSlot(Timestamp inizio, Timestamp fine) {
+    public List<AssegnazioneTurno> leggiTurnoDaSlot(Timestamp inizio, Timestamp fine) {
         return turnoDao.findByInizioAndFine(inizio, fine);
     }
 

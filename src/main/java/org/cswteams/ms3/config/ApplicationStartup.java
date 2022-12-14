@@ -1,7 +1,7 @@
 package org.cswteams.ms3.config;
 
 import org.cswteams.ms3.dao.RuoloDao;
-import org.cswteams.ms3.dao.TurnoDao;
+import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
@@ -34,7 +34,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private UtenteDao utenteDao;
 
     @Autowired
-    private TurnoDao turnoDao;
+    private AssegnazioneTurnoDao turnoDao;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
