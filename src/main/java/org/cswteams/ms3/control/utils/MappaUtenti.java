@@ -10,7 +10,7 @@ import java.util.Set;
 public class MappaUtenti {
 
     public static Utente utenteDTOtoEntity(UtenteDTO utenteDTO) {
-        return new Utente(utenteDTO.getNome(),utenteDTO.getCognome(),utenteDTO.getCodiceFiscale(),utenteDTO.getDataNascita(),utenteDTO.getEmail());
+        return new Utente(utenteDTO.getNome(),utenteDTO.getCognome(),utenteDTO.getCodiceFiscale(),utenteDTO.getDataNascita(),utenteDTO.getEmail(), utenteDTO.getRuoloEnum());
     }
 
     public static Set<Utente> utenteDTOtoEntity(Set<UtenteDTO> utentiDto) {

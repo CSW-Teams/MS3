@@ -7,6 +7,7 @@ import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 
 import javax.persistence.*;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.time.LocalTime;
 
 @Entity
@@ -29,7 +30,7 @@ public class Turno {
 
     public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia) throws TurnoException {
         if(oraInizio.isAfter(oraFine)){
-            throw new TurnoException();
+            throw new TurnoException("Ora inizio dopo ora fine");
         }
         else {
             this.oraInizio = oraInizio;

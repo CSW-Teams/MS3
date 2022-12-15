@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.cswteams.ms3.enums.RuoloEnum;
-
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -35,13 +34,15 @@ public class Utente {
 
     }
 
-    public Utente(String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email) {
+    public Utente(String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum) {
         this.nome = nome;
         this.cognome = cognome;
         this.codiceFiscale = codiceFiscale;
         this.dataNascita = dataNascita;
         this.email = email;
+        this.ruoloEnum = ruoloEnum;
     }
+
 
     public Long getId() {
         return id;
