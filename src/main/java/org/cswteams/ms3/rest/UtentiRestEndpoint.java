@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.utente.IControllerUtente;
+import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.Utente;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/utenti/")
@@ -20,7 +22,7 @@ public class UtentiRestEndpoint {
     private IControllerUtente controllerUtente;
 
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaUtente(@RequestBody(required = true) Utente c) {
+    public ResponseEntity<?> creaUtente(@RequestBody(required = true) UtenteDTO c) {
         if (c != null) {
             return new ResponseEntity<>(controllerUtente.creaUtente(c), HttpStatus.ACCEPTED);
         }
@@ -30,7 +32,7 @@ public class UtentiRestEndpoint {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiUtente() {
-        List<Utente> tuttiITurni = controllerUtente.leggiUtenti();
+        Set<UtenteDTO> tuttiITurni = controllerUtente.leggiUtenti();
         return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
     }
 }

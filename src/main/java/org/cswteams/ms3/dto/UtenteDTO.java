@@ -1,20 +1,11 @@
-package org.cswteams.ms3.entity;
+package org.cswteams.ms3.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
 import org.cswteams.ms3.enums.RuoloEnum;
-import javax.persistence.*;
+
 import java.time.LocalDate;
-import java.util.List;
 
-@Entity
-@Data
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Utente {
+public class UtenteDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nome;
@@ -29,20 +20,15 @@ public class Utente {
 
     private String email;
 
-
-    protected Utente() {
-
-    }
-
-    public Utente(String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum) {
+    public UtenteDTO(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale, RuoloEnum ruoloEnum, String email) {
+        this.id = id;
         this.nome = nome;
         this.cognome = cognome;
-        this.codiceFiscale = codiceFiscale;
         this.dataNascita = dataNascita;
-        this.email = email;
+        this.codiceFiscale = codiceFiscale;
         this.ruoloEnum = ruoloEnum;
+        this.email = email;
     }
-
 
     public Long getId() {
         return id;

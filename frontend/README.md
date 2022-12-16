@@ -1,8 +1,12 @@
 # MS3 FRONTEND
 Avviare il progetto al primissimo lancio:
 ```bash
-npm install
-npm install react-scripts@3.4.1 -g --silent 
+//Su windows
+npm install --global windows-build-tools 
+set PYTHON=%USERPROFILE%\\.windows-build-tools\\python27\\python.exe
+
+npm install --legacy-peer-deps
+npm audit fix --force
 npm start
 ```
 Avviare progetto le volte successive:
