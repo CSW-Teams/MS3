@@ -17,7 +17,6 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     @Autowired
     private AssegnazioneTurnoDao turnoDao;
 
-
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurni() throws ParseException {
         List<AssegnazioneTurno> turni = turnoDao.findAll();
@@ -42,7 +41,9 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
 
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurniUtente(@NotNull Long idPersona) throws ParseException {
-        return MappaAssegnazioneTurni.assegnazioneTurnoToDTO(turnoDao.findTurniUtente(idPersona));
+        Set<AssegnazioneTurnoDTO> turni = MappaAssegnazioneTurni.assegnazioneTurnoToDTO(turnoDao.findTurniUtente(idPersona));
+        System.out.println(turni);
+        return turni;
     }
 
 }

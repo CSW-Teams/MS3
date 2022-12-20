@@ -1,10 +1,12 @@
 package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
+import org.cswteams.ms3.control.assegnazioneTurni.ControllerAssegnazioniTurni;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Servizio;
 import org.cswteams.ms3.enums.RuoloEnum;
@@ -16,6 +18,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
+
+import java.text.ParseException;
 import java.time.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -166,6 +170,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         assegnazioneTurnoDao.save(turnoassegnato2);
         assegnazioneTurnoDao.save(turnoassegnato3);
         assegnazioneTurnoDao.save(turnoassegnato4);
+
 
     }
 }
