@@ -19,9 +19,9 @@ import {
 import { TurnoAPI } from '../API/TurnoAPI';
 import { UtenteAPI } from '../API/UtenteAPI';
 
-  
+
 class GlobalScheduleView extends React.Component {
-  
+
   async componentDidMount() {
     let utenti = [];
     let turni = [];
@@ -33,16 +33,16 @@ class GlobalScheduleView extends React.Component {
 
     this.setState({data:turni})
     this.setState({resources: [{
-      fieldName: 'members',
-      title: 'Members',
-      instances: utenti,
-      allowMultiple: true,
-    }],})
+        fieldName: 'members',
+        title: 'Members',
+        instances: utenti,
+        allowMultiple: true,
+      }],})
 
   }
 
   constructor(props) {
-    
+
     super(props);
     this.state = {
       data: [],
@@ -52,15 +52,13 @@ class GlobalScheduleView extends React.Component {
         instances: [{}],
         allowMultiple: true,
       }],
-      grouping: [ {
-        resourceName: 'members',
-      }],
+
     };
 
     this.commitChanges = this.commitChanges.bind(this);
   }
 
-  
+
   commitChanges({ added, changed, deleted }) {
     this.setState((state) => {
       let { data } = state;
@@ -78,9 +76,9 @@ class GlobalScheduleView extends React.Component {
       return { data };
     });
   }
-  
+
   render() {
-    const { data, resources, grouping } = this.state;
+    const { data, resources } = this.state;
 
     return (
       <Paper>
@@ -93,14 +91,12 @@ class GlobalScheduleView extends React.Component {
           <EditingState
             onCommitChanges={this.commitChanges}
           />
-          <GroupingState
-            grouping={grouping}
-          />
 
           <DayView
-            startDayHour={9}
-            endDayHour={15}
-            intervalCount={2}
+            startDayHour={0}
+            endDayHour={24}
+            intervalCount={7}
+            cellDuration={120}
           />
           <Appointments />
           <Resources
@@ -108,12 +104,9 @@ class GlobalScheduleView extends React.Component {
             mainResourceName="members"
           />
 
-          <IntegratedGrouping />
           <IntegratedEditing />
-
           <AppointmentTooltip showOpenButton />
           <AppointmentForm />
-          <GroupingPanel />
           <DragDropProvider />
         </Scheduler>
       </Paper>

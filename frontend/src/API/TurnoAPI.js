@@ -33,14 +33,21 @@ export  class TurnoAPI {
             turno.startDate = body[i].inizio;
             turno.endDate =body[i].fine;
 
-            let members = [];
+            let utenti_guardia = [];
+            let utenti_reperibili = [];
 
-            for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
-                members[j] = body[i].utentiDiGuardia[j].id;
+
+          for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
+               utenti_guardia[j] = body[i].utentiDiGuardia[j].id;
             }
 
-            turno.members = members;
-            turni[i] = turno;
+          for (let j = 0; j < body[i].utentiReperibili.length; j++) {
+              utenti_reperibili[j] = body[i].utentiReperibili[j].id;
+          }
+
+
+          turno.members = utenti_guardia;
+          turni[i] = turno;
 
         }
 
