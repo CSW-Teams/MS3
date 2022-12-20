@@ -2,12 +2,14 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
+import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.Servizio;
 import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.Servizio;
 import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -15,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
 import java.time.*;
-import java.time.temporal.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +37,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private TurnoDao turnoDao;
 
+    @Autowired
+    private ServizioDao servizioDao;
+
 
     @SneakyThrows
     @Override
@@ -54,10 +58,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u5 = utenteDao.save(u5);
         u6 = utenteDao.save(u6);
 
-        Turno t1 = new Turno(LocalTime.of(8,0), LocalTime.of(14, 0), Servizio.REPARTO, TipologiaTurno.MATTUTINO);
-        Turno t2 = new Turno(LocalTime.of(14,0), LocalTime.of(20, 0), Servizio.REPARTO, TipologiaTurno.POMERIDIANO);
-        Turno t3 = new Turno(LocalTime.of(20,0), LocalTime.of(23, 0), Servizio.REPARTO, TipologiaTurno.NOTTURNO);
-        Turno t4 = new Turno(LocalTime.of(0,0), LocalTime.of(8, 0), Servizio.REPARTO, TipologiaTurno.NOTTURNO);
+        Servizio servizio = new Servizio("reparto");
+        servizioDao.save(servizio);
+
+        Turno t1 = null;
+        Turno t2 = null;
+        Turno t3 = null;
+        Turno t4 = null;
+        try {
+            t1 = new Turno(LocalTime.of(8,0), LocalTime.of(14, 0), servizio, TipologiaTurno.MATTUTINO);
+            t2 = new Turno(LocalTime.of(14,0), LocalTime.of(20, 0), servizio, TipologiaTurno.POMERIDIANO);
+            t3 = new Turno(LocalTime.of(20,0), LocalTime.of(23, 0), servizio, TipologiaTurno.NOTTURNO);
+            t4 = new Turno(LocalTime.of(0,0), LocalTime.of(8, 0), servizio, TipologiaTurno.NOTTURNO);
+        } catch (TurnoException e) {
+            e.printStackTrace();
+        }
 
         t1 = turnoDao.save(t1);
         t2 = turnoDao.save(t2);
@@ -82,10 +97,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         setUtentiGuardia1.add(u1);
         setUtentiGuardia1.add(u4);
 
-        AssegnazioneTurno turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,15),t1,setUtentiGuardia1,setUtentiGuardia1);
-        AssegnazioneTurno turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,15),t2,setUtentiGuardia1,setUtentiReperibili1);
-        AssegnazioneTurno turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,15),t3,setUtentiGuardia2,setUtentiReperibili2);
-        AssegnazioneTurno turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,15),t4,setUtentiGuardia2,setUtentiReperibili2);
+        AssegnazioneTurno turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,21),t1,setUtentiGuardia1,setUtentiGuardia1);
+        AssegnazioneTurno turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,20),t2,setUtentiGuardia2,setUtentiReperibili1);
+        AssegnazioneTurno turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,21),t3,setUtentiGuardia2,setUtentiReperibili2);
+        AssegnazioneTurno turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,21),t4,setUtentiGuardia2,setUtentiReperibili2);
 
         turnoassegnato1 = assegnazioneTurnoDao.save(turnoassegnato1);
         turnoassegnato2 = assegnazioneTurnoDao.save(turnoassegnato2);
