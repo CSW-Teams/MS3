@@ -1,7 +1,7 @@
 export  class TurnoAPI {
     constructor() {
     }
-   
+
     async getTurnByIdUser(id) {
         const response = await fetch('/api/turni/utente_id='+id);
         const body = await response.json();
@@ -14,10 +14,10 @@ export  class TurnoAPI {
             turno.endDate =body[i].fine;
             turno.id = body[i].id;
             turni[i]=turno;
-        } 
-        
+        }
+
         return turni;
-        
+
     }
 
 
@@ -35,17 +35,16 @@ export  class TurnoAPI {
 
             let members = [];
 
-            for (let j = 0; j < body[i].utenti.length; j++) {
-                members[j] = body[i].utenti[j].id;
+            for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
+                members[j] = body[i].utentiDiGuardia[j].id;
             }
 
             turno.members = members;
             turni[i] = turno;
 
-        } 
-        
+        }
+
         return turni;
-        
+
     }
   }
-  

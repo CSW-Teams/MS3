@@ -1,6 +1,6 @@
 package org.cswteams.ms3.dto;
 
-import org.cswteams.ms3.enums.Servizio;
+import org.cswteams.ms3.entity.Servizio;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
 import java.sql.Timestamp;

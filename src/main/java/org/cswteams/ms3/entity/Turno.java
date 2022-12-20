@@ -2,12 +2,10 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.cswteams.ms3.enums.Servizio;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 
 import javax.persistence.*;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.time.LocalTime;
 
 @Entity
@@ -26,6 +24,7 @@ public class Turno {
 
     private LocalTime oraFine;
 
+    @ManyToOne
     private Servizio servizio;
 
     public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia) throws TurnoException {
