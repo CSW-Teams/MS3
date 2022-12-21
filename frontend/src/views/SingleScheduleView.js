@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Paper from '@mui/material/Paper';
-import { TurnoAPI } from '../API/TurnoAPI';
+import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
 import { ViewState } from '@devexpress/dx-react-scheduler';
 import {
   Scheduler,
@@ -24,16 +24,16 @@ export default class SingleScheduleView extends React.Component {
 
   }
 
- 
+
   async componentDidMount() {
-    let apiTurno = new TurnoAPI();
+    let apiTurno = new AssegnazioneTurnoAPI();
     let turni = await apiTurno.getTurnByIdUser('1');
     this.setState({data:turni})
   }
 
   render() {
     const { data } = this.state;
-    
+
     return (
       <Paper>
         <Scheduler

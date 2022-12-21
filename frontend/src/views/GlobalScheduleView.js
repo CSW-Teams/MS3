@@ -16,7 +16,7 @@ import {
   AppointmentForm,
 } from '@devexpress/dx-react-scheduler-material-ui';
 
-import { TurnoAPI } from '../API/TurnoAPI';
+import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
 import { UtenteAPI } from '../API/UtenteAPI';
 
 
@@ -25,7 +25,7 @@ class GlobalScheduleView extends React.Component {
   async componentDidMount() {
     let utenti = [];
     let turni = [];
-    let turnoAPI = new TurnoAPI();
+    let turnoAPI = new AssegnazioneTurnoAPI();
     let utenteAPI = new UtenteAPI();
 
     utenti = await utenteAPI.getAllUser();

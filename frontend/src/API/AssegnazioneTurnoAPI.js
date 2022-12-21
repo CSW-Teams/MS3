@@ -1,4 +1,4 @@
-export  class TurnoAPI {
+export  class AssegnazioneTurnoAPI {
     constructor() {
     }
 
