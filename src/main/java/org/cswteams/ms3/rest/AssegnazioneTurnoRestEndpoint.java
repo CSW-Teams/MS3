@@ -11,16 +11,16 @@ import java.text.ParseException;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/turni/")
+@RequestMapping("/assegnazioneturni/")
 public class AssegnazioneTurnoRestEndpoint {
 
     @Autowired
     private IControllerAssegnazioneTurni controllerAssegnazioneTurni;
 
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaTurno(@RequestBody(required = true) AssegnazioneTurnoDTO c) {
+    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody(required = true) AssegnazioneTurnoDTO c) {
         if (c != null) {
-            return new ResponseEntity<>(controllerAssegnazioneTurni.creaTurno(c), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(controllerAssegnazioneTurni.creaTurnoAssegnato(c), HttpStatus.ACCEPTED);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
@@ -40,8 +40,8 @@ public class AssegnazioneTurnoRestEndpoint {
 
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> leggiTurni() throws ParseException {
-        Set<AssegnazioneTurnoDTO> tuttiITurni = controllerAssegnazioneTurni.leggiTurni();
+    public ResponseEntity<?> leggiTurniAssegnati() throws ParseException {
+        Set<AssegnazioneTurnoDTO> tuttiITurni = controllerAssegnazioneTurni.leggiTurniAssegnati();
         return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
     }
 

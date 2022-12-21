@@ -18,13 +18,13 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     private AssegnazioneTurnoDao turnoDao;
 
     @Override
-    public Set<AssegnazioneTurnoDTO> leggiTurni() throws ParseException {
+    public Set<AssegnazioneTurnoDTO> leggiTurniAssegnati() throws ParseException {
         List<AssegnazioneTurno> turni = turnoDao.findAll();
         return MappaAssegnazioneTurni.assegnazioneTurnoToDTO(turni);
     }
 
     @Override
-    public AssegnazioneTurno creaTurno(@NotNull AssegnazioneTurnoDTO c) {
+    public AssegnazioneTurno creaTurnoAssegnato(@NotNull AssegnazioneTurnoDTO c) {
         try {
             AssegnazioneTurno turno = MappaAssegnazioneTurni.assegnazioneTurnoDTOToEntity(c);
             return turnoDao.save(turno);

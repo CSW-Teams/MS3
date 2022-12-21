@@ -3,7 +3,7 @@ export  class TurnoAPI {
     }
 
     async getTurnByIdUser(id) {
-        const response = await fetch('/api/turni/utente_id='+id);
+        const response = await fetch('/api/assegnazioneturni/utente_id='+id);
         const body = await response.json();
 
         const turni = [];
@@ -22,7 +22,7 @@ export  class TurnoAPI {
 
 
     async getGlobalTurn() {
-        const response = await fetch('/api/turni/');
+        const response = await fetch('/api/assegnazioneturni/');
         const body = await response.json();
 
         let turni = [];

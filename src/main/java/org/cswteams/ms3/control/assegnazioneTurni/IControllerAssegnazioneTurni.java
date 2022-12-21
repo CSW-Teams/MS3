@@ -7,9 +7,9 @@ import java.text.ParseException;
 import java.util.Set;
 
 public interface IControllerAssegnazioneTurni {
-    Set<AssegnazioneTurnoDTO> leggiTurni() throws ParseException;
+    Set<AssegnazioneTurnoDTO> leggiTurniAssegnati() throws ParseException;
 
-    AssegnazioneTurno creaTurno(AssegnazioneTurnoDTO c);
+    AssegnazioneTurno creaTurnoAssegnato(AssegnazioneTurnoDTO c);
 
     Set<AssegnazioneTurnoDTO> leggiTurniUtente(Long idUtente) throws ParseException;
 }
