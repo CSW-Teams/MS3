@@ -7,6 +7,7 @@ import { DefaultLayout } from "./layouts";
 // Route Views
 import GlobalScheduleView from "./views/GlobalScheduleView";
 import SingleScheduleView from "./views/SingleScheduleView";
+import InsertAssignedSheet from "./views/InsertAssignedSheet";
 
 export default [
   {
@@ -14,7 +15,7 @@ export default [
     exact: true,
     layout: DefaultLayout,
     component: () => <Redirect to="/Global-Schedule" />
-  }, 
+  },
   {
     path: "/Private-Schedule",
     layout: DefaultLayout,
@@ -24,6 +25,12 @@ export default [
     path: "/Global-Schedule",
     layout: DefaultLayout,
     component:  GlobalScheduleView
+  },
+  {
+    path: "/Pianifica-Turno",
+    layout: DefaultLayout,
+    component:  InsertAssignedSheet
   }
+
 ];
 
