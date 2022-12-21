@@ -37,8 +37,6 @@ public class AssegnazioneTurnoRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-
-
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiTurniAssegnati() throws ParseException {
         Set<AssegnazioneTurnoDTO> tuttiITurni = controllerAssegnazioneTurni.leggiTurniAssegnati();

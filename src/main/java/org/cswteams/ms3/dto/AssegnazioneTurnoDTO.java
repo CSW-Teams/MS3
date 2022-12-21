@@ -15,10 +15,10 @@ public class AssegnazioneTurnoDTO {
     private Set<UtenteDTO> utentiDiGuardia;
     private Set<UtenteDTO> utentiReperibili;
 
-    private Servizio servizio;
+    private ServizioDTO servizio;
     private TipologiaTurno tipologiaTurno;
 
-    public AssegnazioneTurnoDTO(Long id, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, Servizio servizio, TipologiaTurno turno) {
+    public AssegnazioneTurnoDTO(Long id, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
         this.id = id;
         this.inizio = inizio;
         this.fine = fine;
@@ -28,7 +28,7 @@ public class AssegnazioneTurnoDTO {
         this.servizio = servizio;
     }
 
-    public AssegnazioneTurnoDTO(Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, Servizio servizio, TipologiaTurno turno) {
+    public AssegnazioneTurnoDTO(Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
         this.inizio = inizio;
         this.fine = fine;
         this.utentiDiGuardia = utentiDiGuardia;
@@ -57,7 +57,7 @@ public class AssegnazioneTurnoDTO {
         return utentiReperibili;
     }
 
-    public Servizio getServizio() {
+    public ServizioDTO getServizio() {
         return servizio;
     }
 

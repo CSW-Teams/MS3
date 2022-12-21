@@ -21,7 +21,7 @@ import java.util.Set;
 public class MappaAssegnazioneTurni {
 
     public static AssegnazioneTurno assegnazioneTurnoDTOToEntity(AssegnazioneTurnoDTO dto) throws Exception {
-        Turno turno = new Turno(dto.getInizio().toLocalDateTime().toLocalTime(),dto.getFine().toLocalDateTime().toLocalTime(),dto.getServizio(),dto.getTipologiaTurno());
+        Turno turno = new Turno(dto.getInizio().toLocalDateTime().toLocalTime(),dto.getFine().toLocalDateTime().toLocalTime(),MappaServizio.servizioDTOtoEntity(dto.getServizio()),dto.getTipologiaTurno());
         Set<Utente> diGuardia = MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia());
         Set<Utente> reperibili = MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili());
 
@@ -43,7 +43,7 @@ public class MappaAssegnazioneTurni {
         Timestamp timestampFine = new Timestamp(datefine.getTime());
         Set<UtenteDTO> diGuardiaDto = MappaUtenti.utenteEntitytoDTO(entity.getUtentiDiGuardia());
         Set<UtenteDTO> reperibiliDto = MappaUtenti.utenteEntitytoDTO(entity.getUtentiReperibili());
-        AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(),timestampInizio,timestampFine,diGuardiaDto,reperibiliDto,entity.getTurno().getServizio(), entity.getTurno().getTipologiaTurno());
+        AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(),timestampInizio,timestampFine,diGuardiaDto,reperibiliDto,MappaServizio.servizioEntitytoDTO(entity.getTurno().getServizio()), entity.getTurno().getTipologiaTurno());
         return dto;
     }
 
