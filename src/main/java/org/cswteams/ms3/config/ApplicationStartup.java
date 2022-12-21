@@ -62,18 +62,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u5 = utenteDao.save(u5);
         u6 = utenteDao.save(u6);
 
-        Servizio servizio = new Servizio("reparto");
-        servizioDao.save(servizio);
+        Servizio servizio1 = new Servizio("reparto");
+        servizioDao.save(servizio1);
+
+        Servizio servizio2 = new Servizio("ambulatorio");
+        servizioDao.save(servizio2);
 
         Turno t1 = null;
         Turno t2 = null;
         Turno t3 = null;
         Turno t4 = null;
         try {
-            t1 = new Turno(LocalTime.of(8,0), LocalTime.of(14, 0), servizio, TipologiaTurno.MATTUTINO);
-            t2 = new Turno(LocalTime.of(14,0), LocalTime.of(20, 0), servizio, TipologiaTurno.POMERIDIANO);
-            t3 = new Turno(LocalTime.of(20,0), LocalTime.of(23, 0), servizio, TipologiaTurno.NOTTURNO);
-            t4 = new Turno(LocalTime.of(0,0), LocalTime.of(8, 0), servizio, TipologiaTurno.NOTTURNO);
+            t1 = new Turno(LocalTime.of(8,0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
+            t2 = new Turno(LocalTime.of(14,0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO);
+            t3 = new Turno(LocalTime.of(20,0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
+            t4 = new Turno(LocalTime.of(0,0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
         } catch (TurnoException e) {
             e.printStackTrace();
         }

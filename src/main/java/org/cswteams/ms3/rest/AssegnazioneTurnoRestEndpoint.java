@@ -8,12 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
-import java.util.List;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/turni/")
-public class TurnoRestEndpoint {
+public class AssegnazioneTurnoRestEndpoint {
 
     @Autowired
     private IControllerAssegnazioneTurni controllerAssegnazioneTurni;

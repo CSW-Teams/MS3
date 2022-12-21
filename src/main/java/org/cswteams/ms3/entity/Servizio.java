@@ -10,13 +10,17 @@ import javax.persistence.Id;
 public class Servizio {
 
     @Id
-    private String name;
+    private String nome;
 
     protected Servizio(){
 
     }
 
     public Servizio(String name){
-        this.name = name;
+        this.nome = name;
+    }
+
+    public String getNome(){
+        return nome;
     }
 }
