@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class MappaAssegnazioneTurni {
 
-    public static AssegnazioneTurno assegnazioneTurnoDTOToEntity(AssegnazioneTurnoDTO dto) throws Exception {
+    public static AssegnazioneTurno assegnazioneTurnoDTOToEntity(AssegnazioneTurnoDTO dto) {
         Turno turno = new Turno(dto.getInizio().toLocalDateTime().toLocalTime(),dto.getFine().toLocalDateTime().toLocalTime(),MappaServizio.servizioDTOtoEntity(dto.getServizio()),dto.getTipologiaTurno());
         Set<Utente> diGuardia = MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia());
         Set<Utente> reperibili = MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili());
@@ -28,8 +28,7 @@ public class MappaAssegnazioneTurni {
         return new AssegnazioneTurno(dto.getInizio().toLocalDateTime().toLocalDate(), turno, reperibili, diGuardia);
     }
 
-    public static AssegnazioneTurnoDTO assegnazioneTurnoToDTO(AssegnazioneTurno entity) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    public static AssegnazioneTurnoDTO assegnazioneTurnoToDTO(AssegnazioneTurno entity) {
         LocalDateTime inizio = LocalDateTime.of(entity.getDate(), entity.getTurno().getOraInizio());
         LocalDateTime fine = LocalDateTime.of(entity.getDate(), entity.getTurno().getOraFine());
 
@@ -47,7 +46,7 @@ public class MappaAssegnazioneTurni {
         return dto;
     }
 
-    public static Set<AssegnazioneTurnoDTO> assegnazioneTurnoToDTO(Set<AssegnazioneTurno> turni) throws ParseException {
+    public static Set<AssegnazioneTurnoDTO> assegnazioneTurnoToDTO(Set<AssegnazioneTurno> turni) {
         Set<AssegnazioneTurnoDTO> assegnazioneTurnoDTOS = new HashSet<>();
         for (AssegnazioneTurno entity: turni){
             assegnazioneTurnoDTOS.add(assegnazioneTurnoToDTO(entity));
@@ -55,7 +54,7 @@ public class MappaAssegnazioneTurni {
         return assegnazioneTurnoDTOS;
     }
 
-    public static Set<AssegnazioneTurnoDTO> assegnazioneTurnoToDTO(List<AssegnazioneTurno> turni) throws ParseException {
+    public static Set<AssegnazioneTurnoDTO> assegnazioneTurnoToDTO(List<AssegnazioneTurno> turni) {
         Set<AssegnazioneTurnoDTO> assegnazioneTurnoDTOS = new HashSet<>();
         for (AssegnazioneTurno entity: turni){
             assegnazioneTurnoDTOS.add(assegnazioneTurnoToDTO(entity));

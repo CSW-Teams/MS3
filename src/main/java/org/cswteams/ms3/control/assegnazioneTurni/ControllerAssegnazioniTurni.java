@@ -4,6 +4,8 @@ import org.cswteams.ms3.control.utils.MappaAssegnazioneTurni;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,18 +26,12 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     }
 
     @Override
-    public AssegnazioneTurno creaTurnoAssegnato(@NotNull AssegnazioneTurnoDTO c) {
-        try {
-            AssegnazioneTurno turno = MappaAssegnazioneTurni.assegnazioneTurnoDTOToEntity(c);
-            return turnoDao.save(turno);
-        } catch (TurnoException e) {
-            e.printStackTrace();
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
+    public AssegnazioneTurno creaTurnoAssegnato(@NotNull AssegnazioneTurnoDTO c) throws AssegnazioneTurnoException {
+        AssegnazioneTurno assegnazioneTurno = MappaAssegnazioneTurni.assegnazioneTurnoDTOToEntity(c);
+        if(!checkAssegnazioneTurno(assegnazioneTurno)){
+            throw new AssegnazioneTurnoException("Collisione tra utenti reperibili e di guardia");
         }
-
-        return null;
+        return turnoDao.save(assegnazioneTurno);
     }
 
 
@@ -44,6 +40,18 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
         Set<AssegnazioneTurnoDTO> turni = MappaAssegnazioneTurni.assegnazioneTurnoToDTO(turnoDao.findTurniUtente(idPersona));
         System.out.println(turni);
         return turni;
+    }
+
+    private boolean checkAssegnazioneTurno(AssegnazioneTurno turno) {
+
+        for(Utente utente1: turno.getUtentiDiGuardia()){
+            for(Utente utente2: turno.getUtentiReperibili()){
+                if (utente1.getId().longValue() == utente2.getId().longValue()){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 }

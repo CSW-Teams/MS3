@@ -5,6 +5,7 @@ import org.cswteams.ms3.dto.ServizioDTO;
 import org.cswteams.ms3.dto.TurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.exception.TurnoException;
 
 import java.util.Set;
 
@@ -15,8 +16,7 @@ public interface IControllerTurni {
 
     Set<TurnoDTO> leggiTurni();
 
-    Turno creaTurno(TurnoDTO turno);
-
+    Turno creaTurno(TurnoDTO turno) throws TurnoException;
 
 
 }

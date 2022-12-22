@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class MappaTurni {
 
-    public static Turno turnoDTOToEntity(TurnoDTO dto) throws Exception {
+    public static Turno turnoDTOToEntity(TurnoDTO dto) {
         return new Turno(dto.getOraInizio(),dto.getOraFine(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getTipologiaTurno());
     }
 

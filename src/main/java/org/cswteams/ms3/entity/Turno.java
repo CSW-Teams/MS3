@@ -27,16 +27,12 @@ public class Turno {
     @ManyToOne
     private Servizio servizio;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia) throws TurnoException {
-        if(oraInizio.isAfter(oraFine)){
-            throw new TurnoException("Ora inizio dopo ora fine");
-        }
-        else {
-            this.oraInizio = oraInizio;
-            this.oraFine = oraFine;
-            this.servizio = servizio;
-            this.tipologiaTurno = tipologia;
-        }
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia){
+        this.oraInizio = oraInizio;
+        this.oraFine = oraFine;
+        this.servizio = servizio;
+        this.tipologiaTurno = tipologia;
+
     }
 
     public Turno() {

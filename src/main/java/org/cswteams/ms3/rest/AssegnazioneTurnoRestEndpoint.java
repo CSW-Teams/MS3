@@ -2,6 +2,7 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
+import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,11 @@ public class AssegnazioneTurnoRestEndpoint {
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> creaTurnoAssegnato(@RequestBody(required = true) AssegnazioneTurnoDTO c) {
         if (c != null) {
-            return new ResponseEntity<>(controllerAssegnazioneTurni.creaTurnoAssegnato(c), HttpStatus.ACCEPTED);
+            try {
+                return new ResponseEntity<>(controllerAssegnazioneTurni.creaTurnoAssegnato(c), HttpStatus.ACCEPTED);
+            } catch (AssegnazioneTurnoException e) {
+                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            }
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

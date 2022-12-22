@@ -32,12 +32,17 @@ public class ControllerTurni implements IControllerTurni {
     }
 
     @Override
-    public Turno creaTurno(TurnoDTO turno) {
-        try {
-            return turnoDao.save(MappaTurni.turnoDTOToEntity(turno));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+    public Turno creaTurno(TurnoDTO turno) throws TurnoException {
+        Turno turnoEntity = MappaTurni.turnoDTOToEntity(turno);
+        if(!checkTurno(turnoEntity)){
+            throw new TurnoException("Ora inizio dopo ora fine");
         }
+        return turnoDao.save(turnoEntity);
     }
+
+    private boolean checkTurno(Turno turno) {
+        return turno.getOraInizio().isBefore(turno.getOraFine());
+    }
+
+
 }
