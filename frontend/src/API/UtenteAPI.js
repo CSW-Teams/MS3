@@ -14,11 +14,7 @@ export  class UtenteAPI {
       const utente = new Object();
       utente.text = body[i].nome+" "+body[i].cognome+"  - "+ body[i].ruoloEnum;
       utente.id =body[i].id;
-          if (body[i].ruoloEnum==="SPECIALIZZANDO") {
-           utente.color = teal;
-         } else {
-         utente.color = blue;
-       }
+      utente.color = teal;
       utenti[i]=utente;
     }
 
