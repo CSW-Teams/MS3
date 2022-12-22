@@ -54,6 +54,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u5 = new Utente("Daniele","La Prova", "DNLLPRV******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u6 = new Utente("Luca","Fiscariello", "FSCRLC******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u7 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1950, 3, 7),"giovannicantone@gmail.com", RuoloEnum.STRUTTURATO );
+        Utente u8 = new Utente("Manuel","Mastrofini", "MNLMASTR******", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", RuoloEnum.STRUTTURATO);
+        Utente u9 = new Utente("Giulia","Cantone", "GLCCTN******", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u10 = new Utente("Fabio","Valenzi", "FBVVLZ******", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", RuoloEnum.SPECIALIZZANDO);
 
         u1 = utenteDao.save(u1);
         u2 = utenteDao.save(u2);
@@ -61,6 +65,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u4 = utenteDao.save(u4);
         u5 = utenteDao.save(u5);
         u6 = utenteDao.save(u6);
+        u7 = utenteDao.save(u7);
+        u8 = utenteDao.save(u8);
+        u9 = utenteDao.save(u9);
+        u10 = utenteDao.save(u10);
 
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
@@ -68,112 +76,82 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Servizio servizio2 = new Servizio("ambulatorio");
         servizioDao.save(servizio2);
 
-        Turno t1 = null;
-        Turno t2 = null;
-        Turno t3 = null;
-        Turno t4 = null;
-        try {
-            t1 = new Turno(LocalTime.of(8,0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
-            t2 = new Turno(LocalTime.of(14,0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO);
-            t3 = new Turno(LocalTime.of(20,0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
-            t4 = new Turno(LocalTime.of(0,0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
-        } catch (TurnoException e) {
-            e.printStackTrace();
-        }
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO);
+      
 
-        t1 = turnoDao.save(t1);
-        t2 = turnoDao.save(t2);
-        t3 = turnoDao.save(t3);
-        t4 = turnoDao.save(t4);
+        turnoDao.save(t1);
+        turnoDao.save(t2);
+        turnoDao.save(t3);
+        turnoDao.save(t4);
+        turnoDao.save(t5);
 
-        Set<Utente> setUtentiGuardia1 = new HashSet<>();
-        setUtentiGuardia1.add(u1);
-        setUtentiGuardia1.add(u2);
-        setUtentiGuardia1.add(u4);
-        setUtentiGuardia1.add(u5);
+        Set<Utente> setUtenti1 = new HashSet<>();
+        setUtenti1.add(u1);
+        setUtenti1.add(u4);
 
-        Set<Utente> setUtentiReperibili1 = new HashSet<>();
-        setUtentiReperibili1.add(u3);
-        setUtentiReperibili1.add(u6);
+        Set<Utente> setUtenti2 = new HashSet<>();
+        setUtenti2.add(u2);
+        setUtenti2.add(u5);
 
-        Set<Utente> setUtentiGuardia2 = new HashSet<>();
-        setUtentiGuardia2.add(u3);
-        setUtentiGuardia2.add(u6);
+        Set<Utente> setUtenti3 = new HashSet<>();
+        setUtenti3.add(u7);
+        setUtenti3.add(u3);
 
-        Set<Utente> setUtentiReperibili2 = new HashSet<>();
-        setUtentiReperibili2.add(u1);
-        setUtentiReperibili2.add(u4);
+        Set<Utente> setUtenti4 = new HashSet<>();
+        setUtenti4.add(u8);
+        setUtenti4.add(u9);
 
-        AssegnazioneTurno turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,20),t1,setUtentiReperibili1,setUtentiGuardia1);
-        AssegnazioneTurno turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,20),t2,setUtentiReperibili1,setUtentiGuardia1);
-        AssegnazioneTurno turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,20),t3,setUtentiReperibili1,setUtentiGuardia1);
-        AssegnazioneTurno turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,20),t4,setUtentiReperibili1,setUtentiGuardia1);
+        Set<Utente> setUtenti5 = new HashSet<>();
+        setUtenti5.add(u10);
+        setUtenti5.add(u6);
 
-        assegnazioneTurnoDao.save(turnoassegnato1);
-        assegnazioneTurnoDao.save(turnoassegnato2);
-        assegnazioneTurnoDao.save(turnoassegnato3);
-        assegnazioneTurnoDao.save(turnoassegnato4);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t5,setUtenti3,setUtenti5));
 
-        turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,21),t1,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,21),t2,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,21),t3,setUtentiReperibili2,setUtentiGuardia2);
-        turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,21),t4,setUtentiGuardia2,setUtentiGuardia2);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t1,setUtenti1,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t2,setUtenti1,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t3,setUtenti3,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t4,setUtenti3,setUtenti4));
 
-        assegnazioneTurnoDao.save(turnoassegnato1);
-        assegnazioneTurnoDao.save(turnoassegnato2);
-        assegnazioneTurnoDao.save(turnoassegnato3);
-        assegnazioneTurnoDao.save(turnoassegnato4);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t1,setUtenti1,setUtenti3));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t2,setUtenti1,setUtenti3));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t3,setUtenti4,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t4,setUtenti4,setUtenti2));
 
-        turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,22),t1,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,22),t2,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,22),t3,setUtentiReperibili2,setUtentiGuardia2);
-        turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,22),t4,setUtentiReperibili2,setUtentiGuardia2);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t1,setUtenti3,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t2,setUtenti3,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t3,setUtenti2,setUtenti1));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t4,setUtenti2,setUtenti1));
 
-        assegnazioneTurnoDao.save(turnoassegnato1);
-        assegnazioneTurnoDao.save(turnoassegnato2);
-        assegnazioneTurnoDao.save(turnoassegnato3);
-        assegnazioneTurnoDao.save(turnoassegnato4);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t5,setUtenti3,setUtenti2));
 
-        turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,23),t1,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,23),t2,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,23),t3,setUtentiReperibili2,setUtentiGuardia2);
-        turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,23),t4,setUtentiReperibili2,setUtentiGuardia2);
 
-        assegnazioneTurnoDao.save(turnoassegnato1);
-        assegnazioneTurnoDao.save(turnoassegnato2);
-        assegnazioneTurnoDao.save(turnoassegnato3);
-        assegnazioneTurnoDao.save(turnoassegnato4);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t1,setUtenti4,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t2,setUtenti4,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t3,setUtenti1,setUtenti3));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t4,setUtenti1,setUtenti3));
 
-        turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,24),t1,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,24),t2,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,24),t3,setUtentiReperibili2,setUtentiGuardia2);
-        turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,24),t4,setUtentiReperibili2,setUtentiGuardia2);
 
-        assegnazioneTurnoDao.save(turnoassegnato1);
-        assegnazioneTurnoDao.save(turnoassegnato2);
-        assegnazioneTurnoDao.save(turnoassegnato3);
-        assegnazioneTurnoDao.save(turnoassegnato4);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t1,setUtenti1,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t2,setUtenti1,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t3,setUtenti2,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t4,setUtenti2,setUtenti4));
 
-        turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,25),t1,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,25),t2,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,25),t3,setUtentiReperibili2,setUtentiGuardia2);
-        turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,25),t4,setUtentiReperibili2,setUtentiGuardia2);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t5,setUtenti1,setUtenti3));
 
-        assegnazioneTurnoDao.save(turnoassegnato1);
-        assegnazioneTurnoDao.save(turnoassegnato2);
-        assegnazioneTurnoDao.save(turnoassegnato3);
-        assegnazioneTurnoDao.save(turnoassegnato4);
 
-        turnoassegnato1 =  new AssegnazioneTurno(LocalDate.of(2022,12,26),t1,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato2 =  new AssegnazioneTurno(LocalDate.of(2022,12,26),t2,setUtentiReperibili1,setUtentiGuardia1);
-        turnoassegnato3 =  new AssegnazioneTurno(LocalDate.of(2022,12,26),t3,setUtentiReperibili2,setUtentiGuardia2);
-        turnoassegnato4 =  new AssegnazioneTurno(LocalDate.of(2022,12,26),t4,setUtentiReperibili2,setUtentiGuardia2);
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t1,setUtenti3,setUtenti1));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t2,setUtenti3,setUtenti1));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t3,setUtenti4,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t4,setUtenti4,setUtenti2));
 
-        assegnazioneTurnoDao.save(turnoassegnato1);
-        assegnazioneTurnoDao.save(turnoassegnato2);
-        assegnazioneTurnoDao.save(turnoassegnato3);
-        assegnazioneTurnoDao.save(turnoassegnato4);
-
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t1,setUtenti1,setUtenti3));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t2,setUtenti1,setUtenti3));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t3,setUtenti2,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t4,setUtenti2,setUtenti4));
 
     }
 }

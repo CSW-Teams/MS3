@@ -14,15 +14,15 @@ export default [
     path: "/",
     exact: true,
     layout: DefaultLayout,
-    component: () => <Redirect to="/Global-Schedule" />
+    component: () => <Redirect to="/pianificazione-globale" />
   },
   {
-    path: "/Private-Schedule",
+    path: "/pianificazione-privata",
     layout: DefaultLayout,
     component: SingleScheduleView
   },
   {
-    path: "/Global-Schedule",
+    path: "/pianificazione-globale",
     layout: DefaultLayout,
     component:  GlobalScheduleView
   },

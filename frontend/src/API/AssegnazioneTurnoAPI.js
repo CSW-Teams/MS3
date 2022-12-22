@@ -13,6 +13,8 @@ export  class AssegnazioneTurnoAPI {
             turno.startDate = body[i].inizio;
             turno.endDate =body[i].fine;
             turno.id = body[i].id;
+            turno.title= "Turno in "+  body[i].servizio.nome;
+            turno.tipologia = body[i].tipologiaTurno;
             turni[i]=turno;
         }
 
@@ -45,8 +47,13 @@ export  class AssegnazioneTurnoAPI {
               utenti_reperibili[j] = body[i].utentiReperibili[j].id;
           }
 
+          turno.title= "Turno in "+  body[i].servizio.nome;
 
-          turno.members = utenti_guardia;
+          turno.utenti_guardia = utenti_guardia;
+          turno.utenti_reperibili = utenti_reperibili;
+
+          turno.tipologia = body[i].tipologiaTurno;
+
           turni[i] = turno;
 
         }
