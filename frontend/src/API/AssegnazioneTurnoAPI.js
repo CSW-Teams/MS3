@@ -1,6 +1,4 @@
 export  class AssegnazioneTurnoAPI {
-    constructor() {
-    }
 
     async getTurnByIdUser(id) {
         const response = await fetch('/api/assegnazioneturni/utente_id='+id);
@@ -38,6 +36,8 @@ export  class AssegnazioneTurnoAPI {
         const response = await fetch('/api/assegnazioneturni/');
         const body = await response.json();
 
+        console.log(body)
+
         let turni = [];
 
         for (let i = 0; i < body.length; i++) {
@@ -68,8 +68,9 @@ export  class AssegnazioneTurnoAPI {
           turni[i] = turno;
 
         }
-
+        
         return turni;
 
     }
+
   }

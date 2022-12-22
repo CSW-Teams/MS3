@@ -7,7 +7,7 @@ import { DefaultLayout } from "./layouts";
 // Route Views
 import GlobalScheduleView from "./views/GlobalScheduleView";
 import SingleScheduleView from "./views/SingleScheduleView";
-import InsertAssignedSheet from "./views/InsertAssignedSheet";
+import AssegnaTurnoView from "./views/AssegnaTurnoView";
 
 export default [
   {
@@ -29,7 +29,7 @@ export default [
   {
     path: "/Pianifica-Turno",
     layout: DefaultLayout,
-    component:  InsertAssignedSheet
+    component:  AssegnaTurnoView
   }
 
 ];

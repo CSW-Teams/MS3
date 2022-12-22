@@ -22,4 +22,20 @@ export  class UtenteAPI {
 
   }
 
+  async getAllUserOnlyNameSurname() {
+    const response = await fetch('/api/utenti/');
+    const body = await response.json();
+
+    const utenti = [];
+
+    for (let i = 0; i < body.length; i++) {
+      const utente = new Object();
+      utente.label = body[i].nome+" "+body[i].cognome;
+      utenti[i]=utente;
+    }
+
+    return utenti;
+
+  }
+
 }

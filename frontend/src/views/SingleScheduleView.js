@@ -18,21 +18,9 @@ import {
   MonthView, Resources,
 } from '@devexpress/dx-react-scheduler-material-ui';
 import styled from "@emotion/styled";
-import Typography from '@mui/material/Typography';
 import {
   Button,
-  Box,
-  Checkbox,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  Grid,
-  IconButton,
-  TextField, Popover,
 } from "@mui/material";
-import {Title} from "@mui/icons-material";
 
 
 const PREFIX = 'Demo';
