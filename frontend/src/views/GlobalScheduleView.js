@@ -3,10 +3,9 @@
 import React from 'react';
 import {ViewState} from '@devexpress/dx-react-scheduler';
 import { styled } from '@mui/material/styles';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+
 import {
-  Button,
+  Button, Grid,
   Paper,
 } from "@mui/material";
 import {
@@ -23,10 +22,11 @@ import {
   WeekView, CurrentTimeIndicator,
 } from '@devexpress/dx-react-scheduler-material-ui';
 
-
 import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
 import { UtenteAPI } from '../API/UtenteAPI';
 import {blue, red, teal} from "@mui/material/colors";
+import classNames from "classnames";
+import {AccessTime} from "@mui/icons-material";
 
 
 const PREFIX = 'Demo';
@@ -47,6 +47,8 @@ const classes = {
   weekendCell: `${PREFIX}-weekendCell`,
   weekEnd: `${PREFIX}-weekEnd`,
 };
+
+
 // #FOLD_BLOCK
 const StyledAppointmentsAppointmentContent = styled(Appointments.AppointmentContent)(() => ({
   [`& .${classes.title}`]: {
@@ -77,6 +79,7 @@ const StyledAppointmentsAppointmentContent = styled(Appointments.AppointmentCont
   },
 }));
 
+
 const AppointmentContent = ({
                               data, formatDate, ...restProps
                             }) => (
@@ -104,17 +107,12 @@ const AppointmentContent = ({
   </StyledAppointmentsAppointmentContent>
 );
 
-const StyledDiv = styled('div')(({ theme }) => ({
-  [`&.${classes.container}`]: {
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-    justifyContent: 'flex-end',
-  },
-  [`& .${classes.text}`]: {
-    ...theme.typography.h6,
-    marginRight: theme.spacing(2),
-  },
-}));
+const verticalTopHorizontalCenterOptions = {
+  vertical: "top",
+  horizontal: "center"
+};
+
+
 
 
 class GlobalScheduleView extends React.Component {
@@ -147,12 +145,11 @@ class GlobalScheduleView extends React.Component {
 
 
   constructor(props) {
-
     super(props);
     this.state = {
       data: [],
       mainResourceName: 'utenti_guardia',
-      resources: [
+     resources: [
         {fieldName: 'utenti_guardia', title: 'Guardia', allowMultiple: true,instances: [{}] , color:blue,},
         {fieldName: 'utenti_reperibili', title: 'Reperibilità',allowMultiple: true, instances: [{}]}, ]
     };
@@ -168,13 +165,13 @@ class GlobalScheduleView extends React.Component {
 
     return (
       <React.Fragment>
-
         <Paper>
           <Scheduler
             locale={"it-IT"}
             firstDayOfWeek={1}
             data={data}
-            height={660}>
+            height={660}
+          >
             <ViewState/>
             <WeekView
               displayName="Settimanale"

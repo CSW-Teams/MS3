@@ -13,9 +13,20 @@ export  class AssegnazioneTurnoAPI {
             turno.startDate = body[i].inizio;
             turno.endDate =body[i].fine;
             turno.id = body[i].id;
-            turno.title= "Turno in "+  body[i].servizio.nome;
             turno.tipologia = body[i].tipologiaTurno;
             turni[i]=turno;
+            for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
+             if (id==body[i].utentiDiGuardia[j].id) {
+               turno.title= "Turno in "+  body[i].servizio.nome ;
+               turni[i].turno="GUARDIA"
+             }
+            }
+            for (let j = 0; j < body[i].utentiReperibili.length; j++) {
+              if (id==body[i].utentiReperibili[j].id) {
+                turno.title= "Turno in "+  body[i].servizio.nome;
+                turni[i].turno="REPERIBILITA'"
+            }
+          }
         }
 
         return turni;

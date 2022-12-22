@@ -30,8 +30,10 @@ import {
   DialogContentText,
   Grid,
   IconButton,
-  TextField,
+  TextField, Popover,
 } from "@mui/material";
+import {Title} from "@mui/icons-material";
+
 
 const PREFIX = 'Demo';
 // #FOLD_BLOCK
@@ -89,9 +91,13 @@ const AppointmentContent = ({
       <div className={classes.title}>
         {data.title}
       </div>
-      <div className={classes.test}>
+      <div className={classes.textField}>
+        {data.turno}
+      </div>
+      <div className={classes.textContainer}>
         {data.tipologia}
       </div>
+
       <div className={classes.textContainer}>
         <div className={classes.time}>
           {formatDate(data.startDate, { hour: 'numeric', minute: 'numeric' })}
@@ -102,7 +108,6 @@ const AppointmentContent = ({
         <div className={classes.time}>
           {formatDate(data.endDate, { hour: 'numeric', minute: 'numeric' })}
         </div>
-
       </div>
     </div>
   </StyledAppointmentsAppointmentContent>
@@ -124,20 +129,10 @@ export default class SingleScheduleView extends React.Component {
     let apiTurno = new AssegnazioneTurnoAPI();
     let turni = await apiTurno.getTurnByIdUser('1');
     let utenteAPI = new UtenteAPI();
-    let utenti = await utenteAPI.getAllUser();
 
     this.setState(
       {
         data:turni,
-        resources:
-          [
-            {
-              fieldName: 'utenti_guardia', title: 'Guardia',allowMultiple: true, instances: utenti,
-            }
-            ,{
-            fieldName:'utenti_reperibili', title: 'Reperibilità',allowMultiple: true, instances: utenti,
-          },
-          ],
       })
     this.changeMainResource = this.changeMainResource.bind(this);
   }
