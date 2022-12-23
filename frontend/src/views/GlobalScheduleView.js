@@ -5,7 +5,7 @@ import {ViewState} from '@devexpress/dx-react-scheduler';
 import { styled } from '@mui/material/styles';
 
 import {
-  Button,
+  Button, Grid,
   Paper,
 } from "@mui/material";
 import {
@@ -25,6 +25,217 @@ import {
 import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
 import { UtenteAPI } from '../API/UtenteAPI';
 import {blue} from "@mui/material/colors";
+import {Room} from "@mui/icons-material";
+import { getAppointmentColor, getResourceColor } from '../utils/utils';
+import PropTypes from 'prop-types';
+import classNames from 'clsx';
+import AccessTime from '@mui/icons-material/AccessTime';
+import Lens from '@mui/icons-material/Lens';
+import { HOUR_MINUTE_OPTIONS, WEEKDAY_INTERVAL, viewBoundText } from '@devexpress/dx-scheduler-core';
+
+
+const PREFIX_TOOLTIP = 'Content';
+
+export const tooltip_classes = {
+  content: `${PREFIX_TOOLTIP}-content`,
+  text: `${PREFIX_TOOLTIP}-text`,
+  title: `${PREFIX_TOOLTIP}-title`,
+  icon: `${PREFIX_TOOLTIP}-icon`,
+  lens: `${PREFIX_TOOLTIP}-lens`,
+  lensMini: `${PREFIX_TOOLTIP}-lensMini`,
+  textCenter: `${PREFIX_TOOLTIP}-textCenter`,
+  dateAndTitle: `${PREFIX_TOOLTIP}-dateAndTitle`,
+  titleContainer: `${PREFIX_TOOLTIP}-titleContainer`,
+  contentContainer: `${PREFIX_TOOLTIP}-contentContainer`,
+  resourceContainer: `${PREFIX_TOOLTIP}-resourceContainer`,
+  recurringIcon: `${PREFIX_TOOLTIP}-recurringIcon`,
+  relativeContainer: `${PREFIX_TOOLTIP}-relativeContainer`,
+};
+
+const StyledDiv = styled('div')(({
+                                   theme: { spacing, palette, typography }, resources,
+                                 }) => ({
+  [`&.${tooltip_classes.content}`]: {
+    padding: spacing(1.5, 1),
+    paddingTop: spacing(1),
+    backgroundColor: palette.background.paper,
+    boxSizing: 'border-box',
+    ...typography.body2,
+  },
+  [`& .${tooltip_classes.text}`]: {
+    display: 'inline-block',
+  },
+  [`& .${tooltip_classes.title}`]: {
+    ...typography.h6,
+    color: palette.text.secondary,
+    fontWeight: typography.fontWeightBold,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  [`& .${tooltip_classes.icon}`]: {
+    verticalAlign: 'middle',
+    color: palette.action.active,
+  },
+  [`& .${tooltip_classes.lens}`]: {
+    color: getAppointmentColor(300, getResourceColor(resources), palette.primary),
+    width: spacing(4.5),
+    height: spacing(4.5),
+    verticalAlign: 'super',
+    position: 'absolute',
+    left: '50%',
+    transform: 'translate(-50%,0)',
+  },
+  [`& .${tooltip_classes.lensMini}`]: {
+    width: spacing(2.5),
+    height: spacing(2.5),
+  },
+  [`& .${tooltip_classes.textCenter}`]: {
+    textAlign: 'center',
+    height: spacing(2.5),
+  },
+  [`& .${tooltip_classes.dateAndTitle}`]: {
+    lineHeight: 1.4,
+  },
+  [`& .${tooltip_classes.titleContainer}`]: {
+    paddingBottom: spacing(2),
+  },
+  [`& .${tooltip_classes.contentContainer}`]: {
+    paddingBottom: spacing(1.5),
+  },
+  [`& .${tooltip_classes.resourceContainer}`]: {
+    paddingBottom: spacing(0.25),
+  },
+  [`& .${tooltip_classes.recurringIcon}`]: {
+    position: 'absolute',
+    paddingTop: spacing(0.875),
+    left: '50%',
+    transform: 'translate(-50%,0)',
+    color: palette.background.paper,
+    width: spacing(2.625),
+    height: spacing(2.625),
+  },
+  [`& .${tooltip_classes.relativeContainer}`]: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+  },
+}));
+
+export const Content = ({
+                          className,
+                          children,
+                          appointmentData,
+                          appointmentResources,
+                          formatDate,
+                          recurringIconComponent: RecurringIcon,
+                          ...restProps
+                        }) => {
+  const weekDays = viewBoundText(
+    appointmentData.startDate, appointmentData.endDate, WEEKDAY_INTERVAL,
+    appointmentData.startDate, 1, formatDate,
+  );
+  return (
+    <StyledDiv
+      resources={appointmentResources}
+      className={classNames(tooltip_classes.content, className)}
+      {...restProps}
+    >
+      <Grid container alignItems="flex-start" className={tooltip_classes.titleContainer}>
+        <Grid item xs={2}>
+          <div className={tooltip_classes.relativeContainer}>
+            <Lens className={tooltip_classes.lens} />
+            {!!appointmentData.rRule && (
+              <RecurringIcon className={tooltip_classes.recurringIcon} />
+            )}
+          </div>
+        </Grid>
+        <Grid item xs={10}>
+          <div>
+            <div className={classNames(tooltip_classes.title, tooltip_classes.dateAndTitle)}>
+              {appointmentData.title}
+            </div>
+            <div className={classNames(tooltip_classes.text, tooltip_classes.dateAndTitle)}>
+              {weekDays}
+            </div>
+          </div>
+        </Grid>
+      </Grid>
+      <Grid container alignItems="center" className={tooltip_classes.contentContainer}>
+        <Grid item xs={2} className={tooltip_classes.textCenter}>
+          <AccessTime className={tooltip_classes.icon} />
+        </Grid>
+        <Grid item xs={10}>
+          <div className={tooltip_classes.text}>
+            {`${formatDate(appointmentData.startDate, HOUR_MINUTE_OPTIONS)}
+              - ${formatDate(appointmentData.endDate, HOUR_MINUTE_OPTIONS)}`}
+          </div>
+        </Grid>
+      </Grid>
+      <Grid>
+      <Grid container alignItems="center" >
+        <div className={tooltip_classes.text}> Di Guardia : </div>
+      </Grid>
+      { appointmentResources.slice(0, appointmentData.utenti_guardia.length).map(resourceItem => (
+        <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
+          <Grid item xs={2} className={tooltip_classes.textCenter}>
+            <div className={tooltip_classes.relativeContainer}>
+              <Lens
+                className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
+                style={{ color: getAppointmentColor(300, resourceItem.color) }}
+              />
+            </div>
+          </Grid>
+          <Grid item xs={10}>
+            <div className={tooltip_classes.text}>
+              {resourceItem.text}
+            </div>
+          </Grid>
+        </Grid>
+      ))}
+      <Grid item xs={2}>
+        <div className={tooltip_classes.text}> In Reperibilità: </div>
+      </Grid>
+      { appointmentResources.slice(appointmentData.utenti_guardia.length, appointmentData.utenti_guardia.length + appointmentData.utenti_reperibili.length).map(resourceItem => (
+        <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
+          <Grid item xs={2} className={tooltip_classes.textCenter}>
+            <div className={tooltip_classes.relativeContainer}>
+              <Lens
+                className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
+                style={{ color: getAppointmentColor(300, resourceItem.color) }}
+              />
+            </div>
+          </Grid>
+          <Grid item xs={10}>
+            <div className={tooltip_classes.text}>
+              {resourceItem.text}
+            </div>
+          </Grid>
+        </Grid>
+      ))}
+      </Grid>
+      {children}
+    </StyledDiv>
+  );
+};
+
+Content.propTypes = {
+  appointmentData: PropTypes.object,
+  appointmentResources: PropTypes.array,
+  children: PropTypes.node,
+  className: PropTypes.string,
+  formatDate: PropTypes.func.isRequired,
+  recurringIconComponent: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
+};
+
+Content.defaultProps = {
+  appointmentData: undefined,
+  appointmentResources: [],
+  className: undefined,
+  children: undefined,
+};
+
+
+
 
 
 
@@ -111,7 +322,17 @@ const verticalTopHorizontalCenterOptions = {
   horizontal: "center"
 };
 
+const StyledGrid = styled(Grid)(() => ({
+  [`&.${classes.textCenter}`]: {
+    textAlign: 'center',
+  },
+}));
 
+const StyledRoom = styled(Room)(({ theme: { palette } }) => ({
+  [`&.${classes.icon}`]: {
+    color: palette.action.active,
+  },
+}));
 
 
 class GlobalScheduleView extends React.Component {
@@ -201,6 +422,7 @@ class GlobalScheduleView extends React.Component {
             <ViewSwitcher />
             <AppointmentTooltip
               showCloseButton
+              contentComponent={Content}
             />
             <CurrentTimeIndicator
               shadePreviousAppointments={true}
