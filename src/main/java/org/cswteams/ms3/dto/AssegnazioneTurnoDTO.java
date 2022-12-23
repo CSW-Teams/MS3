@@ -1,14 +1,16 @@
 package org.cswteams.ms3.dto;
 
-import org.cswteams.ms3.entity.Servizio;
+import lombok.Data;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
 import java.sql.Timestamp;
 import java.util.Set;
 
+@Data
 public class AssegnazioneTurnoDTO {
 
     private Long id;
+    private Long idTurno;
     private Timestamp inizio;
     private Timestamp fine;
 
@@ -28,6 +30,19 @@ public class AssegnazioneTurnoDTO {
         this.servizio = servizio;
     }
 
+    public AssegnazioneTurnoDTO(Long id,Long idTurno, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
+        this.id = id;
+        this.inizio = inizio;
+        this.fine = fine;
+        this.utentiDiGuardia = utentiDiGuardia;
+        this.utentiReperibili = utentiReperibili;
+        this.tipologiaTurno = turno;
+        this.servizio = servizio;
+        this.idTurno=idTurno;
+    }
+
+    public AssegnazioneTurnoDTO(){}
+
     public AssegnazioneTurnoDTO(Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
         this.inizio = inizio;
         this.fine = fine;
@@ -40,7 +55,9 @@ public class AssegnazioneTurnoDTO {
     public Long getId() {
         return id;
     }
-
+    public Long getIdTurno() {
+        return idTurno;
+    }
     public Timestamp getInizio() {
         return inizio;
     }

@@ -63,6 +63,9 @@ export default function FullWidthTabs() {
     getService();
   }, []);
 
+
+  //Queste due funzioni permettono di capire a react quale dei tab che compaiono nell'interfaccia grafica è stato 
+  //effettivamente selezionato
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };

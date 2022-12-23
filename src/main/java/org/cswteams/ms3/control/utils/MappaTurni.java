@@ -14,7 +14,7 @@ public class MappaTurni {
     }
 
     public static TurnoDTO turnoEntityToDTO(Turno entity){
-        return new TurnoDTO(entity.getTipologiaTurno(),entity.getOraInizio(), entity.getOraFine(), MappaServizio.servizioEntitytoDTO(entity.getServizio()));
+        return new TurnoDTO(entity.getId(), entity.getTipologiaTurno(),entity.getOraInizio(), entity.getOraFine(), MappaServizio.servizioEntitytoDTO(entity.getServizio()));
     }
 
     public static Set<TurnoDTO> turnoEntityToDTO(List<Turno> turni){

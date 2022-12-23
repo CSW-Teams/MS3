@@ -18,5 +18,18 @@ export  class TurnoAPI {
 
   }
 
+  async getTurnoByServizioTipologia(servizio,tipologia) {
+    const response = await fetch('/api/turni/servizio='+servizio);
+    const body = await response.json();
+
+    for (let i = 0; i < body.length; i++) {
+        if( body[i].tipologiaTurno == tipologia)
+          return body[i];
+    }
+
+    return {};  
+
+  }
+
 
 }

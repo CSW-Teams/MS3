@@ -35,6 +35,15 @@ public class Turno {
 
     }
 
+    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia){
+        this.oraInizio = oraInizio;
+        this.oraFine = oraFine;
+        this.servizio = servizio;
+        this.tipologiaTurno = tipologia;
+        this.id = id;
+
+    }
+
     public Turno() {
 
     }
