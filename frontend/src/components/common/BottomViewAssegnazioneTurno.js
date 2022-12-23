@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { UtenteAPI } from '../../API/UtenteAPI';
+import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 
 
 export default function TemporaryDrawer(props) {
@@ -30,15 +31,19 @@ export default function TemporaryDrawer(props) {
   }, []);
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare la data.
+  //Viene passata al componente <BasicDatePicker>
   const handleData = (data) => {
     setdata(data);
   }
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
+  //Viene passata al componente <MultipleSelect>
   const handleTurno = (turno) => {
     setTurno(turno);
   }
 
+  //Funzione che apre la schermata secondaria che permette di creare un associazione. 
+  //Viene passata come callback al componente <Drawer>
   const toggleDrawer = (anchor, open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
@@ -47,15 +52,20 @@ export default function TemporaryDrawer(props) {
 
   };
 
+  //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione. 
+  //Viene passata come callback al componente <Button>Assegna turno</Button>
   const assegnaTurno = (anchor, open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
     setState({ ...state, [anchor]: open });
 
-    console.log(data)
-    console.log(turno)
-    console.log(utentiSelezionati)
+    let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
+    assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionati,props.serviceName)
+
+    // TODO verificare che la creazione sia avvenuta correttamente
+    
+  
   }
   
   return (

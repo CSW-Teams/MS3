@@ -31,6 +31,14 @@ export  class UtenteAPI {
     for (let i = 0; i < body.length; i++) {
       const utente = new Object();
       utente.label = body[i].nome+" "+body[i].cognome;
+      utente.id = body[i].id;
+      utente.nome = body[i].nome;
+      utente.cognome = body[i].cognome;
+      utente.dataNascita = body[i].dataNascita;
+      utente.codiceFiscale = body[i].codiceFiscale;
+      utente.ruoloEnum = body[i].ruoloEnum;
+      utente.email = body[i].email;
+
       utenti[i]=utente;
     }
 
