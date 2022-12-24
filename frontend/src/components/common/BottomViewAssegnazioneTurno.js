@@ -2,20 +2,22 @@ import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
-import MultipleSelect from './TurniListSelectorView';
+import MultipleSelect from './MultipleSelect';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { UtenteAPI } from '../../API/UtenteAPI';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 
-
 export default function TemporaryDrawer(props) {
 
   const [user,setUser] = React.useState([{}])
   const [data,setdata] = React.useState("")
   const [turno,setTurno] = React.useState("")
-  const [utentiSelezionati,setUtentiSelezionati] = React.useState([])
+  const [servizio,setServizio] = React.useState("")
+  const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
+  const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
+
   const [state, setState] = React.useState({bottom: false});
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono. 
@@ -42,6 +44,11 @@ export default function TemporaryDrawer(props) {
     setTurno(turno);
   }
 
+  const handleServizio = (servizio) => {
+    setServizio(servizio);
+  }
+  
+
   //Funzione che apre la schermata secondaria che permette di creare un associazione. 
   //Viene passata come callback al componente <Drawer>
   const toggleDrawer = (anchor, open) => (event) => {
@@ -61,13 +68,14 @@ export default function TemporaryDrawer(props) {
     setState({ ...state, [anchor]: open });
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
-    assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionati,props.serviceName)
+    assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio)
 
     // TODO verificare che la creazione sia avvenuta correttamente
     
   
   }
-  
+
+
   return (
     <div>
         <React.Fragment key= 'bottom'>
@@ -84,19 +92,26 @@ export default function TemporaryDrawer(props) {
               display: 'flex',
               'padding-top': '20px',
               justifyContent: 'center',
-              height: '50vh',
+              height: '65vh',
             }}>
               
             
-            <Stack spacing={3}>
+            <Stack spacing={3} >
                 <BasicDatePicker onSelectData={handleData}></BasicDatePicker>
-                <MultipleSelect serviceName={props.serviceName} onSelectTurno={handleTurno}></MultipleSelect>
+                <MultipleSelect onSelectTurno = {handleTurno} onSelectServizio = {handleServizio}></MultipleSelect>
                 <Autocomplete
-                  onChange={(event, value) => setUtentiSelezionati(value)}
+                  onChange={(event, value) => setUtentiSelezionatiGuardia(value)}
                   multiple
                   options={user}
                   sx={{ width: 300 }}
-                  renderInput={(params) => <TextField {...params} label="Medici" />}
+                  renderInput={(params) => <TextField {...params} label="Medici Guardia" />}
+                />
+                <Autocomplete
+                  onChange={(event, value) => setUtentiSelezionatiReperibilita(value)}
+                  multiple
+                  options={user}
+                  sx={{ width: 300 }}
+                  renderInput={(params) => <TextField {...params} label="Medici Reperibili" />}
                 />
                 <Button variant="contained" size="small" onClick={assegnaTurno('bottom', false)} >
                   Assegna turno

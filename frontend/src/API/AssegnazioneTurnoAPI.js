@@ -48,7 +48,7 @@ export  class AssegnazioneTurnoAPI {
 
     }
  
-    async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,servizioNome) {
+    async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome) {
 
       let turnoAPI = new TurnoAPI();
       let assegnazioneTurno = new Object();
@@ -76,7 +76,7 @@ export  class AssegnazioneTurnoAPI {
       assegnazioneTurno.servizio = turno.servizio
       assegnazioneTurno.tipologiaTurno = turnoTipologia
       assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
-      assegnazioneTurno.utentiReperibili = [];
+      assegnazioneTurno.utentiReperibili = utentiReperibilita;
 
       console.log(assegnazioneTurno)
 
