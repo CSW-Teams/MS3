@@ -3,7 +3,8 @@
 import React from 'react';
 import {ViewState} from '@devexpress/dx-react-scheduler';
 import { styled } from '@mui/material/styles';
-
+import { ButtonGroup } from '@material-ui/core';
+import { ServizioAPI } from '../API/ServizioAPI';
 import {
   Button, Grid,
   Paper,
@@ -30,6 +31,7 @@ import classNames from 'clsx';
 import AccessTime from '@mui/icons-material/AccessTime';
 import Lens from '@mui/icons-material/Lens';
 import { HOUR_MINUTE_OPTIONS, WEEKDAY_INTERVAL, viewBoundText } from '@devexpress/dx-scheduler-core';
+import { ServiceFilterSelectorButton } from '../components/common/ServiceFilterSelectorButton';
 
 
 const PREFIX_TOOLTIP = 'Content';
@@ -351,19 +353,17 @@ class ScheduleView extends React.Component{
               {fieldName: 'utenti_reperibili', title: 'Reperibilità',allowMultiple: true, instances: [{}]},
             ],
             /**
-             * Filter criteria are stored as ScheduleView state in order to allow
-             * child filter selectors component to update them and trigger a re-render
-             * of the ScheduleView component.
+             * Filter criteria are the attributes used by filters to choose if a shift can be displayed. 
              */
             filterCriteria: {
               
-              /** what services we want to display? (all) */
-              services: [
-                // "reparto", "ambulatorio"
-              ],
+              /** what services we want to display? (default: all) */
+              services: new Set(),
             
               // add more filter criteria here ...
-            } 
+            },
+            /** all services registered in the system */
+            allServices: new Set(), 
           };
           /** 
            * All filtering functions.
@@ -377,7 +377,7 @@ class ScheduleView extends React.Component{
             // add filters here ...
             function filterByServices(shift){
               let services = this.state.filterCriteria.services;
-              return services.length === 0 || services.includes(shift.servizio);
+              return services.size === 0 || services.has(shift.servizio);
             }.bind(this),
 
             // add more filters here ...
@@ -392,13 +392,19 @@ class ScheduleView extends React.Component{
 
     /**
      * This function is passed as a callback to the filter selectors components, which
-     * can use it to change the filter criteria.
+     * can use it to change the filter criteria in ScheduleView state.
+     * It merely consists of a decorator adding a call to forceUpdate() to the updateLogic function
+     * defined by the filter selector.
+     * @param {function} updateLogic - function that takes the current filter criteria as input and updates it
      */
-    updateFilterCriteria(newCriteria){
-      this.setState({filterCriteria: newCriteria});
+    updateFilterCriteria(updateLogic){
+      updateLogic(this.state.filterCriteria);
+      this.forceUpdate();
     }
     
-    componentDidMount(turni, utenti){
+    async componentDidMount(turni, utenti){
+      let allServices = await new ServizioAPI().getService();
+     
       this.setState(
         {
           data:turni,
@@ -412,6 +418,7 @@ class ScheduleView extends React.Component{
              fieldName:'utenti_reperibili', title: 'Reperibilità',allowMultiple: true, instances: utenti,
             },
             ],
+            allServices: new Set(allServices),
         })
       }
 
@@ -427,14 +434,18 @@ class ScheduleView extends React.Component{
           );
         });
 
-        // TODO: test block, remove when done
-        data.map((shift) => {
-            console.log(shift.servizio);
-        });
-
         return (
           <React.Fragment>
             <Paper>
+              {/** Service Filter selectors */}
+              <div id="service-filter-selector">
+                <ButtonGroup variant='text' aria-label="outlined primary button group">
+                {Array.from(this.state.allServices).map(
+                  (service, i) => (
+                    <ServiceFilterSelectorButton key={i} criterion={service} updateFilterCriteriaCallback={this.updateFilterCriteria}/>
+                  ))}
+                </ButtonGroup>
+              </div>
               <Scheduler
                 locale={"it-IT"}
                 firstDayOfWeek={1}
