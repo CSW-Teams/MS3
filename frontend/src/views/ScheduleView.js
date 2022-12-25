@@ -335,7 +335,7 @@ const StyledRoom = styled(Room)(({ theme: { palette } }) => ({
 
 /**
  * This view defines a generic shift schedule view.
- * Childs are expected to query shifts from their preferred backend API
+ * Children are expected to query shifts from their preferred backend API
  * before the render() method is fired, i.e. overriding the componentDidMount() method
  * 
  */
@@ -344,18 +344,58 @@ class ScheduleView extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            data: [],   // list of shifts
+            data: [],   // list of shifts to display in schedule (not filtered yet)
             mainResourceName: 'utenti_guardia',
-            resources: [ // TODO: describe what are these resources and how they are used
+            resources: [ // TODO: queste risorse sarebbero i dettagli da scrivere nelle carte dei turni assegnati? Ulteriori dettagli andrebbero aggiunti qui?
               {fieldName: 'utenti_guardia', title: 'Guardia', allowMultiple: true,instances: [{}] , color:blue,},
               {fieldName: 'utenti_reperibili', title: 'Reperibilità',allowMultiple: true, instances: [{}]},
             ],
+            /**
+             * Filter criteria are stored as ScheduleView state in order to allow
+             * child filter selectors component to update them and trigger a re-render
+             * of the ScheduleView component.
+             */
+            filterCriteria: {
+              
+              /** what services we want to display? (all) */
+              services: [
+                // "reparto", "ambulatorio"
+              ],
             
+              // add more filter criteria here ...
+            } 
           };
-          this.changeMainResource = this.changeMainResource.bind(this);      
+          /** 
+           * All filtering functions.
+           * Each filter function must take a shift as input
+           * and return true if the shift is feasible according to the filter conditions confronting
+           * them to the filterCriteria specified in state.
+           * We can adopt the following name convention to make the code more readable: 
+           * @function filterBy\<MyCriterion\>(shift) -> boolean
+           */ 
+          this.filters = [
+            // add filters here ...
+            function filterByServices(shift){
+              let services = this.state.filterCriteria.services;
+              return services.length === 0 || services.includes(shift.servizio);
+            }.bind(this),
+
+            // add more filters here ...
+          ];
+          this.changeMainResource = this.changeMainResource.bind(this);
+          this.updateFilterCriteria = this.updateFilterCriteria.bind(this);      
     }
+
     changeMainResource(mainResourceName) {
       this.setState({ mainResourceName });
+    }
+
+    /**
+     * This function is passed as a callback to the filter selectors components, which
+     * can use it to change the filter criteria.
+     */
+    updateFilterCriteria(newCriteria){
+      this.setState({filterCriteria: newCriteria});
     }
     
     componentDidMount(turni, utenti){
@@ -377,7 +417,20 @@ class ScheduleView extends React.Component{
 
     render(){
 
-        const { data, resources} = this.state;
+        let { data, resources} = this.state;
+
+        /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
+        data = data.filter((shift) => {
+          return this.filters.reduce(
+            (isFeasible, currentFilter) => isFeasible && currentFilter(shift, this.state.filterCriteria),
+            true
+          );
+        });
+
+        // TODO: test block, remove when done
+        data.map((shift) => {
+            console.log(shift.servizio);
+        });
 
         return (
           <React.Fragment>

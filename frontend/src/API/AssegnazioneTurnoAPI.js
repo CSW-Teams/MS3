@@ -33,6 +33,8 @@ export  class AssegnazioneTurnoAPI {
 
       turno.tipologia = body[i].tipologiaTurno;
 
+      turno.servizio = body[i].servizio.nome;
+
       turni[i] = turno;
 
     }
