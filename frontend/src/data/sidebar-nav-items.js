@@ -13,11 +13,5 @@ export default function() {
       to: "/pianificazione-privata",
     },
 
-    {
-      title: "Pianifica turno",
-      htmlBefore: '<i class="material-icons">view_module</i>',
-      to: "/Pianifica-Turno",
-    }
-
   ];
 }

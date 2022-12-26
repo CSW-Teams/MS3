@@ -5,6 +5,8 @@ import {ViewState} from '@devexpress/dx-react-scheduler';
 import { styled } from '@mui/material/styles';
 import { ButtonGroup } from '@material-ui/core';
 import { ServizioAPI } from '../API/ServizioAPI';
+import Stack from '@mui/material/Stack';
+
 import {
   Button, Grid,
   Paper,
@@ -32,6 +34,9 @@ import AccessTime from '@mui/icons-material/AccessTime';
 import Lens from '@mui/icons-material/Lens';
 import { HOUR_MINUTE_OPTIONS, WEEKDAY_INTERVAL, viewBoundText } from '@devexpress/dx-scheduler-core';
 import { ServiceFilterSelectorButton } from '../components/common/ServiceFilterSelectorButton';
+import { UtenteAPI } from '../API/UtenteAPI';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 
 
 const PREFIX_TOOLTIP = 'Content';
@@ -359,11 +364,13 @@ class ScheduleView extends React.Component{
               
               /** what services we want to display? (default: all) */
               services: new Set(),
+              users: [],
             
               // add more filter criteria here ...
             },
             /** all services registered in the system */
             allServices: new Set(), 
+            allUser : [],
           };
           /** 
            * All filtering functions.
@@ -378,6 +385,17 @@ class ScheduleView extends React.Component{
             function filterByServices(shift){
               let services = this.state.filterCriteria.services;
               return services.size === 0 || services.has(shift.servizio);
+            }.bind(this),
+
+            function filterByUsers(shift){
+              let users = this.state.filterCriteria.users;
+              
+              for (let i = 0; i < shift.utenti_guardia.length; i++) 
+                for (let j = 0; j < users.length; j++) 
+                  if(users[j].id === shift.utenti_guardia[i])
+                    return true;
+                      
+              return users.length === 0
             }.bind(this),
 
             // add more filters here ...
@@ -402,9 +420,10 @@ class ScheduleView extends React.Component{
       updateLogic(this.state.filterCriteria);
       this.forceUpdate();
     }
-    
+ 
     async componentDidMount(turni, utenti){
       let allServices = await new ServizioAPI().getService();
+      let allUser = await new UtenteAPI().getAllUserOnlyNameSurname();
      
       this.setState(
         {
@@ -420,8 +439,11 @@ class ScheduleView extends React.Component{
             },
             ],
             allServices: new Set(allServices),
+            allUser : allUser
         })
       }
+
+    
 
     render(){
 
@@ -439,14 +461,32 @@ class ScheduleView extends React.Component{
           <React.Fragment>
             <Paper>
               {/** Service Filter selectors */}
-              <div id="service-filter-selector">
-                <ButtonGroup variant='text' aria-label="outlined primary button group">
-                {Array.from(this.state.allServices).map(
-                  (service, i) => (
-                    <ServiceFilterSelectorButton key={i} criterion={service} updateFilterCriteriaCallback={this.updateFilterCriteria}/>
-                  ))}
-                </ButtonGroup>
-              </div>
+              <Stack spacing={1} style={{
+                    display: 'flex',
+                    'padding-top': '10px',
+                    justifyContent: 'center',
+                    'align-items': 'center'
+                  }}>
+
+                <Autocomplete
+                  onChange={(event, value) => {
+                    this.updateFilterCriteria(()=>this.state.filterCriteria.users= value)
+                    }}
+                  multiple
+                  options={this.state.allUser}
+                  sx={{ width: 300 }}
+                  renderInput={(params) => <TextField {...params} label="Medici" />}
+                />
+
+                <div style={{display : 'flex','justify-content': 'space-between','column-gap': '20px'}}>
+                  {Array.from(this.state.allServices).map(
+                    (service, i) => (
+                      <ServiceFilterSelectorButton key={i} criterion={service} updateFilterCriteriaCallback={this.updateFilterCriteria}/>
+                    ))}
+                </div>
+            
+              </Stack>
+
               <Scheduler
                 locale={"it-IT"}
                 firstDayOfWeek={1}
