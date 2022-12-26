@@ -395,7 +395,8 @@ class ScheduleView extends React.Component{
      * can use it to change the filter criteria in ScheduleView state.
      * It merely consists of a decorator adding a call to forceUpdate() to the updateLogic function
      * defined by the filter selector.
-     * @param {function} updateLogic - function that takes the current filter criteria as input and updates it
+     * the updateLogic() function must take the filterCriteria object as argument and change its properties values.
+     * An example: function updateLogic(filterCriteria) { filterCriteria.myAttribute = myValue; }
      */
     updateFilterCriteria(updateLogic){
       updateLogic(this.state.filterCriteria);

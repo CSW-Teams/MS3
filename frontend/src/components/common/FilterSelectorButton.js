@@ -30,8 +30,6 @@ export class FilterSelectorButton extends React.Component{
 
             /**
              * This function implements the updates on filter criteria specified in ScheduleView state.
-             * It must take the filterCriteria object as argument and change its properties values.
-             * An example: function updateLogic(filterCriteria) { filterCriteria.myAttribute = myValue; }
              */
             updateLogic: null
         }
