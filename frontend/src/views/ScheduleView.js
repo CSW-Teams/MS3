@@ -381,7 +381,7 @@ class ScheduleView extends React.Component{
            * @function filterBy\<MyCriterion\>(shift) -> boolean
            */ 
           this.filters = [
-            // add filters here ...
+            
             function filterByServices(shift){
               let services = this.state.filterCriteria.services;
               return services.size === 0 || services.has(shift.servizio);
@@ -460,7 +460,6 @@ class ScheduleView extends React.Component{
         return (
           <React.Fragment>
             <Paper>
-              {/** Service Filter selectors */}
               <Stack spacing={1} style={{
                     display: 'flex',
                     'padding-top': '10px',
@@ -477,7 +476,7 @@ class ScheduleView extends React.Component{
                   sx={{ width: 300 }}
                   renderInput={(params) => <TextField {...params} label="Medici" />}
                 />
-
+                {/** Service Filter selectors */}
                 <div style={{display : 'flex','justify-content': 'space-between','column-gap': '20px'}}>
                   {Array.from(this.state.allServices).map(
                     (service, i) => (
