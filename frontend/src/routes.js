@@ -7,7 +7,6 @@ import { DefaultLayout } from "./layouts";
 // Route Views
 import GlobalScheduleView from "./views/GlobalScheduleView";
 import SingleScheduleView from "./views/SingleScheduleView";
-import AssegnaTurnoView from "./views/AssegnaTurnoView";
 
 export default [
   {
@@ -25,11 +24,6 @@ export default [
     path: "/pianificazione-globale",
     layout: DefaultLayout,
     component:  GlobalScheduleView
-  },
-  {
-    path: "/Pianifica-Turno",
-    layout: DefaultLayout,
-    component:  AssegnaTurnoView
   }
 
 ];
