@@ -20,9 +20,9 @@ export const AppointmentSingleContent = ({
       <div className={classes.title}>
         {data.title}
       </div>
-      <div className={classes.textField}>
-        {data.turno}
-      </div>
+      <li
+        style={{color: data.turno === "REPERIBILITA'" ? "blue" : "red","font-family":"courier", "font-weight":"bold"}}
+      > {data.turno} </li>
       <div className={classes.textField}>
         {data.tipologia}
       </div>
