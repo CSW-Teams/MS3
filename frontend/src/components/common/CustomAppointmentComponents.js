@@ -21,12 +21,11 @@ export const AppointmentSingleContent = ({
         {data.title}
       </div>
       <li
-        style={{color: data.turno === "REPERIBILITA'" ? "blue" : "red","font-family":"courier", "font-weight":"bold"}}
+        style={{color: data.turno === "REPERIBILITA'" ? "white" : "red","font-family":"sans-serif", "font-weight":"bold"}}
       > {data.turno} </li>
-      <div className={classes.textField}>
-        {data.tipologia}
-      </div>
-      <div className={classes.textContainer}>
+        <li
+        > {data.tipologia} </li>
+      <li>
         <div className={classes.time}>
           {formatDate(data.startDate, { hour: 'numeric', minute: 'numeric' })}
         </div>
@@ -36,8 +35,7 @@ export const AppointmentSingleContent = ({
         <div className={classes.time}>
           {formatDate(data.endDate, { hour: 'numeric', minute: 'numeric' })}
         </div>
-
-      </div>
+      </li>
     </div>
   </StyledAppointmentsAppointmentContent>
 );
