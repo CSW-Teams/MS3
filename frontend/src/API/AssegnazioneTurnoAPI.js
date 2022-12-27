@@ -1,9 +1,10 @@
 import { TurnoAPI } from "./TurnoAPI";
+import {blue, red} from "@material-ui/core/colors";
 
 export  class AssegnazioneTurnoAPI {
 
   /**
-   * Parses content of query response body to extract a list of shifts 
+   * Parses content of query response body to extract a list of shifts
    */
   parseAllocatedShifts(body){
     let turni = [];
@@ -38,18 +39,33 @@ export  class AssegnazioneTurnoAPI {
       turni[i] = turno;
 
     }
-    
+
     return turni;
-}  
-  
+}
+
   async getTurnByIdUser(id) {
-        const response = await fetch('/api/assegnazioneturni/utente_id='+id);
-        const body = await response.json();
+    const response = await fetch('/api/assegnazioneturni/utente_id=' + id);
+    const body = await response.json();
 
-        return this.parseAllocatedShifts(body);
 
+    let turni = this.parseAllocatedShifts(body);
+
+    for (let i = 0; i < turni.length; i++) {
+      for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
+        if (id == turni[i].utenti_guardia[j]) {
+          turni[i].turno ="GUARDIA" ;
+        }
+      }
+      for (let j = 0; j < body[i].utentiReperibili.length; j++) {
+        if (id == turni[i].utenti_reperibili[j]) {
+          turni[i].turno = "REPERIBILITA'";
+        }
+      }
     }
- 
+
+    return turni;
+  }
+
     async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome) {
 
       let turnoAPI = new TurnoAPI();
@@ -58,7 +74,7 @@ export  class AssegnazioneTurnoAPI {
       let mese =data.$M;
       let giorno = data.$D;
 
-      // modifico il formato del giorno e del mese. Esempio: gennaio è identificato dal numero 0 e febbraio da 1. 
+      // modifico il formato del giorno e del mese. Esempio: gennaio è identificato dal numero 0 e febbraio da 1.
       // Devo convertire rispettivamente 0 -> 01 e 1 ->02 perchè questo è il formato accettato dal backend.
       // Stesso ragionamento per il giorno del mese.
       mese = mese+1;
@@ -90,7 +106,7 @@ export  class AssegnazioneTurnoAPI {
 
       const response = await fetch('/api/assegnazioneturni/',requestOptions);
       const body = await response.json();
-      
+
       // TODO gestione dell'errore
       return;
 
