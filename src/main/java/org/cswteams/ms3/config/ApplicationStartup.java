@@ -76,14 +76,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Servizio servizio2 = new Servizio("ambulatorio");
         servizioDao.save(servizio2);
 
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO);
         Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
         Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
         Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO);
       
 
-        turnoDao.save(t1);
         turnoDao.save(t2);
         turnoDao.save(t3);
         turnoDao.save(t4);
@@ -111,22 +109,18 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t5,setUtenti3,setUtenti5));
 
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t1,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t2,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t3,setUtenti2,setUtenti4));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t4,setUtenti2,setUtenti4));
 
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t1,setUtenti1,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t2,setUtenti1,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t3,setUtenti3,setUtenti4));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t4,setUtenti3,setUtenti4));
 
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t1,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t2,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t3,setUtenti4,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t4,setUtenti4,setUtenti2));
 
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t1,setUtenti3,setUtenti4));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t2,setUtenti3,setUtenti4));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t3,setUtenti2,setUtenti1));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t4,setUtenti2,setUtenti1));
@@ -134,13 +128,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t5,setUtenti3,setUtenti2));
 
 
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t1,setUtenti4,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t2,setUtenti4,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t3,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t4,setUtenti1,setUtenti3));
 
 
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t1,setUtenti1,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t2,setUtenti1,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t3,setUtenti2,setUtenti4));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t4,setUtenti2,setUtenti4));
@@ -148,10 +140,44 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t5,setUtenti1,setUtenti3));
 
 
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t1,setUtenti3,setUtenti1));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t2,setUtenti3,setUtenti1));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t3,setUtenti4,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t4,setUtenti4,setUtenti2));
+
+
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t5,setUtenti3,setUtenti5));
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t2,setUtenti1,setUtenti3));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t3,setUtenti2,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t4,setUtenti2,setUtenti4));
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,27),t2,setUtenti1,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,27),t3,setUtenti3,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,27),t4,setUtenti3,setUtenti4));
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,28),t2,setUtenti1,setUtenti3));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,28),t3,setUtenti4,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,28),t4,setUtenti4,setUtenti2));
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,29),t2,setUtenti3,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,29),t3,setUtenti2,setUtenti1));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,29),t4,setUtenti2,setUtenti1));
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,29),t5,setUtenti3,setUtenti2));
+
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,30),t2,setUtenti4,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,30),t3,setUtenti1,setUtenti3));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,30),t4,setUtenti1,setUtenti3));
+
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t2,setUtenti1,setUtenti2));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t3,setUtenti2,setUtenti4));
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t4,setUtenti2,setUtenti4));
+
+        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t5,setUtenti1,setUtenti3));
+
 
 
     }

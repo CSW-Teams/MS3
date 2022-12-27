@@ -164,10 +164,10 @@ export const AppointmentContent = ({
       <div className={classes.title}>
         {data.title}
       </div>
-      <div className={classes.test}>
+      <li className={classes.text}>
         {data.tipologia}
-      </div>
-      <div className={classes.textContainer}>
+      </li>
+      <li className={classes.textContainer}>
         <div className={classes.time}>
           {formatDate(data.startDate, { hour: 'numeric', minute: 'numeric' })}
         </div>
@@ -178,7 +178,7 @@ export const AppointmentContent = ({
           {formatDate(data.endDate, { hour: 'numeric', minute: 'numeric' })}
         </div>
 
-      </div>
+      </li>
     </div>
   </StyledAppointmentsAppointmentContent>
 );
