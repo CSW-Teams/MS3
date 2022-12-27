@@ -105,10 +105,10 @@ export  class AssegnazioneTurnoAPI {
       };
 
       const response = await fetch('/api/assegnazioneturni/',requestOptions);
-      const body = await response.json();
-
-      // TODO gestione dell'errore
-      return;
+      if(response.status != 202)
+        return null
+        
+      return assegnazioneTurno;
 
   }
 

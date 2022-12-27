@@ -8,6 +8,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { UtenteAPI } from '../../API/UtenteAPI';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 export default function TemporaryDrawer(props) {
 
@@ -17,6 +23,8 @@ export default function TemporaryDrawer(props) {
   const [servizio,setServizio] = React.useState("")
   const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
+  const [openMessage,setMessageOpen] = React.useState(true)
+
 
   const [state, setState] = React.useState({bottom: false});
 
@@ -61,17 +69,25 @@ export default function TemporaryDrawer(props) {
 
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione. 
   //Viene passata come callback al componente <Button>Assegna turno</Button>
-  const assegnaTurno = (anchor, open) => (event) => {
+  const assegnaTurno = (anchor, open) => async (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
     setState({ ...state, [anchor]: open });
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
-    assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio)
-
-    // TODO verificare che la creazione sia avvenuta correttamente
+    let assegnazione = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio)
     
+    //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
+    props.onPostAssegnazione()
+
+    if(assegnazione==null){
+      console.log('errore')
+    }else{
+      console.log('OK')
+    }
+
+    setState({ ...state, [anchor]: open });    
   
   }
 
@@ -117,9 +133,7 @@ export default function TemporaryDrawer(props) {
                   Assegna turno
                 </Button>
             </Stack>
-            
-            
-            
+      
             </div>
           </Drawer>
         </React.Fragment>

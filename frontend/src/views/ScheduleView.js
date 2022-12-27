@@ -5,6 +5,7 @@ import {ViewState} from '@devexpress/dx-react-scheduler';
 import { ServizioAPI } from '../API/ServizioAPI';
 import Stack from '@mui/material/Stack';
 import {AppointmentContent, Content} from "../components/common/CustomAppointmentComponents.js"
+import Collapse from '@mui/material/Collapse';
 
 import {
   Button, Grid,
@@ -65,6 +66,8 @@ class ScheduleView extends React.Component{
             allServices: new Set(),
             allUser : [],
             appointmentContentComponent : AppointmentContent,
+            openOptionFilter: false
+
           };
           /**
            * All filtering functions.
@@ -154,31 +157,48 @@ class ScheduleView extends React.Component{
         return (
           <React.Fragment>
             <Paper>
-              <Stack spacing={1} style={{
-                    display: 'flex',
-                    'padding-top': '10px',
-                    justifyContent: 'center',
-                    'align-items': 'center'
-                  }}>
+              <Collapse in={this.state.openOptionFilter}>
+                <Stack spacing={1} style={{
+                      display: 'flex',
+                      'padding-top': '10px',
+                      justifyContent: 'center',
+                      'align-items': 'center'
+                    }}>
 
-                <Autocomplete
-                  onChange={(event, value) => {
-                    this.updateFilterCriteria(()=>this.state.filterCriteria.users= value)
-                    }}
-                  multiple
-                  options={this.state.allUser}
-                  sx={{ width: 300 }}
-                  renderInput={(params) => <TextField {...params} label="Medici di guardia" />}
-                />
-                {/** Service Filter selectors */}
-                <div style={{display : 'flex','justify-content': 'space-between','column-gap': '20px'}}>
-                  {Array.from(this.state.allServices).map(
-                    (service, i) => (
-                      <ServiceFilterSelectorButton key={i} criterion={service} updateFilterCriteriaCallback={this.updateFilterCriteria}/>
-                    ))}
-                </div>
+                  <Autocomplete
+                    onChange={(event, value) => {
+                      this.updateFilterCriteria(()=>this.state.filterCriteria.users= value)
+                      }}
+                    multiple
+                    options={this.state.allUser}
+                    sx={{ width: 300 }}
+                    renderInput={(params) => <TextField {...params} label="Medici di guardia" />}
+                  />
+                  {/** Service Filter selectors */}
+                  <div style={{display : 'flex','justify-content': 'space-between','column-gap': '20px'}}>
+                    {Array.from(this.state.allServices).map(
+                      (service, i) => (
+                        <ServiceFilterSelectorButton key={i} criterion={service} updateFilterCriteriaCallback={this.updateFilterCriteria}/>
+                      ))}
+                  </div>
 
-              </Stack>
+                </Stack>
+              </Collapse>
+
+              <Button
+                onClick={() => {
+                  this.setState({openOptionFilter: !this.state.openOptionFilter});
+                }} 
+                style={{
+                  'display': 'block',
+                  'margin-left': 'auto',
+                  'margin-right': 'auto',
+                  'margin-top':'1%',
+                  'margin-bottom':'-1%'
+                }} 
+              >
+                {this.state.openOptionFilter?"Chiudi":"Filtra"}
+              </Button>
 
               <Scheduler
                 locale={"it-IT"}

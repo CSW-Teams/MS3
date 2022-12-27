@@ -19,10 +19,11 @@ class GlobalScheduleView extends ScheduleView {
     super.componentDidMount(turni, utenti);
   }
 
+
   render(){
     return (
       <Stack spacing={3}>
-        <TemporaryDrawer></TemporaryDrawer>
+        <TemporaryDrawer onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></TemporaryDrawer>
         {super.render()}
       </Stack>
       );
