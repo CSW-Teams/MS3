@@ -168,7 +168,7 @@ class ScheduleView extends React.Component{
                   multiple
                   options={this.state.allUser}
                   sx={{ width: 300 }}
-                  renderInput={(params) => <TextField {...params} label="Medici" />}
+                  renderInput={(params) => <TextField {...params} label="Medici di guardia" />}
                 />
                 {/** Service Filter selectors */}
                 <div style={{display : 'flex','justify-content': 'space-between','column-gap': '20px'}}>
