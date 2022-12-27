@@ -14,6 +14,7 @@ public interface AssegnazioneTurnoDao extends JpaRepository<AssegnazioneTurno,Lo
 
     @Query(nativeQuery = true, value = "SELECT * FROM ASSEGNAZIONE_TURNO_UTENTI_DI_GUARDIA AS GUARDIA, ASSEGNAZIONE_TURNO_UTENTI_REPERIBILI AS REPERIBILI, ASSEGNAZIONE_TURNO AS T WHERE (GUARDIA.ASSEGNAZIONE_TURNO_ID=T.ID OR REPERIBILI.ASSEGNAZIONE_TURNO_ID=T.ID) AND REPERIBILI.UTENTI_REPERIBILI_ID=:idPersona AND GUARDIA.UTENTI_DI_GUARDIA_ID=:idPersona")
     Set<AssegnazioneTurno> findTurniUtente(@Param("idPersona") Long id);
+
 }
 
 

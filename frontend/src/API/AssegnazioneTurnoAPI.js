@@ -68,35 +68,22 @@ export  class AssegnazioneTurnoAPI {
 
     async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome) {
 
-      let turnoAPI = new TurnoAPI();
       let assegnazioneTurno = new Object();
-      let turno = await turnoAPI.getTurnoByServizioTipologia(servizioNome,turnoTipologia);
-      let mese =data.$M;
-      let giorno = data.$D;
 
-      // modifico il formato del giorno e del mese. Esempio: gennaio è identificato dal numero 0 e febbraio da 1.
-      // Devo convertire rispettivamente 0 -> 01 e 1 ->02 perchè questo è il formato accettato dal backend.
-      // Stesso ragionamento per il giorno del mese.
-      mese = mese+1;
-      if(mese<10){
-        mese = '0'+mese
-      }
-      giorno = giorno+1;
-      if(giorno<10){
-        giorno = '0'+giorno
-      }
+      assegnazioneTurno.giorno = data.$d.getDate();
+      assegnazioneTurno.mese = data.$d.getMonth()+1;
+      assegnazioneTurno.anno = data.$d.getFullYear();
 
-      console.log(turno)
-
-      assegnazioneTurno.inizio= data.$y+'-'+mese+'-'+giorno+'T'+turno.oraInizio+'.000+0000';
-      assegnazioneTurno.fine= data.$y+'-'+mese+'-'+giorno+'T'+turno.oraFine+'.000+0000';
-      assegnazioneTurno.idTurno = turno.id
-      assegnazioneTurno.servizio = turno.servizio
+      assegnazioneTurno.data= data.$d.getTime();
+      assegnazioneTurno.servizio = servizioNome
       assegnazioneTurno.tipologiaTurno = turnoTipologia
       assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
       assegnazioneTurno.utentiReperibili = utentiReperibilita;
 
       console.log(assegnazioneTurno)
+      console.log(data.$d.getDay())
+      console.log(data.$D)
+
 
       const requestOptions = {
         method: 'POST',

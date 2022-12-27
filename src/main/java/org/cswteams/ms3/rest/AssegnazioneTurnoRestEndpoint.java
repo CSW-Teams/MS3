@@ -2,13 +2,16 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.Set;
 
 @RestController
@@ -19,11 +22,13 @@ public class AssegnazioneTurnoRestEndpoint {
     private IControllerAssegnazioneTurni controllerAssegnazioneTurni;
 
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody(required = true) AssegnazioneTurnoDTO c) {
+    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody(required = true) RegistraAssegnazioneTurnoDTO c) {
+
         if (c != null) {
             try {
                 return new ResponseEntity<>(controllerAssegnazioneTurni.creaTurnoAssegnato(c), HttpStatus.ACCEPTED);
             } catch (AssegnazioneTurnoException e) {
+                e.printStackTrace();
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
             }
         }

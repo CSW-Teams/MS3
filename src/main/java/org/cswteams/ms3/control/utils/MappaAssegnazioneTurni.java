@@ -1,6 +1,7 @@
 package org.cswteams.ms3.control.utils;
 
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Turno;
@@ -20,8 +21,9 @@ import java.util.Set;
 
 public class MappaAssegnazioneTurni {
 
+
     public static AssegnazioneTurno assegnazioneTurnoDTOToEntity(AssegnazioneTurnoDTO dto) {
-        Turno turno = new Turno(dto.getIdTurno(),dto.getInizio().toLocalDateTime().toLocalTime(),dto.getFine().toLocalDateTime().toLocalTime(),MappaServizio.servizioDTOtoEntity(dto.getServizio()),dto.getTipologiaTurno());
+        Turno turno = new Turno(dto.getIdTurno(), dto.getInizio().toLocalDateTime().toLocalTime(), dto.getFine().toLocalDateTime().toLocalTime(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getTipologiaTurno());
         Set<Utente> diGuardia = MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia());
         Set<Utente> reperibili = MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili());
 
@@ -29,26 +31,26 @@ public class MappaAssegnazioneTurni {
     }
 
     public static AssegnazioneTurnoDTO assegnazioneTurnoToDTO(AssegnazioneTurno entity) {
-        LocalDateTime inizio = LocalDateTime.of(entity.getDate(), entity.getTurno().getOraInizio());
-        LocalDateTime fine = LocalDateTime.of(entity.getDate(), entity.getTurno().getOraFine());
+        LocalDateTime inizio = LocalDateTime.of(entity.getData(), entity.getTurno().getOraInizio());
+        LocalDateTime fine = LocalDateTime.of(entity.getData(), entity.getTurno().getOraFine());
 
         Instant instantinizio = inizio.atZone(ZoneId.systemDefault()).toInstant();
         Instant instantfine = fine.atZone(ZoneId.systemDefault()).toInstant();
 
-        Date dateinizio= Date.from(instantinizio);
+        Date dateinizio = Date.from(instantinizio);
         Date datefine = Date.from(instantfine);
 
         Timestamp timestampInizio = new Timestamp(dateinizio.getTime());
         Timestamp timestampFine = new Timestamp(datefine.getTime());
         Set<UtenteDTO> diGuardiaDto = MappaUtenti.utenteEntitytoDTO(entity.getUtentiDiGuardia());
         Set<UtenteDTO> reperibiliDto = MappaUtenti.utenteEntitytoDTO(entity.getUtentiReperibili());
-        AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(),entity.getTurno().getId(),timestampInizio,timestampFine,diGuardiaDto,reperibiliDto,MappaServizio.servizioEntitytoDTO(entity.getTurno().getServizio()), entity.getTurno().getTipologiaTurno());
+        AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(), entity.getTurno().getId(), timestampInizio, timestampFine, diGuardiaDto, reperibiliDto, MappaServizio.servizioEntitytoDTO(entity.getTurno().getServizio()), entity.getTurno().getTipologiaTurno());
         return dto;
     }
 
     public static Set<AssegnazioneTurnoDTO> assegnazioneTurnoToDTO(Set<AssegnazioneTurno> turni) {
         Set<AssegnazioneTurnoDTO> assegnazioneTurnoDTOS = new HashSet<>();
-        for (AssegnazioneTurno entity: turni){
+        for (AssegnazioneTurno entity : turni) {
             assegnazioneTurnoDTOS.add(assegnazioneTurnoToDTO(entity));
         }
         return assegnazioneTurnoDTOS;
@@ -56,9 +58,11 @@ public class MappaAssegnazioneTurni {
 
     public static Set<AssegnazioneTurnoDTO> assegnazioneTurnoToDTO(List<AssegnazioneTurno> turni) {
         Set<AssegnazioneTurnoDTO> assegnazioneTurnoDTOS = new HashSet<>();
-        for (AssegnazioneTurno entity: turni){
+        for (AssegnazioneTurno entity : turni) {
             assegnazioneTurnoDTOS.add(assegnazioneTurnoToDTO(entity));
         }
         return assegnazioneTurnoDTOS;
     }
+
 }
+
