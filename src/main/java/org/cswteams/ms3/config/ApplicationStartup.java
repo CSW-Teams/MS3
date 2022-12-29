@@ -1,17 +1,17 @@
 package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
-import org.cswteams.ms3.control.assegnazioneTurni.ControllerAssegnazioniTurni;
+import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
-import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Servizio;
+import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
-import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
 
-import java.text.ParseException;
 import java.time.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,6 +42,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private ServizioDao servizioDao;
+
+    @Autowired
+    private IHolidayController holidayController;
 
 
     @SneakyThrows
@@ -178,7 +180,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t5,setUtenti1,setUtenti3));
 
-
+        // registriamo qualche festività
+        // vigilia + natale + santo stefano per i prossimi 10 anni
+        holidayController.registerHolidayPeriod(new HolidayDTO(
+            "Riposo Natalizio",
+            HolidayCategory.RELIGIOUS,
+            LocalDate.of(2022, Month.DECEMBER, 24).toEpochDay(),
+            LocalDate.of(2022, Month.DECEMBER, 26).toEpochDay()
+            ), 10);
 
     }
 }
