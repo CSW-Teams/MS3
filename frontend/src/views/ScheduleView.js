@@ -2,6 +2,7 @@
 
 import React from 'react';
 import {ViewState} from '@devexpress/dx-react-scheduler';
+import {AllDayPanel} from '@devexpress/dx-react-scheduler-material-ui';
 import { ServizioAPI } from '../API/ServizioAPI';
 import Stack from '@mui/material/Stack';
 import {AppointmentContent, Content} from "../components/common/CustomAppointmentComponents.js"
@@ -30,7 +31,7 @@ import { ServiceFilterSelectorButton } from '../components/common/ServiceFilterS
 import { UtenteAPI } from '../API/UtenteAPI';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-
+import { HolidaysAPI } from '../API/HolidaysAPI';
 
 
 
@@ -66,7 +67,10 @@ class ScheduleView extends React.Component{
             allServices: new Set(),
             allUser : [],
             appointmentContentComponent : AppointmentContent,
-            openOptionFilter: false
+            openOptionFilter: false,
+
+            /** Holidays to display */
+            holidays: [],
 
           };
           /**
@@ -117,11 +121,13 @@ class ScheduleView extends React.Component{
       updateLogic(this.state.filterCriteria);
       this.forceUpdate();
     }
-
+    
     async componentDidMount(turni, utenti){
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UtenteAPI().getAllUserOnlyNameSurname();
+      let allHolidays = await new HolidaysAPI().getHolidays();
 
+      
       this.setState(
         {
           data:turni,
@@ -136,7 +142,8 @@ class ScheduleView extends React.Component{
             },
             ],
             allServices: new Set(allServices),
-            allUser : allUser
+            allUser : allUser,
+            holidays: allHolidays,
         })
       }
 
@@ -144,6 +151,7 @@ class ScheduleView extends React.Component{
 
     render(){
 
+        // add shifts to the schedulables to display  
         let { data, resources} = this.state;
 
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
@@ -153,6 +161,10 @@ class ScheduleView extends React.Component{
             true
           );
         });
+
+        // add holidays to the schedulables to display
+        data.push(...this.state.holidays);
+        console.log(this.state.holidays);
 
         return (
           <React.Fragment>
@@ -222,6 +234,7 @@ class ScheduleView extends React.Component{
                 <MonthView displayName="Mensile"/>
                 <Toolbar />
                 <Appointments appointmentContentComponent={this.state.appointmentContentComponent} />
+                <AllDayPanel/>
                 <Resources
                   data={resources}
                 />

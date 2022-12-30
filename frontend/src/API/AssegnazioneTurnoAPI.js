@@ -1,5 +1,6 @@
 import { TurnoAPI } from "./TurnoAPI";
 import {blue, red} from "@material-ui/core/colors";
+import { AssignedShift } from "./Schedulable";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -10,10 +11,11 @@ export  class AssegnazioneTurnoAPI {
     let turni = [];
 
     for (let i = 0; i < body.length; i++) {
-        let turno = new Object();
+        let turno = new AssignedShift(
+          "Turno in "+  body[i].servizio.nome,
+          body[i].inizio,
+          body[i].fine);
         turno.id = body[i].id;
-        turno.startDate = body[i].inizio;
-        turno.endDate =body[i].fine;
 
         let utenti_guardia = [];
         let utenti_reperibili = [];
@@ -26,8 +28,6 @@ export  class AssegnazioneTurnoAPI {
       for (let j = 0; j < body[i].utentiReperibili.length; j++) {
           utenti_reperibili[j] = body[i].utentiReperibili[j].id;
       }
-
-      turno.title= "Turno in "+  body[i].servizio.nome;
 
       turno.utenti_guardia = utenti_guardia;
       turno.utenti_reperibili = utenti_reperibili;

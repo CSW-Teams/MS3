@@ -8,7 +8,7 @@ import {StyledAppointmentsAppointmentContent, tooltip_classes} from "./style";
 import classNames from "clsx";
 import PropTypes from "prop-types";
 import {classes,StyledDiv} from "./style"
-
+import { SchedulableType } from "../../API/Schedulable";
 
 
 // AppointmentContent di SingleScheduleView
@@ -54,88 +54,116 @@ export const Content = ({
     appointmentData.startDate, appointmentData.endDate, WEEKDAY_INTERVAL,
     appointmentData.startDate, 1, formatDate,
   );
-  return (
-    <StyledDiv
-      resources={appointmentResources}
-      className={classNames(tooltip_classes.content, className)}
-      {...restProps}
-    >
-      <Grid container alignItems="flex-start" className={tooltip_classes.titleContainer}>
-        <Grid item xs={2}>
-          <div className={tooltip_classes.relativeContainer}>
-            <Lens className={tooltip_classes.lens} />
-            {!!appointmentData.rRule && (
-              <RecurringIcon className={tooltip_classes.recurringIcon} />
-            )}
-          </div>
-        </Grid>
-        <Grid item xs={10}>
-          <div>
-            <div className={classNames(tooltip_classes.title, tooltip_classes.dateAndTitle)}>
-              {appointmentData.title}
-            </div>
-            <div className={classNames(tooltip_classes.text, tooltip_classes.dateAndTitle)}>
-              {weekDays}
-            </div>
-          </div>
-        </Grid>
-      </Grid>
-      <Grid container alignItems="center" className={tooltip_classes.contentContainer}>
-        <Grid item xs={2} className={tooltip_classes.textCenter}>
-          <AccessTime className={tooltip_classes.icon} />
-        </Grid>
-        <Grid item xs={10}>
-          <div className={tooltip_classes.text}>
-            {`${formatDate(appointmentData.startDate, HOUR_MINUTE_OPTIONS)}
-              - ${formatDate(appointmentData.endDate, HOUR_MINUTE_OPTIONS)}`}
-          </div>
-        </Grid>
-      </Grid>
-      <Grid>
-        <Grid container alignItems="center" >
-          <div className={tooltip_classes.text}> Di Guardia : </div>
-        </Grid>
-        { appointmentResources.slice(0, appointmentData.utenti_guardia.length).map(resourceItem => (
-          <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
-            <Grid item xs={2} className={tooltip_classes.textCenter}>
+  
+  // contents of tooltip may vary depending on the type of the corresponding schedulable
+  switch(appointmentData.schedulableType){
+    case SchedulableType.Holiday:
+      return (
+        
+        <StyledDiv
+        resources={appointmentResources}
+        className={classNames(tooltip_classes.content, className)}
+        {...restProps}
+      >
+        <h1>{appointmentData.title}! 🥳</h1>
+        <p>Questo è un giorno appertenente a una Festività di tipo: {appointmentData.category}.</p>
+        <p>Assegnare turni in questo giorno può generare malcontento. Ricorda di essere equo!</p>
+      </StyledDiv>
+      
+      )
+        
+      break;
+    case SchedulableType.AssignedShift:
+      return (
+        <StyledDiv
+          resources={appointmentResources}
+          className={classNames(tooltip_classes.content, className)}
+          {...restProps}
+        >
+          <Grid container alignItems="flex-start" className={tooltip_classes.titleContainer}>
+            <Grid item xs={2}>
               <div className={tooltip_classes.relativeContainer}>
-                <Lens
-                  className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
-                  style={{ color: getAppointmentColor(300, resourceItem.color) }}
-                />
+                <Lens className={tooltip_classes.lens} />
+                {!!appointmentData.rRule && (
+                  <RecurringIcon className={tooltip_classes.recurringIcon} />
+                )}
               </div>
             </Grid>
             <Grid item xs={10}>
-              <div className={tooltip_classes.text}>
-                {resourceItem.text}
+              <div>
+                <div className={classNames(tooltip_classes.title, tooltip_classes.dateAndTitle)}>
+                  {appointmentData.title}
+                </div>
+                <div className={classNames(tooltip_classes.text, tooltip_classes.dateAndTitle)}>
+                  {weekDays}
+                </div>
               </div>
             </Grid>
           </Grid>
-        ))}
-        <Grid item xs={2}>
-          <div className={tooltip_classes.text}> In Reperibilità: </div>
-        </Grid>
-        { appointmentResources.slice(appointmentData.utenti_guardia.length, appointmentData.utenti_guardia.length + appointmentData.utenti_reperibili.length).map(resourceItem => (
-          <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
+          <Grid container alignItems="center" className={tooltip_classes.contentContainer}>
             <Grid item xs={2} className={tooltip_classes.textCenter}>
-              <div className={tooltip_classes.relativeContainer}>
-                <Lens
-                  className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
-                  style={{ color: getAppointmentColor(300, resourceItem.color) }}
-                />
-              </div>
+              <AccessTime className={tooltip_classes.icon} />
             </Grid>
             <Grid item xs={10}>
               <div className={tooltip_classes.text}>
-                {resourceItem.text}
+                {`${formatDate(appointmentData.startDate, HOUR_MINUTE_OPTIONS)}
+                  - ${formatDate(appointmentData.endDate, HOUR_MINUTE_OPTIONS)}`}
               </div>
             </Grid>
           </Grid>
-        ))}
-      </Grid>
-      {children}
-    </StyledDiv>
-  );
+          <Grid>
+            <Grid container alignItems="center" >
+              <div className={tooltip_classes.text}> Di Guardia : </div>
+            </Grid>
+            { appointmentResources.slice(0, appointmentData.utenti_guardia.length).map(resourceItem => (
+              <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
+                <Grid item xs={2} className={tooltip_classes.textCenter}>
+                  <div className={tooltip_classes.relativeContainer}>
+                    <Lens
+                      className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
+                      style={{ color: getAppointmentColor(300, resourceItem.color) }}
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={10}>
+                  <div className={tooltip_classes.text}>
+                    {resourceItem.text}
+                  </div>
+                </Grid>
+              </Grid>
+            ))}
+            <Grid item xs={2}>
+              <div className={tooltip_classes.text}> In Reperibilità: </div>
+            </Grid>
+            { appointmentResources.slice(appointmentData.utenti_guardia.length, appointmentData.utenti_guardia.length + appointmentData.utenti_reperibili.length).map(resourceItem => (
+              <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
+                <Grid item xs={2} className={tooltip_classes.textCenter}>
+                  <div className={tooltip_classes.relativeContainer}>
+                    <Lens
+                      className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
+                      style={{ color: getAppointmentColor(300, resourceItem.color) }}
+                    />
+                  </div>
+                </Grid>
+                <Grid item xs={10}>
+                  <div className={tooltip_classes.text}>
+                    {resourceItem.text}
+                  </div>
+                </Grid>
+              </Grid>
+            ))}
+          </Grid>
+          {children}
+        </StyledDiv>
+      );
+          break;
+    default:
+      return (
+        // empty tooltip
+        null
+        )
+ 
+  }
 };
 
 Content.propTypes = {
