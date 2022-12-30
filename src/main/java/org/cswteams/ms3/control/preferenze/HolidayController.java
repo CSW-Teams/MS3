@@ -43,7 +43,7 @@ public class HolidayController implements IHolidayController {
         long endDateOld = holidayArgs.getEndDateEpochDay();
 
         // Register a holiday period for each desired year (including the ones specified in start/end dates)
-        for (int y = 0; y <= (isRepeatInFuture? years : -years); y = isRepeatInFuture? y + 1 : y - 1){
+        for (int y = 0; (isRepeatInFuture? y <= years : y >= years); y = isRepeatInFuture? y + 1 : y - 1){
 
             holidayArgs.setStartDateEpochDay(LocalDate.ofEpochDay(startDateOld).plusYears(y).toEpochDay());
             holidayArgs.setEndDateEpochDay(LocalDate.ofEpochDay(endDateOld).plusYears(y).toEpochDay());
@@ -55,6 +55,4 @@ public class HolidayController implements IHolidayController {
         holidayArgs.setEndDateEpochDay(endDateOld);
         
     }
-
-
 }
