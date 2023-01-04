@@ -68,4 +68,23 @@ public class Holiday {
         this.endDateEpochDay = endDate.toEpochDay();
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public HolidayCategory getCategory() {
+        return category;
+    }
+
+    public long getStartDateEpochDay() {
+        return startDateEpochDay;
+    }
+
+    public long getEndDateEpochDay() {
+        return endDateEpochDay;
+    }
 }
