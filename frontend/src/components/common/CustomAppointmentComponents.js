@@ -54,24 +54,24 @@ export const Content = ({
     appointmentData.startDate, appointmentData.endDate, WEEKDAY_INTERVAL,
     appointmentData.startDate, 1, formatDate,
   );
-  
+
   // contents of tooltip may vary depending on the type of the corresponding schedulable
   switch(appointmentData.schedulableType){
     case SchedulableType.Holiday:
       return (
-        
+
         <StyledDiv
         resources={appointmentResources}
         className={classNames(tooltip_classes.content, className)}
         {...restProps}
       >
         <h1>{appointmentData.title}! 🥳</h1>
-        <p>Questo è un giorno appertenente a una Festività di tipo: {appointmentData.category}.</p>
+        <p>Festività {appointmentData.location} di tipo {appointmentData.category}.</p>
         <p>Assegnare turni in questo giorno può generare malcontento. Ricorda di essere equo!</p>
       </StyledDiv>
-      
+
       )
-        
+
       break;
     case SchedulableType.AssignedShift:
       return (
@@ -162,7 +162,7 @@ export const Content = ({
         // empty tooltip
         null
         )
- 
+
   }
 };
 

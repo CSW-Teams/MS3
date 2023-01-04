@@ -1,5 +1,6 @@
 package org.cswteams.ms3.control.preferenze;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.cswteams.ms3.dto.HolidayDTO;
@@ -19,4 +20,5 @@ public interface IHolidayController {
      * <0 nel passato, 0 solo per l'anno specificato.
      */
     void registerHolidayPeriod(HolidayDTO holidayArgs, int years);
+
 }

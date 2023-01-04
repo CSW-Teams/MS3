@@ -24,7 +24,7 @@ public class HolidayController implements IHolidayController {
         }
 
         // stores the holiday period in the db
-        holidayDao.save(new Holiday(holidayArgs.getName(), holidayArgs.getCategory(), holidayArgs.getStartDateEpochDay(), holidayArgs.getEndDateEpochDay()));
+        holidayDao.save(new Holiday(holidayArgs.getName(), holidayArgs.getCategory(), holidayArgs.getStartDateEpochDay(), holidayArgs.getEndDateEpochDay(), holidayArgs.getLocation()));
     }
 
     @Override

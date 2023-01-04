@@ -19,9 +19,12 @@ import org.springframework.stereotype.Component;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
 
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Component()
 public class ApplicationStartup implements ApplicationListener<ApplicationReadyEvent> {
@@ -180,14 +183,42 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t5,setUtenti1,setUtenti3));
 
-        // registriamo qualche festività
-        // vigilia + natale + santo stefano per i prossimi 10 anni
-        holidayController.registerHolidayPeriod(new HolidayDTO(
-            "Riposo Natalizio",
-            HolidayCategory.RELIGIOUS,
-            LocalDate.of(2022, Month.DECEMBER, 24).toEpochDay(),
-            LocalDate.of(2022, Month.DECEMBER, 26).toEpochDay()
-            ), 10);
+        LoadHoliday();
+    }
 
+
+    /** Metodo che server per caricare le festività dell'anno 2023/2024*/
+    public void LoadHoliday() throws IOException {
+        List<List<String>> data = new ArrayList<>();
+        String currPath = System.getProperty("user.dir");
+        String filePath = currPath+"\\src\\main\\resources\\holiday.csv";
+        FileReader fr = new FileReader(filePath);
+        BufferedReader br = new BufferedReader(fr);
+        String line = br.readLine();
+        while(line != null)
+        {
+            List<String> lineData = Arrays.asList(line.split(";"));//splitting lines
+            data.add(lineData);
+            line = br.readLine();
+        }
+        for(List<String> list : data) {
+            String HolidayData = Arrays.asList(list.get(0).split(";")).get(0).toString();
+            final String[] HolidayDataS = HolidayData.split("/");
+            int year = Integer.parseInt(HolidayDataS[2].replaceAll("[^0-9]", ""));
+            int month = Integer.parseInt(HolidayDataS[1].replaceAll("[^0-9]", ""));
+            int day = Integer.parseInt(HolidayDataS[0].replaceAll("[^0-9]", ""));
+            String HolidayName= Arrays.asList(list.get(1).split(";")).get(0);
+            String HolidayLocation= Arrays.asList(list.get(2).split(";")).get(0);
+            String Holiday_Category= Arrays.asList(list.get(3).split(";")).get(0);
+            LocalDate Date = LocalDate.of(year, month, day);
+            holidayController.registerHolidayPeriod(new HolidayDTO(
+                    HolidayName,
+                    HolidayCategory.valueOf(Holiday_Category),
+                    Date.toEpochDay(),
+                    Date.toEpochDay(),
+                    HolidayLocation
+            ));
+        }
+        br.close();
     }
 }
