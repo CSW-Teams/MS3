@@ -3,7 +3,6 @@ package org.cswteams.ms3.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.cswteams.ms3.enums.TipologiaTurno;
-import org.cswteams.ms3.exception.TurnoException;
 
 import javax.persistence.*;
 import java.time.LocalTime;
@@ -24,6 +23,11 @@ public class Turno {
 
     private LocalTime oraFine;
 
+    /**
+     * In quali giorni della settimana questo turno può essere assegnato
+     */
+    private GiorniDellaSettimanaBitMask giorniDiValidità;
+
     @ManyToOne
     private Servizio servizio;
 
@@ -32,39 +36,21 @@ public class Turno {
         this.oraFine = oraFine;
         this.servizio = servizio;
         this.tipologiaTurno = tipologia;
+        this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
 
     }
 
     public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia){
-        this.oraInizio = oraInizio;
-        this.oraFine = oraFine;
-        this.servizio = servizio;
-        this.tipologiaTurno = tipologia;
+        this(oraInizio, oraFine, servizio, tipologia);
         this.id = id;
+    }
 
+    public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
+            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio) {
+        this(id, oraInizio, oraFine, servizio, tipologiaTurno);
+        this.giorniDiValidità = giorniDiValidità;
     }
 
     public Turno() {
-
-    }
-
-    public LocalTime getOraInizio(){
-        return this.oraInizio;
-    }
-
-    public LocalTime getOraFine(){
-        return this.oraFine;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public TipologiaTurno getTipologiaTurno() {
-        return tipologiaTurno;
-    }
-
-    public Servizio getServizio() {
-        return servizio;
     }
 }
