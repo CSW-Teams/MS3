@@ -30,11 +30,12 @@ public class Holiday {
     public Holiday() {
     }
 
-    public Holiday(String name, HolidayCategory category, long startDateEpochDay, long endDateEpochDay) {
+    public Holiday(String name, HolidayCategory category, long startDateEpochDay, long endDateEpochDay, String Location) {
         this.name = name;
         this.category = category;
         this.startDateEpochDay = startDateEpochDay;
         this.endDateEpochDay = endDateEpochDay;
+        this.location=Location;
     }
     
     @Id
@@ -49,6 +50,9 @@ public class Holiday {
     private long startDateEpochDay;
     /** data di fine della festività, in giorni dall'Epoch */
     private long endDateEpochDay;
+    /** locazione */
+    private String location;
+
 
     /** Metodi di convenienza per lavorare con oggetti LocalDate anziché con timestamp */
 
@@ -68,4 +72,23 @@ public class Holiday {
         this.endDateEpochDay = endDate.toEpochDay();
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public HolidayCategory getCategory() {
+        return category;
+    }
+
+    public long getStartDateEpochDay() {
+        return startDateEpochDay;
+    }
+
+    public long getEndDateEpochDay() {
+        return endDateEpochDay;
+    }
 }

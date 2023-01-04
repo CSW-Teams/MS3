@@ -42,5 +42,23 @@ public class AssegnazioneTurno {
         return LocalDate.ofEpochDay(this.dataEpochDay);
     }
 
+    public Long getId() {
+        return id;
+    }
 
+    public Set<Utente> getUtentiDiGuardia() {
+        return utentiDiGuardia;
+    }
+
+    public Set<Utente> getUtentiReperibili() {
+        return utentiReperibili;
+    }
+
+    public long getDataEpochDay() {
+        return dataEpochDay;
+    }
+
+    public Turno getTurno() {
+        return turno;
+    }
 }

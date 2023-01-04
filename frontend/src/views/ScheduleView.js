@@ -121,13 +121,13 @@ class ScheduleView extends React.Component{
       updateLogic(this.state.filterCriteria);
       this.forceUpdate();
     }
-    
+
     async componentDidMount(turni, utenti){
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UtenteAPI().getAllUserOnlyNameSurname();
       let allHolidays = await new HolidaysAPI().getHolidays();
 
-      
+
       this.setState(
         {
           data:turni,
@@ -151,7 +151,7 @@ class ScheduleView extends React.Component{
 
     render(){
 
-        // add shifts to the schedulables to display  
+        // add shifts to the schedulables to display
         let { data, resources} = this.state;
 
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
@@ -200,14 +200,14 @@ class ScheduleView extends React.Component{
               <Button
                 onClick={() => {
                   this.setState({openOptionFilter: !this.state.openOptionFilter});
-                }} 
+                }}
                 style={{
                   'display': 'block',
                   'margin-left': 'auto',
                   'margin-right': 'auto',
                   'margin-top':'1%',
                   'margin-bottom':'-1%'
-                }} 
+                }}
               >
                 {this.state.openOptionFilter?"Chiudi":"Filtra"}
               </Button>
@@ -216,7 +216,6 @@ class ScheduleView extends React.Component{
                 locale={"it-IT"}
                 firstDayOfWeek={1}
                 data={data}
-                height={660}
               >
                 <ViewState/>
                 <WeekView
@@ -231,7 +230,7 @@ class ScheduleView extends React.Component{
                   endDayHour={24}
                   cellDuration={120}
                 />
-                <MonthView displayName="Mensile"/>
+                <MonthView displayName="Mensile" />
                 <Toolbar />
                 <Appointments appointmentContentComponent={this.state.appointmentContentComponent} />
                 <AllDayPanel/>
