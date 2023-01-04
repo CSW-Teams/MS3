@@ -91,7 +91,7 @@ public class VincoloPersonaTurnoTest {
         assegnazioneTurnoDao.save(turnoNotturno);
         assegnazioneTurnoDao.save(turnoMattutino);
         //Crea utente - PERSONA OVER 62
-        Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1983, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
+        Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
         utenteDao.save(over62user);
         //Aggiungi categoria all'utente
         CategoriaUtente over62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,over62user.getId(),LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
