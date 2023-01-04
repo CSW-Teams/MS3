@@ -126,12 +126,44 @@ public class VincoloPersonaTurnoTest {
         CategoriaUtente malattia = new CategoriaUtente(CategoriaUtentiEnum.IN_MALATTIA,inmalattiauser.getId(),LocalDate.of(2023, 1, 4), LocalDate.of(2023, 1, 9));
         categoriaUtenteDao.save(malattia);
         //Verifica il vincolo
-        // la persona over62 può essere aggiunta ad alcun turno durante la malattia
+        // la persona in malattia  può essere aggiunta ad alcun turno durante la malattia
         Assert.assertFalse(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoNotturnoinmalattia)));
         Assert.assertFalse(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoMattutinoinmalattia)));
         // ma può essere aggiunto ai turni dopo la malattia
         Assert.assertTrue(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoNotturnodopomalattia)));
     }
+
+    @Test
+    public void InFerieTEST(){
+        //Crea turni e servizio
+        Servizio servizio1 = new Servizio("reparto");
+        servizioDao.save(servizio1);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)));
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.DONNA_INCINTA, CategoriaUtentiEnum.OVER_62, CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)));
+        turnoDao.save(t1);
+        turnoDao.save(t3);
+        //Aggiungi vincoli ai turni
+        AssegnazioneTurno turnoMattutinoinmalattia = new AssegnazioneTurno(LocalDate.of(2023,1, 4),t1,null,null);
+        AssegnazioneTurno turnoNotturnoinmalattia = new AssegnazioneTurno(LocalDate.of(2023,1, 4),t3,null,null);
+        AssegnazioneTurno turnoNotturnodopomalattia = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,null,null);
+        assegnazioneTurnoDao.save(turnoMattutinoinmalattia);
+        assegnazioneTurnoDao.save(turnoNotturnoinmalattia);
+        assegnazioneTurnoDao.save(turnoNotturnodopomalattia);
+        //Crea utente - PERSONA IN FERIE
+        Utente inmalattiauser = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1983, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
+        utenteDao.save(inmalattiauser);
+        //Aggiungi categoria all'utente
+        //utente in ferie per 5 giorni
+        CategoriaUtente malattia = new CategoriaUtente(CategoriaUtentiEnum.IN_FERIE,inmalattiauser.getId(),LocalDate.of(2023, 1, 4), LocalDate.of(2023, 1, 9));
+        categoriaUtenteDao.save(malattia);
+        //Verifica il vincolo
+        // la persona in ferie può essere aggiunta ad alcun turno durante le ferie
+        Assert.assertFalse(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoNotturnoinmalattia)));
+        Assert.assertFalse(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoMattutinoinmalattia)));
+        // ma può essere aggiunto ai turni dopo le ferie
+        Assert.assertTrue(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoNotturnodopomalattia)));
+    }
+
 
 
 }
