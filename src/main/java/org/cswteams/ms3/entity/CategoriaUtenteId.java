@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 
-@Data
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CategoriaUtenteId implements Serializable {
 
     private CategoriaUtentiEnum categoria;
@@ -19,4 +20,7 @@ public class CategoriaUtenteId implements Serializable {
         this.utenteId = utente;
     }
 
+    public CategoriaUtenteId() {
+
+    }
 }

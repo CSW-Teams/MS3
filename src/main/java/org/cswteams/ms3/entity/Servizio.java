@@ -20,7 +20,4 @@ public class Servizio {
         this.nome = name;
     }
 
-    public String getNome(){
-        return nome;
-    }
 }

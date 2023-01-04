@@ -53,27 +53,4 @@ public class Turno {
 
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public TipologiaTurno getTipologiaTurno() {
-        return tipologiaTurno;
-    }
-
-    public LocalTime getOraInizio() {
-        return oraInizio;
-    }
-
-    public LocalTime getOraFine() {
-        return oraFine;
-    }
-
-    public Servizio getServizio() {
-        return servizio;
-    }
-
-    public Set<CategoriaUtentiEnum> getCategorieVietate() {
-        return categorieVietate;
-    }
 }

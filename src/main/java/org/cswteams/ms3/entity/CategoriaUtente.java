@@ -17,7 +17,6 @@ public class CategoriaUtente {
 
     @Id
     private CategoriaUtentiEnum categoria;
-
     @Id
     private Long utenteId;
 
@@ -26,7 +25,9 @@ public class CategoriaUtente {
     private LocalDate fineValidità;
 
     public CategoriaUtente() {
+
     }
+
 
     public CategoriaUtente(CategoriaUtentiEnum categoria, Long utenteId, LocalDate inizioValidità, LocalDate fineValidità) {
         this.categoria = categoria;
@@ -35,19 +36,4 @@ public class CategoriaUtente {
         this.fineValidità = fineValidità;
     }
 
-    public CategoriaUtentiEnum getCategoria() {
-        return categoria;
-    }
-
-    public Long getUtenteId() {
-        return utenteId;
-    }
-
-    public LocalDate getInizioValidità() {
-        return inizioValidità;
-    }
-
-    public LocalDate getFineValidità() {
-        return fineValidità;
-    }
 }
