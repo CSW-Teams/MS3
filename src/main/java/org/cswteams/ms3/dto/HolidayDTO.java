@@ -51,4 +51,36 @@ public class HolidayDTO {
         this.endMonth = endDate.getMonthValue();
         this.endDayOfMonth = endDate.getDayOfMonth();
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public HolidayCategory getCategory() {
+        return category;
+    }
+
+    public int getStartYear() {
+        return startYear;
+    }
+
+    public int getStartMonth() {
+        return startMonth;
+    }
+
+    public int getStartDayOfMonth() {
+        return startDayOfMonth;
+    }
+
+    public int getEndYear() {
+        return endYear;
+    }
+
+    public int getEndMonth() {
+        return endMonth;
+    }
+
+    public int getEndDayOfMonth() {
+        return endDayOfMonth;
+    }
 }

@@ -10,11 +10,11 @@ import java.util.Set;
 public class MappaTurni {
 
     public static Turno turnoDTOToEntity(TurnoDTO dto) {
-        return new Turno(dto.getOraInizio(),dto.getOraFine(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getTipologiaTurno());
+        return new Turno(dto.getOraInizio(),dto.getOraFine(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getTipologiaTurno(), dto.getCategorieVietate());
     }
 
     public static TurnoDTO turnoEntityToDTO(Turno entity){
-        return new TurnoDTO(entity.getId(), entity.getTipologiaTurno(),entity.getOraInizio(), entity.getOraFine(), MappaServizio.servizioEntitytoDTO(entity.getServizio()));
+        return new TurnoDTO(entity.getId(), entity.getTipologiaTurno(),entity.getOraInizio(), entity.getOraFine(), MappaServizio.servizioEntitytoDTO(entity.getServizio()), entity.getCategorieVietate());
     }
 
     public static Set<TurnoDTO> turnoEntityToDTO(List<Turno> turni){
