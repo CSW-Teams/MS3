@@ -19,7 +19,7 @@ public class ControllerScheduler implements IControllerScheduler{
     @Autowired
     TurnoDao turnoDao;
 
-    // TODO:
+    
 
     
 }
