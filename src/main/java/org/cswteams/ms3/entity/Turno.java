@@ -24,6 +24,10 @@ public class Turno {
     private LocalTime oraInizio;
 
     private LocalTime oraFine;
+    
+    private int numUtentiReperibilita;
+    private int numUtentiGuardia;
+
 
     /**
      * In quali giorni della settimana questo turno può essere assegnato
@@ -57,6 +61,16 @@ public class Turno {
         this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate);
         this.giorniDiValidità = giorniDiValidità;
     }
+
+     public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
+            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio, int numUtentiGuardia, int numUtentiReperibilita) {
+        this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate);
+        this.giorniDiValidità = giorniDiValidità;
+        this.numUtentiGuardia = numUtentiGuardia;
+        this.numUtentiReperibilita = numUtentiReperibilita;
+    }
+
+    
 
     public Turno() {
     }
