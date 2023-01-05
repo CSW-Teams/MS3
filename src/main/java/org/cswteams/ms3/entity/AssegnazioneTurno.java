@@ -39,6 +39,13 @@ public class AssegnazioneTurno {
         this.turno = turno;
     }
 
+    public AssegnazioneTurno(LocalDate data, Turno turno) {
+        this.dataEpochDay = data.toEpochDay();
+        this.utentiDiGuardia = new HashSet<>();
+        this.utentiReperibili = new HashSet<>();
+        this.turno = turno;
+    }
+
     public LocalDate getData() {
         return LocalDate.ofEpochDay(this.dataEpochDay);
     }
