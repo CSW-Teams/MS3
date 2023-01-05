@@ -41,11 +41,7 @@ public class VincoloPersonaTurnoTest {
     @Autowired
     private ServizioDao servizioDao;
 
-    @Autowired
-    private CategoriaUtenteDao categoriaUtenteDao;
-
-    @Autowired
-    private VincoloPersonaTurno vincoloPersonaTurno;
+    private VincoloPersonaTurno vincoloPersonaTurno = new VincoloPersonaTurno();
 
     @Test
     public void pregnancyTEST(){
@@ -67,8 +63,8 @@ public class VincoloPersonaTurnoTest {
         Utente pregUser = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
         utenteDao.save(pregUser);
         //Aggiungi categoria all'utente
-        CategoriaUtente incinta = new CategoriaUtente(CategoriaUtentiEnum.DONNA_INCINTA,pregUser.getId(),LocalDate.of(2023, 1, 4), LocalDate.of(2023, 10, 4));
-        categoriaUtenteDao.save(incinta);
+        CategoriaUtente incinta = new CategoriaUtente(CategoriaUtentiEnum.DONNA_INCINTA, LocalDate.of(2023, 1, 4), LocalDate.of(2023, 10, 4));
+        pregUser.getCategorie().add(incinta);
         //Verifica il vincolo
         // la persona incinta può essere aggiunta ai turni mattutini ma non notturni
         //Assert.assertFalse(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(pregUser,turnoNotturno)));
@@ -94,8 +90,8 @@ public class VincoloPersonaTurnoTest {
         Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
         utenteDao.save(over62user);
         //Aggiungi categoria all'utente
-        CategoriaUtente over62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,over62user.getId(),LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
-        categoriaUtenteDao.save(over62);
+        CategoriaUtente over62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
+        over62user.getCategorie().add(over62);
         //Verifica il vincolo
         // la persona over62 può essere aggiunta ai turni mattutini ma non notturni
         //Assert.assertFalse(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(over62user,turnoNotturno)));
@@ -123,8 +119,8 @@ public class VincoloPersonaTurnoTest {
         utenteDao.save(inmalattiauser);
         //Aggiungi categoria all'utente
         //utente in malattia per 5 giorni
-        CategoriaUtente malattia = new CategoriaUtente(CategoriaUtentiEnum.IN_MALATTIA,inmalattiauser.getId(),LocalDate.of(2023, 1, 4), LocalDate.of(2023, 1, 9));
-        categoriaUtenteDao.save(malattia);
+        CategoriaUtente malattia = new CategoriaUtente(CategoriaUtentiEnum.IN_MALATTIA,LocalDate.of(2023, 1, 4), LocalDate.of(2023, 1, 9));
+        inmalattiauser.getCategorie().add(malattia);
         //Verifica il vincolo
         // la persona in malattia  può essere aggiunta ad alcun turno durante la malattia
         //Assert.assertFalse(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoNotturnoinmalattia)));
@@ -154,8 +150,8 @@ public class VincoloPersonaTurnoTest {
         utenteDao.save(inmalattiauser);
         //Aggiungi categoria all'utente
         //utente in ferie per 5 giorni
-        CategoriaUtente malattia = new CategoriaUtente(CategoriaUtentiEnum.IN_FERIE,inmalattiauser.getId(),LocalDate.of(2023, 1, 4), LocalDate.of(2023, 1, 9));
-        categoriaUtenteDao.save(malattia);
+        CategoriaUtente malattia = new CategoriaUtente(CategoriaUtentiEnum.IN_FERIE,LocalDate.of(2023, 1, 4), LocalDate.of(2023, 1, 9));
+        inmalattiauser.getCategorie().add(malattia);
         //Verifica il vincolo
         // la persona in ferie può essere aggiunta ad alcun turno durante le ferie
         //Assert.assertFalse(vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoNotturnoinmalattia)));

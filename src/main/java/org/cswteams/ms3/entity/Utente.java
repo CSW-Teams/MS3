@@ -5,6 +5,8 @@ import lombok.Data;
 import org.cswteams.ms3.enums.RuoloEnum;
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -27,6 +29,9 @@ public class Utente {
 
     private String email;
 
+    @OneToMany(fetch = FetchType.EAGER)
+    private List<CategoriaUtente> categorie ;
+
     /** Massimo monte ore pianficabile in una settimana per questo utente */
     private int maxWeekSchedulableHours;
 
@@ -42,6 +47,7 @@ public class Utente {
         this.email = email;
         this.ruoloEnum = ruoloEnum;
         this.maxWeekSchedulableHours = -1;
+        this.categorie = new ArrayList<>();
     }
 
     public Utente(Long id,String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum) {
@@ -55,6 +61,16 @@ public class Utente {
         this.maxWeekSchedulableHours = maxWeekSchedulableHours;
     }
 
+     public Utente(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale,
+            RuoloEnum ruoloEnum, String email, int maxWeekSchedulableHours, List<CategoriaUtente> categorie) {
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
+        this.maxWeekSchedulableHours = maxWeekSchedulableHours;
+        this.categorie=categorie;
+    }
+
+
+
+    
     
 
 }

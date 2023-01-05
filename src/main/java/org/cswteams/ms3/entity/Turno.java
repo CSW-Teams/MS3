@@ -32,12 +32,13 @@ public class Turno {
     /**
      * In quali giorni della settimana questo turno può essere assegnato
      */
+    @Embedded
     private GiorniDellaSettimanaBitMask giorniDiValidità;
 
     @ManyToOne
     private Servizio servizio;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<CategoriaUtentiEnum> categorieVietate;
 

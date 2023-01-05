@@ -5,7 +5,9 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -64,6 +66,13 @@ public class AssegnazioneTurno {
 
     public Set<Utente> getUtenti(){
         Set<Utente> utenti = new HashSet<>();
+        utenti.addAll(utentiDiGuardia);
+        utenti.addAll(utentiReperibili);
+        return utenti;
+    }
+
+    public List<Utente> getUtentiAsList(){
+        List<Utente> utenti = new ArrayList<>();
         utenti.addAll(utentiDiGuardia);
         utenti.addAll(utentiReperibili);
         return utenti;

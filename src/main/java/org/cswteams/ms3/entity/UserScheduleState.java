@@ -14,8 +14,8 @@ import lombok.Data;
 @Data
 @Table(uniqueConstraints={
     @UniqueConstraint(columnNames={
-        "utente",
-        "schedule",
+        "utente_id",
+        "schedule_id",
     })
 })
 

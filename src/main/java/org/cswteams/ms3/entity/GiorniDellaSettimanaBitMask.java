@@ -2,7 +2,7 @@ package org.cswteams.ms3.entity;
 
 import java.time.DayOfWeek;
 
-import javax.persistence.Entity;
+import javax.persistence.Embeddable;
 
 import lombok.Data;
 
@@ -10,8 +10,8 @@ import lombok.Data;
  * Classe di utilità che modella giorni della settimana come una bitmask i cui
  * 7 bit meno significativi rappresentano i giorni della settimana inclusi.
  */
-@Entity
 @Data
+@Embeddable
 public class GiorniDellaSettimanaBitMask {
 
     /** The actual mask value associated with this bitmask */
