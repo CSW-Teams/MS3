@@ -6,7 +6,8 @@ import java.util.ArrayList;
 
 import org.cswteams.ms3.control.vincoli.Vincolo;
 import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
-import org.cswteams.ms3.dao.ServizioDao;
+import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
+import org.cswteams.ms3.dao.ScheduleDao;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
@@ -20,17 +21,18 @@ import org.springframework.stereotype.Service;
 public class ControllerScheduler implements IControllerScheduler{
 
     @Autowired
-    ServizioDao servizioDao;
+    private UtenteDao utenteDao;
 
     @Autowired
-    UtenteDao utenteDao;
+    private TurnoDao turnoDao;
 
     @Autowired
-    TurnoDao turnoDao;
+    private ScheduleDao scheduleDao;
 
+    @Autowired
+    private AssegnazioneTurnoDao assegnazioneTurnoDao;
 
-
-    ScheduleBuilder scheduleBuilder;
+    private ScheduleBuilder scheduleBuilder;
 
   /** 
      * Restituisce tutti i vincoli di tutte le categorie, instanziando quelli
@@ -62,7 +64,7 @@ public class ControllerScheduler implements IControllerScheduler{
                 // Possiamo assegnare questo turno a questo giorno solo se il giorno
                 // della settimana è previsto tra quelli ammissibili del turno
                 if (turno.getGiorniDiValidità().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
-                    allAssegnazioni.add(new AssegnazioneTurno(currentDay,turno));
+                    allAssegnazioni.add(assegnazioneTurnoDao.save(new AssegnazioneTurno(currentDay,turno)));
                 }
                 
             }
@@ -79,8 +81,8 @@ public class ControllerScheduler implements IControllerScheduler{
             allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
             utenteDao.findAll() // tutti i candidati da allocare ai turni
             );
-        return this.scheduleBuilder.build();
-        
+        assegnazioneTurnoDao.flush();
+        return scheduleDao.save(this.scheduleBuilder.build());
     }
 
     

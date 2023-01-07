@@ -21,6 +21,8 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import javax.transaction.Transactional;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
@@ -41,12 +43,18 @@ public class TestSchedule {
     @Autowired
     private CategoriaUtenteDao categoriaUtenteDao;
 
+    @Autowired
+    private ScheduleDao scheduleDao;
+
     @Test
+    /** needed to avoid "org.hibernate.LazyInitializationException: could not initialize proxy - no Session".
+     *  Remember to flush daos after each change to entities */
+    @Transactional 
     public void TestNotValid() throws UnableToBuildScheduleException{
 
         //Crea turni e servizio
         Servizio servizio1 = new Servizio("reparto");
-        servizioDao.save(servizio1);
+        servizioDao.saveAndFlush(servizio1);
         Turno t1 = new Turno(
             LocalTime.of(20, 0),
             LocalTime.of(23, 0),
@@ -59,24 +67,26 @@ public class TestSchedule {
                 CategoriaUtentiEnum.IN_FERIE)
                 ));
         t1.setNumUtentiGuardia(1);
-        turnoDao.save(t1);
+        turnoDao.saveAndFlush(t1);
         
         //Crea utente - donna INCINTA
         Utente pregUser = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
         Utente utente = new Utente("Antonio","Rossi", "GLRRSS******", LocalDate.of(1955, 3, 14),"antss@gmail.com", RuoloEnum.SPECIALIZZANDO );
 
         CategoriaUtente categoriaIncinta = new CategoriaUtente(CategoriaUtentiEnum.DONNA_INCINTA,LocalDate.now(), LocalDate.now().plusDays(10));
-        categoriaUtenteDao.save(categoriaIncinta);
+        categoriaUtenteDao.saveAndFlush(categoriaIncinta);
         
         pregUser.getCategorie().add(categoriaIncinta);
-        utenteDao.save(pregUser);
-        utenteDao.save(utente);
+        utenteDao.saveAndFlush(pregUser);
+        utenteDao.saveAndFlush(utente);
 
 
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = startDate.plusDays(5);
         
-        Schedule schedule = this.controllerScheduler.createSchedule(startDate,endDate);
+        long scheduleId = this.controllerScheduler.createSchedule(startDate,endDate).getId();
+
+        Schedule schedule = scheduleDao.findById(scheduleId).get();
 
         assertEquals(schedule.getAssegnazioniTurno().get(0).getUtenti().size(), 1);
         assertEquals(schedule.getAssegnazioniTurno().get(0).getUtentiAsList().get(0).getNome(), utente.getNome());
@@ -84,6 +94,7 @@ public class TestSchedule {
         
 
 }
+
     
 
 

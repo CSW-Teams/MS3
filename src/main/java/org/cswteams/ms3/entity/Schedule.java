@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -12,7 +13,7 @@ import javax.persistence.UniqueConstraint;
 
 import lombok.Data;
 
-/** Rappresenta una pianificazione dei turni in un intervallo di date */
+/** Rappresenta una pianificazione dei turni assegnati in un intervallo di date */
 @Entity
 @Data
 @Table(uniqueConstraints={
@@ -34,9 +35,12 @@ public class Schedule {
     private long endDateEpochDay;
 
     /** Assegnazioni dei turni previste dalla pianificazione */
-    @OneToMany
+    @OneToMany 
     private List<AssegnazioneTurno> assegnazioniTurno;
 
+    public Schedule() {
+    }
+    
     public Schedule(LocalDate startDate, LocalDate endDate) {
         this.startDateEpochDay = startDate.toEpochDay();
         this.endDateEpochDay = endDate.toEpochDay();
