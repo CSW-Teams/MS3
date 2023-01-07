@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.cswteams.ms3.control.vincoli.Vincolo;
-import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
-import org.cswteams.ms3.dao.*;
+import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
@@ -18,10 +17,10 @@ import org.springframework.stereotype.Service;
 public class ControllerScheduler implements IControllerScheduler{
 
     @Autowired
-    ServizioDao servizioDao;
+    private UtenteDao utenteDao;
 
     @Autowired
-    UtenteDao utenteDao;
+    private TurnoDao turnoDao;
 
     @Autowired
     TurnoDao turnoDao;
@@ -34,7 +33,7 @@ public class ControllerScheduler implements IControllerScheduler{
 
 
 
-    ScheduleBuilder scheduleBuilder;
+    private ScheduleBuilder scheduleBuilder;
 
   /** 
      * Restituisce tutti i vincoli di tutte le categorie, instanziando quelli
@@ -66,8 +65,7 @@ public class ControllerScheduler implements IControllerScheduler{
                 // Possiamo assegnare questo turno a questo giorno solo se il giorno
                 // della settimana è previsto tra quelli ammissibili del turno
                 if (turno.getGiorniDiValidità().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
-                    AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(currentDay,turno);
-                    allAssegnazioni.add(assegnazioneTurno);
+                    allAssegnazioni.add(assegnazioneTurnoDao.save(new AssegnazioneTurno(currentDay,turno)));
                 }
                 
             }

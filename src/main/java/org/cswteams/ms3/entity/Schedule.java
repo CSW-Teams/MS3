@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 import lombok.Data;
 
-/** Rappresenta una pianificazione dei turni in un intervallo di date */
+/** Rappresenta una pianificazione dei turni assegnati in un intervallo di date */
 @Entity
 @Data
 @Table(uniqueConstraints={
@@ -32,6 +32,9 @@ public class Schedule {
     @OneToMany(cascade = {CascadeType.ALL})
     private List<AssegnazioneTurno> assegnazioniTurno;
 
+    public Schedule() {
+    }
+    
     public Schedule(LocalDate startDate, LocalDate endDate) {
         this.startDateEpochDay = startDate.toEpochDay();
         this.endDateEpochDay = endDate.toEpochDay();

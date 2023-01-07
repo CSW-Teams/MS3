@@ -29,7 +29,7 @@ public class Utente {
 
     private String email;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     private List<CategoriaUtente> categorie ;
 
     /** Massimo monte ore pianficabile in una settimana per questo utente */
