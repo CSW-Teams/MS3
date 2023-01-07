@@ -2,13 +2,10 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
-import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
-import org.cswteams.ms3.dao.ServizioDao;
-import org.cswteams.ms3.dao.TurnoDao;
-import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.Servizio;
+import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
@@ -16,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.entity.Utente;
 
 
 import java.io.BufferedReader;
@@ -49,26 +44,99 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private ServizioDao servizioDao;
 
     @Autowired
+    private CategoriaUtenteDao categoriaUtenteDao;
+
+    @Autowired
     private IHolidayController holidayController;
 
 
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        // populateDB();
+         //populateDB();
+         populateDBTestSchedule();
+    }
+
+    private void populateDBTestSchedule() {
+        //Creo categorie
+        CategoriaUtente categoriaOver62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,LocalDate.now(), LocalDate.now().plusDays(1000));
+        categoriaUtenteDao.save(categoriaOver62);
+
+        //Creo utenti
+        Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        Utente u7 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1950, 3, 7),"giovannicantone@gmail.com", RuoloEnum.STRUTTURATO );
+        u7.getCategorie().add(categoriaOver62);
+
+        utenteDao.save(u7);
+        utenteDao.save(u1);
+
+        //creo servizi
+        Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio2 = new Servizio("ambulatorio");
+
+        servizioDao.save(servizio2);
+        servizioDao.save(servizio1);
+
+
+        //Creo turni
+        HashSet<CategoriaUtentiEnum> categorieVietate= new HashSet<>(Arrays.asList(
+                CategoriaUtentiEnum.DONNA_INCINTA,
+                CategoriaUtentiEnum.OVER_62,
+                CategoriaUtentiEnum.IN_MALATTIA,
+                CategoriaUtentiEnum.IN_FERIE)
+        );
+
+
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>());
+        t2.setNumUtentiGuardia(1);
+        t2.setNumUtentiReperibilita(1);
+
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
+        t3.setNumUtentiGuardia(1);
+        t3.setNumUtentiReperibilita(1);
+
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
+        t4.setNumUtentiGuardia(1);
+        t4.setNumUtentiReperibilita(1);
+
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>());
+        t5.setNumUtentiGuardia(1);
+        t5.setNumUtentiReperibilita(1);
+
+        turnoDao.save(t2);
+        turnoDao.save(t3);
+        turnoDao.save(t4);
+        turnoDao.save(t5);
+
+        try {
+            LoadHoliday();
+        } catch (IOException e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, e.getMessage());
+        }
+
     }
 
     private void populateDB(){
+
+        //Creo categorie
+        CategoriaUtente categoriaOver62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,LocalDate.now(), LocalDate.now().plusDays(1000));
+        categoriaUtenteDao.save(categoriaOver62);
+
+        //Creo utenti
         Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO );
         Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", RuoloEnum.SPECIALIZZANDO);
         Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", RuoloEnum.SPECIALIZZANDO);
         Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u5 = new Utente("Daniele","La Prova", "DNLLPRV******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u6 = new Utente("Luca","Fiscariello", "FSCRLC******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+
         Utente u7 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1950, 3, 7),"giovannicantone@gmail.com", RuoloEnum.STRUTTURATO );
+        u7.getCategorie().add(categoriaOver62);
+
         Utente u8 = new Utente("Manuel","Mastrofini", "MNLMASTR******", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u9 = new Utente("Giulia","Cantone", "GLCCTN******", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", RuoloEnum.SPECIALIZZANDO);
         Utente u10 = new Utente("Fabio","Valenzi", "FBVVLZ******", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", RuoloEnum.SPECIALIZZANDO);
+
 
         u1 = utenteDao.save(u1);
         u2 = utenteDao.save(u2);
@@ -81,23 +149,45 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u9 = utenteDao.save(u9);
         u10 = utenteDao.save(u10);
 
+        //creo servizi
         Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio2 = new Servizio("ambulatorio");
+
+        servizioDao.save(servizio2);
         servizioDao.save(servizio1);
 
-        Servizio servizio2 = new Servizio("ambulatorio");
-        servizioDao.save(servizio2);
+
+        //Creo turni
+        HashSet<CategoriaUtentiEnum> categorieVietate= new HashSet<>(Arrays.asList(
+                CategoriaUtentiEnum.DONNA_INCINTA,
+                CategoriaUtentiEnum.OVER_62,
+                CategoriaUtentiEnum.IN_MALATTIA,
+                CategoriaUtentiEnum.IN_FERIE)
+        );
+
 
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>());
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>());
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>());
+        t2.setNumUtentiGuardia(1);
+        t2.setNumUtentiReperibilita(1);
+
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
+        t3.setNumUtentiGuardia(1);
+        t3.setNumUtentiReperibilita(1);
+
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
+        t4.setNumUtentiGuardia(1);
+        t4.setNumUtentiReperibilita(1);
+
         Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>());
-      
+        t5.setNumUtentiGuardia(1);
+        t5.setNumUtentiReperibilita(1);
 
         turnoDao.save(t2);
         turnoDao.save(t3);
         turnoDao.save(t4);
         turnoDao.save(t5);
 
+        //creo associazioni
         Set<Utente> setUtenti1 = new HashSet<>();
         setUtenti1.add(u1);
         setUtenti1.add(u4);

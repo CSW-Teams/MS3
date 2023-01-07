@@ -6,9 +6,7 @@ import java.util.ArrayList;
 
 import org.cswteams.ms3.control.vincoli.Vincolo;
 import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
-import org.cswteams.ms3.dao.ServizioDao;
-import org.cswteams.ms3.dao.TurnoDao;
-import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
@@ -27,6 +25,12 @@ public class ControllerScheduler implements IControllerScheduler{
 
     @Autowired
     TurnoDao turnoDao;
+
+    @Autowired
+    ScheduleDao scheduleDao;
+
+    @Autowired
+    AssegnazioneTurnoDao assegnazioneTurnoDao;
 
 
 
@@ -62,7 +66,8 @@ public class ControllerScheduler implements IControllerScheduler{
                 // Possiamo assegnare questo turno a questo giorno solo se il giorno
                 // della settimana è previsto tra quelli ammissibili del turno
                 if (turno.getGiorniDiValidità().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
-                    allAssegnazioni.add(new AssegnazioneTurno(currentDay,turno));
+                    AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(currentDay,turno);
+                    allAssegnazioni.add(assegnazioneTurno);
                 }
                 
             }
@@ -79,11 +84,12 @@ public class ControllerScheduler implements IControllerScheduler{
             allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
             utenteDao.findAll() // tutti i candidati da allocare ai turni
             );
-        return this.scheduleBuilder.build();
+
+        
+        return  scheduleDao.save(this.scheduleBuilder.build());
         
     }
 
-    
 
     
 }

@@ -12,6 +12,11 @@ export default function() {
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/pianificazione-privata",
     },
+    {
+      title: "Genera Pianificazione",
+      htmlBefore: '<i class="material-icons">view_module</i>',
+      to: "/generazione-scheduling",
+    },
 
   ];
 }

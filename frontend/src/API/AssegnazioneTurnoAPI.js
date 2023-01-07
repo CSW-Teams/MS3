@@ -107,5 +107,33 @@ export  class AssegnazioneTurnoAPI {
         return this.parseAllocatedShifts(body);
     }
 
+    async postGenerationSchedule(dataStart,dataEnd) {
+
+      let requestGeneration = new Object();
+
+      requestGeneration.giornoInizio = dataStart.$d.getDate();
+      requestGeneration.meseInizio = dataStart.$d.getMonth()+1;
+      requestGeneration.annoInizio = dataStart.$d.getFullYear();
+
+      requestGeneration.giornoFine= dataEnd.$d.getDate();
+      requestGeneration.meseFine = dataEnd.$d.getMonth()+1;
+      requestGeneration.annoFine = dataEnd.$d.getFullYear();
+      
+      console.log(requestGeneration)
+      
+
+      const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestGeneration)
+      };
+
+      const response = await fetch('/api/schedule/generation',requestOptions);
+      if(response.status != 202)
+        return null
+        
+      return requestGeneration;
+
+  }
 
   }

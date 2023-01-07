@@ -3,12 +3,7 @@ package org.cswteams.ms3.entity;
 import java.time.LocalDate;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 
 import lombok.Data;
 
@@ -34,12 +29,16 @@ public class Schedule {
     private long endDateEpochDay;
 
     /** Assegnazioni dei turni previste dalla pianificazione */
-    @OneToMany
+    @OneToMany(cascade = {CascadeType.ALL})
     private List<AssegnazioneTurno> assegnazioniTurno;
 
     public Schedule(LocalDate startDate, LocalDate endDate) {
         this.startDateEpochDay = startDate.toEpochDay();
         this.endDateEpochDay = endDate.toEpochDay();
+    }
+
+    public Schedule(){
+
     }
 
     public LocalDate getStartDate() {

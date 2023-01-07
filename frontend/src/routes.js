@@ -6,6 +6,7 @@ import { DefaultLayout } from "./layouts";
 
 // Route Views
 import GlobalScheduleView from "./views/GlobalScheduleView";
+import { SchedulerGeneratorView } from "./views/ScheduleGeneratorView";
 import SingleScheduleView from "./views/SingleScheduleView";
 
 export default [
@@ -24,6 +25,11 @@ export default [
     path: "/pianificazione-globale",
     layout: DefaultLayout,
     component:  GlobalScheduleView
+  },
+  {
+    path: "/generazione-scheduling",
+    layout: DefaultLayout,
+    component:  SchedulerGeneratorView
   }
 
 ];
