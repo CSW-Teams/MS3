@@ -32,9 +32,6 @@ public class Schedule {
     @OneToMany(cascade = {CascadeType.ALL})
     private List<AssegnazioneTurno> assegnazioniTurno;
 
-    public Schedule() {
-    }
-    
     public Schedule(LocalDate startDate, LocalDate endDate) {
         this.startDateEpochDay = startDate.toEpochDay();
         this.endDateEpochDay = endDate.toEpochDay();

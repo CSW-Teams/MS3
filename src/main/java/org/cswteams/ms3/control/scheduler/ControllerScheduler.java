@@ -23,9 +23,6 @@ public class ControllerScheduler implements IControllerScheduler{
     private TurnoDao turnoDao;
 
     @Autowired
-    TurnoDao turnoDao;
-
-    @Autowired
     ScheduleDao scheduleDao;
 
     @Autowired
