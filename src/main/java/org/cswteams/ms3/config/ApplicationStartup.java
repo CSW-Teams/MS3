@@ -141,23 +141,22 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u15 = new Utente("Giorgio","Bianchi", "******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u16 = new Utente("Claudio","Gialli", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
 
-
-        u1 = utenteDao.save(u1);
-        u2 = utenteDao.save(u2);
-        u3 = utenteDao.save(u3);
-        u4 = utenteDao.save(u4);
-        u5 = utenteDao.save(u5);
-        u6 = utenteDao.save(u6);
-        u7 = utenteDao.save(u7);
-        u8 = utenteDao.save(u8);
-        u9 = utenteDao.save(u9);
-        u10 = utenteDao.save(u10);
-        u11 = utenteDao.save(u11);
-        u12 = utenteDao.save(u12);
-        u13 = utenteDao.save(u13);
-        u14 = utenteDao.save(u14);
-        u15 = utenteDao.save(u15);
-        u16 = utenteDao.save(u16);
+        u1 = utenteDao.saveAndFlush(u1);
+        u2 = utenteDao.saveAndFlush(u2);
+        u3 = utenteDao.saveAndFlush(u3);
+        u4 = utenteDao.saveAndFlush(u4);
+        u5 = utenteDao.saveAndFlush(u5);
+        u6 = utenteDao.saveAndFlush(u6);
+        u7 = utenteDao.saveAndFlush(u7);
+        u8 = utenteDao.saveAndFlush(u8);
+        u9 = utenteDao.saveAndFlush(u9);
+        u10 = utenteDao.saveAndFlush(u10);
+        u11 = utenteDao.saveAndFlush(u11);
+        u12 = utenteDao.saveAndFlush(u12);
+        u13 = utenteDao.saveAndFlush(u13);
+        u14 = utenteDao.saveAndFlush(u14);
+        u15 = utenteDao.saveAndFlush(u15);
+        u16 = utenteDao.saveAndFlush(u16);
 
         //creo servizi
         Servizio servizio1 = new Servizio("reparto");
@@ -165,6 +164,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
+
 
         //Creo turni
         HashSet<CategoriaUtentiEnum> categorieVietate= new HashSet<>(Arrays.asList(
@@ -176,25 +176,25 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
 
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>());
-        t2.setNumUtentiGuardia(1);
-        t2.setNumUtentiReperibilita(1);
+        t2.setNumUtentiGuardia(2);
+        t2.setNumUtentiReperibilita(2);
 
         Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
-        t3.setNumUtentiGuardia(1);
-        t3.setNumUtentiReperibilita(1);
+        t3.setNumUtentiGuardia(2);
+        t3.setNumUtentiReperibilita(2);
 
         Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
-        t4.setNumUtentiGuardia(1);
-        t4.setNumUtentiReperibilita(1);
+        t4.setNumUtentiGuardia(2);
+        t4.setNumUtentiReperibilita(2);
 
         Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>());
-        t5.setNumUtentiGuardia(1);
-        t5.setNumUtentiReperibilita(1);
+        t5.setNumUtentiGuardia(2);
+        t5.setNumUtentiReperibilita(2);
 
-        turnoDao.save(t2);
-        turnoDao.save(t3);
-        turnoDao.save(t4);
-        turnoDao.save(t5);
+        turnoDao.saveAndFlush(t2);
+        turnoDao.saveAndFlush(t3);
+        turnoDao.saveAndFlush(t4);
+        turnoDao.saveAndFlush(t5);
 
         //creo associazioni
         Set<Utente> setUtenti1 = new HashSet<>();
@@ -217,7 +217,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         setUtenti5.add(u10);
         setUtenti5.add(u16);
 
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t5,setUtenti3,setUtenti5));
+      assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t5,setUtenti3,setUtenti5));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t2,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t3,setUtenti2,setUtenti4));
@@ -285,7 +285,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t4,setUtenti2,setUtenti4));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t5,setUtenti1,setUtenti3));
-
 
         try {
             LoadHoliday();

@@ -8,12 +8,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { UtenteAPI } from '../../API/UtenteAPI';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
-import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
+
 
 export default function TemporaryDrawer(props) {
 
@@ -28,7 +28,7 @@ export default function TemporaryDrawer(props) {
 
   const [state, setState] = React.useState({bottom: false});
 
-  //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono. 
+  //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
     let userApi = new UtenteAPI();
     let utenti = await userApi.getAllUserOnlyNameSurname()
@@ -55,9 +55,9 @@ export default function TemporaryDrawer(props) {
   const handleServizio = (servizio) => {
     setServizio(servizio);
   }
-  
 
-  //Funzione che apre la schermata secondaria che permette di creare un associazione. 
+
+  //Funzione che apre la schermata secondaria che permette di creare un associazione.
   //Viene passata come callback al componente <Drawer>
   const toggleDrawer = (anchor, open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -67,7 +67,7 @@ export default function TemporaryDrawer(props) {
 
   };
 
-  //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione. 
+  //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione.
   //Viene passata come callback al componente <Button>Assegna turno</Button>
   const assegnaTurno = (anchor, open) => async (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -77,25 +77,25 @@ export default function TemporaryDrawer(props) {
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
     let assegnazione = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio)
-    
+
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
     props.onPostAssegnazione()
 
     if(assegnazione==null){
-      console.log('errore')
+      alert('errore assegnazione');
     }else{
-      console.log('OK')
+      alert('assegnazione creata con successo');
     }
 
-    setState({ ...state, [anchor]: open });    
-  
+    setState({ ...state, [anchor]: open });
+
   }
 
 
   return (
     <div>
         <React.Fragment key= 'bottom'>
-             
+
           <Button onClick={toggleDrawer('bottom', true)} style={{
               'display': 'block',
               'margin-left': 'auto',
@@ -110,8 +110,8 @@ export default function TemporaryDrawer(props) {
               justifyContent: 'center',
               height: '65vh',
             }}>
-              
-            
+
+
             <Stack spacing={3} >
                 <BasicDatePicker onSelectData={handleData}></BasicDatePicker>
                 <MultipleSelect onSelectTurno = {handleTurno} onSelectServizio = {handleServizio}></MultipleSelect>
@@ -133,7 +133,7 @@ export default function TemporaryDrawer(props) {
                   Assegna turno
                 </Button>
             </Stack>
-      
+
             </div>
           </Drawer>
         </React.Fragment>

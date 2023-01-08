@@ -40,10 +40,6 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
             throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia turno: "+dto.getTipologiaTurno().toString());
 
         AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()),turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
-        System.out.println(dto.getAnno());
-        System.out.println(dto.getMese());
-        System.out.println(dto.getGiorno());
-        System.out.println(assegnazioneTurno.getData());
 
         if(!checkAssegnazioneTurno(assegnazioneTurno)){
             throw new AssegnazioneTurnoException("Collisione tra utenti reperibili e di guardia");

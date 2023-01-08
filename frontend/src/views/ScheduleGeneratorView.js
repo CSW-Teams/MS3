@@ -12,7 +12,7 @@ export class SchedulerGeneratorView extends React.Component{
         super(props);
         this.state = {
             dataStart: "",
-            dataEnd: "" 
+            dataEnd: ""
         }
 
     }
@@ -29,8 +29,14 @@ export class SchedulerGeneratorView extends React.Component{
     //Al click del bottone richiedo al backend la generazione della pianificazione nel range di date specificate
     handleOnClick = async () =>{
         let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
-        await assegnazioneTurnoAPI.postGenerationSchedule(this.state.dataStart,this.state.dataEnd)
-    
+        let assegnazione = await assegnazioneTurnoAPI.postGenerationSchedule(this.state.dataStart,this.state.dataEnd)
+        if(assegnazione==null){
+           alert('errore generazione pianificazione');
+        }else{
+          alert('pianificazione creata');
+      }
+
+
     }
 
 
@@ -55,7 +61,7 @@ export class SchedulerGeneratorView extends React.Component{
                   Genera Pianificazione
                 </Button>
             </Stack>
-            
+
             </div>
         )
     }
