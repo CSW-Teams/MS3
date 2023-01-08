@@ -32,8 +32,9 @@ public class ScheduleBuilder {
     private List<UserScheduleState> allUserScheduleStates;
 
     /** Pianificazione in costruzione */
-    private Schedule schedule;    
-    
+    private Schedule schedule;
+
+
     public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Vincolo> allConstraints, List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) {
         this.schedule = new Schedule(startDate, endDate);
         this.schedule.setAssegnazioniTurno(allAssignedShifts);
@@ -55,19 +56,20 @@ public class ScheduleBuilder {
      * @throws UnableToBuildScheduleException
      * */
     public Schedule build() throws UnableToBuildScheduleException{
-
+        Set<Utente> utentiGuardia;
         for( AssegnazioneTurno at : this.schedule.getAssegnazioniTurno()){
             
             try {
                 // Prima pensiamo a riempire la guardia, che è la più importante
-                at.setUtentiDiGuardia(this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia()));
+                utentiGuardia = this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia(), null);
+                at.setUtentiDiGuardia(utentiGuardia);
             } catch (NotEnoughFeasibleUsersException e) {
                 throw new UnableToBuildScheduleException("unable to select utenti di guardia", e);
             }
 
             try {
                 // Passo poi a riempire la reperibilità
-                at.setUtentiReperibili(this.ricercaUtenti(at, at.getTurno().getNumUtentiReperibilita()));
+                at.setUtentiReperibili(this.ricercaUtenti(at, at.getTurno().getNumUtentiReperibilita(),utentiGuardia));
             } catch (NotEnoughFeasibleUsersException e) {
                 throw new UnableToBuildScheduleException("unable to select utenti di reperibilita", e);
             }
@@ -79,11 +81,15 @@ public class ScheduleBuilder {
     /** seleziona gli utenti per una lista di utenti assegnati (guardia, reperibilità, ...) per una assegnazione di turno 
      * @throws NotEnoughFeasibleUsersException
      * */
-    private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti) throws NotEnoughFeasibleUsersException{
+    private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
         
         List<Utente> selectedUsers = new ArrayList<>();
 
         for (int i = 0; i < allUserScheduleStates.size() && selectedUsers.size() < numUtenti; i ++){
+            //Se viene passato un set di utenti non ammessi (utenti di guardia) allora li esclude
+            if (NotAllowedSet!=null && NotAllowedSet.contains(allUserScheduleStates.get(i).getUtente())) {
+                continue;
+            }
             ContestoVincolo contesto = new ContestoVincolo(allUserScheduleStates.get(i).getUtente(),assegnazione);
             // Se l'utente rispetta tutti i vincoli possiamo includerlo nella lista desiderata
             try {
@@ -106,12 +112,11 @@ public class ScheduleBuilder {
     /** Applica tutti i vincoli al contesto specificato e ritorna l'AND tra i risultati
      * di ciascuno di essi
      */
-    private boolean verificaTuttiVincoli(ContestoVincolo contesto) throws ViolatedConstraintException{
+    private void verificaTuttiVincoli(ContestoVincolo contesto) throws ViolatedConstraintException{
 
         for(Vincolo vincolo : this.allConstraints){
             vincolo.verificaVincolo(contesto);
         }
-        return true;
     }
 
     /**Aggiunge una assegnazione turno manualmente alla pianificazione, senza
