@@ -22,7 +22,7 @@ public class GiorniDellaSettimanaBitMask {
      */
     private byte getBitMaskGiorno(DayOfWeek giorno){
         
-        return (byte) (2<<giorno.getValue()-1);
+        return (byte) (1<<giorno.getValue()-1);
     }
 
      /** Controlla se il giorno specificato è compreso tra quelli indicati
@@ -46,7 +46,7 @@ public class GiorniDellaSettimanaBitMask {
 
     /**Abilita tutti i giorni */
     public GiorniDellaSettimanaBitMask enableAllDays(){
-        this.giorni = (byte) 255;
+        this.giorni = (byte) 127;
         return this;
     }
 
