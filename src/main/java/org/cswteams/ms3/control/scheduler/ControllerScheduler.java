@@ -62,7 +62,7 @@ public class ControllerScheduler implements IControllerScheduler{
                 // Possiamo assegnare questo turno a questo giorno solo se il giorno
                 // della settimana è previsto tra quelli ammissibili del turno
                 if (turno.getGiorniDiValidità().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
-                    allAssegnazioni.add(assegnazioneTurnoDao.save(new AssegnazioneTurno(currentDay,turno)));
+                    allAssegnazioni.add(new AssegnazioneTurno(currentDay,turno));
                 }
                 
             }
