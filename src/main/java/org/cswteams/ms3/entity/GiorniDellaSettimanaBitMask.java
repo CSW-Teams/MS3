@@ -46,7 +46,7 @@ public class GiorniDellaSettimanaBitMask {
 
     /**Abilita tutti i giorni */
     public GiorniDellaSettimanaBitMask enableAllDays(){
-        this.giorni = 127;
+        this.giorni = (byte) 255;
         return this;
     }
 
