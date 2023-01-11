@@ -31,11 +31,11 @@ export default class UserActions extends React.Component {
     return (
       <NavItem tag={Dropdown} caret toggle={this.toggleUserActions}>
         <DropdownToggle caret tag={NavLink} className="text-nowrap px-3">
-          
+
           <span className="d-none d-md-inline-block">Luca Verde</span>
         </DropdownToggle>
         <Collapse tag={DropdownMenu} right small open={this.state.visible}>
-          <DropdownItem tag={Link} to="user-profile">
+          <DropdownItem tag={Link} to="/user-profile">
             <i className="material-icons">&#xE7FD;</i> Profilo
           </DropdownItem>
           <DropdownItem tag={Link} to="edit-user-profile">

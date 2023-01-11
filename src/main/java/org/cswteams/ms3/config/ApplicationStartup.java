@@ -17,8 +17,12 @@ import org.springframework.stereotype.Component;
 
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.time.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -299,7 +303,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     public void LoadHoliday() throws IOException {
         List<List<String>> data = new ArrayList<>();
         String currPath = System.getProperty("user.dir");
-        String filePath = currPath+"\\src\\main\\resources\\holiday.csv";
+        //String filePath = currPath+"\\src\\main\\resources\\holiday.csv";
+        String filePath = "";
+        File file = new File("src/main/resources/holiday.csv");
+        filePath = file.getAbsolutePath();
+
         FileReader fr = new FileReader(filePath);
         BufferedReader br = new BufferedReader(fr);
         String line = br.readLine();

@@ -1,8 +1,6 @@
 import {styled} from "@mui/material/styles";
 import {getAppointmentColor, getResourceColor} from "../../utils/utils";
 import {Appointments} from "@devexpress/dx-react-scheduler-material-ui";
-import {Grid} from "@mui/material";
-import {FormatItalic, Room} from "@mui/icons-material";
 import {lightBlue} from "@mui/material/colors";
 const PREFIX_TOOLTIP = 'Content';
 

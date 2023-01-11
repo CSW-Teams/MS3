@@ -8,6 +8,7 @@ import { DefaultLayout } from "./layouts";
 import GlobalScheduleView from "./views/GlobalScheduleView";
 import { SchedulerGeneratorView } from "./views/ScheduleGeneratorView";
 import SingleScheduleView from "./views/SingleScheduleView";
+import UserProfileView from "./views/UserProfileView"
 
 export default [
   {
@@ -30,7 +31,11 @@ export default [
     path: "/generazione-scheduling",
     layout: DefaultLayout,
     component:  SchedulerGeneratorView
+  },
+  {
+    path: "/user-profile",
+    layout: DefaultLayout,
+    component: UserProfileView
   }
-
 ];
 
