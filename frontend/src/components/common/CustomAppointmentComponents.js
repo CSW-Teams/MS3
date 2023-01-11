@@ -11,8 +11,6 @@ import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 
 
-
-
 // AppointmentContent di SingleScheduleView
 export const AppointmentSingleContent = ({
                                     data, formatDate, ...restProps
