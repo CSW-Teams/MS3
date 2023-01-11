@@ -51,7 +51,6 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurniUtente(@NotNull Long idPersona) throws ParseException {
         Set<AssegnazioneTurnoDTO> turni = MappaAssegnazioneTurni.assegnazioneTurnoToDTO(assegnazioneTurnoDao.findTurniUtente(idPersona));
-        System.out.println(turni);
         return turni;
     }
 

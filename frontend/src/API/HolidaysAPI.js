@@ -20,6 +20,7 @@ export class HolidaysAPI {
             h.allDay = true;
             h.category = sh.category;
             h.location = sh.location;
+            h.color = '#dc3545'
             holidays.push(h);
         }
 
