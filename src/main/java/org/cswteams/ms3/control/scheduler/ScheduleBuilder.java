@@ -106,7 +106,7 @@ public class ScheduleBuilder {
             try {
                 this.verificaTuttiVincoli(contesto);
                 selectedUsers.add(contesto.getUtente());
-                allUserScheduleStates.get(contesto.getUtente().getId()).getAssegnazioniTurnoCache().add(contesto.getTurno());
+                allUserScheduleStates.get(contesto.getUtente().getId()).getAssegnazioniTurno().add(contesto.getTurno());
             } catch (ViolatedConstraintException e) {
                 // logghiamo semplicemente l'evento e ignoriamo l'utente inammissibile
                 logger.log(Level.WARNING, e.getMessage(), e);
