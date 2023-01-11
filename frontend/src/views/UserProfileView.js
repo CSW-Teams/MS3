@@ -53,6 +53,15 @@ export default class UserProfileView extends React.Component{
                   <p className="text-muted mb-4">{this.state.ruolo}</p>
                 </MDBCardBody>
               </MDBCard>
+              <MDBCardBody>
+              <MDBRow lg="4">
+                <MDBCard className="mb-4">
+                  <MDBCardBody className="text-center">
+
+                  </MDBCardBody>
+                </MDBCard>
+              </MDBRow>
+                </MDBCardBody>
             </MDBCol>
             <MDBCol lg="8">
               <MDBCard className="mb-4">
