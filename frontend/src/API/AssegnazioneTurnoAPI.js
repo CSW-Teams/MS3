@@ -1,5 +1,5 @@
 import { TurnoAPI } from "./TurnoAPI";
-import {blue, red} from "@material-ui/core/colors";
+import {blue, red, teal} from "@material-ui/core/colors";
 import { AssignedShift } from "./Schedulable";
 
 export  class AssegnazioneTurnoAPI {
@@ -14,29 +14,31 @@ export  class AssegnazioneTurnoAPI {
         let turno = new AssignedShift(
           "Turno in "+  body[i].servizio.nome,
           body[i].inizio,
-          body[i].fine);
+          body[i].fine,
+          teal);
         turno.id = body[i].id;
+        turno.type ="Assigned"
 
         let utenti_guardia = [];
         let utenti_reperibili = [];
 
 
-      for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
-           utenti_guardia[j] = body[i].utentiDiGuardia[j].id;
+        for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
+             utenti_guardia[j] = body[i].utentiDiGuardia[j].id;
+          }
+
+        for (let j = 0; j < body[i].utentiReperibili.length; j++) {
+            utenti_reperibili[j] = body[i].utentiReperibili[j].id;
         }
 
-      for (let j = 0; j < body[i].utentiReperibili.length; j++) {
-          utenti_reperibili[j] = body[i].utentiReperibili[j].id;
-      }
+        turno.utenti_guardia = utenti_guardia;
+        turno.utenti_reperibili = utenti_reperibili;
 
-      turno.utenti_guardia = utenti_guardia;
-      turno.utenti_reperibili = utenti_reperibili;
+        turno.tipologia = body[i].tipologiaTurno;
 
-      turno.tipologia = body[i].tipologiaTurno;
+        turno.servizio = body[i].servizio.nome;
 
-      turno.servizio = body[i].servizio.nome;
-
-      turni[i] = turno;
+        turni[i] = turno;
 
     }
 
@@ -94,7 +96,7 @@ export  class AssegnazioneTurnoAPI {
       const response = await fetch('/api/assegnazioneturni/',requestOptions);
       if(response.status != 202)
         return null
-        
+
       return assegnazioneTurno;
 
   }
@@ -118,9 +120,9 @@ export  class AssegnazioneTurnoAPI {
       requestGeneration.giornoFine= dataEnd.$d.getDate();
       requestGeneration.meseFine = dataEnd.$d.getMonth()+1;
       requestGeneration.annoFine = dataEnd.$d.getFullYear();
-      
+
       console.log(requestGeneration)
-      
+
 
       const requestOptions = {
         method: 'POST',
@@ -131,7 +133,7 @@ export  class AssegnazioneTurnoAPI {
       const response = await fetch('/api/schedule/generation',requestOptions);
       if(response.status != 202)
         return null
-        
+
       return requestGeneration;
 
   }

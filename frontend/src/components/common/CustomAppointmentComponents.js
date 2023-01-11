@@ -11,17 +11,19 @@ import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 
 
+
+
 // AppointmentContent di SingleScheduleView
 export const AppointmentSingleContent = ({
                                     data, formatDate, ...restProps
                                   }) => (
-  <StyledAppointmentsAppointmentContent {...restProps} formatDate={formatDate} data={data}>
+  <StyledAppointmentsAppointmentContent {...restProps} formatDate={formatDate} data={data} >
     <div className={classes.container}>
-      <div className={classes.title}>
+      <div style={{color: data.type === "Holiday" ? "red" : "white","font-family":"sans-serif", "font-weight":"bold"}}>
         {data.title}
       </div>
       <li
-        style={{color: data.turno === "REPERIBILITA'" ? "white" : "red","font-family":"sans-serif", "font-weight":"bold"}}
+        style={{color: data.turno === "REPERIBILITA'" ? "white" : "green","font-family":"sans-serif", "font-weight":"bold"}}
       > {data.turno} </li>
         <li
         > {data.tipologia} </li>
@@ -189,7 +191,7 @@ export const AppointmentContent = ({
                             }) => (
   <StyledAppointmentsAppointmentContent {...restProps} formatDate={formatDate} data={data}>
     <div className={classes.container}>
-      <div className={classes.title}>
+      <div style={{color: data.type === "Holiday" ? "red" : "white","font-family":"sans-serif", "font-weight":"bold"}}>
         {data.title}
       </div>
       <li className={classes.text}>
@@ -205,7 +207,6 @@ export const AppointmentContent = ({
         <div className={classes.time}>
           {formatDate(data.endDate, { hour: 'numeric', minute: 'numeric' })}
         </div>
-
       </li>
     </div>
   </StyledAppointmentsAppointmentContent>
