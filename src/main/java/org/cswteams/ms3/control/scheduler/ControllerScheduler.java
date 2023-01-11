@@ -29,8 +29,6 @@ public class ControllerScheduler implements IControllerScheduler{
     @Autowired
     AssegnazioneTurnoDao assegnazioneTurnoDao;
 
-
-
     private ScheduleBuilder scheduleBuilder;
 
   /** 
@@ -81,7 +79,6 @@ public class ControllerScheduler implements IControllerScheduler{
             utenteDao.findAll() // tutti i candidati da allocare ai turni
             );
 
-        
         return  scheduleDao.save(this.scheduleBuilder.build());
         
     }

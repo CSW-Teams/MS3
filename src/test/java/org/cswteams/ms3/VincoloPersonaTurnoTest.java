@@ -68,8 +68,9 @@ public class VincoloPersonaTurnoTest {
         Utente pregUser = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
         pregUser.getCategorie().add(incinta);
         utenteDao.saveAndFlush(pregUser);
+        UserScheduleState pregUserState = new UserScheduleState(pregUser, null);
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(pregUser,turnoNotturno));
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(pregUserState,turnoNotturno));
     }
 
     @Test(expected=ViolatedConstraintException.class)
@@ -95,9 +96,10 @@ public class VincoloPersonaTurnoTest {
         Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
         over62user.getCategorie().add(over62);
         utenteDao.saveAndFlush(over62user);
+        UserScheduleState over62userState = new UserScheduleState(over62user, null);
         //Verifica il vincolo
         //La persona over62 non può essere aggiunta ai turni  notturni, l'eccezioen deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(over62user,turnoNotturno));
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(over62userState,turnoNotturno));
     }
 
     @Test(expected=ViolatedConstraintException.class)
@@ -121,9 +123,10 @@ public class VincoloPersonaTurnoTest {
         Utente inmalattiauser = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
         inmalattiauser.getCategorie().add(inmalattia);
         utenteDao.saveAndFlush(inmalattiauser);
+        UserScheduleState inmalattiauserState = new UserScheduleState(inmalattiauser, null);
         //Verifica il vincolo
         //La persona in malattia non può essere aggiunta ai turni durante la malattia, quindi l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoMattutinoinmalattia));
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauserState,turnoMattutinoinmalattia));
     }
 
     @Test(expected=ViolatedConstraintException.class)
@@ -147,9 +150,10 @@ public class VincoloPersonaTurnoTest {
         Utente inferieuser = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
         inferieuser.getCategorie().add(inferie);
         utenteDao.saveAndFlush(inferieuser);
+        UserScheduleState inferieuserState = new UserScheduleState(inferieuser, null);
         //Verifica il vincolo
         //La persona in malattia non può essere aggiunta ai turni durante la malattia, quindi l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inferieuser,turnoMattutinoiferie));
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inferieuserState,turnoMattutinoiferie));
     }
 
 

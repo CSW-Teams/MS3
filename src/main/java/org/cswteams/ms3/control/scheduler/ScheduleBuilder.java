@@ -31,7 +31,7 @@ public class ScheduleBuilder {
     /** Lista di vincoli da applicare a ogni coppia AssegnazioneTurno, Utente */
     private List<Vincolo> allConstraints;
 
-    /** Oggetti che raprresentano lo stato relativo alla costruzione della pianificazione
+    /** Oggetti che rappresentano lo stato relativo alla costruzione della pianificazione
      * per ogni utente partecipante
      */
     private Map<Long, UserScheduleState> allUserScheduleStates;
@@ -93,20 +93,20 @@ public class ScheduleBuilder {
         
         List<Utente> selectedUsers = new ArrayList<>();
         
-        for (long id : allUserScheduleStates.keySet()){
+        for (UserScheduleState userScheduleState : allUserScheduleStates.values()){
             if (selectedUsers.size() == numUtenti){
                 break;
             }
             //Se viene passato un set di utenti non ammessi (utenti di guardia) allora li esclude
-            if (NotAllowedSet!=null && NotAllowedSet.contains(allUserScheduleStates.get(id).getUtente())) {
+            if (NotAllowedSet!=null && NotAllowedSet.contains(userScheduleState.getUtente())) {
                 continue;
             }
-            ContestoVincolo contesto = new ContestoVincolo(allUserScheduleStates.get(id).getUtente(),assegnazione);
+            ContestoVincolo contesto = new ContestoVincolo(userScheduleState,assegnazione);
             // Se l'utente rispetta tutti i vincoli possiamo includerlo nella lista desiderata
             try {
                 this.verificaTuttiVincoli(contesto);
-                selectedUsers.add(contesto.getUtente());
-                allUserScheduleStates.get(contesto.getUtente().getId()).getAssegnazioniTurno().add(contesto.getTurno());
+                selectedUsers.add(userScheduleState.getUtente());
+                userScheduleState.getAssegnazioniTurno().add(contesto.getTurno());
             } catch (ViolatedConstraintException e) {
                 // logghiamo semplicemente l'evento e ignoriamo l'utente inammissibile
                 logger.log(Level.WARNING, e.getMessage(), e);
@@ -148,7 +148,7 @@ public class ScheduleBuilder {
         for (Utente u : at.getUtenti()){
             
             try {
-                verificaTuttiVincoli(new ContestoVincolo(u, at));
+                verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
             } catch (ViolatedConstraintException e) {
                 throw new IllegalAssegnazioneTurnoException(e);
             }
