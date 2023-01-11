@@ -148,7 +148,6 @@ class ScheduleView extends React.Component{
       }
 
 
-
     render(){
 
         // add shifts to the schedulables to display
@@ -232,7 +231,7 @@ class ScheduleView extends React.Component{
                 <MonthView displayName="Mensile" />
                 <Toolbar />
                 <Appointments appointmentContentComponent={this.state.appointmentContentComponent} />
-                <AllDayPanel/>
+                <AllDayPanel />
                 <Resources
                   data={resources}
                 />
