@@ -2,15 +2,16 @@ export class CategoriaUtenteAPI {
   constructor() {
   }
   async getCategoriaUtente(idUtente) {
-    const response = await fetch('/api/categoria/utente_id='+idUtente);
+    const response = await fetch('/api/categorie/utente_id='+idUtente);
     const body = await response.json();
-
     const categorie = [];
 
     for (let i = 0; i < body.length; i++) {
-      categorie[i].categoria = body[i].categoria
-      categorie[i].inizio = body[i].inizioValidita
-      categorie[i].fine = body[i].fineValidita
+      let categoria = new Object();
+      categoria.categoria = body[i].categoria
+      categoria.inizio = body[i].inizioValidita
+      categoria.fine = body[i].fineValidita
+      categorie[i]=categoria
     }
 
     console.log(categorie)
