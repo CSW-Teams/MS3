@@ -2,8 +2,10 @@ package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +34,7 @@ public class ScheduleBuilder {
     /** Oggetti che raprresentano lo stato relativo alla costruzione della pianificazione
      * per ogni utente partecipante
      */
-    private List<UserScheduleState> allUserScheduleStates;
+    private Map<Long, UserScheduleState> allUserScheduleStates;
 
     /** Pianificazione in costruzione */
     private Schedule schedule;
@@ -42,7 +44,7 @@ public class ScheduleBuilder {
         this.schedule = new Schedule(startDate, endDate);
         this.schedule.setAssegnazioniTurno(allAssignedShifts);
         this.allConstraints = allConstraints;
-        this.allUserScheduleStates = new ArrayList<>();
+        this.allUserScheduleStates = new HashMap<>();
         initializeUserScheduleStates(users);
     }
 
@@ -51,10 +53,10 @@ public class ScheduleBuilder {
         
         for (Utente u : users){
             UserScheduleState usstate = new UserScheduleState(u, schedule);
-            allUserScheduleStates.add(usstate);
+            allUserScheduleStates.put(u.getId(), usstate);
         }        
     }
-
+    
     /** invoca la creazione automatica della pianificazione 
      * @throws UnableToBuildScheduleException
      * */
@@ -66,6 +68,9 @@ public class ScheduleBuilder {
                 // Prima pensiamo a riempire la guardia, che è la più importante
                 utentiGuardia = this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia(), null);
                 at.setUtentiDiGuardia(utentiGuardia);
+                for (Utente u : utentiGuardia){
+                    allUserScheduleStates.get(u.getId()).getAssegnazioniTurnoCache().add(at);
+                }
             } catch (NotEnoughFeasibleUsersException e) {
                 throw new UnableToBuildScheduleException("unable to select utenti di guardia", e);
             }
@@ -87,23 +92,27 @@ public class ScheduleBuilder {
     private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
         
         List<Utente> selectedUsers = new ArrayList<>();
-
-        for (int i = 0; i < allUserScheduleStates.size() && selectedUsers.size() < numUtenti; i ++){
+        
+        for (long id : allUserScheduleStates.keySet()){
+            if (selectedUsers.size() == numUtenti){
+                break;
+            }
             //Se viene passato un set di utenti non ammessi (utenti di guardia) allora li esclude
-            if (NotAllowedSet!=null && NotAllowedSet.contains(allUserScheduleStates.get(i).getUtente())) {
+            if (NotAllowedSet!=null && NotAllowedSet.contains(allUserScheduleStates.get(id).getUtente())) {
                 continue;
             }
-            ContestoVincolo contesto = new ContestoVincolo(allUserScheduleStates.get(i).getUtente(),assegnazione);
+            ContestoVincolo contesto = new ContestoVincolo(allUserScheduleStates.get(id).getUtente(),assegnazione);
             // Se l'utente rispetta tutti i vincoli possiamo includerlo nella lista desiderata
             try {
                 this.verificaTuttiVincoli(contesto);
                 selectedUsers.add(contesto.getUtente());
+                allUserScheduleStates.get(contesto.getUtente().getId()).getAssegnazioniTurnoCache().add(contesto.getTurno());
             } catch (ViolatedConstraintException e) {
                 // logghiamo semplicemente l'evento e ignoriamo l'utente inammissibile
                 logger.log(Level.WARNING, e.getMessage(), e);
             }
         }
-
+        
         // potrei aver finito senza aver trovato abbastanza utenti
         if (selectedUsers.size() != numUtenti){
             throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers.size());
