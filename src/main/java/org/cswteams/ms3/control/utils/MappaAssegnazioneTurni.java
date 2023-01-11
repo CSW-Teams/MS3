@@ -5,7 +5,6 @@ import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
-import org.cswteams.ms3.exception.TurnoException;
 
 import java.sql.Timestamp;
 import java.time.*;

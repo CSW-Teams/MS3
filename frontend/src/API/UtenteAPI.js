@@ -1,4 +1,4 @@
-import {teal,blue} from '@mui/material/colors';
+import {teal, blue, red} from '@mui/material/colors';
 
 export  class UtenteAPI {
   constructor() {
@@ -22,7 +22,25 @@ export  class UtenteAPI {
 
   }
 
-  async getAllUserOnlyNameSurname() {
+  async getUserDetails(id){
+    const response = await fetch('/api/utenti/utente_id=' + id);
+    const body = await response.json();
+
+    const utente = new Object();
+
+    utente.label = body.nome+" "+body.cognome;
+    utente.id = body.id;
+    utente.nome = body.nome;
+    utente.cognome = body.cognome;
+    utente.dataNascita = body.dataNascita;
+    utente.codiceFiscale = body.codiceFiscale;
+    utente.ruoloEnum = body.ruoloEnum;
+    utente.email = body.email;
+    return utente;
+
+  }
+
+  async getAllUsersInfo() {
     const response = await fetch('/api/utenti/');
     const body = await response.json();
 

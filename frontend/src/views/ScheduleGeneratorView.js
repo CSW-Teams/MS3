@@ -3,6 +3,9 @@ import Button from '@mui/material/Button';
 import BasicDatePicker from '../components/common/DataPicker';
 import Stack from '@mui/material/Stack';
 import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
+import {Alert} from "@mui/lab";
+import {Collapse} from "shards-react";
+import {IconButton, Snackbar} from "@mui/material";
 
 /*
 * Schermata che permette di generare un nuovo schedulo
@@ -12,7 +15,9 @@ export class SchedulerGeneratorView extends React.Component{
         super(props);
         this.state = {
             dataStart: "",
-            dataEnd: ""
+            dataEnd: "",
+            generationDone: ""
+
         }
 
     }
@@ -31,9 +36,9 @@ export class SchedulerGeneratorView extends React.Component{
         let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
         let assegnazione = await assegnazioneTurnoAPI.postGenerationSchedule(this.state.dataStart,this.state.dataEnd)
         if(assegnazione==null){
-           alert('errore generazione pianificazione');
+          this.setState({generationDone: "-1"})
         }else{
-          alert('pianificazione creata');
+          this.setState({generationDone: "1"})
       }
 
 
@@ -41,6 +46,14 @@ export class SchedulerGeneratorView extends React.Component{
 
 
     render(){
+      const generationDone = this.state.generationDone
+      let alert
+      if(generationDone === "-1"){
+        alert = <Alert severity="error" onClose={() => {}}>Errore nella generazione della pianificazione</Alert>
+      }else if(generationDone === "1"){
+        alert = <Alert severity="success">Pianificazione generata con successo</Alert>
+      }
+
         return (
             <div style={{
                 display: 'flex',
@@ -60,6 +73,7 @@ export class SchedulerGeneratorView extends React.Component{
                 <Button variant="contained" size="small" onClick={this.handleOnClick} >
                   Genera Pianificazione
                 </Button>
+                {alert}
             </Stack>
 
             </div>

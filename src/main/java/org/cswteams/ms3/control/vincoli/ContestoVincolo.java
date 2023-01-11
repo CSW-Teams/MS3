@@ -1,25 +1,19 @@
 package org.cswteams.ms3.control.vincoli;
 
+import lombok.Data;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.UserScheduleState;
 
+@Data
 public class ContestoVincolo {
 
-    private Utente utente;
+    private UserScheduleState userScheduleState;
 
     private AssegnazioneTurno turno;
 
-    public ContestoVincolo(Utente utente, AssegnazioneTurno turno){
+    public ContestoVincolo(UserScheduleState utente, AssegnazioneTurno turno){
         this.turno = turno;
-        this.utente = utente;
+        this.userScheduleState = utente;
     }
 
-    public Utente getUtente() {
-
-        return utente;
-    }
-
-    public AssegnazioneTurno getTurno() {
-        return turno;
-    }
 }

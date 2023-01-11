@@ -1,9 +1,8 @@
 import {styled} from "@mui/material/styles";
 import {getAppointmentColor, getResourceColor} from "../../utils/utils";
 import {Appointments} from "@devexpress/dx-react-scheduler-material-ui";
-import {Grid} from "@mui/material";
-import {FormatItalic, Room} from "@mui/icons-material";
-import {lightBlue} from "@mui/material/colors";
+import {lightBlue, red} from "@mui/material/colors";
+import {blue, teal} from "@material-ui/core/colors";
 const PREFIX_TOOLTIP = 'Content';
 
 // Usare gli stili di queste classi per uniformare le viste
@@ -42,8 +41,10 @@ export const classes = {
   text: `${PREFIX}-text`,
   container: `${PREFIX}-container`,
   weekendCell: `${PREFIX}-weekendCell`,
-  weekEnd: `${PREFIX}-weekEnd`, type: "--type"
-
+  weekEnd: `${PREFIX}-weekEnd`, type: "--type",
+  content: `${PREFIX}-content`,
+  Holiday: `${PREFIX}-content`,
+  Normal: `${PREFIX}-content`
 };
 
 //Stile di Div
@@ -131,6 +132,11 @@ export const StyledAppointmentsAppointmentContent = styled(Appointments.Appointm
     whiteSpace: 'nowrap',
     labelTextColor: lightBlue,
   },
+  [`& .${classes.content}`]: {
+    fontSize: 12,
+    fontWeight: 500,
+    opacity: 0.7,
+  },
   [`& .${classes.textContainer}`]: {
     lineHeight: 1,
     whiteSpace: 'pre-wrap',
@@ -150,6 +156,12 @@ export const StyledAppointmentsAppointmentContent = styled(Appointments.Appointm
   },
   [`& .${classes.container}`]: {
     width: '100%',
+  },
+  [`&.${classes.Holiday}`]: {
+    borderLeft: `4px solid ${red[500]}`,
+  },
+  [`&.${classes.Normal}`]: {
+    borderLeft: `4px solid ${teal[500]}`,
   },
 }));
 

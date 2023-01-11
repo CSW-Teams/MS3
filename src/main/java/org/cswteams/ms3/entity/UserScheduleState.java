@@ -1,12 +1,9 @@
 package org.cswteams.ms3.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.*;
 
 import lombok.Data;
 
@@ -33,8 +30,25 @@ public class UserScheduleState {
     @OneToOne
     private Schedule schedule;
 
-    /** Quante ore sono state pianificate per questo utente in questa pianificazione */
-    private int scheduledHours;
+    /** tutti i turni assegnati a questo utente nella pianificazione corrente */
+    @Transient
+    List<AssegnazioneTurno> assegnazioniTurnoCache;
+
+    public List<AssegnazioneTurno> getAssegnazioniTurno(){
+        
+        if (assegnazioniTurnoCache == null){
+            this.assegnazioniTurnoCache = new ArrayList<>();
+            for (AssegnazioneTurno at: schedule.getAssegnazioniTurno()){
+                for (Utente collega : at.getUtenti()){
+                    if (collega.getId() == this.utente.getId()){
+                        assegnazioniTurnoCache.add(at);
+                        break;
+                    }
+                }
+            }
+        }
+        return assegnazioniTurnoCache;
+    }
 
     public UserScheduleState() {
     }
@@ -42,6 +56,5 @@ public class UserScheduleState {
     public UserScheduleState(Utente utente, Schedule schedule) {
         this.utente = utente;
         this.schedule = schedule;
-        this.scheduledHours = 0;
     }
 }

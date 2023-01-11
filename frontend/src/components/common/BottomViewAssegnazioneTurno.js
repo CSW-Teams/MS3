@@ -28,7 +28,7 @@ export default function TemporaryDrawer(props) {
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
     let userApi = new UtenteAPI();
-    let utenti = await userApi.getAllUserOnlyNameSurname()
+    let utenti = await userApi.getAllUsersInfo()
     setUser(utenti);
   }
 

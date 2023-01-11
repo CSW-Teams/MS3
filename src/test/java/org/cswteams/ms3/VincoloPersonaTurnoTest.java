@@ -2,20 +2,18 @@ package org.cswteams.ms3;
 
 import org.cswteams.ms3.control.vincoli.ContestoVincolo;
 import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
-import org.cswteams.ms3.control.vincoli.ViolatedConstraintException;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
@@ -70,8 +68,9 @@ public class VincoloPersonaTurnoTest {
         Utente pregUser = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
         pregUser.getCategorie().add(incinta);
         utenteDao.saveAndFlush(pregUser);
+        UserScheduleState pregUserState = new UserScheduleState(pregUser, null);
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(pregUser,turnoNotturno));
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(pregUserState,turnoNotturno));
     }
 
     @Test(expected=ViolatedConstraintException.class)
@@ -97,9 +96,10 @@ public class VincoloPersonaTurnoTest {
         Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
         over62user.getCategorie().add(over62);
         utenteDao.saveAndFlush(over62user);
+        UserScheduleState over62userState = new UserScheduleState(over62user, null);
         //Verifica il vincolo
         //La persona over62 non può essere aggiunta ai turni  notturni, l'eccezioen deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(over62user,turnoNotturno));
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(over62userState,turnoNotturno));
     }
 
     @Test(expected=ViolatedConstraintException.class)
@@ -123,9 +123,10 @@ public class VincoloPersonaTurnoTest {
         Utente inmalattiauser = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
         inmalattiauser.getCategorie().add(inmalattia);
         utenteDao.saveAndFlush(inmalattiauser);
+        UserScheduleState inmalattiauserState = new UserScheduleState(inmalattiauser, null);
         //Verifica il vincolo
         //La persona in malattia non può essere aggiunta ai turni durante la malattia, quindi l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauser,turnoMattutinoinmalattia));
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauserState,turnoMattutinoinmalattia));
     }
 
     @Test(expected=ViolatedConstraintException.class)
@@ -149,9 +150,10 @@ public class VincoloPersonaTurnoTest {
         Utente inferieuser = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
         inferieuser.getCategorie().add(inferie);
         utenteDao.saveAndFlush(inferieuser);
+        UserScheduleState inferieuserState = new UserScheduleState(inferieuser, null);
         //Verifica il vincolo
         //La persona in malattia non può essere aggiunta ai turni durante la malattia, quindi l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inferieuser,turnoMattutinoiferie));
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inferieuserState,turnoMattutinoiferie));
     }
 
 

@@ -123,8 +123,9 @@ class ScheduleView extends React.Component{
     }
 
     async componentDidMount(turni, utenti){
+
       let allServices = await new ServizioAPI().getService();
-      let allUser = await new UtenteAPI().getAllUserOnlyNameSurname();
+      let allUser = await new UtenteAPI().getAllUsersInfo();
       let allHolidays = await new HolidaysAPI().getHolidays();
 
 
@@ -148,7 +149,6 @@ class ScheduleView extends React.Component{
       }
 
 
-
     render(){
 
         // add shifts to the schedulables to display
@@ -164,7 +164,6 @@ class ScheduleView extends React.Component{
 
         // add holidays to the schedulables to display
         data.push(...this.state.holidays);
-        console.log(this.state.holidays);
 
         return (
           <React.Fragment>
@@ -233,7 +232,7 @@ class ScheduleView extends React.Component{
                 <MonthView displayName="Mensile" />
                 <Toolbar />
                 <Appointments appointmentContentComponent={this.state.appointmentContentComponent} />
-                <AllDayPanel/>
+                <AllDayPanel />
                 <Resources
                   data={resources}
                 />

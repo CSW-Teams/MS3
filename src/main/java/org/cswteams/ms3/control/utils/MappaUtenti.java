@@ -21,11 +21,12 @@ public class MappaUtenti {
         return utenti;
     }
 
+
     public static UtenteDTO utenteEntitytoDTO(Utente utente) {
         return new UtenteDTO(utente.getId(),utente.getNome(),utente.getCognome(),utente.getDataNascita(), utente.getCodiceFiscale(), utente.getRuoloEnum(), utente.getEmail(), utente.getCategorie());
     }
 
-    public static Set<UtenteDTO> utenteEntitytoDTO(Set<Utente> utenti){
+    public static Set<UtenteDTO> utentiEntitytoDTO(Set<Utente> utenti){
         Set<UtenteDTO> utenteDTOS = new HashSet<>();
         for (Utente entity: utenti){
             utenteDTOS.add(utenteEntitytoDTO(entity));
@@ -33,7 +34,7 @@ public class MappaUtenti {
         return utenteDTOS;
     }
 
-    public static Set<UtenteDTO> utenteEntitytoDTO(List<Utente> utenti){
+    public static Set<UtenteDTO> utentiEntitytoDTO(List<Utente> utenti){
         Set<UtenteDTO> utenteDTOS = new HashSet<>();
         for (Utente entity: utenti){
             utenteDTOS.add(utenteEntitytoDTO(entity));

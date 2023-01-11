@@ -2,8 +2,10 @@ package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,7 +13,10 @@ import java.util.logging.Logger;
 import lombok.experimental.Accessors;
 import org.cswteams.ms3.control.vincoli.ContestoVincolo;
 import org.cswteams.ms3.control.vincoli.Vincolo;
-import org.cswteams.ms3.control.vincoli.ViolatedConstraintException;
+import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
+import org.cswteams.ms3.exception.NotEnoughFeasibleUsersException;
+import org.cswteams.ms3.exception.UnableToBuildScheduleException;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.UserScheduleState;
@@ -27,10 +32,10 @@ public class ScheduleBuilder {
     /** Lista di vincoli da applicare a ogni coppia AssegnazioneTurno, Utente */
     private List<Vincolo> allConstraints;
 
-    /** Oggetti che raprresentano lo stato relativo alla costruzione della pianificazione
+    /** Oggetti che rappresentano lo stato relativo alla costruzione della pianificazione
      * per ogni utente partecipante
      */
-    private List<UserScheduleState> allUserScheduleStates;
+    private Map<Long, UserScheduleState> allUserScheduleStates;
 
     /** Pianificazione in costruzione */
     private Schedule schedule;
@@ -40,22 +45,8 @@ public class ScheduleBuilder {
         this.schedule = new Schedule(startDate, endDate);
         this.schedule.setAssegnazioniTurno(allAssignedShifts);
         this.allConstraints = allConstraints;
-        this.allUserScheduleStates = new ArrayList<>();
+        this.allUserScheduleStates = new HashMap<>();
         initializeUserScheduleStates(users);
-    }
-
-    /**
-     * Questo costruttore verrà utilizzato per creare un builder nel momento in cui uno schedulo già è esistente.
-     * Uno scenario tipico è quando si vuole aggiungere un asssegnazione turno ad uno schedulo già esistente
-     * @param allConstraints
-     * @param allUser
-     * @param schedule
-     */
-    public ScheduleBuilder(List<Vincolo> allConstraints, List<Utente> allUser, Schedule schedule) {
-        this.allConstraints = allConstraints;
-        this.allUserScheduleStates = new ArrayList<>();
-        initializeUserScheduleStates(allUser);
-        this.schedule = schedule;
     }
 
     /** Imposta stato per tutti gli utenti disponibili per la pianificazione */
@@ -63,7 +54,7 @@ public class ScheduleBuilder {
         
         for (Utente u : users){
             UserScheduleState usstate = new UserScheduleState(u, schedule);
-            allUserScheduleStates.add(usstate);
+            allUserScheduleStates.put(u.getId(), usstate);
         }        
     }
 
@@ -80,6 +71,9 @@ public class ScheduleBuilder {
                 // Prima pensiamo a riempire la guardia, che è la più importante
                 utentiGuardia = this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia(), null);
                 at.setUtentiDiGuardia(utentiGuardia);
+                for (Utente u : utentiGuardia){
+                    allUserScheduleStates.get(u.getId()).getAssegnazioniTurnoCache().add(at);
+                }
             } catch (NotEnoughFeasibleUsersException e) {
                 throw new UnableToBuildScheduleException("unable to select utenti di guardia", e);
             }
@@ -101,23 +95,27 @@ public class ScheduleBuilder {
     private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
         
         List<Utente> selectedUsers = new ArrayList<>();
-
-        for (int i = 0; i < allUserScheduleStates.size() && selectedUsers.size() < numUtenti; i ++){
+        
+        for (UserScheduleState userScheduleState : allUserScheduleStates.values()){
+            if (selectedUsers.size() == numUtenti){
+                break;
+            }
             //Se viene passato un set di utenti non ammessi (utenti di guardia) allora li esclude
-            if (NotAllowedSet!=null && NotAllowedSet.contains(allUserScheduleStates.get(i).getUtente())) {
+            if (NotAllowedSet!=null && NotAllowedSet.contains(userScheduleState.getUtente())) {
                 continue;
             }
-            ContestoVincolo contesto = new ContestoVincolo(allUserScheduleStates.get(i).getUtente(),assegnazione);
+            ContestoVincolo contesto = new ContestoVincolo(userScheduleState,assegnazione);
             // Se l'utente rispetta tutti i vincoli possiamo includerlo nella lista desiderata
             try {
                 this.verificaTuttiVincoli(contesto);
-                selectedUsers.add(contesto.getUtente());
+                selectedUsers.add(userScheduleState.getUtente());
+                userScheduleState.getAssegnazioniTurno().add(contesto.getTurno());
             } catch (ViolatedConstraintException e) {
                 // logghiamo semplicemente l'evento e ignoriamo l'utente inammissibile
                 logger.log(Level.WARNING, e.getMessage(), e);
             }
         }
-
+        
         // potrei aver finito senza aver trovato abbastanza utenti
         if (selectedUsers.size() != numUtenti){
             throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers.size());
@@ -153,7 +151,7 @@ public class ScheduleBuilder {
         for (Utente u : at.getUtenti()){
 
             try {
-                verificaTuttiVincoli(new ContestoVincolo(u, at));
+                verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
             } catch (ViolatedConstraintException e) {
                 throw new IllegalAssegnazioneTurnoException(e);
             }

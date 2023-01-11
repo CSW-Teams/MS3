@@ -1,5 +1,5 @@
 import { TurnoAPI } from "./TurnoAPI";
-import {blue, red} from "@material-ui/core/colors";
+import {blue, red, teal} from "@material-ui/core/colors";
 import { AssignedShift } from "./Schedulable";
 
 export  class AssegnazioneTurnoAPI {
@@ -14,23 +14,25 @@ export  class AssegnazioneTurnoAPI {
         let turno = new AssignedShift(
           "Turno in "+  body[i].servizio.nome,
           body[i].inizio,
-          body[i].fine);
+          body[i].fine,
+          teal);
         turno.id = body[i].id;
+        turno.type ="Assigned"
 
         let utenti_guardia = [];
         let utenti_reperibili = [];
 
 
-      for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
-           utenti_guardia[j] = body[i].utentiDiGuardia[j].id;
+        for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
+             utenti_guardia[j] = body[i].utentiDiGuardia[j].id;
+          }
+
+        for (let j = 0; j < body[i].utentiReperibili.length; j++) {
+            utenti_reperibili[j] = body[i].utentiReperibili[j].id;
         }
 
-      for (let j = 0; j < body[i].utentiReperibili.length; j++) {
-          utenti_reperibili[j] = body[i].utentiReperibili[j].id;
-      }
-
-      turno.utenti_guardia = utenti_guardia;
-      turno.utenti_reperibili = utenti_reperibili;
+        turno.utenti_guardia = utenti_guardia;
+        turno.utenti_reperibili = utenti_reperibili;
 
       turno.tipologia = body[i].tipologiaTurno;
       turno.servizio = body[i].servizio.nome;
@@ -124,7 +126,7 @@ export  class AssegnazioneTurnoAPI {
       const response = await fetch('/api/schedule/generation',requestOptions);
       if(response.status != 202)
         return null
-        
+
       return requestGeneration;
 
   }
