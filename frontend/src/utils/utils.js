@@ -58,6 +58,7 @@ export const getResourceColor = (resources) => {
 };
 
 export const getAppointmentColor = (level, color, defaultColor) => {
+  console.log(color)
   if (!color) return ensureColor(level, defaultColor);
   if (typeof color === 'string') return color;
   return ensureColor(level, color);

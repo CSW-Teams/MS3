@@ -18,12 +18,18 @@ public class ControllerUtente implements IControllerUtente {
     @Override
     public Set<UtenteDTO> leggiUtenti() {
         List<Utente> utentiList = utenteDao.findAll();
-        return MappaUtenti.utenteEntitytoDTO(utentiList);
+        return MappaUtenti.utentiEntitytoDTO(utentiList);
     }
 
     @Override
     public Object creaUtente(UtenteDTO s) {
         return utenteDao.save(MappaUtenti.utenteDTOtoEntity(s));
+    }
+
+    @Override
+    public UtenteDTO leggiUtente(long idUtente) {
+        Utente utente = utenteDao.findById(idUtente);
+        return  MappaUtenti.utenteEntitytoDTO(utente);
     }
 
 }
