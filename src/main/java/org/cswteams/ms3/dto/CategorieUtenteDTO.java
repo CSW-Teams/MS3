@@ -10,16 +10,16 @@ public class CategorieUtenteDTO {
 
     private CategoriaUtentiEnum categoria;
 
-    private LocalDate inizioValidità;
+    private LocalDate inizioValidita;
 
-    private LocalDate fineValidità;
+    private LocalDate fineValidita;
 
     public CategorieUtenteDTO() {
     }
 
-    public CategorieUtenteDTO(CategoriaUtentiEnum categoria, LocalDate inizioValidità, LocalDate fineValidità) {
+    public CategorieUtenteDTO(CategoriaUtentiEnum categoria, LocalDate inizioValidita, LocalDate fineValidita) {
         this.categoria=categoria;
-        this.inizioValidità=inizioValidità;
-        this.fineValidità=fineValidità;
+        this.inizioValidita = inizioValidita;
+        this.fineValidita = fineValidita;
     }
 }

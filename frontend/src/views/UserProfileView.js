@@ -23,14 +23,13 @@ export default class UserProfileView extends React.Component{
 
   }
   async componentDidMount() {
-    let utenti = await (new UtenteAPI()).getAllUserOnlyNameSurname();
-    console.log(utenti)
+    let utente = await(new UtenteAPI().getUserDetails(7));
     this.setState({
-      nome: utenti.at(0).nome,
-      cognome: utenti.at(0).cognome,
-      ruolo: utenti.at(0).ruoloEnum,
-      email: utenti.at(0).email,
-      dataNascita: utenti.at(0).dataNascita
+      nome: utente.nome,
+      cognome: utente.cognome,
+      ruolo: utente.ruoloEnum,
+      email: utente.email,
+      dataNascita: utente.dataNascita
     })
   }
 

@@ -1,15 +1,11 @@
 package org.cswteams.ms3.control.utils;
 
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
-import org.cswteams.ms3.exception.TurnoException;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -43,8 +39,8 @@ public class MappaAssegnazioneTurni {
 
         Timestamp timestampInizio = new Timestamp(dateinizio.getTime());
         Timestamp timestampFine = new Timestamp(datefine.getTime());
-        Set<UtenteDTO> diGuardiaDto = MappaUtenti.utenteEntitytoDTO(entity.getUtentiDiGuardia());
-        Set<UtenteDTO> reperibiliDto = MappaUtenti.utenteEntitytoDTO(entity.getUtentiReperibili());
+        Set<UtenteDTO> diGuardiaDto = MappaUtenti.utentiEntitytoDTO(entity.getUtentiDiGuardia());
+        Set<UtenteDTO> reperibiliDto = MappaUtenti.utentiEntitytoDTO(entity.getUtentiReperibili());
         AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(), entity.getTurno().getId(), timestampInizio, timestampFine, diGuardiaDto, reperibiliDto, MappaServizio.servizioEntitytoDTO(entity.getTurno().getServizio()), entity.getTurno().getTipologiaTurno());
         return dto;
     }
