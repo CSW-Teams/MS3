@@ -8,6 +8,7 @@ import org.cswteams.ms3.exception.TurnoException;
 
 import javax.persistence.*;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -88,6 +89,13 @@ public class Turno {
     public Turno() {
     }
 
+    public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt, Set<CategoriaUtentiEnum> es) {
+        this.oraFine=oi;
+        this.oraInizio=of;
+        this.tipologiaTurno=tt;
+        this.categorieVietate=es;
+        this.servizio=servizio;
+    }
 
 
     public void setGiornoSuccessivo(){
