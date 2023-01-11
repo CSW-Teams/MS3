@@ -9,6 +9,8 @@ import GlobalScheduleView from "./views/GlobalScheduleView";
 import { SchedulerGeneratorView } from "./views/ScheduleGeneratorView";
 import SingleScheduleView from "./views/SingleScheduleView";
 import UserProfileView from "./views/UserProfileView"
+import UserProfilesView from "./views/UserProfilesView"
+
 
 export default [
   {
@@ -36,6 +38,11 @@ export default [
     path: "/user-profile",
     layout: DefaultLayout,
     component: UserProfileView
+  },
+  {
+    path: "/info-utenti",
+    layout: DefaultLayout,
+    component: UserProfilesView
   }
 ];
 

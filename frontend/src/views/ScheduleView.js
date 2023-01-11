@@ -123,8 +123,9 @@ class ScheduleView extends React.Component{
     }
 
     async componentDidMount(turni, utenti){
+
       let allServices = await new ServizioAPI().getService();
-      let allUser = await new UtenteAPI().getAllUserOnlyNameSurname();
+      let allUser = await new UtenteAPI().getAllUsersInfo();
       let allHolidays = await new HolidaysAPI().getHolidays();
 
 

@@ -40,7 +40,7 @@ export  class UtenteAPI {
 
   }
 
-  async getAllUserOnlyNameSurname() {
+  async getAllUsersInfo() {
     const response = await fetch('/api/utenti/');
     const body = await response.json();
 

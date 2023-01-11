@@ -17,7 +17,6 @@ import {
   MDBBtnGroup, MDBCardTitle
 } from "mdb-react-ui-kit";
 import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
-import {Button, Table} from "@material-ui/core";
 
 
 export default class UserProfileView extends React.Component{
