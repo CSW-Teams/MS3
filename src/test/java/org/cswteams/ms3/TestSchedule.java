@@ -2,7 +2,7 @@ package org.cswteams.ms3;
 
 import org.cswteams.ms3.config.ApplicationStartup;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
-import org.cswteams.ms3.control.scheduler.UnableToBuildScheduleException;
+import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.CategoriaUtentiEnum;

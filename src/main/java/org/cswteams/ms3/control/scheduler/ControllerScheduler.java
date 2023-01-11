@@ -9,6 +9,7 @@ import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;import org.cswteams.
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +49,7 @@ public class ControllerScheduler implements IControllerScheduler{
     }
     
     @Override
-    public Schedule createSchedule(LocalDate startDate, LocalDate endDate) throws UnableToBuildScheduleException{
+    public Schedule createSchedule(LocalDate startDate, LocalDate endDate) throws UnableToBuildScheduleException {
 
         //Data che uso per scorre l'intervallo di giorni
         LocalDate currentDay = startDate;

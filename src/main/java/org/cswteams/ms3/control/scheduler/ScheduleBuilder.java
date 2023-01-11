@@ -10,7 +10,10 @@ import java.util.logging.Logger;
 
 import org.cswteams.ms3.control.vincoli.ContestoVincolo;
 import org.cswteams.ms3.control.vincoli.Vincolo;
-import org.cswteams.ms3.control.vincoli.ViolatedConstraintException;
+import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
+import org.cswteams.ms3.exception.NotEnoughFeasibleUsersException;
+import org.cswteams.ms3.exception.UnableToBuildScheduleException;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.UserScheduleState;

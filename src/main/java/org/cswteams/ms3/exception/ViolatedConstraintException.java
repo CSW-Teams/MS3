@@ -1,4 +1,4 @@
-package org.cswteams.ms3.control.vincoli;
+package org.cswteams.ms3.exception;
 
 public class ViolatedConstraintException extends Exception{
 

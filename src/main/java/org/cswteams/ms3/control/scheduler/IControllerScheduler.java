@@ -3,6 +3,7 @@ package org.cswteams.ms3.control.scheduler;
 import java.time.LocalDate;
 
 import org.cswteams.ms3.entity.Schedule;
+import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 
 /**
  * Questo controller si occupa di gestire le richieste di creazione di

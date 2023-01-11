@@ -1,4 +1,4 @@
-package org.cswteams.ms3.control.scheduler;
+package org.cswteams.ms3.exception;
 
 public class IllegalAssegnazioneTurnoException extends Exception{
 

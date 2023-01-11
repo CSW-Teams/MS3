@@ -1,10 +1,8 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
-import org.cswteams.ms3.control.scheduler.UnableToBuildScheduleException;
-import org.cswteams.ms3.control.utente.IControllerUtente;
+import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.dto.GenerazioneScheduloDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Set;
 
 @RestController
 @RequestMapping("/schedule/")

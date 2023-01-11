@@ -4,6 +4,8 @@ import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.CategoriaUtente;
 import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.enums.CategoriaUtentiEnum;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
+import org.cswteams.ms3.exception.ViolatedVincoloPersonaTurnoException;
 
 import java.util.List;
 
@@ -24,6 +26,6 @@ public class VincoloPersonaTurno implements Vincolo {
                 }
             }
         }
-        return ;
+
     }
 }
