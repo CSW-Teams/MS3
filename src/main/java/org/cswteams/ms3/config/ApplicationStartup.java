@@ -20,9 +20,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
 import java.time.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -60,7 +57,20 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         populateDB();
+        registerHolidays();
         //populateDBTestSchedule();
+    }
+
+    private void registerHolidays(){
+        try {
+            LoadHoliday();
+        } catch (IOException e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, e.getMessage());
+        }
+
+        // registra le domeniche nel ventennio 2013-2033
+        holidayController.registerSundays(LocalDate.of(2013, 1, 1), 20);
+
     }
 
     private void populateDBTestSchedule() {
@@ -109,13 +119,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         turnoDao.save(t3);
         turnoDao.save(t4);
         turnoDao.save(t5);
-
-        try {
-            LoadHoliday();
-        } catch (IOException e) {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, e.getMessage());
-        }
-
     }
 
     private void populateDB(){
@@ -295,11 +298,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t5,setUtenti1,setUtenti3));
 
-        try {
-            LoadHoliday();
-        } catch (IOException e) {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, e.getMessage());
-        }
 
     }
 

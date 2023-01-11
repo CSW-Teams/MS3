@@ -1,11 +1,13 @@
 package org.cswteams.ms3.control.preferenze;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
 import org.cswteams.ms3.dao.HolidayDao;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.Holiday;
+import org.cswteams.ms3.enums.HolidayCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,37 @@ public class HolidayController implements IHolidayController {
      
     @Autowired
     private HolidayDao holidayDao;
+    
+    /**
+     * Registra le domeniche come festività per il numero di anni specificato
+     * a partire dalla data specificata.
+     * @param years
+     */
+    public void registerSundays(LocalDate start, int years) {
+
+        LocalDate sunday;
+        HolidayDTO sundayDTO = new HolidayDTO();
+
+        // we move the start date back in time if the repeat is in the past
+        if (years < 0){
+            start = start.plusYears(years);
+            years = -years;
+        }
+
+        // finds first sunday starting from provided date
+        for (sunday = start; sunday.getDayOfWeek() != DayOfWeek.SUNDAY; sunday = sunday.plusDays(1));
+
+        // registers all sundays in desired years
+        for (; sunday.getYear() - start.getYear() <= years; sunday = sunday.plusWeeks(1)) {
+            sundayDTO.setName("Domenica");
+            sundayDTO.setCategory(HolidayCategory.RELIGIOSA);
+            sundayDTO.setStartDateEpochDay(sunday.toEpochDay());
+            sundayDTO.setEndDateEpochDay(sunday.toEpochDay());
+            registerHolidayPeriod(sundayDTO);
+
+        }
+
+    }
 
     @Override
     public void registerHolidayPeriod(HolidayDTO holidayArgs){
@@ -35,15 +68,20 @@ public class HolidayController implements IHolidayController {
     @Override
     public void registerHolidayPeriod(HolidayDTO holidayArgs, int years) {
         
-        // is the event repeating in the future or in the past?
-        boolean isRepeatInFuture = years > 0;
-
         // Instead of creating a new dto at each call, we use the original one after saving its epochDay timestamps
         long startDateOld = holidayArgs.getStartDateEpochDay();
-        long endDateOld = holidayArgs.getEndDateEpochDay();
+        long endDateOld = holidayArgs.getEndDateEpochDay();        
+        
+        // If the event is repeating in the past, we travel back in time
+        // by the provided amount of years and set that as thet starting year.
+        if (years < 0){
+            holidayArgs.setStartDateEpochDay(LocalDate.ofEpochDay(startDateOld).plusYears(years).toEpochDay());
+            holidayArgs.setEndDateEpochDay(LocalDate.ofEpochDay(endDateOld).plusYears(years).toEpochDay());
+            years = -years;
+        }
 
-        // Register a holiday period for each desired year (including the ones specified in start/end dates)
-        for (int y = 0; (isRepeatInFuture? y <= years : y >= years); y = isRepeatInFuture? y + 1 : y - 1){
+        // Register a holiday period for each desired year. If the repeat is in the past, the current year is not considered.
+        for (int y = 0; y <= years; y ++){
 
             holidayArgs.setStartDateEpochDay(LocalDate.ofEpochDay(startDateOld).plusYears(y).toEpochDay());
             holidayArgs.setEndDateEpochDay(LocalDate.ofEpochDay(endDateOld).plusYears(y).toEpochDay());
