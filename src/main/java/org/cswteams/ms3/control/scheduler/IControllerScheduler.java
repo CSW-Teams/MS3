@@ -2,9 +2,9 @@ package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
 
-import org.cswteams.ms3.control.vincoli.ViolatedConstraintException;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
+import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 
 /**
@@ -21,7 +21,7 @@ public interface IControllerScheduler {
      * @throws UnableToBuildScheduleException controlla lo stack delle eccezioni per scoprire perché non è stato possibile creare la pianificazione
      */
     Schedule createSchedule(LocalDate startDate, LocalDate endDate) throws UnableToBuildScheduleException;
-    Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno) throws  IllegalAssegnazioneTurnoException;
+    Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno) throws IllegalAssegnazioneTurnoException, IllegalAssegnazioneTurnoException;
     Schedule aggiungiAssegnazioneTurnoForced(AssegnazioneTurno assegnazioneTurno);
 
 

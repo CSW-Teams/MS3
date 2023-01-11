@@ -2,15 +2,14 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
-import org.cswteams.ms3.control.scheduler.IllegalAssegnazioneTurnoException;
 import org.cswteams.ms3.control.utils.MappaUtenti;
-import org.cswteams.ms3.control.vincoli.ViolatedConstraintException;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;

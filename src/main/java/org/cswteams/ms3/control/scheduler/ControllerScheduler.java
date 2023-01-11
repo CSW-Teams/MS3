@@ -6,11 +6,11 @@ import java.util.ArrayList;
 
 import org.cswteams.ms3.control.vincoli.Vincolo;
 import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
-import org.cswteams.ms3.control.vincoli.ViolatedConstraintException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -94,7 +94,7 @@ public class ControllerScheduler implements IControllerScheduler{
      * Permette di aggiungere una nuova assegnazione( rispettando tutti i vincoli) ad uno schedulo gia esistente. Il controller andrà a cercare
      * lo schedulo contenente il giorno della nuova assegnazione e lo passerà al builder.
      */
-    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno) throws IllegalAssegnazioneTurnoException {
+    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno) throws  IllegalAssegnazioneTurnoException {
 
         //creo un nuovo builder passandogli uno schedulo già esistente
         this.scheduleBuilder = new ScheduleBuilder(

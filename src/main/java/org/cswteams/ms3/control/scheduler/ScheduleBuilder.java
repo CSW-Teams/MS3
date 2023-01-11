@@ -49,6 +49,14 @@ public class ScheduleBuilder {
         initializeUserScheduleStates(users);
     }
 
+    public ScheduleBuilder(List<Vincolo> allConstraints, List<Utente> all, Schedule schedule) {
+        this.allConstraints = allConstraints;
+        this.schedule=schedule;
+        this.allUserScheduleStates = new HashMap<>();
+        initializeUserScheduleStates(all);
+
+    }
+
     /** Imposta stato per tutti gli utenti disponibili per la pianificazione */
     private void initializeUserScheduleStates(List<Utente> users){
         
