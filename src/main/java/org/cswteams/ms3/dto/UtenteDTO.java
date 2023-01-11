@@ -1,9 +1,11 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
+import org.cswteams.ms3.entity.CategoriaUtente;
 import org.cswteams.ms3.enums.RuoloEnum;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class UtenteDTO {
@@ -22,9 +24,10 @@ public class UtenteDTO {
 
     private String email;
 
+    private List<CategoriaUtente> categorie;
     public UtenteDTO(){}
 
-    public UtenteDTO(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale, RuoloEnum ruoloEnum, String email) {
+    public UtenteDTO(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale, RuoloEnum ruoloEnum, String email, List<CategoriaUtente> categorie) {
         this.id = id;
         this.nome = nome;
         this.cognome = cognome;
@@ -32,6 +35,7 @@ public class UtenteDTO {
         this.codiceFiscale = codiceFiscale;
         this.ruoloEnum = ruoloEnum;
         this.email = email;
+        this.categorie = categorie;
     }
 
     public Long getId() {

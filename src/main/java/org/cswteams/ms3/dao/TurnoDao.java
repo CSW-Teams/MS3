@@ -9,6 +9,6 @@ import java.util.List;
 public interface TurnoDao extends JpaRepository<Turno,Long> {
 
     List<Turno> findAllByServizioNome(String nomeServizio);
-    Turno findAllByServizioNomeAndTipologiaTurno(String nomeServizio, TipologiaTurno tipologiaTurno);
+    List<Turno> findAllByServizioNomeAndTipologiaTurno(String nomeServizio, TipologiaTurno tipologiaTurno);
 
 }
