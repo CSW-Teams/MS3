@@ -3,14 +3,7 @@ package org.cswteams.ms3.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 
 import lombok.Data;
 
@@ -38,9 +31,10 @@ public class UserScheduleState {
     private Schedule schedule;
 
     /** tutti i turni assegnati a questo utente nella pianificazione corrente */
+    @Transient
     List<AssegnazioneTurno> assegnazioniTurnoCache;
 
-    List<AssegnazioneTurno> getAssegnazioniTurno(){
+    public List<AssegnazioneTurno> getAssegnazioniTurno(){
         
         if (assegnazioniTurnoCache == null){
             this.assegnazioniTurnoCache = new ArrayList<>();
