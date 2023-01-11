@@ -50,11 +50,7 @@ export default class UserProfileView extends React.Component{
                     style={{ width: '150px' }}
                     fluid />
                   <p className="text-muted mb-1">{this.state.nome + " " + this.state.cognome}</p>
-                  <p className="text-muted mb-4">Bay Area, San Francisco, CA</p>
-                  <div className="d-flex justify-content-center mb-2">
-                    <MDBBtn>Follow</MDBBtn>
-                    <MDBBtn outline className="ms-1">Message</MDBBtn>
-                  </div>
+                  <p className="text-muted mb-4">{this.state.ruolo}</p>
                 </MDBCardBody>
               </MDBCard>
             </MDBCol>
@@ -75,34 +71,25 @@ export default class UserProfileView extends React.Component{
                       <MDBCardText>Email</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
-                      <MDBCardText className="text-muted">example@example.com</MDBCardText>
+                      <MDBCardText className="text-muted">{this.state.email}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
                   <hr />
                   <MDBRow>
                     <MDBCol sm="3">
-                      <MDBCardText>Phone</MDBCardText>
+                      <MDBCardText>Data di Nascita</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
-                      <MDBCardText className="text-muted">(097) 234-5678</MDBCardText>
+                      <MDBCardText className="text-muted">{this.state.dataNascita}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
                   <hr />
                   <MDBRow>
                     <MDBCol sm="3">
-                      <MDBCardText>Mobile</MDBCardText>
+                      <MDBCardText>Ruolo</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
-                      <MDBCardText className="text-muted">(098) 765-4321</MDBCardText>
-                    </MDBCol>
-                  </MDBRow>
-                  <hr />
-                  <MDBRow>
-                    <MDBCol sm="3">
-                      <MDBCardText>Address</MDBCardText>
-                    </MDBCol>
-                    <MDBCol sm="9">
-                      <MDBCardText className="text-muted">Bay Area, San Francisco, CA</MDBCardText>
+                      <MDBCardText className="text-muted">{this.state.ruolo}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
                 </MDBCardBody>
