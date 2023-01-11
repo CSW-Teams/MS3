@@ -38,6 +38,7 @@ export  class UtenteAPI {
       utente.codiceFiscale = body[i].codiceFiscale;
       utente.ruoloEnum = body[i].ruoloEnum;
       utente.email = body[i].email;
+      utente.categorie = body[i].categorie;
 
       utenti[i]=utente;
     }

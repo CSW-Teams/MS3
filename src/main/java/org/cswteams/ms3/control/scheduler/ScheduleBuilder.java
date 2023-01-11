@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import lombok.experimental.Accessors;
 import org.cswteams.ms3.control.vincoli.ContestoVincolo;
 import org.cswteams.ms3.control.vincoli.Vincolo;
 import org.cswteams.ms3.control.vincoli.ViolatedConstraintException;
@@ -43,6 +44,20 @@ public class ScheduleBuilder {
         initializeUserScheduleStates(users);
     }
 
+    /**
+     * Questo costruttore verrà utilizzato per creare un builder nel momento in cui uno schedulo già è esistente.
+     * Uno scenario tipico è quando si vuole aggiungere un asssegnazione turno ad uno schedulo già esistente
+     * @param allConstraints
+     * @param allUser
+     * @param schedule
+     */
+    public ScheduleBuilder(List<Vincolo> allConstraints, List<Utente> allUser, Schedule schedule) {
+        this.allConstraints = allConstraints;
+        this.allUserScheduleStates = new ArrayList<>();
+        initializeUserScheduleStates(allUser);
+        this.schedule = schedule;
+    }
+
     /** Imposta stato per tutti gli utenti disponibili per la pianificazione */
     private void initializeUserScheduleStates(List<Utente> users){
         
@@ -51,6 +66,8 @@ public class ScheduleBuilder {
             allUserScheduleStates.add(usstate);
         }        
     }
+
+
 
     /** invoca la creazione automatica della pianificazione 
      * @throws UnableToBuildScheduleException
@@ -122,19 +139,19 @@ public class ScheduleBuilder {
     /**Aggiunge una assegnazione turno manualmente alla pianificazione, senza
      * apportare nessun tipo di controllo.
      */
-    public ScheduleBuilder addAssegnazioneTurnoForced(AssegnazioneTurno at){
+    public Schedule addAssegnazioneTurnoForced(AssegnazioneTurno at){
         this.schedule.getAssegnazioniTurno().add(at);
-        return this;
+        return this.schedule;
     }
 
     /** Aggiunge un'assegnazione turno manualmente alla pianificazione.
      * L'assegnazione deve già essere compilata con la data e gli utenti.
      * @throws IllegalAssegnazioneTurnoException
      */
-    public ScheduleBuilder addAssegnazioneTurno(AssegnazioneTurno at) throws IllegalAssegnazioneTurnoException{
+    public Schedule addAssegnazioneTurno(AssegnazioneTurno at) throws IllegalAssegnazioneTurnoException{
         
         for (Utente u : at.getUtenti()){
-            
+
             try {
                 verificaTuttiVincoli(new ContestoVincolo(u, at));
             } catch (ViolatedConstraintException e) {

@@ -33,11 +33,11 @@ export  class AssegnazioneTurnoAPI {
       turno.utenti_reperibili = utenti_reperibili;
 
       turno.tipologia = body[i].tipologiaTurno;
-
       turno.servizio = body[i].servizio.nome;
 
       turni[i] = turno;
 
+      
     }
 
     return turni;
@@ -66,13 +66,15 @@ export  class AssegnazioneTurnoAPI {
     return turni;
   }
 
-    async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome) {
+    async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,forced) {
 
       let assegnazioneTurno = new Object();
 
       assegnazioneTurno.giorno = data.$d.getDate();
       assegnazioneTurno.mese = data.$d.getMonth()+1;
       assegnazioneTurno.anno = data.$d.getFullYear();
+
+      assegnazioneTurno.forced = forced;
 
       assegnazioneTurno.data= data.$d.getTime();
       assegnazioneTurno.servizio = servizioNome
@@ -81,21 +83,15 @@ export  class AssegnazioneTurnoAPI {
       assegnazioneTurno.utentiReperibili = utentiReperibilita;
 
       console.log(assegnazioneTurno)
-      console.log(data.$d.getDay())
-      console.log(data.$D)
-
-
+     
       const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(assegnazioneTurno)
       };
 
-      const response = await fetch('/api/assegnazioneturni/',requestOptions);
-      if(response.status != 202)
-        return null
-        
-      return assegnazioneTurno;
+      const response = await fetch('/api/assegnazioneturni/',requestOptions);        
+      return response.status;
 
   }
 
@@ -117,10 +113,7 @@ export  class AssegnazioneTurnoAPI {
 
       requestGeneration.giornoFine= dataEnd.$d.getDate();
       requestGeneration.meseFine = dataEnd.$d.getMonth()+1;
-      requestGeneration.annoFine = dataEnd.$d.getFullYear();
-      
-      console.log(requestGeneration)
-      
+      requestGeneration.annoFine = dataEnd.$d.getFullYear();      
 
       const requestOptions = {
         method: 'POST',

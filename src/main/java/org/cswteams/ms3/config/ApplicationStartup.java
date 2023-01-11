@@ -9,6 +9,7 @@ import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -51,6 +52,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private IHolidayController holidayController;
 
+    @Autowired
+    private ScheduleDao dao;
+
 
     @SneakyThrows
     @Override
@@ -59,7 +63,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         //populateDBTestSchedule();
     }
 
-    private void populateDBTestSchedule() {
+    private void populateDBTestSchedule() throws  TurnoException {
         //Creo categorie
         CategoriaUtente categoriaOver62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,LocalDate.now(), LocalDate.now().plusDays(1000));
         categoriaUtenteDao.save(categoriaOver62);
@@ -85,19 +89,19 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         );
 
 
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>());
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);
         t2.setNumUtentiGuardia(1);
         t2.setNumUtentiReperibilita(1);
 
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate,false);
         t3.setNumUtentiGuardia(1);
         t3.setNumUtentiReperibilita(1);
 
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate,false);
         t4.setNumUtentiGuardia(1);
         t4.setNumUtentiReperibilita(1);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>());
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
         t5.setNumUtentiGuardia(1);
         t5.setNumUtentiReperibilita(1);
 
@@ -114,7 +118,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     }
 
-    private void populateDB(){
+    private void populateDB() throws TurnoException {
 
         //Creo categorie
         CategoriaUtente categoriaOver62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,LocalDate.now(), LocalDate.now().plusDays(1000));
@@ -141,13 +145,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u15 = new Utente("Giorgio","Bianchi", "******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u16 = new Utente("Claudio","Gialli", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
 
+        u7 = utenteDao.saveAndFlush(u7);
+
         u1 = utenteDao.saveAndFlush(u1);
         u2 = utenteDao.saveAndFlush(u2);
         u3 = utenteDao.saveAndFlush(u3);
         u4 = utenteDao.saveAndFlush(u4);
         u5 = utenteDao.saveAndFlush(u5);
         u6 = utenteDao.saveAndFlush(u6);
-        u7 = utenteDao.saveAndFlush(u7);
         u8 = utenteDao.saveAndFlush(u8);
         u9 = utenteDao.saveAndFlush(u9);
         u10 = utenteDao.saveAndFlush(u10);
@@ -175,25 +180,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         );
 
 
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>());
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);
         t2.setNumUtentiGuardia(2);
         t2.setNumUtentiReperibilita(2);
 
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
+        boolean giornoSuccessivo = true;
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate,giornoSuccessivo);
         t3.setNumUtentiGuardia(2);
         t3.setNumUtentiReperibilita(2);
 
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate);
-        t4.setNumUtentiGuardia(2);
-        t4.setNumUtentiReperibilita(2);
-
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>());
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
         t5.setNumUtentiGuardia(2);
         t5.setNumUtentiReperibilita(2);
 
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
-        turnoDao.saveAndFlush(t4);
         turnoDao.saveAndFlush(t5);
 
         //creo associazioni
@@ -221,68 +222,55 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t2,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t3,setUtenti2,setUtenti4));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,19),t4,setUtenti2,setUtenti4));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t2,setUtenti1,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t3,setUtenti3,setUtenti4));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,20),t4,setUtenti3,setUtenti4));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t2,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t3,setUtenti4,setUtenti2));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,21),t4,setUtenti4,setUtenti2));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t2,setUtenti3,setUtenti4));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t3,setUtenti2,setUtenti1));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t4,setUtenti2,setUtenti1));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,22),t5,setUtenti3,setUtenti2));
 
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t2,setUtenti4,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t3,setUtenti1,setUtenti3));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,23),t4,setUtenti1,setUtenti3));
 
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t2,setUtenti1,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t3,setUtenti2,setUtenti4));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t4,setUtenti2,setUtenti4));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,24),t5,setUtenti1,setUtenti3));
 
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t2,setUtenti3,setUtenti1));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t3,setUtenti4,setUtenti2));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,25),t4,setUtenti4,setUtenti2));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t5,setUtenti3,setUtenti5));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t2,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t3,setUtenti2,setUtenti4));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,26),t4,setUtenti2,setUtenti4));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,27),t2,setUtenti1,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,27),t3,setUtenti3,setUtenti4));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,27),t4,setUtenti3,setUtenti4));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,28),t2,setUtenti1,setUtenti3));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,28),t3,setUtenti4,setUtenti2));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,28),t4,setUtenti4,setUtenti2));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,29),t2,setUtenti3,setUtenti4));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,29),t3,setUtenti2,setUtenti1));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,29),t4,setUtenti2,setUtenti1));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,29),t5,setUtenti3,setUtenti2));
 
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,30),t2,setUtenti4,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,30),t3,setUtenti1,setUtenti3));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,30),t4,setUtenti1,setUtenti3));
 
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t2,setUtenti1,setUtenti2));
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t3,setUtenti2,setUtenti4));
-        assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t4,setUtenti2,setUtenti4));
 
         assegnazioneTurnoDao.save(new AssegnazioneTurno(LocalDate.of(2022,12,31),t5,setUtenti1,setUtenti3));
 
