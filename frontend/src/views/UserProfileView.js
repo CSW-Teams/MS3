@@ -149,9 +149,6 @@ export default class UserProfileView extends React.Component{
         </MDBRow>
       </MDBContainer>
       </section>
-
     );
   }
-
-
 }
