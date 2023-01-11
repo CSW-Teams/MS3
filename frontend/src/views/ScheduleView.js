@@ -49,7 +49,7 @@ class ScheduleView extends React.Component{
             data: [],   // list of shifts to display in schedule (not filtered yet)
             mainResourceName: 'utenti_guardia',
             resources: [ // TODO: queste risorse sarebbero i dettagli da scrivere nelle carte dei turni assegnati? Ulteriori dettagli andrebbero aggiunti qui?
-              {fieldName: 'utenti_guardia', title: 'Guardia', allowMultiple: true,instances: [{}] , color:blue,},
+              {fieldName: 'utenti_guardia', title: 'Guardia', allowMultiple: true,instances: [{}]},
               {fieldName: 'utenti_reperibili', title: 'Reperibilità',allowMultiple: true, instances: [{}]},
             ],
             /**
@@ -232,7 +232,7 @@ class ScheduleView extends React.Component{
                 <MonthView displayName="Mensile" />
                 <Toolbar />
                 <Appointments appointmentContentComponent={this.state.appointmentContentComponent} />
-                <AllDayPanel />
+                <AllDayPanel/>
                 <Resources
                   data={resources}
                 />

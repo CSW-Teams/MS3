@@ -1,4 +1,4 @@
-import {teal, blue, red} from '@mui/material/colors';
+import {teal, red} from '@mui/material/colors';
 
 export  class UtenteAPI {
   constructor() {
@@ -17,6 +17,13 @@ export  class UtenteAPI {
       utente.color = teal;
       utenti[i]=utente;
     }
+
+    //Dummy user to change holiday color
+    const dummy = new Object;
+    dummy.text ="Ih-Oh";
+    dummy.id = -1;
+    dummy.color = red;
+    utenti[body.length] = dummy
 
     return utenti;
 
