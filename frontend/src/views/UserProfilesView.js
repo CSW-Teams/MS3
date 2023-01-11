@@ -8,7 +8,7 @@ import {
   MDBTable, MDBTableBody,
   MDBTableHead
 } from "mdb-react-ui-kit";
-import {Button} from "@material-ui/core";
+import {Button, Link} from "@material-ui/core";
 
 
 export default class UserProfilesView extends React.Component{
@@ -49,7 +49,10 @@ export default class UserProfilesView extends React.Component{
                     <td>{data.cognome}</td>
                     <td>{data.dataNascita}</td>
                     <td>{data.ruoloEnum}</td>
-                    <td><Button href=""> <i className="far fa-edit mb-5"></i></Button></td>
+                    <td>
+                      <Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}>
+                       <i className="fas fa-edit fa-lg"> </i>
+                        </Button></td>
                   </tr>
                 )
               })}
