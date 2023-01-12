@@ -28,6 +28,9 @@ public class ControllerScheduler implements IControllerScheduler{
     @Autowired
     ScheduleDao scheduleDao;
 
+    @Autowired
+    VincoloTipologieTurniContigueDao vincoloTipologieTurniContigueDao;
+
 
     private ScheduleBuilder scheduleBuilder;
 
@@ -40,6 +43,7 @@ public class ControllerScheduler implements IControllerScheduler{
         List<Vincolo> vincoli = new ArrayList<>();
         
         vincoli.add(new VincoloPersonaTurno());
+        vincoli.addAll(vincoloTipologieTurniContigueDao.findAll());
 
         // aggiungere altri vincoli ...
 
