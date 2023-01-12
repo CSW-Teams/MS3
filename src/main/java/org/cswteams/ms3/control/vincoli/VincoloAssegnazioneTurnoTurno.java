@@ -1,15 +1,42 @@
 package org.cswteams.ms3.control.vincoli;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
+
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 
 public abstract class VincoloAssegnazioneTurnoTurno implements Vincolo{
+    
+    /**
+     * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1
+     */
+    protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2) {
+        
+        return verificaContiguitàAssegnazioneTurni(aTurno1, aTurno2, ChronoUnit.MINUTES, 0);
+    }
 
-    protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno turno1, AssegnazioneTurno turno2) {
-        // TODO: Bisogna vedere com'è la nuova modellazione del turno notturno e modificare questo controllo sulle date di conseguenza
-        if(turno1.getData().isEqual(turno2.getData())){
-            return turno1.getTurno().getOraFine().equals(turno2.getTurno().getOraInizio());
+    /**
+     * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1,
+     * ammettendo un errore pari a delta
+     * @param aTurno1
+     * @param aTurno2 deve essere successivo temporalmente ad aTurno1
+     * @param tu unità di misura temporale per delta (minuti, anni, ...)
+     * @param delta numero di unità temporali tollerabili per considerare i turni contigui
+     * @return
+     */
+    protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2, TemporalUnit tu, long delta){
+        LocalDateTime aTurno1End = aTurno1.getData().atTime(aTurno1.getTurno().getOraFine());
+        
+        // if aTurno1 shift spans more than one day, we add 1 day to its endDateTime
+        if(aTurno1.getTurno().isGiornoSuccessivo()){
+            aTurno1End = aTurno1End.plusDays(1);
         }
-        else return false;
+        
+        LocalDateTime aTurno2Start = aTurno2.getData().atTime(aTurno2.getTurno().getOraInizio());
+        
+        return aTurno1End.until(aTurno2Start, tu) <= delta;
+        
     }
 
 }
