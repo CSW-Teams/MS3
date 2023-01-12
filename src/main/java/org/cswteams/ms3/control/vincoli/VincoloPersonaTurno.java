@@ -14,7 +14,7 @@ public class VincoloPersonaTurno implements Vincolo {
     @Override
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
         Utente utente = contesto.getUserScheduleState().getUtente();
-        AssegnazioneTurno turno = contesto.getTurno();
+        AssegnazioneTurno turno = contesto.getAssegnazioneTurno();
         List<CategoriaUtente> categorieUtente = utente.getCategorie();
 
         for(CategoriaUtentiEnum categoriaVietata : turno.getTurno().getCategorieVietate()){

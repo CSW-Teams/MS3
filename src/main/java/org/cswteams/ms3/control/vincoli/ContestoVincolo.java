@@ -9,10 +9,10 @@ public class ContestoVincolo {
 
     private UserScheduleState userScheduleState;
 
-    private AssegnazioneTurno turno;
+    private AssegnazioneTurno assegnazioneTurno;
 
     public ContestoVincolo(UserScheduleState utente, AssegnazioneTurno turno){
-        this.turno = turno;
+        this.assegnazioneTurno = turno;
         this.userScheduleState = utente;
     }
 

@@ -34,7 +34,7 @@ public class UserScheduleState {
     @Transient
     List<AssegnazioneTurno> assegnazioniTurnoCache;
 
-    public List<AssegnazioneTurno> getAssegnazioniTurno(){
+    public List<AssegnazioneTurno> getAssegnazioniTurnoCache(){
         
         if (assegnazioniTurnoCache == null){
             this.assegnazioniTurnoCache = new ArrayList<>();
