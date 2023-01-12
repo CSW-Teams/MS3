@@ -18,7 +18,13 @@ public interface IHolidayController {
      * per il numero ulteriore di anni specificato .
      * @param years numero di anni da ripetere oltre quello specificato, nelle date di inizio e fine. >0 nel futuro,
      * <0 nel passato, 0 solo per l'anno specificato.
+     * Se la ripetizione è nel passato, l'anno corrente non viene considerato.
      */
     void registerHolidayPeriod(HolidayDTO holidayArgs, int years);
+
+    /**
+     * Registra le domeniche come festività per il numero di anni specificato
+     */
+    public void registerSundays(LocalDate start, int years);
 
 }

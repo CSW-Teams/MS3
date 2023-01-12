@@ -8,11 +8,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { UtenteAPI } from '../../API/UtenteAPI';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
-import MuiAlert from '@mui/material/Alert';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
 
 
 export default function TemporaryDrawer(props) {
@@ -21,12 +19,11 @@ export default function TemporaryDrawer(props) {
   const [data,setdata] = React.useState("")
   const [turno,setTurno] = React.useState("")
   const [servizio,setServizio] = React.useState("")
+  const [forced,setForced] = React.useState(false)
   const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
-  const [openMessage,setMessageOpen] = React.useState(true)
-
-
   const [state, setState] = React.useState({bottom: false});
+
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
@@ -57,6 +54,7 @@ export default function TemporaryDrawer(props) {
   }
 
 
+
   //Funzione che apre la schermata secondaria che permette di creare un associazione.
   //Viene passata come callback al componente <Drawer>
   const toggleDrawer = (anchor, open) => (event) => {
@@ -76,15 +74,21 @@ export default function TemporaryDrawer(props) {
     setState({ ...state, [anchor]: open });
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
-    let assegnazione = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio)
+    let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+
+
+    status = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
     props.onPostAssegnazione()
 
-    if(assegnazione==null){
-      alert('errore assegnazione');
-    }else{
+    //Verifico la risposta del server analizzando il codice di risposta http
+    if(status==202){
       alert('assegnazione creata con successo');
+    }else if (status == 400){
+      alert('Errore nei parametri');
+    } else if( status == 406 ){
+      alert('Un vincolo è stato violato, non è stato aggiunta l\'assegnazione');
     }
 
     setState({ ...state, [anchor]: open });
@@ -129,6 +133,7 @@ export default function TemporaryDrawer(props) {
                   sx={{ width: 300 }}
                   renderInput={(params) => <TextField {...params} label="Medici Reperibili" />}
                 />
+                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced)}}/>} label="Forza assegnazione" />
                 <Button variant="contained" size="small" onClick={assegnaTurno('bottom', false)} >
                   Assegna turno
                 </Button>

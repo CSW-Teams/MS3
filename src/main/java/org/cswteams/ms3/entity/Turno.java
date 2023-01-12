@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.exception.TurnoException;
 
 import javax.persistence.*;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -24,9 +26,14 @@ public class Turno {
     private LocalTime oraInizio;
 
     private LocalTime oraFine;
+
+    //Utile nel caso di turno notturno. Questa variabile sarà vera se un turno inizia un giorno e termina il successivo.
+    private boolean giornoSuccessivo;
     
     private int numUtentiReperibilita;
     private int numUtentiGuardia;
+
+
 
 
     /**
@@ -42,7 +49,15 @@ public class Turno {
     @Enumerated(EnumType.STRING)
     private Set<CategoriaUtentiEnum> categorieVietate;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<CategoriaUtentiEnum> categorieVietate){
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<CategoriaUtentiEnum> categorieVietate, boolean giornoSuccessivo) throws  TurnoException {
+
+        // Se l'ora di inizio segue l'ora di fine verrà sollevata eccezzione solo se il turno non è configurato
+        // per iniziare in un giorno e finire in quello seguente
+        if(oraInizio.isAfter(oraFine) && !giornoSuccessivo){
+            throw new TurnoException("Data di inizio non può seguire data di fine");
+        }
+
+        this.giornoSuccessivo=giornoSuccessivo;
         this.oraInizio = oraInizio;
         this.oraFine = oraFine;
         this.servizio = servizio;
@@ -52,27 +67,40 @@ public class Turno {
 
     }
 
-    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<CategoriaUtentiEnum> categorieVietate){
-        this(oraInizio, oraFine, servizio, tipologia, categorieVietate);
+    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<CategoriaUtentiEnum> categorieVietate, boolean giornoSuccessivo) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, tipologia, categorieVietate,giornoSuccessivo);
         this.id = id;
     }
 
     public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio) {
-        this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate);
+            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio,boolean giornoSuccessivo) throws  TurnoException {
+        this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate,giornoSuccessivo);
         this.giorniDiValidità = giorniDiValidità;
     }
 
      public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio, int numUtentiGuardia, int numUtentiReperibilita) {
-        this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate);
+            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio, int numUtentiGuardia, int numUtentiReperibilita, boolean giornoSuccessivo) throws TurnoException {
+        this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate, giornoSuccessivo);
         this.giorniDiValidità = giorniDiValidità;
         this.numUtentiGuardia = numUtentiGuardia;
         this.numUtentiReperibilita = numUtentiReperibilita;
     }
 
-    
-
     public Turno() {
     }
+
+    public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt, Set<CategoriaUtentiEnum> es) {
+        this.oraFine=oi;
+        this.oraInizio=of;
+        this.tipologiaTurno=tt;
+        this.categorieVietate=es;
+        this.servizio=servizio;
+    }
+
+
+    public void setGiornoSuccessivo(){
+        this.giornoSuccessivo = true;
+    }
+
+
 }

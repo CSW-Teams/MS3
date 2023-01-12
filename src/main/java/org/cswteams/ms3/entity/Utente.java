@@ -69,8 +69,8 @@ public class Utente {
     }
 
 
-
-    
-    
-
+    public Utente(Long id, String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum, List<CategoriaUtente> categorie) {
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
+        this.categorie=categorie;
+    }
 }

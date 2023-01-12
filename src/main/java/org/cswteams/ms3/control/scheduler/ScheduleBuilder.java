@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import lombok.experimental.Accessors;
 import org.cswteams.ms3.control.vincoli.ContestoVincolo;
 import org.cswteams.ms3.control.vincoli.Vincolo;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
@@ -48,6 +49,14 @@ public class ScheduleBuilder {
         initializeUserScheduleStates(users);
     }
 
+    public ScheduleBuilder(List<Vincolo> allConstraints, List<Utente> all, Schedule schedule) {
+        this.allConstraints = allConstraints;
+        this.schedule=schedule;
+        this.allUserScheduleStates = new HashMap<>();
+        initializeUserScheduleStates(all);
+
+    }
+
     /** Imposta stato per tutti gli utenti disponibili per la pianificazione */
     private void initializeUserScheduleStates(List<Utente> users){
         
@@ -56,7 +65,9 @@ public class ScheduleBuilder {
             allUserScheduleStates.put(u.getId(), usstate);
         }        
     }
-    
+
+
+
     /** invoca la creazione automatica della pianificazione 
      * @throws UnableToBuildScheduleException
      * */
@@ -134,19 +145,19 @@ public class ScheduleBuilder {
     /**Aggiunge una assegnazione turno manualmente alla pianificazione, senza
      * apportare nessun tipo di controllo.
      */
-    public ScheduleBuilder addAssegnazioneTurnoForced(AssegnazioneTurno at){
+    public Schedule addAssegnazioneTurnoForced(AssegnazioneTurno at){
         this.schedule.getAssegnazioniTurno().add(at);
-        return this;
+        return this.schedule;
     }
 
     /** Aggiunge un'assegnazione turno manualmente alla pianificazione.
      * L'assegnazione deve già essere compilata con la data e gli utenti.
      * @throws IllegalAssegnazioneTurnoException
      */
-    public ScheduleBuilder addAssegnazioneTurno(AssegnazioneTurno at) throws IllegalAssegnazioneTurnoException{
+    public Schedule addAssegnazioneTurno(AssegnazioneTurno at) throws IllegalAssegnazioneTurnoException{
         
         for (Utente u : at.getUtenti()){
-            
+
             try {
                 verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
             } catch (ViolatedConstraintException e) {
