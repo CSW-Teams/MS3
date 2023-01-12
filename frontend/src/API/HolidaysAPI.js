@@ -22,6 +22,7 @@ export class HolidaysAPI {
             h.type="Holiday"
             h.category = sh.category;
             h.location = sh.location;
+            h.utenti_guardia = [-1];
             holidays.push(h);
         }
 

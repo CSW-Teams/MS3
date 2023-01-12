@@ -16,6 +16,8 @@ public class TurnoDTO {
 
     private LocalTime oraFine;
 
+    private boolean giornoSuccessivo;
+
     private ServizioDTO servizio;
 
     private Set<CategoriaUtentiEnum> categorieVietate;
@@ -24,9 +26,10 @@ public class TurnoDTO {
 
     public TurnoDTO(){}
 
-    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, Set<CategoriaUtentiEnum> categorieVietate){
+    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, Set<CategoriaUtentiEnum> categorieVietate, boolean giornoSuccessivo){
         this.oraFine = fine;
         this.oraInizio = inizio;
+        this.giornoSuccessivo = giornoSuccessivo;
         this.servizio = servizio;
         this.tipologiaTurno = tipologiaTurno;
         this.id = id;

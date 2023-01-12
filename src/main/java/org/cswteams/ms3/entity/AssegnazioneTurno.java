@@ -13,7 +13,7 @@ import java.util.Set;
 @Entity
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class AssegnazioneTurno {
+public class AssegnazioneTurno{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
@@ -45,6 +45,14 @@ public class AssegnazioneTurno {
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = new HashSet<>();
         this.utentiReperibili = new HashSet<>();
+        this.turno = turno;
+    }
+
+    public AssegnazioneTurno(Long id, Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, long dataEpochDay, Turno turno) {
+        this.id = id;
+        this.utentiDiGuardia = utentiDiGuardia;
+        this.utentiReperibili = utentiReperibili;
+        this.dataEpochDay = dataEpochDay;
         this.turno = turno;
     }
 
@@ -85,4 +93,6 @@ public class AssegnazioneTurno {
     public Turno getTurno() {
         return turno;
     }
+
+
 }

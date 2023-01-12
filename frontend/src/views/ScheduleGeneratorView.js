@@ -68,8 +68,8 @@ export class SchedulerGeneratorView extends React.Component{
                 }}>
                     Inserisci inizio e fine pianificazione
                 </div>
-                <BasicDatePicker onSelectData={this.handleDataStart}></BasicDatePicker>
-                <BasicDatePicker onSelectData={this.handleDataEnd}></BasicDatePicker>
+                <BasicDatePicker onSelectData={this.handleDataStart} label={"data inizio"}></BasicDatePicker>
+                <BasicDatePicker onSelectData={this.handleDataEnd} label={"data fine"}></BasicDatePicker>
                 <Button variant="contained" size="small" onClick={this.handleOnClick} >
                   Genera Pianificazione
                 </Button>

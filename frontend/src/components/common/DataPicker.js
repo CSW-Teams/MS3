@@ -12,7 +12,7 @@ export default function BasicDatePicker(props) {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='it'>
       <DatePicker
-        label="Scegli data"
+        label={props.label}
         value={value}
         onChange={(newValue) => {
           setValue(newValue);

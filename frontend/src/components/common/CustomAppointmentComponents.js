@@ -17,7 +17,7 @@ export const AppointmentSingleContent = ({
                                   }) => (
   <StyledAppointmentsAppointmentContent {...restProps} formatDate={formatDate} data={data} >
     <div className={classes.container}>
-      <div style={{color: data.type === "Holiday" ? "red" : "white","font-family":"sans-serif", "font-weight":"bold"}}>
+      <div style={{textAlign: "center", color: "white","font-family":"sans-serif", "font-weight":"bold"}}>
         {data.title}
       </div>
       <li
@@ -189,7 +189,7 @@ export const AppointmentContent = ({
                             }) => (
   <StyledAppointmentsAppointmentContent {...restProps} formatDate={formatDate} data={data}>
     <div className={classes.container}>
-      <div style={{color: data.type === "Holiday" ? "red" : "white","font-family":"sans-serif", "font-weight":"bold"}}>
+      <div style={{textAlign: "center", color: "white","font-family":"sans-serif", "font-weight":"bold"}}>
         {data.title}
       </div>
       <li className={classes.text}>

@@ -10,6 +10,7 @@ import { SchedulerGeneratorView } from "./views/ScheduleGeneratorView";
 import SingleScheduleView from "./views/SingleScheduleView";
 import UserProfileView from "./views/UserProfileView"
 import UserProfilesView from "./views/UserProfilesView"
+import UserProfileViewId from "./views/UserProfileViewId";
 
 
 export default [
@@ -43,6 +44,12 @@ export default [
     path: "/info-utenti",
     layout: DefaultLayout,
     component: UserProfilesView
-  }
+  },
+  {
+    path: "/profilo-utente/:idUser",
+    layout: DefaultLayout,
+    component: UserProfileViewId
+  },
+
 ];
 
