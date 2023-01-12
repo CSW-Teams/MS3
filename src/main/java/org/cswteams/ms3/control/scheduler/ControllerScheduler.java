@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.cswteams.ms3.control.vincoli.Vincolo;
+import org.cswteams.ms3.control.vincoli.VincoloMaxPeriodoConsecutivo;
 import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
@@ -18,6 +19,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ControllerScheduler implements IControllerScheduler{
+
+    // TO DO: Prenderlo dalla configurazione e toglierlo da qui
+    private static final int massimoPeriodoContiguo = 12*60;
 
     @Autowired
     private UtenteDao utenteDao;
@@ -40,6 +44,7 @@ public class ControllerScheduler implements IControllerScheduler{
         List<Vincolo> vincoli = new ArrayList<>();
         
         vincoli.add(new VincoloPersonaTurno());
+        vincoli.add(new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo));
 
         // aggiungere altri vincoli ...
 
