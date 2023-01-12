@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.cswteams.ms3.control.vincoli.Vincolo;
-import org.cswteams.ms3.control.vincoli.VincoloMaxPeriodoConsecutivo;
 import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
@@ -32,6 +31,9 @@ public class ControllerScheduler implements IControllerScheduler{
     @Autowired
     ScheduleDao scheduleDao;
 
+    @Autowired
+    VincoloTipologieTurniContigueDao vincoloTipologieTurniContigueDao;
+
 
     private ScheduleBuilder scheduleBuilder;
 
@@ -45,6 +47,7 @@ public class ControllerScheduler implements IControllerScheduler{
         
         vincoli.add(new VincoloPersonaTurno());
         vincoli.add(new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo));
+        vincoli.addAll(vincoloTipologieTurniContigueDao.findAll());
 
         // aggiungere altri vincoli ...
 
