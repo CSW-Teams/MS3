@@ -44,13 +44,7 @@ public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno{
             long minutiConsecutivi = 0;
             // Controllo che la somma delle ore non sia superata con la nuova assegnazione
             for(AssegnazioneTurno turno: turniConsecutivi){
-                if(turno.getTurno().isGiornoSuccessivo()){
-                    LocalDateTime inizio = LocalDateTime.of(LocalDate.ofEpochDay(turno.getDataEpochDay()),turno.getTurno().getOraInizio());
-                    LocalDateTime fine = LocalDateTime.of(LocalDate.ofEpochDay(turno.getDataEpochDay()).plusDays(1),turno.getTurno().getOraFine());
-                    minutiConsecutivi += inizio.until(fine, ChronoUnit.MINUTES);
-                }
-                else minutiConsecutivi += turno.getTurno().getOraInizio().until(turno.getTurno().getOraFine(), ChronoUnit.MINUTES);
-            }
+                minutiConsecutivi += turno.getTurno().getMinutidiLavoro();           }
             if (minutiConsecutivi > maxConsecutiveMinutes) {
                 throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno());
             }

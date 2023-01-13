@@ -7,7 +7,10 @@ import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,9 +35,6 @@ public class Turno {
     
     private int numUtentiReperibilita;
     private int numUtentiGuardia;
-
-
-
 
     /**
      * In quali giorni della settimana questo turno può essere assegnato
@@ -102,5 +102,15 @@ public class Turno {
         this.giornoSuccessivo = true;
     }
 
+    //Restituisce il numero di minuto di lavoro per quetso turno
+    public long getMinutidiLavoro(){
+        LocalDateTime inizio = LocalDateTime.of(LocalDate.now(),this.oraInizio);
+        LocalDateTime fine;
+        if(this.giornoSuccessivo)
+            fine = LocalDateTime.of(LocalDate.now().plusDays(1),this.oraFine);
+         else
+            fine = LocalDateTime.of(LocalDate.now(),this.oraFine);
+        return inizio.until(fine, ChronoUnit.MINUTES);
+    }
 
 }

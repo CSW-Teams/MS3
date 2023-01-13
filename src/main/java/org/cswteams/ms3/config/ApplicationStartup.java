@@ -155,6 +155,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u14 = new Utente("Claudia","Rossi", "******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u15 = new Utente("Giorgio","Bianchi", "******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u16 = new Utente("Claudio","Gialli", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u17 = new Utente("Filippo","Neri", "******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u18 = new Utente("Vincenzo","Grassi", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u19 = new Utente("Diana","Pasquali", "******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u20 = new Utente("Francesco","Lo Presti", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
 
         u7 = utenteDao.saveAndFlush(u7);
 
@@ -173,6 +177,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u14 = utenteDao.saveAndFlush(u14);
         u15 = utenteDao.saveAndFlush(u15);
         u16 = utenteDao.saveAndFlush(u16);
+        u17 = utenteDao.saveAndFlush(u17);
+        u18 = utenteDao.saveAndFlush(u18);
+        u19 = utenteDao.saveAndFlush(u19);
+        u20 = utenteDao.saveAndFlush(u20);
 
         //creo servizi
         Servizio servizio1 = new Servizio("reparto");

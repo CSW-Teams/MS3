@@ -9,6 +9,7 @@ import org.cswteams.ms3.entity.AssegnazioneTurno;
 import java.time.LocalDate;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public abstract class VincoloAssegnazioneTurnoTurno implements Vincolo{
 
@@ -17,15 +18,7 @@ public abstract class VincoloAssegnazioneTurnoTurno implements Vincolo{
      */
     protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2) {
 
-        LocalDate data1;
-        if(aTurno1.getTurno().isGiornoSuccessivo()){
-            // Nel caso di turno notturno
-            data1 = aTurno1.getData().plusDays(1);
-        } else data1 = aTurno1.getData();
-        if(data1.isEqual(aTurno2.getData())){
-            return aTurno1.getTurno().getOraFine().equals(aTurno2.getTurno().getOraInizio());
-        }
-        else return false;
+        return verificaContiguitàAssegnazioneTurni(aTurno1, aTurno2, ChronoUnit.MINUTES, 0);
     }
 
     /**
@@ -49,6 +42,15 @@ public abstract class VincoloAssegnazioneTurnoTurno implements Vincolo{
 
         return aTurno1End.until(aTurno2Start, tu) <= delta;
 
+    }
+
+    protected int getAssegnazioneTurnoPrecedenteIdx(List<AssegnazioneTurno> turniAssegnati, AssegnazioneTurno turnoDaAssegnare){
+        for(int i = 0; i < turniAssegnati.size(); i++){
+            if(turniAssegnati.get(i).getData().isAfter(turnoDaAssegnare.getData())){
+                return i-1;
+            }
+        }
+        return turniAssegnati.size();
     }
 
 }

@@ -103,7 +103,6 @@ public class ScheduleBuilder {
     private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
         
         List<Utente> selectedUsers = new ArrayList<>();
-        
         for (UserScheduleState userScheduleState : allUserScheduleStates.values()){
             if (selectedUsers.size() == numUtenti){
                 break;
