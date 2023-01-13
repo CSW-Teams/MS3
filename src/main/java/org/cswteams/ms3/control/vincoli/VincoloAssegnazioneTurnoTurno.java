@@ -6,13 +6,18 @@ import java.time.temporal.TemporalUnit;
 
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 
+import java.time.LocalDate;
+
+import java.time.LocalDate;
+import java.util.List;
+
 public abstract class VincoloAssegnazioneTurnoTurno implements Vincolo{
-    
+
     /**
      * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1
      */
     protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2) {
-        
+
         return verificaContiguitàAssegnazioneTurni(aTurno1, aTurno2, ChronoUnit.MINUTES, 0);
     }
 
@@ -27,16 +32,25 @@ public abstract class VincoloAssegnazioneTurnoTurno implements Vincolo{
      */
     protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2, TemporalUnit tu, long delta){
         LocalDateTime aTurno1End = aTurno1.getData().atTime(aTurno1.getTurno().getOraFine());
-        
+
         // if aTurno1 shift spans more than one day, we add 1 day to its endDateTime
         if(aTurno1.getTurno().isGiornoSuccessivo()){
             aTurno1End = aTurno1End.plusDays(1);
         }
-        
+
         LocalDateTime aTurno2Start = aTurno2.getData().atTime(aTurno2.getTurno().getOraInizio());
-        
+
         return aTurno1End.until(aTurno2Start, tu) <= delta;
-        
+
+    }
+
+    protected int getAssegnazioneTurnoPrecedenteIdx(List<AssegnazioneTurno> turniAssegnati, AssegnazioneTurno turnoDaAssegnare){
+        for(int i = 0; i < turniAssegnati.size(); i++){
+            if(turniAssegnati.get(i).getData().isAfter(turnoDaAssegnare.getData())){
+                return i-1;
+            }
+        }
+        return turniAssegnati.size();
     }
 
 }
