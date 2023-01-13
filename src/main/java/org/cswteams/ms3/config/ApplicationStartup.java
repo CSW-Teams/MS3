@@ -2,6 +2,7 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.control.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.*;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,15 +58,30 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private ScheduleDao dao;
 
+    @Autowired
+    private VincoloTipologieTurniContigueDao vincoloTipologieTurniContigueDao;
+
 
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         populateDB();
         registerHolidays();
+        registerConstraints();
         //populateDBTestSchedule();
     }
 
+    private void registerConstraints(){
+        // nessun turno può essere allocato a questa persona durante il suo smonto notte
+        VincoloTipologieTurniContigue vincoloTurniContigui = new VincoloTipologieTurniContigue(
+            20,
+            ChronoUnit.HOURS,
+            TipologiaTurno.NOTTURNO,
+            new HashSet<>(Arrays.asList(TipologiaTurno.values()))
+            );
+        vincoloTipologieTurniContigueDao.save(vincoloTurniContigui);
+    }
+    
     private void registerHolidays(){
         try {
             LoadHoliday();
