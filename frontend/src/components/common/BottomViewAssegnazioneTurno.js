@@ -10,6 +10,8 @@ import { UtenteAPI } from '../../API/UtenteAPI';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 
@@ -23,6 +25,9 @@ export default function TemporaryDrawer(props) {
   const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
   const [state, setState] = React.useState({bottom: false});
+  const [alertState, setAlert] = React.useState(false);
+  const [alertColor, setAlertColor] = React.useState("success");
+  const [alertMessage, setAlertMessage] = React.useState("");
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
@@ -83,12 +88,42 @@ export default function TemporaryDrawer(props) {
     props.onPostAssegnazione()
 
     //Verifico la risposta del server analizzando il codice di risposta http
-    if(status==202){
-      alert('assegnazione creata con successo');
-    }else if (status == 400){
-      alert('Errore nei parametri');
-    } else if( status == 406 ){
-      alert('Un vincolo è stato violato, non è stato aggiunta l\'assegnazione');
+    if(status===202){
+      toast.success('Assegnazione creata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      //alert('assegnazione creata con successo');
+    }else if (status === 400){
+      toast.error('Errore nei parametri', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+
+      //alert('Errore nei parametri');
+    } else if( status === 406 ){
+      toast.error('Violazione dei vincoli', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     }
 
     setState({ ...state, [anchor]: open });
@@ -138,10 +173,22 @@ export default function TemporaryDrawer(props) {
                   Assegna turno
                 </Button>
             </Stack>
-
             </div>
           </Drawer>
         </React.Fragment>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
+
   );
 }

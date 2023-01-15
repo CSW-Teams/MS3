@@ -3,9 +3,8 @@ import Button from '@mui/material/Button';
 import BasicDatePicker from '../components/common/DataPicker';
 import Stack from '@mui/material/Stack';
 import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
-import {Alert} from "@mui/lab";
-import {Collapse} from "shards-react";
-import {IconButton, Snackbar} from "@mui/material";
+import {toast, ToastContainer} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 /*
 * Schermata che permette di generare un nuovo schedulo
@@ -16,7 +15,7 @@ export class SchedulerGeneratorView extends React.Component{
         this.state = {
             dataStart: "",
             dataEnd: "",
-            generationDone: ""
+
 
         }
 
@@ -36,24 +35,32 @@ export class SchedulerGeneratorView extends React.Component{
         let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
         let assegnazione = await assegnazioneTurnoAPI.postGenerationSchedule(this.state.dataStart,this.state.dataEnd)
         if(assegnazione==null){
-          this.setState({generationDone: "-1"})
+          toast.error('Errore nella generazione della pianificazione', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+
         }else{
-          this.setState({generationDone: "1"})
-      }
-
-
+          toast.success('Pianificazione creata con successo', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+        }
     }
 
-
     render(){
-      const generationDone = this.state.generationDone
-      let alert
-      if(generationDone === "-1"){
-        alert = <Alert severity="error" onClose={() => {}}>Errore nella generazione della pianificazione</Alert>
-      }else if(generationDone === "1"){
-        alert = <Alert severity="success">Pianificazione generata con successo</Alert>
-      }
-
         return (
             <div style={{
                 display: 'flex',
@@ -73,9 +80,20 @@ export class SchedulerGeneratorView extends React.Component{
                 <Button variant="contained" size="small" onClick={this.handleOnClick} >
                   Genera Pianificazione
                 </Button>
-                {alert}
-            </Stack>
 
+            </Stack>
+            <ToastContainer
+              position="top-center"
+              autoClose={5000}
+              hideProgressBar={true}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
             </div>
         )
     }

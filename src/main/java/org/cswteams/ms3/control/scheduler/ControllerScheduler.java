@@ -24,7 +24,7 @@ public class ControllerScheduler implements IControllerScheduler{
     // TO DO: Prenderli dalla configurazione e toglierli da qui
     private static final int massimoPeriodoContiguo = 12*60;
     private static final int numGiorni = 7;
-    private static final int numMaxMinuti = 60*60;
+    private static final int numMaxMinuti = 80*60;
 
     @Autowired
     private UtenteDao utenteDao;

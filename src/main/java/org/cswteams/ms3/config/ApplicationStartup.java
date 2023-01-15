@@ -176,6 +176,17 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u18 = new Utente("Vincenzo","Grassi", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
         Utente u19 = new Utente("Diana","Pasquali", "******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.SPECIALIZZANDO);
         Utente u20 = new Utente("Francesco","Lo Presti", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u21 = new Utente("Andrea","Pepe", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
+        Utente u22 = new Utente("Matteo","Fanfarillo", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
+        Utente u23 = new Utente("Matteo","Ciccaglione", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
+        Utente u24 = new Utente("Vittoria","De Nitto", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u25 = new Utente("Valeria","Cardellini", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u26 = new Utente("Roberto","Monte", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u27 = new Utente("Giovanni","Saggio", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u28 = new Utente("Livia","Simoncini", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
+        Utente u29 = new Utente("Ludovico","Zarrelli", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
+        Utente u30 = new Utente("Alessandro","Montenegro", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
+
 
         u7 = utenteDao.saveAndFlush(u7);
 
@@ -198,6 +209,17 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u18 = utenteDao.saveAndFlush(u18);
         u19 = utenteDao.saveAndFlush(u19);
         u20 = utenteDao.saveAndFlush(u20);
+        u21 = utenteDao.saveAndFlush(u20);
+        u22 = utenteDao.saveAndFlush(u20);
+        u23 = utenteDao.saveAndFlush(u20);
+        u24 = utenteDao.saveAndFlush(u20);
+        u25 = utenteDao.saveAndFlush(u20);
+        u26 = utenteDao.saveAndFlush(u20);
+        u27 = utenteDao.saveAndFlush(u20);
+        u28 = utenteDao.saveAndFlush(u20);
+        u29 = utenteDao.saveAndFlush(u20);
+        u30 = utenteDao.saveAndFlush(u20);
+
 
         //creo servizi
         Servizio servizio1 = new Servizio("reparto");
