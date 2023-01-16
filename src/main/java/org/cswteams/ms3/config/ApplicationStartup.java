@@ -219,11 +219,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //creo servizi
         Servizio servizio1 = new Servizio("reparto");
-        Servizio servizio3 = new Servizio("pronto soccorso");
+        Servizio servizio2 = new Servizio("ambulatorio");
 
 
+        servizioDao.save(servizio2);
         servizioDao.save(servizio1);
-        servizioDao.save(servizio3);
 
 
         //Creo turni
@@ -244,19 +244,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         t3.setNumUtentiGuardia(2);
         t3.setNumUtentiReperibilita(2);
 
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
+        t5.setNumUtentiGuardia(2);
+        t5.setNumUtentiReperibilita(2);
 
-        Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio3, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);
-        t2.setNumUtentiGuardia(2);
-        t2.setNumUtentiReperibilita(2);
-
-        Turno t4 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio3, TipologiaTurno.NOTTURNO, categorieVietate,giornoSuccessivo);
-        t3.setNumUtentiGuardia(2);
-        t3.setNumUtentiReperibilita(2);
 
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
-        turnoDao.saveAndFlush(t4);
-        turnoDao.saveAndFlush(t1);
+        turnoDao.saveAndFlush(t5);
+
 
     }
 
