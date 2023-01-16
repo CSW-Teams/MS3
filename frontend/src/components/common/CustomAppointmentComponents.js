@@ -17,7 +17,7 @@ export const AppointmentSingleContent = ({
                                   }) => (
   <StyledAppointmentsAppointmentContent {...restProps} formatDate={formatDate} data={data} >
     <div className={classes.container}>
-      <div style={{textAlign: "center", color: "white","font-family":"sans-serif", "font-weight":"bold"}}>
+      <div style={{textAlign: "center", color: "white","fontFamily":"sans-serif", "font-weight":"bold"}}>
         {data.title}
       </div>
       <li
@@ -64,10 +64,10 @@ export const Content = ({
         resources={appointmentResources}
         className={classNames(tooltip_classes.content, className)}
         {...restProps}
-      >
-        <h1>{appointmentData.title}! 🥳</h1>
-        <p>Festività {appointmentData.location} di tipo {appointmentData.category}.</p>
-        <p>Assegnare turni in questo giorno può generare malcontento. Ricorda di essere equo!</p>
+       >
+         <h1>{appointmentData.title}! 🥳</h1>
+          <li>Festività {appointmentData.category}</li>
+          <li>Assegnare turni in questo giorno può generare malcontento. Ricorda di essere equo!</li>
       </StyledDiv>
 
       )
@@ -189,7 +189,7 @@ export const AppointmentContent = ({
                             }) => (
   <StyledAppointmentsAppointmentContent {...restProps} formatDate={formatDate} data={data}>
     <div className={classes.container}>
-      <div style={{textAlign: "center", color: "white","font-family":"sans-serif", "font-weight":"bold"}}>
+      <div style={{textAlign: "center", color: "white","fontFamily":"sans-serif", "font-weight":"bold"}}>
         {data.title}
       </div>
       <li className={classes.text}>

@@ -34,8 +34,8 @@ export default class UserProfileView extends React.Component{
 
   }
   async componentDidMount() {
-    let utente = await(new UtenteAPI().getUserDetails(7));
-    let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(7))
+    let utente = await(new UtenteAPI().getUserDetails(1));
+    let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(1))
     this.setState({
       nome: utente.nome,
       cognome: utente.cognome,
