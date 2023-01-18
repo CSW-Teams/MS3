@@ -16,7 +16,6 @@ import {
 import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
 import {Button} from "@material-ui/core";
 
-
 export default class UserProfileView extends React.Component{
   constructor(props){
     super(props);
