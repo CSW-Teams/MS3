@@ -1,6 +1,5 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.CategoriaUtente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,10 +9,13 @@ import java.util.Set;
 
 public interface CategoriaUtenteDao extends JpaRepository<CategoriaUtente,Long> {
 
-    @Query(nativeQuery = true, value = "SELECT * FROM UTENTE_CATEGORIE AS US, CATEGORIA_UTENTE AS CU WHERE UTENTE_ID=:idPersona AND US.categorie_id=CU.id")
-    Set<CategoriaUtente> findCategorieUtente(@Param("idPersona") Long id);
+    @Query(nativeQuery = true, value = "SELECT * from categoria_utente as cu, utente_stato as us where us.stato_id=cu.id and us.utente_id=:idPersona")
+    Set<CategoriaUtente> findStatoUtente(@Param("idPersona") Long id);
 
-    @Query(nativeQuery = true,value="SELECT * FROM UTENTE_SPECIALIZZAZIONI AS US, CATEGORIA_UTENTE AS CU WHERE UTENTE_ID=:idPersona AND US.specializzazioni_id=CU.id")
-    Set<CategoriaUtente> findSpecializzazioneUtente(@Param("idPersona") Long id);
+    @Query(nativeQuery = true,value="SELECT * from categoria_utente as cu, utente_specializzazioni as us where us.specializzazioni_id=cu.id and us.utente_id=:idPersona")
+    Set<CategoriaUtente> findSpecializzazioniUtente(@Param("idPersona") Long id);
+
+    @Query(nativeQuery = true,value="SELECT * from categoria_utente as cu, utente_turnazioni as us where us.turnazioni_id=cu.id and us.utente_id=:idPersona")
+    Set<CategoriaUtente> findTurnazioniUtente(@Param("idPersona") Long id);
 
 }

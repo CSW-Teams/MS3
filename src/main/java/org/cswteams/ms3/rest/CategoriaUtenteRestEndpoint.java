@@ -21,7 +21,7 @@ public class CategoriaUtenteRestEndpoint {
     @Autowired
     private IControllerCategorieUtente controllerCategorieUtente;
 
-    @RequestMapping(method = RequestMethod.GET, path = "/utente_id={idUtente}")
+    @RequestMapping(method = RequestMethod.GET, path = "/stato/utente_id={idUtente}")
     public ResponseEntity<?> leggiCategorieUtente(@PathVariable Long idUtente) throws ParseException {
         if (idUtente != null) {
             Set<CategorieUtenteDTO> c = controllerCategorieUtente.leggiCategorieUtente(idUtente);
@@ -44,5 +44,18 @@ public class CategoriaUtenteRestEndpoint {
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/turnazioni/utente_id={idUtente}")
+    public ResponseEntity<?> leggiTurnazioniUtente(@PathVariable Long idUtente) throws ParseException {
+        if (idUtente != null) {
+            Set<CategorieUtenteDTO> c = controllerCategorieUtente.leggiTurnazioniUtente(idUtente);
+            if (c == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>( c, HttpStatus.FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
 
 }

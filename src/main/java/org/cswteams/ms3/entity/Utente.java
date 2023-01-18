@@ -30,10 +30,13 @@ public class Utente {
     private String email;
 
     @ManyToMany
-    private List<CategoriaUtente> categorie ;
+    private List<CategoriaUtente> stato;
 
     @ManyToMany
     private  List<CategoriaUtente> specializzazioni;
+
+    @ManyToMany
+    private  List<CategoriaUtente> turnazioni;
 
     /** Massimo monte ore pianficabile in una settimana per questo utente */
     private int maxWeekSchedulableHours;
@@ -50,8 +53,9 @@ public class Utente {
         this.email = email;
         this.ruoloEnum = ruoloEnum;
         this.maxWeekSchedulableHours = -1;
-        this.categorie = new ArrayList<>();
+        this.stato = new ArrayList<>();
         this.specializzazioni= new ArrayList<>();
+        this.turnazioni = new ArrayList<>();
     }
 
     public Utente(Long id,String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum) {
@@ -66,15 +70,15 @@ public class Utente {
     }
 
      public Utente(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale,
-            RuoloEnum ruoloEnum, String email, int maxWeekSchedulableHours, List<CategoriaUtente> categorie) {
+            RuoloEnum ruoloEnum, String email, int maxWeekSchedulableHours, List<CategoriaUtente> stato) {
         this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
         this.maxWeekSchedulableHours = maxWeekSchedulableHours;
-        this.categorie=categorie;
+        this.stato = stato;
     }
 
 
-    public Utente(Long id, String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum, List<CategoriaUtente> categorie) {
+    public Utente(Long id, String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum, List<CategoriaUtente> stato) {
         this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
-        this.categorie=categorie;
+        this.stato = stato;
     }
 }
