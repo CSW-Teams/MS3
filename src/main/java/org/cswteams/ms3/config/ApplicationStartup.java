@@ -141,13 +141,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u6.getSpecializzazioni().add(cardiologo);
         Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO );
 
-        CategoriaUtente categoria_cardiologia = new CategoriaUtente(cardiologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        CategoriaUtente categoria_cardiologia = new CategoriaUtente(reparto_cardiologia, LocalDate.now(),LocalDate.now().plusMonths(2));
         categoriaUtenteDao.save(categoria_cardiologia);
 
         u1.getTurnazioni().add(categoria_cardiologia);
         Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", RuoloEnum.SPECIALIZZANDO);
         u2.getTurnazioni().add(categoria_cardiologia);
         Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u3.getTurnazioni().add(categoria_cardiologia);
         Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u5 = new Utente("Daniele","La Prova", "DNLLPRV******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u7 = new Utente("Luca","Fiscariello", "FSCRLC******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
