@@ -6,7 +6,7 @@ import SelectCategoria from './SelectCategoria';
 import Button from '@mui/material/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {Divider} from "@material-ui/core";
+import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 
 export default function TemporaryDrawer(props) {
 
@@ -46,13 +46,18 @@ export default function TemporaryDrawer(props) {
 
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione.
   //Viene passata come callback al componente <Button>Assegna turno</Button>
-  const assegnaTurno = (anchor, open) => async (event) => {
+  const aggiungiCategoria= (anchor, open) => async (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
     setState({ ...state, [anchor]: open });
 
+    let categoriaUtenteAPI = new CategoriaUtenteAPI()
+
     let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+    status = await categoriaUtenteAPI.postAggiungiTurnazione(categoria, dataInizio, dataFine)
+
+    props.onPostAssegnazione()
 
     //Verifico la risposta del server analizzando il codice di risposta http
     if(status===202){
@@ -107,7 +112,7 @@ export default function TemporaryDrawer(props) {
               <label>Turnazioni</label>
               <SelectCategoria onSelectedCategoria = {handleCategoria} ></SelectCategoria>
 
-              <Button variant="contained" size="small" onClick={assegnaTurno('bottom', false)}>
+              <Button variant="contained" size="small" onClick={aggiungiCategoria('bottom', false)}>
                 <i className="fa fa-plus" aria-hidden="true"> </i>
               </Button>
             </Stack>
