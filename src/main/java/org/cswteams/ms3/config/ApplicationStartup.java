@@ -6,10 +6,7 @@ import org.cswteams.ms3.control.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.CategoriaUtentiEnum;
-import org.cswteams.ms3.enums.HolidayCategory;
-import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -176,6 +173,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //creo servizi
         Servizio servizio1 = new Servizio("reparto");
+        servizio1.getMansioni().add(MansioneEnum.AMBULATORIO);
+
         Servizio servizio2 = new Servizio("gastroenterologia");
         Servizio servizio3 = new Servizio("allergologia");
 
