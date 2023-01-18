@@ -140,28 +140,52 @@ public class ScheduleBuilder {
         }
     }
 
-    /**Aggiunge una assegnazione turno manualmente alla pianificazione, senza
-     * apportare nessun tipo di controllo.
+    /**
+     * Questo metodo è invocato nel momento in cui è richiesta l'aggiunta di un assegnazione turno in modo forzato.
+     * Il metodo va quindi a verificare i soli vincoli che non possono essere violati.
+     * @param contesto
+     * @throws ViolatedConstraintException
      */
-    public Schedule addAssegnazioneTurnoForced(AssegnazioneTurno at){
-        this.schedule.getAssegnazioniTurno().add(at);
-        return this.schedule;
+    private void verificaTuttiVincoliForced(ContestoVincolo contesto) throws ViolatedConstraintException{
+
+        for(Vincolo vincolo : this.allConstraints){
+            if(!vincolo.isViolabile())
+                vincolo.verificaVincolo(contesto);
+        }
     }
+
+
 
     /** Aggiunge un'assegnazione turno manualmente alla pianificazione.
      * L'assegnazione deve già essere compilata con la data e gli utenti.
      * @throws IllegalAssegnazioneTurnoException
      */
-    public Schedule addAssegnazioneTurno(AssegnazioneTurno at) throws IllegalAssegnazioneTurnoException{
+    public Schedule addAssegnazioneTurno(AssegnazioneTurno at, boolean forced) throws IllegalAssegnazioneTurnoException{
         
         for (Utente u : at.getUtenti()){
 
-            try {
-                verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
-            } catch (ViolatedConstraintException e) {
-                throw new IllegalAssegnazioneTurnoException(e);
+            //verifico se è richiesta un aggiunta di assegnazione turno in modo forzata
+            if(!forced){
+
+                //Se non è richiesta la forzatura allora si verificano tutti i vincoli
+                try {
+                    verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
+                } catch (ViolatedConstraintException e) {
+                    throw new IllegalAssegnazioneTurnoException(e);
+                }
+            }else{
+
+                //Se è richiesta la forzatura si verificano solo i vincoli non violabili
+                try {
+                    verificaTuttiVincoliForced(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
+                } catch (ViolatedConstraintException e) {
+                    throw new IllegalAssegnazioneTurnoException(e);
+                }
             }
+
         }
-        return addAssegnazioneTurnoForced(at);
+
+        this.schedule.getAssegnazioniTurno().add(at);
+        return this.schedule;
     }
 }

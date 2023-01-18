@@ -78,10 +78,12 @@ public class ControllerScheduler implements IControllerScheduler{
     }
 
     /**
-     * Permette di aggiungere una nuova assegnazione( rispettando tutti i vincoli) ad uno schedulo gia esistente. Il controller andrà a cercare
+     * Permette di aggiungere una nuova assegnazione ad uno schedulo gia esistente. Il controller andrà a cercare
      * lo schedulo contenente il giorno della nuova assegnazione e lo passerà al builder.
+     * Se forced è true l'assegnazione verrà aggiunta solo se vengono rispetatti i vincoli non violabili.
+     * Se forced è false l'assegnazione verà aggiunta se vengono rispettati tutti i vincoli.
      */
-    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno) throws  IllegalAssegnazioneTurnoException {
+    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno,boolean forced) throws  IllegalAssegnazioneTurnoException {
 
         //creo un nuovo builder passandogli uno schedulo già esistente
         this.scheduleBuilder = new ScheduleBuilder(
@@ -90,25 +92,11 @@ public class ControllerScheduler implements IControllerScheduler{
                 scheduleDao.findByDateBetween(assegnazioneTurno.getDataEpochDay()) //Schedulo gia esistente
         );
 
-        return scheduleDao.save(this.scheduleBuilder.addAssegnazioneTurno(assegnazioneTurno));
+        return scheduleDao.save(this.scheduleBuilder.addAssegnazioneTurno(assegnazioneTurno,forced));
     }
 
 
-    /**
-     * Permette di aggiungere una nuova assegnazione( senza rispettare vincoli) ad uno schedulo gia esistente. Il controller andrà a cercare
-     * lo schedulo contenente il giorno della nuova assegnazione e lo passerà al builder.
-     */
-    public Schedule aggiungiAssegnazioneTurnoForced(AssegnazioneTurno assegnazioneTurno)  {
 
-        //creo un nuovo builder passandogli uno schedulo già esistente
-        this.scheduleBuilder = new ScheduleBuilder(
-                vincoloDao.findAll(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
-                utenteDao.findAll(), // tutti i candidati da allocare ai turni
-                scheduleDao.findByDateBetween(assegnazioneTurno.getDataEpochDay()) //Schedulo gia esistente
-        );
-
-        return scheduleDao.save(this.scheduleBuilder.addAssegnazioneTurnoForced(assegnazioneTurno));
-    }
 
 
     

@@ -7,10 +7,12 @@ import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloPersonaTurnoException;
 
+import javax.persistence.Entity;
 import java.util.List;
 import java.util.Objects;
 
-public class VincoloPersonaTurno implements Vincolo {
+@Entity
+public class VincoloPersonaTurno extends Vincolo {
 
     @Override
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {

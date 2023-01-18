@@ -5,10 +5,7 @@ import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
-import org.cswteams.ms3.entity.vincoli.VincoloMaxPeriodoConsecutivo;
-import org.cswteams.ms3.entity.vincoli.VincoloPersonaTurno;
-import org.cswteams.ms3.entity.vincoli.VincoloTipologieTurniContigue;
+import org.cswteams.ms3.entity.vincoli.*;
 import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,12 +87,18 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             new HashSet<>(Arrays.asList(TipologiaTurno.values()))
             );
 
+
+        Vincolo vincolo1 = new VincoloPersonaTurno();
+        Vincolo vincolo2 = new  VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo);
+        Vincolo vincolo3 = new  VincoloMaxOrePeriodo(numGiorni,numMaxMinuti);
+
         vincoloTurniContigui.setViolabile(true);
+        vincolo2.setViolabile(true);
 
         vincoloDao.saveAndFlush(vincoloTurniContigui);
-        vincoloDao.saveAndFlush(new VincoloPersonaTurno());
-        vincoloDao.saveAndFlush(new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo));
-        vincoloDao.saveAndFlush(new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti));
+        vincoloDao.saveAndFlush(vincolo1);
+        vincoloDao.saveAndFlush(vincolo3);
+        vincoloDao.saveAndFlush(vincolo2);
     }
     
     private void registerHolidays(){
@@ -225,6 +228,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Servizio servizio1 = new Servizio("reparto");
         Servizio servizio2 = new Servizio("gastroenterologia");
         Servizio servizio3 = new Servizio("allergologia");
+
+        servizio1.getMansioni().add(MansioneEnum.AMBULATORIO);
 
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);

@@ -10,11 +10,15 @@ import java.util.List;
 public class ServizioDTO {
 
     private String nome;
-    private List<MansioneEnum> mansioni;
+    private List<MansioneEnum> mansioni = new ArrayList<>();
 
     public ServizioDTO(String nome, List<MansioneEnum> mansioni){
         this.nome = nome;
         this.mansioni = mansioni;
+    }
+
+    public ServizioDTO(String nome){
+        this.nome = nome;
     }
     public ServizioDTO(){}
 }
