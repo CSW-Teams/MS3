@@ -1,12 +1,7 @@
 package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -103,7 +98,12 @@ public class ScheduleBuilder {
     private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
         
         List<Utente> selectedUsers = new ArrayList<>();
-        for (UserScheduleState userScheduleState : allUserScheduleStates.values()){
+
+        //Randomizzo la scelta dell'utente dalla lista di tutti gli utenti
+        List<UserScheduleState> allUserScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
+        Collections.shuffle(allUserScheduleState);
+
+        for (UserScheduleState userScheduleState : allUserScheduleState){
             if (selectedUsers.size() == numUtenti){
                 break;
             }

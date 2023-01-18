@@ -12,7 +12,7 @@ import java.util.Set;
 public class MappaServizio {
 
     public static Servizio servizioDTOtoEntity(ServizioDTO dto){
-        return new Servizio(dto.getNome());
+        return new Servizio(dto.getNome(), dto.getMansioni());
     }
 
     public static Set<ServizioDTO> servizioEntitytoDTO(List<Servizio> servizi){
@@ -24,7 +24,7 @@ public class MappaServizio {
     }
 
     public static ServizioDTO servizioEntitytoDTO(Servizio entity){
-        return new ServizioDTO(entity.getNome());
+        return new ServizioDTO(entity.getNome(), entity.getMansioni());
     }
 
 }
