@@ -33,4 +33,16 @@ public class CategoriaUtenteRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @RequestMapping(method = RequestMethod.GET, path = "/specializzazioni/utente_id={idUtente}")
+    public ResponseEntity<?> leggiSpecializzazioniUtente(@PathVariable Long idUtente) throws ParseException {
+        if (idUtente != null) {
+            Set<CategorieUtenteDTO> c = controllerCategorieUtente.leggiSpecializzazioniUtente(idUtente);
+            if (c == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>( c, HttpStatus.FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
 }

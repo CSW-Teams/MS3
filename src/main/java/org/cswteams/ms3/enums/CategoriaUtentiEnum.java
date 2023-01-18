@@ -5,7 +5,13 @@ public enum CategoriaUtentiEnum {
     OVER_62("over_62"),
     IN_FERIE("in_ferie"),
     IN_MALATTIA("in_malattia"),
-    CATEGORIA_PROTETTA("categoria_protetta");
+    CATEGORIA_PROTETTA("categoria_protetta"),
+    UROLOGIA("urologia"),
+    CARDIOLOGIA("cardiologia"),
+    PEDIARIA("pediatria"),
+    ONCOLOGIA("oncologia");
+
+
 
     private String db_code;
 

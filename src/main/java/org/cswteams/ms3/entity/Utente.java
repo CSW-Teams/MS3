@@ -32,6 +32,9 @@ public class Utente {
     @ManyToMany
     private List<CategoriaUtente> categorie ;
 
+    @ManyToMany
+    private  List<CategoriaUtente> specializzazioni;
+
     /** Massimo monte ore pianficabile in una settimana per questo utente */
     private int maxWeekSchedulableHours;
 
@@ -48,6 +51,7 @@ public class Utente {
         this.ruoloEnum = ruoloEnum;
         this.maxWeekSchedulableHours = -1;
         this.categorie = new ArrayList<>();
+        this.specializzazioni= new ArrayList<>();
     }
 
     public Utente(Long id,String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum) {

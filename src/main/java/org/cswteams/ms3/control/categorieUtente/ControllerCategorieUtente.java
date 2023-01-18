@@ -16,9 +16,16 @@ public class ControllerCategorieUtente implements IControllerCategorieUtente {
 
     @Autowired
     CategoriaUtenteDao categoriaUtenteDao;
+
     @Override
     public Set<CategorieUtenteDTO> leggiCategorieUtente(Long id) {
         Set<CategorieUtenteDTO> categorieUtenteDTO = MappaCategoriaUtente.categoriaUtenteToDTO(categoriaUtenteDao.findCategorieUtente(id));
         return categorieUtenteDTO;
+    }
+
+    @Override
+    public Set<CategorieUtenteDTO> leggiSpecializzazioniUtente(Long id) {
+        Set<CategorieUtenteDTO> specializzazioneUtenteDTO = MappaCategoriaUtente.categoriaUtenteToDTO(categoriaUtenteDao.findSpecializzazioneUtente(id));
+        return specializzazioneUtenteDTO;
     }
 }

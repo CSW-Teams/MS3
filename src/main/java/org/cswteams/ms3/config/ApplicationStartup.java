@@ -94,53 +94,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     }
 
-    private void populateDBTestSchedule() throws  TurnoException {
-        //Creo categorie
-        CategoriaUtente categoriaOver62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,LocalDate.now(), LocalDate.now().plusDays(1000));
-        categoriaUtenteDao.save(categoriaOver62);
-
-        //Creo utenti
-        Utente u1 = new Utente("Manuel","Mastrofini", "MNLMSTR******", LocalDate.of(1987, 3, 14),"salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO );
-        Utente u7 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1950, 3, 7),"giovannicantone@gmail.com", RuoloEnum.STRUTTURATO );
-
-        u7.getCategorie().add(categoriaOver62);
-        utenteDao.save(u7);
-        utenteDao.save(u1);
-        //creo servizi
-        Servizio servizio1 = new Servizio("reparto");
-        Servizio servizio2 = new Servizio("ambulatorio");
-        servizioDao.save(servizio2);
-        servizioDao.save(servizio1);
-        //Creo turni
-        HashSet<CategoriaUtentiEnum> categorieVietate= new HashSet<>(Arrays.asList(
-                CategoriaUtentiEnum.DONNA_INCINTA,
-                CategoriaUtentiEnum.OVER_62,
-                CategoriaUtentiEnum.IN_MALATTIA,
-                CategoriaUtentiEnum.IN_FERIE)
-        );
-
-
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);
-        t2.setNumUtentiGuardia(1);
-        t2.setNumUtentiReperibilita(1);
-
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate,false);
-        t3.setNumUtentiGuardia(1);
-        t3.setNumUtentiReperibilita(1);
-
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate,false);
-        t4.setNumUtentiGuardia(1);
-        t4.setNumUtentiReperibilita(1);
-
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
-        t5.setNumUtentiGuardia(1);
-        t5.setNumUtentiReperibilita(1);
-
-        turnoDao.save(t2);
-        turnoDao.save(t3);
-        turnoDao.save(t4);
-        turnoDao.save(t5);
-    }
 
     private void populateDB() throws TurnoException {
 
@@ -151,10 +104,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         CategoriaUtente ferie = new CategoriaUtente(CategoriaUtentiEnum.IN_FERIE,LocalDate.now(), LocalDate.now().plusDays(7));
         categoriaUtenteDao.save(ferie);
 
+        CategoriaUtente cardiologo = new CategoriaUtente(CategoriaUtentiEnum.CARDIOLOGIA,LocalDate.now(), LocalDate.now().plusDays(10000));
+        categoriaUtenteDao.save(cardiologo);
+
         //Creo utenti
         Utente u6 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", RuoloEnum.STRUTTURATO );
         u6.getCategorie().add(categoriaOver62);
         u6.getCategorie().add(ferie);
+        // Aggiungo la specializzazione
+        u6.getSpecializzazioni().add(cardiologo);
         Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO );
         Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", RuoloEnum.SPECIALIZZANDO);
         Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", RuoloEnum.SPECIALIZZANDO);
@@ -169,21 +127,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u13 = new Utente("Federica","Pollini", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
         Utente u14 = new Utente("Claudia","Rossi", "******", LocalDate.of(1982, 7, 6),"***@gmail.com@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u15 = new Utente("Giorgio","Bianchi", "******", LocalDate.of(1993, 2, 12),"***@gmail.com@gmail.com", RuoloEnum.STRUTTURATO);
-        Utente u16 = new Utente("Claudio","Gialli", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
-        Utente u17 = new Utente("Filippo","Neri", "******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        Utente u18 = new Utente("Vincenzo","Grassi", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
-        Utente u19 = new Utente("Diana","Pasquali", "******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        Utente u20 = new Utente("Francesco","Lo Presti", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
-        Utente u21 = new Utente("Andrea","Pepe", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
-        Utente u22 = new Utente("Matteo","Fanfarillo", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
-        Utente u23 = new Utente("Matteo","Ciccaglione", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
-        Utente u24 = new Utente("Vittoria","De Nitto", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
-        Utente u25 = new Utente("Valeria","Cardellini", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
-        Utente u26 = new Utente("Roberto","Monte", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
-        Utente u27 = new Utente("Giovanni","Saggio", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
-        Utente u28 = new Utente("Livia","Simoncini", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
-        Utente u29 = new Utente("Ludovico","Zarrelli", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
-        Utente u30 = new Utente("Alessandro","Montenegro", "******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.SPECIALIZZANDO);
+        Utente u16 = new Utente("Claudio","Gialli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u17 = new Utente("Filippo","Neri", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u18 = new Utente("Vincenzo","Grassi", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u19 = new Utente("Diana","Pasquali", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u20 = new Utente("Francesco","Lo Presti", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u21 = new Utente("Andrea","Pepe", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u22 = new Utente("Matteo","Fanfarillo", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u23 = new Utente("Matteo","Ciccaglione", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u24 = new Utente("Vittoria","De Nitto", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u25 = new Utente("Valeria","Cardellini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u26 = new Utente("Roberto","Monte", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u27 = new Utente("Giovanni","Saggio", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u28 = new Utente("Livia","Simoncini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u29 = new Utente("Ludovico","Zarrelli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u30 = new Utente("Alessandro","Montenegro", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
 
         u6 = utenteDao.saveAndFlush(u6);
         u7 = utenteDao.saveAndFlush(u7);
@@ -216,15 +174,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u29 = utenteDao.saveAndFlush(u20);
         u30 = utenteDao.saveAndFlush(u20);
 
-
         //creo servizi
         Servizio servizio1 = new Servizio("reparto");
-        Servizio servizio2 = new Servizio("ambulatorio");
-
+        Servizio servizio2 = new Servizio("gastroenterologia");
+        Servizio servizio3 = new Servizio("allergologia");
 
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
-
+        servizioDao.save(servizio3);
 
         //Creo turni
         HashSet<CategoriaUtentiEnum> categorieVietate= new HashSet<>(Arrays.asList(
@@ -233,7 +190,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 CategoriaUtentiEnum.IN_MALATTIA,
                 CategoriaUtentiEnum.IN_FERIE)
         );
-
 
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);
         t2.setNumUtentiGuardia(2);
@@ -248,12 +204,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         t5.setNumUtentiGuardia(2);
         t5.setNumUtentiReperibilita(2);
 
+        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio3, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
+        t6.setNumUtentiGuardia(2);
+        t6.setNumUtentiReperibilita(2);
 
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
-
-
+        turnoDao.saveAndFlush(t6);
     }
 
 
