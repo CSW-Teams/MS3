@@ -53,6 +53,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private CategoriaUtenteDao categoriaUtenteDao;
 
     @Autowired
+    private CategorieDao categoriaDao;
+
+    @Autowired
     private IHolidayController holidayController;
 
     @Autowired
@@ -110,25 +113,56 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     private void populateDB() throws TurnoException {
 
-        //Creo categorie
-        CategoriaUtente categoriaOver62 = new CategoriaUtente(CategoriaUtentiEnum.OVER_62,LocalDate.of(2022,3,7), LocalDate.now().plusDays(1000));
+        //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
+        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
+        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE (INCLUSIVE)
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", 1);
+        Categoria oncologia = new Categoria("ONCOLOGIA", 1);
+        //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
+        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", 2);
+        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", 2);
+        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", 2);
+        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", 2);
+
+        categoriaDao.save(categoriaFerie);
+        categoriaDao.save(categoriaOVER62);
+        categoriaDao.save(categoriaIncinta);
+        categoriaDao.save(categoriaMalattia);
+        categoriaDao.save(cardiologia);
+        categoriaDao.save(oncologia);
+        categoriaDao.save(reparto_cardiologia);
+        categoriaDao.save(reparto_oncologia);
+        categoriaDao.save(ambulatorio_cardiologia);
+        categoriaDao.save(ambulatorio_oncologia);
+
+
+        //Creo categorie stato per un utente specifico
+        CategoriaUtente categoriaOver62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2022,3,7), LocalDate.now().plusDays(1000));
         categoriaUtenteDao.save(categoriaOver62);
-
-        CategoriaUtente ferie = new CategoriaUtente(CategoriaUtentiEnum.IN_FERIE,LocalDate.now(), LocalDate.now().plusDays(7));
+        CategoriaUtente ferie = new CategoriaUtente(categoriaFerie,LocalDate.now(), LocalDate.now().plusDays(7));
         categoriaUtenteDao.save(ferie);
-
-        CategoriaUtente cardiologo = new CategoriaUtente(CategoriaUtentiEnum.CARDIOLOGIA,LocalDate.now(), LocalDate.now().plusDays(10000));
+        CategoriaUtente cardiologo = new CategoriaUtente(cardiologia,LocalDate.now(), LocalDate.now().plusDays(10000));
         categoriaUtenteDao.save(cardiologo);
 
         //Creo utenti
         Utente u6 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", RuoloEnum.STRUTTURATO );
-        u6.getCategorie().add(categoriaOver62);
-        u6.getCategorie().add(ferie);
+        u6.getStato().add(categoriaOver62);
+        u6.getStato().add(ferie);
         // Aggiungo la specializzazione
         u6.getSpecializzazioni().add(cardiologo);
         Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO );
+
+        CategoriaUtente categoria_cardiologia = new CategoriaUtente(reparto_cardiologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(categoria_cardiologia);
+
+        u1.getTurnazioni().add(categoria_cardiologia);
         Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u2.getTurnazioni().add(categoria_cardiologia);
         Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u3.getTurnazioni().add(categoria_cardiologia);
         Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u5 = new Utente("Daniele","La Prova", "DNLLPRV******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
         Utente u7 = new Utente("Luca","Fiscariello", "FSCRLC******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
@@ -189,8 +223,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //creo servizi
         Servizio servizio1 = new Servizio("reparto");
-        servizio1.getMansioni().add(MansioneEnum.AMBULATORIO);
-
         Servizio servizio2 = new Servizio("gastroenterologia");
         Servizio servizio3 = new Servizio("allergologia");
 
@@ -199,11 +231,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         servizioDao.save(servizio3);
 
         //Creo turni
-        HashSet<CategoriaUtentiEnum> categorieVietate= new HashSet<>(Arrays.asList(
-                CategoriaUtentiEnum.DONNA_INCINTA,
-                CategoriaUtentiEnum.OVER_62,
-                CategoriaUtentiEnum.IN_MALATTIA,
-                CategoriaUtentiEnum.IN_FERIE)
+        HashSet<Categoria> categorieVietate= new HashSet<>(Arrays.asList(
+                categoriaIncinta,
+                categoriaOVER62,
+                categoriaMalattia,
+                categoriaFerie)
         );
 
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);

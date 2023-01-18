@@ -2,7 +2,6 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 
@@ -11,7 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -45,11 +44,10 @@ public class Turno {
     @ManyToOne
     private Servizio servizio;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Enumerated(EnumType.STRING)
-    private Set<CategoriaUtentiEnum> categorieVietate;
+    @ManyToMany
+    private Set<Categoria> categorieVietate;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<CategoriaUtentiEnum> categorieVietate, boolean giornoSuccessivo) throws  TurnoException {
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<Categoria> categorieVietate, boolean giornoSuccessivo) throws  TurnoException {
 
         // Se l'ora di inizio segue l'ora di fine verrà sollevata eccezzione solo se il turno non è configurato
         // per iniziare in un giorno e finire in quello seguente
@@ -67,19 +65,19 @@ public class Turno {
 
     }
 
-    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<CategoriaUtentiEnum> categorieVietate, boolean giornoSuccessivo) throws  TurnoException {
+    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<Categoria> categorieVietate, boolean giornoSuccessivo) throws  TurnoException {
         this(oraInizio, oraFine, servizio, tipologia, categorieVietate,giornoSuccessivo);
         this.id = id;
     }
 
     public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio,boolean giornoSuccessivo) throws  TurnoException {
+            GiorniDellaSettimanaBitMask giorniDiValidità, Set<Categoria> categorieVietate, Servizio servizio,boolean giornoSuccessivo) throws  TurnoException {
         this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate,giornoSuccessivo);
         this.giorniDiValidità = giorniDiValidità;
     }
 
      public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio, int numUtentiGuardia, int numUtentiReperibilita, boolean giornoSuccessivo) throws TurnoException {
+            GiorniDellaSettimanaBitMask giorniDiValidità, Set<Categoria> categorieVietate, Servizio servizio, int numUtentiGuardia, int numUtentiReperibilita, boolean giornoSuccessivo) throws TurnoException {
         this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate, giornoSuccessivo);
         this.giorniDiValidità = giorniDiValidità;
         this.numUtentiGuardia = numUtentiGuardia;
@@ -89,7 +87,7 @@ public class Turno {
     public Turno() {
     }
 
-    public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt, Set<CategoriaUtentiEnum> es) {
+    public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt, Set<Categoria> es) {
         this.oraFine=oi;
         this.oraInizio=of;
         this.tipologiaTurno=tt;
