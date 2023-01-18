@@ -2,6 +2,8 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.control.vincoli.VincoloMaxOrePeriodo;
+import org.cswteams.ms3.control.vincoli.VincoloMaxPeriodoConsecutivo;
 import org.cswteams.ms3.control.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
@@ -80,6 +82,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             new HashSet<>(Arrays.asList(TipologiaTurno.values()))
             );
         vincoloTipologieTurniContigueDao.save(vincoloTurniContigui);
+
+        VincoloMaxPeriodoConsecutivo vincoloMaxPeriodoConsecutivo = new VincoloMaxPeriodoConsecutivo(12*60, Arrays.asList(CategoriaUtentiEnum.values()));
+        VincoloMaxOrePeriodo vincoloMaxOrePeriodo = new VincoloMaxOrePeriodo(7,80*60);
+
     }
     
     private void registerHolidays(){

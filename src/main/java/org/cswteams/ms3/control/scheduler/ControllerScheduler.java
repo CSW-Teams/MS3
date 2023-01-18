@@ -1,6 +1,7 @@
 package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -12,6 +13,7 @@ import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +52,7 @@ public class ControllerScheduler implements IControllerScheduler{
         List<Vincolo> vincoli = new ArrayList<>();
         
         vincoli.add(new VincoloPersonaTurno());
-        vincoli.add(new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo));
+        vincoli.add(new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo, Arrays.asList(CategoriaUtentiEnum.values())));
         vincoli.addAll(vincoloTipologieTurniContigueDao.findAll());
         vincoli.add(new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti));
 

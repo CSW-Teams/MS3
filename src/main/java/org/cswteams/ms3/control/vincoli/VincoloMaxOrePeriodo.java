@@ -1,14 +1,27 @@
 package org.cswteams.ms3.control.vincoli;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.time.LocalDate;
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
 public class VincoloMaxOrePeriodo extends VincoloAssegnazioneTurnoTurno{
 
+    @Id
+    @GeneratedValue
+    private long id;
     private int numGiorniPeriodo;
 
     private long numMinutiMaxPeriodo;
@@ -16,6 +29,10 @@ public class VincoloMaxOrePeriodo extends VincoloAssegnazioneTurnoTurno{
     public VincoloMaxOrePeriodo(int numGiorniPeriodo, long numMinutiMax){
         this.numGiorniPeriodo = numGiorniPeriodo;
         this.numMinutiMaxPeriodo = numMinutiMax;
+    }
+
+    protected VincoloMaxOrePeriodo(){
+
     }
 
     @Override
