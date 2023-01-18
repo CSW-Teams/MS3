@@ -1,4 +1,4 @@
-package org.cswteams.ms3.control.vincoli;
+package org.cswteams.ms3.entity.vincoli;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -6,12 +6,12 @@ import java.time.temporal.TemporalUnit;
 
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 
-import java.time.LocalDate;
+import javax.persistence.Entity;
 
-import java.time.LocalDate;
 import java.util.List;
 
-public abstract class VincoloAssegnazioneTurnoTurno implements Vincolo{
+@Entity
+public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
 
     /**
      * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1

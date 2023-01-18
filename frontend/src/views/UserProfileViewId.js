@@ -19,7 +19,6 @@ import {
 import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
 import {Button} from "@material-ui/core";
 
-
 export default class UserProfileView extends React.Component{
   constructor(props){
     super(props);
@@ -30,7 +29,9 @@ export default class UserProfileView extends React.Component{
       email: "",
       categorie: "",
       dataNascita: "",
-      categorie_utente: []
+      categorie_utente: [],
+      specializzazioni_utente:[],
+      turnazioni_utente:[],
     }
 
   }
@@ -38,6 +39,9 @@ export default class UserProfileView extends React.Component{
     let id = this.props.match.params.idUser
     let utente = await(new UtenteAPI().getUserDetails(id));
     let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
+    let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
+    let turnazioni_utente = await(new CategoriaUtenteAPI().getTurnazioniUtente(id))
+
     this.setState({
       nome: utente.nome,
       cognome: utente.cognome,
@@ -45,13 +49,72 @@ export default class UserProfileView extends React.Component{
       email: utente.email,
       dataNascita: utente.dataNascita,
       categorie_utente : categorie_utente,
+      specializzazioni_utente:specializzazioni_utente,
+      turnazioni_utente:turnazioni_utente,
     })
   }
 
 
   render() {
+
+    function getTurnazioniSpecializzando() {
+      if(this.state.ruolo!=="STRUTTURATO")
+        return <MDBCol>
+          <MDBCard>
+            <MDBCardBody className="text-center">
+              <MDBCardTitle>Turnazioni
+                <Button size="small">
+                  <i className="fas fa-edit fa-lg"> </i></Button>
+              </MDBCardTitle>
+              <MDBTable align="middle">
+                <MDBTableHead>
+                  <tr>
+                    <th scope='col'>Turnazione</th>
+                    <th scope='col'>Inizio validità</th>
+                    <th scope='col'>Fine validità</th>
+                  </tr>
+                </MDBTableHead>
+                <MDBTableBody>
+                  {this.state.turnazioni_utente.map((data, key) => {
+                    return (
+                      <tr key={key}>
+                        <td>{data.categoria}</td>
+                        <td>{data.inizio}</td>
+                        <td>{data.fine}</td>
+                      </tr>
+                    )
+                  })}
+                </MDBTableBody>
+              </MDBTable>
+            </MDBCardBody>
+          </MDBCard>
+        </MDBCol>;
+    }
+
+    function getSpecializzazioneStrutturato() {
+      if(this.state.ruolo==="STRUTTURATO")
+          return <MDBRow>
+            <MDBCol sm="3">
+              <MDBCardText>Specializzazione</MDBCardText>
+            </MDBCol>
+            <MDBCol sm="9">
+              <MDBCardText className="text-muted">
+                <MDBTableBody>
+                {this.state.specializzazioni_utente.map((data, key) => {
+                  return (
+                    <tr key={key}>
+                      <td>{data.categoria}</td>
+                    </tr>
+                  )
+                })}
+              </MDBTableBody>
+              </MDBCardText>
+            </MDBCol>
+          </MDBRow>;
+    }
+
     return (
-      <section style={{ backgroundColor: '#eee' }}>
+      <section style={{backgroundColor: '#eee'}}>
         <MDBContainer className="py-5">
           <MDBRow>
             <MDBCol lg="4">
@@ -61,9 +124,10 @@ export default class UserProfileView extends React.Component{
                     src="https://erad.com/wp-content/uploads/choice-icons-physician-portal.png"
                     alt="avatar"
                     className="rounded-circle"
-                    style={{ width: '150px' }}
-                    fluid />
-                  <p className="text-muted mb-1">{this.state.nome + " " + this.state.cognome}</p>
+                    style={{width: '150px'}}
+                    fluid/>
+                  <p
+                    className="text-muted mb-1">{this.state.nome + " " + this.state.cognome}</p>
                   <p className="text-muted mb-4">{this.state.ruolo}</p>
                 </MDBCardBody>
               </MDBCard>
@@ -71,13 +135,18 @@ export default class UserProfileView extends React.Component{
             <MDBCol lg="8">
               <MDBCard className="mb-4">
                 <MDBCardBody>
-                  <MDBCardTitle>Informazioni utente  <Button size="small"><i className="fas fa-edit fa-lg"> </i></Button></MDBCardTitle>
-                  <MDBRow >
+                  <MDBCardTitle>Informazioni utente
+                    <Button size="small"><i
+                    className="fas fa-edit fa-lg"> </i>
+                    </Button>
+                  </MDBCardTitle>
+                  <MDBRow>
                     <MDBCol sm="3">
                       <MDBCardText>Nome</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
-                      <MDBCardText className="text-muted">{this.state.nome}</MDBCardText>
+                      <MDBCardText
+                        className="text-muted">{this.state.nome}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
                   <MDBRow>
@@ -85,7 +154,8 @@ export default class UserProfileView extends React.Component{
                       <MDBCardText>Cognome</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
-                      <MDBCardText className="text-muted">{this.state.cognome}</MDBCardText>
+                      <MDBCardText
+                        className="text-muted">{this.state.cognome}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
                   <MDBRow>
@@ -93,7 +163,8 @@ export default class UserProfileView extends React.Component{
                       <MDBCardText>Email</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
-                      <MDBCardText className="text-muted">{this.state.email}</MDBCardText>
+                      <MDBCardText
+                        className="text-muted">{this.state.email}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
                   <MDBRow>
@@ -101,7 +172,8 @@ export default class UserProfileView extends React.Component{
                       <MDBCardText>Data di Nascita</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
-                      <MDBCardText className="text-muted">{this.state.dataNascita}</MDBCardText>
+                      <MDBCardText
+                        className="text-muted">{this.state.dataNascita}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
                   <MDBRow>
@@ -109,21 +181,24 @@ export default class UserProfileView extends React.Component{
                       <MDBCardText>Ruolo</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
-                      <MDBCardText className="text-muted">{this.state.ruolo}</MDBCardText>
+                      <MDBCardText
+                        className="text-muted">{this.state.ruolo}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
+                  {getSpecializzazioneStrutturato.call(this)}
                 </MDBCardBody>
               </MDBCard>
             </MDBCol>
           </MDBRow>
           <MDBRow>
+            {getTurnazioniSpecializzando.call(this)}
             <MDBCol>
               <MDBCard>
                 <MDBCardBody className="text-center">
                   <MDBCardTitle>Categorie utente
                     <Button size="small"><i className="fas fa-edit fa-lg"> </i></Button>
                   </MDBCardTitle>
-                  <MDBTable align="middle" >
+                  <MDBTable align="middle">
                     <MDBTableHead>
                       <tr>
                         <th scope='col'>Categoria</th>
@@ -133,8 +208,8 @@ export default class UserProfileView extends React.Component{
                     </MDBTableHead>
                     <MDBTableBody>
                       {this.state.categorie_utente.map((data, key) => {
-                        if (data.categoria==="OVER_62")
-                          data.fine="//"
+                        if (data.categoria === "OVER_62")
+                          data.fine = "//"
                         return (
                           <tr key={key}>
                             <td>{data.categoria}</td>

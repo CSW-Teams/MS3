@@ -9,5 +9,8 @@ public interface IControllerCategorieUtente {
 
     Set<CategorieUtenteDTO> leggiCategorieUtente(Long id)  throws ParseException;
 
+    Set<CategorieUtenteDTO> leggiSpecializzazioniUtente(Long id)  throws ParseException;
+
+    Set<CategorieUtenteDTO> leggiTurnazioniUtente(Long id)  throws ParseException;
 
 }

@@ -78,8 +78,7 @@ export  class AssegnazioneTurnoAPI {
 
       assegnazioneTurno.forced = forced;
 
-      assegnazioneTurno.data= data.$d.getTime();
-      assegnazioneTurno.servizio = servizioNome
+      assegnazioneTurno.servizio = new Object().nome = servizioNome;
       assegnazioneTurno.tipologiaTurno = turnoTipologia
       assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
       assegnazioneTurno.utentiReperibili = utentiReperibilita;
@@ -92,7 +91,8 @@ export  class AssegnazioneTurnoAPI {
         body: JSON.stringify(assegnazioneTurno)
       };
 
-      const response = await fetch('/api/assegnazioneturni/',requestOptions);        
+      const response = await fetch('/api/assegnazioneturni/',requestOptions);   
+      console.log(response)     
       return response.status;
 
   }

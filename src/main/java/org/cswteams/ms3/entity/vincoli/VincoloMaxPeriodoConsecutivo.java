@@ -1,45 +1,32 @@
 package org.cswteams.ms3.control.vincoli;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.CategoriaUtente;
-import org.cswteams.ms3.entity.Utente;
-import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
-import org.cswteams.ms3.exception.ViolatedVincoloPersonaTurnoException;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Implementa il vincolo del numero massimo di ore consecutive che un utente può fare
  */
-@Getter
-@Setter
-@NoArgsConstructor
 @Entity
 public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno{
 
-    @Id
-    @GeneratedValue
-    private long id;
     private long maxConsecutiveMinutes;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private List<CategoriaUtentiEnum> categorieVincolate;
 
-     public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes, List<CategoriaUtentiEnum> categorieVincolate){
-        this.maxConsecutiveMinutes = maxConsecutiveMinutes;
-        this.categorieVincolate = categorieVincolate;
+
+    public VincoloMaxPeriodoConsecutivo() {
     }
 
-    protected VincoloMaxPeriodoConsecutivo(){
-
+    public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes, List<CategoriaUtentiEnum> categorieVincolate){
+        this.maxConsecutiveMinutes = maxConsecutiveMinutes;
+        this.categorieVincolate = categorieVincolate;
     }
 
 

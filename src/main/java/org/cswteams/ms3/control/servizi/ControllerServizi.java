@@ -4,6 +4,7 @@ import org.cswteams.ms3.control.utils.MappaServizio;
 import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dto.ServizioDTO;
 import org.cswteams.ms3.entity.Servizio;
+import org.cswteams.ms3.enums.MansioneEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,11 @@ public class ControllerServizi implements IControllerServizi{
     @Override
     public Set<ServizioDTO> leggiServizi() {
         return MappaServizio.servizioEntitytoDTO(servizioDao.findAll());
+    }
+
+    @Override
+    public ServizioDTO leggiServizioByNome(String nome) {
+        return MappaServizio.servizioEntitytoDTO(servizioDao.findByNome(nome));
     }
 
     @Override

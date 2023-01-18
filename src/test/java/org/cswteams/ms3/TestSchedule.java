@@ -5,7 +5,6 @@ import org.cswteams.ms3.control.scheduler.IControllerScheduler;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.junit.Assert;
@@ -57,17 +56,24 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
 
     @Before
     public void populateDBTestSchedule() {
+            //Crea turni e servizio
+            //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
+            Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
+            Categoria categoriaIncinta = new Categoria("INCINTA", 0);
+            Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
+            Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+            Servizio servizio1 = new Servizio("reparto");
+            servizioDao.save(servizio1);
             //Creo utente con categoria incinta
             Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com", RuoloEnum.SPECIALIZZANDO);
-            CategoriaUtente categoriaIncinta = new CategoriaUtente(CategoriaUtentiEnum.DONNA_INCINTA, LocalDate.now(), LocalDate.now().plusDays(10));
-            categoriaUtenteDao.saveAndFlush(categoriaIncinta);
-            pregUser.getCategorie().add(categoriaIncinta);
+            CategoriaUtente ci = new CategoriaUtente(categoriaIncinta, LocalDate.now(), LocalDate.now().plusDays(10));
+            categoriaUtenteDao.saveAndFlush(ci);
+            pregUser.getStato().add(ci);
             utenteDao.saveAndFlush(pregUser);
             //Creo utente generico
             Utente utente = new Utente("Manuel", "Rossi", "******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO);
             utenteDao.saveAndFlush(utente);
             //Crea turni e servizio
-            Servizio servizio1 = new Servizio("reparto");
             servizioDao.saveAndFlush(servizio1);
             Turno t1 = new Turno(
                     LocalTime.of(20, 0),
@@ -75,10 +81,10 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
                     servizio1,
                     TipologiaTurno.NOTTURNO,
                     new HashSet<>(Arrays.asList(
-                            CategoriaUtentiEnum.DONNA_INCINTA,
-                            CategoriaUtentiEnum.OVER_62,
-                            CategoriaUtentiEnum.IN_MALATTIA,
-                            CategoriaUtentiEnum.IN_FERIE)
+                            categoriaIncinta,
+                            categoriaOVER62,
+                            categoriaMalattia,
+                            categoriaFerie)
                     ));
 
             t1.setNumUtentiGuardia(1);

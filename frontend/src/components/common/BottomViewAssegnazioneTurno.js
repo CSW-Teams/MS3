@@ -168,7 +168,7 @@ export default function TemporaryDrawer(props) {
                   sx={{ width: 300 }}
                   renderInput={(params) => <TextField {...params} label="Medici Reperibili" />}
                 />
-                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced)}}/>} label="Forza assegnazione" />
+                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced)}}/>} label="Forza Vincoli non stringenti" />
                 <Button variant="contained" size="small" onClick={assegnaTurno('bottom', false)} >
                   Assegna turno
                 </Button>
