@@ -11,6 +11,7 @@ import React from "react";
 export default class SingleScheduleView extends ScheduleView {
 
 
+
   async componentDidMount() {
     let apiTurno = new AssegnazioneTurnoAPI();
     let turni = await apiTurno.getTurnByIdUser('1');
