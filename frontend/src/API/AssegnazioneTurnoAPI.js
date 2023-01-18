@@ -124,6 +124,7 @@ export  class AssegnazioneTurnoAPI {
       };
 
       const response = await fetch('/api/schedule/generation',requestOptions);
+      console.log(response)
       if(response.status != 202)
         return null
 

@@ -1,7 +1,7 @@
 package org.cswteams.ms3;
 
-import org.cswteams.ms3.control.vincoli.ContestoVincolo;
-import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.VincoloPersonaTurno;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;

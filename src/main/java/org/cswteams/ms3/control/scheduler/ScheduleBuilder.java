@@ -5,9 +5,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import lombok.experimental.Accessors;
-import org.cswteams.ms3.control.vincoli.ContestoVincolo;
-import org.cswteams.ms3.control.vincoli.Vincolo;
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.cswteams.ms3.exception.NotEnoughFeasibleUsersException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;

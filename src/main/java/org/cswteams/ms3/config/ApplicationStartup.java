@@ -2,10 +2,13 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
-import org.cswteams.ms3.control.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
+import org.cswteams.ms3.entity.vincoli.VincoloMaxPeriodoConsecutivo;
+import org.cswteams.ms3.entity.vincoli.VincoloPersonaTurno;
+import org.cswteams.ms3.entity.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +59,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private ScheduleDao dao;
 
     @Autowired
-    private VincoloTipologieTurniContigueDao vincoloTipologieTurniContigueDao;
+    private VincoloDao vincoloDao;
 
 
     @SneakyThrows
@@ -69,6 +72,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     }
 
     private void registerConstraints(){
+
+        //Creo vincoli
+        final int massimoPeriodoContiguo = 12*60;
+        final int numGiorni = 7;
+        final int numMaxMinuti = 80*60;
+
+
         // nessun turno può essere allocato a questa persona durante il suo smonto notte
         VincoloTipologieTurniContigue vincoloTurniContigui = new VincoloTipologieTurniContigue(
             20,
@@ -76,7 +86,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             TipologiaTurno.NOTTURNO,
             new HashSet<>(Arrays.asList(TipologiaTurno.values()))
             );
-        vincoloTipologieTurniContigueDao.save(vincoloTurniContigui);
+
+        vincoloTurniContigui.setViolabile(true);
+
+        vincoloDao.saveAndFlush(vincoloTurniContigui);
+        vincoloDao.saveAndFlush(new VincoloPersonaTurno());
+        vincoloDao.saveAndFlush(new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo));
+        vincoloDao.saveAndFlush(new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti));
     }
     
     private void registerHolidays(){
@@ -211,6 +227,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
         turnoDao.saveAndFlush(t6);
+
+
     }
 
 

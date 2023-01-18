@@ -1,22 +1,23 @@
-package org.cswteams.ms3.control.vincoli;
+package org.cswteams.ms3.entity.vincoli;
 
 import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import javax.persistence.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Implementa il vincolo del numero massimo di ore consecutive che un utente può fare
  */
+@Entity
 public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno{
 
     private long maxConsecutiveMinutes;
+
+    public VincoloMaxPeriodoConsecutivo() {
+    }
 
     public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;

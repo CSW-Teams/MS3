@@ -1,4 +1,4 @@
-package org.cswteams.ms3.control.vincoli;
+package org.cswteams.ms3.entity.vincoli;
 
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.CategoriaUtente;

@@ -4,10 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.cswteams.ms3.control.vincoli.Vincolo;
-import org.cswteams.ms3.control.vincoli.VincoloMaxOrePeriodo;
-import org.cswteams.ms3.control.vincoli.VincoloMaxPeriodoConsecutivo;
-import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
@@ -21,11 +17,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ControllerScheduler implements IControllerScheduler{
 
-    // TO DO: Prenderli dalla configurazione e toglierli da qui
-    private static final int massimoPeriodoContiguo = 12*60;
-    private static final int numGiorni = 7;
-    private static final int numMaxMinuti = 80*60;
-
     @Autowired
     private UtenteDao utenteDao;
 
@@ -36,28 +27,11 @@ public class ControllerScheduler implements IControllerScheduler{
     ScheduleDao scheduleDao;
 
     @Autowired
-    VincoloTipologieTurniContigueDao vincoloTipologieTurniContigueDao;
+    VincoloDao vincoloDao;
 
 
     private ScheduleBuilder scheduleBuilder;
 
-  /** 
-     * Restituisce tutti i vincoli di tutte le categorie, instanziando quelli
-     * stateless e ritrovando le istanze stateful dal database contattando le
-     * opportune dao.
-     */
-    private List<Vincolo> getAllConstraints(){
-        List<Vincolo> vincoli = new ArrayList<>();
-        
-        vincoli.add(new VincoloPersonaTurno());
-        vincoli.add(new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo));
-        vincoli.addAll(vincoloTipologieTurniContigueDao.findAll());
-        vincoli.add(new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti));
-
-        // aggiungere altri vincoli ...
-
-        return vincoli;
-    }
 
     /**
      * Permette la creazione di un nuovo schedulo specificando data inizio e data fine della generazione.
@@ -94,7 +68,7 @@ public class ControllerScheduler implements IControllerScheduler{
         this.scheduleBuilder = new ScheduleBuilder(
             startDate,  // data inizio pianificazione
             endDate,    // data fine pianificazione
-            getAllConstraints(),    // tutti i vincoli da rispettare quando si assegna una persona a un turno
+            vincoloDao.findAll(),    // tutti i vincoli da rispettare quando si assegna una persona a un turno
             allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
             utenteDao.findAll() // tutti i candidati da allocare ai turni
             );
@@ -111,7 +85,7 @@ public class ControllerScheduler implements IControllerScheduler{
 
         //creo un nuovo builder passandogli uno schedulo già esistente
         this.scheduleBuilder = new ScheduleBuilder(
-                getAllConstraints(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
+                vincoloDao.findAll(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
                 utenteDao.findAll(),  // tutti i candidati da allocare ai turni
                 scheduleDao.findByDateBetween(assegnazioneTurno.getDataEpochDay()) //Schedulo gia esistente
         );
@@ -128,7 +102,7 @@ public class ControllerScheduler implements IControllerScheduler{
 
         //creo un nuovo builder passandogli uno schedulo già esistente
         this.scheduleBuilder = new ScheduleBuilder(
-                getAllConstraints(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
+                vincoloDao.findAll(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
                 utenteDao.findAll(), // tutti i candidati da allocare ai turni
                 scheduleDao.findByDateBetween(assegnazioneTurno.getDataEpochDay()) //Schedulo gia esistente
         );

@@ -1,8 +1,8 @@
 package org.cswteams.ms3;
 
-import org.cswteams.ms3.control.vincoli.ContestoVincolo;
-import org.cswteams.ms3.control.vincoli.Vincolo;
-import org.cswteams.ms3.control.vincoli.VincoloMaxPeriodoConsecutivo;
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
+import org.cswteams.ms3.entity.vincoli.VincoloMaxPeriodoConsecutivo;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dao.TurnoDao;
