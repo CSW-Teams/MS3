@@ -21,8 +21,6 @@ import org.springframework.test.context.junit4.AbstractTransactionalJUnit4Spring
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.HashSet;
 import javax.transaction.Transactional;
 
 
@@ -54,6 +52,12 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
     @MockBean
     private ApplicationStartup applicationStartup;
 
+    @Autowired
+    private UserCategoryPolicyDao userCategoryPolicyDao;
+
+    @Autowired
+    private CategorieDao categorieDao;
+
     @Before
     public void populateDBTestSchedule() {
             //Crea turni e servizio
@@ -62,8 +66,14 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
             Categoria categoriaIncinta = new Categoria("INCINTA", 0);
             Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
             Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+
+            categorieDao.saveAndFlush(categoriaOVER62);
+            categorieDao.saveAndFlush(categoriaIncinta);
+            categorieDao.saveAndFlush(categoriaFerie);
+            categorieDao.saveAndFlush(categoriaMalattia);
+
             Servizio servizio1 = new Servizio("reparto");
-            servizioDao.save(servizio1);
+            servizioDao.saveAndFlush(servizio1);
             //Creo utente con categoria incinta
             Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com", RuoloEnum.SPECIALIZZANDO);
             CategoriaUtente ci = new CategoriaUtente(categoriaIncinta, LocalDate.now(), LocalDate.now().plusDays(10));
@@ -79,16 +89,16 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
                     LocalTime.of(20, 0),
                     LocalTime.of(23, 0),
                     servizio1,
-                    TipologiaTurno.NOTTURNO,
-                    new HashSet<>(Arrays.asList(
-                            categoriaIncinta,
-                            categoriaOVER62,
-                            categoriaMalattia,
-                            categoriaFerie)
-                    ));
+                    TipologiaTurno.NOTTURNO
+                   );
+                   t1.setNumUtentiGuardia(1);
+                   turnoDao.saveAndFlush(t1);       
+        userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaIncinta, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaOVER62, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
 
-            t1.setNumUtentiGuardia(1);
-            turnoDao.saveAndFlush(t1);
+
     }
 
     @Test

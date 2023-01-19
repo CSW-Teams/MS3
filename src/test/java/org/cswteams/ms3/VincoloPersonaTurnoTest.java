@@ -44,6 +44,9 @@ public class VincoloPersonaTurnoTest {
 
     private VincoloPersonaTurno vincoloPersonaTurno = new VincoloPersonaTurno();
 
+    @Autowired
+    private UserCategoryPolicyDao userCategoryPolicyDao;
+
     @Test(expected=ViolatedConstraintException.class)
     /**Test che verifica che una persona incinta non può essere aggiunta ad un turno notturno -
      *  violazione del vincolo categoria. */
@@ -56,9 +59,21 @@ public class VincoloPersonaTurnoTest {
         Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(Arrays.asList(categoriaMalattia,categoriaFerie)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta, categoriaOVER62,categoriaMalattia,categoriaFerie)));
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta,categoriaOVER62, categoriaMalattia, categoriaFerie)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE));
+        
         turnoDao.save(t1);
         turnoDao.save(t3);
         turnoDao.save(t4);
@@ -89,9 +104,21 @@ public class VincoloPersonaTurnoTest {
         Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(Arrays.asList(categoriaMalattia,categoriaFerie)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta, categoriaOVER62,categoriaMalattia,categoriaFerie)));
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta,categoriaOVER62, categoriaMalattia, categoriaFerie)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE));
+
         turnoDao.save(t1);
         turnoDao.save(t3);
         turnoDao.save(t4);
@@ -123,9 +150,20 @@ public class VincoloPersonaTurnoTest {
         Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(Arrays.asList(categoriaMalattia,categoriaFerie)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta, categoriaOVER62,categoriaMalattia,categoriaFerie)));
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta,categoriaOVER62, categoriaMalattia, categoriaFerie)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE));
         turnoDao.save(t1);
         turnoDao.save(t3);
         turnoDao.save(t4);
@@ -157,9 +195,20 @@ public class VincoloPersonaTurnoTest {
         Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(Arrays.asList(categoriaMalattia,categoriaFerie)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta, categoriaOVER62,categoriaMalattia,categoriaFerie)));
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta,categoriaOVER62, categoriaMalattia, categoriaFerie)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE));
         turnoDao.save(t1);
         turnoDao.save(t3);
         turnoDao.save(t4);

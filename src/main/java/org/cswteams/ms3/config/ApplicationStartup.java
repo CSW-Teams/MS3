@@ -248,20 +248,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 categoriaFerie)
         );
 
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO,false);
         t2.setNumUtentiGuardia(2);
         t2.setNumUtentiReperibilita(2);
 
         boolean giornoSuccessivo = true;
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate,giornoSuccessivo);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO,giornoSuccessivo);
+        t3.setCategorieVietate(categorieVietate);
         t3.setNumUtentiGuardia(2);
         t3.setNumUtentiReperibilita(2);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, false);
         t5.setNumUtentiGuardia(2);
         t5.setNumUtentiReperibilita(2);
 
-        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio3, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
+        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio3, TipologiaTurno.MATTUTINO, false);
         t6.setNumUtentiGuardia(2);
         t6.setNumUtentiReperibilita(2);
 
