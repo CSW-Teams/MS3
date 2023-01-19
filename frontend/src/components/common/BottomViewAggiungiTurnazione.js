@@ -110,7 +110,7 @@ export default function TemporaryDrawer(props) {
               <label>Data fine</label>
               <BasicDatePicker onSelectData={handleDataFine}></BasicDatePicker>
               <label>Turnazioni</label>
-              <SelectCategoria onSelectedCategoria = {handleCategoria} ></SelectCategoria>
+              <SelectCategoria onSelectCategoria = {handleCategoria} ></SelectCategoria>
 
               <Button variant="contained" size="small" onClick={aggiungiCategoria('bottom', false)}>
                 <i className="fa fa-plus" aria-hidden="true"> </i>

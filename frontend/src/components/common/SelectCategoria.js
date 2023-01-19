@@ -5,21 +5,23 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
-import { ServizioAPI } from '../../API/ServizioAPI';
+import {CategoriaAPI} from "../../API/CategoriaAPI";
 
 
 export default function MultipleSelect(props) {
   const [categoria, setCategoria] = React.useState('');
   const [categorie,setCategorie] = React.useState([])
+
   const handleChangeCategoria = (event) => {
     setCategoria(event.target.value);
-    props.onSelectServizio(event.target.value)
+    getCategoria(event.target.value);
+    props.onSelectCategoria(event.target.value)
   };
 
 
   async function getCategoria() {
-    let serviceAPI = new ServizioAPI();
-    let categorie = await serviceAPI.getService()
+    let categoriaAPI = new CategoriaAPI();
+    let categorie = await categoriaAPI.getTurnazioni()
     setCategorie(categorie);
   }
 

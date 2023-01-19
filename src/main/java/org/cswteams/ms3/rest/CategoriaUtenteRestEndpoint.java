@@ -1,9 +1,13 @@
 package org.cswteams.ms3.rest;
 
 
+import org.cswteams.ms3.control.categorie.IControllerCategorie;
 import org.cswteams.ms3.control.categorieUtente.IControllerCategorieUtente;
 import org.cswteams.ms3.dao.CategorieDao;
+import org.cswteams.ms3.dto.CategoriaDTO;
 import org.cswteams.ms3.dto.CategoriaUtenteDTO;
+import org.cswteams.ms3.dto.ServizioDTO;
+import org.cswteams.ms3.entity.Categoria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +24,26 @@ public class CategoriaUtenteRestEndpoint {
     private IControllerCategorieUtente controllerCategorieUtente;
 
     @Autowired
-    private CategorieDao categorieDao;
+    private IControllerCategorie controllerCategorie;
+
+    @RequestMapping(method = RequestMethod.GET, path = "/specializzazioni/")
+    public ResponseEntity<?> leggiSpecializzazioni() throws ParseException {
+        Set<CategoriaDTO> categorie = controllerCategorie.leggiCategorieSpecializzazioni();
+        return new ResponseEntity<>(categorie, HttpStatus.FOUND);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/turnazioni/")
+    public ResponseEntity<?> leggiTurnazioni() throws ParseException {
+        Set<CategoriaDTO> categorie = controllerCategorie.leggiCategorieTurnazioni();
+        return new ResponseEntity<>(categorie, HttpStatus.FOUND);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/stato/")
+    public ResponseEntity<?> leggiStati() throws ParseException {
+        Set<CategoriaDTO> categorie = controllerCategorie.leggiCategorieStato();
+        return new ResponseEntity<>(categorie, HttpStatus.FOUND);
+    }
+
 
     @RequestMapping(method = RequestMethod.GET, path = "/stato/utente_id={idUtente}")
     public ResponseEntity<?> leggiCategorieUtente(@PathVariable Long idUtente) throws ParseException {
