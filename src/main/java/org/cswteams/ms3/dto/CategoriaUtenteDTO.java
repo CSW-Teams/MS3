@@ -2,24 +2,28 @@ package org.cswteams.ms3.dto;
 
 
 import lombok.Data;
-import org.cswteams.ms3.enums.CategoriaUtentiEnum;
+import org.cswteams.ms3.entity.Categoria;
+
 import java.time.LocalDate;
 
 @Data
-public class CategorieUtenteDTO {
+public class CategoriaUtenteDTO {
 
-    private CategoriaUtentiEnum categoria;
+    private Categoria categoria;
 
     private LocalDate inizioValidita;
 
     private LocalDate fineValidita;
 
-    public CategorieUtenteDTO() {
+
+
+    public CategoriaUtenteDTO() {
     }
 
-    public CategorieUtenteDTO(CategoriaUtentiEnum categoria, LocalDate inizioValidita, LocalDate fineValidita) {
+    public CategoriaUtenteDTO(Categoria  categoria, LocalDate inizioValidita, LocalDate fineValidita) {
         this.categoria=categoria;
         this.inizioValidita = inizioValidita;
         this.fineValidita = fineValidita;
     }
+
 }

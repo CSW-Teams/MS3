@@ -1,4 +1,4 @@
-package org.cswteams.ms3.control.vincoli;
+package org.cswteams.ms3.entity.vincoli;
 
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
@@ -9,8 +9,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.enums.TipologiaTurno;
@@ -32,10 +30,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 public class VincoloTipologieTurniContigue extends VincoloAssegnazioneTurnoTurno {
-
-    @Id
-    @GeneratedValue
-    private long id;
 
     /** Intorno di unità temporali in cui è proibito assegnare lo stesso utente a un altro turno
      * la cui categoria rientri in quelle vietate
@@ -78,7 +72,7 @@ public class VincoloTipologieTurniContigue extends VincoloAssegnazioneTurnoTurno
             for (AssegnazioneTurno at : ats) {
                 if (at.getTurno().getTipologiaTurno() == tipologiaTurno
                         && verificaContiguitàAssegnazioneTurni(at, contesto.getAssegnazioneTurno(), tUnit, horizon)) {
-                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(at, contesto.getAssegnazioneTurno());
+                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(at, contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getUtente());
                 }
             }
         }

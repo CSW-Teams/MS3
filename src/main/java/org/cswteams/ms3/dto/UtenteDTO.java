@@ -25,9 +25,12 @@ public class UtenteDTO {
     private String email;
 
     private List<CategoriaUtente> categorie;
+
+    private List<CategoriaUtente> specializzazioni;
+
     public UtenteDTO(){}
 
-    public UtenteDTO(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale, RuoloEnum ruoloEnum, String email, List<CategoriaUtente> categorie) {
+    public UtenteDTO(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale, RuoloEnum ruoloEnum, String email, List<CategoriaUtente> categorie, List<CategoriaUtente> specializzazioni) {
         this.id = id;
         this.nome = nome;
         this.cognome = cognome;
@@ -36,33 +39,7 @@ public class UtenteDTO {
         this.ruoloEnum = ruoloEnum;
         this.email = email;
         this.categorie = categorie;
+        this.specializzazioni=specializzazioni;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public String getCognome() {
-        return cognome;
-    }
-
-    public LocalDate getDataNascita() {
-        return dataNascita;
-    }
-
-    public String getCodiceFiscale() {
-        return codiceFiscale;
-    }
-
-    public RuoloEnum getRuoloEnum() {
-        return ruoloEnum;
-    }
-
-    public String getEmail() {
-        return email;
-    }
 }

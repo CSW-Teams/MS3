@@ -21,8 +21,7 @@ public interface IControllerScheduler {
      * @throws UnableToBuildScheduleException controlla lo stack delle eccezioni per scoprire perché non è stato possibile creare la pianificazione
      */
     Schedule createSchedule(LocalDate startDate, LocalDate endDate) throws UnableToBuildScheduleException;
-    Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno) throws IllegalAssegnazioneTurnoException, IllegalAssegnazioneTurnoException;
-    Schedule aggiungiAssegnazioneTurnoForced(AssegnazioneTurno assegnazioneTurno);
+    Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno, boolean forced) throws  IllegalAssegnazioneTurnoException;
 
 
 

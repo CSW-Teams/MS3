@@ -1,14 +1,13 @@
 package org.cswteams.ms3;
 
-import org.cswteams.ms3.control.vincoli.ContestoVincolo;
-import org.cswteams.ms3.control.vincoli.Vincolo;
-import org.cswteams.ms3.control.vincoli.VincoloMaxOrePeriodo;
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
+import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.CategoriaUtentiEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
@@ -51,12 +50,18 @@ public class VincoloMaxOrePeriodoTest {
     @Test(expected= ViolatedConstraintException.class)
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
     public void maxOrePeriodoTest() throws ViolatedConstraintException, TurnoException {
+        //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
+        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
+        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+
         //Crea turni e servizio
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)),false);
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)),false);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.DONNA_INCINTA, CategoriaUtentiEnum.OVER_62, CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)),true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(Arrays.asList(categoriaOVER62,categoriaIncinta)),false);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(Arrays.asList(categoriaMalattia, categoriaFerie)),false);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta,categoriaOVER62, categoriaMalattia, categoriaFerie)),true);
         //Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.DONNA_INCINTA, CategoriaUtentiEnum.OVER_62, CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)));
         turnoDao.save(t1);
         turnoDao.save(t2);

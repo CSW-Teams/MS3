@@ -3,15 +3,14 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
 import org.cswteams.ms3.control.utils.MappaUtenti;
+import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +32,8 @@ public class AssegnazioneTurnoRestEndpoint {
     @Autowired
     private TurnoDao turnoDao;
 
-    @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody(required = true) RegistraAssegnazioneTurnoDTO assegnazione) {
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody RegistraAssegnazioneTurnoDTO assegnazione) {
 
         if (assegnazione != null) {
             try {
@@ -52,26 +51,18 @@ public class AssegnazioneTurnoRestEndpoint {
                         MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia())
                 );
 
-                //Verifico se aggiungere l'assegnazione in modo forzato
-                if(assegnazione.isForced()){
 
-                    //Se l'utente chiede l'aggiunta forzata di un assegnazione non viene fatto nessun controllo sui vincoli
-                    controllerScheduler.aggiungiAssegnazioneTurnoForced(assegnazioneTurno);
-
-                }else{
-
-                    //Se l'utente chiede l'aggiunta non forzata dell'assegnazione allora si controlla la validità dei vincoli
-                    controllerScheduler.aggiungiAssegnazioneTurno(assegnazioneTurno);
-
-                }
+                //Se l'utente chiede l'aggiunta forzata di un assegnazione  viene fatto controllo solo sui vincoli non violabili
+                controllerScheduler.aggiungiAssegnazioneTurno(assegnazioneTurno,assegnazione.isForced());
 
                 return new ResponseEntity<>(assegnazioneTurno, HttpStatus.ACCEPTED);
 
             } catch (IllegalAssegnazioneTurnoException e) {
 
-                //Se un vincolo è violato è comunicato all'utente. Questa eccezione può essere sollevata solo quando è richiesta
-                //l'aggiunta di un assegnazione turno con controllo sui vincoli.
-                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+                //Se un vincolo è violato è comunicato all'utente.
+                RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
+                risposta.setMessage(e.getCause().getMessage());
+                return new ResponseEntity<>(risposta,HttpStatus.NOT_ACCEPTABLE);
 
             }
 
