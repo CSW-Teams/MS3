@@ -24,7 +24,7 @@ public class VincoloPersonaTurno extends Vincolo {
             for(CategoriaUtente categoriaUtente : categorieUtente){
                 if(Objects.equals(categoriaVietata.getId(), categoriaUtente.getCategoria().getId())){
                     if( (categoriaUtente.getInizioValidità().isBefore(turno.getData()) || categoriaUtente.getInizioValidità().isEqual(turno.getData())) && (categoriaUtente.getFineValidità().isAfter(turno.getData()) || categoriaUtente.getFineValidità().isEqual(turno.getData()) )){
-                        throw new ViolatedVincoloPersonaTurnoException(categoriaUtente, utente.getId());
+                        throw new ViolatedVincoloPersonaTurnoException(contesto.getAssegnazioneTurno(),categoriaUtente, utente);
                     }
                 }
             }
