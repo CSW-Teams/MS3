@@ -11,16 +11,16 @@ public class CategoriaUtenteDTO {
 
     private Categoria categoria;
 
-    private LocalDate inizioValidita;
+    private String inizioValidita;
 
-    private LocalDate fineValidita;
+    private String fineValidita;
 
 
 
     public CategoriaUtenteDTO() {
     }
 
-    public CategoriaUtenteDTO(Categoria  categoria, LocalDate inizioValidita, LocalDate fineValidita) {
+    public CategoriaUtenteDTO(Categoria  categoria, String inizioValidita, String fineValidita) {
         this.categoria=categoria;
         this.inizioValidita = inizioValidita;
         this.fineValidita = fineValidita;
