@@ -24,6 +24,7 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
     /**
      * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1,
      * ammettendo un errore pari a delta
+     * Le assegnazioni turno non devono essere sovrapposte temporalmente.
      * @param aTurno1
      * @param aTurno2 deve essere successivo temporalmente ad aTurno1
      * @param tu unità di misura temporale per delta (minuti, anni, ...)
@@ -31,16 +32,26 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
      * @return
      */
     protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2, TemporalUnit tu, long delta){
+        
         LocalDateTime aTurno1End = aTurno1.getData().atTime(aTurno1.getTurno().getOraFine());
+        LocalDateTime aTurno1Start = aTurno1.getData().atTime(aTurno1.getTurno().getOraInizio());
+        LocalDateTime aTurno2Start = aTurno2.getData().atTime(aTurno2.getTurno().getOraInizio());
+        LocalDateTime aTurno2End = aTurno2.getData().atTime(aTurno2.getTurno().getOraFine());
 
-        // if aTurno1 shift spans more than one day, we add 1 day to its endDateTime
+        // if shift spans more than one day, we add 1 day to its endDateTime
         if(aTurno1.getTurno().isGiornoSuccessivo()){
             aTurno1End = aTurno1End.plusDays(1);
         }
+        if(aTurno2.getTurno().isGiornoSuccessivo()){
+            aTurno2End = aTurno2End.plusDays(1);
+        }
 
-        LocalDateTime aTurno2Start = aTurno2.getData().atTime(aTurno2.getTurno().getOraInizio());
-
-        return aTurno1End.until(aTurno2Start, tu) <= delta;
+        if (aTurno1Start.isBefore(aTurno2Start)){
+            return Math.abs(aTurno1End.until(aTurno2Start, tu)) <= delta;
+        }
+        else {
+            return Math.abs(aTurno2End.until(aTurno1Start, tu)) <= delta;
+        }
 
     }
 
