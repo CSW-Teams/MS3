@@ -7,6 +7,9 @@ import org.cswteams.ms3.entity.Categoria;
 import org.cswteams.ms3.entity.CategoriaUtente;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,11 +17,16 @@ public class MappaCategoriaUtente {
 
 
     public static CategoriaUtente categoriaUtenteDTOToEntity(CategoriaUtenteDTO dto) {
-        return new CategoriaUtente(dto.getCategoria(), dto.getInizioValidita(), dto.getFineValidita());
+        Categoria c = dto.getCategoria();
+        DateTimeFormatter df = DateTimeFormatter.ISO_DATE_TIME;
+        System.out.println(dto.getInizioValidita());
+        LocalDate inizio = LocalDate.parse(dto.getInizioValidita(), df);
+        LocalDate fine = LocalDate.parse(dto.getFineValidita(), df);
+        return new CategoriaUtente(c, inizio, fine);
     }
 
     public static CategoriaUtenteDTO categoriaUtenteToDTO(CategoriaUtente entity) {
-        CategoriaUtenteDTO dto = new CategoriaUtenteDTO(entity.getCategoria(),entity.getInizioValidità(),entity.getFineValidità());
+        CategoriaUtenteDTO dto = new CategoriaUtenteDTO(entity.getCategoria(),entity.getInizioValidità().toString(),entity.getFineValidità().toString());
         return dto;
     }
 

@@ -49,13 +49,17 @@ export class CategoriaUtenteAPI {
     return categorie;
   }
 
-  async postAggiungiTurnazione(categoria,dataInizio,dataFine) {
+  async postAggiungiTurnazione(categoria,dataInizio,dataFine, utente_id) {
+
+    let cat = new Object;
+    cat.nome = categoria;
+    cat.tipo = 2; // = tipo turnazione
 
     let turnazione = new Object();
 
-    turnazione.categoria = categoria
-    turnazione.inizio = dataInizio
-    turnazione.fine = dataFine
+    turnazione.categoria = cat
+    turnazione.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+    turnazione.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
 
     console.log("turnazionI:")
     console.log(turnazione)
@@ -65,8 +69,8 @@ export class CategoriaUtenteAPI {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(turnazione)
     };
-
-    const response = await fetch('/api/categorie/turnazioni/utente_id=3',requestOptions);
+    const url = "/api/categorie/turnazioni/utente_id=" + utente_id;
+    const response = await fetch(url , requestOptions);
     return response.status;
 
   }

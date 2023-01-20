@@ -53,9 +53,11 @@ export default function TemporaryDrawer(props) {
     setState({ ...state, [anchor]: open });
 
     let categoriaUtenteAPI = new CategoriaUtenteAPI()
-
+    let url = window.location.href;
+    let index = url.lastIndexOf("/");
+    let utente_id = url.substring(index+1);
     let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-    status = await categoriaUtenteAPI.postAggiungiTurnazione(categoria, dataInizio, dataFine)
+    status = await categoriaUtenteAPI.postAggiungiTurnazione(categoria, dataInizio, dataFine, utente_id)
 
     props.onPostAssegnazione()
 
@@ -73,7 +75,7 @@ export default function TemporaryDrawer(props) {
       });
       //alert('assegnazione creata con successo');
     }else if (status === 400){
-      toast.error('Errore nei parametri', {
+      toast.error('Errore nei parametri. Riprova con nuove date', {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -108,7 +110,7 @@ export default function TemporaryDrawer(props) {
                 <label>Data inizio</label>
                 <BasicDatePicker  onSelectData={handleDataInizio}></BasicDatePicker>
               <label>Data fine</label>
-              <BasicDatePicker onSelectData={handleDataFine}></BasicDatePicker>
+              <BasicDatePicker  onSelectData={handleDataFine}></BasicDatePicker>
               <label>Turnazioni</label>
               <SelectCategoria onSelectCategoria = {handleCategoria} ></SelectCategoria>
 
