@@ -26,14 +26,13 @@ public class TurnoDTO {
 
     public TurnoDTO(){}
 
-    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, Set<Categoria> categorieVietate, boolean giornoSuccessivo){
+    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, boolean giornoSuccessivo){
         this.oraFine = fine;
         this.oraInizio = inizio;
         this.giornoSuccessivo = giornoSuccessivo;
         this.servizio = servizio;
         this.tipologiaTurno = tipologiaTurno;
         this.id = id;
-        this.categorieVietate = categorieVietate;
     }
 
     public TipologiaTurno getTipologiaTurno() {

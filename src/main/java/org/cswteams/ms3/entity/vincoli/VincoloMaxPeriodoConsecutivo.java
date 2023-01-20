@@ -79,7 +79,7 @@ public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno 
                 minutiConsecutivi += turno.getTurno().getMinutidiLavoro();
             }
             if (minutiConsecutivi > maxConsecutiveMinutes) {
-                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno());
+                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getUtente(), maxConsecutiveMinutes);
             }
         }
 

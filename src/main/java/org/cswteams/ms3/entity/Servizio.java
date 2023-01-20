@@ -17,6 +17,8 @@ public class Servizio {
     @Column
     @Enumerated
     @ElementCollection(targetClass = MansioneEnum.class)
+
+    /** Lista di mansioni che è possibile svolgere durante un turno di questo servizio */
     List<MansioneEnum> mansioni ;
 
     protected Servizio(){

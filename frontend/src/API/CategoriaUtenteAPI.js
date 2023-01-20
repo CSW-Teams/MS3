@@ -1,6 +1,4 @@
 export class CategoriaUtenteAPI {
-  constructor() {
-  }
 
   async getCategoriaUtente(idUtente) {
     const response = await fetch('/api/categorie/stato/utente_id='+idUtente);
@@ -15,7 +13,6 @@ export class CategoriaUtenteAPI {
       categorie[i]=categoria
     }
 
-    console.log(categorie)
     return categorie;
 
   }
@@ -33,7 +30,6 @@ export class CategoriaUtenteAPI {
       categorie[i]=categoria
     }
 
-    console.log(categorie)
     return categorie;
   }
 
@@ -50,7 +46,32 @@ export class CategoriaUtenteAPI {
       categorie[i]=categoria
     }
 
-    console.log(categorie)
     return categorie;
+  }
+
+  async postAggiungiTurnazione(categoria,dataInizio,dataFine, utente_id) {
+
+    let cat = new Object;
+    cat.nome = categoria;
+    cat.tipo = 2; // = tipo turnazione
+
+    let turnazione = new Object();
+
+    turnazione.categoria = cat
+    turnazione.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+    turnazione.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+
+    console.log("turnazionI:")
+    console.log(turnazione)
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(turnazione)
+    };
+    const url = "/api/categorie/turnazioni/utente_id=" + utente_id;
+    const response = await fetch(url , requestOptions);
+    return response.status;
+
   }
 }

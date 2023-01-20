@@ -5,23 +5,22 @@ import lombok.Data;
 import org.cswteams.ms3.entity.Categoria;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 
 @Data
-public class CategorieUtenteDTO {
+public class CategoriaUtenteDTO {
 
     private Categoria categoria;
 
-    private LocalDate inizioValidita;
+    private String inizioValidita;
 
-    private LocalDate fineValidita;
+    private String fineValidita;
 
 
 
-    public CategorieUtenteDTO() {
+    public CategoriaUtenteDTO() {
     }
 
-    public CategorieUtenteDTO(Categoria  categoria, LocalDate inizioValidita, LocalDate fineValidita) {
+    public CategoriaUtenteDTO(Categoria  categoria, String inizioValidita, String fineValidita) {
         this.categoria=categoria;
         this.inizioValidita = inizioValidita;
         this.fineValidita = fineValidita;

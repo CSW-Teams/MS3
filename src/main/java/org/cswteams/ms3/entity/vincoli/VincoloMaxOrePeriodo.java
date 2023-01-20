@@ -43,7 +43,7 @@ public class VincoloMaxOrePeriodo extends VincoloAssegnazioneTurnoTurno {
                 if(at.getData().isBefore(endPeriodDate) && (at.getData().isAfter(startPeriodDate) || at.getData().isEqual(startPeriodDate))){
                     minutiComplessivi += at.getTurno().getMinutidiLavoro();
                     if(minutiComplessivi > numMinutiMaxPeriodo){
-                        throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno());
+                        throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getUtente(), numGiorniPeriodo, numMinutiMaxPeriodo);
                     }
                 }
             }

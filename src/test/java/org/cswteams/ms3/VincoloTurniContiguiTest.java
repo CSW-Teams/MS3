@@ -6,6 +6,7 @@ import org.cswteams.ms3.entity.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dao.TurnoDao;
+import org.cswteams.ms3.dao.UserCategoryPolicyDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.RuoloEnum;
@@ -48,6 +49,9 @@ public class VincoloTurniContiguiTest {
     @Autowired
     private ServizioDao servizioDao;
 
+    @Autowired
+    private UserCategoryPolicyDao userCategoryPolicyDao;
+
     @Test(expected= ViolatedConstraintException.class)
     public void testTurniContigui() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
@@ -58,24 +62,29 @@ public class VincoloTurniContiguiTest {
         Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(Arrays.asList(categoriaMalattia,categoriaFerie)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta, categoriaOVER62,categoriaMalattia,categoriaFerie)));
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(categoriaIncinta,categoriaOVER62, categoriaMalattia, categoriaFerie)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE));
+
         turnoDao.save(t1);
         turnoDao.save(t3);
         turnoDao.save(t4);
-
-        HashSet<Categoria> categorieVietate= new HashSet<>(Arrays.asList(
-                categoriaIncinta,
-                categoriaOVER62,
-                categoriaMalattia,
-                categoriaFerie)
-        );
         
         t3.setNumUtentiGuardia(1);
         t3.setNumUtentiReperibilita(1);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, TipologiaTurno.MATTUTINO, false);
         t5.setNumUtentiGuardia(1);
         t5.setNumUtentiReperibilita(1);
         

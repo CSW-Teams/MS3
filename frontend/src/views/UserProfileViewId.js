@@ -8,17 +8,15 @@ import {
   MDBCol,
   MDBContainer,
   MDBRow,
-  MDBTypography,
-  MDBIcon,
-  MDBBtn,
   MDBTable,
   MDBTableHead,
   MDBTableBody,
-  MDBBtnGroup, MDBCardTitle
+   MDBCardTitle
 } from "mdb-react-ui-kit";
 import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
 import {Button} from "@material-ui/core";
-
+import AggiungiCategoria from "../components/common/BottomViewAggiungiTurnazione"
+import TemporaryDrawer from "../components/common/BottomViewAssegnazioneTurno";
 export default class UserProfileView extends React.Component{
   constructor(props){
     super(props);
@@ -63,8 +61,7 @@ export default class UserProfileView extends React.Component{
           <MDBCard>
             <MDBCardBody className="text-center">
               <MDBCardTitle>Turnazioni
-                <Button size="small">
-                  <i className="fas fa-edit fa-lg"> </i></Button>
+                <AggiungiCategoria onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></AggiungiCategoria>
               </MDBCardTitle>
               <MDBTable align="middle">
                 <MDBTableHead>

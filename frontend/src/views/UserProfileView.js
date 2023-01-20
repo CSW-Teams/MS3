@@ -28,6 +28,7 @@ export default class UserProfileView extends React.Component{
       dataNascita: "",
       categorie_utente: [],
       specializzazioni_utente: [],
+      turnazioni_utente:[],
     }
   }
 
@@ -35,6 +36,7 @@ export default class UserProfileView extends React.Component{
     let utente = await(new UtenteAPI().getUserDetails(1));
     let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(1))
     let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(1))
+    let turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(1));
     this.setState({
       nome: utente.nome,
       cognome: utente.cognome,
@@ -43,12 +45,13 @@ export default class UserProfileView extends React.Component{
       dataNascita: utente.dataNascita,
       categorie_utente : categorie_utente,
       specializzazioni_utente : specializzazioni_utente,
+      turnazioni_utente:turnazioni_utente,
     })
   }
 
   render() {
 
-    function getSpecilizzazioni() {
+    function getTurnazioni() {
       if(this.state.ruolo!=="STRUTTURATO")
        return <MDBCol>
         <MDBCard>
@@ -177,7 +180,7 @@ export default class UserProfileView extends React.Component{
               </MDBCol>
             </MDBRow>
             <MDBRow>
-              {getSpecilizzazioni.call(this)}
+              {getTurnazioni.call(this)}
               <MDBCol>
                 <MDBCard>
                   <MDBCardBody className="text-center">

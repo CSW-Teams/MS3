@@ -3,15 +3,14 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
 import org.cswteams.ms3.control.utils.MappaUtenti;
+import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,9 +59,10 @@ public class AssegnazioneTurnoRestEndpoint {
 
             } catch (IllegalAssegnazioneTurnoException e) {
 
-                //Se un vincolo è violato è comunicato all'utente. Questa eccezione può essere sollevata solo quando è richiesta
-                //l'aggiunta di un assegnazione turno con controllo sui vincoli.
-                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+                //Se un vincolo è violato è comunicato all'utente.
+                RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
+                risposta.setMessage(e.getCause().getMessage());
+                return new ResponseEntity<>(risposta,HttpStatus.NOT_ACCEPTABLE);
 
             }
 

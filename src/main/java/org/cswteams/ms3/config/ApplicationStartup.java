@@ -99,6 +99,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloTurniContigui.setViolabile(true);
         vincolo2.setViolabile(true);
 
+        vincolo1.setDescrizione("Vincolo Turno Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
+        vincolo2.setDescrizione("Vincolo massimo ore lavorative continuative. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
+        vincolo3.setDescrizione("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
+        vincoloTurniContigui.setDescrizione("Vincolo turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
+
         vincoloDao.saveAndFlush(vincoloTurniContigui);
         vincoloDao.saveAndFlush(vincolo1);
         vincoloDao.saveAndFlush(vincolo3);
@@ -169,6 +174,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         u1.getTurnazioni().add(categoria_cardiologia);
         Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u2.getTurnazioni().add(categoria_cardiologia);
         Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", RuoloEnum.SPECIALIZZANDO);
         u3.getTurnazioni().add(categoria_cardiologia);
         Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
@@ -248,28 +254,38 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 categoriaFerie)
         );
 
-
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO,false);
+        t2.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t2,  UserCategoryPolicyValue.EXCLUDE)
+        ));
         t2.setNumUtentiGuardia(2);
         t2.setNumUtentiReperibilita(2);
 
         boolean giornoSuccessivo = true;
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, categorieVietate,giornoSuccessivo);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO,giornoSuccessivo);
+        t3.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t3,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaIncinta, t3,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaOVER62, t3,  UserCategoryPolicyValue.EXCLUDE)
+        ));
+        t3.setCategorieVietate(categorieVietate);
         t3.setNumUtentiGuardia(2);
         t3.setNumUtentiReperibilita(2);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, false);
+        t5.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t5, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t5,  UserCategoryPolicyValue.EXCLUDE)
+        ));
         t5.setNumUtentiGuardia(2);
         t5.setNumUtentiReperibilita(2);
 
-        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio3, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
-        t6.setNumUtentiGuardia(2);
-        t6.setNumUtentiReperibilita(2);
 
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
-        turnoDao.saveAndFlush(t6);
 
 
     }
