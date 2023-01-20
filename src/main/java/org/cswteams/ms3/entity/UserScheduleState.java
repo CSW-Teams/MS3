@@ -50,6 +50,20 @@ public class UserScheduleState {
         return assegnazioniTurnoCache;
     }
 
+    /**Aggiunge in ordine la nuova assegnazione alla lista delle assegnazioni dell'utente **/
+    public void addAssegnazioneTurno(AssegnazioneTurno nuovaAssegnazione){
+        List<AssegnazioneTurno> turniAssegnati = getAssegnazioniTurnoCache();
+        int idInsert = turniAssegnati.size();
+        for(int i = 0; i < turniAssegnati.size(); i++){
+            if(turniAssegnati.get(i).getData().isAfter(nuovaAssegnazione.getData()) || turniAssegnati.get(i).getData().isEqual(nuovaAssegnazione.getData())){
+                if(turniAssegnati.get(i).getTurno().getOraInizio().isAfter(nuovaAssegnazione.getTurno().getOraInizio())) {
+                    idInsert = i;
+                }
+            }
+        }
+        turniAssegnati.add(idInsert,nuovaAssegnazione);
+    }
+
     public UserScheduleState() {
     }
     

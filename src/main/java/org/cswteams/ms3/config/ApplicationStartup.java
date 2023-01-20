@@ -2,7 +2,7 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
-import org.cswteams.ms3.control.vincoli.VincoloTipologieTurniContigue;
+import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.*;
@@ -78,6 +78,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         final int massimoPeriodoContiguo = 12*60;
         final int numGiorni = 7;
         final int numMaxMinuti = 80*60;
+        final int massimoPeriodoContiguoOver62 = 6*60;
 
 
         // nessun turno può essere allocato a questa persona durante il suo smonto notte
@@ -90,8 +91,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
 
         Vincolo vincolo1 = new VincoloPersonaTurno();
-        Vincolo vincolo2 = new  VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo);
-        Vincolo vincolo3 = new  VincoloMaxOrePeriodo(numGiorni,numMaxMinuti);
+        Vincolo vincolo2 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo,categoriaDao.findAll());
+        Vincolo vincolo3 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguoOver62,categoriaDao.findAllByNome("OVER_62"));
+        Vincolo vincolo4 = new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti);
+        Vincolo vincolo5 = new VincoloUbiquità();
 
         vincoloTurniContigui.setViolabile(true);
         vincolo2.setViolabile(true);
@@ -100,6 +103,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloDao.saveAndFlush(vincolo1);
         vincoloDao.saveAndFlush(vincolo3);
         vincoloDao.saveAndFlush(vincolo2);
+        vincoloDao.saveAndFlush(vincolo4);
+        vincoloDao.saveAndFlush(vincolo5);
     }
     
     private void registerHolidays(){
