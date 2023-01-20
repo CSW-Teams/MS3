@@ -20,15 +20,11 @@ public class MappaTurni {
     }
 
     public static TurnoDTO turnoEntityToDTO(Turno entity){
-        TurnoDTO dto = TurnoDTO(entity.getId(), entity.getTipologiaTurno(),entity.getOraInizio(), entity.getOraFine(), MappaServizio.servizioEntitytoDTO(entity.getServizio()), entity.isGiornoSuccessivo());
+        TurnoDTO dto = new TurnoDTO(entity.getId(), entity.getTipologiaTurno(),entity.getOraInizio(), entity.getOraFine(), MappaServizio.servizioEntitytoDTO(entity.getServizio()), entity.isGiornoSuccessivo());
         dto.setCategorieVietate(entity.getCategorieVietate());
         return dto;
     }
 
-    private static TurnoDTO TurnoDTO(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            ServizioDTO servizioEntitytoDTO, boolean giornoSuccessivo) {
-        return null;
-    }
 
     public static Set<TurnoDTO> turnoEntityToDTO(List<Turno> turni){
         Set<TurnoDTO> turniDTO = new HashSet<>();
