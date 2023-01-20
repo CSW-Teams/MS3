@@ -58,12 +58,7 @@ public class VincoloTipologieTurniContigue extends VincoloAssegnazioneTurnoTurno
 
     @Override
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
-        
-        /**
-         * ATTENZIONE: diamo per scontato che il turno da allocare sia nel futuro rispetto
-         * a tutte le altre assegnazioni per lo stesso utente
-         */
-        
+                
         // we check if the shift to be allocated is of the type that must be excluded the constraint
         if (tipologieTurnoVietate.contains(contesto.getAssegnazioneTurno().getTurno().getTipologiaTurno())){
             

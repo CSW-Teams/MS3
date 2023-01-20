@@ -42,4 +42,13 @@ public class CategoriaUtente {
         this.fineValidità = fineValidità;
     }
 
+    /**
+     * Verifica se la categoria è valida in una dato giorno.
+     * @param when Giorno per cui si vuole verificare la validità della categoria
+     * @return {@code true} se la categoria è valida in quel giorno, {@code false} altrimenti
+     */
+    public boolean isValid(LocalDate when){
+
+            return (when.isBefore(inizioValidità) || when.isAfter(fineValidità));
+    }
 }

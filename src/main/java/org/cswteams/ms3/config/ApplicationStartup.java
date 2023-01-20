@@ -88,7 +88,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             );
 
 
-        Vincolo vincolo1 = new VincoloPersonaTurno();
+        Vincolo vincolo1 = new VincoloCategorieUtenteTurno();
         Vincolo vincolo2 = new  VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo);
         Vincolo vincolo3 = new  VincoloMaxOrePeriodo(numGiorni,numMaxMinuti);
 
@@ -249,27 +249,37 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         );
 
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO,false);
+        t2.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t2,  UserCategoryPolicyValue.EXCLUDE)
+        ));
         t2.setNumUtentiGuardia(2);
         t2.setNumUtentiReperibilita(2);
 
         boolean giornoSuccessivo = true;
         Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO,giornoSuccessivo);
+        t3.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t3,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaIncinta, t3,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaOVER62, t3,  UserCategoryPolicyValue.EXCLUDE)
+        ));
         t3.setCategorieVietate(categorieVietate);
         t3.setNumUtentiGuardia(2);
         t3.setNumUtentiReperibilita(2);
 
         Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, false);
+        t5.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t5, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t5,  UserCategoryPolicyValue.EXCLUDE)
+        ));
         t5.setNumUtentiGuardia(2);
         t5.setNumUtentiReperibilita(2);
 
-        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio3, TipologiaTurno.MATTUTINO, false);
-        t6.setNumUtentiGuardia(2);
-        t6.setNumUtentiReperibilita(2);
 
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
-        turnoDao.saveAndFlush(t6);
 
 
     }
