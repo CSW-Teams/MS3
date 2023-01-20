@@ -2,6 +2,7 @@ package org.cswteams.ms3;
 
 import org.cswteams.ms3.config.ApplicationStartup;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
+import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
@@ -59,40 +60,41 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
     private CategorieDao categorieDao;
 
     @Before
-    public void populateDBTestSchedule() {
-            //Crea turni e servizio
-            //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-            Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-            Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-            Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-            Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+    public void populateDBTestSchedule() throws TurnoException {
+        //Crea turni e servizio
+        //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
+        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
+        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
 
-            categorieDao.saveAndFlush(categoriaOVER62);
-            categorieDao.saveAndFlush(categoriaIncinta);
-            categorieDao.saveAndFlush(categoriaFerie);
-            categorieDao.saveAndFlush(categoriaMalattia);
+        categorieDao.saveAndFlush(categoriaOVER62);
+        categorieDao.saveAndFlush(categoriaIncinta);
+        categorieDao.saveAndFlush(categoriaFerie);
+        categorieDao.saveAndFlush(categoriaMalattia);
 
-            Servizio servizio1 = new Servizio("reparto");
-            servizioDao.saveAndFlush(servizio1);
-            //Creo utente con categoria incinta
-            Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com", RuoloEnum.SPECIALIZZANDO);
-            CategoriaUtente ci = new CategoriaUtente(categoriaIncinta, LocalDate.now(), LocalDate.now().plusDays(10));
-            categoriaUtenteDao.saveAndFlush(ci);
-            pregUser.getStato().add(ci);
-            utenteDao.saveAndFlush(pregUser);
-            //Creo utente generico
-            Utente utente = new Utente("Manuel", "Rossi", "******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO);
-            utenteDao.saveAndFlush(utente);
-            //Crea turni e servizio
-            servizioDao.saveAndFlush(servizio1);
-            Turno t1 = new Turno(
-                    LocalTime.of(20, 0),
-                    LocalTime.of(23, 0),
-                    servizio1,
-                    TipologiaTurno.NOTTURNO
-                   );
-                   t1.setNumUtentiGuardia(1);
-                   turnoDao.saveAndFlush(t1);       
+        Servizio servizio1 = new Servizio("reparto");
+        servizioDao.saveAndFlush(servizio1);
+        //Creo utente con categoria incinta
+        Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        CategoriaUtente ci = new CategoriaUtente(categoriaIncinta, LocalDate.now(), LocalDate.now().plusDays(10));
+        categoriaUtenteDao.saveAndFlush(ci);
+        pregUser.getStato().add(ci);
+        utenteDao.saveAndFlush(pregUser);
+        //Creo utente generico
+        Utente utente = new Utente("Manuel", "Rossi", "******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        utenteDao.saveAndFlush(utente);
+        //Crea turni e servizio
+        servizioDao.saveAndFlush(servizio1);
+        Turno t1 = new Turno(
+                LocalTime.of(20, 0),
+                LocalTime.of(8, 0),
+                servizio1,
+                TipologiaTurno.NOTTURNO,
+                true
+               );
+        t1.setNumUtentiGuardia(1);
+        turnoDao.saveAndFlush(t1);
         userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaIncinta, t1, UserCategoryPolicyValue.EXCLUDE));
         userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaOVER62, t1, UserCategoryPolicyValue.EXCLUDE));
         userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));

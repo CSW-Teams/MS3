@@ -107,9 +107,9 @@ public class VincoloMaxPeriodoConsecutivoTest {
     public void oreConsecutiveConCategoriaTEST() throws ViolatedConstraintException, TurnoException{
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO, new HashSet<>(),false);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(),true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO,false);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO,false);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO,true);
         turnoDao.save(t1);
         turnoDao.save(t2);
         turnoDao.save(t3);

@@ -90,9 +90,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             );
 
 
-        Vincolo vincolo1 = new VincoloPersonaTurno();
+        Vincolo vincolo1 = new VincoloCategorieUtenteTurno();
         Vincolo vincolo2 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo,categoriaDao.findAll());
-        Vincolo vincolo3 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguoOver62,categoriaDao.findAllByNome("OVER_62"));
+        Vincolo vincolo3 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguoOver62,Arrays.asList(categoriaDao.findAllByNome("OVER_62")));
         Vincolo vincolo4 = new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti);
         Vincolo vincolo5 = new VincoloUbiquità();
 

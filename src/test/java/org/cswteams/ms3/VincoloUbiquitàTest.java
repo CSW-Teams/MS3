@@ -3,7 +3,6 @@ package org.cswteams.ms3;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
-import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.entity.vincoli.VincoloUbiquità;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
@@ -36,8 +35,8 @@ public class VincoloUbiquitàTest {
     public void turniAccavallatiTest() throws ViolatedConstraintException, TurnoException{
         Servizio servizio1 = new Servizio("reparto");
         Servizio servizio2 = new Servizio("ambulatorio");
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
-        Turno t2 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO,false);
+        Turno t2 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO,false);
 
         Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
 
@@ -59,8 +58,8 @@ public class VincoloUbiquitàTest {
     public void turniCoincidentiTest() throws ViolatedConstraintException, TurnoException{
         Servizio servizio1 = new Servizio("reparto");
         Servizio servizio2 = new Servizio("ambulatorio");
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
-        Turno t2 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, TipologiaTurno.MATTUTINO, new HashSet<>(),false);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO,false);
+        Turno t2 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, TipologiaTurno.MATTUTINO,false);
 
         Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
 

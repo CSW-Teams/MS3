@@ -20,7 +20,7 @@ public class VincoloUbiquità extends VincoloAssegnazioneTurnoTurno{
                 LocalDateTime endB = LocalDateTime.of(contesto.getAssegnazioneTurno().getTurno().isGiornoSuccessivo()? contesto.getAssegnazioneTurno().getData().plusDays(1) : contesto.getAssegnazioneTurno().getData(),contesto.getAssegnazioneTurno().getTurno().getOraFine());
 
                 if(!((startA.isBefore(startB) && (endA.isBefore(startB) || endA.isEqual(startB))) || (startB.isBefore(startA) && (endB.isBefore(startA) || endB.isEqual(startA))))){
-                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno());
+                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), turnoAssegnato, contesto.getUserScheduleState().getUtente());
                 }
             }
         }

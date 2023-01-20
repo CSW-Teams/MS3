@@ -1,13 +1,9 @@
 package org.cswteams.ms3;
 
+import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloTipologieTurniContigue;
-import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
-import org.cswteams.ms3.dao.ServizioDao;
-import org.cswteams.ms3.dao.TurnoDao;
-import org.cswteams.ms3.dao.UserCategoryPolicyDao;
-import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
@@ -52,6 +48,9 @@ public class VincoloTurniContiguiTest {
     @Autowired
     private UserCategoryPolicyDao userCategoryPolicyDao;
 
+    @Autowired
+    private CategorieDao categorieDao;
+
     @Test(expected= ViolatedConstraintException.class)
     public void testTurniContigui() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
@@ -60,6 +59,10 @@ public class VincoloTurniContiguiTest {
         Categoria categoriaIncinta = new Categoria("INCINTA", 0);
         Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
         Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        categorieDao.save(categoriaFerie);
+        categorieDao.save(categoriaIncinta);
+        categorieDao.save(categoriaMalattia);
+        categorieDao.save(categoriaOVER62);
         Servizio servizio1 = new Servizio("reparto");
         servizioDao.save(servizio1);
         Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
