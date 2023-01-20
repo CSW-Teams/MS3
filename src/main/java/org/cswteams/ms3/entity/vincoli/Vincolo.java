@@ -27,7 +27,5 @@ public abstract class  Vincolo {
     /**
      * @throws ViolatedConstraintException : se il vincolo è violato
      */
-    public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
-
-    }
+    public abstract void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException;
 }

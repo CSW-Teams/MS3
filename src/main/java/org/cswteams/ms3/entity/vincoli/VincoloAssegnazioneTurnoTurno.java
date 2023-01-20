@@ -46,11 +46,13 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
 
     protected int getAssegnazioneTurnoPrecedenteIdx(List<AssegnazioneTurno> turniAssegnati, AssegnazioneTurno turnoDaAssegnare){
         for(int i = 0; i < turniAssegnati.size(); i++){
-            if(turniAssegnati.get(i).getData().isAfter(turnoDaAssegnare.getData())){
-                return i-1;
+            if(turniAssegnati.get(i).getData().isAfter(turnoDaAssegnare.getData()) || turniAssegnati.get(i).getData().isEqual(turnoDaAssegnare.getData())){
+                if(turniAssegnati.get(i).getTurno().getOraInizio().isAfter(turnoDaAssegnare.getTurno().getOraInizio()) || turniAssegnati.get(i).getTurno().getOraInizio().equals(turnoDaAssegnare.getTurno().getOraInizio())) {
+                    return i - 1;
+                }
             }
         }
-        return turniAssegnati.size();
+        return turniAssegnati.size()-1;
     }
 
 }
