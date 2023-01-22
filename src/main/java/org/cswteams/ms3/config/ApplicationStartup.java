@@ -97,11 +97,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Vincolo vincolo5 = new VincoloUbiquità();
 
         vincoloTurniContigui.setViolabile(true);
-        vincolo2.setViolabile(true);
+        vincolo1.setViolabile(true);
 
         vincolo1.setDescrizione("Vincolo Turno Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
-        vincolo2.setDescrizione("Vincolo massimo ore lavorative continuative. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
-        vincolo3.setDescrizione("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
+        vincolo2.setDescrizione("Vincolo massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
+        vincolo3.setDescrizione("Vincolo massimo periodo consecutivo per categoria over65.");
+        vincolo4.setDescrizione("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
+        vincolo5.setDescrizione("Vincolo ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
         vincoloTurniContigui.setDescrizione("Vincolo turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
 
         vincoloDao.saveAndFlush(vincoloTurniContigui);

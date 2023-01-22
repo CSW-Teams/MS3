@@ -94,14 +94,20 @@ export default function InformationDialogs() {
           </Typography>
           <Typography gutterBottom>
             <h4>Vincoli non violabili</h4>
+            <ul>
             {Array.from(vincoli).map((vincolo, i) => (
-            <div>{!vincolo.violabile?vincolo.descrizione:null}</div>
-          ))}          </Typography>
+            !vincolo.violabile? <li>{ vincolo.descrizione }</li>:null
+            ))}  
+            </ul>
+                    </Typography>
           <Typography gutterBottom>
           <h4>Vincoli violabili</h4>
+          <ul>
           {Array.from(vincoli).map((vincolo, i) => (
-            <div>{vincolo.violabile?vincolo.descrizione:null}</div>
-          ))}
+            vincolo.violabile? <li>{ vincolo.descrizione }</li>:null
+            ))}
+          
+          </ul>
           </Typography>
         </DialogContent>
       </BootstrapDialog>
