@@ -74,7 +74,7 @@ public class ScheduleBuilder {
                 utentiGuardia = this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia(), null);
                 at.setUtentiDiGuardia(utentiGuardia);
                 for (Utente u : utentiGuardia){
-                    allUserScheduleStates.get(u.getId()).getAssegnazioniTurnoCache().add(at);
+                    allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
                 }
             } catch (NotEnoughFeasibleUsersException e) {
                 throw new UnableToBuildScheduleException("unable to select utenti di guardia", e);
@@ -115,7 +115,6 @@ public class ScheduleBuilder {
             try {
                 this.verificaTuttiVincoli(contesto);
                 selectedUsers.add(userScheduleState.getUtente());
-                //userScheduleState.getAssegnazioniTurnoCache().add(contesto.getAssegnazioneTurno());
                 userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
             } catch (ViolatedConstraintException e) {
                 // logghiamo semplicemente l'evento e ignoriamo l'utente inammissibile
@@ -171,6 +170,7 @@ public class ScheduleBuilder {
                 //Se non è richiesta la forzatura allora si verificano tutti i vincoli
                 try {
                     verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
+                    this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
                 } catch (ViolatedConstraintException e) {
                     throw new IllegalAssegnazioneTurnoException(e);
                 }
@@ -179,6 +179,7 @@ public class ScheduleBuilder {
                 //Se è richiesta la forzatura si verificano solo i vincoli non violabili
                 try {
                     verificaTuttiVincoliForced(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
+                    this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
                 } catch (ViolatedConstraintException e) {
                     throw new IllegalAssegnazioneTurnoException(e);
                 }
