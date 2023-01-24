@@ -1,9 +1,11 @@
 package org.cswteams.ms3.entity;
 
 import lombok.Data;
+import org.cswteams.ms3.enums.MansioneEnum;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -12,12 +14,28 @@ public class Servizio {
     @Id
     private String nome;
 
-    protected Servizio(){
+    @Column
+    @Enumerated
+    @ElementCollection(targetClass = MansioneEnum.class)
 
+    /** Lista di mansioni che è possibile svolgere durante un turno di questo servizio */
+    List<MansioneEnum> mansioni ;
+
+    protected Servizio(){
     }
 
     public Servizio(String name){
+
         this.nome = name;
+        this.mansioni = new ArrayList<>();
+
+    }
+
+    public Servizio(String name,List<MansioneEnum> mansioni){
+
+        this.nome = name;
+        this.mansioni = mansioni;
+
     }
 
 }

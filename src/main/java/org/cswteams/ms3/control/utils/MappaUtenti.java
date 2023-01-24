@@ -23,7 +23,7 @@ public class MappaUtenti {
 
 
     public static UtenteDTO utenteEntitytoDTO(Utente utente) {
-        return new UtenteDTO(utente.getId(),utente.getNome(),utente.getCognome(),utente.getDataNascita(), utente.getCodiceFiscale(), utente.getRuoloEnum(), utente.getEmail(), utente.getCategorie());
+        return new UtenteDTO(utente.getId(),utente.getNome(),utente.getCognome(),utente.getDataNascita(), utente.getCodiceFiscale(), utente.getRuoloEnum(), utente.getEmail(), utente.getStato(), utente.getSpecializzazioni());
     }
 
     public static Set<UtenteDTO> utentiEntitytoDTO(Set<Utente> utenti){

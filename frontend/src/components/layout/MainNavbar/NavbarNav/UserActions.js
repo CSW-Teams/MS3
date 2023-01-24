@@ -25,7 +25,7 @@ export default class UserActions extends React.Component {
   }
 
   async componentDidMount() {
-    let utente = await(new UtenteAPI().getUserDetails(7));
+    let utente = await(new UtenteAPI().getUserDetails(1));
     this.setState({
       nome: utente.nome,
       cognome : utente.cognome

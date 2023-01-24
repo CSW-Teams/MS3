@@ -8,16 +8,13 @@ import React from "react";
  * A view showing shift scheduling of a single user
  */
 
-
-
-
 export default class SingleScheduleView extends ScheduleView {
+
 
 
   async componentDidMount() {
     let apiTurno = new AssegnazioneTurnoAPI();
-    let turni = await apiTurno.getTurnByIdUser('7');
-
+    let turni = await apiTurno.getTurnByIdUser('1');
 
     // FIXME: Only colleagues should be queried here, not all users
     let utenti = await (new UtenteAPI()).getAllUser();

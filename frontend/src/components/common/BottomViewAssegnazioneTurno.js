@@ -6,10 +6,13 @@ import MultipleSelect from './MultipleSelect';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
-import { UtenteAPI } from '../../API/UtenteAPI';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
+import { UtenteAPI } from '../../API/UtenteAPI';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import InformationDialogs from './InformationVincoloComponent';
 
 
 
@@ -23,16 +26,20 @@ export default function TemporaryDrawer(props) {
   const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
   const [state, setState] = React.useState({bottom: false});
+  const [alertState, setAlert] = React.useState(false);
+  const [alertColor, setAlertColor] = React.useState("success");
+  const [alertMessage, setAlertMessage] = React.useState("");
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
+  // Il suo obiettivo è quello di scaricare gli utenti dal backend e salvarli nello stato del componente
   async function getUser() {
     let userApi = new UtenteAPI();
     let utenti = await userApi.getAllUsersInfo()
     setUser(utenti);
   }
 
-  //Questa funzione aggiorna lo stato del componente.
+  //Questa funzione invoca in modo asincrono la funzione che scarica gli utenti e li memorizza nello stato del componente.
   React.useEffect(() => {
     getUser();
   }, []);
@@ -61,6 +68,7 @@ export default function TemporaryDrawer(props) {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
+
     setState({ ...state, [anchor]: open });
 
   };
@@ -71,27 +79,66 @@ export default function TemporaryDrawer(props) {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-    setState({ ...state, [anchor]: open });
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
-    let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+    let response; //risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
 
 
-    status = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,forced)
+    response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
     props.onPostAssegnazione()
 
     //Verifico la risposta del server analizzando il codice di risposta http
-    if(status==202){
-      alert('assegnazione creata con successo');
-    }else if (status == 400){
-      alert('Errore nei parametri');
-    } else if( status == 406 ){
-      alert('Un vincolo è stato violato, non è stato aggiunta l\'assegnazione');
+    if(response.status===202){
+      toast.success('Assegnazione creata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+
+      //Chiudo la schermata perchè l'assegnazione è andata a buon fine
+      setState({ ...state, [anchor]: open });
+
+    }else if (response.status === 400){
+      toast.error('Errore nei parametri di input!', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+
+      //Non chiudo la schermata perchè l'assegnazione è andata a buon fine
+      setState({ ...state, [anchor]: !open });
+
+    } else if( response.status === 406 ){
+
+      let responseBody = await response.json();
+      toast.error('Violazione dei vincoli.'+ responseBody.message, {
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+
+      //Non chiudo la schermata perchè l'assegnazione è andata a buon fine
+      setState({ ...state, [anchor]: !open });
+
+
     }
 
-    setState({ ...state, [anchor]: open });
 
   }
 
@@ -112,7 +159,7 @@ export default function TemporaryDrawer(props) {
               display: 'flex',
               'padding-top': '20px',
               justifyContent: 'center',
-              height: '65vh',
+              height: '75vh',
             }}>
 
 
@@ -133,15 +180,34 @@ export default function TemporaryDrawer(props) {
                   sx={{ width: 300 }}
                   renderInput={(params) => <TextField {...params} label="Medici Reperibili" />}
                 />
-                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced)}}/>} label="Forza assegnazione" />
+                
+                
+                <div>
+                  <FormControlLabel control={<Switch  onClick={() => {setForced(!forced)}}/>} label="Forza Vincoli non stringenti" />
+                  <InformationDialogs></InformationDialogs>                  
+                </div>
+
+                
                 <Button variant="contained" size="small" onClick={assegnaTurno('bottom', false)} >
                   Assegna turno
                 </Button>
             </Stack>
-
             </div>
           </Drawer>
         </React.Fragment>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
+
   );
 }

@@ -2,20 +2,14 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.cswteams.ms3.enums.CategoriaUtentiEnum;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(uniqueConstraints={
     @UniqueConstraint(columnNames={
-        "categoria",
+            "categoria_id",
         "inizioValidità",
         "fineValidità"
     })
@@ -30,7 +24,8 @@ public class CategoriaUtente {
     @GeneratedValue
     private Long id;
 
-    private CategoriaUtentiEnum categoria;
+    @ManyToOne
+    private Categoria categoria;
    
     private LocalDate inizioValidità;
 
@@ -41,10 +36,19 @@ public class CategoriaUtente {
     }
 
 
-    public CategoriaUtente(CategoriaUtentiEnum categoria, LocalDate inizioValidità, LocalDate fineValidità) {
+    public CategoriaUtente(Categoria categoria, LocalDate inizioValidità, LocalDate fineValidità) {
         this.categoria = categoria;
         this.inizioValidità = inizioValidità;
         this.fineValidità = fineValidità;
     }
 
+    /**
+     * Verifica se la categoria è valida in una dato giorno.
+     * @param when Giorno per cui si vuole verificare la validità della categoria
+     * @return {@code true} se la categoria è valida in quel giorno, {@code false} altrimenti
+     */
+    public boolean isValid(LocalDate when){
+
+            return (when.isBefore(inizioValidità) || when.isAfter(fineValidità));
+    }
 }

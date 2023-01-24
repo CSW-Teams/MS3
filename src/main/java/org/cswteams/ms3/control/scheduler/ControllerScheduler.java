@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.cswteams.ms3.control.vincoli.Vincolo;
-import org.cswteams.ms3.control.vincoli.VincoloPersonaTurno;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
@@ -28,23 +26,12 @@ public class ControllerScheduler implements IControllerScheduler{
     @Autowired
     ScheduleDao scheduleDao;
 
+    @Autowired
+    VincoloDao vincoloDao;
+
 
     private ScheduleBuilder scheduleBuilder;
 
-  /** 
-     * Restituisce tutti i vincoli di tutte le categorie, instanziando quelli
-     * stateless e ritrovando le istanze stateful dal database contattando le
-     * opportune dao.
-     */
-    private List<Vincolo> getAllConstraints(){
-        List<Vincolo> vincoli = new ArrayList<>();
-        
-        vincoli.add(new VincoloPersonaTurno());
-
-        // aggiungere altri vincoli ...
-
-        return vincoli;
-    }
 
     /**
      * Permette la creazione di un nuovo schedulo specificando data inizio e data fine della generazione.
@@ -81,7 +68,7 @@ public class ControllerScheduler implements IControllerScheduler{
         this.scheduleBuilder = new ScheduleBuilder(
             startDate,  // data inizio pianificazione
             endDate,    // data fine pianificazione
-            getAllConstraints(),    // tutti i vincoli da rispettare quando si assegna una persona a un turno
+            vincoloDao.findAll(),    // tutti i vincoli da rispettare quando si assegna una persona a un turno
             allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
             utenteDao.findAll() // tutti i candidati da allocare ai turni
             );
@@ -91,37 +78,25 @@ public class ControllerScheduler implements IControllerScheduler{
     }
 
     /**
-     * Permette di aggiungere una nuova assegnazione( rispettando tutti i vincoli) ad uno schedulo gia esistente. Il controller andrà a cercare
+     * Permette di aggiungere una nuova assegnazione ad uno schedulo gia esistente. Il controller andrà a cercare
      * lo schedulo contenente il giorno della nuova assegnazione e lo passerà al builder.
+     * Se forced è true l'assegnazione verrà aggiunta solo se vengono rispetatti i vincoli non violabili.
+     * Se forced è false l'assegnazione verà aggiunta se vengono rispettati tutti i vincoli.
      */
-    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno) throws  IllegalAssegnazioneTurnoException {
+    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno,boolean forced) throws  IllegalAssegnazioneTurnoException {
 
         //creo un nuovo builder passandogli uno schedulo già esistente
         this.scheduleBuilder = new ScheduleBuilder(
-                getAllConstraints(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
+                vincoloDao.findAll(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
                 utenteDao.findAll(),  // tutti i candidati da allocare ai turni
                 scheduleDao.findByDateBetween(assegnazioneTurno.getDataEpochDay()) //Schedulo gia esistente
         );
 
-        return scheduleDao.save(this.scheduleBuilder.addAssegnazioneTurno(assegnazioneTurno));
+        return scheduleDao.save(this.scheduleBuilder.addAssegnazioneTurno(assegnazioneTurno,forced));
     }
 
 
-    /**
-     * Permette di aggiungere una nuova assegnazione( senza rispettare vincoli) ad uno schedulo gia esistente. Il controller andrà a cercare
-     * lo schedulo contenente il giorno della nuova assegnazione e lo passerà al builder.
-     */
-    public Schedule aggiungiAssegnazioneTurnoForced(AssegnazioneTurno assegnazioneTurno)  {
 
-        //creo un nuovo builder passandogli uno schedulo già esistente
-        this.scheduleBuilder = new ScheduleBuilder(
-                getAllConstraints(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
-                utenteDao.findAll(), // tutti i candidati da allocare ai turni
-                scheduleDao.findByDateBetween(assegnazioneTurno.getDataEpochDay()) //Schedulo gia esistente
-        );
-
-        return scheduleDao.save(this.scheduleBuilder.addAssegnazioneTurnoForced(assegnazioneTurno));
-    }
 
 
     

@@ -8,6 +8,6 @@ import java.util.Set;
 public interface IControllerServizi {
 
     Set<ServizioDTO> leggiServizi();
-
+    ServizioDTO leggiServizioByNome(String nome);
     Servizio creaServizio(ServizioDTO servizio);
 }

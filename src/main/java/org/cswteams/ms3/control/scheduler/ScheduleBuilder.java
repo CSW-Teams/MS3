@@ -1,18 +1,12 @@
 package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import lombok.experimental.Accessors;
-import org.cswteams.ms3.control.vincoli.ContestoVincolo;
-import org.cswteams.ms3.control.vincoli.Vincolo;
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.cswteams.ms3.exception.NotEnoughFeasibleUsersException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
@@ -80,7 +74,7 @@ public class ScheduleBuilder {
                 utentiGuardia = this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia(), null);
                 at.setUtentiDiGuardia(utentiGuardia);
                 for (Utente u : utentiGuardia){
-                    allUserScheduleStates.get(u.getId()).getAssegnazioniTurnoCache().add(at);
+                    allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
                 }
             } catch (NotEnoughFeasibleUsersException e) {
                 throw new UnableToBuildScheduleException("unable to select utenti di guardia", e);
@@ -103,8 +97,12 @@ public class ScheduleBuilder {
     private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
         
         List<Utente> selectedUsers = new ArrayList<>();
-        
-        for (UserScheduleState userScheduleState : allUserScheduleStates.values()){
+
+        //Randomizzo la scelta dell'utente dalla lista di tutti gli utenti
+        List<UserScheduleState> allUserScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
+        Collections.shuffle(allUserScheduleState);
+
+        for (UserScheduleState userScheduleState : allUserScheduleState){
             if (selectedUsers.size() == numUtenti){
                 break;
             }
@@ -117,7 +115,7 @@ public class ScheduleBuilder {
             try {
                 this.verificaTuttiVincoli(contesto);
                 selectedUsers.add(userScheduleState.getUtente());
-                userScheduleState.getAssegnazioniTurnoCache().add(contesto.getAssegnazioneTurno());
+                userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
             } catch (ViolatedConstraintException e) {
                 // logghiamo semplicemente l'evento e ignoriamo l'utente inammissibile
                 logger.log(Level.WARNING, e.getMessage(), e);
@@ -142,28 +140,54 @@ public class ScheduleBuilder {
         }
     }
 
-    /**Aggiunge una assegnazione turno manualmente alla pianificazione, senza
-     * apportare nessun tipo di controllo.
+    /**
+     * Questo metodo è invocato nel momento in cui è richiesta l'aggiunta di un assegnazione turno in modo forzato.
+     * Il metodo va quindi a verificare i soli vincoli che non possono essere violati.
+     * @param contesto
+     * @throws ViolatedConstraintException
      */
-    public Schedule addAssegnazioneTurnoForced(AssegnazioneTurno at){
-        this.schedule.getAssegnazioniTurno().add(at);
-        return this.schedule;
+    private void verificaTuttiVincoliForced(ContestoVincolo contesto) throws ViolatedConstraintException{
+
+        for(Vincolo vincolo : this.allConstraints){
+            if(!vincolo.isViolabile())
+                vincolo.verificaVincolo(contesto);
+        }
     }
+
+
 
     /** Aggiunge un'assegnazione turno manualmente alla pianificazione.
      * L'assegnazione deve già essere compilata con la data e gli utenti.
      * @throws IllegalAssegnazioneTurnoException
      */
-    public Schedule addAssegnazioneTurno(AssegnazioneTurno at) throws IllegalAssegnazioneTurnoException{
+    public Schedule addAssegnazioneTurno(AssegnazioneTurno at, boolean forced) throws IllegalAssegnazioneTurnoException{
         
         for (Utente u : at.getUtenti()){
 
-            try {
-                verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
-            } catch (ViolatedConstraintException e) {
-                throw new IllegalAssegnazioneTurnoException(e);
+            //verifico se è richiesta un aggiunta di assegnazione turno in modo forzata
+            if(!forced){
+
+                //Se non è richiesta la forzatura allora si verificano tutti i vincoli
+                try {
+                    verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
+                    this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
+                } catch (ViolatedConstraintException e) {
+                    throw new IllegalAssegnazioneTurnoException(e);
+                }
+            }else{
+
+                //Se è richiesta la forzatura si verificano solo i vincoli non violabili
+                try {
+                    verificaTuttiVincoliForced(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
+                    this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
+                } catch (ViolatedConstraintException e) {
+                    throw new IllegalAssegnazioneTurnoException(e);
+                }
             }
+
         }
-        return addAssegnazioneTurnoForced(at);
+
+        this.schedule.getAssegnazioniTurno().add(at);
+        return this.schedule;
     }
 }

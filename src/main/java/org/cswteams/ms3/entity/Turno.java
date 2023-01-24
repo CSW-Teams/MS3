@@ -2,13 +2,19 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.cswteams.ms3.enums.CategoriaUtentiEnum;
+
+import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -33,8 +39,8 @@ public class Turno {
     private int numUtentiReperibilita;
     private int numUtentiGuardia;
 
-
-
+    /** Quale mansione è da svolgere per questo turno */
+    private MansioneEnum mansione;
 
     /**
      * In quali giorni della settimana questo turno può essere assegnato
@@ -45,11 +51,13 @@ public class Turno {
     @ManyToOne
     private Servizio servizio;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Enumerated(EnumType.STRING)
-    private Set<CategoriaUtentiEnum> categorieVietate;
+    /**
+     * Le categorie utenti richieste o vietate per questo turno
+     */
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<UserCategoryPolicy> categoryPolicies;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<CategoriaUtentiEnum> categorieVietate, boolean giornoSuccessivo) throws  TurnoException {
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
 
         // Se l'ora di inizio segue l'ora di fine verrà sollevata eccezzione solo se il turno non è configurato
         // per iniziare in un giorno e finire in quello seguente
@@ -62,25 +70,24 @@ public class Turno {
         this.oraFine = oraFine;
         this.servizio = servizio;
         this.tipologiaTurno = tipologia;
-        this.categorieVietate = categorieVietate;
         this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
 
     }
 
-    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, Set<CategoriaUtentiEnum> categorieVietate, boolean giornoSuccessivo) throws  TurnoException {
-        this(oraInizio, oraFine, servizio, tipologia, categorieVietate,giornoSuccessivo);
+    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, tipologia,giornoSuccessivo);
         this.id = id;
     }
 
     public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio,boolean giornoSuccessivo) throws  TurnoException {
-        this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate,giornoSuccessivo);
+            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio,boolean giornoSuccessivo) throws  TurnoException {
+        this(id, oraInizio, oraFine, servizio, tipologiaTurno, giornoSuccessivo);
         this.giorniDiValidità = giorniDiValidità;
     }
 
      public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Set<CategoriaUtentiEnum> categorieVietate, Servizio servizio, int numUtentiGuardia, int numUtentiReperibilita, boolean giornoSuccessivo) throws TurnoException {
-        this(id, oraInizio, oraFine, servizio, tipologiaTurno, categorieVietate, giornoSuccessivo);
+            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, int numUtentiGuardia, int numUtentiReperibilita, boolean giornoSuccessivo) throws TurnoException {
+        this(id, oraInizio, oraFine, servizio, tipologiaTurno, giornoSuccessivo);
         this.giorniDiValidità = giorniDiValidità;
         this.numUtentiGuardia = numUtentiGuardia;
         this.numUtentiReperibilita = numUtentiReperibilita;
@@ -89,12 +96,12 @@ public class Turno {
     public Turno() {
     }
 
-    public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt, Set<CategoriaUtentiEnum> es) {
+    public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt) {
         this.oraFine=oi;
         this.oraInizio=of;
         this.tipologiaTurno=tt;
-        this.categorieVietate=es;
         this.servizio=servizio;
+        this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
     }
 
 
@@ -102,5 +109,33 @@ public class Turno {
         this.giornoSuccessivo = true;
     }
 
+    //Restituisce il numero di minuto di lavoro per quetso turno
+    public long getMinutidiLavoro(){
+        LocalDateTime inizio = LocalDateTime.of(LocalDate.now(),this.oraInizio);
+        LocalDateTime fine;
+        if(this.giornoSuccessivo)
+            fine = LocalDateTime.of(LocalDate.now().plusDays(1),this.oraFine);
+         else
+            fine = LocalDateTime.of(LocalDate.now(),this.oraFine);
+        return inizio.until(fine, ChronoUnit.MINUTES);
+    }
+
+    public void setCategorieVietate(Set<Categoria> categorieVietate){
+        List<UserCategoryPolicy> policies = new ArrayList<>();
+        for (Categoria cu : categorieVietate) {
+            policies.add(new UserCategoryPolicy(cu, this, UserCategoryPolicyValue.EXCLUDE));
+        }
+        this.setCategoryPolicies(policies);
+    }
+
+    public Set<Categoria> getCategorieVietate(){
+        Set<Categoria> categorieVietate = new HashSet<>();
+        for (UserCategoryPolicy p : this.getCategoryPolicies()) {
+            if (p.getPolicy().equals(UserCategoryPolicyValue.EXCLUDE)) {
+                categorieVietate.add(p.getCategoria());
+            }
+        }
+        return categorieVietate;
+    }
 
 }

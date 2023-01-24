@@ -8,10 +8,7 @@ import org.cswteams.ms3.dto.UtenteDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.util.Set;
@@ -27,6 +24,12 @@ public class ServizioRestEndpoint {
     public ResponseEntity<?> leggiServizi() throws ParseException {
         Set<ServizioDTO> servizi = controllerServizi.leggiServizi();
         return new ResponseEntity<>(servizi, HttpStatus.FOUND);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,path = "nome/{nomeServizio}")
+    public ResponseEntity<?> leggiServizio(@PathVariable String nomeServizio)  {
+        ServizioDTO servizio = controllerServizi.leggiServizioByNome(nomeServizio);
+        return new ResponseEntity<>(servizio, HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "")

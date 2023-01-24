@@ -19,35 +19,9 @@ public class RegistraAssegnazioneTurnoDTO {
 
     public RegistraAssegnazioneTurnoDTO(){}
 
-    public int getGiorno() {
-        return giorno;
-    }
-
-    public int getMese() {
-        return mese;
-    }
-
-    public int getAnno() {
-        return anno;
-    }
-
     public void setForced(boolean forced) {
         this.forced = forced;
     }
 
-    public TipologiaTurno getTipologiaTurno() {
-        return tipologiaTurno;
-    }
 
-    public Set<UtenteDTO> getUtentiDiGuardia() {
-        return utentiDiGuardia;
-    }
-
-    public Set<UtenteDTO> getUtentiReperibili() {
-        return utentiReperibili;
-    }
-
-    public ServizioDTO getServizio() {
-        return servizio;
-    }
 }
