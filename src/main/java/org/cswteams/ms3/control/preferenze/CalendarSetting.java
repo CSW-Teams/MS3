@@ -14,6 +14,10 @@ public class CalendarSetting {
 		this.baseURL = baseURL;
 		this.URLParameters = new ArrayList<KeyValue<String, String>>();
 	}
+
+	public void reset(){
+		this.URLParameters = new ArrayList<KeyValue<String, String>>();
+	}
 	
 	public void addURLParameter(String value) {
 		this.addURLParameter(null, value);

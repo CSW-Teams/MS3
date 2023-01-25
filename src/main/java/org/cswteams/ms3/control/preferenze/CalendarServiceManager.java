@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -18,10 +19,15 @@ import org.cswteams.ms3.exception.CalendarServiceException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
+@Service
 public class CalendarServiceManager implements ICalendarServiceManager {
-	
+
+	@Autowired
+	IHolidayController holidayController ;
 	private String serviceURL;
 	private String dateFormat;
 	
@@ -51,18 +57,7 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 				JSONArray JSONData = (JSONArray) JSONValue.parse(response.body());
 				for (Object item : JSONData) {
 					JSONObject JSONItem = (JSONObject) item;
-					
-					//System.out.println(JSONItem);
-					
-					Calendar calendar = new GregorianCalendar();
-					if (JSONItem.get("date") != null) {
-						DateFormat dateFormat = new SimpleDateFormat(this.dateFormat);
-						Date date = dateFormat.parse(JSONItem.get("date").toString());
-						calendar.setTime(date);
-					} else {
-						throw new CalendarServiceException("Calendar date not found");
-					}
-					
+
 					/*holidays.add(new Holiday (
 							calendar, 
 							((JSONItem.get("name") != null) ? JSONItem.get("name").toString() : null), 
@@ -74,22 +69,25 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 							((JSONItem.get("global") != null) ? Boolean.parseBoolean(JSONItem.get("global").toString()): null)
 							));*/
 					holidays.add(new Holiday(
-							((JSONItem.get("localName") != null) ? JSONItem.get("localName").toString() : null), 
+							JSONItem.get("localName").toString(),
 							null, //HolidayCategory category, 
-							calendar.getTimeInMillis(), //long startDateEpochDay, Nel JSON le festività sono indicate giorno per giorno
-							calendar.getTimeInMillis(), //long endDateEpochDay, Non so se esistono festività che durono più di un giorno e per quanto ne so durono l'intera giornata
-							((JSONItem.get("countryCode") != null) ? JSONItem.get("countryCode").toString() : null)
+							LocalDate.parse(JSONItem.get("date").toString()).toEpochDay(), //long startDateEpochDay, Nel JSON le festività sono indicate giorno per giorno
+							LocalDate.parse(JSONItem.get("date").toString()).toEpochDay(), //long endDateEpochDay, Non so se esistono festività che durono più di un giorno e per quanto ne so durono l'intera giornata
+							JSONItem.get("countryCode").toString()
 							));
 				}
 			} catch (Exception e) {
 				throw new CalendarServiceException(e);
 			}
+
+			//holidays.addAll(holidayController.readHolidays());
+
 			return holidays;
 		} else {
 			throw new CalendarServiceException("Calendar data not found: data searched in '" + this.serviceURL + "'");
 		}
 	}
-	
+
 	public List<Date> getAllSundays(int year) {
 	    Calendar calendar = new GregorianCalendar();
 	    calendar.set(year, 0, 1, 0, 0, 0);

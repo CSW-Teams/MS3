@@ -5,7 +5,7 @@ export class HolidaysAPI {
 
     /** gets all holidays from backend  */
     async getHolidays() {
-        let response = await fetch('/api/holidays/', {method: 'GET'});
+        let response = await fetch('/api/holidays/year=2023/country=IT', {method: 'GET'});
         let serializedHolidays = await response.json();
         let holidays = [];
 

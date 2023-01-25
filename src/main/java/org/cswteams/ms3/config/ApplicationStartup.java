@@ -115,11 +115,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     }
     
     private void registerHolidays(){
+        /*
         try {
             LoadHoliday();
         } catch (IOException e) {
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, e.getMessage());
         }
+        */
 
         // registra le domeniche nel ventennio 2013-2033
         holidayController.registerSundays(LocalDate.of(2013, 1, 1), 20);

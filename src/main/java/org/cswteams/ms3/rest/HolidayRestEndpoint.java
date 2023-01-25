@@ -43,9 +43,9 @@ public class HolidayRestEndpoint {
      * @return all registered holidays
      */
     @RequestMapping(method = RequestMethod.GET, path = "/year={currentYear}/country={currentCountry}")
-    public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable String year, @PathVariable String country){
-    	this.setting.addURLParameter("/" + year);
-    	this.setting.addURLParameter("/" + country);
+    public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable String currentYear, @PathVariable String currentCountry){
+    	this.setting.addURLParameter("/" + currentYear);
+    	this.setting.addURLParameter("/" + currentCountry);
     	
     	calendarServiceManager.init(this.setting);
     	
@@ -66,6 +66,7 @@ public class HolidayRestEndpoint {
             dtos.add(MappaHolidays.holidayToDto(holiday));
         }
 
+        this.setting.reset();
         return ResponseEntity.status(HttpStatus.FOUND).body(dtos);
     }
 
