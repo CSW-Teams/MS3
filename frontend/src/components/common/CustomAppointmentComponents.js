@@ -9,7 +9,7 @@ import classNames from "clsx";
 import PropTypes from "prop-types";
 import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
-
+import { UtenteAPI } from "../../API/UtenteAPI";
 
 // AppointmentContent di SingleScheduleView
 export const AppointmentSingleContent = ({
@@ -41,6 +41,9 @@ export const AppointmentSingleContent = ({
 );
 
 //Appointment Tooltip generico
+/** Questo componente mostra i dettagli di uno schedulabile, i quali appaiono
+ * dopo aver cliccato sull'Appointment corrispondente.
+ */
 export const Content = ({
                           className,
                           children,
@@ -74,6 +77,11 @@ export const Content = ({
 
       break;
     case SchedulableType.AssignedShift:
+      /**
+       * Lo schedulabile è un turno assegnato.
+       * Per tutti i turni verranno mostrati tra i dettagli gli allocati al turno.
+       * Se il turno è una GUARDIA, verranno mostrati anche i reperibili.
+       */
       return (
         <StyledDiv
           resources={appointmentResources}
@@ -113,7 +121,7 @@ export const Content = ({
           </Grid>
           <Grid>
             <Grid container alignItems="center" >
-              <div className={tooltip_classes.text}> Di Guardia : </div>
+              <div className={tooltip_classes.text}> Allocati : </div>
             </Grid>
             { appointmentResources.slice(0, appointmentData.utenti_guardia.length).map(resourceItem => (
               <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
@@ -132,26 +140,32 @@ export const Content = ({
                 </Grid>
               </Grid>
             ))}
-            <Grid item xs={2}>
-              <div className={tooltip_classes.text}> In Reperibilità: </div>
-            </Grid>
-            { appointmentResources.slice(appointmentData.utenti_guardia.length, appointmentData.utenti_guardia.length + appointmentData.utenti_reperibili.length).map(resourceItem => (
-              <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
-                <Grid item xs={2} className={tooltip_classes.textCenter}>
-                  <div className={tooltip_classes.relativeContainer}>
-                    <Lens
-                      className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
-                      style={{ color: getAppointmentColor(300, resourceItem.color) }}
-                    />
-                  </div>
+            { appointmentData.mansione === "GUARDIA" ? (
+              <div>
+                <Grid item xs={2}>
+                  <div className={tooltip_classes.text}> Reperibili </div>
                 </Grid>
-                <Grid item xs={10}>
-                  <div className={tooltip_classes.text}>
-                    {resourceItem.text}
-                  </div>
-                </Grid>
-              </Grid>
-            ))}
+                {appointmentResources.slice(appointmentData.utenti_guardia.length, appointmentData.utenti_guardia.length + appointmentData.utenti_reperibili.length).map(resourceItem => (
+                  <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
+                    <Grid item xs={2} className={tooltip_classes.textCenter}>
+                      <div className={tooltip_classes.relativeContainer}>
+                        <Lens
+                          className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
+                          style={{ color: getAppointmentColor(300, resourceItem.color) }}
+                        />
+                      </div>
+                    </Grid>
+                    <Grid item xs={10}>
+                      <div className={tooltip_classes.text}>
+                        {resourceItem.text}
+                      </div>
+                    </Grid>
+                  </Grid>
+                ))}
+              </div>
+          ) : (
+              <div></div>
+            ) }
           </Grid>
           {children}
         </StyledDiv>
@@ -183,30 +197,97 @@ Content.defaultProps = {
 };
 
 
-// AppointmentContent di GlobalScheduleView
-export const AppointmentContent = ({
-                              data, formatDate, ...restProps
-                            }) => (
-  <StyledAppointmentsAppointmentContent {...restProps} formatDate={formatDate} data={data}>
-    <div className={classes.container}>
-      <div style={{textAlign: "center", color: "white","fontFamily":"sans-serif", "font-weight":"bold"}}>
-        {data.title}
-      </div>
-      <li className={classes.text}>
-        {data.tipologia}
-      </li>
-      <li className={classes.textContainer}>
-        <div className={classes.time}>
-          {formatDate(data.startDate, { hour: 'numeric', minute: 'numeric' })}
-        </div>
-        <div className={classes.time}>
-          {' - '}
-        </div>
-        <div className={classes.time}>
-          {formatDate(data.endDate, { hour: 'numeric', minute: 'numeric' })}
-        </div>
-      </li>
-    </div>
-  </StyledAppointmentsAppointmentContent>
-);
+/** Questo appointment descrive il rettangolo colorato contenente il sommario
+ * delle informazioni di uno schedulabile.
+ */
+export class AppointmentContent extends React.Component{
 
+  constructor(data, formatDate, ...restProps) {
+    super(data, formatDate, ...restProps);
+    this.state = {
+      utenti_allocati: [],
+      utenti_riserve: [], // corrispondono ai reperibili nelle mansioni di guardia
+      formatDate: formatDate,
+      ...data,
+      restProps: {...restProps}
+    }
+
+  }
+
+  async componentDidMount() {
+
+    /**
+     * Se questo schedulabile è un turno, recuperiamo i dettagli degli utenti
+     * usando gli ids salvati nell'oggetto turno.
+     */
+    if (this.state.data.schedulableType == SchedulableType.AssignedShift) {
+      let utenteAPI = new UtenteAPI();
+      let utente;
+
+      this.state.data.utenti_guardia.forEach(async (userId) => {
+        utente = await utenteAPI.getUserDetails(userId);
+        this.setState({
+          utenti_allocati: [...this.state.utenti_allocati, utente]
+        });
+      });
+      this.state.data.utenti_reperibili.forEach(async (userId) => {
+        utente = await utenteAPI.getUserDetails(userId);
+        this.setState({
+          utenti_riserve: [...this.state.utenti_riserve, utente]
+        });
+      });
+    }
+  }
+
+  render() {
+  // mostriamo informazioni diverse a seconda del tipo di schedulabile
+  if (this.state.data.schedulableType == SchedulableType.AssignedShift) {
+    /**
+     * Mostriamo i cognomi dei partecipanti al turno, includendo i reperibili
+     * se il turno è una GUARDIA
+     */
+    return (
+      <StyledAppointmentsAppointmentContent {...this.state.restProps} formatDate={this.state.formatDate} data={this.state.data}>
+        <div className={classes.container}>
+          <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "font-weight": "bold" }}>
+            {this.state.data.title}
+          </div>
+          <div>
+            <div style={{display: "inline-block"}}>
+              Allocati:
+            <ul>
+              {this.state.utenti_allocati.map((user) => <li> {user.cognome} </li>) }
+            </ul>
+            </div>
+            
+            {this.state.data.mansione === "GUARDIA" ? (
+              <div style={{ display: "inline-block" }}>
+                Reperibili:
+                <ul>
+                  {this.state.utenti_riserve.map((user) => <li> {user.cognome} </li>)}
+                </ul>
+              </div>
+          ) : (
+              <div></div>
+            )}
+          </div>
+        </div>
+      </StyledAppointmentsAppointmentContent>
+    );
+  }
+  else {
+    /**
+     * Mostriamo solo il nome della festività
+     */
+    return (
+      <StyledAppointmentsAppointmentContent {...this.state.restProps} formatDate={this.state.formatDate} data={this.state.data}>
+        <div className={classes.container}>
+          <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "font-weight": "bold" }}>
+            {this.state.data.title}
+          </div>
+        </div>
+      </StyledAppointmentsAppointmentContent>
+    );
+  }
+  }
+}

@@ -238,7 +238,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u30 = utenteDao.saveAndFlush(u20);
 
         //creo servizi
-        Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio1 = new Servizio("pediatria");
         Servizio servizio2 = new Servizio("gastroenterologia");
         Servizio servizio3 = new Servizio("allergologia");
 
@@ -263,6 +263,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         ));
         t2.setNumUtentiGuardia(2);
         t2.setNumUtentiReperibilita(2);
+        t2.setMansione(MansioneEnum.AMBULATORIO);
 
         boolean giornoSuccessivo = true;
         Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO,giornoSuccessivo);
@@ -275,6 +276,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         t3.setCategorieVietate(categorieVietate);
         t3.setNumUtentiGuardia(2);
         t3.setNumUtentiReperibilita(2);
+        t3.setMansione(MansioneEnum.REPARTO);
 
         Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, false);
         t5.setCategoryPolicies(Arrays.asList(
@@ -283,6 +285,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         ));
         t5.setNumUtentiGuardia(2);
         t5.setNumUtentiReperibilita(2);
+        t5.setMansione(MansioneEnum.GUARDIA);
 
 
         turnoDao.saveAndFlush(t2);

@@ -1,4 +1,4 @@
-import { Holiday } from "./Schedulable";
+import { Holiday, SchedulableType } from "./Schedulable";
 import {red} from "@mui/material/colors";
 
 export class HolidaysAPI {
@@ -19,7 +19,7 @@ export class HolidaysAPI {
                 red,
             );
             h.allDay = true;
-            h.type="Holiday"
+            h.schedulableType=SchedulableType.Holiday;
             h.category = sh.category;
             h.location = sh.location;
             h.utenti_guardia = [-1];

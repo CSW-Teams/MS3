@@ -1,12 +1,16 @@
 package org.cswteams.ms3.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
 import java.sql.Timestamp;
 import java.util.Set;
 
 @Data
+@AllArgsConstructor
 public class AssegnazioneTurnoDTO {
 
     private Long id;
@@ -20,6 +24,8 @@ public class AssegnazioneTurnoDTO {
     private ServizioDTO servizio;
     private TipologiaTurno tipologiaTurno;
     private boolean giornoSuccessivoTurno;
+
+    private MansioneEnum mansione;
 
     public AssegnazioneTurnoDTO(Long id, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
         this.id = id;
