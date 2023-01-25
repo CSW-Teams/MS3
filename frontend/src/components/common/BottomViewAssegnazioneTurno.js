@@ -32,13 +32,14 @@ export default function TemporaryDrawer(props) {
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
+  // Il suo obiettivo è quello di scaricare gli utenti dal backend e salvarli nello stato del componente
   async function getUser() {
     let userApi = new UtenteAPI();
     let utenti = await userApi.getAllUsersInfo()
     setUser(utenti);
   }
 
-  //Questa funzione aggiorna lo stato del componente.
+  //Questa funzione invoca in modo asincrono la funzione che scarica gli utenti e li memorizza nello stato del componente.
   React.useEffect(() => {
     getUser();
   }, []);
@@ -67,6 +68,7 @@ export default function TemporaryDrawer(props) {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
+
     setState({ ...state, [anchor]: open });
 
   };
@@ -77,7 +79,6 @@ export default function TemporaryDrawer(props) {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-    setState({ ...state, [anchor]: open });
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
     let response; //risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
@@ -100,7 +101,10 @@ export default function TemporaryDrawer(props) {
         progress: undefined,
         theme: "colored",
       });
-      //alert('assegnazione creata con successo');
+
+      //Chiudo la schermata perchè l'assegnazione è andata a buon fine
+      setState({ ...state, [anchor]: open });
+
     }else if (response.status === 400){
       toast.error('Errore nei parametri di input!', {
         position: "top-center",
@@ -113,7 +117,9 @@ export default function TemporaryDrawer(props) {
         theme: "colored",
       });
 
-      //alert('Errore nei parametri');
+      //Non chiudo la schermata perchè l'assegnazione è andata a buon fine
+      setState({ ...state, [anchor]: !open });
+
     } else if( response.status === 406 ){
 
       let responseBody = await response.json();
@@ -127,9 +133,12 @@ export default function TemporaryDrawer(props) {
         theme: "colored",
       });
 
+      //Non chiudo la schermata perchè l'assegnazione è andata a buon fine
+      setState({ ...state, [anchor]: !open });
+
+
     }
 
-    setState({ ...state, [anchor]: open });
 
   }
 
