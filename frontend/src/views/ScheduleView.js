@@ -221,17 +221,17 @@ class ScheduleView extends React.Component{
                   displayName="Settimanale"
                   startDayHour={0}
                   endDayHour={24}
-                  cellDuration={120}
+                  cellDuration={60}
                 />
                 <DayView
                   displayName="Giornaliero"
                   startDayHour={0}
                   endDayHour={24}
-                  cellDuration={120}
+                  cellDuration={60}
                 />
                 <MonthView displayName="Mensile" />
                 <Toolbar />
-                <Appointments appointmentContentComponent={this.state.appointmentContentComponent} />
+                <Appointments appointmentContentComponent={AppointmentContent} />
                 <AllDayPanel/>
                 <Resources
                   data={resources}
