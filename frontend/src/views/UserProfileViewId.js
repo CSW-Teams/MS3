@@ -60,7 +60,7 @@ export default class UserProfileView extends React.Component{
         return <MDBCol>
           <MDBCard>
             <MDBCardBody className="text-center">
-              <MDBCardTitle>Turnazioni
+              <MDBCardTitle>Rotazioni
                 <AggiungiCategoria onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></AggiungiCategoria>
               </MDBCardTitle>
               <MDBTable align="middle">
