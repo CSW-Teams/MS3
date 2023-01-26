@@ -45,6 +45,20 @@ public class GiustificazioneForzaturaEndpoint {
         }
     }
 
+//    @PostMapping(value = "/caricaFiles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity uploadFile(@RequestParam MultipartFile[] files) {
+//
+//        for (MultipartFile file : files) {
+//            try {
+//                //filesDAO.save(file);
+//                System.out.println("Uploaded the file successfully: " + file.getMultipartFile().getOriginalFilename());
+//            } catch (Exception e) {
+//                System.out.println("Could not upload the file: " + file.getMultipartFile().getOriginalFilename() + ". Error: " + e.getMessage());
+//            }
+//        }
+//        return ResponseEntity.ok().build();
+//    }
+
 
 
 }

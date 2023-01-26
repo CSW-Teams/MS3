@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import UploadService from "./UploadServices";
+import {UploadFilesAPI} from "./UploadFilesAPI"
+import {
+  MDBCard,
+  MDBCardBody, MDBCardSubTitle,
+  MDBCardText,
+  MDBCardTitle
+} from "mdb-react-ui-kit";
 
 const FilesUpload = () => {
 
@@ -10,7 +16,8 @@ const FilesUpload = () => {
   const progressInfosRef = useRef(null)
 
   useEffect(() => {
-    UploadService.getFiles().then((response) => {
+    let UploadAPI = new UploadFilesAPI()
+    UploadAPI.getFiles().then((response) => {
       setFileInfos(response.data);
     });
   }, []);
@@ -20,11 +27,10 @@ const FilesUpload = () => {
     setProgressInfos({ val: [] });
   };
 
-
-
   const upload = (idx, file) => {
     let _progressInfos = [...progressInfosRef.current.val];
-    return UploadService.upload(file, (event) => {
+    let uploadAPI = new UploadFilesAPI();
+    return uploadAPI.uploadFile(file, (event) => {
       _progressInfos[idx].percentage = Math.round(
         (100 * event.loaded) / event.total
       );
@@ -39,16 +45,16 @@ const FilesUpload = () => {
       .catch(() => {
         _progressInfos[idx].percentage = 0;
         setProgressInfos({ val: _progressInfos });
-
         setMessage((prevMessage) => ([
           ...prevMessage,
-          "Impossibile caricare il file: " + file.name,
+          "Impossibile caricare il file: " + file.name+ "!",
         ]));
       });
   };
 
   const uploadFiles = () => {
     const files = Array.from(selectedFiles);
+    let UploadFiles = new UploadFilesAPI();
 
     let _progressInfos = files.map(file => ({ percentage: 0, fileName: file.name }));
 
@@ -59,7 +65,7 @@ const FilesUpload = () => {
     const uploadPromises = files.map((file, i) => upload(i, file));
 
     Promise.all(uploadPromises)
-      .then(() => UploadService.getFiles())
+      .then(() => UploadFiles.getFiles())
       .then((files) => {
         setFileInfos(files.data);
       });
@@ -107,13 +113,11 @@ const FilesUpload = () => {
       </div>
 
       {message.length > 0 && (
-        <div className="alert alert-secondary" role="alert">
           <ul>
             {message.map((item, i) => {
-              return <li key={i}>{item}</li>;
+              return <li> <h6 key={i}>{item}</h6></li>;
             })}
           </ul>
-        </div>
       )}
 
       <div className="card">
