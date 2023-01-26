@@ -186,7 +186,6 @@ export default function TemporaryDrawer(props) {
   };
 
   function Giustifica() {
-    if (!giustificato)
         return (
           <MDBCard>
               <MDBCardBody>
@@ -200,18 +199,11 @@ export default function TemporaryDrawer(props) {
                              value={giustifica}>
                 </MDBTextArea>
                   <FilesUpload/>
-                <Button title="Conferma" onClick={() => caricaGiustifica('bottom', false) && setGiustificato(true)}>
+                <Button title="Conferma" onClick={() => caricaGiustifica('bottom', false) && setGiustificato(true) }>
                   Conferma
                 </Button>
               </MDBCardBody>
             </MDBCard>
-    )
-    return (
-      <MDBCard>
-        <MDBCardBody>
-         Giustificazione compilata con successo!
-        </MDBCardBody>
-      </MDBCard>
     )};
 
 
@@ -254,9 +246,9 @@ export default function TemporaryDrawer(props) {
                 renderInput={(params) => <TextField {...params} label="Medici Reperibili" />}
               />
               <div>
-                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced)}}/>} label="Forza Vincoli non stringenti" />
+                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced); setGiustificato(false)}}/>} label="Forza Vincoli non stringenti" />
                 <InformationDialogs></InformationDialogs>
-                { (forced && <Giustifica  />) && ( <Giustifica  />|| !giustificato)}
+                { (forced && !giustificato && <Giustifica/>  ) }
               </div>
 
 
