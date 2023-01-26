@@ -96,6 +96,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Vincolo vincolo3 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguoOver62,Arrays.asList(categoriaDao.findAllByNome("OVER_62")));
         Vincolo vincolo4 = new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti);
         Vincolo vincolo5 = new VincoloUbiquità();
+        Vincolo vincolo6 = new VincoloNumeroDiRuoloTurno();
 
         vincoloTurniContigui.setViolabile(true);
         vincolo1.setViolabile(true);
@@ -106,6 +107,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincolo4.setDescrizione("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
         vincolo5.setDescrizione("Vincolo ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
         vincoloTurniContigui.setDescrizione("Vincolo turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
+        vincolo6.setDescrizione("Vincolo Ruolo numero.");
 
         vincoloDao.saveAndFlush(vincoloTurniContigui);
         vincoloDao.saveAndFlush(vincolo1);
@@ -113,6 +115,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloDao.saveAndFlush(vincolo2);
         vincoloDao.saveAndFlush(vincolo4);
         vincoloDao.saveAndFlush(vincolo5);
+        vincoloDao.saveAndFlush(vincolo6);
+
     }
     
     private void registerHolidays(){
