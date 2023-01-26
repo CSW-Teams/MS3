@@ -1,6 +1,7 @@
 package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
+import org.cswteams.ms3.control.preferenze.CalendarSetting;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.dao.*;
@@ -124,7 +125,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         */
 
         // registra le domeniche nel ventennio 2021-2023 (ridurre overhead di comunicazione)
-        holidayController.registerSundays(LocalDate.of(2021, 1, 1), 3);
+        // holidayController.registerSundays(LocalDate.of(2021, 1, 1), 3);
 
     }
 

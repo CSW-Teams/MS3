@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,29 +45,37 @@ public class HolidayRestEndpoint {
      */
     @RequestMapping(method = RequestMethod.GET, path = "/year={currentYear}/country={currentCountry}")
     public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable String currentYear, @PathVariable String currentCountry){
-    	this.setting.addURLParameter("/" + currentYear);
-    	this.setting.addURLParameter("/" + currentCountry);
-    	
-    	calendarServiceManager.init(this.setting);
-    	
-        List<Holiday> holidays = null;
-		try {
-			holidays = calendarServiceManager.getHolidays();
-		} catch (CalendarServiceException e) {
-			e.printStackTrace();
-		}
-        
-		/*Se il servizio esterno da problemi, allora prenderà le festività dal servizio interno*/
-		if (holidays == null) {
-			holidays = holidayController.readHolidays();
-		}
+
+        List<Holiday> holidays = holidayController.readHolidays();
+
+        // Se il database non contiene nessuna festività e nessuna domenica, questa informaizoni vengono pescatae dall'api esterna
+        if(holidays.size() == 0) {
+
+            this.setting.addURLParameter("/" + currentYear);
+            this.setting.addURLParameter("/" + currentCountry);
+
+            calendarServiceManager.init(this.setting);
+
+            try {
+                holidays = calendarServiceManager.getHolidays();
+            } catch (CalendarServiceException e) {
+                e.printStackTrace();
+            }
+
+            holidayController.registerHoliday(holidays);
+            holidayController.registerSundays(LocalDate.of(Integer.parseInt(currentYear)-1, 1, 1), 3);
+
+            holidays = holidayController.readHolidays();
+            this.setting.reset();
+
+        }
 
         List<HolidayDTO> dtos = new LinkedList<>();
         for (Holiday holiday : holidays){
             dtos.add(MappaHolidays.holidayToDto(holiday));
         }
 
-        this.setting.reset();
+
         return ResponseEntity.status(HttpStatus.FOUND).body(dtos);
     }
 
