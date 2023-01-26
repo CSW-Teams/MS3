@@ -20,6 +20,8 @@ const FilesUpload = () => {
     setProgressInfos({ val: [] });
   };
 
+
+
   const upload = (idx, file) => {
     let _progressInfos = [...progressInfosRef.current.val];
     return UploadService.upload(file, (event) => {

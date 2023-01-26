@@ -15,7 +15,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import InformationDialogs from './InformationVincoloComponent';
 import {MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
 import FilesUpload from './FilesUpload'
-import {Icon} from "@material-ui/core";
+import {GiustificaForzatura} from "../../API/GiustificaForzatura";
+import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
+
 
 
 
@@ -75,6 +77,48 @@ export default function TemporaryDrawer(props) {
     setState({ ...state, [anchor]: open });
 
   };
+
+  const caricaGiustifica= (anchor, open) => async (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setState({ ...state, [anchor]: open });
+
+    let giustificaForzatura = new GiustificaForzatura()
+
+    let utente_id = 7
+    let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+    status = await giustificaForzatura.caricaGiustifica(utente_id,giustificato,"");
+
+    props.caricaGiustifica()
+
+    //Verifico la risposta del server analizzando il codice di risposta http
+    if(status===202){
+      toast.success('Assegnazione creata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      //alert('assegnazione creata con successo');
+    }else if (status === 400){
+      toast.error('Errore nei parametri. Riprova con nuove date', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+    setState({ ...state, [anchor]: open });
+  }
 
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione.
   //Viene passata come callback al componente <Button>Assegna turno</Button>
@@ -154,7 +198,7 @@ export default function TemporaryDrawer(props) {
                               onChange={onChangeText}>
                              </textarea>
                   <FilesUpload/>
-                  <Button onClick={() => setGiustificato(true)}> Conferma </Button>
+                  <Button onClick={() => caricaGiustifica('bottom', false)}> Conferma </Button>
                 </Stack>
               </MDBCardBody>
             </MDBCard>
