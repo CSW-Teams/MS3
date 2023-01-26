@@ -89,7 +89,7 @@ export default class UserProfileView extends React.Component{
       if(this.state.ruolo==="STRUTTURATO")
         return <MDBRow>
           <MDBCol sm="3">
-            <MDBCardText>Specializzazione</MDBCardText>
+            <MDBCardText>Indirizzo</MDBCardText>
           </MDBCol>
           <MDBCol sm="9">
             <MDBCardText className="text-muted">  <MDBTableBody>

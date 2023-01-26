@@ -115,7 +115,6 @@ const FilesUpload = () => {
       )}
 
       <div className="card">
-        <div className="card-header">Lita dei file</div>
         <ul className="list-group list-group-flush">
           {fileInfos &&
           fileInfos.map((file, index) => (

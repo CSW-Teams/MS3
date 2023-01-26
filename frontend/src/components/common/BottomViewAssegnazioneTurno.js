@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
@@ -29,7 +29,8 @@ export default function TemporaryDrawer(props) {
   const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
   const [state, setState] = React.useState({bottom: false});
-  const [commentText,setCommentText] = React.useState(" ")
+  const [commentText, setCommentText] = useState("");
+  const onChangeText = (event) => setCommentText(event.target.value);
   const [giustificato, setGiustificato] = React.useState(false)
 
 
@@ -145,10 +146,12 @@ export default function TemporaryDrawer(props) {
                 <MDBCardTitle className="text-center">Motiva la forzatura</MDBCardTitle>
                 <Stack spacing={1}>
                             <textarea
-                              name="motivazione"
+                              type="text"
+                              defaultValue=""
                               value={commentText}
+                              maxLength={300}
                               placeholder="Inserisci la motivazione."
-                              onChange={e => setCommentText(e.target.value)}>
+                              onChange={onChangeText}>
                              </textarea>
                   <FilesUpload/>
                   <Button onClick={() => setGiustificato(true)}> Conferma </Button>
