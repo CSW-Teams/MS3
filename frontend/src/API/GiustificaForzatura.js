@@ -14,4 +14,17 @@ export class GiustificaForzatura {
      const response = await fetch(url , requestOptions);
      return response.status;
    }
+
+   async CaricaFile(file) {
+
+     const requestOptions = {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify(file)
+     };
+     const url = "/api/giustifica/caricaFile";
+     const response = await fetch(url , requestOptions);
+     return response.status;
+
+   }
 }

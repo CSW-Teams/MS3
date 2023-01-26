@@ -1,4 +1,3 @@
-import http from "../http-common";
 
 const upload = (file, onUploadProgress) => {
   let formData = new FormData();

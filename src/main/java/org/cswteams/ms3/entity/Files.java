@@ -17,6 +17,8 @@ public class Files {
 
     private String name;
 
+    private String url;
+
     @Transient
     private MultipartFile multipartFile;
 

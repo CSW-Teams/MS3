@@ -13,11 +13,10 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import InformationDialogs from './InformationVincoloComponent';
-import {MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
+import {MDBBtn, MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
 import FilesUpload from './FilesUpload'
 import {GiustificaForzatura} from "../../API/GiustificaForzatura";
-import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
-
+import {MDBTextArea} from "mdb-react-ui-kit";
 
 
 
@@ -31,10 +30,8 @@ export default function TemporaryDrawer(props) {
   const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
   const [state, setState] = React.useState({bottom: false});
-  const [commentText, setCommentText] = useState("");
-  const onChangeText = (event) => setCommentText(event.target.value);
   const [giustificato, setGiustificato] = React.useState(false)
-
+  const [giustifica, setGiustifica] = useState( '');
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
@@ -182,24 +179,30 @@ export default function TemporaryDrawer(props) {
 
   }
 
+  const handleChange = (e) => {
+    e.preventDefault();
+    setGiustifica(e.target.value);
+    console.log(e.target.value);
+  };
+
   function Giustifica() {
     if (!giustificato)
         return (
           <MDBCard>
               <MDBCardBody>
-                <MDBCardTitle className="text-center">Motiva la forzatura</MDBCardTitle>
-                <Stack spacing={1}>
-                            <textarea
-                              type="text"
-                              defaultValue=""
-                              value={commentText}
-                              maxLength={300}
-                              placeholder="Inserisci la motivazione."
-                              onChange={onChangeText}>
-                             </textarea>
+                <MDBCardTitle className="text-center">Motiva la forzatura!</MDBCardTitle>
+                <MDBTextArea
+                             contrast id='textAreaExample'
+                             rows={4}
+                             className="text"
+                             onChange={handleChange}
+                             required
+                             value={giustifica}>
+                </MDBTextArea>
                   <FilesUpload/>
-                  <Button onClick={() => caricaGiustifica('bottom', false)}> Conferma </Button>
-                </Stack>
+                <Button title="Conferma" onClick={() => caricaGiustifica('bottom', false)}>
+                  Conferma
+                </Button>
               </MDBCardBody>
             </MDBCard>
     )
