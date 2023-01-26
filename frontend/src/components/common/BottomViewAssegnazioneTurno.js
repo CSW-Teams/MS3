@@ -200,7 +200,7 @@ export default function TemporaryDrawer(props) {
                              value={giustifica}>
                 </MDBTextArea>
                   <FilesUpload/>
-                <Button title="Conferma" onClick={() => caricaGiustifica('bottom', false)}>
+                <Button title="Conferma" onClick={() => caricaGiustifica('bottom', false) && setGiustificato(true)}>
                   Conferma
                 </Button>
               </MDBCardBody>
@@ -209,7 +209,7 @@ export default function TemporaryDrawer(props) {
     return (
       <MDBCard>
         <MDBCardBody>
-         Giustificazione compilata.
+         Giustificazione compilata con successo!
         </MDBCardBody>
       </MDBCard>
     )};
