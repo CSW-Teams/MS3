@@ -93,4 +93,8 @@ public class HolidayController implements IHolidayController {
         holidayArgs.setEndDateEpochDay(endDateOld);
         
     }
+
+    public void registerHoliday(List<Holiday> holidays){
+        holidayDao.saveAll(holidays);
+    }
 }
