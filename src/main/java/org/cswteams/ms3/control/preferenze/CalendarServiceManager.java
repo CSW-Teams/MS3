@@ -80,7 +80,7 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 				throw new CalendarServiceException(e);
 			}
 
-			//holidays.addAll(holidayController.readHolidays());
+			holidays.addAll(holidayController.readHolidays());
 
 			return holidays;
 		} else {

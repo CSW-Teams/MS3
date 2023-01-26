@@ -123,8 +123,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         }
         */
 
-        // registra le domeniche nel ventennio 2013-2033
-        holidayController.registerSundays(LocalDate.of(2013, 1, 1), 20);
+        // registra le domeniche nel ventennio 2021-2023 (ridurre overhead di comunicazione)
+        holidayController.registerSundays(LocalDate.of(2021, 1, 1), 3);
 
     }
 
