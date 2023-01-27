@@ -66,14 +66,13 @@ public class ScheduleBuilder {
      * @throws UnableToBuildScheduleException
      * */
     public Schedule build() throws UnableToBuildScheduleException{
-        Set<Utente> utentiGuardia;
+
         for( AssegnazioneTurno at : this.schedule.getAssegnazioniTurno()){
             
             try {
                 // Prima pensiamo a riempire la guardia, che è la più importante
-                utentiGuardia = this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia(), null);
-                at.setUtentiDiGuardia(utentiGuardia);
-                for (Utente u : utentiGuardia){
+                this.aggiungiUtenti(at,at.getTurno().getNumUtentiGuardia(),at.getUtentiDiGuardia());
+                for (Utente u : at.getUtentiDiGuardia()){
                     allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
                 }
             } catch (NotEnoughFeasibleUsersException e) {
@@ -82,7 +81,7 @@ public class ScheduleBuilder {
 
             try {
                 // Passo poi a riempire la reperibilità
-                at.setUtentiReperibili(this.ricercaUtenti(at, at.getTurno().getNumUtentiReperibilita(),utentiGuardia));
+                this.aggiungiUtenti(at,at.getTurno().getNumUtentiGuardia(),at.getUtentiReperibili());
             } catch (NotEnoughFeasibleUsersException e) {
                 throw new UnableToBuildScheduleException("unable to select utenti di reperibilita", e);
             }
@@ -91,31 +90,30 @@ public class ScheduleBuilder {
         return this.schedule;
     }
 
-    /** seleziona gli utenti per una lista di utenti assegnati (guardia, reperibilità, ...) per una assegnazione di turno 
+    /** aggiunge gli utenti in una lista di utenti (guardia, reperibilità, ...) per una assegnazione di turno
      * @throws NotEnoughFeasibleUsersException
      * */
-    private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
+    private void aggiungiUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> utentiDaPopolare) throws NotEnoughFeasibleUsersException{
         
-        List<Utente> selectedUsers = new ArrayList<>();
+        int selectedUsers = 0;
 
         //Randomizzo la scelta dell'utente dalla lista di tutti gli utenti
         List<UserScheduleState> allUserScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
         Collections.shuffle(allUserScheduleState);
 
         for (UserScheduleState userScheduleState : allUserScheduleState){
-            if (selectedUsers.size() == numUtenti){
+            if (selectedUsers == numUtenti){
                 break;
             }
-            //Se viene passato un set di utenti non ammessi (utenti di guardia) allora li esclude
-            if (NotAllowedSet!=null && NotAllowedSet.contains(userScheduleState.getUtente())) {
-                continue;
-            }
+
             ContestoVincolo contesto = new ContestoVincolo(userScheduleState,assegnazione);
             // Se l'utente rispetta tutti i vincoli possiamo includerlo nella lista desiderata
             try {
                 this.verificaTuttiVincoli(contesto);
-                selectedUsers.add(userScheduleState.getUtente());
+                utentiDaPopolare.add(userScheduleState.getUtente());
                 userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
+
+                selectedUsers++;
             } catch (ViolatedConstraintException e) {
                 // logghiamo semplicemente l'evento e ignoriamo l'utente inammissibile
                 logger.log(Level.WARNING, e.getMessage(), e);
@@ -123,17 +121,16 @@ public class ScheduleBuilder {
         }
         
         // potrei aver finito senza aver trovato abbastanza utenti
-        if (selectedUsers.size() != numUtenti){
-            throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers.size());
+        if (selectedUsers != numUtenti){
+            throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers);
         }
         
-        return new HashSet<Utente>(selectedUsers);
     }
 
     /** Applica tutti i vincoli al contesto specificato e ritorna l'AND tra i risultati
      * di ciascuno di essi
      */
-    private void verificaTuttiVincoli(ContestoVincolo contesto) throws ViolatedConstraintException{
+    private void verificaTuttiVincoli(ContestoVincolo contesto) throws ViolatedConstraintException {
 
         for(Vincolo vincolo : this.allConstraints){
             vincolo.verificaVincolo(contesto);

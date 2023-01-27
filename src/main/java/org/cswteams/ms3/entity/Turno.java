@@ -1,9 +1,11 @@
 package org.cswteams.ms3.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 
@@ -39,6 +41,9 @@ public class Turno {
     private int numUtentiReperibilita;
     private int numUtentiGuardia;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<RuoloNumero> ruoliNumero ;
+
     /** Quale mansione è da svolgere per questo turno */
     private MansioneEnum mansione;
 
@@ -72,6 +77,10 @@ public class Turno {
         this.tipologiaTurno = tipologia;
         this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
 
+        this.ruoliNumero = new ArrayList<>();
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.STRUTTURATO,1));
+
     }
 
     public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
@@ -94,6 +103,9 @@ public class Turno {
     }
 
     public Turno() {
+        this.ruoliNumero = new ArrayList<>();
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.STRUTTURATO,1));
     }
 
     public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt) {
@@ -102,6 +114,10 @@ public class Turno {
         this.tipologiaTurno=tt;
         this.servizio=servizio;
         this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
+
+        this.ruoliNumero = new ArrayList<>();
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.STRUTTURATO,1));
     }
 
 

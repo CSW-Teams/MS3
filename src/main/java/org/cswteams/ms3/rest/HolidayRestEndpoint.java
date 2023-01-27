@@ -69,6 +69,7 @@ public class HolidayRestEndpoint {
             this.setting.reset();
 
         }
+        
 
         List<HolidayDTO> dtos = new LinkedList<>();
         for (Holiday holiday : holidays){

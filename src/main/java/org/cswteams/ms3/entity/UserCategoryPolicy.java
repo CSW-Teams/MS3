@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NonNull;
 import org.cswteams.ms3.dao.CategorieDao;
@@ -27,6 +28,7 @@ import org.cswteams.ms3.dao.CategorieDao;
     private Categoria categoria;
 
     @ManyToOne
+    @JsonIgnore
     @NonNull
     private Turno turno;
     
