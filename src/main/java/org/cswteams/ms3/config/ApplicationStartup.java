@@ -107,7 +107,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincolo4.setDescrizione("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
         vincolo5.setDescrizione("Vincolo ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
         vincoloTurniContigui.setDescrizione("Vincolo turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
-        vincolo6.setDescrizione("Vincolo Ruolo numero.");
+        vincolo6.setDescrizione("Vincolo numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
 
         vincoloDao.saveAndFlush(vincoloTurniContigui);
         vincoloDao.saveAndFlush(vincolo1);
@@ -285,7 +285,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         t3.setNumUtentiReperibilita(2);
         t3.setMansione(MansioneEnum.REPARTO);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, false);
+        Turno t5 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, TipologiaTurno.MATTUTINO, false);
         t5.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t5, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t5,  UserCategoryPolicyValue.EXCLUDE)

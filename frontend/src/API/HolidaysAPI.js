@@ -3,9 +3,18 @@ import {red} from "@mui/material/colors";
 
 export class HolidaysAPI {
 
+
     /** gets all holidays from backend  */
     async getHolidays() {
-        let response = await fetch('/api/holidays/year=2023/country=IT', {method: 'GET'});
+
+        let date = new Date()
+        let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        let county = await this.searchCountry(timeZone);
+
+        console.log(county);
+
+        let response = await fetch('/api/holidays/year='+date.getFullYear()+'/country='+county, {method: 'GET'});
+
         let serializedHolidays = await response.json();
         let holidays = [];
 
@@ -30,4 +39,28 @@ export class HolidaysAPI {
 
 
     }
+
+     //Questa funzione restituisce la nazione in cui è eseguito il frontend sulla base della timezone.
+     //Serve per capire contattare il backend e richiedere le fetività di quella nazione specifica
+    async searchCountry(timeZone){
+
+        if(timeZone.includes("Rome"))
+            return "IT"
+
+        if(timeZone.includes("Paris"))
+            return "FR"
+
+        if(timeZone.includes("Madrid"))
+            return "SP"
+
+        // Altri timeZone..
+        
+        return "IT"
+    }
+
+
+
+    
 }
+
+

@@ -55,7 +55,7 @@ export  class UtenteAPI {
 
     for (let i = 0; i < body.length; i++) {
       const utente = new Object();
-      utente.label = body[i].nome+" "+body[i].cognome;
+      utente.label = body[i].nome+" "+body[i].cognome+" "+body[i].ruoloEnum.substring(0, 3);
       utente.id = body[i].id;
       utente.nome = body[i].nome;
       utente.cognome = body[i].cognome;

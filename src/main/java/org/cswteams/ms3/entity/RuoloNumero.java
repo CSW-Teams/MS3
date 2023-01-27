@@ -7,6 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+/**
+ * Questa classe permette di memorizzare quanti utenti di ogni ruolo sono necessari in un turno specifico.
+ * Ad esempio nel turno notturno in reparto devono esserci 1 strutturato e 1 specializzando tra gli utenti allocati.
+ */
 @Entity
 @Data
 public class RuoloNumero {
@@ -15,7 +19,10 @@ public class RuoloNumero {
     @GeneratedValue
     private Long id;
 
+    //Ruolo dell'utente
     private RuoloEnum ruolo;
+
+    //Numero di utenti di un ruolo specifico da allocare per un turno specifico
     private int numero;
 
     public RuoloNumero(Long id, RuoloEnum ruolo, int numero) {
@@ -32,4 +39,6 @@ public class RuoloNumero {
     public RuoloNumero(){
 
     }
+
+
 }
