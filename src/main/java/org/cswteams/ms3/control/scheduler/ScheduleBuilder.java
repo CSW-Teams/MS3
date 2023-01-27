@@ -133,7 +133,7 @@ public class ScheduleBuilder {
     /** Applica tutti i vincoli al contesto specificato e ritorna l'AND tra i risultati
      * di ciascuno di essi
      */
-    private void verificaTuttiVincoli(ContestoVincolo contesto) throws ViolatedConstraintException{
+    private void verificaTuttiVincoli(ContestoVincolo contesto) throws ViolatedConstraintException {
 
         for(Vincolo vincolo : this.allConstraints){
             vincolo.verificaVincolo(contesto);
