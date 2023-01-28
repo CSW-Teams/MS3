@@ -5,6 +5,7 @@ import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
@@ -63,11 +64,13 @@ public class VincoloTurniContiguiTest {
         categorieDao.save(categoriaIncinta);
         categorieDao.save(categoriaMalattia);
         categorieDao.save(categoriaOVER62);
-        Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().add(MansioneEnum.REPARTO);
+        servizio1.getMansioni().add(MansioneEnum.AMBULATORIO);
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, false);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, false);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
         
         userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
         userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
@@ -87,7 +90,7 @@ public class VincoloTurniContiguiTest {
         t3.setNumUtentiGuardia(1);
         t3.setNumUtentiReperibilita(1);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, TipologiaTurno.MATTUTINO, false);
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
         t5.setNumUtentiGuardia(1);
         t5.setNumUtentiReperibilita(1);
         

@@ -2,6 +2,7 @@ package org.cswteams.ms3;
 
 import org.cswteams.ms3.config.ApplicationStartup;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
+import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.dao.*;
@@ -73,7 +74,8 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
         categorieDao.saveAndFlush(categoriaFerie);
         categorieDao.saveAndFlush(categoriaMalattia);
 
-        Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.saveAndFlush(servizio1);
         //Creo utente con categoria incinta
         Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com", RuoloEnum.SPECIALIZZANDO);
@@ -90,6 +92,7 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
                 LocalTime.of(20, 0),
                 LocalTime.of(8, 0),
                 servizio1,
+                MansioneEnum.REPARTO,
                 TipologiaTurno.NOTTURNO,
                 true
                );

@@ -135,13 +135,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
         Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE (INCLUSIVE)
-        Categoria cardiologia = new Categoria("CARDIOLOGIA", 1);
-        Categoria oncologia = new Categoria("ONCOLOGIA", 1);
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", -1);
+        Categoria oncologia = new Categoria("ONCOLOGIA", -1);
         //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
-        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", 2);
-        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", 2);
-        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", 2);
-        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", 2);
+        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", -2);
+        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", -2);
+        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", -2);
+        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", -2);
 
         categoriaDao.save(categoriaFerie);
         categoriaDao.save(categoriaOVER62);
@@ -162,6 +162,18 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         categoriaUtenteDao.save(ferie);
         CategoriaUtente cardiologo = new CategoriaUtente(cardiologia,LocalDate.now(), LocalDate.now().plusDays(10000));
         categoriaUtenteDao.save(cardiologo);
+        CategoriaUtente oncologo = new CategoriaUtente(oncologia,LocalDate.now(), LocalDate.now().plusDays(10000));
+        categoriaUtenteDao.save(oncologo);
+
+
+        CategoriaUtente repartoCardiologia = new CategoriaUtente(reparto_cardiologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(repartoCardiologia);
+        CategoriaUtente ambulatorioCardiologia = new CategoriaUtente(ambulatorio_cardiologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(ambulatorioCardiologia);
+        CategoriaUtente repartoOncologia = new CategoriaUtente(reparto_oncologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(repartoOncologia);
+        CategoriaUtente ambulatorioOncologia = new CategoriaUtente(ambulatorio_oncologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(ambulatorioOncologia);
 
         //Creo utenti
         Utente u6 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", RuoloEnum.STRUTTURATO );
@@ -170,42 +182,58 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         // Aggiungo la specializzazione
         u6.getSpecializzazioni().add(cardiologo);
         Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO );
-
-        CategoriaUtente categoria_cardiologia = new CategoriaUtente(reparto_cardiologia, LocalDate.now(),LocalDate.now().plusMonths(2));
-        categoriaUtenteDao.save(categoria_cardiologia);
-
-        u1.getTurnazioni().add(categoria_cardiologia);
+        u1.getTurnazioni().add(repartoCardiologia);
         Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        u2.getTurnazioni().add(categoria_cardiologia);
+        u2.getTurnazioni().add(repartoCardiologia);
         Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        u3.getTurnazioni().add(categoria_cardiologia);
+        u3.getTurnazioni().add(repartoCardiologia);
         Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
+        u4.getSpecializzazioni().add(cardiologo);
         Utente u5 = new Utente("Daniele","La Prova", "DNLLPRV******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
+        u5.getSpecializzazioni().add(oncologo);
         Utente u7 = new Utente("Luca","Fiscariello", "FSCRLC******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        u7.getSpecializzazioni().add(oncologo);
         Utente u8 = new Utente("Manuel","Mastrofini", "MNLMASTR******", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", RuoloEnum.STRUTTURATO);
+        u8.getSpecializzazioni().add(cardiologo);
         Utente u9 = new Utente("Giulia","Cantone", "GLCCTN******", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u9.getTurnazioni().add(ambulatorioOncologia);
         Utente u10 = new Utente("Fabio","Valenzi", "FBVVLZ******", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u10.getTurnazioni().add(ambulatorioOncologia);
         Utente u11 = new Utente("Giada","Rossi", "******", LocalDate.of(1997, 3, 14),"**@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        u11.getTurnazioni().add(repartoOncologia);
         Utente u12 = new Utente("Camilla","Verdi", "******", LocalDate.of(1997, 5, 23),"***@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u12.getTurnazioni().add(repartoOncologia);
         Utente u13 = new Utente("Federica","Pollini", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u13.getTurnazioni().add(ambulatorioCardiologia);
         Utente u14 = new Utente("Claudia","Rossi", "******", LocalDate.of(1982, 7, 6),"***@gmail.com@gmail.com", RuoloEnum.STRUTTURATO);
+        u14.getSpecializzazioni().add(oncologo);
         Utente u15 = new Utente("Giorgio","Bianchi", "******", LocalDate.of(1993, 2, 12),"***@gmail.com@gmail.com", RuoloEnum.STRUTTURATO);
+        u15.getSpecializzazioni().add(oncologo);
         Utente u16 = new Utente("Claudio","Gialli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        u16.getSpecializzazioni().add(cardiologo);
         Utente u17 = new Utente("Filippo","Neri", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u17.getTurnazioni().add(ambulatorioCardiologia);
         Utente u18 = new Utente("Vincenzo","Grassi", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        u18.getSpecializzazioni().add(oncologo);
         Utente u19 = new Utente("Diana","Pasquali", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        u19.getTurnazioni().add(ambulatorioCardiologia);
         Utente u20 = new Utente("Francesco","Lo Presti", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
         Utente u21 = new Utente("Andrea","Pepe", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u21.getTurnazioni().add(ambulatorioOncologia);
         Utente u22 = new Utente("Matteo","Fanfarillo", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u22.getTurnazioni().add(repartoOncologia);
         Utente u23 = new Utente("Matteo","Ciccaglione", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u23.getTurnazioni().add(repartoOncologia);
         Utente u24 = new Utente("Vittoria","De Nitto", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
         Utente u25 = new Utente("Valeria","Cardellini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
         Utente u26 = new Utente("Roberto","Monte", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
         Utente u27 = new Utente("Giovanni","Saggio", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
         Utente u28 = new Utente("Livia","Simoncini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u28.getTurnazioni().add(repartoCardiologia);
         Utente u29 = new Utente("Ludovico","Zarrelli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u29.getTurnazioni().add(repartoCardiologia);
         Utente u30 = new Utente("Alessandro","Montenegro", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
-
+        u30.getTurnazioni().add(repartoOncologia);
         u6 = utenteDao.saveAndFlush(u6);
         u7 = utenteDao.saveAndFlush(u7);
         u1 = utenteDao.saveAndFlush(u1);
@@ -226,68 +254,74 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u18 = utenteDao.saveAndFlush(u18);
         u19 = utenteDao.saveAndFlush(u19);
         u20 = utenteDao.saveAndFlush(u20);
-        u21 = utenteDao.saveAndFlush(u20);
-        u22 = utenteDao.saveAndFlush(u20);
-        u23 = utenteDao.saveAndFlush(u20);
-        u24 = utenteDao.saveAndFlush(u20);
-        u25 = utenteDao.saveAndFlush(u20);
-        u26 = utenteDao.saveAndFlush(u20);
-        u27 = utenteDao.saveAndFlush(u20);
-        u28 = utenteDao.saveAndFlush(u20);
-        u29 = utenteDao.saveAndFlush(u20);
-        u30 = utenteDao.saveAndFlush(u20);
+        u21 = utenteDao.saveAndFlush(u21);
+        u22 = utenteDao.saveAndFlush(u22);
+        u23 = utenteDao.saveAndFlush(u23);
+        u24 = utenteDao.saveAndFlush(u24);
+        u25 = utenteDao.saveAndFlush(u25);
+        u26 = utenteDao.saveAndFlush(u26);
+        u27 = utenteDao.saveAndFlush(u27);
+        u28 = utenteDao.saveAndFlush(u28);
+        u29 = utenteDao.saveAndFlush(u29);
+        u30 = utenteDao.saveAndFlush(u30);
 
         //creo servizi
-        Servizio servizio1 = new Servizio("reparto");
-        Servizio servizio2 = new Servizio("gastroenterologia");
-        Servizio servizio3 = new Servizio("allergologia");
+        Servizio servizio1 = new Servizio("cardiologia");
+        Servizio servizio2 = new Servizio("oncologia");
 
-        servizio1.getMansioni().add(MansioneEnum.AMBULATORIO);
 
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
+        servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
-        servizioDao.save(servizio3);
 
-        //Creo turni
-        HashSet<Categoria> categorieVietate= new HashSet<>(Arrays.asList(
-                categoriaIncinta,
-                categoriaOVER62,
-                categoriaMalattia,
-                categoriaFerie)
-        );
 
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, TipologiaTurno.POMERIDIANO,false);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
         t2.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaFerie, t2,  UserCategoryPolicyValue.EXCLUDE)
+            new UserCategoryPolicy(categoriaFerie, t2,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(reparto_cardiologia, t2, UserCategoryPolicyValue.INCLUDE)
         ));
         t2.setNumUtentiGuardia(2);
         t2.setNumUtentiReperibilita(2);
 
         boolean giornoSuccessivo = true;
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO,giornoSuccessivo);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,giornoSuccessivo);
         t3.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t3,  UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaIncinta, t3,  UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaOVER62, t3,  UserCategoryPolicyValue.EXCLUDE)
+            new UserCategoryPolicy(categoriaOVER62, t3,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(reparto_cardiologia, t3, UserCategoryPolicyValue.INCLUDE)
         ));
-        t3.setCategorieVietate(categorieVietate);
         t3.setNumUtentiGuardia(2);
         t3.setNumUtentiReperibilita(2);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO, false);
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, false);
         t5.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t5, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaFerie, t5,  UserCategoryPolicyValue.EXCLUDE)
+            new UserCategoryPolicy(categoriaFerie, t5,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(cardiologia, t5, UserCategoryPolicyValue.INCLUDE),
+            new UserCategoryPolicy(ambulatorio_cardiologia, t5, UserCategoryPolicyValue.INCLUDE)
         ));
         t5.setNumUtentiGuardia(2);
         t5.setNumUtentiReperibilita(2);
+
+        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
+        t6.setCategoryPolicies(Arrays.asList(
+                new UserCategoryPolicy(categoriaMalattia, t6, UserCategoryPolicyValue.EXCLUDE),
+                new UserCategoryPolicy(categoriaFerie, t6,  UserCategoryPolicyValue.EXCLUDE),
+                new UserCategoryPolicy(oncologia, t6, UserCategoryPolicyValue.INCLUDE),
+                new UserCategoryPolicy(ambulatorio_oncologia, t6, UserCategoryPolicyValue.INCLUDE)
+        ));
+        t6.setNumUtentiGuardia(2);
+        t6.setNumUtentiReperibilita(2);
 
 
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
+        turnoDao.saveAndFlush(t6);
 
 
     }

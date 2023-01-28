@@ -4,6 +4,7 @@ import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloUbiquità;
+import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
@@ -33,10 +34,11 @@ public class VincoloUbiquitàTest {
     @Test(expected= ViolatedConstraintException.class)
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
     public void turniAccavallatiTest() throws ViolatedConstraintException, TurnoException{
-        Servizio servizio1 = new Servizio("reparto");
-        Servizio servizio2 = new Servizio("ambulatorio");
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO,false);
-        Turno t2 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, TipologiaTurno.MATTUTINO,false);
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
+        //Servizio servizio2 = new Servizio("ambulatorio");
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,false);
+        Turno t2 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,false);
 
         Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
 
@@ -56,10 +58,12 @@ public class VincoloUbiquitàTest {
     @Test(expected= ViolatedConstraintException.class)
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
     public void turniCoincidentiTest() throws ViolatedConstraintException, TurnoException{
-        Servizio servizio1 = new Servizio("reparto");
-        Servizio servizio2 = new Servizio("ambulatorio");
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO,false);
-        Turno t2 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, TipologiaTurno.MATTUTINO,false);
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
+        Servizio servizio2 = new Servizio("cardiologia");
+        servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,false);
+        Turno t2 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,false);
 
         Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
 

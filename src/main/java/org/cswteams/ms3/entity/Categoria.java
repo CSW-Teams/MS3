@@ -17,7 +17,7 @@ public class Categoria {
 
     private String nome;
 
-    private int tipo; //0 : STATO - 1: SPECILIZZAZIONE - 2 TURNAZIONE
+    private int tipo; //0 : STATO, - 1: SPECIALIZZAZIONE, - 2 TURNAZIONE
 
     public Categoria() {
     }

@@ -7,5 +7,7 @@ public enum MansioneEnum {
     AMBULATORIO,
     PRONTO_SOCCORSO,
 
+    REPARTO,
+
 
 }

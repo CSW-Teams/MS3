@@ -57,51 +57,53 @@ public class Turno {
     @OneToMany(cascade = CascadeType.ALL)
     private List<UserCategoryPolicy> categoryPolicies;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
 
         // Se l'ora di inizio segue l'ora di fine verrà sollevata eccezzione solo se il turno non è configurato
         // per iniziare in un giorno e finire in quello seguente
         if(oraInizio.isAfter(oraFine) && !giornoSuccessivo){
             throw new TurnoException("Data di inizio non può seguire data di fine");
         }
+        //Controllo che la mansione inserita è presente per il servizio inserito
+        boolean check = false;
+        for(MansioneEnum mansioneServizio: servizio.getMansioni()){
+            if (mansioneServizio.equals(mansione)) {
+                check = true;
+                break;
+            }
+        }
+        if(!check) throw new TurnoException("Mansione inserita non compatibile con il servizio inserito");
 
         this.giornoSuccessivo=giornoSuccessivo;
         this.oraInizio = oraInizio;
         this.oraFine = oraFine;
         this.servizio = servizio;
+        this.mansione = mansione;
         this.tipologiaTurno = tipologia;
         this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
 
     }
 
-    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
-        this(oraInizio, oraFine, servizio, tipologia,giornoSuccessivo);
+    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, mansione, tipologia,giornoSuccessivo);
         this.id = id;
     }
 
     public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio,boolean giornoSuccessivo) throws  TurnoException {
-        this(id, oraInizio, oraFine, servizio, tipologiaTurno, giornoSuccessivo);
+            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, MansioneEnum mansione, boolean giornoSuccessivo) throws  TurnoException {
+        this(id, oraInizio, oraFine, servizio, mansione, tipologiaTurno, giornoSuccessivo);
         this.giorniDiValidità = giorniDiValidità;
     }
 
      public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, int numUtentiGuardia, int numUtentiReperibilita, boolean giornoSuccessivo) throws TurnoException {
-        this(id, oraInizio, oraFine, servizio, tipologiaTurno, giornoSuccessivo);
+            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, MansioneEnum mansione, int numUtentiGuardia, int numUtentiReperibilita, boolean giornoSuccessivo) throws TurnoException {
+        this(id, oraInizio, oraFine, servizio, mansione, tipologiaTurno, giornoSuccessivo);
         this.giorniDiValidità = giorniDiValidità;
         this.numUtentiGuardia = numUtentiGuardia;
         this.numUtentiReperibilita = numUtentiReperibilita;
     }
 
     public Turno() {
-    }
-
-    public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt) {
-        this.oraFine=oi;
-        this.oraInizio=of;
-        this.tipologiaTurno=tt;
-        this.servizio=servizio;
-        this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
     }
 
 

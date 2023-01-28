@@ -2,6 +2,7 @@ package org.cswteams.ms3.dto;
 
 import lombok.Data;
 import org.cswteams.ms3.entity.Categoria;
+import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
 import java.time.LocalTime;
@@ -20,17 +21,20 @@ public class TurnoDTO {
 
     private ServizioDTO servizio;
 
+    private MansioneEnum mansione;
+
     private Set<Categoria> categorieVietate;
 
     private long id;
 
     public TurnoDTO(){}
 
-    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, boolean giornoSuccessivo){
+    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, MansioneEnum mansione, boolean giornoSuccessivo){
         this.oraFine = fine;
         this.oraInizio = inizio;
         this.giornoSuccessivo = giornoSuccessivo;
         this.servizio = servizio;
+        this.mansione = mansione;
         this.tipologiaTurno = tipologiaTurno;
         this.id = id;
     }
