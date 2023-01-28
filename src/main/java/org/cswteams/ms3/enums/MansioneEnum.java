@@ -17,7 +17,6 @@ public enum MansioneEnum {
      */
     REPARTO,    
 
-    REPARTO,
 
 
 }

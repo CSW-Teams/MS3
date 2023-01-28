@@ -203,15 +203,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u8 = new Utente("Manuel","Mastrofini", "MNLMASTR******", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", RuoloEnum.STRUTTURATO);
         u8.getSpecializzazioni().add(cardiologo);
         Utente u9 = new Utente("Giulia","Cantone", "GLCCTN******", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        u9.getTurnazioni().add(ambulatorioOncologia);
+        u9.getTurnazioni().add(repartoOncologia);
         Utente u10 = new Utente("Fabio","Valenzi", "FBVVLZ******", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        u10.getTurnazioni().add(ambulatorioOncologia);
+        u10.getTurnazioni().add(repartoOncologia);
         Utente u11 = new Utente("Giada","Rossi", "******", LocalDate.of(1997, 3, 14),"**@gmail.com", RuoloEnum.SPECIALIZZANDO );
         u11.getTurnazioni().add(repartoOncologia);
         Utente u12 = new Utente("Camilla","Verdi", "******", LocalDate.of(1997, 5, 23),"***@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        u12.getTurnazioni().add(repartoOncologia);
+        u12.getTurnazioni().add(repartoCardiologia);
         Utente u13 = new Utente("Federica","Pollini", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        u13.getTurnazioni().add(ambulatorioCardiologia);
+        u13.getTurnazioni().add(repartoCardiologia);
         Utente u14 = new Utente("Claudia","Rossi", "******", LocalDate.of(1982, 7, 6),"***@gmail.com@gmail.com", RuoloEnum.STRUTTURATO);
         u14.getSpecializzazioni().add(oncologo);
         Utente u15 = new Utente("Giorgio","Bianchi", "******", LocalDate.of(1993, 2, 12),"***@gmail.com@gmail.com", RuoloEnum.STRUTTURATO);
@@ -232,15 +232,28 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u23 = new Utente("Matteo","Ciccaglione", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
         u23.getTurnazioni().add(repartoOncologia);
         Utente u24 = new Utente("Vittoria","De Nitto", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        u24.getSpecializzazioni().add(oncologo);
         Utente u25 = new Utente("Valeria","Cardellini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        u25.getSpecializzazioni().add(oncologo);
         Utente u26 = new Utente("Roberto","Monte", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        u26.getSpecializzazioni().add(cardiologo);
         Utente u27 = new Utente("Giovanni","Saggio", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        u27.getSpecializzazioni().add(cardiologo);
         Utente u28 = new Utente("Livia","Simoncini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
         u28.getTurnazioni().add(repartoCardiologia);
         Utente u29 = new Utente("Ludovico","Zarrelli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
         u29.getTurnazioni().add(repartoCardiologia);
         Utente u30 = new Utente("Alessandro","Montenegro", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
-        u30.getTurnazioni().add(repartoOncologia);
+        u30.getTurnazioni().add(ambulatorioOncologia);
+        Utente u31 = new Utente("Daniel","Lungu", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u31.getTurnazioni().add(repartoCardiologia);
+        Utente u32 = new Utente("Andrea","Tosti", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u32.getTurnazioni().add(repartoCardiologia);
+        Utente u33 = new Utente("Giorgio","Pesce", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u33.getTurnazioni().add(repartoOncologia);
+        Utente u34 = new Utente("Valerio","Palmerini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        u34.getTurnazioni().add(repartoOncologia);
+
         u6 = utenteDao.saveAndFlush(u6);
         u7 = utenteDao.saveAndFlush(u7);
         u1 = utenteDao.saveAndFlush(u1);
@@ -271,6 +284,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u28 = utenteDao.saveAndFlush(u28);
         u29 = utenteDao.saveAndFlush(u29);
         u30 = utenteDao.saveAndFlush(u30);
+        u31 = utenteDao.saveAndFlush(u31);
+        u32 = utenteDao.saveAndFlush(u32);
+        u33 = utenteDao.saveAndFlush(u33);
+        u34 = utenteDao.saveAndFlush(u34);
+
 
         //creo servizi
         Servizio servizio1 = new Servizio("cardiologia");

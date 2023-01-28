@@ -62,7 +62,7 @@ public class Turno {
     @OneToMany(cascade = CascadeType.ALL)
     private List<UserCategoryPolicy> categoryPolicies;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
 
         // Se l'ora di inizio segue l'ora di fine verrà sollevata eccezzione solo se il turno non è configurato
         // per iniziare in un giorno e finire in quello seguente
@@ -83,6 +83,7 @@ public class Turno {
         this.oraInizio = oraInizio;
         this.oraFine = oraFine;
         this.servizio = servizio;
+        this.mansione = mansione;
         this.tipologiaTurno = tipologia;
         this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
 
