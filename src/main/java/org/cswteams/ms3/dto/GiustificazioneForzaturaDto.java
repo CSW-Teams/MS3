@@ -2,7 +2,7 @@ package org.cswteams.ms3.dto;
 
 
 import lombok.Data;
-import org.cswteams.ms3.entity.Files;
+import org.cswteams.ms3.entity.Liberatoria;
 import org.cswteams.ms3.entity.Utente;
 
 import java.util.Set;
@@ -14,12 +14,12 @@ public class GiustificazioneForzaturaDto {
 
     private Utente utenteGiustificante;
 
-    private Set<Files> delibere;
+    private Set<Liberatoria> delibere;
 
     public GiustificazioneForzaturaDto() {
 
     }
-    public GiustificazioneForzaturaDto(String message,Utente utenteGiustificante,Set<Files> delibere) {
+    public GiustificazioneForzaturaDto(String message,Utente utenteGiustificante,Set<Liberatoria> delibere) {
         this.message=message;
         this.utenteGiustificante=utenteGiustificante;
         this.delibere=delibere;

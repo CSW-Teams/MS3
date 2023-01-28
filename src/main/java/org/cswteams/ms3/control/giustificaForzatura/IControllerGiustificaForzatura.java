@@ -1,26 +1,20 @@
 package org.cswteams.ms3.control.giustificaForzatura;
 
+import org.cswteams.ms3.entity.Liberatoria;
 import org.cswteams.ms3.entity.GiustificazioneForzaturaVincoli;
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
-import java.util.stream.Stream;
+import java.io.IOException;
 
 
 public interface IControllerGiustificaForzatura {
 
-    public void init();
+    void saveGiustificazione(GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli);
 
-    public void saveGiustificazione(GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli);
+    Liberatoria saveDelibera(MultipartFile file) throws IOException;
 
-    public void save(MultipartFile file);
+    Liberatoria getDelibera(String filename);
 
-    public Resource load(String filename);
-
-    public void deleteAll();
-
-    public Stream<Path> loadAll();
 
 
 }

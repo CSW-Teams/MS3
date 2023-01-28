@@ -181,7 +181,7 @@ export default function TemporaryDrawer(props) {
       setState({ ...state, [anchor]: !open });
 
     }
-    
+
 
 
   }

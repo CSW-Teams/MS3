@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {UploadFilesAPI} from "./UploadFilesAPI"
+import {UploadFilesAPI} from "../../API/UploadFilesAPI"
 import {
   MDBCard,
   MDBCardBody, MDBCardSubTitle,
@@ -9,7 +9,7 @@ import {
 
 const FilesUpload = () => {
 
-  const [selectedFiles, setSelectedFiles] = useState();
+  const [selectedFiles, setSelectedFiles] = useState('');
   const [progressInfos, setProgressInfos] = useState({ val: [] });
   const [message, setMessage] = useState([]);
   const [fileInfos, setFileInfos] = useState([]);
@@ -27,29 +27,26 @@ const FilesUpload = () => {
     setProgressInfos({ val: [] });
   };
 
-  const upload = (idx, file) => {
+  const upload = async (idx, file) => {
     let _progressInfos = [...progressInfosRef.current.val];
     let uploadAPI = new UploadFilesAPI();
-    return uploadAPI.uploadFile(file, (event) => {
+    let response = await uploadAPI.uploadFile(file, (event) => {
       _progressInfos[idx].percentage = Math.round(
         (100 * event.loaded) / event.total
       );
       setProgressInfos({ val: _progressInfos });
     })
-      .then(() => {
-        setMessage((prevMessage) => ([
-          ...prevMessage,
-          "Caricamento file avvenuto con successo: " + file.name,
-        ]));
-      })
-      .catch(() => {
-        _progressInfos[idx].percentage = 0;
-        setProgressInfos({ val: _progressInfos });
-        setMessage((prevMessage) => ([
-          ...prevMessage,
-          "Impossibile caricare il file: " + file.name+ "!",
-        ]));
-      });
+    if(response.status === 202){
+      setMessage((prevMessage) => ([
+        ...prevMessage,
+        "Caricamento file avvenuto con successo: " + file.name,
+      ]));
+    }else if(response.status ===417){
+      setMessage((prevMessage) => ([
+        ...prevMessage,
+        "Impossibile caricare il file: " + file.name+ "!",
+      ]));
+    }
   };
 
   const uploadFiles = () => {

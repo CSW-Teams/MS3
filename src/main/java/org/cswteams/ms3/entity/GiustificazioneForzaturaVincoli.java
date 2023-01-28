@@ -3,6 +3,7 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
 
 import javax.persistence.*;
 import java.util.List;
@@ -19,11 +20,16 @@ public class GiustificazioneForzaturaVincoli {
     private Long id;
 
     @OneToMany(cascade = CascadeType.ALL)
-    private Set<Files> delibere;
-
-    private String message;
+    private Set<Liberatoria> liberatorie;
 
     @OneToOne
+    private AssegnazioneTurno assegnazioneViolante;
+
+    @ManyToMany
+    private List<Vincolo> vincoliViolati;
+    private String motivazione;
+
+    @ManyToOne
     private Utente utenteGiustificatore;
 
     public GiustificazioneForzaturaVincoli() {
@@ -31,9 +37,9 @@ public class GiustificazioneForzaturaVincoli {
     }
 
 
-    public GiustificazioneForzaturaVincoli(String message, Utente utenteGiustificante, Set<Files> delibere) {
-        this.message=message;
+    public GiustificazioneForzaturaVincoli(String message, Utente utenteGiustificante, Set<Liberatoria> liberatorie) {
+        this.motivazione=message;
         this.utenteGiustificatore=utenteGiustificante;
-        this.delibere=delibere;
+        this.liberatorie=liberatorie;
     }
 }

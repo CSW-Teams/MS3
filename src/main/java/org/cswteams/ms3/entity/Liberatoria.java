@@ -3,13 +3,13 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
+
 import javax.persistence.*;
 
 @Entity
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Files {
+public class Liberatoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -17,13 +17,19 @@ public class Files {
 
     private String name;
 
-    private String url;
+    private String type;
 
-    @Transient
-    private MultipartFile multipartFile;
+    @Lob
+    private byte[] data;
 
-    public Files() {
+    public Liberatoria() {
 
+    }
+
+    public Liberatoria(String fileName, String type, byte[] data){
+        this.data = data;
+        this.name = fileName;
+        this.type = type;
     }
 
 }
