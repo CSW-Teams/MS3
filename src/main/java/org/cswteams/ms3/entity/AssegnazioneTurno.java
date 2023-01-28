@@ -98,5 +98,7 @@ public class AssegnazioneTurno{
         return turno;
     }
 
-
+    public void addUtentediGuardia(Utente u) {
+        this.utentiDiGuardia.add(u);
+    }
 }

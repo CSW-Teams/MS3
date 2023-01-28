@@ -75,14 +75,13 @@ public class ScheduleBuilder {
             try {
                 
                 // Prima pensiamo a riempire le allocazioni, che sono le più importante
-                utentiGuardia = this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia(), null);
-                at.setUtentiDiGuardia(utentiGuardia);
-                for (Utente u : utentiGuardia){
+                this.aggiungiUtenti(at,at.getTurno().getNumUtentiGuardia(),at.getUtentiDiGuardia());
+                for (Utente u : at.getUtentiDiGuardia()){
                     allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
                 }
 
                 // Passo poi a riempire le riserve
-                at.setUtentiReperibili(this.ricercaUtenti(at, at.getTurno().getNumUtentiReperibilita(),utentiGuardia));
+                this.aggiungiUtenti(at,at.getTurno().getNumUtentiGuardia(),at.getUtentiReperibili());
 
             } catch (NotEnoughFeasibleUsersException e) {
                 
@@ -97,40 +96,37 @@ public class ScheduleBuilder {
         return this.schedule;
     }
 
-    /** seleziona gli utenti per una lista di utenti assegnati per una assegnazione di turno 
+    /** aggiunge gli utenti per una lista di utenti assegnati per una assegnazione di turno 
      * @throws NotEnoughFeasibleUsersException
      * */
-    private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
+    private void aggiungiUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> utentiDaPopolare) throws NotEnoughFeasibleUsersException{
         
-        List<Utente> selectedUsers = new ArrayList<>();
+        int selectedUsers = 0;
 
         //Randomizzo la scelta dell'utente dalla lista di tutti gli utenti
         List<UserScheduleState> allUserScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
         Collections.shuffle(allUserScheduleState);
 
         for (UserScheduleState userScheduleState : allUserScheduleState){
-            if (selectedUsers.size() == numUtenti){
+            if (selectedUsers == numUtenti){
                 break;
             }
-            //Se viene passato un set di utenti non ammessi (utenti di guardia) allora li esclude
-            if (NotAllowedSet!=null && NotAllowedSet.contains(userScheduleState.getUtente())) {
-                continue;
-            }
+
             ContestoVincolo contesto = new ContestoVincolo(userScheduleState,assegnazione);
             // Se l'utente rispetta tutti i vincoli possiamo includerlo nella lista desiderata
             // TODO: parametrizzare la costruzione della schedulazione su forzare vincoli stringenti o meno
             if (verificaTuttiVincoli(contesto, false)){
-                selectedUsers.add(userScheduleState.getUtente());
-                userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());    
+                utentiDaPopolare.add(userScheduleState.getUtente());
+                userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
+                selectedUsers++;    
             }
         }
         
         // potrei aver finito senza aver trovato abbastanza utenti
-        if (selectedUsers.size() != numUtenti){
-            throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers.size());
+        if (selectedUsers != numUtenti){
+            throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers);
         }
         
-        return new HashSet<Utente>(selectedUsers);
     }
 
     /** Applica tutti i vincoli al contesto specificato.

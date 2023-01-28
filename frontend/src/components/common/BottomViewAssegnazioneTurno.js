@@ -13,9 +13,10 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import InformationDialogs from './InformationVincoloComponent';
-import {MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
+import {MDBBtn, MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
 import FilesUpload from './FilesUpload'
-import {Icon} from "@material-ui/core";
+import {GiustificaForzatura} from "../../API/GiustificaForzatura";
+import {MDBTextArea} from "mdb-react-ui-kit";
 
 
 
@@ -29,10 +30,8 @@ export default function TemporaryDrawer(props) {
   const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
   const [state, setState] = React.useState({bottom: false});
-  const [commentText, setCommentText] = useState("");
-  const onChangeText = (event) => setCommentText(event.target.value);
   const [giustificato, setGiustificato] = React.useState(false)
-
+  const [giustifica, setGiustifica] = useState( '');
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
@@ -76,13 +75,54 @@ export default function TemporaryDrawer(props) {
 
   };
 
+  const caricaGiustifica= (anchor, open) => async (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setState({ ...state, [anchor]: open });
+
+    let giustificaForzatura = new GiustificaForzatura()
+
+    let utente_id = 7
+    let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+    status = await giustificaForzatura.caricaGiustifica(utente_id,giustificato,"");
+
+    props.caricaGiustifica()
+
+    //Verifico la risposta del server analizzando il codice di risposta http
+    if(status===202){
+      toast.success('Assegnazione creata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      //alert('assegnazione creata con successo');
+    }else if (status === 400){
+      toast.error('Errore nei parametri. Riprova con nuove date', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+    setState({ ...state, [anchor]: open });
+  }
+
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione.
   //Viene passata come callback al componente <Button>Assegna turno</Button>
   const assegnaTurno = (anchor, open) => async (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-    setState({ ...state, [anchor]: open });
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
     let response; //risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
@@ -105,7 +145,10 @@ export default function TemporaryDrawer(props) {
         progress: undefined,
         theme: "colored",
       });
-      //alert('assegnazione creata con successo');
+
+      //Chiudo la schermata perchè l'assegnazione è andata a buon fine
+      setState({ ...state, [anchor]: open });
+
     }else if (response.status === 400){
       toast.error('Errore nei parametri di input!', {
         position: "top-center",
@@ -118,8 +161,10 @@ export default function TemporaryDrawer(props) {
         theme: "colored",
       });
 
-      //alert('Errore nei parametri');
-    } else if( response.status === 406 ){
+      //Non chiudo la schermata perchè l'assegnazione non è andata a buon fine
+      setState({ ...state, [anchor]: !open });
+
+    } else {
 
       let responseBody = await response.json();
       toast.error('Violazione dei vincoli.'+ responseBody.message, {
@@ -132,39 +177,40 @@ export default function TemporaryDrawer(props) {
         theme: "colored",
       });
 
+      //Non chiudo la schermata perchè l'assegnazione non è andata a buon fine
+      setState({ ...state, [anchor]: !open });
+
     }
 
-    setState({ ...state, [anchor]: open });
+
 
   }
 
+  const handleChange = (e) => {
+    e.preventDefault();
+    setGiustifica(e.target.value);
+    console.log(e.target.value);
+  };
+
   function Giustifica() {
-    if (!giustificato)
         return (
           <MDBCard>
               <MDBCardBody>
-                <MDBCardTitle className="text-center">Motiva la forzatura</MDBCardTitle>
-                <Stack spacing={1}>
-                            <textarea
-                              type="text"
-                              defaultValue=""
-                              value={commentText}
-                              maxLength={300}
-                              placeholder="Inserisci la motivazione."
-                              onChange={onChangeText}>
-                             </textarea>
+                <MDBCardTitle className="text-center">Motiva la forzatura!</MDBCardTitle>
+                <MDBTextArea
+                             contrast id='textAreaExample'
+                             rows={4}
+                             className="text"
+                             onChange={handleChange}
+                             required
+                             value={giustifica}>
+                </MDBTextArea>
                   <FilesUpload/>
-                  <Button onClick={() => setGiustificato(true)}> Conferma </Button>
-                </Stack>
+                <Button title="Conferma" onClick={() => caricaGiustifica('bottom', false) && setGiustificato(true) }>
+                  Conferma
+                </Button>
               </MDBCardBody>
             </MDBCard>
-    )
-    return (
-      <MDBCard>
-        <MDBCardBody>
-         Giustificazione compilata.
-        </MDBCardBody>
-      </MDBCard>
     )};
 
 
@@ -207,9 +253,9 @@ export default function TemporaryDrawer(props) {
                 renderInput={(params) => <TextField {...params} label="Medici Reperibili" />}
               />
               <div>
-                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced)}}/>} label="Forza Vincoli non stringenti" />
+                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced); setGiustificato(false)}}/>} label="Forza Vincoli non stringenti" />
                 <InformationDialogs></InformationDialogs>
-                { (forced && <Giustifica  />) && ( <Giustifica  />|| !giustificato)}
+                { (forced && !giustificato && <Giustifica/>  ) }
               </div>
 
 

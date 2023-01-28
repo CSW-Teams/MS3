@@ -18,4 +18,5 @@ public enum MansioneEnum {
     REPARTO,    
 
 
+
 }

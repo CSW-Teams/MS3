@@ -2,11 +2,14 @@ package org.cswteams.ms3;
 
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloCategorieUtenteTurno;
+import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -50,9 +54,9 @@ public class VincoloPersonaTurnoTest {
     private CategorieDao categorieDao;
 
     @Test(expected=ViolatedConstraintException.class)
-    /**Test che verifica che una persona incinta non può essere aggiunta ad un turno notturno -
-     *  violazione del vincolo categoria. */
-    public void pregnancyTEST() throws ViolatedConstraintException {
+    //**Test che verifica che una persona incinta non può essere aggiunta ad un turno notturno -
+     //  violazione del vincolo categoria. */
+    public void pregnancyTEST() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
         Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
@@ -64,11 +68,11 @@ public class VincoloPersonaTurnoTest {
         categorieDao.saveAndFlush(categoriaFerie);
         categorieDao.saveAndFlush(categoriaMalattia);
 
-        Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, false);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -80,16 +84,9 @@ public class VincoloPersonaTurnoTest {
             new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE)
             ));
-        t4.setCategoryPolicies(Arrays.asList(
-            new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE)
-            ));
 
         turnoDao.save(t1);
         turnoDao.save(t3);
-        turnoDao.save(t4);
                 
         //Aggiungi assegnazione turno
         AssegnazioneTurno turnoNotturno = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,null,null);
@@ -107,9 +104,9 @@ public class VincoloPersonaTurnoTest {
     }
 
     @Test(expected=ViolatedConstraintException.class)
-    /**Test che verifica che una persona over62 non può essere aggiunta ad un turno notturno
-     *  violazione del vincolo categoria. */
-    public void over62TEST() throws ViolatedConstraintException {
+    //**Test che verifica che una persona over62 non può essere aggiunta ad un turno notturno
+     //  violazione del vincolo categoria. *//*
+    public void over62TEST() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
         Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
@@ -122,11 +119,11 @@ public class VincoloPersonaTurnoTest {
         categorieDao.saveAndFlush(categoriaFerie);
         categorieDao.saveAndFlush(categoriaMalattia);
 
-        Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO, false);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -138,16 +135,9 @@ public class VincoloPersonaTurnoTest {
             new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE)
             ));
-        t4.setCategoryPolicies(Arrays.asList(
-            new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE)
-            ));
         
         turnoDao.save(t1);
         turnoDao.save(t3);
-        turnoDao.save(t4);
                 
         //Aggiungi assegnazione turno
         AssegnazioneTurno turnoNotturno = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,null,null);
@@ -166,9 +156,9 @@ public class VincoloPersonaTurnoTest {
     }
 
     @Test(expected=ViolatedConstraintException.class)
-    /**Test che verifica che una persona in malattia non può essere aggiunta ad un turno notturno
-     *  violazione del vincolo categoria. */
-    public void InMalattiaTEST() throws ViolatedConstraintException {
+    //**Test che verifica che una persona in malattia non può essere aggiunta ad un turno notturno
+    //violazione del vincolo categoria. *//*
+    public void InMalattiaTEST() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
         Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
@@ -181,11 +171,12 @@ public class VincoloPersonaTurnoTest {
         categorieDao.saveAndFlush(categoriaFerie);
         categorieDao.saveAndFlush(categoriaMalattia);
         
-        Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, false);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -197,16 +188,9 @@ public class VincoloPersonaTurnoTest {
             new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE)
             ));
-        t4.setCategoryPolicies(Arrays.asList(
-            new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE)
-            ));
 
         turnoDao.save(t1);
         turnoDao.save(t3);
-        turnoDao.save(t4);
 
         //Aggiungi assegnazione turno
         AssegnazioneTurno turnoMattutinoinmalattia = new AssegnazioneTurno(LocalDate.of(2023,1, 4),t1,null,null);
@@ -225,9 +209,9 @@ public class VincoloPersonaTurnoTest {
     }
 
     @Test(expected=ViolatedConstraintException.class)
-    /**Test che verifica che una persona in ferie non può essere aggiunta ad alcun turno -
-     * violazione del vincolo categoria. */
-    public void InFerieTEST() throws ViolatedConstraintException {
+    //**Test che verifica che una persona in ferie non può essere aggiunta ad alcun turno -
+    // * violazione del vincolo categoria. *//*
+    public void InFerieTEST() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
         Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
@@ -240,11 +224,12 @@ public class VincoloPersonaTurnoTest {
         categorieDao.saveAndFlush(categoriaFerie);
         categorieDao.saveAndFlush(categoriaMalattia);
 
-        Servizio servizio1 = new Servizio("reparto");
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
+
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, TipologiaTurno.MATTUTINO);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, TipologiaTurno.NOTTURNO);
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, false);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -256,16 +241,9 @@ public class VincoloPersonaTurnoTest {
             new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE)
             ));
-        t4.setCategoryPolicies(Arrays.asList(
-            new UserCategoryPolicy(categoriaIncinta, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaOVER62, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaMalattia, t4, UserCategoryPolicyValue.EXCLUDE),
-            new UserCategoryPolicy(categoriaFerie, t4, UserCategoryPolicyValue.EXCLUDE)
-            ));
 
         turnoDao.save(t1);
         turnoDao.save(t3);
-        turnoDao.save(t4);
         
         //Aggiungi assegnazione turno
         AssegnazioneTurno turnoMattutinoiferie = new AssegnazioneTurno(LocalDate.of(2023,1, 4),t1,null,null);
@@ -283,6 +261,63 @@ public class VincoloPersonaTurnoTest {
         vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inferieuserState,turnoMattutinoiferie));
     }
 
+    @Test(expected=ViolatedConstraintException.class)
+    /**Test che verifica che una persona in ferie non può essere aggiunta ad alcun turno -
+     * violazione del vincolo categoria. */
+    public void turnoInCardiologiaTest() throws ViolatedConstraintException, TurnoException {
+        //Crea turni e servizio
+        //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE E TURNAZIONE (ESCLUSIVE PER I TURNI)
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", -1);
+        Categoria ambulatorioCardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", -2);
+
+        categorieDao.saveAndFlush(cardiologia);
+        categorieDao.saveAndFlush(ambulatorioCardiologia);
+
+        Servizio servizio1 = new Servizio("cardiologia");
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
+        servizioDao.saveAndFlush(servizio1);
+        Turno t1 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
+
+        t1.setCategoryPolicies(Arrays.asList(
+                new UserCategoryPolicy(cardiologia, t1, UserCategoryPolicyValue.INCLUDE),
+                new UserCategoryPolicy(ambulatorioCardiologia, t1, UserCategoryPolicyValue.INCLUDE)
+        ));
+
+        turnoDao.saveAndFlush(t1);
+
+        //Aggiungi assegnazione turno
+        AssegnazioneTurno turnoCardiologia = new AssegnazioneTurno(LocalDate.of(2023,1, 4),t1,null,null);
+        assegnazioneTurnoDao.saveAndFlush(turnoCardiologia);
+
+        CategoriaUtente cardiologo = new CategoriaUtente(cardiologia,LocalDate.of(2023, 1, 3), LocalDate.of(2100, 10, 4));
+        categoriaUtenteDao.saveAndFlush(cardiologo);
+        CategoriaUtente ambulatorioInCardiologia = new CategoriaUtente(ambulatorioCardiologia,LocalDate.of(2023, 1, 3), LocalDate.of(2023, 10, 4));
+        categoriaUtenteDao.saveAndFlush(ambulatorioInCardiologia);
+
+        Utente specializzandoCardiologia = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        specializzandoCardiologia.getTurnazioni().add(ambulatorioInCardiologia);
+        utenteDao.saveAndFlush(specializzandoCardiologia);
+        Utente specializzatoCardiologia = new Utente("Giacomo","Bianchi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO);
+        specializzatoCardiologia.getSpecializzazioni().add(cardiologo);
+        utenteDao.saveAndFlush(specializzatoCardiologia);
+        UserScheduleState specializzato = new UserScheduleState(specializzatoCardiologia, null);
+        UserScheduleState specializzando = new UserScheduleState(specializzandoCardiologia, null);
+
+        //Verifica il vincolo
+        try{
+            vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(specializzato,turnoCardiologia));
+            vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(specializzando,turnoCardiologia));
+        }catch(ViolatedConstraintException ex){
+            Assert.fail();
+        }
+
+        Utente utenteacaso = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        utenteDao.saveAndFlush(utenteacaso);
+        UserScheduleState nonCardiologo = new UserScheduleState(utenteacaso, null);
+        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(nonCardiologo, turnoCardiologia));
+
+
+    }
 
 
 }

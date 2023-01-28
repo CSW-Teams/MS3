@@ -9,22 +9,27 @@ import javax.persistence.*;
 @Entity
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Categoria {
+public class Liberatoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    private String nome;
+    private String name;
 
-    private int tipo; //0 : STATO, - 1: SPECIALIZZAZIONE, - 2 TURNAZIONE
+    private String type;
 
-    public Categoria() {
+    @Lob
+    private byte[] data;
+
+    public Liberatoria() {
+
     }
 
-    public Categoria(String nome, int tipo) {
-        this.nome=nome;
-        this.tipo=tipo;
+    public Liberatoria(String fileName, String type, byte[] data){
+        this.data = data;
+        this.name = fileName;
+        this.type = type;
     }
 
 }
