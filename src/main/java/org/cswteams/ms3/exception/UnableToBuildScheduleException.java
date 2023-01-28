@@ -6,4 +6,8 @@ public class UnableToBuildScheduleException extends Exception{
         super(string, e);
     }
 
+    public UnableToBuildScheduleException(String string){
+        super(string);
+    }
+
 }

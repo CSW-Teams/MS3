@@ -8,8 +8,9 @@ import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
+import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,36 +36,39 @@ public class AssegnazioneTurnoRestEndpoint {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> creaTurnoAssegnato(@RequestBody RegistraAssegnazioneTurnoDTO assegnazione) {
 
+        Schedule schedule;
+
         if (assegnazione != null) {
-            try {
 
-                //Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere presente nel databse
-                Turno turno = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno()).get(0);
-                if(turno == null)
-                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            // Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere
+            // presente nel databse
+            Turno turno = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(),
+                    assegnazione.getTipologiaTurno()).get(0);
+            if (turno == null)
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-                //Converto il dto in un entità
-                AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(
-                        LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(),assegnazione.getGiorno()),
-                        turno,
-                        MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
-                        MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia())
-                );
+            // Converto il dto in un entità
+            AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(
+                    LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(), assegnazione.getGiorno()),
+                    turno,
+                    MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
+                    MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia()));
 
+            // Se l'utente chiede l'aggiunta forzata di un assegnazione viene fatto
+            // controllo solo sui vincoli non violabili
+            schedule = controllerScheduler.aggiungiAssegnazioneTurno(assegnazioneTurno, assegnazione.isForced());
 
-                //Se l'utente chiede l'aggiunta forzata di un assegnazione  viene fatto controllo solo sui vincoli non violabili
-                controllerScheduler.aggiungiAssegnazioneTurno(assegnazioneTurno,assegnazione.isForced());
-
-                return new ResponseEntity<>(assegnazioneTurno, HttpStatus.ACCEPTED);
-
-            } catch (IllegalAssegnazioneTurnoException e) {
-
-                //Se un vincolo è violato è comunicato all'utente.
+            // Se un vincolo è violato è comunicato all'utente.
+            if (schedule.isIllegal()) {
                 RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
-                risposta.setMessage(e.getCause().getMessage());
-                return new ResponseEntity<>(risposta,HttpStatus.NOT_ACCEPTABLE);
-
+                risposta.getMessagges().add(schedule.getCauseIllegal().getMessage());
+                for (ViolatedConstraintLogEntry vclEntry : schedule.getViolatedConstraintLog()) {
+                    risposta.getMessagges().add(vclEntry.getViolation().getMessage());
+                }
+                return new ResponseEntity<>(risposta, HttpStatus.NOT_ACCEPTABLE);
             }
+
+            return new ResponseEntity<>(assegnazioneTurno, HttpStatus.ACCEPTED);
 
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
