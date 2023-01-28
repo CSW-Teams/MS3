@@ -34,10 +34,10 @@ export default function MultipleSelect(props) {
     <Stack spacing={3}>
       <Box sx={{minWidth: 120}}>
         <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Turnazioni</InputLabel>
+          <InputLabel id="demo-simple-select-label">Rotazioni</InputLabel>
           <Select
             value={categoria}
-            label='Turnazioni'
+            label='Rotazioni'
             onChange={handleChangeCategoria}
           >
             {categorie.map((elementData) => (

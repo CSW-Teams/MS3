@@ -1,6 +1,6 @@
 import { TurnoAPI } from "./TurnoAPI";
 import {blue, red, teal} from "@material-ui/core/colors";
-import { AssignedShift } from "./Schedulable";
+import { AssignedShift, SchedulableType } from "./Schedulable";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -12,7 +12,7 @@ export  class AssegnazioneTurnoAPI {
 
     for (let i = 0; i < body.length; i++) {
         let turno = new AssignedShift(
-          "Turno in "+  body[i].servizio.nome,
+          body[i].mansione + " in " + body[i].servizio.nome,
           body[i].inizio,
           body[i].fine,
           teal);
@@ -36,6 +36,7 @@ export  class AssegnazioneTurnoAPI {
 
       turno.tipologia = body[i].tipologiaTurno;
       turno.servizio = body[i].servizio.nome;
+      turno.mansione = body[i].mansione;
 
       turni[i] = turno;
 

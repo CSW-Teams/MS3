@@ -1,9 +1,11 @@
 package org.cswteams.ms3.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 
@@ -39,6 +41,9 @@ public class Turno {
     private int numUtentiReperibilita;
     private int numUtentiGuardia;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<RuoloNumero> ruoliNumero ;
+
     /** Quale mansione è da svolgere per questo turno */
     private MansioneEnum mansione;
 
@@ -57,7 +62,7 @@ public class Turno {
     @OneToMany(cascade = CascadeType.ALL)
     private List<UserCategoryPolicy> categoryPolicies;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, TipologiaTurno tipologia, boolean giornoSuccessivo) throws  TurnoException {
 
         // Se l'ora di inizio segue l'ora di fine verrà sollevata eccezzione solo se il turno non è configurato
         // per iniziare in un giorno e finire in quello seguente
@@ -78,9 +83,12 @@ public class Turno {
         this.oraInizio = oraInizio;
         this.oraFine = oraFine;
         this.servizio = servizio;
-        this.mansione = mansione;
         this.tipologiaTurno = tipologia;
         this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
+
+        this.ruoliNumero = new ArrayList<>();
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.STRUTTURATO,1));
 
     }
 
@@ -104,6 +112,21 @@ public class Turno {
     }
 
     public Turno() {
+        this.ruoliNumero = new ArrayList<>();
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.STRUTTURATO,1));
+    }
+
+    public Turno(LocalTime oi, LocalTime of, Servizio servizio, TipologiaTurno tt) {
+        this.oraFine=oi;
+        this.oraInizio=of;
+        this.tipologiaTurno=tt;
+        this.servizio=servizio;
+        this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
+
+        this.ruoliNumero = new ArrayList<>();
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
+        ruoliNumero.add(new RuoloNumero(RuoloEnum.STRUTTURATO,1));
     }
 
 

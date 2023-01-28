@@ -1,11 +1,20 @@
-import { Holiday } from "./Schedulable";
+import { Holiday, SchedulableType } from "./Schedulable";
 import {red} from "@mui/material/colors";
 
 export class HolidaysAPI {
 
+
     /** gets all holidays from backend  */
     async getHolidays() {
-        let response = await fetch('/api/holidays/', {method: 'GET'});
+
+        let date = new Date()
+        let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        let county = await this.searchCountry(timeZone);
+
+        console.log(county);
+
+        let response = await fetch('/api/holidays/year='+date.getFullYear()+'/country='+county, {method: 'GET'});
+
         let serializedHolidays = await response.json();
         let holidays = [];
 
@@ -19,7 +28,7 @@ export class HolidaysAPI {
                 red,
             );
             h.allDay = true;
-            h.type="Holiday"
+            h.schedulableType=SchedulableType.Holiday;
             h.category = sh.category;
             h.location = sh.location;
             h.utenti_guardia = [-1];
@@ -30,4 +39,28 @@ export class HolidaysAPI {
 
 
     }
+
+     //Questa funzione restituisce la nazione in cui è eseguito il frontend sulla base della timezone.
+     //Serve per capire contattare il backend e richiedere le fetività di quella nazione specifica
+    async searchCountry(timeZone){
+
+        if(timeZone.includes("Rome"))
+            return "IT"
+
+        if(timeZone.includes("Paris"))
+            return "FR"
+
+        if(timeZone.includes("Madrid"))
+            return "SP"
+
+        // Altri timeZone..
+        
+        return "IT"
+    }
+
+
+
+    
 }
+
+

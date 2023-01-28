@@ -93,7 +93,7 @@ export default function InformationDialogs() {
             all'occorrenza il pianificatore può decidere di violare.
           </Typography>
           <Typography gutterBottom>
-            <h4>Vincoli non violabili</h4>
+            <h4>Vincoli stringenti</h4>
             <ul>
             {Array.from(vincoli).map((vincolo, i) => (
             !vincolo.violabile? <li>{ vincolo.descrizione }</li>:null
@@ -101,7 +101,7 @@ export default function InformationDialogs() {
             </ul>
                     </Typography>
           <Typography gutterBottom>
-          <h4>Vincoli violabili</h4>
+          <h4>Vincoli non stringenti</h4>
           <ul>
           {Array.from(vincoli).map((vincolo, i) => (
             vincolo.violabile? <li>{ vincolo.descrizione }</li>:null
