@@ -69,7 +69,20 @@ export  class AssegnazioneTurnoAPI {
     return turni;
   }
 
-    async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,forced) {
+  /**
+   * Richiede al backend di registrare un'assegnazione turno.
+   * @param {*} data 
+   * @param {*} turnoTipologia 
+   * @param {*} utentiSelezionatiGuardia 
+   * @param {*} utentiReperibilita 
+   * @param {*} servizioNome 
+   * @param {*} forced 
+   * @returns La risposta del backend:
+   * 202 se è andato tutto ok, dunque la risposta contiene l'oggetto assegnazione generato;
+   * 400 se i parametri della richiesta sono malformati e il backend non è riuscito a interpretarli;
+   * 406 se la richiesta di assegnazone è stata rigettata, ad esempio perché violerebbe dei vincoli per la sua pianificazione.
+   */  
+  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,forced) {
 
       let assegnazioneTurno = new Object();
 
