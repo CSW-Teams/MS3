@@ -18,7 +18,16 @@ import FilesUpload from './FilesUpload'
 import {GiustificaForzaturaAPI} from "../../API/GiustificaForzaturaAPI";
 import {MDBTextArea} from "mdb-react-ui-kit";
 
+function ViolationLog(props){
 
+  return (
+    <div>
+        <ul>
+          {props.log.map((msg) => <li> {msg} </li>)}
+        </ul>
+    </div>
+  );
+}
 
 export default function TemporaryDrawer(props) {
 
@@ -143,49 +152,97 @@ export default function TemporaryDrawer(props) {
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
     let response; //risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
 
-
+    /**
+     * Chiediamo al backend di registrare l'assegnazione turno.
+     * In base alla risposta che riceviamo sapremo se l'assegnazione è andata a buon fine,
+     * oppure se è stata rigettata.
+     * In quest'ultimo caso ci verranno forniti dei messaggi informativi per l'utente riguardo a cosa è andato storto.
+     */
     response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
     props.onPostAssegnazione()
 
     //Verifico la risposta del server analizzando il codice di risposta http
-    if(response.status===202){
+    let responseStatusClass = Math.floor(response.status / 100)
+    switch(responseStatusClass){
 
-      toast.success('Assegnazione creata con successo', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+      // 200 family, success
+      case 2:
+        // Informa l'utente che l'assegnazione turno è stata registrata con successo
+        toast.success('Assegnazione creata con successo', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        if(forced === true){
+          let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
+          let bodyResponse = response.json()
+          console.log(bodyResponse)
+          let assegnazioneTurnoId = bodyResponse.turno
+          console.log(assegnazioneTurnoId)
+          let utente_id = 7
+          let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+          status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
+          if(status === 202){
+            toast.success('Giustificazione salvata', {
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
+          }else{
+            // TODO: Bisogna cancellare l'assegnazione turno inserita
+            toast.error('Errore nel salvataggio della giustificazione', {
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
+          }}
+          break;
+      // 400 family, malformed request
+      case 4:
+        if (response.status === 406) {
 
-      if(forced === true){
-        let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
-        let bodyResponse = response.json()
-        console.log(bodyResponse)
-        let assegnazioneTurnoId = bodyResponse.turno
-        console.log(assegnazioneTurnoId)
-        let utente_id = 7
-        let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-        status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
-        if(status === 202){
-          toast.success('Giustificazione salvata', {
+          /**
+           * L'assegnazione è fallita a causa di una violazione dei vincoli.
+           * Mostriamo a schermo quali vincoli sono stati violati.
+           */
+          let responseBody = await response.json();
+          /**
+           * FIXME: non sono riuscito a passare al toast il componente del ViolationLog usando la sintassi JSX
+           * perché non riuscivo a passargli i messaggi da stampare come props. Questo è un workaround che aggira il problema
+           * simulando il passaggio delle props invocando il componente direttamente come funzione. Se qualcuno riesce a sistemarlo
+           * passandolo direttamente nella forma <ViolationLog log={responseBody.messagges}/> sarebbe meglio.
+           */
+          toast.error(ViolationLog({log : responseBody.messagges}), {
             position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: true,
+            hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
             theme: "colored",
+            autoClose: false,
           });
-        }else{
-          // TODO: Bisogna cancellare l'assegnazione turno inserita
-          toast.error('Errore nel salvataggio della giustificazione', {
+        } else {
+          // malformed request
+
+          toast.error('Errore nei parametri di input!', {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: true,
@@ -196,44 +253,22 @@ export default function TemporaryDrawer(props) {
             theme: "colored",
           });
         }
-      }
-
-      //Chiudo la schermata perchè l'assegnazione è andata a buon fine
-      setState({ ...state, [anchor]: open });
-
-
-    }else if (response.status === 400){
-      toast.error('Errore nei parametri di input!', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-
-      //Non chiudo la schermata perchè l'assegnazione non è andata a buon fine
-      setState({ ...state, [anchor]: !open });
-
-    } else {
-
-      let responseBody = await response.json();
-      toast.error('Violazione dei vincoli.'+ responseBody.message, {
-        position: "top-center",
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-
-      //Non chiudo la schermata perchè l'assegnazione non è andata a buon fine
-      setState({ ...state, [anchor]: !open });
+        break;
+      // 500 family, server error
+      case 5:
+      // TODO: Dovremmo gestire i casi in cui il server si inceppa, e informare l'utente riguardo
+      // le cause del problema e consigliargli di contattare un amministratore o un tecnico (noi!)
+      default:
+        // If you get here, something went really wrong. For real. :/
+        console.log("Unexpected response status: " + response.status);
+        break;
 
     }
+
+    // chiudiamo il cassetto dell'assegnazione turno solo se l'assegnazione è andata a buon fine
+    setState({ ...state, [anchor]: (responseStatusClass === 2)? open : !open });
+
+
   }
 
   const handleChange = (e) => {
