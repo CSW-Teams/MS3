@@ -37,9 +37,11 @@ public class GiustificazioneForzaturaVincoli {
     }
 
 
-    public GiustificazioneForzaturaVincoli(String message, Utente utenteGiustificante, Set<Liberatoria> liberatorie) {
+    public GiustificazioneForzaturaVincoli(String message, Utente utenteGiustificante, Set<Liberatoria> liberatorie, List<Vincolo> vincoliViolati, AssegnazioneTurno assegnazioneViolante) {
         this.motivazione=message;
         this.utenteGiustificatore=utenteGiustificante;
         this.liberatorie=liberatorie;
+        this.assegnazioneViolante = assegnazioneViolante;
+        this.vincoliViolati = vincoliViolati;
     }
 }
