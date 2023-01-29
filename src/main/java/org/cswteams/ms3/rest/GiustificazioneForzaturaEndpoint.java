@@ -28,6 +28,7 @@ public class GiustificazioneForzaturaEndpoint {
         }*/
     }
 
+
     @RequestMapping(method = RequestMethod.POST, path = "/caricaFile")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         String message = "";
