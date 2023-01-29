@@ -4,8 +4,10 @@ package org.cswteams.ms3.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
+import org.cswteams.ms3.enums.TipologiaTurno;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -19,14 +21,21 @@ public class GiustificazioneForzaturaVincoli {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private Set<Liberatoria> liberatorie;
+  /*  @OneToMany(cascade = CascadeType.ALL)
+    private Set<Liberatoria> liberatorie;*/
 
-    @OneToOne
-    private AssegnazioneTurno assegnazioneViolante;
+    private TipologiaTurno turnoViolante;
+
+    private LocalDate data;
 
     @ManyToMany
-    private List<Vincolo> vincoliViolati;
+    private Set<Utente> utentiAllocati;
+
+    @ManyToOne
+    private Servizio servizio;
+
+    /*@ManyToMany
+    private List<Vincolo> vincoliViolati;*/
     private String motivazione;
 
     @ManyToOne
@@ -37,11 +46,12 @@ public class GiustificazioneForzaturaVincoli {
     }
 
 
-    public GiustificazioneForzaturaVincoli(String message, Utente utenteGiustificante, Set<Liberatoria> liberatorie, List<Vincolo> vincoliViolati, AssegnazioneTurno assegnazioneViolante) {
-        this.motivazione=message;
-        this.utenteGiustificatore=utenteGiustificante;
-        this.liberatorie=liberatorie;
-        this.assegnazioneViolante = assegnazioneViolante;
-        this.vincoliViolati = vincoliViolati;
+    public GiustificazioneForzaturaVincoli(String message, TipologiaTurno turnoViolante, Servizio servizio, LocalDate data, Set<Utente> utentiAllocati, Utente utenteGiustificatore) {
+        this.turnoViolante = turnoViolante;
+        this.data = data;
+        this.utentiAllocati = utentiAllocati;
+        this.servizio = servizio;
+        this.motivazione = message;
+        this.utenteGiustificatore = utenteGiustificatore;
     }
 }

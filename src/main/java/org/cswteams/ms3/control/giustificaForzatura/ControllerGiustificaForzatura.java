@@ -1,5 +1,7 @@
 package org.cswteams.ms3.control.giustificaForzatura;
 
+import org.cswteams.ms3.control.utils.MappaServizio;
+import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.LiberatoriaDao;
 import org.cswteams.ms3.dao.GiustificazioneFozaturaDao;
 import org.cswteams.ms3.dao.UtenteDao;
@@ -14,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -32,9 +35,9 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
     @Override
     public void saveGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoliDTO) {
         //giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
-        Utente giustificatore = utenteDao.findById(giustificazioneForzaturaVincoliDTO.getUtenteGiustificatoreId());
-        GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(), giustificatore,new HashSet<>(),new ArrayList<>(), new AssegnazioneTurno());
-        //giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
+        Utente giustificatore = utenteDao.findById(Long.parseLong(giustificazioneForzaturaVincoliDTO.getUtenteGiustificatoreId()));
+        GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(),giustificazioneForzaturaVincoliDTO.getTipologiaTurno(), MappaServizio.servizioDTOtoEntity(giustificazioneForzaturaVincoliDTO.getServizio()),LocalDate.of(giustificazioneForzaturaVincoliDTO.getAnno(), giustificazioneForzaturaVincoliDTO.getMese(), giustificazioneForzaturaVincoliDTO.getGiorno()), MappaUtenti.utenteDTOtoEntity(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()), giustificatore);
+        giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
     }
 
 

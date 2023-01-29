@@ -72,6 +72,25 @@ export default function TemporaryDrawer(props) {
 
   };
 
+  const giustificaCompilata = (anchor, open) => async (event) => {
+    if(giustificazione !== ''){
+      setGiustificato(true)
+    }else{
+      toast.error('Giustificazione non compilata', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+
+
+  }
+
   const caricaGiustifica= (anchor, open) => async (event) => {
     setGiustificato(true)
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -132,6 +151,7 @@ export default function TemporaryDrawer(props) {
 
     //Verifico la risposta del server analizzando il codice di risposta http
     if(response.status===202){
+
       toast.success('Assegnazione creata con successo', {
         position: "top-center",
         autoClose: 5000,
@@ -143,8 +163,44 @@ export default function TemporaryDrawer(props) {
         theme: "colored",
       });
 
+      if(forced === true){
+        let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
+        let bodyResponse = response.json()
+        console.log(bodyResponse)
+        let assegnazioneTurnoId = bodyResponse.turno
+        console.log(assegnazioneTurnoId)
+        let utente_id = 7
+        let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+        status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
+        if(status === 202){
+          toast.success('Giustificazione salvata', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+        }else{
+          // TODO: Bisogna cancellare l'assegnazione turno inserita
+          toast.error('Errore nel salvataggio della giustificazione', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+        }
+      }
+
       //Chiudo la schermata perchè l'assegnazione è andata a buon fine
       setState({ ...state, [anchor]: open });
+
 
     }else if (response.status === 400){
       toast.error('Errore nei parametri di input!', {
@@ -200,8 +256,7 @@ export default function TemporaryDrawer(props) {
 
                 </MDBTextArea>
                   <FilesUpload/>
-                {/*<Button title="Conferma" onClick={() => caricaGiustifica('bottom', false) && setGiustificato(true) }>*/}
-                <Button title="Conferma" onClick={caricaGiustifica('bottom', false)}>
+                <Button title="Conferma" onClick={giustificaCompilata('bottom', false)}>
                   Conferma
                 </Button>
               </MDBCardBody>
@@ -252,9 +307,9 @@ export default function TemporaryDrawer(props) {
                 <InformationDialogs></InformationDialogs>
                 { (forced && !giustificato && <Giustifica/>  ) }
               </div>
+              { (forced && giustificato && <MDBCard><MDBCardBody>Giustificazione compilata</MDBCardBody></MDBCard>)}
 
-
-              <Button variant="contained" size="small" onClick={assegnaTurno('bottom', false)} >
+              <Button variant="contained" size="small" disabled={forced && !giustificato} onClick={assegnaTurno('bottom', false)} >
                 Assegna turno
               </Button>
             </Stack>

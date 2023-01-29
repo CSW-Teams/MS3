@@ -1,9 +1,16 @@
 export class GiustificaForzaturaAPI {
 
-  async caricaGiustifica(message, utenteId) {
+  async caricaGiustifica(message, utenteId, turno, utenti, data, servizio) {
+    console.log(message+utenteId+turno+data+utenti)
     let giustificazione = new Object();
     giustificazione.message = message;
     giustificazione.utenteGiustificatoreId = utenteId;
+    giustificazione.giorno = data.$d.getDate();
+    giustificazione.mese = data.$d.getMonth()+1;
+    giustificazione.anno = data.$d.getFullYear();
+    giustificazione.utentiAllocati = utenti;
+    giustificazione.tipologiaTurno = turno;
+    giustificazione.servizio = servizio;
     //giustificazione.liberatoria = liberatoria;
 
     const requestOptions = {
