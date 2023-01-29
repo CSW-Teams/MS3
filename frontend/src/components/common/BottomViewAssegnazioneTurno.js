@@ -15,7 +15,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import InformationDialogs from './InformationVincoloComponent';
 import {MDBBtn, MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
 import FilesUpload from './FilesUpload'
-import {GiustificaForzatura} from "../../API/GiustificaForzatura";
+import {GiustificaForzaturaAPI} from "../../API/GiustificaForzaturaAPI";
 import {MDBTextArea} from "mdb-react-ui-kit";
 
 function ViolationLog(props){
@@ -40,8 +40,7 @@ export default function TemporaryDrawer(props) {
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
   const [state, setState] = React.useState({bottom: false});
   const [giustificato, setGiustificato] = React.useState(false)
-  const [giustifica, setGiustifica] = useState( '');
-
+  let giustificazione = ''
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
@@ -83,18 +82,19 @@ export default function TemporaryDrawer(props) {
   };
 
   const caricaGiustifica= (anchor, open) => async (event) => {
+    setGiustificato(true)
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
     setState({ ...state, [anchor]: open });
 
-    let giustificaForzatura = new GiustificaForzatura()
+    let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
 
     let utente_id = 7
     let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-    status = await giustificaForzatura.caricaGiustifica(utente_id,giustificato,"");
+    status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id);
 
-    props.caricaGiustifica()
+    //await props.caricaGiustifica()
 
     //Verifico la risposta del server analizzando il codice di risposta http
     if(status===202){
@@ -108,8 +108,7 @@ export default function TemporaryDrawer(props) {
         progress: undefined,
         theme: "colored",
       });
-      //alert('assegnazione creata con successo');
-    }else if (status === 400){
+    }else if (status === 400 || status === 417){
       toast.error('Errore nei parametri. Riprova con nuove date', {
         position: "top-center",
         autoClose: 5000,
@@ -214,48 +213,6 @@ export default function TemporaryDrawer(props) {
 
     }
     
-    // TODO: muovi questo if else nello switch
-    
-    /*
-    if(response.status===202){
-      toast.success('Assegnazione creata con successo', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-
-    }else if (response.status === 400){
-      toast.error('Errore nei parametri di input!', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-
-    } else {
-
-      let responseBody = await response.json();
-      toast.error('Violazione dei vincoli.'+ responseBody.message, {
-        position: "top-center",
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-
-    }
-*/
     // chiudiamo il cassetto dell'assegnazione turno solo se l'assegnazione è andata a buon fine
     setState({ ...state, [anchor]: (responseStatusClass === 2)? open : !open });
 
@@ -263,9 +220,9 @@ export default function TemporaryDrawer(props) {
   }
 
   const handleChange = (e) => {
-    e.preventDefault();
-    setGiustifica(e.target.value);
-    console.log(e.target.value);
+    e.persist()
+    giustificazione = e.target.value;
+    console.log(giustificazione);
   };
 
   function Giustifica() {
@@ -274,20 +231,21 @@ export default function TemporaryDrawer(props) {
               <MDBCardBody>
                 <MDBCardTitle className="text-center">Motiva la forzatura!</MDBCardTitle>
                 <MDBTextArea
-                             contrast id='textAreaExample'
+                             contrast id='textAreaGiustifica'
                              rows={4}
                              className="text"
                              onChange={handleChange}
-                             required
-                             value={giustifica}>
+                             required>
+
                 </MDBTextArea>
                   <FilesUpload/>
-                <Button title="Conferma" onClick={() => caricaGiustifica('bottom', false) && setGiustificato(true) }>
+                {/*<Button title="Conferma" onClick={() => caricaGiustifica('bottom', false) && setGiustificato(true) }>*/}
+                <Button title="Conferma" onClick={caricaGiustifica('bottom', false)}>
                   Conferma
                 </Button>
               </MDBCardBody>
             </MDBCard>
-    )};
+    )}
 
 
 

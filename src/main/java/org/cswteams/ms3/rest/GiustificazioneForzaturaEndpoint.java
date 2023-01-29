@@ -2,8 +2,7 @@ package org.cswteams.ms3.rest;
 
 
 import org.cswteams.ms3.control.giustificaForzatura.IControllerGiustificaForzatura;
-import org.cswteams.ms3.control.utils.MappaGiustificazioneForzaturaVincoli;
-import org.cswteams.ms3.dto.GiustificazioneForzaturaDto;
+import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,11 @@ public class GiustificazioneForzaturaEndpoint {
     private IControllerGiustificaForzatura iControllerGiustificaForzatura;
 
 
-    @RequestMapping(method = RequestMethod.POST, path = "/caricaGiustifica")
-    public ResponseEntity<String> caricaGiustificazione(@RequestParam("giustificazione") GiustificazioneForzaturaDto giustificazioneForzaturaVincoli) {
+    @RequestMapping(method = RequestMethod.POST, path = "/caricaGiustificazione")
+    public ResponseEntity<String> caricaGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazione) {
         try {
-            iControllerGiustificaForzatura.saveGiustificazione(MappaGiustificazioneForzaturaVincoli.GiustificazioneForzaturaVincoliDtoToEntity(giustificazioneForzaturaVincoli));
-            return ResponseEntity.status(HttpStatus.OK).body("Giustificazione caricata correttamente");
+            iControllerGiustificaForzatura.saveGiustificazione(giustificazione);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Giustificazione caricata correttamente");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body("Giustificazione non caricata. Errore.");
         }
