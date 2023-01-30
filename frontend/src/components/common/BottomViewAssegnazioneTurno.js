@@ -252,7 +252,7 @@ export default function TemporaryDrawer(props) {
                              required>
 
                 </MDBTextArea>
-                <li>Aggiungi la/le delibera/e :</li>
+                <li>Aggiungi la/le liberatoria/e :</li>
                   <FilesUpload/>
                 <Button title="Conferma" onClick={giustificaCompilata('bottom', false)}>
                   Conferma
