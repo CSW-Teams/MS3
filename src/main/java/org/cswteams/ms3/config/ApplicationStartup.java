@@ -295,10 +295,20 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Servizio servizio2 = new Servizio("oncologia");
 
 
-        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
-        servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO, MansioneEnum.GUARDIA));
+        servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO, MansioneEnum.GUARDIA));
+
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
+
+        Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,false);
+        t1.setCategoryPolicies(Arrays.asList(
+                new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
+                new UserCategoryPolicy(categoriaFerie, t1,  UserCategoryPolicyValue.EXCLUDE),
+                new UserCategoryPolicy(reparto_cardiologia, t1, UserCategoryPolicyValue.INCLUDE)
+        ));
+        t1.setNumUtentiGuardia(2);
+        t1.setNumUtentiReperibilita(2);
 
 
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
@@ -342,7 +352,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         t6.setNumUtentiGuardia(2);
         t6.setNumUtentiReperibilita(2);
 
-
+        turnoDao.saveAndFlush(t1);
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
