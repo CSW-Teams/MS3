@@ -27,4 +27,6 @@ public interface IHolidayController {
      */
     public void registerSundays(LocalDate start, int years);
 
+    void registerHoliday(List<Holiday> holidays);
+
 }

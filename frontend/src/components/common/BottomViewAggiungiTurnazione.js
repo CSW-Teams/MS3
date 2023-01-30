@@ -73,7 +73,6 @@ export default function TemporaryDrawer(props) {
         progress: undefined,
         theme: "colored",
       });
-      //alert('assegnazione creata con successo');
     }else if (status === 400){
       toast.error('Errore nei parametri. Riprova con nuove date', {
         position: "top-center",

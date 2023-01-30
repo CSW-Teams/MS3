@@ -19,9 +19,13 @@ public class AssegnazioneTurno{
     @Column(name = "id", nullable = false)
     private Long id;
 
+    /** Utenti assegnati per il turno. Da non confondere con la mansione GUARDIA */
     @ManyToMany
     private Set<Utente> utentiDiGuardia;
 
+    /** Utenti in riserva per il turno. Questi utenti sono eligibili per L'assegnazione al turno,
+     * ma non sono stati assegnati. Da non confondere con la reperibilità prevista dalla mansione GUARDIA
+     */
     @ManyToMany
     private Set<Utente> utentiReperibili;
 
@@ -94,5 +98,7 @@ public class AssegnazioneTurno{
         return turno;
     }
 
-
+    public void addUtentediGuardia(Utente u) {
+        this.utentiDiGuardia.add(u);
+    }
 }

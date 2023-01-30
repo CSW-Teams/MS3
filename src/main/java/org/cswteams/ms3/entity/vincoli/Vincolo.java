@@ -13,7 +13,10 @@ public abstract class  Vincolo {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    /** True se il vincolo è non-stringente */
     private boolean violabile;
+
+    /** TODO: descrizione di che cosa in particolare del vincolo? */
     private String descrizione;
 
     public Long getId() {

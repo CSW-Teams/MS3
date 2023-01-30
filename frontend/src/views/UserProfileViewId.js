@@ -66,7 +66,7 @@ export default class UserProfileView extends React.Component{
               <MDBTable align="middle">
                 <MDBTableHead>
                   <tr>
-                    <th scope='col'>Turnazione</th>
+                    <th scope='col'>Rotazione</th>
                     <th scope='col'>Inizio validità</th>
                     <th scope='col'>Fine validità</th>
                   </tr>

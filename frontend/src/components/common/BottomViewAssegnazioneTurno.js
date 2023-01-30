@@ -13,11 +13,21 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import InformationDialogs from './InformationVincoloComponent';
-import {MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
+import {MDBBtn, MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
 import FilesUpload from './FilesUpload'
-import {Icon} from "@material-ui/core";
+import {GiustificaForzaturaAPI} from "../../API/GiustificaForzaturaAPI";
+import {MDBTextArea} from "mdb-react-ui-kit";
 
+function ViolationLog(props){
 
+  return (
+    <div>
+        <ul>
+          {props.log.map((msg) => <li> {msg} </li>)}
+        </ul>
+    </div>
+  );
+}
 
 export default function TemporaryDrawer(props) {
 
@@ -29,10 +39,8 @@ export default function TemporaryDrawer(props) {
   const [utentiSelezionatiGuardia,setUtentiSelezionatiGuardia] = React.useState([])
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
   const [state, setState] = React.useState({bottom: false});
-  const [commentText, setCommentText] = useState("");
-  const onChangeText = (event) => setCommentText(event.target.value);
   const [giustificato, setGiustificato] = React.useState(false)
-
+  let giustificazione = ''
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
@@ -64,8 +72,6 @@ export default function TemporaryDrawer(props) {
     setServizio(servizio);
   }
 
-
-
   //Funzione che apre la schermata secondaria che permette di creare un associazione.
   //Viene passata come callback al componente <Drawer>
   const toggleDrawer = (anchor, open) => (event) => {
@@ -76,96 +82,184 @@ export default function TemporaryDrawer(props) {
 
   };
 
+  const giustificaCompilata = (anchor, open) => async (event) => {
+    if(giustificazione !== ''){
+      setGiustificato(true)
+    }else{
+      toast.error('Giustificazione non compilata', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+
+
+  }
+
+
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione.
   //Viene passata come callback al componente <Button>Assegna turno</Button>
   const assegnaTurno = (anchor, open) => async (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-    setState({ ...state, [anchor]: open });
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI()
     let response; //risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
 
-
+    /**
+     * Chiediamo al backend di registrare l'assegnazione turno.
+     * In base alla risposta che riceviamo sapremo se l'assegnazione è andata a buon fine,
+     * oppure se è stata rigettata.
+     * In quest'ultimo caso ci verranno forniti dei messaggi informativi per l'utente riguardo a cosa è andato storto.
+     */
     response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,turno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
     props.onPostAssegnazione()
 
     //Verifico la risposta del server analizzando il codice di risposta http
-    if(response.status===202){
-      toast.success('Assegnazione creata con successo', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-      //alert('assegnazione creata con successo');
-    }else if (response.status === 400){
-      toast.error('Errore nei parametri di input!', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+    let responseStatusClass = Math.floor(response.status / 100)
+    switch(responseStatusClass){
 
-      //alert('Errore nei parametri');
-    } else if( response.status === 406 ){
+      // 200 family, success
+      case 2:
+        // Informa l'utente che l'assegnazione turno è stata registrata con successo
+        toast.success('Assegnazione creata con successo', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        if(forced === true){
+          let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
+          let bodyResponse = response.json()
+          console.log(bodyResponse)
+          let assegnazioneTurnoId = bodyResponse.turno
+          console.log(assegnazioneTurnoId)
+          let utente_id = 7
+          let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+          status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
+          if(status === 202){
+            toast.success('Giustificazione salvata', {
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
+          }else{
+            // TODO: Bisogna cancellare l'assegnazione turno inserita
+            toast.error('Errore nel salvataggio della giustificazione', {
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
+          }}
+          break;
+      // 400 family, malformed request
+      case 4:
+        if (response.status === 406) {
 
-      let responseBody = await response.json();
-      toast.error('Violazione dei vincoli.'+ responseBody.message, {
-        position: "top-center",
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+          /**
+           * L'assegnazione è fallita a causa di una violazione dei vincoli.
+           * Mostriamo a schermo quali vincoli sono stati violati.
+           */
+          let responseBody = await response.json();
+          /**
+           * FIXME: non sono riuscito a passare al toast il componente del ViolationLog usando la sintassi JSX
+           * perché non riuscivo a passargli i messaggi da stampare come props. Questo è un workaround che aggira il problema
+           * simulando il passaggio delle props invocando il componente direttamente come funzione. Se qualcuno riesce a sistemarlo
+           * passandolo direttamente nella forma <ViolationLog log={responseBody.messagges}/> sarebbe meglio.
+           */
+          toast.error(ViolationLog({log : responseBody.messagges}), {
+            position: "top-center",
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            autoClose: false,
+          });
+        } else {
+          // malformed request
+
+          toast.error('Errore nei parametri di input!', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+        }
+        break;
+      // 500 family, server error
+      case 5:
+      // TODO: Dovremmo gestire i casi in cui il server si inceppa, e informare l'utente riguardo
+      // le cause del problema e consigliargli di contattare un amministratore o un tecnico (noi!)
+      default:
+        // If you get here, something went really wrong. For real. :/
+        console.log("Unexpected response status: " + response.status);
+        break;
 
     }
 
-    setState({ ...state, [anchor]: open });
+    // chiudiamo il cassetto dell'assegnazione turno solo se l'assegnazione è andata a buon fine
+    setState({ ...state, [anchor]: (responseStatusClass === 2)? open : !open });
+    setForced(false)
+    setGiustificato(false)
+
 
   }
 
+  const handleChange = (e) => {
+    e.persist()
+    giustificazione = e.target.value;
+    console.log(giustificazione);
+  };
+
   function Giustifica() {
-    if (!giustificato)
         return (
           <MDBCard>
               <MDBCardBody>
-                <MDBCardTitle className="text-center">Motiva la forzatura</MDBCardTitle>
-                <Stack spacing={1}>
-                            <textarea
-                              type="text"
-                              defaultValue=""
-                              value={commentText}
-                              maxLength={300}
-                              placeholder="Inserisci la motivazione."
-                              onChange={onChangeText}>
-                             </textarea>
+                <MDBCardTitle className="text-center">Motiva la forzatura!</MDBCardTitle>
+                <MDBTextArea
+                             contrast id='textAreaGiustifica'
+                             rows={4}
+                             className="text"
+                             onChange={handleChange}
+                             required>
+
+                </MDBTextArea>
+                <li>Aggiungi la/le liberatoria/e :</li>
                   <FilesUpload/>
-                  <Button onClick={() => setGiustificato(true)}> Conferma </Button>
-                </Stack>
+                <Button title="Conferma" onClick={giustificaCompilata('bottom', false)}>
+                  Conferma
+                </Button>
               </MDBCardBody>
             </MDBCard>
-    )
-    return (
-      <MDBCard>
-        <MDBCardBody>
-         Giustificazione compilata.
-        </MDBCardBody>
-      </MDBCard>
-    )};
+    )}
 
 
 
@@ -207,13 +301,13 @@ export default function TemporaryDrawer(props) {
                 renderInput={(params) => <TextField {...params} label="Medici Reperibili" />}
               />
               <div>
-                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced)}}/>} label="Forza Vincoli non stringenti" />
+                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced); setGiustificato(false)}}/>} label="Forza Vincoli non stringenti" />
                 <InformationDialogs></InformationDialogs>
-                { (forced && <Giustifica  />) && ( <Giustifica  />|| !giustificato)}
+                { (forced && !giustificato && <Giustifica/>  ) }
               </div>
+              { (forced && giustificato && <MDBCard><MDBCardBody>Giustificazione compilata</MDBCardBody></MDBCard>)}
 
-
-              <Button variant="contained" size="small" onClick={assegnaTurno('bottom', false)} >
+              <Button variant="contained" size="small" disabled={forced && !giustificato} onClick={assegnaTurno('bottom', false)} >
                 Assegna turno
               </Button>
             </Stack>

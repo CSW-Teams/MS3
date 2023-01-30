@@ -15,6 +15,7 @@ import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.UserScheduleState;
 import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
 
 import lombok.Data;
 
@@ -60,133 +61,118 @@ public class ScheduleBuilder {
         }        
     }
 
-
-
     /** invoca la creazione automatica della pianificazione 
      * @throws UnableToBuildScheduleException
      * */
     public Schedule build() throws UnableToBuildScheduleException{
         Set<Utente> utentiGuardia;
+
+        // we need to clear violations and illegal state, if any
+        schedule.purify();
+
         for( AssegnazioneTurno at : this.schedule.getAssegnazioniTurno()){
             
             try {
-                // Prima pensiamo a riempire la guardia, che è la più importante
-                utentiGuardia = this.ricercaUtenti(at, at.getTurno().getNumUtentiGuardia(), null);
-                at.setUtentiDiGuardia(utentiGuardia);
-                for (Utente u : utentiGuardia){
+                
+                // Prima pensiamo a riempire le allocazioni, che sono le più importante
+                this.aggiungiUtenti(at,at.getTurno().getNumUtentiGuardia(),at.getUtentiDiGuardia());
+                for (Utente u : at.getUtentiDiGuardia()){
                     allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
                 }
-            } catch (NotEnoughFeasibleUsersException e) {
-                throw new UnableToBuildScheduleException("unable to select utenti di guardia", e);
-            }
 
-            try {
-                // Passo poi a riempire la reperibilità
-                at.setUtentiReperibili(this.ricercaUtenti(at, at.getTurno().getNumUtentiReperibilita(),utentiGuardia));
+                // Passo poi a riempire le riserve
+                this.aggiungiUtenti(at,at.getTurno().getNumUtentiGuardia(),at.getUtentiReperibili());
+
             } catch (NotEnoughFeasibleUsersException e) {
-                throw new UnableToBuildScheduleException("unable to select utenti di reperibilita", e);
+                
+                // non ci sono abbastanza allocati o riserve per questa assegnazione turno, loggiamo l'evento
+                // e rendiamo la pianificazione illegale, infine ritorniamo al chiamante
+                logger.log(Level.SEVERE, e.getMessage(), e);
+                schedule.taint(e);
+                return this.schedule;
             }
         }
 
         return this.schedule;
     }
 
-    /** seleziona gli utenti per una lista di utenti assegnati (guardia, reperibilità, ...) per una assegnazione di turno 
+    /** aggiunge gli utenti per una lista di utenti assegnati per una assegnazione di turno 
      * @throws NotEnoughFeasibleUsersException
      * */
-    private Set<Utente> ricercaUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> NotAllowedSet) throws NotEnoughFeasibleUsersException{
+    private void aggiungiUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> utentiDaPopolare) throws NotEnoughFeasibleUsersException{
         
-        List<Utente> selectedUsers = new ArrayList<>();
+        int selectedUsers = 0;
 
         //Randomizzo la scelta dell'utente dalla lista di tutti gli utenti
         List<UserScheduleState> allUserScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
         Collections.shuffle(allUserScheduleState);
 
         for (UserScheduleState userScheduleState : allUserScheduleState){
-            if (selectedUsers.size() == numUtenti){
+            if (selectedUsers == numUtenti){
                 break;
             }
-            //Se viene passato un set di utenti non ammessi (utenti di guardia) allora li esclude
-            if (NotAllowedSet!=null && NotAllowedSet.contains(userScheduleState.getUtente())) {
-                continue;
-            }
+
             ContestoVincolo contesto = new ContestoVincolo(userScheduleState,assegnazione);
             // Se l'utente rispetta tutti i vincoli possiamo includerlo nella lista desiderata
-            try {
-                this.verificaTuttiVincoli(contesto);
-                selectedUsers.add(userScheduleState.getUtente());
+            // TODO: parametrizzare la costruzione della schedulazione su forzare vincoli stringenti o meno
+            if (verificaTuttiVincoli(contesto, false)){
+                utentiDaPopolare.add(userScheduleState.getUtente());
                 userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
-            } catch (ViolatedConstraintException e) {
-                // logghiamo semplicemente l'evento e ignoriamo l'utente inammissibile
-                logger.log(Level.WARNING, e.getMessage(), e);
+                selectedUsers++;    
             }
         }
         
         // potrei aver finito senza aver trovato abbastanza utenti
-        if (selectedUsers.size() != numUtenti){
-            throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers.size());
+        if (selectedUsers != numUtenti){
+            throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers);
         }
         
-        return new HashSet<Utente>(selectedUsers);
     }
 
-    /** Applica tutti i vincoli al contesto specificato e ritorna l'AND tra i risultati
-     * di ciascuno di essi
-     */
-    private void verificaTuttiVincoli(ContestoVincolo contesto) throws ViolatedConstraintException{
-
-        for(Vincolo vincolo : this.allConstraints){
-            vincolo.verificaVincolo(contesto);
-        }
-    }
-
-    /**
-     * Questo metodo è invocato nel momento in cui è richiesta l'aggiunta di un assegnazione turno in modo forzato.
-     * Il metodo va quindi a verificare i soli vincoli che non possono essere violati.
+    /** Applica tutti i vincoli al contesto specificato.
+     * Se un vincolo viene violato, viene aggiunto al log delle violazioni della pianificazione.
+     * Se il vincolo violato è stringente, lo stato della pianificazione è impostato a illegale
+     * e la causa è impostata con la suddetta violazione, infine ritorna al chiamante senza controllare
+     * gli altri vincoli.
      * @param contesto
-     * @throws ViolatedConstraintException
+     * @param isForced se dobbiamo forzare i vincoli non stringenti
+     * @return True se non sono accadute violazioni oppure le uniche violazione accadute riguardano
+     * vincoli non stringenti e si vuole forzarli, false altrimenti
      */
-    private void verificaTuttiVincoliForced(ContestoVincolo contesto) throws ViolatedConstraintException{
+    private boolean verificaTuttiVincoli(ContestoVincolo contesto, boolean isForced){
 
         for(Vincolo vincolo : this.allConstraints){
-            if(!vincolo.isViolabile())
+            try {
                 vincolo.verificaVincolo(contesto);
+            } catch (ViolatedConstraintException e) {
+
+                schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
+                
+                // se il vincolo violato è stringente, la schedulazione è illegale
+                if (!vincolo.isViolabile() || (vincolo.isViolabile() && !isForced)){
+                    return false;
+                }
+
+            }
         }
+        return true;
     }
-
-
 
     /** Aggiunge un'assegnazione turno manualmente alla pianificazione.
      * L'assegnazione deve già essere compilata con la data e gli utenti.
-     * @throws IllegalAssegnazioneTurnoException
      */
-    public Schedule addAssegnazioneTurno(AssegnazioneTurno at, boolean forced) throws IllegalAssegnazioneTurnoException{
+    public Schedule addAssegnazioneTurno(AssegnazioneTurno at, boolean forced){
         
+        schedule.purify();
         for (Utente u : at.getUtenti()){
 
-            //verifico se è richiesta un aggiunta di assegnazione turno in modo forzata
-            if(!forced){
+            if (!verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at), forced)){
+                schedule.taint(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
 
-                //Se non è richiesta la forzatura allora si verificano tutti i vincoli
-                try {
-                    verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
-                    this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
-                } catch (ViolatedConstraintException e) {
-                    throw new IllegalAssegnazioneTurnoException(e);
-                }
-            }else{
-
-                //Se è richiesta la forzatura si verificano solo i vincoli non violabili
-                try {
-                    verificaTuttiVincoliForced(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at));
-                    this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
-                } catch (ViolatedConstraintException e) {
-                    throw new IllegalAssegnazioneTurnoException(e);
-                }
             }
-
+            this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
         }
-
+        
         this.schedule.getAssegnazioniTurno().add(at);
         return this.schedule;
     }

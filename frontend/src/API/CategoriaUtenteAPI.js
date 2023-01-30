@@ -61,7 +61,7 @@ export class CategoriaUtenteAPI {
     turnazione.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
     turnazione.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
 
-    console.log("turnazionI:")
+    console.log("turnazioni:")
     console.log(turnazione)
 
     const requestOptions = {
