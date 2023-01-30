@@ -42,6 +42,7 @@ export default function TemporaryDrawer(props) {
   const [giustificato, setGiustificato] = React.useState(false)
   let giustificazione = ''
 
+
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
     let userApi = new UtenteAPI();
@@ -100,47 +101,6 @@ export default function TemporaryDrawer(props) {
 
   }
 
-  const caricaGiustifica= (anchor, open) => async (event) => {
-    setGiustificato(true)
-    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-      return;
-    }
-    setState({ ...state, [anchor]: open });
-
-    let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
-
-    let utente_id = 7
-    let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-    status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id);
-
-    //await props.caricaGiustifica()
-
-    //Verifico la risposta del server analizzando il codice di risposta http
-    if(status===202){
-      toast.success('Assegnazione creata con successo', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }else if (status === 400 || status === 417){
-      toast.error('Errore nei parametri. Riprova con nuove date', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
-    setState({ ...state, [anchor]: open });
-  }
 
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione.
   //Viene passata come callback al componente <Button>Assegna turno</Button>
@@ -267,6 +227,8 @@ export default function TemporaryDrawer(props) {
 
     // chiudiamo il cassetto dell'assegnazione turno solo se l'assegnazione è andata a buon fine
     setState({ ...state, [anchor]: (responseStatusClass === 2)? open : !open });
+    setForced(false)
+    setGiustificato(false)
 
 
   }
