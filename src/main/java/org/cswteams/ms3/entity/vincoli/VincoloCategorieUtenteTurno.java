@@ -25,7 +25,7 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
         // Se sto considerando lo specializzando non prendo in considerazione categorie di tipo specializzazione,
         // Se sto considerando lo strutturato, non prendo in considerazione categorie di tipo turnazione
         int tipoCategoria = ucp.getCategoria().getTipo();
-        if((tipoCategoria == -1 && utente.getRuoloEnum() == RuoloEnum.SPECIALIZZANDO) || (tipoCategoria == -2 && utente.getRuoloEnum() == RuoloEnum.STRUTTURATO)){
+        if((tipoCategoria == 1 && utente.getRuoloEnum() == RuoloEnum.SPECIALIZZANDO) || (tipoCategoria == 2 && utente.getRuoloEnum() == RuoloEnum.STRUTTURATO)){
             return true;
         }
 
@@ -35,10 +35,10 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
             case 0:
                 daControllare = utente.getStato();
                 break;
-            case -1:
+            case 1:
                 daControllare = utente.getSpecializzazioni();
                 break;
-            case -2:
+            case 2:
                 daControllare = utente.getTurnazioni();
                 break;
         }

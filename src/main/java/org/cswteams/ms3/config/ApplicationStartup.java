@@ -142,13 +142,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
         Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE (INCLUSIVE)
-        Categoria cardiologia = new Categoria("CARDIOLOGIA", -1);
-        Categoria oncologia = new Categoria("ONCOLOGIA", -1);
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", 1);
+        Categoria oncologia = new Categoria("ONCOLOGIA", 1);
         //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
-        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", -2);
-        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", -2);
-        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", -2);
-        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", -2);
+        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", 2);
+        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", 2);
+        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", 2);
+        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", 2);
 
         categoriaDao.save(categoriaFerie);
         categoriaDao.save(categoriaOVER62);
