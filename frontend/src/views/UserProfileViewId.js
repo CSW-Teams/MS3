@@ -106,7 +106,7 @@ export default class UserProfileView extends React.Component{
                 })}
               </MDBTableBody>
               </MDBCardText>
-            </MDBCol>yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+            </MDBCol>
           </MDBRow>;
     }
 
