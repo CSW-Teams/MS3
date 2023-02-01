@@ -141,74 +141,117 @@ class ScheduleView extends React.Component{
      * @param {*} param0 
      */
     async commitChanges({ added, changed, deleted }) {
-      let { data} = this.state;
-      let appointmentChanged;
 
-      /**
-       * Il campo changed contiene l'id dell'assegnazione appena modificata e le modifiche apportate.
-       * Un esempio changed = {idAssegnazione: {utenti_guardia:[...], utenti_reperibili: [...]} 
-       * Poichè l'id dell'assegnazione è espresso come numero e non è referenziato da una stringa 
-       * sono costretto a scorrere tutte le assegnazioni turni per verificare quell'id a quale asseganzione turno corrisponde
-       */
-      for( let i=0; i < data.length ; i++){
-        if(changed[data[i].id])
-          appointmentChanged=data[i]
-      }
-      
       let assegnazioneTurnoApi = new AssegnazioneTurnoAPI();
 
-      let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id]);
-      let responseStatusClass = Math.floor(response.status / 100)
+      if(changed){
+        let { data} = this.state;
+        let appointmentChanged;
 
-      if(responseStatusClass==5){
-
-        toast.error('Errore nel server!', {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-      }
-
-      else if(responseStatusClass!= 2){
-
-        let responseBody = await response.json();
-
-        toast.error(ViolationLog({log : responseBody.messagges}), {
-          position: "top-center",
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          autoClose: false,
-        });
-
-      }else{
-
-
-        toast.success('Assegnazione creata con successo', {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
+        /**
+        * Il campo changed contiene l'id dell'assegnazione appena modificata e le modifiche apportate.
+        * Un esempio changed = {idAssegnazione: {utenti_guardia:[...], utenti_reperibili: [...]} 
+        * Poichè l'id dell'assegnazione è espresso come numero e non è referenziato da una stringa 
+        * sono costretto a scorrere tutte le assegnazioni turni per verificare quell'id a quale asseganzione turno corrisponde
+        */
+        for( let i=0; i < data.length ; i++){
+          if(changed[data[i].id])
+            appointmentChanged=data[i]
+        }
         
-        let turni = await assegnazioneTurnoApi.getGlobalTurn();
+        let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id]);
+        let responseStatusClass = Math.floor(response.status / 100)
 
-        this.setState({data:turni});
-        this.forceUpdate();
+        if(responseStatusClass==5){
+
+          toast.error('Errore nel server!', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+        }
+
+        else if(responseStatusClass!= 2){
+
+          let responseBody = await response.json();
+
+          toast.error(ViolationLog({log : responseBody.messagges}), {
+            position: "top-center",
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            autoClose: false,
+          });
+
+        }else{
+
+          toast.success('Assegnazione creata con successo', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+          
+          let turni = await assegnazioneTurnoApi.getGlobalTurn();
+
+          this.setState({data:turni});
+          this.forceUpdate();
+        }
+
+      } else if(deleted){
+        
+        let response = await assegnazioneTurnoApi.eliminaAssegnazioneTurno(deleted);
+        let responseStatusClass = Math.floor(response.status / 100);
+        
+        if(responseStatusClass!=2){
+
+          toast.error('Non è stato possibile eliminare l\'assegnazione selezionata!!', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+        }
+
+        else{
+
+          toast.success("Eliminazione avventa con successo", {
+            position: "top-center",
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            autoClose: false,
+          });
+
+          let turni = await assegnazioneTurnoApi.getGlobalTurn();
+
+          this.setState({data:turni});
+          this.forceUpdate();
+
+        }
+
+
       }
-      
+            
     }
 
     /**
@@ -356,6 +399,7 @@ class ScheduleView extends React.Component{
                   <AppointmentTooltip
                     showCloseButton
                     showOpenButton
+                    showDeleteButton
                     contentComponent={Content} //go to CustomContent.js
                   />
                   :

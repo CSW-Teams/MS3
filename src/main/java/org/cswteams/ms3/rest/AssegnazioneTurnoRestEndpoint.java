@@ -31,8 +31,6 @@ public class AssegnazioneTurnoRestEndpoint {
     @Autowired
     private IControllerScheduler controllerScheduler;
 
-    @Autowired
-    private TurnoDao turnoDao;
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> creaTurnoAssegnato(@RequestBody RegistraAssegnazioneTurnoDTO assegnazione) {
@@ -41,35 +39,23 @@ public class AssegnazioneTurnoRestEndpoint {
 
         if (assegnazione != null) {
 
-            // Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere
-            // presente nel databse
-            Turno turno = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(),
-                    assegnazione.getTipologiaTurno()).get(0);
-            if (turno == null)
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-            // Converto il dto in un entità
-            AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(
-                    LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(), assegnazione.getGiorno()),
-                    turno,
-                    MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
-                    MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia()));
-
             // Se l'utente chiede l'aggiunta forzata di un assegnazione viene fatto
             // controllo solo sui vincoli non violabili
-            schedule = controllerScheduler.aggiungiAssegnazioneTurno(assegnazioneTurno, assegnazione.isForced());
+            schedule = controllerScheduler.aggiungiAssegnazioneTurno(assegnazione, assegnazione.isForced());
 
-            // Se un vincolo è violato è comunicato all'utente.
-            if (schedule.isIllegal()) {
-                RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
-                risposta.getMessagges().add(schedule.getCauseIllegal().getMessage());
-                for (ViolatedConstraintLogEntry vclEntry : schedule.getViolatedConstraintLog()) {
-                    risposta.getMessagges().add(vclEntry.getViolation().getMessage());
+            if(schedule!=null){
+                // Se un vincolo è violato è comunicato all'utente.
+                if (schedule.isIllegal()) {
+                    RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
+                    risposta.getMessagges().add(schedule.getCauseIllegal().getMessage());
+                    for (ViolatedConstraintLogEntry vclEntry : schedule.getViolatedConstraintLog()) {
+                        risposta.getMessagges().add(vclEntry.getViolation().getMessage());
+                    }
+                    return new ResponseEntity<>(risposta, HttpStatus.NOT_ACCEPTABLE);
                 }
-                return new ResponseEntity<>(risposta, HttpStatus.NOT_ACCEPTABLE);
-            }
 
-            return new ResponseEntity<>(assegnazioneTurno, HttpStatus.ACCEPTED);
+                return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            }
 
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -118,6 +104,17 @@ public class AssegnazioneTurnoRestEndpoint {
 
 
         return new ResponseEntity<>(schedule, HttpStatus.ACCEPTED);
+    }
+
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/{idAssegnazione}")
+    public ResponseEntity<?> rimuoviAssegnazione(@PathVariable Long idAssegnazione)  {
+        if (idAssegnazione != null) {
+            if(controllerScheduler.rimuoviAssegnazioneTurno(idAssegnazione)){
+                return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
 

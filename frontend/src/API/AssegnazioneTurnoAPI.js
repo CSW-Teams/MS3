@@ -132,6 +132,20 @@ export  class AssegnazioneTurnoAPI {
 
 
 
+async eliminaAssegnazioneTurno(idDaEliminare) {
+ 
+  const requestOptions = {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  };
+
+  const response = await fetch('/api/assegnazioneturni/'+idDaEliminare,requestOptions); 
+  return response;
+
+}
+
+
+
     async getGlobalTurn() {
         const response = await fetch('/api/assegnazioneturni/');
         const body = await response.json();

@@ -37,7 +37,6 @@ public class Schedule {
     /** Log di messaggi corrispondenti a violazioni di vincoli.
      * Questa lista dovrebbe contenere al più un messaggio per ogni vincolo violato.
      */
-    
     @OneToMany(fetch = FetchType.EAGER,cascade = {CascadeType.ALL})
     List<ViolatedConstraintLogEntry> violatedConstraintLog = new ArrayList<>();
 

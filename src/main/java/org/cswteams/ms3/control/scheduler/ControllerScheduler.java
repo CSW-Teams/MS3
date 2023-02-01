@@ -4,14 +4,15 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 
-import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
+import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -119,6 +120,37 @@ public class ControllerScheduler implements IControllerScheduler{
 
         scheduleDao.flush();
         assegnazioneTurnoDao.delete(assegnazioneTurnoOld);
+    }
+
+    @Override
+    public boolean rimuoviAssegnazioneTurno(Long idAssegnazione) {
+        Optional<AssegnazioneTurno> assegnazioneTurno = assegnazioneTurnoDao.findById(idAssegnazione);
+        if(assegnazioneTurno.isEmpty())
+            return false;
+
+        this.rimuoviAssegnazioneTurno(assegnazioneTurno.get());
+        return true;
+    }
+
+    @Override
+    public Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) {
+        // Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere
+        // presente nel databse
+        Turno turno = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(),
+                assegnazione.getTipologiaTurno()).get(0);
+
+        if (turno == null)
+            return null;
+
+        // Converto il dto in un entità
+        AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(
+                LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(), assegnazione.getGiorno()),
+                turno,
+                MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
+                MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia()));
+
+        return this.aggiungiAssegnazioneTurno(assegnazioneTurno,forced);
+
     }
 
     /**
