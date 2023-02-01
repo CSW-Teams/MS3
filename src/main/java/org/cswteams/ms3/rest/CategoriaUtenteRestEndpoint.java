@@ -3,11 +3,9 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.categorie.IControllerCategorie;
 import org.cswteams.ms3.control.categorieUtente.IControllerCategorieUtente;
-import org.cswteams.ms3.dao.CategorieDao;
 import org.cswteams.ms3.dto.CategoriaDTO;
 import org.cswteams.ms3.dto.CategoriaUtenteDTO;
-import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.entity.Categoria;
+import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -77,6 +75,19 @@ public class CategoriaUtenteRestEndpoint {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
             return new ResponseEntity<>( c, HttpStatus.FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/rotazione_id={idRotazione}/utente_id={idUtente}")
+    public ResponseEntity<?> deleteCategoriaUtente(@PathVariable Long idRotazione, @PathVariable Long idUtente) throws ParseException {
+        if (idRotazione != null && idUtente != null) {
+            try {
+                controllerCategorieUtente.cancellaRotazione(idRotazione, idUtente);
+                return new ResponseEntity<>(HttpStatus.OK);
+            } catch (DatabaseException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

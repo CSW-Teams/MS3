@@ -193,7 +193,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", RuoloEnum.SPECIALIZZANDO);
         u2.getTurnazioni().add(repartoCardiologia);
         Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", RuoloEnum.SPECIALIZZANDO);
-        u3.getTurnazioni().add(repartoCardiologia);
+        //u3.getTurnazioni().add(repartoCardiologia);
         Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
         u4.getSpecializzazioni().add(cardiologo);
         Utente u5 = new Utente("Daniele","La Prova", "DNLLPRV******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
@@ -304,8 +304,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,false);
         t1.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
-                new UserCategoryPolicy(categoriaFerie, t1,  UserCategoryPolicyValue.EXCLUDE),
-                new UserCategoryPolicy(reparto_cardiologia, t1, UserCategoryPolicyValue.INCLUDE)
+                new UserCategoryPolicy(categoriaFerie, t1,  UserCategoryPolicyValue.EXCLUDE)
         ));
         t1.setNumUtentiGuardia(2);
         t1.setNumUtentiReperibilita(2);

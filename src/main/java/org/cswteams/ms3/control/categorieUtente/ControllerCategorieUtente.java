@@ -8,10 +8,12 @@ import org.cswteams.ms3.dto.CategoriaUtenteDTO;
 import org.cswteams.ms3.entity.Categoria;
 import org.cswteams.ms3.entity.CategoriaUtente;
 import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -62,6 +64,24 @@ public class ControllerCategorieUtente implements IControllerCategorieUtente {
         utenteDao.saveAndFlush(u.get());
 
         return  categoriaUtente;
+    }
+
+    @Override
+    public void cancellaRotazione(Long idCategoria, Long idUtente) throws DatabaseException {
+        Optional<Utente> utente = utenteDao.findById(idUtente);
+        if(utente.isPresent()){
+            List<CategoriaUtente> rotazioni = utente.get().getTurnazioni();
+            for(int i = 0; i < rotazioni.size(); i++){
+                if(rotazioni.get(i).getId().equals(idCategoria)){
+                    utente.get().getTurnazioni().remove(i);
+                }
+            }
+            utenteDao.save(utente.get());
+        }else{
+            throw new DatabaseException("Utente non trovato");
+        }
+
+
     }
 
 }
