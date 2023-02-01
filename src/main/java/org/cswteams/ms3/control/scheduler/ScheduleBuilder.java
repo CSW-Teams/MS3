@@ -172,8 +172,9 @@ public class ScheduleBuilder {
             }
             this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
         }
-        
-        this.schedule.getAssegnazioniTurno().add(at);
+        if(!schedule.isIllegal())
+            this.schedule.getAssegnazioniTurno().add(at);
+
         return this.schedule;
     }
 }

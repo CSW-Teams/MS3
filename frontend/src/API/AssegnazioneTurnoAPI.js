@@ -110,6 +110,28 @@ export  class AssegnazioneTurnoAPI {
   }
 
 
+  async aggiornaAssegnazioneTurno(appointmentChanged,changes) {
+
+    let assegnazioneModificata = new Object();
+    assegnazioneModificata.idAssegnazione = appointmentChanged.id;
+    assegnazioneModificata.utenti_guardia = changes.utenti_guardia
+    assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili
+    
+    const requestOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(assegnazioneModificata)
+    };
+
+    console.log(assegnazioneModificata)
+
+    const response = await fetch('/api/assegnazioneturni/',requestOptions); 
+    return response;
+
+}
+
+
+
     async getGlobalTurn() {
         const response = await fetch('/api/assegnazioneturni/');
         const body = await response.json();

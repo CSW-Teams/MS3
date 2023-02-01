@@ -7,6 +7,7 @@ import java.util.List;
 import javax.persistence.*;
 
 import lombok.Data;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Rappresenta una pianificazione dei turni assegnati in un intervallo di date */
 @Entity
@@ -30,13 +31,14 @@ public class Schedule {
     private long endDateEpochDay;
 
     /** Assegnazioni dei turni previste dalla pianificazione */
-    @OneToMany(cascade = {CascadeType.ALL})
+    @OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<AssegnazioneTurno> assegnazioniTurno;
 
     /** Log di messaggi corrispondenti a violazioni di vincoli.
      * Questa lista dovrebbe contenere al più un messaggio per ogni vincolo violato.
      */
-    @OneToMany(cascade = {CascadeType.ALL})
+    
+    @OneToMany(fetch = FetchType.EAGER,cascade = {CascadeType.ALL})
     List<ViolatedConstraintLogEntry> violatedConstraintLog = new ArrayList<>();
 
     /** True se questa Schedule è malformata, ad esempio perché non

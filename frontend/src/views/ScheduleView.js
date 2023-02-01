@@ -7,9 +7,8 @@ import { ServizioAPI } from '../API/ServizioAPI';
 import Stack from '@mui/material/Stack';
 import {AppointmentContent, Content} from "../components/common/CustomAppointmentComponents.js"
 import Collapse from '@mui/material/Collapse';
-
 import {
-  Button, Grid,
+  Button,
   Paper,
 } from "@mui/material";
 import {
@@ -24,14 +23,39 @@ import {
   Toolbar,
   ViewSwitcher,
   WeekView, CurrentTimeIndicator,
+  AppointmentForm,
 } from '@devexpress/dx-react-scheduler-material-ui';
+import { ToastContainer, toast } from 'react-toastify';
 
-import {blue} from "@mui/material/colors";
+
+import {
+   EditingState,IntegratedEditing
+} from '@devexpress/dx-react-scheduler';
 import { ServiceFilterSelectorButton } from '../components/common/ServiceFilterSelectorButton';
 import { UtenteAPI } from '../API/UtenteAPI';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { HolidaysAPI } from '../API/HolidaysAPI';
+import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
+import { BasicLayout, Nullcomponent, Overlay } from '../components/common/AssegnazioneTurnoModificaComponent';
+
+
+/**
+ * Componente utilizzato per visualizzare i messaggi di errori della violazione dei vincoli 
+ * quando si modifica un assegnazione turno
+ * @param {} props 
+ * @returns 
+ */
+function ViolationLog(props){
+
+  return (
+    <div>
+        <ul>
+          {props.log.map((msg) => <li> {msg} </li>)}
+        </ul>
+    </div>
+  );
+}
 
 
 
@@ -102,11 +126,89 @@ class ScheduleView extends React.Component{
             // add more filters here ...
           ];
           this.changeMainResource = this.changeMainResource.bind(this);
+          this.componentDidMount= this.componentDidMount.bind(this);
           this.updateFilterCriteria = this.updateFilterCriteria.bind(this);
+          this.commitChanges = this.commitChanges.bind(this);
     }
 
     changeMainResource(mainResourceName) {
       this.setState({ mainResourceName });
+    }
+
+    /**
+     * Questa funzione verrà invocata nel momento in cui il pianificatore effettua una modifica su una assegnazione turno.
+     * Le modifiche effettuate su una assegnazione turno già esistente verranno inviate al backend.
+     * @param {*} param0 
+     */
+    async commitChanges({ added, changed, deleted }) {
+      let { data} = this.state;
+      let appointmentChanged;
+
+      /**
+       * Il campo changed contiene l'id dell'assegnazione appena modificata e le modifiche apportate.
+       * Un esempio changed = {idAssegnazione: {utenti_guardia:[...], utenti_reperibili: [...]} 
+       * Poichè l'id dell'assegnazione è espresso come numero e non è referenziato da una stringa 
+       * sono costretto a scorrere tutte le assegnazioni turni per verificare quell'id a quale asseganzione turno corrisponde
+       */
+      for( let i=0; i < data.length ; i++){
+        if(changed[data[i].id])
+          appointmentChanged=data[i]
+      }
+      
+      let assegnazioneTurnoApi = new AssegnazioneTurnoAPI();
+
+      let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id]);
+      let responseStatusClass = Math.floor(response.status / 100)
+
+      if(responseStatusClass==5){
+
+        toast.error('Errore nel server!', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+      }
+
+      else if(responseStatusClass!= 2){
+
+        let responseBody = await response.json();
+
+        toast.error(ViolationLog({log : responseBody.messagges}), {
+          position: "top-center",
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          autoClose: false,
+        });
+
+      }else{
+
+
+        toast.success('Assegnazione creata con successo', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        
+        let turni = await assegnazioneTurnoApi.getGlobalTurn();
+
+        this.setState({data:turni});
+        this.forceUpdate();
+      }
+      
     }
 
     /**
@@ -149,7 +251,7 @@ class ScheduleView extends React.Component{
       }
 
 
-    render(){
+    render(view){
 
         // add shifts to the schedulables to display
         let { data, resources} = this.state;
@@ -164,7 +266,7 @@ class ScheduleView extends React.Component{
 
         // add holidays to the schedulables to display
         data.push(...this.state.holidays);
-
+        console.log(view)
         return (
           <React.Fragment>
             <Paper>
@@ -231,6 +333,8 @@ class ScheduleView extends React.Component{
                 />
                 <MonthView displayName="Mensile" />
                 <Toolbar />
+                <EditingState onCommitChanges={this.commitChanges}/>
+                <IntegratedEditing/>
                 <Appointments appointmentContentComponent={AppointmentContent} />
                 <AllDayPanel/>
                 <Resources
@@ -245,18 +349,55 @@ class ScheduleView extends React.Component{
                   );
                 }}/>
                 <ViewSwitcher />
-                <AppointmentTooltip
-                  showCloseButton
-                  contentComponent={Content} //go to CustomContent.js
-                />
+
+                
+                {view=="global"? 
+                  //Visualizzo il bottone per modificare un assegnazione solo se sono sulla schermata globale
+                  <AppointmentTooltip
+                    showCloseButton
+                    showOpenButton
+                    contentComponent={Content} //go to CustomContent.js
+                  />
+                  :
+                  //Se sono sulla schermata "singola" non visualizzo il bottone per modificare l'assegnazione turno
+                  <AppointmentTooltip
+                    showCloseButton
+                    contentComponent={Content} //go to CustomContent.js
+                  />
+                }
+
                 <CurrentTimeIndicator
                   shadePreviousAppointments={true}
                   shadePreviousCells={true}
                   updateInterval={60000}
                 />
+                
+                <AppointmentForm  
+                  overlayComponent = {Overlay}
+                  textEditorComponent={Nullcomponent}
+                  labelComponent={Nullcomponent}
+                  booleanEditorComponent={Nullcomponent}
+                  dateEditorComponent ={Nullcomponent}
+                  basicLayoutComponent={BasicLayout}                   
+                  />
+              
+
               </Scheduler>
+              <ToastContainer
+                  position="top-center"
+                  autoClose={5000}
+                  hideProgressBar={true}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  theme="light"
+                />
             </Paper>
           </React.Fragment>
+          
         );
 
     }

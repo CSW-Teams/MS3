@@ -6,6 +6,7 @@ import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
@@ -90,6 +91,33 @@ public class AssegnazioneTurnoRestEndpoint {
     public ResponseEntity<?> leggiTurniAssegnati() throws ParseException {
         Set<AssegnazioneTurnoDTO> tuttiITurni = controllerAssegnazioneTurni.leggiTurniAssegnati();
         return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
+    }
+
+    /**
+     * Permette la modifica di un assegnazione turno già esistente.
+     * @param modificaAssegnazioneTurnoDTO
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.PUT)
+    public ResponseEntity<?> modificaAssegnazioneTurno(@RequestBody ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO)  {
+
+        //Chiedo al controller di modificare e salvare nel database l'assegnazione turno modificata
+        Schedule schedule= controllerScheduler.modificaAssegnazioneTurno(modificaAssegnazioneTurnoDTO);
+
+
+        // Se la modifica dell'assegnazione turno comporta una violazione dei vincoli, la modifica non va a buon fine
+        if (schedule.isIllegal()) {
+            RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
+            risposta.getMessagges().add(schedule.getCauseIllegal().getMessage());
+            for (ViolatedConstraintLogEntry vclEntry : schedule.getViolatedConstraintLog()) {
+                risposta.getMessagges().add(vclEntry.getViolation().getMessage());
+            }
+
+            return new ResponseEntity<>(risposta, HttpStatus.NOT_ACCEPTABLE);
+        }
+
+
+        return new ResponseEntity<>(schedule, HttpStatus.ACCEPTED);
     }
 
 
