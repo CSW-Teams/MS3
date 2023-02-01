@@ -90,7 +90,6 @@ public class AssegnazioneTurnoRestEndpoint {
         //Chiedo al controller di modificare e salvare nel database l'assegnazione turno modificata
         Schedule schedule= controllerScheduler.modificaAssegnazioneTurno(modificaAssegnazioneTurnoDTO);
 
-
         // Se la modifica dell'assegnazione turno comporta una violazione dei vincoli, la modifica non va a buon fine
         if (schedule.isIllegal()) {
             RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();

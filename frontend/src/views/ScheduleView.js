@@ -41,10 +41,10 @@ import { BasicLayout, Nullcomponent, Overlay } from '../components/common/Assegn
 
 
 /**
- * Componente utilizzato per visualizzare i messaggi di errori della violazione dei vincoli 
+ * Componente utilizzato per visualizzare i messaggi di errori della violazione dei vincoli
  * quando si modifica un assegnazione turno
- * @param {} props 
- * @returns 
+ * @param {} props
+ * @returns
  */
 function ViolationLog(props){
 
@@ -138,7 +138,7 @@ class ScheduleView extends React.Component{
     /**
      * Questa funzione verrà invocata nel momento in cui il pianificatore effettua una modifica su una assegnazione turno.
      * Le modifiche effettuate su una assegnazione turno già esistente verranno inviate al backend.
-     * @param {*} param0 
+     * @param {*} param0
      */
     async commitChanges({ added, changed, deleted }) {
 
@@ -150,15 +150,15 @@ class ScheduleView extends React.Component{
 
         /**
         * Il campo changed contiene l'id dell'assegnazione appena modificata e le modifiche apportate.
-        * Un esempio changed = {idAssegnazione: {utenti_guardia:[...], utenti_reperibili: [...]} 
-        * Poichè l'id dell'assegnazione è espresso come numero e non è referenziato da una stringa 
+        * Un esempio changed = {idAssegnazione: {utenti_guardia:[...], utenti_reperibili: [...]}
+        * Poichè l'id dell'assegnazione è espresso come numero e non è referenziato da una stringa
         * sono costretto a scorrere tutte le assegnazioni turni per verificare quell'id a quale asseganzione turno corrisponde
         */
         for( let i=0; i < data.length ; i++){
           if(changed[data[i].id])
             appointmentChanged=data[i]
         }
-        
+
         let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id]);
         let responseStatusClass = Math.floor(response.status / 100)
 
@@ -203,7 +203,7 @@ class ScheduleView extends React.Component{
             progress: undefined,
             theme: "colored",
           });
-          
+
           let turni = await assegnazioneTurnoApi.getGlobalTurn();
 
           this.setState({data:turni});
@@ -211,10 +211,10 @@ class ScheduleView extends React.Component{
         }
 
       } else if(deleted){
-        
+
         let response = await assegnazioneTurnoApi.eliminaAssegnazioneTurno(deleted);
         let responseStatusClass = Math.floor(response.status / 100);
-        
+
         if(responseStatusClass!=2){
 
           toast.error('Non è stato possibile eliminare l\'assegnazione selezionata!!', {
@@ -231,7 +231,7 @@ class ScheduleView extends React.Component{
 
         else{
 
-          toast.success("Eliminazione avventa con successo", {
+          toast.success("Eliminazione avvenuta con successo", {
             position: "top-center",
             hideProgressBar: false,
             closeOnClick: true,
@@ -251,7 +251,7 @@ class ScheduleView extends React.Component{
 
 
       }
-            
+
     }
 
     /**
@@ -393,8 +393,8 @@ class ScheduleView extends React.Component{
                 }}/>
                 <ViewSwitcher />
 
-                
-                {view=="global"? 
+
+                {view=="global"?
                   //Visualizzo il bottone per modificare un assegnazione solo se sono sulla schermata globale
                   <AppointmentTooltip
                     showCloseButton
@@ -415,16 +415,16 @@ class ScheduleView extends React.Component{
                   shadePreviousCells={true}
                   updateInterval={60000}
                 />
-                
-                <AppointmentForm  
+
+                <AppointmentForm
                   overlayComponent = {Overlay}
                   textEditorComponent={Nullcomponent}
                   labelComponent={Nullcomponent}
                   booleanEditorComponent={Nullcomponent}
                   dateEditorComponent ={Nullcomponent}
-                  basicLayoutComponent={BasicLayout}                   
+                  basicLayoutComponent={BasicLayout}
                   />
-              
+
 
               </Scheduler>
               <ToastContainer
@@ -441,7 +441,7 @@ class ScheduleView extends React.Component{
                 />
             </Paper>
           </React.Fragment>
-          
+
         );
 
     }

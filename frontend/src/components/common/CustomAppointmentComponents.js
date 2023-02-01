@@ -10,6 +10,7 @@ import PropTypes from "prop-types";
 import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 import { UtenteAPI } from "../../API/UtenteAPI";
+import Button from "@mui/material/Button";
 
 // AppointmentContent di SingleScheduleView
 export const AppointmentSingleContent = ({
@@ -259,7 +260,7 @@ export class AppointmentContent extends React.Component{
               {this.state.utenti_allocati.map((user) => <li> {user.cognome} </li>) }
             </ul>
             </div>
-            
+
             {this.state.data.mansione === "GUARDIA" ? (
               <div style={{ display: "inline-block" }}>
                 Reperibili:
