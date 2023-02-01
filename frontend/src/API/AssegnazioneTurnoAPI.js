@@ -110,12 +110,13 @@ export  class AssegnazioneTurnoAPI {
   }
 
 
-  async aggiornaAssegnazioneTurno(appointmentChanged,changes) {
+  async aggiornaAssegnazioneTurno(appointmentChanged,changes,idLoggato) {
 
     let assegnazioneModificata = new Object();
     assegnazioneModificata.idAssegnazione = appointmentChanged.id;
     assegnazioneModificata.utenti_guardia = changes.utenti_guardia
     assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili
+    assegnazioneModificata.utenteModificatoreId = idLoggato;
     
     const requestOptions = {
       method: 'PUT',
@@ -127,6 +128,36 @@ export  class AssegnazioneTurnoAPI {
 
     const response = await fetch('/api/assegnazioneturni/',requestOptions); 
     return response;
+
+}
+
+async richiediRinunciaTurno(utenteCambio,assegnazione,idLoggato) {
+
+
+  for(let i =0; i<assegnazione.utenti_guardia.length; i++){
+    if(assegnazione.utenti_guardia[i] == idLoggato)
+      assegnazione.utenti_guardia[i] = utenteCambio.id; 
+  }
+
+  for(let i =0; i<assegnazione.utenti_reperibili.length; i++){
+    if(assegnazione.utenti_reperibili[i] == idLoggato)
+    assegnazione.utenti_reperibili[i] = utenteCambio.id; 
+  }
+
+  let assegnazioneModificata = new Object();
+  assegnazioneModificata.idAssegnazione = assegnazione.id;
+  assegnazioneModificata.utenti_guardia = assegnazione.utenti_guardia
+  assegnazioneModificata.utenti_reperibili = assegnazione.utenti_reperibili
+  assegnazioneModificata.utenteModificatoreId = idLoggato;
+  
+  const requestOptions = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(assegnazioneModificata)
+  };
+
+  const response = await fetch('/api/assegnazioneturni/',requestOptions); 
+  return response;
 
 }
 

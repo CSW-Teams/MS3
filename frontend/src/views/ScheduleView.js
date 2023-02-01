@@ -37,7 +37,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { HolidaysAPI } from '../API/HolidaysAPI';
 import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
-import { BasicLayout, Nullcomponent, Overlay } from '../components/common/AssegnazioneTurnoModificaComponent';
+import { BasicLayout, CommandLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../components/common/AssegnazioneTurnoModificaComponent';
 
 
 /**
@@ -159,7 +159,7 @@ class ScheduleView extends React.Component{
             appointmentChanged=data[i]
         }
         
-        let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id]);
+        let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],1);
         let responseStatusClass = Math.floor(response.status / 100)
 
         if(responseStatusClass==5){
@@ -395,7 +395,7 @@ class ScheduleView extends React.Component{
 
                 
                 {view=="global"? 
-                  //Visualizzo il bottone per modificare un assegnazione solo se sono sulla schermata globale
+                  //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
                   <AppointmentTooltip
                     showCloseButton
                     showOpenButton
@@ -403,9 +403,10 @@ class ScheduleView extends React.Component{
                     contentComponent={Content} //go to CustomContent.js
                   />
                   :
-                  //Se sono sulla schermata "singola" non visualizzo il bottone per modificare l'assegnazione turno
+                  //Se sono sulla schermata "singola" non visualizzo il bottone per eliminare l'assegnazione turno
                   <AppointmentTooltip
                     showCloseButton
+                    showOpenButton
                     contentComponent={Content} //go to CustomContent.js
                   />
                 }
@@ -416,14 +417,28 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
                 
-                <AppointmentForm  
-                  overlayComponent = {Overlay}
-                  textEditorComponent={Nullcomponent}
-                  labelComponent={Nullcomponent}
-                  booleanEditorComponent={Nullcomponent}
-                  dateEditorComponent ={Nullcomponent}
-                  basicLayoutComponent={BasicLayout}                   
+                {view=="global"? 
+                  <AppointmentForm  
+                    overlayComponent = {Overlay}
+                    textEditorComponent={Nullcomponent}
+                    labelComponent={Nullcomponent}
+                    booleanEditorComponent={Nullcomponent}
+                    dateEditorComponent ={Nullcomponent}
+                    basicLayoutComponent={BasicLayout} 
                   />
+                  :
+                  <AppointmentForm  
+                    overlayComponent = {OverlaySingle}
+                    textEditorComponent={Nullcomponent}
+                    labelComponent={Nullcomponent}
+                    booleanEditorComponent={Nullcomponent}
+                    dateEditorComponent ={Nullcomponent}
+                    basicLayoutComponent={SingleLayout} 
+                    commandLayoutComponent={CommandLayout}
+                    readOnly          
+                />
+                }
+               
               
 
               </Scheduler>
