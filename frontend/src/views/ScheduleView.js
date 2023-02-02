@@ -37,7 +37,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { HolidaysAPI } from '../API/HolidaysAPI';
 import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
-import { BasicLayout, CommandLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../components/common/AssegnazioneTurnoModificaComponent';
+import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../components/common/AssegnazioneTurnoModificaComponent';
 
 
 /**
@@ -135,6 +135,7 @@ class ScheduleView extends React.Component{
       this.setState({ mainResourceName });
     }
 
+    
     /**
      * Questa funzione verrà invocata nel momento in cui il pianificatore effettua una modifica su una assegnazione turno.
      * Le modifiche effettuate su una assegnazione turno già esistente verranno inviate al backend.
@@ -267,11 +268,13 @@ class ScheduleView extends React.Component{
       this.forceUpdate();
     }
 
+    
     async componentDidMount(turni, utenti){
 
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UtenteAPI().getAllUsersInfo();
       let allHolidays = await new HolidaysAPI().getHolidays();
+
 
 
       this.setState(
@@ -433,8 +436,7 @@ class ScheduleView extends React.Component{
                     labelComponent={Nullcomponent}
                     booleanEditorComponent={Nullcomponent}
                     dateEditorComponent ={Nullcomponent}
-                    basicLayoutComponent={SingleLayout}
-                    commandLayoutComponent={CommandLayout}
+                    basicLayoutComponent={SingleLayout.bind(this)}
                     readOnly
                 />
                 }
