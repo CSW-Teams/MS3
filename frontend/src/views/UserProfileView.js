@@ -14,18 +14,19 @@ import {
   MDBCardTitle,
 } from "mdb-react-ui-kit";
 import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
-import {Button} from "@material-ui/core";
 import AggiungiCategoriaStato
   from "../components/common/BottomViewAggiungiCategoriaStat";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AggiungiCategoria
   from "../components/common/BottomViewAggiungiTurnazione";
+import {toast} from "react-toastify";
 
 export default class UserProfileView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      idUser : 1,
       nome: "",
       cognome: "",
       ruolo: "",
@@ -45,6 +46,7 @@ export default class UserProfileView extends React.Component{
     let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
     let turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(id));
     this.setState({
+      idUser : id,
       nome: utente.nome,
       cognome: utente.cognome,
       ruolo: utente.ruoloEnum,
@@ -54,6 +56,72 @@ export default class UserProfileView extends React.Component{
       specializzazioni_utente : specializzazioni_utente,
       turnazioni_utente:turnazioni_utente,
     })
+  }
+
+  async handleDeleteRotazioneLoggedUser(idRotazione, key) {
+    console.log(idRotazione + key)
+    let categoriaUtenteApi = new CategoriaUtenteAPI();
+    let responseStatus;
+    responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione,  this.state.idUser);
+    console.log(responseStatus)
+
+    if (responseStatus === 200) {
+      toast.success('Rotazione cancellata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      this.componentDidMount()
+    } else if (responseStatus === 400) {
+      toast.error('Errore nella cancellazione', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+  }
+
+  async handlerDeleteCategoriaStatoLoggedUser(idRotazione, key) {
+    console.log(idRotazione + key )
+    let categoriaUtenteApi = new CategoriaUtenteAPI();
+    let responseStatus;
+    responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.idUser);
+    console.log(responseStatus)
+
+    if (responseStatus === 200) {
+      toast.success('Rotazione cancellata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      this.componentDidMount()
+    } else if (responseStatus === 400) {
+      toast.error('Errore nella cancellazione', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
   }
 
   render() {
@@ -82,7 +150,7 @@ export default class UserProfileView extends React.Component{
                         <td>{data.categoria}</td>
                         <td>{data.inizio}</td>
                         <td>{data.fine}</td>
-                        <td><IconButton aria-label="delete" onClick={() => this.handleDeleteRotazione(data.categoriaUtenteId, key)}>
+                        <td><IconButton aria-label="delete" onClick={() => this.handleDeleteRotazioneLoggedUser(data.categoriaUtenteId, key)}>
                           <DeleteIcon />
                         </IconButton></td>
                       </tr>
@@ -117,7 +185,7 @@ export default class UserProfileView extends React.Component{
                     <td>{data.categoria}</td>
                     <td>{data.inizio}</td>
                     <td>{data.fine}</td>
-                    <td><IconButton aria-label="delete" onClick={() => this.handlerDeleteCategoriaStato(data.categoriaUtenteId, key)}>
+                    <td><IconButton aria-label="delete" onClick={() => this.handlerDeleteCategoriaStatoLoggedUser(data.categoriaUtenteId, key)}>
                       <DeleteIcon />
                     </IconButton></td>
                   </tr>

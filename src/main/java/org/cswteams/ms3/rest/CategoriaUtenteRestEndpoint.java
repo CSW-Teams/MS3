@@ -92,6 +92,19 @@ public class CategoriaUtenteRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @RequestMapping(method = RequestMethod.DELETE, path = "/stato_id={idStato}/utente_id={idUtente}")
+    public ResponseEntity<?> deleteStatoUtente(@PathVariable Long idStato, @PathVariable Long idUtente) throws ParseException {
+        if (idStato != null && idUtente != null) {
+            try {
+                controllerCategorieUtente.cancellaStato(idStato, idUtente);
+                return new ResponseEntity<>(HttpStatus.OK);
+            } catch (DatabaseException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
     @RequestMapping(method = RequestMethod.POST, path = "/turnazioni/utente_id={idUtente}")
     public ResponseEntity<?> aggiungiTurnazione(@RequestBody(required = true) CategoriaUtenteDTO categoriaUtenteDTO, @PathVariable Long idUtente) throws Exception {
         if (categoriaUtenteDTO != null) {

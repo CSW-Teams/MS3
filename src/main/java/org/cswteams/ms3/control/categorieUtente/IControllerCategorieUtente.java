@@ -20,4 +20,7 @@ public interface IControllerCategorieUtente {
     CategoriaUtente aggiungiStatoUtente(CategoriaUtenteDTO c, Long utenteID) throws Exception;
 
     void cancellaRotazione(Long idRotazione, Long idUtente) throws DatabaseException;
+
+    void cancellaStato(Long idRotazione, Long idUtente) throws DatabaseException;
+
 }
