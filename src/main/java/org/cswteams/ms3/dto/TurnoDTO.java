@@ -27,9 +27,15 @@ public class TurnoDTO {
 
     private long id;
 
+    private boolean reperibilitaAttiva;
+
+    private int numUtentiGuardia;
+
+    private int numUtentiReperibilita;
+
     public TurnoDTO(){}
 
-    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, MansioneEnum mansione, boolean giornoSuccessivo){
+    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, MansioneEnum mansione, boolean giornoSuccessivo, boolean reperibilitaAttiva, int numUtentiGuardia, int numUtentiReperibilita){
         this.oraFine = fine;
         this.oraInizio = inizio;
         this.giornoSuccessivo = giornoSuccessivo;
@@ -37,6 +43,20 @@ public class TurnoDTO {
         this.mansione = mansione;
         this.tipologiaTurno = tipologiaTurno;
         this.id = id;
+        this.reperibilitaAttiva = reperibilitaAttiva;
+        this.numUtentiGuardia = numUtentiGuardia;
+        this.numUtentiReperibilita = numUtentiReperibilita;
+    }
+
+    public TurnoDTO(long id,TipologiaTurno tipologiaTurno, LocalTime inizio, LocalTime fine, ServizioDTO servizio, MansioneEnum mansione, boolean giornoSuccessivo, boolean reperibilitaAttiva){
+        this.oraFine = fine;
+        this.oraInizio = inizio;
+        this.giornoSuccessivo = giornoSuccessivo;
+        this.servizio = servizio;
+        this.mansione = mansione;
+        this.tipologiaTurno = tipologiaTurno;
+        this.id = id;
+        this.reperibilitaAttiva = reperibilitaAttiva;
     }
 
     public TipologiaTurno getTipologiaTurno() {

@@ -14,13 +14,13 @@ import java.util.Set;
 public class MappaTurni {
 
     public static Turno turnoDTOToEntity(TurnoDTO dto) throws TurnoException {
-        Turno turno = new Turno(dto.getOraInizio(),dto.getOraFine(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getMansione(), dto.getTipologiaTurno(), dto.isGiornoSuccessivo());
+        Turno turno = new Turno(dto.getOraInizio(),dto.getOraFine(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getMansione(), dto.getTipologiaTurno(), dto.getNumUtentiGuardia(), dto.getNumUtentiReperibilita());
         turno.setCategorieVietate(dto.getCategorieVietate());
         return turno;
     }
 
     public static TurnoDTO turnoEntityToDTO(Turno entity){
-        TurnoDTO dto = new TurnoDTO(entity.getId(), entity.getTipologiaTurno(),entity.getOraInizio(), entity.getOraFine(), MappaServizio.servizioEntitytoDTO(entity.getServizio()), entity.getMansione(), entity.isGiornoSuccessivo());
+        TurnoDTO dto = new TurnoDTO(entity.getId(), entity.getTipologiaTurno(),entity.getOraInizio(), entity.getOraFine(), MappaServizio.servizioEntitytoDTO(entity.getServizio()), entity.getMansione(), entity.isGiornoSuccessivo(), entity.isReperibilitaAttiva());
         dto.setCategorieVietate(entity.getCategorieVietate());
         return dto;
     }
