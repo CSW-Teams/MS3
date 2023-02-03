@@ -93,7 +93,7 @@ export default class UserProfileView extends React.Component{
     console.log(idRotazione + key)
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.props.match.params.idUser);
+    responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.props.match.params.idUser );
     console.log(responseStatus)
 
     if (responseStatus === 200) {
