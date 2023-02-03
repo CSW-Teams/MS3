@@ -102,4 +102,20 @@ public class ControllerCategorieUtente implements IControllerCategorieUtente {
 
     }
 
+    @Override
+    public void cancellaStato(Long idStato, Long idUtente) throws DatabaseException {
+        Optional<Utente> utente = utenteDao.findById(idUtente);
+        if(utente.isPresent()){
+            List<CategoriaUtente> stati = utente.get().getStato();
+            for(int i = 0; i < stati.size(); i++){
+                if(stati.get(i).getId().equals(idStato)){
+                    utente.get().getStato().remove(i);
+                }
+            }
+            utenteDao.save(utente.get());
+        }else{
+            throw new DatabaseException("Utente non trovato");
+        }
+    }
+
 }
