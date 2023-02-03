@@ -1,6 +1,5 @@
 import React from "react";
 import {UtenteAPI} from "../API/UtenteAPI";
-import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
 import {
   MDBCard,
   MDBCardBody,
@@ -10,23 +9,70 @@ import {
 } from "mdb-react-ui-kit";
 import {Button, Link} from "@material-ui/core";
 
+function defaultComparator(prop1, prop2){
+  if (prop1 < prop2)
+    return -1;
+  if (prop1 > prop2)
+    return 1;
+  return 0;
+}
 
 export default class UserProfilesView extends React.Component{
   constructor(props) {
     super(props);
     this.state = {
-      utenti: []
+      utenti: [],
+      orderBy: "nome",
+      comparator: defaultComparator
     }
+    this.setOrderBy = this.setOrderBy.bind(this);
   }
 
-    async componentDidMount() {
+  /**
+   * Cambia la proprietà degli utenti per cui si vuole ordinare,
+   * usando un comparatore di default
+   */
+  setOrderBy(userProp){
+    this.setState({
+      orderBy: userProp,
+      comparator: defaultComparator
+    })
+  }
+
+    /**
+   * Cambia la proprietà degli utenti per cui si vuole ordinare,
+   * specificando un comparatore custom
+   */
+    setOrderByAndComparator(userProp, comparator){
+      this.setState({
+        orderBy: userProp,
+        comparator: comparator
+      })
+    }
+  
+
+  async componentDidMount() {
     let utenti = await(new UtenteAPI().getAllUsersInfo());
+
     this.setState({
       utenti : utenti,
     })
 
   }
   render() {
+    
+    // Ordina gli utenti in base alla proprietà specificata.
+    // È possibile specificare la proprietà cliccando sulla colonna corrispondente.
+    console.log(this.state)
+    this.state.utenti.sort((u1, u2) => {
+
+      let p1 = u1[this.state.orderBy];
+      let p2 = u2[this.state.orderBy];
+
+      return this.state.comparator(p1, p2);
+
+    })
+    
     return(
       <MDBCard>
         <MDBCardBody className="text-center">
@@ -34,10 +80,10 @@ export default class UserProfilesView extends React.Component{
           <MDBTable align="middle" >
             <MDBTableHead>
               <tr>
-                <th scope='col'>Nome</th>
-                <th scope='col'>Cognome</th>
-                <th scope='col'>Data Nascita</th>
-                <th scope='col'>Ruolo</th>
+                <th scope='col' onClick={() => this.setOrderBy("nome")} > Nome </th>
+                <th scope='col' onClick={() => this.setOrderBy("cognome")} >Cognome</th>
+                <th scope='col' onClick={() => this.setOrderBy("dataNascita")} >Data Nascita</th>
+                <th scope='col' onClick={() => this.setOrderBy("ruoloEnum")} >Ruolo</th>
                 <th scope='col'>Modifica</th>
               </tr>
             </MDBTableHead>
