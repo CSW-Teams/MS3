@@ -36,7 +36,7 @@ export default [
     component:  SchedulerGeneratorView
   },
   {
-    path: "/user-profile",
+    path: "/user-profile/1",
     layout: DefaultLayout,
     component: UserProfileView
   },
