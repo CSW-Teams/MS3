@@ -71,8 +71,8 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, false);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, 2,2);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, 2,2);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -122,8 +122,8 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO, false);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO, true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO, 2,2);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO, 2,2);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -175,8 +175,8 @@ public class VincoloPersonaTurnoTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
 
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, false);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, 2,2);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, 2,2);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -228,8 +228,8 @@ public class VincoloPersonaTurnoTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
 
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, false);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, 2,2);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, 2,2);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -267,8 +267,8 @@ public class VincoloPersonaTurnoTest {
     public void turnoInCardiologiaTest() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE E TURNAZIONE (ESCLUSIVE PER I TURNI)
-        Categoria cardiologia = new Categoria("CARDIOLOGIA", -1);
-        Categoria ambulatorioCardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", -2);
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", 1);
+        Categoria ambulatorioCardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", 2);
 
         categorieDao.saveAndFlush(cardiologia);
         categorieDao.saveAndFlush(ambulatorioCardiologia);
@@ -276,7 +276,7 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         servizioDao.saveAndFlush(servizio1);
-        Turno t1 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
+        Turno t1 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, 2,2);
 
         t1.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(cardiologia, t1, UserCategoryPolicyValue.INCLUDE),

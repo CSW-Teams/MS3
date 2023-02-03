@@ -62,8 +62,21 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
 
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurniUtente(@NotNull Long idPersona) throws ParseException {
-        Set<AssegnazioneTurnoDTO> turni = MappaAssegnazioneTurni.assegnazioneTurnoToDTO(assegnazioneTurnoDao.findTurniUtente(idPersona));
-        return turni;
+        Set<AssegnazioneTurno> turniAllocatiERiserve = assegnazioneTurnoDao.findTurniUtente(idPersona);
+        Set<AssegnazioneTurnoDTO> turniAllocati = new HashSet<>();
+        for(AssegnazioneTurno assegnazioneTurno: turniAllocatiERiserve){
+            if(assegnazioneTurno.getTurno().isReperibilitaAttiva() || !utenteInReperibilita(assegnazioneTurno, idPersona))
+                turniAllocati.add(MappaAssegnazioneTurni.assegnazioneTurnoToDTO(assegnazioneTurno));
+        }
+        return turniAllocati;
+    }
+
+    private boolean utenteInReperibilita(AssegnazioneTurno assegnazioneTurno, Long idPersona){
+        for(Utente utenteReperibile: assegnazioneTurno.getUtentiReperibili()){
+            if(utenteReperibile.getId().longValue() == idPersona.longValue())
+                return true;
+        }
+        return false;
     }
 
 

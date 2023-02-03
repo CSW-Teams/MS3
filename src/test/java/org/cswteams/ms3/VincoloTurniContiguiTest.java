@@ -68,9 +68,9 @@ public class VincoloTurniContiguiTest {
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizio1.getMansioni().add(MansioneEnum.AMBULATORIO);
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, false);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, false);
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, 1,1);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, 1,1);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, 1,1);
         
         userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
         userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
@@ -86,13 +86,8 @@ public class VincoloTurniContiguiTest {
         turnoDao.save(t1);
         turnoDao.save(t3);
         turnoDao.save(t4);
-        
-        t3.setNumUtentiGuardia(1);
-        t3.setNumUtentiReperibilita(1);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
-        t5.setNumUtentiGuardia(1);
-        t5.setNumUtentiReperibilita(1);
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, 1,1);
         
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);

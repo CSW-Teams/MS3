@@ -94,9 +94,9 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
                 servizio1,
                 MansioneEnum.REPARTO,
                 TipologiaTurno.NOTTURNO,
-                true
+                1,
+                0
                );
-        t1.setNumUtentiGuardia(1);
         turnoDao.saveAndFlush(t1);
         userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaIncinta, t1, UserCategoryPolicyValue.EXCLUDE));
         userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaOVER62, t1, UserCategoryPolicyValue.EXCLUDE));
