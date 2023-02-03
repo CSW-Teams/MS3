@@ -67,6 +67,24 @@ public class ControllerCategorieUtente implements IControllerCategorieUtente {
     }
 
     @Override
+    public CategoriaUtente aggiungiStatoUtente(CategoriaUtenteDTO c, Long utenteID) throws Exception {
+
+        if(categorieDao.findAllByNome(c.getCategoria().getNome()) == null)
+            throw new Exception("Non esiste una categoria con questo nome :"+c.getCategoria().getNome());
+        Optional<Utente> u = utenteDao.findById(utenteID);
+        if (u == null)
+            throw new Exception("Nessun utente con ID esistente: " + utenteID);
+
+        CategoriaUtente categoriaUtente = MappaCategoriaUtente.categoriaUtenteDTOToEntity(c);
+        categoriaUtente.setCategoria(categorieDao.findAllByNome(c.getCategoria().getNome()));
+        categoriaUtenteDao.save(categoriaUtente);
+        u.get().getStato().add(categoriaUtente);
+        utenteDao.saveAndFlush(u.get());
+
+        return  categoriaUtente;
+    }
+
+    @Override
     public void cancellaRotazione(Long idCategoria, Long idUtente) throws DatabaseException {
         Optional<Utente> utente = utenteDao.findById(idUtente);
         if(utente.isPresent()){
