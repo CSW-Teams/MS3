@@ -1,5 +1,16 @@
 export class CategoriaUtenteAPI {
 
+  async deleteRotazione(idRotazione, idUtente){
+    const response = await fetch('/api/categorie/rotazione_id='+idRotazione+'/utente_id='+idUtente, { method: 'DELETE' });
+    return response.status;
+  }
+
+  async deleteStato(idRotazione, idUtente){
+    const response = await fetch('/api/categorie/stato_id='+idRotazione+'/utente_id='+idUtente, { method: 'DELETE' });
+    return response.status;
+  }
+
+
   async getCategoriaUtente(idUtente) {
     const response = await fetch('/api/categorie/stato/utente_id='+idUtente);
     const body = await response.json();
@@ -7,6 +18,7 @@ export class CategoriaUtenteAPI {
 
     for (let i = 0; i < body.length; i++) {
       let categoria = new Object();
+      categoria.categoriaUtenteId = body[i].id
       categoria.categoria = body[i].categoria.nome
       categoria.inizio = body[i].inizioValidita
       categoria.fine = body[i].fineValidita
@@ -24,6 +36,7 @@ export class CategoriaUtenteAPI {
 
     for (let i = 0; i < body.length; i++) {
       let categoria = new Object();
+      categoria.categoriaUtenteId = body[i].id
       categoria.categoria = body[i].categoria.nome
       categoria.inizio = body[i].inizioValidita
       categoria.fine = body[i].fineValidita
@@ -40,6 +53,7 @@ export class CategoriaUtenteAPI {
 
     for (let i = 0; i < body.length; i++) {
       let categoria = new Object();
+      categoria.categoriaUtenteId = body[i].id
       categoria.categoria = body[i].categoria.nome
       categoria.inizio = body[i].inizioValidita
       categoria.fine = body[i].fineValidita
@@ -70,6 +84,32 @@ export class CategoriaUtenteAPI {
       body: JSON.stringify(turnazione)
     };
     const url = "/api/categorie/turnazioni/utente_id=" + utente_id;
+    const response = await fetch(url , requestOptions);
+    return response.status;
+
+  }
+
+  async postAggiungiStato(categoria,dataInizio,dataFine, utente_id) {
+
+    let cat = new Object;
+    cat.nome = categoria;
+    cat.tipo = 0; // = tipo stato
+
+    let stato = new Object();
+
+    stato.categoria = cat
+    stato.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+    stato.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+
+    console.log("stato:")
+    console.log(stato)
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(stato)
+    };
+    const url = "/api/categorie/stato/utente_id=" + utente_id;
     const response = await fetch(url , requestOptions);
     return response.status;
 

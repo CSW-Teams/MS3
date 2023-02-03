@@ -1,6 +1,7 @@
 package org.cswteams.ms3.control.assegnazioneTurni;
 
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
@@ -14,5 +15,7 @@ public interface IControllerAssegnazioneTurni {
     AssegnazioneTurno creaTurnoAssegnato(RegistraAssegnazioneTurnoDTO c) throws AssegnazioneTurnoException;
 
     Set<AssegnazioneTurnoDTO> leggiTurniUtente(Long idUtente) throws ParseException;
+
+    AssegnazioneTurno leggiTurnoByID(long idAssegnazione);
 
 }

@@ -1,6 +1,7 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
+import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import java.util.Set;
 
@@ -12,6 +13,8 @@ public class RegistraAssegnazioneTurnoDTO {
     private int anno;
 
     private TipologiaTurno tipologiaTurno;
+
+    private MansioneEnum mansione;
     private Set<UtenteDTO> utentiDiGuardia;
     private Set<UtenteDTO> utentiReperibili;
     private ServizioDTO servizio;

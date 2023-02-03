@@ -26,8 +26,7 @@ public class MappaCategoriaUtente {
     }
 
     public static CategoriaUtenteDTO categoriaUtenteToDTO(CategoriaUtente entity) {
-        CategoriaUtenteDTO dto = new CategoriaUtenteDTO(entity.getCategoria(),entity.getInizioValidità().toString(),entity.getFineValidità().toString());
-        return dto;
+        return new CategoriaUtenteDTO(entity.getId(),entity.getCategoria(),entity.getInizioValidità().toString(),entity.getFineValidità().toString());
     }
 
     public static Set<CategoriaUtenteDTO> categoriaUtenteToDTO(Set<CategoriaUtente> categoriaUtente) {

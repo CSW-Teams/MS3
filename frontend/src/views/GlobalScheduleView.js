@@ -24,7 +24,7 @@ class GlobalScheduleView extends ScheduleView {
     return (
       <Stack spacing={3}>
         <TemporaryDrawer onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></TemporaryDrawer>
-        {super.render()}
+        {super.render("global")}
       </Stack>
       );
   }

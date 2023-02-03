@@ -3,6 +3,8 @@ import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
 import SelectCategoria from './SelectCategoria';
+import SelectCategoriaStato from './SelectCategoriaStato';
+
 import Button from '@mui/material/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -46,7 +48,7 @@ export default function TemporaryDrawer(props) {
 
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione.
   //Viene passata come callback al componente <Button>Assegna turno</Button>
-  const aggiungiCategoria= (anchor, open) => async (event) => {
+  const AggiungiCategoriaStato= (anchor, open) => async (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
@@ -57,7 +59,7 @@ export default function TemporaryDrawer(props) {
     let index = url.lastIndexOf("/");
     let utente_id = url.substring(index+1);
     let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-    status = await categoriaUtenteAPI.postAggiungiTurnazione(categoria, dataInizio, dataFine, utente_id)
+    status = await categoriaUtenteAPI.postAggiungiStato(categoria, dataInizio, dataFine, utente_id)
 
     props.onPostAssegnazione()
 
@@ -110,10 +112,10 @@ export default function TemporaryDrawer(props) {
                 <BasicDatePicker  onSelectData={handleDataInizio}></BasicDatePicker>
               <label>Data fine</label>
               <BasicDatePicker  onSelectData={handleDataFine}></BasicDatePicker>
-              <label>Rotazioni</label>
-              <SelectCategoria onSelectCategoria = {handleCategoria} ></SelectCategoria>
+              <label>Stato utente</label>
+              <SelectCategoriaStato onSelectCategoria = {handleCategoria} ></SelectCategoriaStato>
 
-              <Button variant="contained" size="small" onClick={aggiungiCategoria('bottom', false)}>
+              <Button variant="contained" size="small" onClick={AggiungiCategoriaStato('bottom', false)}>
                 <i className="fa fa-plus" aria-hidden="true"> </i>
               </Button>
             </Stack>

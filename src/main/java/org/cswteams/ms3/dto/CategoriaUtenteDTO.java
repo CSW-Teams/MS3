@@ -9,6 +9,8 @@ import java.time.LocalDate;
 @Data
 public class CategoriaUtenteDTO {
 
+    private Long id;
+
     private Categoria categoria;
 
     private String inizioValidita;
@@ -26,4 +28,9 @@ public class CategoriaUtenteDTO {
         this.fineValidita = fineValidita;
     }
 
+    public CategoriaUtenteDTO(Long id, Categoria categoria, String inizioValidita, String fineValidita) {
+        this(categoria,inizioValidita,fineValidita);
+        this.id = id;
+
+    }
 }

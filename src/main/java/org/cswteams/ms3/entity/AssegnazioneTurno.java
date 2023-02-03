@@ -5,10 +5,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Data
@@ -20,13 +17,13 @@ public class AssegnazioneTurno{
     private Long id;
 
     /** Utenti assegnati per il turno. Da non confondere con la mansione GUARDIA */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> utentiDiGuardia;
 
     /** Utenti in riserva per il turno. Questi utenti sono eligibili per L'assegnazione al turno,
      * ma non sono stati assegnati. Da non confondere con la reperibilità prevista dalla mansione GUARDIA
      */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> utentiReperibili;
 
     private long dataEpochDay;
@@ -52,8 +49,7 @@ public class AssegnazioneTurno{
         this.turno = turno;
     }
 
-    public AssegnazioneTurno(Long id, Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, long dataEpochDay, Turno turno) {
-        this.id = id;
+    public AssegnazioneTurno(Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, long dataEpochDay, Turno turno) {
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.dataEpochDay = dataEpochDay;
@@ -100,5 +96,16 @@ public class AssegnazioneTurno{
 
     public void addUtentediGuardia(Utente u) {
         this.utentiDiGuardia.add(u);
+    }
+    public void addUtenteReperibile(Utente u) {
+        this.utentiReperibili.add(u);
+    }
+
+    public AssegnazioneTurno clone(){
+        return new AssegnazioneTurno(
+                new HashSet<>(this.utentiDiGuardia),
+                new HashSet<>(this.utentiReperibili),
+                this.dataEpochDay,
+                this.turno);
     }
 }

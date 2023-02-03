@@ -38,7 +38,7 @@ public class VincoloNumeroDiRuoloTurno extends Vincolo{
         //Entro in questo ramo quando devo aggiungere una nuova assegnazione manualmente
         else{
 
-            //Verifico se in guardia e in reperibilità ho un numero di strutturati e specializzandi succifienti
+            //Verifico se in guardia e in reperibilità ho un numero di strutturati e specializzandi sufficienti
             this.contaRuoli(contesto,contesto.getAssegnazioneTurno().getUtentiDiGuardia());
             this.contaRuoli(contesto,contesto.getAssegnazioneTurno().getUtentiReperibili());
 

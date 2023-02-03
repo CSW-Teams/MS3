@@ -40,7 +40,7 @@ export  class AssegnazioneTurnoAPI {
 
       turni[i] = turno;
 
-      
+
     }
 
     return turni;
@@ -71,17 +71,17 @@ export  class AssegnazioneTurnoAPI {
 
   /**
    * Richiede al backend di registrare un'assegnazione turno.
-   * @param {*} data 
-   * @param {*} turnoTipologia 
-   * @param {*} utentiSelezionatiGuardia 
-   * @param {*} utentiReperibilita 
-   * @param {*} servizioNome 
-   * @param {*} forced 
+   * @param {*} data
+   * @param {*} turnoTipologia
+   * @param {*} utentiSelezionatiGuardia
+   * @param {*} utentiReperibilita
+   * @param {*} servizioNome
+   * @param {*} forced
    * @returns La risposta del backend:
    * 202 se è andato tutto ok, dunque la risposta contiene l'oggetto assegnazione generato;
    * 400 se i parametri della richiesta sono malformati e il backend non è riuscito a interpretarli;
    * 406 se la richiesta di assegnazone è stata rigettata, ad esempio perché violerebbe dei vincoli per la sua pianificazione.
-   */  
+   */
   async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,forced) {
 
       let assegnazioneTurno = new Object();
@@ -96,18 +96,85 @@ export  class AssegnazioneTurnoAPI {
       assegnazioneTurno.tipologiaTurno = turnoTipologia
       assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
       assegnazioneTurno.utentiReperibili = utentiReperibilita;
-     
+
       const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(assegnazioneTurno)
       };
 
-      const response = await fetch('/api/assegnazioneturni/',requestOptions); 
-       
+      const response = await fetch('/api/assegnazioneturni/',requestOptions);
+
       return response;
 
   }
+
+
+  async aggiornaAssegnazioneTurno(appointmentChanged,changes,idLoggato) {
+
+    let assegnazioneModificata = new Object();
+    assegnazioneModificata.idAssegnazione = appointmentChanged.id;
+    assegnazioneModificata.utenti_guardia = changes.utenti_guardia
+    assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili
+    assegnazioneModificata.utenteModificatoreId = idLoggato;
+
+    const requestOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(assegnazioneModificata)
+    };
+
+    console.log(assegnazioneModificata)
+
+    const response = await fetch('/api/assegnazioneturni/',requestOptions);
+    return response;
+
+}
+
+async richiediRinunciaTurno(utenteCambio,assegnazione,idLoggato) {
+  let assegnazioneConModifiche = new Object()
+  assegnazioneConModifiche.idAssegnazione = assegnazione.id;
+  assegnazioneConModifiche.utenti_guardia = []
+  assegnazioneConModifiche.utenti_reperibili = []
+  assegnazioneConModifiche.utenteModificatoreId = idLoggato;
+
+  for(let i =0; i<assegnazione.utenti_guardia.length; i++){
+    assegnazioneConModifiche.utenti_guardia[i] = assegnazione.utenti_guardia[i]
+    if(assegnazione.utenti_guardia[i] == idLoggato)
+      assegnazioneConModifiche.utenti_guardia[i] = utenteCambio.id;
+  }
+
+  for(let i =0; i<assegnazione.utenti_reperibili.length; i++){
+    assegnazioneConModifiche.utenti_reperibili[i] = assegnazione.utenti_reperibili[i]
+    if(assegnazione.utenti_reperibili[i] == idLoggato)
+      assegnazioneConModifiche.utenti_reperibili[i] = utenteCambio.id;
+  }
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(assegnazioneConModifiche)
+  };
+
+  const response = await fetch('/api/assegnazioneturni/',requestOptions);
+  return response;
+
+}
+
+
+
+async eliminaAssegnazioneTurno(idDaEliminare) {
+
+  const requestOptions = {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  };
+
+  const response = await fetch('/api/assegnazioneturni/'+idDaEliminare,requestOptions);
+  return response;
+
+}
+
 
 
     async getGlobalTurn() {
@@ -127,7 +194,7 @@ export  class AssegnazioneTurnoAPI {
 
       requestGeneration.giornoFine= dataEnd.$d.getDate();
       requestGeneration.meseFine = dataEnd.$d.getMonth()+1;
-      requestGeneration.annoFine = dataEnd.$d.getFullYear();      
+      requestGeneration.annoFine = dataEnd.$d.getFullYear();
 
       const requestOptions = {
         method: 'POST',

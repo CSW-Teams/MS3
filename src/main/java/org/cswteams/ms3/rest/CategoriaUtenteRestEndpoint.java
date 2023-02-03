@@ -3,11 +3,9 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.categorie.IControllerCategorie;
 import org.cswteams.ms3.control.categorieUtente.IControllerCategorieUtente;
-import org.cswteams.ms3.dao.CategorieDao;
 import org.cswteams.ms3.dto.CategoriaDTO;
 import org.cswteams.ms3.dto.CategoriaUtenteDTO;
-import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.entity.Categoria;
+import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,6 +79,32 @@ public class CategoriaUtenteRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @RequestMapping(method = RequestMethod.DELETE, path = "/rotazione_id={idRotazione}/utente_id={idUtente}")
+    public ResponseEntity<?> deleteCategoriaUtente(@PathVariable Long idRotazione, @PathVariable Long idUtente) throws ParseException {
+        if (idRotazione != null && idUtente != null) {
+            try {
+                controllerCategorieUtente.cancellaRotazione(idRotazione, idUtente);
+                return new ResponseEntity<>(HttpStatus.OK);
+            } catch (DatabaseException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/stato_id={idStato}/utente_id={idUtente}")
+    public ResponseEntity<?> deleteStatoUtente(@PathVariable Long idStato, @PathVariable Long idUtente) throws ParseException {
+        if (idStato != null && idUtente != null) {
+            try {
+                controllerCategorieUtente.cancellaStato(idStato, idUtente);
+                return new ResponseEntity<>(HttpStatus.OK);
+            } catch (DatabaseException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
     @RequestMapping(method = RequestMethod.POST, path = "/turnazioni/utente_id={idUtente}")
     public ResponseEntity<?> aggiungiTurnazione(@RequestBody(required = true) CategoriaUtenteDTO categoriaUtenteDTO, @PathVariable Long idUtente) throws Exception {
         if (categoriaUtenteDTO != null) {
@@ -88,6 +112,15 @@ public class CategoriaUtenteRestEndpoint {
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+    @RequestMapping(method = RequestMethod.POST, path = "/stato/utente_id={idUtente}")
+    public ResponseEntity<?> aggiungiStato(@RequestBody(required = true) CategoriaUtenteDTO categoriaUtenteDTO, @PathVariable Long idUtente) throws Exception {
+        if (categoriaUtenteDTO != null) {
+            return new ResponseEntity<>(controllerCategorieUtente.aggiungiStatoUtente(categoriaUtenteDTO, idUtente), HttpStatus.ACCEPTED);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+
 
 
 

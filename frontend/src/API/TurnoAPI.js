@@ -10,7 +10,10 @@ export  class TurnoAPI {
     const turni = [];
 
     for (let i = 0; i < body.length; i++) {
-        turni[i] = body[i].tipologiaTurno
+      let turno = new Object()
+      turno.tipologia = body[i].tipologiaTurno
+      turno.mansione = body[i].mansione
+      turni[i] = turno
     }
 
     console.log(turni)
@@ -27,7 +30,7 @@ export  class TurnoAPI {
           return body[i];
     }
 
-    return {};  
+    return {};
 
   }
 

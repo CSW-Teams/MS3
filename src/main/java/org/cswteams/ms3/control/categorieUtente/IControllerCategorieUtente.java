@@ -1,8 +1,8 @@
 package org.cswteams.ms3.control.categorieUtente;
 
 import org.cswteams.ms3.dto.CategoriaUtenteDTO;
-import org.cswteams.ms3.entity.Categoria;
 import org.cswteams.ms3.entity.CategoriaUtente;
+import org.cswteams.ms3.exception.DatabaseException;
 
 import java.text.ParseException;
 import java.util.Set;
@@ -16,5 +16,11 @@ public interface IControllerCategorieUtente {
     Set<CategoriaUtenteDTO> leggiTurnazioniUtente(Long id)  throws ParseException;
 
     CategoriaUtente aggiungiTurnazioneUtente(CategoriaUtenteDTO c, Long utenteID) throws Exception;
+
+    CategoriaUtente aggiungiStatoUtente(CategoriaUtenteDTO c, Long utenteID) throws Exception;
+
+    void cancellaRotazione(Long idRotazione, Long idUtente) throws DatabaseException;
+
+    void cancellaStato(Long idRotazione, Long idUtente) throws DatabaseException;
 
 }

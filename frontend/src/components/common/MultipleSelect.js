@@ -23,14 +23,21 @@ export default function MultipleSelect(props) {
   };
 
   const handleChangeTurno =(event) => {
+    let turnoEMansione = event.target.value
+    const turno = turnoEMansione.toString().substring(0,turnoEMansione.toString().indexOf(" "))
+    console.log(turno)
     setTurno(event.target.value);
-    props.onSelectTurno(event.target.value)
+    props.onSelectTurno(turno)
   };
 
   async function getTurni(servizio) {
     let turniAPI = new TurnoAPI();
     let turni = await turniAPI.getTurniByServizio(servizio);
-    setTurni(turni);
+    let turniEMansioni = []
+    for (let i = 0; i < turni.length; i++) {
+      turniEMansioni[i] = turni[i].tipologia + " - " + turni[i].mansione
+    }
+    setTurni(turniEMansioni);
   }
 
   async function getServizi() {
@@ -38,7 +45,7 @@ export default function MultipleSelect(props) {
     let servizi = await serviceAPI.getService()
     setServizi(servizi);
   }
-  
+
   React.useEffect(() => {
       getServizi();
   }, [])
@@ -54,12 +61,12 @@ export default function MultipleSelect(props) {
               label= 'Servizi'
               onChange={handleChangeServizio}
             >
-            
+
             {servizi.map((elementData) => (
                 <MenuItem value={elementData}>{elementData} </MenuItem>
 
             ))}
-            
+
             </Select>
           </FormControl>
         </Box>
@@ -71,17 +78,17 @@ export default function MultipleSelect(props) {
               label= 'Turni'
               onChange={handleChangeTurno}
             >
-            
+
             {turni.map((elementData) => (
                 <MenuItem value={elementData}>{elementData} </MenuItem>
 
             ))}
-            
+
             </Select>
           </FormControl>
         </Box>
 
     </Stack>
-    
+
   );
 }
