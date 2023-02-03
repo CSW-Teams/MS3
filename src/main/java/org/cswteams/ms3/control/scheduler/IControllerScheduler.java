@@ -6,6 +6,7 @@ import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
+import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 
 /**
@@ -28,5 +29,5 @@ public interface IControllerScheduler {
     void rimuoviAssegnazioneTurno(AssegnazioneTurno assegnazioneTurnoOld);
     boolean rimuoviAssegnazioneTurno(Long idAssegnazione);
 
-    Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced);
+    Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException ;
 }

@@ -12,6 +12,7 @@ import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
+import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,11 @@ public class AssegnazioneTurnoRestEndpoint {
 
             // Se l'utente chiede l'aggiunta forzata di un assegnazione viene fatto
             // controllo solo sui vincoli non violabili
-            schedule = controllerScheduler.aggiungiAssegnazioneTurno(assegnazione, assegnazione.isForced());
+            try {
+                schedule = controllerScheduler.aggiungiAssegnazioneTurno(assegnazione, assegnazione.isForced());
+            } catch (AssegnazioneTurnoException e) {
+                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            }
 
             if(schedule!=null){
                 // Se un vincolo è violato è comunicato all'utente.

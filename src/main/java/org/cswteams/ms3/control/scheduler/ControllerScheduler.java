@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
@@ -13,6 +14,8 @@ import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -133,24 +136,49 @@ public class ControllerScheduler implements IControllerScheduler{
     }
 
     @Override
-    public Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) {
+    public Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException {
         // Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere
-        // presente nel databse
-        Turno turno = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(),
-                assegnazione.getTipologiaTurno()).get(0);
-
-        if (turno == null)
-            return null;
-
-        // Converto il dto in un entità
+        // presente nel database
+        List<Turno> turni = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno());
+        if(turni.size() == 0)
+            throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",tipologia turno: "+assegnazione.getTipologiaTurno().toString());
+        Turno turno = null;
+        for(Turno turnodb: turni){
+            if(turnodb.getMansione().equals(assegnazione.getMansione())){
+                turno = turnodb;
+                break;
+            }
+        }
+        if(turno == null){
+            throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",mansione: "+assegnazione.getMansione().toString());
+        }
         AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(
                 LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(), assegnazione.getGiorno()),
                 turno,
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia()));
 
+
+        if(!checkAssegnazioneTurno(assegnazioneTurno)){
+            throw new AssegnazioneTurnoException("Collisione tra utenti reperibili e di guardia");
+        }
+
+        // Converto il dto in un entità
+
         return this.aggiungiAssegnazioneTurno(assegnazioneTurno,forced);
 
+    }
+
+    private boolean checkAssegnazioneTurno(AssegnazioneTurno turno) {
+
+        for(Utente utente1: turno.getUtentiDiGuardia()){
+            for(Utente utente2: turno.getUtentiReperibili()){
+                if (utente1.getId().longValue() == utente2.getId().longValue()){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
