@@ -5,6 +5,7 @@ import {lightBlue, red} from "@mui/material/colors";
 import {blue, teal} from "@material-ui/core/colors";
 const PREFIX_TOOLTIP = 'Content';
 
+
 // Usare gli stili di queste classi per uniformare le viste
 
 export const tooltip_classes = {
@@ -159,9 +160,11 @@ export const StyledAppointmentsAppointmentContent = styled(Appointments.Appointm
   },
   [`&.${classes.Holiday}`]: {
     borderLeft: `4px solid ${red[500]}`,
+
   },
   [`&.${classes.Normal}`]: {
     borderLeft: `4px solid ${teal[500]}`,
   },
 }));
+
 

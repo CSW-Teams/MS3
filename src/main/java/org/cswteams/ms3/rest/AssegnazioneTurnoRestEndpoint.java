@@ -38,6 +38,7 @@ public class AssegnazioneTurnoRestEndpoint {
         Schedule schedule;
 
         if (assegnazione != null) {
+            System.out.println(assegnazione.getMansione());
 
             // Se l'utente chiede l'aggiunta forzata di un assegnazione viene fatto
             // controllo solo sui vincoli non violabili

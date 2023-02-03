@@ -47,10 +47,19 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     @Override
     public AssegnazioneTurno creaTurnoAssegnato(@NotNull RegistraAssegnazioneTurnoDTO dto) throws AssegnazioneTurnoException {
 
-        Turno turno = turnoDao.findAllByServizioNomeAndTipologiaTurno(dto.getServizio().getNome(), dto.getTipologiaTurno()).get(0);
-        if(turno == null)
+        List<Turno> turni = turnoDao.findAllByServizioNomeAndTipologiaTurno(dto.getServizio().getNome(), dto.getTipologiaTurno());
+        if(turni.size() == 0)
             throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia turno: "+dto.getTipologiaTurno().toString());
-
+        Turno turno = null;
+        for(Turno turnodb: turni){
+            if(turnodb.getMansione().equals(dto.getMansione())){
+                turno = turnodb;
+                break;
+            }
+        }
+        if(turno == null){
+            throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+dto.getServizio().getNome() +",mansione: "+dto.getMansione().toString());
+        }
         AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()),turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
 
         if(!checkAssegnazioneTurno(assegnazioneTurno)){

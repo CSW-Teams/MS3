@@ -3,10 +3,10 @@
  * Il templete grafico utilizzato mette già a disposizione componenti grafici per poter effettuare la modifica di un turno.
  * Le componenti presenti in questo file servono per personalizzare le componenti grafiche già esistenti.
  * Le componenti grafiche da personalizzare sono sostanzialmente 3:
- *    - Overlay : componente che permette di far sollevare dal basso il drawer nel momento in cui si decide di 
+ *    - Overlay : componente che permette di far sollevare dal basso il drawer nel momento in cui si decide di
  *      modificare un assegnazione.
  *    - CommandLayout : definisce quali elementi devono essere visualizzati sulla cima del drawer. Di default è visualizzato
- *      il bottone "save" e il bottone per eliminare un assegnazione turno. 
+ *      il bottone "save" e il bottone per eliminare un assegnazione turno.
  *    - BasicLayout: Definisce gli elementi che devono essere visualizzati all'interno del drawer.
  * Di seguito sono presenti i componenti utilizzati sia in singleScheduleView che in GlobalScheduleView
  */
@@ -49,7 +49,7 @@ function ViolationLog(props){
  * @param {*} param0
  * @returns
  */
-export  const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) => {
+export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) => {
 
     return (
 
@@ -84,10 +84,10 @@ export  const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =
    * Queto componente è invece utilizzato da SingleScheduleView. Quando si vorrà modificare un turno da SingleScheduleView
    * è perchè si vuole richiedere di scambiare un turno con un altro utente. Questo componente contiene
    * la logica per chiedere al backend di modificare un assegnazione turno.
-   * @param {*} param0 
-   * @returns 
+   * @param {*} param0
+   * @returns
    */
-  export  function SingleLayout ({ onFieldChange, appointmentData, ...restProps }) {
+  export function SingleLayout ({ onFieldChange, appointmentData, ...restProps }) {
     const [user,setUser] = React.useState([{}])
     const [utentiSelezionati,setUtentiSelezionati] = React.useState([])
     let assegnazioneTurnoApi = new AssegnazioneTurnoAPI();
@@ -103,9 +103,9 @@ export  const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =
     }, []);
 
     /**
-     * Riceve in ingresso il "contesto" dello schedule view. In questo modo può invocare la funzione che 
+     * Riceve in ingresso il "contesto" dello schedule view. In questo modo può invocare la funzione che
      * permette di aggiornare i turni sullo schedulo nel momento in cui avviene la modifica.
-     * @param {*} contesto 
+     * @param {*} contesto
      */
     async function buildAssegnazioneModificata(contesto){
 
@@ -158,13 +158,13 @@ export  const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =
           let turni = await assegnazioneTurnoApi.getTurnByIdUser('1');
           contesto.setState({data:turni});
 
-          
+
 
         }
 
     }
 
-   
+
 
     return (
 
@@ -252,7 +252,7 @@ export function Overlay({
     return (
       <Drawer anchor='bottom' open={visible} >
         <div style={{height: '5vh',}}></div>
-        
+
             <h3 style={{
                 'position': 'relative',
                 'z-index': '4000',
@@ -263,7 +263,7 @@ export function Overlay({
                 'margin-bottom':'-3%'
             }} >Chiedi sostituzione</h3>
 
-        
+
         {children}
         <div style={{height: '15vh',}}></div>
       </Drawer>
@@ -272,6 +272,6 @@ export function Overlay({
   };
 
 
-  
-  
-  
+
+
+

@@ -65,7 +65,7 @@ export default function TemporaryDrawer(props) {
 
     //Verifico la risposta del server analizzando il codice di risposta http
     if(status===202){
-      toast.success('Rotazione creata con successo', {
+      toast.success('Categoria creata con successo', {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
