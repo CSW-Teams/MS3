@@ -34,7 +34,7 @@ export default function MultipleSelect(props) {
     <Stack spacing={3}>
       <Box sx={{minWidth: 120}}>
         <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Rotazioni</InputLabel>
+          <InputLabel id="demo-simple-select-label">Stato</InputLabel>
           <Select
             value={categoria}
             label='Rotazioni'

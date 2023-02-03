@@ -95,19 +95,19 @@ export class CategoriaUtenteAPI {
     cat.nome = categoria;
     cat.tipo = 0; // = tipo stato
 
-    let turnazione = new Object();
+    let stato = new Object();
 
-    turnazione.categoria = cat
-    turnazione.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
-    turnazione.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+    stato.categoria = cat
+    stato.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+    stato.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
 
-    console.log("turnazioni:")
-    console.log(turnazione)
+    console.log("stato:")
+    console.log(stato)
 
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(turnazione)
+      body: JSON.stringify(stato)
     };
     const url = "/api/categorie/stato/utente_id=" + utente_id;
     const response = await fetch(url , requestOptions);

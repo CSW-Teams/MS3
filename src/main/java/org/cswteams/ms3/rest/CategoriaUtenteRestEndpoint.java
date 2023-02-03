@@ -99,6 +99,15 @@ public class CategoriaUtenteRestEndpoint {
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+    @RequestMapping(method = RequestMethod.POST, path = "/stato/utente_id={idUtente}")
+    public ResponseEntity<?> aggiungiStato(@RequestBody(required = true) CategoriaUtenteDTO categoriaUtenteDTO, @PathVariable Long idUtente) throws Exception {
+        if (categoriaUtenteDTO != null) {
+            return new ResponseEntity<>(controllerCategorieUtente.aggiungiStatoUtente(categoriaUtenteDTO, idUtente), HttpStatus.ACCEPTED);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+
 
 
 

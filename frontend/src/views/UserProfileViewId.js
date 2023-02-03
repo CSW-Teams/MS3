@@ -200,14 +200,14 @@ export default class UserProfileView extends React.Component{
             </MDBTableHead>
             <MDBTableBody>
               {this.state.categorie_utente.map((data, key) => {
-                if (data.categoria === "OVER_62")
-                  data.fine = "//"
                 return (
                   <tr key={key}>
                     <td>{data.categoria}</td>
                     <td>{data.inizio}</td>
                     <td>{data.fine}</td>
-                    <td><IconButton aria-label="delete" onClick={() => this.handlerDeleteCategoriaStato(data.categoriaUtenteId, key)}> </IconButton> </td>
+                    <td><IconButton aria-label="delete" onClick={() => this.handlerDeleteCategoriaStato(data.categoriaUtenteId, key)}>
+                      <DeleteIcon />
+                    </IconButton></td>
                   </tr>
                 )
               })}

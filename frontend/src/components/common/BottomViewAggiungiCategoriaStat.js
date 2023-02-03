@@ -112,7 +112,7 @@ export default function TemporaryDrawer(props) {
                 <BasicDatePicker  onSelectData={handleDataInizio}></BasicDatePicker>
               <label>Data fine</label>
               <BasicDatePicker  onSelectData={handleDataFine}></BasicDatePicker>
-              <label>Rotazioni</label>
+              <label>Stato utente</label>
               <SelectCategoriaStato onSelectCategoria = {handleCategoria} ></SelectCategoriaStato>
 
               <Button variant="contained" size="small" onClick={AggiungiCategoriaStato('bottom', false)}>
