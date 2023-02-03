@@ -16,6 +16,7 @@ import {
 import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
 import {Button} from "@material-ui/core";
 import AggiungiCategoria from "../components/common/BottomViewAggiungiTurnazione"
+import AggiungiCategoriaStato from "../components/common/BottomViewAggiungiCategoriaStat"
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import {toast} from "react-toastify";
@@ -60,6 +61,39 @@ export default class UserProfileView extends React.Component{
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
     responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione, this.props.match.params.idUser);
+    console.log(responseStatus)
+
+    if (responseStatus === 200) {
+      toast.success('Rotazione cancellata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      this.componentDidMount()
+    } else if (responseStatus === 400) {
+      toast.error('Errore nella cancellazione', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+  }
+
+  async handlerDeleteCategoriaStato(idRotazione, key) {
+    console.log(idRotazione + key)
+    let categoriaUtenteApi = new CategoriaUtenteAPI();
+    let responseStatus;
+    responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.props.match.params.idUser);
     console.log(responseStatus)
 
     if (responseStatus === 200) {
@@ -149,6 +183,40 @@ export default class UserProfileView extends React.Component{
           </MDBRow>;
     }
 
+    function getCategoriaStatoUtente() {
+      return <MDBCard>
+        <MDBCardBody className="text-center">
+          <MDBCardTitle>Categorie utente
+            <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></AggiungiCategoriaStato>
+          </MDBCardTitle>
+          <MDBTable align="middle">
+            <MDBTableHead>
+              <tr>
+                <th scope='col'>Categoria</th>
+                <th scope='col'>Inizio validità</th>
+                <th scope='col'>Fine validità</th>
+                <th scope='col'></th>
+              </tr>
+            </MDBTableHead>
+            <MDBTableBody>
+              {this.state.categorie_utente.map((data, key) => {
+                if (data.categoria === "OVER_62")
+                  data.fine = "//"
+                return (
+                  <tr key={key}>
+                    <td>{data.categoria}</td>
+                    <td>{data.inizio}</td>
+                    <td>{data.fine}</td>
+                    <td><IconButton aria-label="delete" onClick={() => this.handlerDeleteCategoriaStato(data.categoriaUtenteId, key)}> </IconButton> </td>
+                  </tr>
+                )
+              })}
+            </MDBTableBody>
+          </MDBTable>
+        </MDBCardBody>
+      </MDBCard>;
+    }
+
     return (
       <section style={{backgroundColor: '#eee'}}>
         <MDBContainer className="py-5">
@@ -173,7 +241,7 @@ export default class UserProfileView extends React.Component{
                 <MDBCardBody>
                   <MDBCardTitle>Informazioni utente
                     <Button size="small"><i
-                    className="fas fa-edit fa-lg"> </i>
+                      className="fas fa-edit fa-lg"> </i>
                     </Button>
                   </MDBCardTitle>
                   <MDBRow>
@@ -229,35 +297,7 @@ export default class UserProfileView extends React.Component{
           <MDBRow>
             {getTurnazioniSpecializzando.call(this)}
             <MDBCol>
-              <MDBCard>
-                <MDBCardBody className="text-center">
-                  <MDBCardTitle>Categorie utente
-                    <Button size="small"><i className="fas fa-edit fa-lg"> </i></Button>
-                  </MDBCardTitle>
-                  <MDBTable align="middle">
-                    <MDBTableHead>
-                      <tr>
-                        <th scope='col'>Categoria</th>
-                        <th scope='col'>Inizio validità</th>
-                        <th scope='col'>Fine validità</th>
-                      </tr>
-                    </MDBTableHead>
-                    <MDBTableBody>
-                      {this.state.categorie_utente.map((data, key) => {
-                        if (data.categoria === "OVER_62")
-                          data.fine = "//"
-                        return (
-                          <tr key={key}>
-                            <td>{data.categoria}</td>
-                            <td>{data.inizio}</td>
-                            <td>{data.fine}</td>
-                          </tr>
-                        )
-                      })}
-                    </MDBTableBody>
-                  </MDBTable>
-                </MDBCardBody>
-              </MDBCard>
+              {getCategoriaStatoUtente.call(this)}
             </MDBCol>
           </MDBRow>
         </MDBContainer>

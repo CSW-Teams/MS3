@@ -5,6 +5,12 @@ export class CategoriaUtenteAPI {
     return response.status;
   }
 
+  async deleteStato(idRotazione, idUtente){
+    const response = await fetch('/api/categorie/stato_id='+idRotazione+'/utente_id='+idUtente, { method: 'DELETE' });
+    return response.status;
+  }
+
+
   async getCategoriaUtente(idUtente) {
     const response = await fetch('/api/categorie/stato/utente_id='+idUtente);
     const body = await response.json();
@@ -78,6 +84,32 @@ export class CategoriaUtenteAPI {
       body: JSON.stringify(turnazione)
     };
     const url = "/api/categorie/turnazioni/utente_id=" + utente_id;
+    const response = await fetch(url , requestOptions);
+    return response.status;
+
+  }
+
+  async postAggiungiStato(categoria,dataInizio,dataFine, utente_id) {
+
+    let cat = new Object;
+    cat.nome = categoria;
+    cat.tipo = 0; // = tipo stato
+
+    let turnazione = new Object();
+
+    turnazione.categoria = cat
+    turnazione.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+    turnazione.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
+
+    console.log("turnazioni:")
+    console.log(turnazione)
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(turnazione)
+    };
+    const url = "/api/categorie/stato/utente_id=" + utente_id;
     const response = await fetch(url , requestOptions);
     return response.status;
 
