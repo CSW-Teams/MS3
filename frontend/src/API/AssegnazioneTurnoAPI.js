@@ -21,22 +21,42 @@ export  class AssegnazioneTurnoAPI {
 
         let utenti_guardia = [];
         let utenti_reperibili = [];
+        let utenti_guardia_id = [];
+        let utenti_reperibili_id = []
 
 
         for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
-             utenti_guardia[j] = body[i].utentiDiGuardia[j].id;
-          }
+          let utenteAllocato = new Object()
+          utenteAllocato.id = body[i].utentiDiGuardia[j].id;
+          utenteAllocato.nome = body[i].utentiDiGuardia[j].nome;
+          utenteAllocato.cognome = body[i].utentiDiGuardia[j].cognome;
+          utenteAllocato.ruoloEnum = body[i].utentiDiGuardia[j].ruoloEnum;
+          utenteAllocato.label = utenteAllocato.nome+" "+utenteAllocato.cognome+" - "+utenteAllocato.ruoloEnum;
+          utenti_guardia[j] = utenteAllocato;
+          utenti_guardia_id[j] = utenteAllocato.id;
+        }
 
         for (let j = 0; j < body[i].utentiReperibili.length; j++) {
-            utenti_reperibili[j] = body[i].utentiReperibili[j].id;
+          let utenteReperibile = new Object()
+          utenteReperibile.id = body[i].utentiReperibili[j].id;
+          utenteReperibile.nome = body[i].utentiReperibili[j].nome;
+          utenteReperibile.cognome = body[i].utentiReperibili[j].cognome;
+          utenteReperibile.ruoloEnum = body[i].utentiReperibili[j].ruoloEnum;
+          utenteReperibile.label = utenteReperibile.nome+" "+utenteReperibile.cognome+" - "+utenteReperibile.ruoloEnum;
+          utenti_reperibili[j] = utenteReperibile;
+          utenti_reperibili_id[j] = utenteReperibile.id;
         }
 
         turno.utenti_guardia = utenti_guardia;
         turno.utenti_reperibili = utenti_reperibili;
+        turno.utenti_guardia_id = utenti_guardia_id;
+        turno.utenti_reperibili_id = utenti_reperibili_id;
 
       turno.tipologia = body[i].tipologiaTurno;
       turno.servizio = body[i].servizio.nome;
       turno.mansione = body[i].mansione;
+      console.log(turno.mansione)
+      turno.reperibilitaAttiva = body[i].reperibilitaAttiva;
 
       turni[i] = turno;
 
@@ -82,7 +102,7 @@ export  class AssegnazioneTurnoAPI {
    * 400 se i parametri della richiesta sono malformati e il backend non è riuscito a interpretarli;
    * 406 se la richiesta di assegnazone è stata rigettata, ad esempio perché violerebbe dei vincoli per la sua pianificazione.
    */
-  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,forced) {
+  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,mansione,forced) {
 
       let assegnazioneTurno = new Object();
 
@@ -93,6 +113,7 @@ export  class AssegnazioneTurnoAPI {
       assegnazioneTurno.forced = forced;
 
       assegnazioneTurno.servizio = servizioNome;
+      assegnazioneTurno.mansione = mansione;
       assegnazioneTurno.tipologiaTurno = turnoTipologia
       assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
       assegnazioneTurno.utentiReperibili = utentiReperibilita;

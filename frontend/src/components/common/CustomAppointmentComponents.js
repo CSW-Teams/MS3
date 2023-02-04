@@ -1,6 +1,6 @@
 import React from "react";
 import {Grid} from "@mui/material";
-import {getAppointmentColor} from "../../utils/utils";
+import {Appointments} from "@devexpress/dx-react-scheduler-material-ui";
 import AccessTime from '@mui/icons-material/AccessTime';
 import Lens from '@mui/icons-material/Lens';
 import {HOUR_MINUTE_OPTIONS, WEEKDAY_INTERVAL, viewBoundText } from '@devexpress/dx-scheduler-core';
@@ -124,41 +124,40 @@ export const Content = ({
             <Grid container alignItems="center" >
               <div className={tooltip_classes.text}> Allocati : </div>
             </Grid>
-            { appointmentResources.slice(0, appointmentData.utenti_guardia.length).map(resourceItem => (
-              <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
+            {/*{ appointmentResources.slice(0, appointmentData.utenti_guardia.length).map(resourceItem => (*/}
+            { appointmentData.utenti_guardia.map(resourceItem => (
+              <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.id}`}>
                 <Grid item xs={2} className={tooltip_classes.textCenter}>
                   <div className={tooltip_classes.relativeContainer}>
                     <Lens
                       className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
-                      style={{ color: getAppointmentColor(300, resourceItem.color) }}
                     />
                   </div>
                 </Grid>
                 <Grid item xs={10}>
                   <div className={tooltip_classes.text}>
-                    {resourceItem.text}
+                    {resourceItem.label}
                   </div>
                 </Grid>
               </Grid>
             ))}
-            { appointmentData.mansione === "GUARDIA" ? (
+            { appointmentData.reperibilitaAttiva === true ? (
               <div>
                 <Grid item xs={2}>
                   <div className={tooltip_classes.text}> Reperibili </div>
                 </Grid>
-                {appointmentResources.slice(appointmentData.utenti_guardia.length, appointmentData.utenti_guardia.length + appointmentData.utenti_reperibili.length).map(resourceItem => (
-                  <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.fieldName}_${resourceItem.id}`}>
+                { appointmentData.utenti_reperibili.map(resourceItem => (
+                  <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.id}`}>
                     <Grid item xs={2} className={tooltip_classes.textCenter}>
                       <div className={tooltip_classes.relativeContainer}>
                         <Lens
                           className={classNames(tooltip_classes.lens, tooltip_classes.lensMini)}
-                          style={{ color: getAppointmentColor(300, resourceItem.color) }}
                         />
                       </div>
                     </Grid>
                     <Grid item xs={10}>
                       <div className={tooltip_classes.text}>
-                        {resourceItem.text}
+                        {resourceItem.label}
                       </div>
                     </Grid>
                   </Grid>
@@ -222,7 +221,9 @@ export class AppointmentContent extends React.Component{
      * usando gli ids salvati nell'oggetto turno.
      */
     if (this.state.data.schedulableType == SchedulableType.AssignedShift) {
-      let utenteAPI = new UtenteAPI();
+      this.setState({utenti_allocati: this.state.data.utenti_guardia})
+      this.setState({utenti_riserve: this.state.data.utenti_reperibili})
+      /*let utenteAPI = new UtenteAPI();
       let utente;
 
       this.state.data.utenti_guardia.forEach(async (userId) => {
@@ -237,7 +238,7 @@ export class AppointmentContent extends React.Component{
           utenti_riserve: [...this.state.utenti_riserve, utente]
         });
       });
-    }
+*/    }
   }
 
   render() {
@@ -261,7 +262,7 @@ export class AppointmentContent extends React.Component{
             </ul>
             </div>
 
-            {this.state.data.mansione === "GUARDIA" ? (
+            {this.state.data.reperibilitaAttiva === true ? (
               <div style={{ display: "inline-block" }}>
                 Reperibili:
                 <ul>
@@ -281,13 +282,19 @@ export class AppointmentContent extends React.Component{
      * Mostriamo solo il nome della festività
      */
     return (
-      <StyledAppointmentsAppointmentContent {...this.state.restProps} formatDate={this.state.formatDate} data={this.state.data}>
+
+      <Appointments.Appointment
+        {...this.state.restProps}
+        style={{
+          backgroundColor: 'red',
+        }}
+      >
         <div className={classes.container}>
           <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "font-weight": "bold" }}>
             {this.state.data.title}
           </div>
         </div>
-      </StyledAppointmentsAppointmentContent>
+      </Appointments.Appointment>
     );
   }
   }

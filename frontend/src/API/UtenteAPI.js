@@ -20,7 +20,7 @@ export  class UtenteAPI {
 
     //Dummy user to change holiday color
     const dummy = new Object;
-    dummy.text ="Ih-Oh";
+    dummy.text ="";
     dummy.id = -1;
     dummy.color = red;
     utenti[body.length] = dummy

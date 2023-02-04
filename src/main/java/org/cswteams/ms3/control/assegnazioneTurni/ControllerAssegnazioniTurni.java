@@ -53,9 +53,6 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
 
         AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()),turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
 
-        if(!checkAssegnazioneTurno(assegnazioneTurno)){
-            throw new AssegnazioneTurnoException("Collisione tra utenti reperibili e di guardia");
-        }
         return assegnazioneTurnoDao.save(assegnazioneTurno);
     }
 
@@ -85,17 +82,5 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
         return assegnazioneTurnoDao.findById(idAssegnazione).get();
     }
 
-
-    private boolean checkAssegnazioneTurno(AssegnazioneTurno turno) {
-
-        for(Utente utente1: turno.getUtentiDiGuardia()){
-            for(Utente utente2: turno.getUtentiReperibili()){
-                if (utente1.getId().longValue() == utente2.getId().longValue()){
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
 }

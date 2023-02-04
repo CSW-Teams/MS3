@@ -117,7 +117,7 @@ class ScheduleView extends React.Component{
 
               for (let i = 0; i < shift.utenti_guardia.length; i++)
                 for (let j = 0; j < users.length; j++)
-                  if(users[j].id === shift.utenti_guardia[i])
+                  if(users[j].id === shift.utenti_guardia[i].id)
                     return true;
 
               return users.length === 0
@@ -135,7 +135,7 @@ class ScheduleView extends React.Component{
       this.setState({ mainResourceName });
     }
 
-    
+
     /**
      * Questa funzione verrà invocata nel momento in cui il pianificatore effettua una modifica su una assegnazione turno.
      * Le modifiche effettuate su una assegnazione turno già esistente verranno inviate al backend.
@@ -268,14 +268,12 @@ class ScheduleView extends React.Component{
       this.forceUpdate();
     }
 
-    
+
     async componentDidMount(turni, utenti){
 
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UtenteAPI().getAllUsersInfo();
       let allHolidays = await new HolidaysAPI().getHolidays();
-
-
 
       this.setState(
         {
@@ -284,10 +282,10 @@ class ScheduleView extends React.Component{
           resources:
             [
               {
-                fieldName: 'utenti_guardia', title: 'Guardia',allowMultiple: true, instances: utenti,
+                fieldName: 'utenti_guardia_id', title: 'Guardia',allowMultiple: true, instances: utenti,
               }
               ,{
-             fieldName:'utenti_reperibili', title: 'Reperibilità',allowMultiple: true, instances: utenti,
+             fieldName:'utenti_reperibili_id', title: 'Reperibilità',allowMultiple: true, instances: utenti,
             },
             ],
             allServices: new Set(allServices),
