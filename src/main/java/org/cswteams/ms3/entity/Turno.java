@@ -13,10 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Data
@@ -64,7 +61,7 @@ public class Turno {
     @OneToMany(cascade = CascadeType.ALL)
     private List<UserCategoryPolicy> categoryPolicies;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean giornoSuccessivo, List<RuoloNumero> ruoliNumero) throws  TurnoException {
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean giornoSuccessivo, List<RuoloNumero> ruoliNumero, boolean reperibilitaAttiva) throws  TurnoException {
 
         // Se l'ora di inizio segue l'ora di fine verrà sollevata eccezione solo se il turno non è configurato
         // per iniziare in un giorno e finire in quello seguente
@@ -92,20 +89,25 @@ public class Turno {
         this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
 
         this.ruoliNumero = ruoliNumero;
+        this.reperibilitaAttiva = reperibilitaAttiva;
     }
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero) throws  TurnoException {
-        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, ruoliNumero);
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero, boolean reperibilitaAttiva) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, ruoliNumero, reperibilitaAttiva);
     }
 
-    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia) throws  TurnoException {
-        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, new ArrayList<>());
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean reperibilitaAttiva) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, new ArrayList<>(Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1),new RuoloNumero(RuoloEnum.STRUTTURATO,1))), reperibilitaAttiva);
+    }
+
+    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean reperibilitaAttiva) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, new ArrayList<>(Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1),new RuoloNumero(RuoloEnum.STRUTTURATO,1))),reperibilitaAttiva);
         this.id = id;
     }
 
     public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, MansioneEnum mansione) throws  TurnoException {
-        this(id, oraInizio, oraFine, servizio, mansione, tipologiaTurno);
+            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, MansioneEnum mansione, boolean reperibilitaAttiva) throws  TurnoException {
+        this(id, oraInizio, oraFine, servizio, mansione, tipologiaTurno, reperibilitaAttiva);
         this.giorniDiValidità = giorniDiValidità;
     }
 
