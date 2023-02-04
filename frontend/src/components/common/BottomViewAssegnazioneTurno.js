@@ -118,12 +118,8 @@ export default function TemporaryDrawer(props) {
      * oppure se è stata rigettata.
      * In quest'ultimo caso ci verranno forniti dei messaggi informativi per l'utente riguardo a cosa è andato storto.
      */
-
-
     const mansione = turno.toString().substring(turno.toString().lastIndexOf(" ")+1, turno.toString().length)
-    console.log(mansione)
     const tipologiaTurno = turno.toString().substring(0,turno.toString().indexOf(" "))
-    console.log(tipologiaTurno)
     response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.

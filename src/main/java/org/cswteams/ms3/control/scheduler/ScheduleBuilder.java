@@ -144,8 +144,7 @@ public class ScheduleBuilder {
     /** Applica tutti i vincoli al contesto specificato.
      * Se un vincolo viene violato, viene aggiunto al log delle violazioni della pianificazione.
      * Se il vincolo violato è stringente, lo stato della pianificazione è impostato a illegale
-     * e la causa è impostata con la suddetta violazione, infine ritorna al chiamante senza controllare
-     * gli altri vincoli.
+     * e la causa è impostata con la suddetta violazione.
      * @param contesto
      * @param isForced se dobbiamo forzare i vincoli non stringenti
      * @return True se non sono accadute violazioni oppure le uniche violazione accadute riguardano
@@ -153,6 +152,9 @@ public class ScheduleBuilder {
      */
     private boolean verificaTuttiVincoli(ContestoVincolo contesto, boolean isForced){
 
+        /** Questa flag ci comunica se è stata riscontrata una violazione dei vincoli */
+        boolean isOk = true;
+        
         for(Vincolo vincolo : this.allConstraints){
             try {
                 vincolo.verificaVincolo(contesto);
@@ -160,14 +162,15 @@ public class ScheduleBuilder {
 
                 schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
                 
-                // se il vincolo violato è stringente, la schedulazione è illegale
+                // se il vincolo violato è stringente, la schedulazione è illegale.
+                // Inoltre, segnaliamo che almeno un vincolo è stato violato
                 if (!vincolo.isViolabile() || (vincolo.isViolabile() && !isForced)){
-                    return false;
+                    isOk = false;
                 }
 
             }
         }
-        return true;
+        return isOk;
     }
 
     /** Aggiunge un'assegnazione turno manualmente alla pianificazione.
@@ -180,12 +183,14 @@ public class ScheduleBuilder {
 
             if (!verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at), forced)){
                 schedule.taint(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
-
             }
-            this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
         }
-        if(!schedule.isIllegal())
+        if(!schedule.isIllegal()){
+            for (Utente u : at.getUtenti()){
+                this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
+            }
             this.schedule.getAssegnazioniTurno().add(at);
+        }
 
         return this.schedule;
     }

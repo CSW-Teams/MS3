@@ -23,10 +23,6 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
      */
     private boolean checkPolicy(UserCategoryPolicy ucp, Utente utente, LocalDate dataTurno){
         
-        if (utente.getNome().equals("Martina") && ucp.getCategoria().getNome().equals("REPARTO CARDIOLOGIA")){
-            int stop = 0;
-        }
-        
         // Se sto considerando lo specializzando non prendo in considerazione categorie di tipo specializzazione,
         // Se sto considerando lo strutturato, non prendo in considerazione categorie di tipo turnazione
         int tipoCategoria = ucp.getCategoria().getTipo();
@@ -62,14 +58,18 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
         Utente utente = contesto.getUserScheduleState().getUtente();
         AssegnazioneTurno aTurno = contesto.getAssegnazioneTurno();
+        List<UserCategoryPolicy> brokenPolicies = new ArrayList<>();
 
         // confronta le policies con le categorie dell'utente
         for(UserCategoryPolicy ucp : aTurno.getTurno().getCategoryPolicies()){
 
             if(!checkPolicy(ucp, utente, aTurno.getData())){
-                throw new ViolatedVincoloCategorieUtenteTurnoException(aTurno, ucp, utente);
+                brokenPolicies.add(ucp);
             }
                 
+        }
+        if(!brokenPolicies.isEmpty()){
+            throw new ViolatedVincoloCategorieUtenteTurnoException(aTurno, brokenPolicies, utente);
         }
 
     }
