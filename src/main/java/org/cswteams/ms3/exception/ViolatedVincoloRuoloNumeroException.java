@@ -9,8 +9,8 @@ import org.cswteams.ms3.enums.RuoloEnum;
 public class ViolatedVincoloRuoloNumeroException extends ViolatedConstraintException{
 
     public ViolatedVincoloRuoloNumeroException(AssegnazioneTurno assegnaione, Utente utente) {
-        super(String.format("Il turno %s del giorno %s in %s non può essere allocato. Sono stati allocati troppi utenti con ruolo %s. Il problema riguarda l'utente %s %s",
-                assegnaione.getTurno().getTipologiaTurno(), ConvertitoreData.daStandardVersoTestuale(assegnaione.getData().toString()), assegnaione.getTurno().getServizio().getNome(),utente.getRuoloEnum().toString(), utente.getNome(), utente.getCognome()));
+        super(String.format("Il turno %s %s del giorno %s in %s non può essere allocato. Sono stati allocati troppi utenti con ruolo %s. Il problema riguarda l'utente %s %s",
+        assegnaione.getTurno().getMansione(), assegnaione.getTurno().getTipologiaTurno(), ConvertitoreData.daStandardVersoTestuale(assegnaione.getData().toString()), assegnaione.getTurno().getServizio().getNome(),utente.getRuoloEnum().toString(), utente.getNome(), utente.getCognome()));
     }
 
     public ViolatedVincoloRuoloNumeroException(AssegnazioneTurno assegnaione, RuoloNumero ruoloNumero, int numero) {

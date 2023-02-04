@@ -49,6 +49,6 @@ public class CategoriaUtente {
      */
     public boolean isValid(LocalDate when){
 
-            return (when.isBefore(inizioValidità) || when.isAfter(fineValidità));
+            return when.compareTo(inizioValidità) >= 0 && when.compareTo(fineValidità) <= 0;
     }
 }

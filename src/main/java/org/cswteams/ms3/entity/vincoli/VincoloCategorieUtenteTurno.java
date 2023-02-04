@@ -22,6 +22,11 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
      * @return @{code true} se la policy è rispettata, {@code false} altrimenti
      */
     private boolean checkPolicy(UserCategoryPolicy ucp, Utente utente, LocalDate dataTurno){
+        
+        if (utente.getNome().equals("Martina") && ucp.getCategoria().getNome().equals("REPARTO CARDIOLOGIA")){
+            int stop = 0;
+        }
+        
         // Se sto considerando lo specializzando non prendo in considerazione categorie di tipo specializzazione,
         // Se sto considerando lo strutturato, non prendo in considerazione categorie di tipo turnazione
         int tipoCategoria = ucp.getCategoria().getTipo();
@@ -42,12 +47,10 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
                 daControllare = utente.getTurnazioni();
                 break;
         }
-
+        
         for(CategoriaUtente categoriaUtente: daControllare){
-            if(categoriaUtente.getCategoria().getNome() == categoria.getNome()){
-                if ((categoriaUtente.getInizioValidità().isBefore(dataTurno) || categoriaUtente.getInizioValidità().isEqual(dataTurno)) && (categoriaUtente.getFineValidità().isAfter(dataTurno) || categoriaUtente.getFineValidità().isEqual(dataTurno))) {
-                    return ucp.getPolicy() != UserCategoryPolicyValue.EXCLUDE;
-                }
+            if(categoriaUtente.getCategoria().getNome().equals(categoria.getNome()) && categoriaUtente.isValid(dataTurno)){
+                return ucp.getPolicy() != UserCategoryPolicyValue.EXCLUDE;
 
             }
         }

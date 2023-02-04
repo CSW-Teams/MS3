@@ -12,6 +12,7 @@ import org.cswteams.ms3.exception.NotEnoughFeasibleUsersException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.RuoloNumero;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.UserScheduleState;
 import org.cswteams.ms3.entity.Utente;
@@ -65,7 +66,6 @@ public class ScheduleBuilder {
      * @throws UnableToBuildScheduleException
      * */
     public Schedule build() throws UnableToBuildScheduleException{
-        Set<Utente> utentiGuardia;
 
         // we need to clear violations and illegal state, if any
         schedule.purify();
@@ -75,21 +75,33 @@ public class ScheduleBuilder {
             try {
                 
                 // Prima pensiamo a riempire le allocazioni, che sono le più importante
-                this.aggiungiUtenti(at,at.getTurno().getNumUtentiGuardia(),at.getUtentiDiGuardia());
-                for (Utente u : at.getUtentiDiGuardia()){
-                    allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
+                
+                for (RuoloNumero rn : at.getTurno().getRuoliNumero()){
+                    this.aggiungiUtenti(at, rn.getNumero(), at.getUtentiDiGuardia());
                 }
-
-                // Passo poi a riempire le riserve
-                this.aggiungiUtenti(at,at.getTurno().getNumUtentiGuardia(),at.getUtentiReperibili());
-
             } catch (NotEnoughFeasibleUsersException e) {
                 
                 // non ci sono abbastanza allocati o riserve per questa assegnazione turno, loggiamo l'evento
                 // e rendiamo la pianificazione illegale, infine ritorniamo al chiamante
                 logger.log(Level.SEVERE, e.getMessage(), e);
                 schedule.taint(e);
+
+                logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
+                for (ViolatedConstraintLogEntry vclEntry : schedule.getViolatedConstraintLog()){
+                    logger.log(Level.SEVERE, vclEntry.toString());
+                }
+
                 return this.schedule;
+            }
+                
+            // Passo poi a riempire le riserve
+            try {
+                for (RuoloNumero rn : at.getTurno().getRuoliNumero()){
+                    this.aggiungiUtenti(at, rn.getNumero(), at.getUtentiReperibili());
+                }
+            } catch (NotEnoughFeasibleUsersException e){
+                // loggiamo l'evento, tuttavia non interrompiamo la pianificazione
+                logger.log(Level.SEVERE, e.getMessage(), e);
             }
         }
 

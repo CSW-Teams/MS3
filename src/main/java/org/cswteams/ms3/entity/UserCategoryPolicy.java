@@ -36,8 +36,6 @@ import org.cswteams.ms3.dao.CategorieDao;
      * La registrazione di questa policy nel db implica che tale categoria è da escludere
      * o da includere per un turno. Se così non fosse, non sarebbe stata registrata.
      * 
-     * @return {@code true}  --> la categoria è necessaria
-     * {@code false} --> la categoria è vietata
      * 
     */
     @NonNull

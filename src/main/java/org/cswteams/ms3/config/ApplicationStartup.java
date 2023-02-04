@@ -1,7 +1,6 @@
 package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
-import org.cswteams.ms3.control.preferenze.CalendarSetting;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.dao.*;
@@ -24,8 +23,6 @@ import java.io.IOException;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Component()
 @Profile("!test")
@@ -38,9 +35,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private UtenteDao utenteDao;
-
-    @Autowired
-    private AssegnazioneTurnoDao assegnazioneTurnoDao;
 
     @Autowired
     private TurnoDao turnoDao;
@@ -56,9 +50,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private IHolidayController holidayController;
-
-    @Autowired
-    private ScheduleDao dao;
 
     @Autowired
     private VincoloDao vincoloDao;
@@ -165,21 +156,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         //Creo categorie stato per un utente specifico
         CategoriaUtente categoriaOver62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2022,3,7), LocalDate.now().plusDays(1000));
         categoriaUtenteDao.save(categoriaOver62);
-        CategoriaUtente ferie = new CategoriaUtente(categoriaFerie,LocalDate.now(), LocalDate.now().plusDays(7));
+        CategoriaUtente ferie = new CategoriaUtente(categoriaFerie,LocalDate.now().minusDays(70), LocalDate.now().plusDays(7));
         categoriaUtenteDao.save(ferie);
-        CategoriaUtente cardiologo = new CategoriaUtente(cardiologia,LocalDate.now(), LocalDate.now().plusDays(10000));
+        CategoriaUtente cardiologo = new CategoriaUtente(cardiologia,LocalDate.now().minusDays(70), LocalDate.now().plusDays(10000));
         categoriaUtenteDao.save(cardiologo);
-        CategoriaUtente oncologo = new CategoriaUtente(oncologia,LocalDate.now(), LocalDate.now().plusDays(10000));
+        CategoriaUtente oncologo = new CategoriaUtente(oncologia,LocalDate.now().minusDays(70), LocalDate.now().plusDays(10000));
         categoriaUtenteDao.save(oncologo);
 
 
-        CategoriaUtente repartoCardiologia = new CategoriaUtente(reparto_cardiologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        CategoriaUtente repartoCardiologia = new CategoriaUtente(reparto_cardiologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
         categoriaUtenteDao.save(repartoCardiologia);
-        CategoriaUtente ambulatorioCardiologia = new CategoriaUtente(ambulatorio_cardiologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        CategoriaUtente ambulatorioCardiologia = new CategoriaUtente(ambulatorio_cardiologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
         categoriaUtenteDao.save(ambulatorioCardiologia);
-        CategoriaUtente repartoOncologia = new CategoriaUtente(reparto_oncologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        CategoriaUtente repartoOncologia = new CategoriaUtente(reparto_oncologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
         categoriaUtenteDao.save(repartoOncologia);
-        CategoriaUtente ambulatorioOncologia = new CategoriaUtente(ambulatorio_oncologia, LocalDate.now(),LocalDate.now().plusMonths(2));
+        CategoriaUtente ambulatorioOncologia = new CategoriaUtente(ambulatorio_oncologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
         categoriaUtenteDao.save(ambulatorioOncologia);
 
         //Creo utenti
@@ -301,20 +292,20 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
 
-        Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,2,2);
+        Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
         t1.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
                 new UserCategoryPolicy(categoriaFerie, t1,  UserCategoryPolicyValue.EXCLUDE)
         ));
 
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,2,0);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
         t2.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t2,  UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(reparto_cardiologia, t2, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,2,0);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
         t3.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t3,  UserCategoryPolicyValue.EXCLUDE),
@@ -323,7 +314,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             new UserCategoryPolicy(reparto_cardiologia, t3, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, 2,0);
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
         t5.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t5, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t5,  UserCategoryPolicyValue.EXCLUDE),
@@ -331,7 +322,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             new UserCategoryPolicy(ambulatorio_cardiologia, t5, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, 2,0);
+        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
         t6.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(categoriaMalattia, t6, UserCategoryPolicyValue.EXCLUDE),
                 new UserCategoryPolicy(categoriaFerie, t6,  UserCategoryPolicyValue.EXCLUDE),
@@ -350,7 +341,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     /** Metodo che server per caricare le festività dell'anno 2023/2024*/
     public void LoadHoliday() throws IOException {
         List<List<String>> data = new ArrayList<>();
-        String currPath = System.getProperty("user.dir");
         //String filePath = currPath+"\\src\\main\\resources\\holiday.csv";
         String filePath = "";
         File file = new File("src/main/resources/holiday.csv");

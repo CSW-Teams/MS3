@@ -1,10 +1,8 @@
 package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AccessLevel;
 import lombok.Data;
 
-import lombok.Setter;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
@@ -38,10 +36,10 @@ public class Turno {
 
     //Utile nel caso di turno notturno. Questa variabile sarà vera se un turno inizia un giorno e termina il successivo.
     private boolean giornoSuccessivo;
-    @Setter(AccessLevel.NONE)
-    private int numUtentiReperibilita;
-    @Setter(AccessLevel.NONE)
-    private int numUtentiGuardia;
+    //@Setter(AccessLevel.NONE)
+    //private int numUtentiReperibilita;
+    //@Setter(AccessLevel.NONE)
+    //private int numUtentiGuardia;
 
     private boolean reperibilitaAttiva;
 
@@ -66,7 +64,7 @@ public class Turno {
     @OneToMany(cascade = CascadeType.ALL)
     private List<UserCategoryPolicy> categoryPolicies;
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean giornoSuccessivo, int numUtentiGuardia, int numUtentiReperibilita) throws  TurnoException {
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean giornoSuccessivo, List<RuoloNumero> ruoliNumero) throws  TurnoException {
 
         // Se l'ora di inizio segue l'ora di fine verrà sollevata eccezione solo se il turno non è configurato
         // per iniziare in un giorno e finire in quello seguente
@@ -83,7 +81,7 @@ public class Turno {
         }
         if(!check) throw new TurnoException("Mansione inserita non compatibile con il servizio inserito");
 
-        setNumUtentiGuardiaReperibilita(numUtentiGuardia, numUtentiReperibilita);
+        //setNumUtentiGuardiaReperibilita(numUtentiGuardia, numUtentiReperibilita);
 
         this.giornoSuccessivo = giornoSuccessivo;
         this.oraInizio = oraInizio;
@@ -93,23 +91,21 @@ public class Turno {
         this.tipologiaTurno = tipologia;
         this.giorniDiValidità = (new GiorniDellaSettimanaBitMask()).enableAllDays();
 
-        this.ruoliNumero = new ArrayList<>();
-        ruoliNumero.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
-        ruoliNumero.add(new RuoloNumero(RuoloEnum.STRUTTURATO,1));
+        this.ruoliNumero = ruoliNumero;
     }
 
-    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, int numUtentiGuardia, int numUtentiReperibilita) throws  TurnoException {
-        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, numUtentiGuardia, numUtentiReperibilita);
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, ruoliNumero);
     }
 
-    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, int numUtentiGuardia, int numUtentiReperibilita) throws  TurnoException {
-        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, numUtentiGuardia, numUtentiReperibilita);
+    public Turno(long id,LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, new ArrayList<>());
         this.id = id;
     }
 
     public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, LocalTime oraFine,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, MansioneEnum mansione, int numUtentiGuardia, int numUtentiReperibilita) throws  TurnoException {
-        this(id, oraInizio, oraFine, servizio, mansione, tipologiaTurno, numUtentiGuardia, numUtentiReperibilita);
+            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, MansioneEnum mansione) throws  TurnoException {
+        this(id, oraInizio, oraFine, servizio, mansione, tipologiaTurno);
         this.giorniDiValidità = giorniDiValidità;
     }
 
@@ -122,24 +118,6 @@ public class Turno {
 
     public void setGiornoSuccessivo(){
         this.giornoSuccessivo = true;
-    }
-
-    public void setNumUtentiGuardiaReperibilita(int numGuardia, int numReperibilita) throws TurnoException {
-        if(numGuardia < 0 || numReperibilita < 0){
-            throw new TurnoException("Numero di utenti inserito non valido");
-        }
-        else {
-            this.numUtentiGuardia = numGuardia;
-            if(numReperibilita == 0){
-                reperibilitaAttiva = false;
-                // Il nostro sistema mantiene comunque delle riserve per il turno
-                this.numUtentiReperibilita = numGuardia;
-            }else{
-                reperibilitaAttiva = true;
-                this.numUtentiReperibilita = numReperibilita;
-
-            }
-        }
     }
 
     //Restituisce il numero di minuto di lavoro per questo turno
@@ -169,6 +147,20 @@ public class Turno {
             }
         }
         return categorieVietate;
+    }
+
+    /**
+     * Calcola il numero di utenti necessari per il turno sommando
+     * il numero di utenti richiesto per ogni ruolo.
+     * @return numero di utenti necessari per il turno.
+     */
+    public int getNumRequiredUsers(){
+
+        int numUtenti = 0;
+        for(RuoloNumero ruoloNumero: ruoliNumero){
+            numUtenti += ruoloNumero.getNumero();
+        }
+        return numUtenti;
     }
 
 }

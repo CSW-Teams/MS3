@@ -37,8 +37,8 @@ public class VincoloUbiquitàTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         //Servizio servizio2 = new Servizio("ambulatorio");
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,2,2);
-        Turno t2 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,2,2);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t2 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
 
         Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
 
@@ -62,8 +62,8 @@ public class VincoloUbiquitàTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         Servizio servizio2 = new Servizio("cardiologia");
         servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,2,2);
-        Turno t2 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,2,2);
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t2 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
 
         Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
 

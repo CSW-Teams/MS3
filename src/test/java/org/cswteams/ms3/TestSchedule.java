@@ -24,6 +24,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import javax.transaction.Transactional;
+import java.util.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -94,8 +95,7 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
                 servizio1,
                 MansioneEnum.REPARTO,
                 TipologiaTurno.NOTTURNO,
-                1,
-                0
+                Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1))
                );
         turnoDao.saveAndFlush(t1);
         userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaIncinta, t1, UserCategoryPolicyValue.EXCLUDE));

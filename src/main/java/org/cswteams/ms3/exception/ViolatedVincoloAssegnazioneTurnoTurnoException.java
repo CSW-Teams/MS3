@@ -7,8 +7,8 @@ import org.cswteams.ms3.entity.Utente;
 public class ViolatedVincoloAssegnazioneTurnoTurnoException extends ViolatedConstraintException{
 
     public ViolatedVincoloAssegnazioneTurnoTurnoException(AssegnazioneTurno turno1, AssegnazioneTurno turno2, Utente utente) {
-        super(String.format("Il turno %s del giorno %s non è compatibile con il turno %s del giorno %s. La violazione del vincolo riguarda l'utente %s %s",
-                turno1.getTurno().getTipologiaTurno(), ConvertitoreData.daStandardVersoTestuale(turno1.getData().toString()), turno2.getTurno().getTipologiaTurno(), ConvertitoreData.daStandardVersoTestuale(turno2.getData().toString()),
+        super(String.format("Il turno %s %s del giorno %s non è compatibile con il turno %s %s del giorno %s. La violazione del vincolo riguarda l'utente %s %s",
+                turno1.getTurno().getTipologiaTurno(), turno1.getTurno().getMansione(), ConvertitoreData.daStandardVersoTestuale(turno1.getData().toString()), turno2.getTurno().getTipologiaTurno(), turno2.getTurno().getMansione(), ConvertitoreData.daStandardVersoTestuale(turno2.getData().toString()),
                 utente.getNome(), utente.getCognome()));
     }
 
