@@ -12,7 +12,7 @@ import java.util.Set;
 public class MappaTurni {
 
     public static Turno turnoDTOToEntity(TurnoDTO dto) throws TurnoException {
-        Turno turno = new Turno(dto.getOraInizio(),dto.getOraFine(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getMansione(), dto.getTipologiaTurno(), dto.getRuoliNumero());
+        Turno turno = new Turno(dto.getOraInizio(),dto.getOraFine(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getMansione(), dto.getTipologiaTurno(), dto.getRuoliNumero(),dto.isReperibilitaAttiva());
         turno.setCategorieVietate(dto.getCategorieVietate());
         return turno;
     }

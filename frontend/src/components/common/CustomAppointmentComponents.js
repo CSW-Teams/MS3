@@ -285,6 +285,8 @@ export class AppointmentContent extends React.Component{
 
       <Appointments.Appointment
         {...this.state.restProps}
+        formatDate={this.state.formatDate}
+        data={this.state.data}
         style={{
           backgroundColor: 'red',
         }}

@@ -96,6 +96,7 @@ export  class AssegnazioneTurnoAPI {
    * @param {*} utentiSelezionatiGuardia
    * @param {*} utentiReperibilita
    * @param {*} servizioNome
+   * @param mansione
    * @param {*} forced
    * @returns La risposta del backend:
    * 202 se è andato tutto ok, dunque la risposta contiene l'oggetto assegnazione generato;

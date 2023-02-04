@@ -278,7 +278,7 @@ class ScheduleView extends React.Component{
       this.setState(
         {
           data:turni,
-          mainResourceName: 'utenti_guardia',
+          mainResourceName: 'utenti_guardia_id',
           resources:
             [
               {
