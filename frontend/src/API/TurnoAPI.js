@@ -16,7 +16,6 @@ export  class TurnoAPI {
       turni[i] = turno
     }
 
-    console.log(turni)
     return turni;
 
   }

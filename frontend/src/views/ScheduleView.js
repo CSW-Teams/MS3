@@ -310,7 +310,7 @@ class ScheduleView extends React.Component{
 
         // add holidays to the schedulables to display
         data.push(...this.state.holidays);
-        console.log(view)
+
         return (
           <React.Fragment>
             <Paper>

@@ -15,8 +15,9 @@ public enum MansioneEnum {
     /**
      * gestisce ricoverati dal pronto soccorso
      */
-    REPARTO,    
-
-
-
+    REPARTO,
+    /**
+     * gestisce, allestisce o partecipa in sala operatoria
+     */
+    SALA_OPERATORIA
 }

@@ -286,8 +286,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Servizio servizio2 = new Servizio("oncologia");
 
 
-        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO, MansioneEnum.GUARDIA));
-        servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO, MansioneEnum.GUARDIA));
+        servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO, MansioneEnum.GUARDIA, MansioneEnum.SALA_OPERATORIA));
+        servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO, MansioneEnum.GUARDIA, MansioneEnum.SALA_OPERATORIA));
 
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
@@ -330,11 +330,20 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 new UserCategoryPolicy(ambulatorio_oncologia, t6, UserCategoryPolicyValue.INCLUDE)
         ));
 
+        // Creazione del turno in sala operatoria in cardiologia ogni lunedì
+        Turno salaOpCardio = new Turno(LocalTime.of(10, 0), LocalTime.of(23, 59), servizio1, MansioneEnum.SALA_OPERATORIA, TipologiaTurno.MATTUTINO, false);
+        GiorniDellaSettimanaBitMask bitmask= new GiorniDellaSettimanaBitMask();
+        bitmask.disableAllDays();
+        salaOpCardio.setGiorniDiValidità(bitmask.addDayOfWeek(DayOfWeek.MONDAY));
+
+        //Salvataggio dei Turni nel DB
         turnoDao.saveAndFlush(t1);
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
         turnoDao.saveAndFlush(t6);
+        turnoDao.saveAndFlush(salaOpCardio);
+
     }
 
 
