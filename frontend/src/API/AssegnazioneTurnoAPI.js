@@ -136,8 +136,8 @@ export  class AssegnazioneTurnoAPI {
 
     let assegnazioneModificata = new Object();
     assegnazioneModificata.idAssegnazione = appointmentChanged.id;
-    assegnazioneModificata.utenti_guardia = changes.utenti_guardia
-    assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili
+    assegnazioneModificata.utenti_guardia = changes.utenti_guardia_id
+    assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili_id
     assegnazioneModificata.utenteModificatoreId = idLoggato;
 
     const requestOptions = {
@@ -161,14 +161,14 @@ async richiediRinunciaTurno(utenteCambio,assegnazione,idLoggato) {
   assegnazioneConModifiche.utenteModificatoreId = idLoggato;
 
   for(let i =0; i<assegnazione.utenti_guardia.length; i++){
-    assegnazioneConModifiche.utenti_guardia[i] = assegnazione.utenti_guardia[i]
-    if(assegnazione.utenti_guardia[i] == idLoggato)
+    assegnazioneConModifiche.utenti_guardia[i] = assegnazione.utenti_guardia_id[i]
+    if(assegnazione.utenti_guardia_id[i] == idLoggato)
       assegnazioneConModifiche.utenti_guardia[i] = utenteCambio.id;
   }
 
   for(let i =0; i<assegnazione.utenti_reperibili.length; i++){
-    assegnazioneConModifiche.utenti_reperibili[i] = assegnazione.utenti_reperibili[i]
-    if(assegnazione.utenti_reperibili[i] == idLoggato)
+    assegnazioneConModifiche.utenti_reperibili[i] = assegnazione.utenti_reperibili_id[i]
+    if(assegnazione.utenti_reperibili_id[i] == idLoggato)
       assegnazioneConModifiche.utenti_reperibili[i] = utenteCambio.id;
   }
 
@@ -192,6 +192,7 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
     headers: { 'Content-Type': 'application/json' },
   };
 
+  console.log(idDaEliminare)
   const response = await fetch('/api/assegnazioneturni/'+idDaEliminare,requestOptions);
   return response;
 

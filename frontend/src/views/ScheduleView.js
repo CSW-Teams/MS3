@@ -160,6 +160,7 @@ class ScheduleView extends React.Component{
             appointmentChanged=data[i]
         }
 
+
         let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],1);
         let responseStatusClass = Math.floor(response.status / 100)
 
@@ -194,7 +195,7 @@ class ScheduleView extends React.Component{
 
         }else{
 
-          toast.success('Assegnazione creata con successo', {
+          toast.success('Assegnazione modificata con successo', {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: true,
