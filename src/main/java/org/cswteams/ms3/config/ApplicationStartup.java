@@ -128,18 +128,20 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private void populateDB() throws TurnoException {
 
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO.ordinal());
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO.ordinal());
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO.ordinal());
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO.ordinal());
+
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE (INCLUSIVE)
-        Categoria cardiologia = new Categoria("CARDIOLOGIA", 1);
-        Categoria oncologia = new Categoria("ONCOLOGIA", 1);
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE.ordinal());
+        Categoria oncologia = new Categoria("ONCOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE.ordinal());
+
         //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
-        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", 2);
-        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", 2);
-        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", 2);
-        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", 2);
+        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
+        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
+        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
+        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
 
         categoriaDao.save(categoriaFerie);
         categoriaDao.save(categoriaOVER62);
