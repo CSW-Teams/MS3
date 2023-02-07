@@ -2,7 +2,6 @@ import React from "react"
 import {LoginAPI} from "../API/LoginAPI";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from "react-router-dom";
 
 
 export default class LoginView extends React.Component {
@@ -35,19 +34,21 @@ export default class LoginView extends React.Component {
        reindirizzato sul suo profilo, altrimenti viene mostrato
        un messaggio di errore.
      */
-    let responseStatusClass = Math.floor(httpResponse.status / 100)
+    let responseStatusClass = Math.floor(httpResponse.status / 100) // Grazie Fede
 
     switch (responseStatusClass) {
       case 2:
         // Success - Redirect e salvataggio dati di sessione
         const utente = await httpResponse.json();
+
+        localStorage.setItem("id", utente.id)
+        localStorage.setItem("nome", utente.nome)
+        localStorage.setItem("cognome", utente.cognome)
+
         this.props.history.push({
           pathname: '/pianificazione-globale',
           state: utente,
         })
-        localStorage.setItem("id", utente.id)
-        localStorage.setItem("nome", utente.nome)
-        localStorage.setItem("cognome", utente.cognome)
 
         break;
       default:

@@ -9,7 +9,6 @@ import {
   NavItem,
   NavLink
 } from "shards-react";
-import {UtenteAPI} from "../../../../API/UtenteAPI";
 
 export default class UserActions extends React.Component {
   constructor(props) {
@@ -17,8 +16,8 @@ export default class UserActions extends React.Component {
 
     this.state = {
       visible: false,
-      nome : "",
-      cognome:"",
+      nome : localStorage.getItem("nome"),
+      cognome: localStorage.getItem("cognome"),
     };
 
     this.toggleUserActions = this.toggleUserActions.bind(this);
