@@ -10,7 +10,7 @@ import java.util.Set;
 public class MappaUtenti {
 
     public static Utente utenteDTOtoEntity(UtenteDTO utenteDTO) {
-        return new Utente(utenteDTO.getId(),utenteDTO.getNome(),utenteDTO.getCognome(),utenteDTO.getCodiceFiscale(),utenteDTO.getDataNascita(),utenteDTO.getEmail(), utenteDTO.getRuoloEnum(),utenteDTO.getCategorie());
+        return new Utente(utenteDTO.getId(),utenteDTO.getNome(),utenteDTO.getCognome(),utenteDTO.getCodiceFiscale(),utenteDTO.getDataNascita(),utenteDTO.getEmail(), utenteDTO.getPassword(), utenteDTO.getRuoloEnum(),utenteDTO.getCategorie());
     }
 
     public static Set<Utente> utenteDTOtoEntity(Set<UtenteDTO> utentiDto) {
@@ -23,7 +23,7 @@ public class MappaUtenti {
 
 
     public static UtenteDTO utenteEntitytoDTO(Utente utente) {
-        return new UtenteDTO(utente.getId(),utente.getNome(),utente.getCognome(),utente.getDataNascita(), utente.getCodiceFiscale(), utente.getRuoloEnum(), utente.getEmail(), utente.getStato(), utente.getSpecializzazioni());
+        return new UtenteDTO(utente.getId(), utente.getNome(), utente.getCognome(), utente.getDataNascita(), utente.getCodiceFiscale(), utente.getRuoloEnum(), utente.getEmail(), utente.getPassword(), utente.getStato(), utente.getSpecializzazioni());
     }
 
     public static Set<UtenteDTO> utentiEntitytoDTO(Set<Utente> utenti){
