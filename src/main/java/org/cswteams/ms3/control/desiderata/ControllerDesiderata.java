@@ -50,17 +50,25 @@ public class ControllerDesiderata implements IControllerDesiderata{
     @Override
     public void cancellaDesiderata(Long idDesiderata, long utenteId) throws DatabaseException {
         Utente utente = utenteDao.findById(utenteId);
+        Desiderata desiderataDaEliminare = null;
         if(utente == null){
             throw new DatabaseException("Utente non trovato");
         }
+
         List<Desiderata> desiderataList = utente.getDesiderataList();
-        for(int i = 0; i < desiderataList.size(); i++){
-            if(desiderataList.get(i).getId().equals(idDesiderata)){
-                desiderataDao.deleteById(idDesiderata);
-                utente.getDesiderataList().remove(i);
+        for(Desiderata desiderata : desiderataList){
+            if(desiderata.getId().equals(idDesiderata)){
+                desiderataDaEliminare = desiderata;
+                break;
             }
         }
-        utenteDao.save(utente);
+
+        if(desiderataDaEliminare!= null){
+            utente.getDesiderataList().remove(desiderataDaEliminare);
+            desiderataDao.delete(desiderataDaEliminare);
+            utenteDao.save(utente);
+        }
+
 
     }
 

@@ -58,6 +58,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private ScocciaturaDao scocciaturaDao;
+    @Autowired
     private DesiderataDao desiderataDao;
 
 
@@ -372,7 +373,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         turnoDao.saveAndFlush(salaOpCardio);
 
         Desiderata desiderata = new Desiderata(LocalDate.of(2023,03,12),new ArrayList<>(), u3);
+        u3.getDesiderataList().add(desiderata);
+
         desiderataDao.save(desiderata);
+        utenteDao.saveAndFlush(u3);
+
 
     }
 
