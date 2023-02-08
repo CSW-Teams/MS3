@@ -29,7 +29,7 @@ public class ControllerUtente implements IControllerUtente {
     @Override
     public UtenteDTO leggiUtente(long idUtente) {
         Utente utente = utenteDao.findById(idUtente);
-        return  MappaUtenti.utenteEntitytoDTO(utente);
+        return MappaUtenti.utenteEntitytoDTO(utente);
     }
 
 }

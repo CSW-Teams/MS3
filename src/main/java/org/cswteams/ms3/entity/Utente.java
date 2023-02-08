@@ -29,6 +29,9 @@ public class Utente {
 
     private String email;
 
+    @OneToMany
+    private List<Desiderata> desiderataList;
+
     @ManyToMany
     private List<CategoriaUtente> stato;
 
@@ -38,7 +41,7 @@ public class Utente {
     @ManyToMany
     private  List<CategoriaUtente> turnazioni;
 
-    /** Massimo monte ore pianficabile in una settimana per questo utente */
+    /** Massimo monte ore pianificabile in una settimana per questo utente */
     private int maxWeekSchedulableHours;
 
     protected Utente() {
@@ -56,6 +59,7 @@ public class Utente {
         this.stato = new ArrayList<>();
         this.specializzazioni= new ArrayList<>();
         this.turnazioni = new ArrayList<>();
+        this.desiderataList = new ArrayList<>();
     }
 
     public Utente(Long id,String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum) {
@@ -80,5 +84,12 @@ public class Utente {
     public Utente(Long id, String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum, List<CategoriaUtente> stato) {
         this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
         this.stato = stato;
+    }
+
+    public Utente(Long id, String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum, List<CategoriaUtente> stato,
+                List<Desiderata> desiderataList) {
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
+        this.stato = stato;
+        this.desiderataList = desiderataList;
     }
 }
