@@ -7,7 +7,7 @@ import { Stack } from "@mui/system";
 class GlobalScheduleView extends ScheduleView {
 
   async componentDidMount() {
-    
+
     let utenti = [];
     let turni = [];
     let turnoAPI = new AssegnazioneTurnoAPI();

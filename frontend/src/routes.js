@@ -11,6 +11,8 @@ import SingleScheduleView from "./views/SingleScheduleView";
 import UserProfileView from "./views/UserProfileView"
 import UserProfilesView from "./views/UserProfilesView"
 import UserProfileViewId from "./views/UserProfileViewId";
+import LoginView from "./views/LoginView"
+import EmptyLayout from "./layouts/LoginLayout/Empty";
 
 
 export default [
@@ -18,7 +20,7 @@ export default [
     path: "/",
     exact: true,
     layout: DefaultLayout,
-    component: () => <Redirect to="/pianificazione-globale" />
+    component: () => <Redirect to="/login/" />
   },
   {
     path: "/pianificazione-privata",
@@ -49,6 +51,11 @@ export default [
     path: "/profilo-utente/:idUser",
     layout: DefaultLayout,
     component: UserProfileViewId
+  },
+  {
+    path: "/login/",
+    layout: EmptyLayout,
+    component: LoginView
   },
 
 ];

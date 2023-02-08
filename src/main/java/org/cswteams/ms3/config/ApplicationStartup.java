@@ -128,18 +128,20 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private void populateDB() throws TurnoException {
 
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO.ordinal());
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO.ordinal());
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO.ordinal());
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO.ordinal());
+
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE (INCLUSIVE)
-        Categoria cardiologia = new Categoria("CARDIOLOGIA", 1);
-        Categoria oncologia = new Categoria("ONCOLOGIA", 1);
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE.ordinal());
+        Categoria oncologia = new Categoria("ONCOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE.ordinal());
+
         //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
-        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", 2);
-        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", 2);
-        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", 2);
-        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", 2);
+        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
+        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
+        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
+        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
 
         categoriaDao.save(categoriaFerie);
         categoriaDao.save(categoriaOVER62);
@@ -174,75 +176,75 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         categoriaUtenteDao.save(ambulatorioOncologia);
 
         //Creo utenti
-        Utente u6 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", RuoloEnum.STRUTTURATO );
+        Utente u6 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", "passw", RuoloEnum.STRUTTURATO );
         u6.getStato().add(categoriaOver62);
         u6.getStato().add(ferie);
         // Aggiungo la specializzazione
         u6.getSpecializzazioni().add(cardiologo);
-        Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
         u1.getTurnazioni().add(repartoCardiologia);
-        Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u2.getTurnazioni().add(repartoCardiologia);
-        Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u3 = new Utente("Federica","Villani", "FDRVLLN******", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         //u3.getTurnazioni().add(repartoCardiologia);
-        Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", RuoloEnum.STRUTTURATO);
+        Utente u4 = new Utente("Daniele","Colavecchi", "DNLCLV******", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u4.getSpecializzazioni().add(cardiologo);
-        Utente u5 = new Utente("Daniele","La Prova", "DNLLPRV******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", RuoloEnum.STRUTTURATO);
+        Utente u5 = new Utente("Daniele","La Prova", "DNLLPRV******", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u5.getSpecializzazioni().add(oncologo);
-        Utente u7 = new Utente("Luca","Fiscariello", "FSCRLC******", LocalDate.of(1998, 8, 12),"lucafiscariello",RuoloEnum.STRUTTURATO);
+        Utente u7 = new Utente("Luca","Fiscariello", "FSCRLC******", LocalDate.of(1998, 8, 12),"lucafiscariello", "passw",RuoloEnum.STRUTTURATO);
         u7.getSpecializzazioni().add(oncologo);
-        Utente u8 = new Utente("Manuel","Mastrofini", "MNLMASTR******", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", RuoloEnum.STRUTTURATO);
+        Utente u8 = new Utente("Manuel","Mastrofini", "MNLMASTR******", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u8.getSpecializzazioni().add(cardiologo);
-        Utente u9 = new Utente("Giulia","Cantone", "GLCCTN******", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u9 = new Utente("Giulia","Cantone", "GLCCTN******", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u9.getTurnazioni().add(repartoOncologia);
-        Utente u10 = new Utente("Fabio","Valenzi", "FBVVLZ******", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u10 = new Utente("Fabio","Valenzi", "FBVVLZ******", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u10.getTurnazioni().add(repartoOncologia);
-        Utente u11 = new Utente("Giada","Rossi", "******", LocalDate.of(1997, 3, 14),"**@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        Utente u11 = new Utente("Giada","Rossi", "******", LocalDate.of(1997, 3, 14),"**@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
         u11.getTurnazioni().add(repartoOncologia);
-        Utente u12 = new Utente("Camilla","Verdi", "******", LocalDate.of(1997, 5, 23),"***@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u12 = new Utente("Camilla","Verdi", "******", LocalDate.of(1997, 5, 23),"***@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u12.getTurnazioni().add(repartoCardiologia);
-        Utente u13 = new Utente("Federica","Pollini", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u13 = new Utente("Federica","Pollini", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u13.getTurnazioni().add(repartoCardiologia);
-        Utente u14 = new Utente("Claudia","Rossi", "******", LocalDate.of(1982, 7, 6),"***@gmail.com@gmail.com", RuoloEnum.STRUTTURATO);
+        Utente u14 = new Utente("Claudia","Rossi", "******", LocalDate.of(1982, 7, 6),"***@gmail.com@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u14.getSpecializzazioni().add(oncologo);
-        Utente u15 = new Utente("Giorgio","Bianchi", "******", LocalDate.of(1993, 2, 12),"***@gmail.com@gmail.com", RuoloEnum.STRUTTURATO);
+        Utente u15 = new Utente("Giorgio","Bianchi", "******", LocalDate.of(1993, 2, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u15.getSpecializzazioni().add(oncologo);
-        Utente u16 = new Utente("Claudio","Gialli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u16 = new Utente("Claudio","Gialli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u16.getSpecializzazioni().add(cardiologo);
-        Utente u17 = new Utente("Filippo","Neri", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u17 = new Utente("Filippo","Neri", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u17.getTurnazioni().add(ambulatorioCardiologia);
-        Utente u18 = new Utente("Vincenzo","Grassi", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u18 = new Utente("Vincenzo","Grassi", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u18.getSpecializzazioni().add(oncologo);
-        Utente u19 = new Utente("Diana","Pasquali", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente u19 = new Utente("Diana","Pasquali", "******", LocalDate.of(1998, 2, 12),"***@gmail.com@gmail.com@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u19.getTurnazioni().add(ambulatorioCardiologia);
-        Utente u20 = new Utente("Francesco","Lo Presti", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
-        Utente u21 = new Utente("Andrea","Pepe", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u20 = new Utente("Francesco","Lo Presti", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.STRUTTURATO);
+        Utente u21 = new Utente("Andrea","Pepe", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u21.getTurnazioni().add(ambulatorioOncologia);
-        Utente u22 = new Utente("Matteo","Fanfarillo", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u22 = new Utente("Matteo","Fanfarillo", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com","passw", RuoloEnum.SPECIALIZZANDO);
         u22.getTurnazioni().add(repartoOncologia);
-        Utente u23 = new Utente("Matteo","Ciccaglione", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u23 = new Utente("Matteo","Ciccaglione", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com","passw", RuoloEnum.SPECIALIZZANDO);
         u23.getTurnazioni().add(repartoOncologia);
-        Utente u24 = new Utente("Vittoria","De Nitto", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u24 = new Utente("Vittoria","De Nitto", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u24.getSpecializzazioni().add(oncologo);
-        Utente u25 = new Utente("Valeria","Cardellini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u25 = new Utente("Valeria","Cardellini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u25.getSpecializzazioni().add(oncologo);
-        Utente u26 = new Utente("Roberto","Monte", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u26 = new Utente("Roberto","Monte", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com","passw", RuoloEnum.STRUTTURATO);
         u26.getSpecializzazioni().add(cardiologo);
-        Utente u27 = new Utente("Giovanni","Saggio", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.STRUTTURATO);
+        Utente u27 = new Utente("Giovanni","Saggio", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.STRUTTURATO);
         u27.getSpecializzazioni().add(cardiologo);
-        Utente u28 = new Utente("Livia","Simoncini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u28 = new Utente("Livia","Simoncini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com","passw", RuoloEnum.SPECIALIZZANDO);
         u28.getTurnazioni().add(repartoCardiologia);
-        Utente u29 = new Utente("Ludovico","Zarrelli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u29 = new Utente("Ludovico","Zarrelli", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u29.getTurnazioni().add(repartoCardiologia);
-        Utente u30 = new Utente("Alessandro","Montenegro", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u30 = new Utente("Alessandro","Montenegro", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u30.getTurnazioni().add(ambulatorioOncologia);
-        Utente u31 = new Utente("Daniel","Lungu", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u31 = new Utente("Daniel","Lungu", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com","passw", RuoloEnum.SPECIALIZZANDO);
         u31.getTurnazioni().add(repartoCardiologia);
-        Utente u32 = new Utente("Andrea","Tosti", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u32 = new Utente("Andrea","Tosti", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com","passw", RuoloEnum.SPECIALIZZANDO);
         u32.getTurnazioni().add(repartoCardiologia);
-        Utente u33 = new Utente("Giorgio","Pesce", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u33 = new Utente("Giorgio","Pesce", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u33.getTurnazioni().add(repartoOncologia);
-        Utente u34 = new Utente("Valerio","Palmerini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com",RuoloEnum.SPECIALIZZANDO);
+        Utente u34 = new Utente("Valerio","Palmerini", "******", LocalDate.of(1998, 8, 12),"***@gmail.com@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO);
         u34.getTurnazioni().add(repartoOncologia);
 
         u6 = utenteDao.saveAndFlush(u6);

@@ -29,6 +29,8 @@ public class Utente {
 
     private String email;
 
+    private String password;
+
     @OneToMany
     private List<Desiderata> desiderataList;
 
@@ -48,12 +50,15 @@ public class Utente {
 
     }
 
-    public Utente(String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum) {
+    public Utente(String nome, String cognome, String codiceFiscale,
+                  LocalDate dataNascita, String email, String password,
+                  RuoloEnum ruoloEnum) {
         this.nome = nome;
         this.cognome = cognome;
         this.codiceFiscale = codiceFiscale;
         this.dataNascita = dataNascita;
         this.email = email;
+        this.password = password;
         this.ruoloEnum = ruoloEnum;
         this.maxWeekSchedulableHours = -1;
         this.stato = new ArrayList<>();
@@ -62,33 +67,42 @@ public class Utente {
         this.desiderataList = new ArrayList<>();
     }
 
-    public Utente(Long id,String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum) {
-        this(nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
+    public Utente(Long id,String nome, String cognome, String codiceFiscale,
+                  LocalDate dataNascita, String email, String password,
+                  RuoloEnum ruoloEnum) {
+
+        this(nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
         this.id = id;
     }
 
-    public Utente(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale,
-            RuoloEnum ruoloEnum, String email, int maxWeekSchedulableHours) {
-        this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
+    public Utente(Long id, String nome, String cognome, LocalDate dataNascita,
+                  String codiceFiscale, RuoloEnum ruoloEnum, String email,
+                  String password, int maxWeekSchedulableHours) {
+
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
         this.maxWeekSchedulableHours = maxWeekSchedulableHours;
     }
 
-     public Utente(Long id, String nome, String cognome, LocalDate dataNascita, String codiceFiscale,
-            RuoloEnum ruoloEnum, String email, int maxWeekSchedulableHours, List<CategoriaUtente> stato) {
-        this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
+     public Utente(Long id, String nome, String cognome, LocalDate dataNascita,
+                   String codiceFiscale, RuoloEnum ruoloEnum, String email,
+                   String password, int maxWeekSchedulableHours, List<CategoriaUtente> stato) {
+
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
         this.maxWeekSchedulableHours = maxWeekSchedulableHours;
         this.stato = stato;
     }
 
 
-    public Utente(Long id, String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum, List<CategoriaUtente> stato) {
-        this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
+    public Utente(Long id, String nome, String cognome, String codiceFiscale,
+                  LocalDate dataNascita, String email, String password,
+                  RuoloEnum ruoloEnum, List<CategoriaUtente> stato) {
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
         this.stato = stato;
     }
 
     public Utente(Long id, String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum, List<CategoriaUtente> stato,
-                List<Desiderata> desiderataList) {
-        this(id,nome, cognome, codiceFiscale, dataNascita, email, ruoloEnum);
+                String password, List<Desiderata> desiderataList) {
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
         this.stato = stato;
         this.desiderataList = desiderataList;
     }
