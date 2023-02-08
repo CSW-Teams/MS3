@@ -13,6 +13,7 @@ import IconButton from "@mui/material/IconButton";
 import {DesiderateAPI} from "../API/DesiderataAPI";
 import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
 import {toast} from "react-toastify";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 
 
@@ -34,11 +35,12 @@ export default class Preference extends React.Component {
 
   }
 
-  async handleDeleteDesiderata(id, key) {
-    console.log(id + key)
+  async handleDeleteDesiderata(idDesiderata) {
+    let id = localStorage.getItem("id");
+    console.log(idDesiderata)
     let desiderata = new DesiderateAPI();
     let responseStatus;
-    responseStatus = await desiderata.deleteDesiderate(id, this.props.match.params.idUser);
+    responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
     console.log(responseStatus)
 
     if (responseStatus === 200) {
@@ -86,6 +88,7 @@ export default class Preference extends React.Component {
                 <MDBTableHead>
                   <tr>
                     <th scope='col'  > Data </th>
+                    <th scope='col'  >  </th>
                   </tr>
                 </MDBTableHead>
                 <MDBTableBody>
@@ -93,8 +96,7 @@ export default class Preference extends React.Component {
                     return (
                       <tr key={key}>
                         <td>{data.giorno+"/"+data.mese+"/"+data.anno}</td>
-                        <td><IconButton aria-label="delete"  onClick={() => this.handleDeleteDesiderata(data.id, key)}>
-                          </IconButton></td>
+                        <td><IconButton aria-label="delete"onClick={() => this.handleDeleteDesiderata(data.idDesiderata)}><DeleteIcon /></IconButton></td>
                       </tr>
                     )
                   })}

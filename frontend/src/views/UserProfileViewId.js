@@ -148,8 +148,7 @@ export default class UserProfileView extends React.Component{
                         <td>{data.categoria}</td>
                         <td>{data.inizio}</td>
                         <td>{data.fine}</td>
-                        <td><IconButton aria-label="delete" onClick={() => this.handleDeleteRotazione(data.categoriaUtenteId, key)}>
-                          <DeleteIcon />
+                        <td><IconButton aria-label="delete" onClick={() => this.handleDeleteRotazione(data.categoriaUtenteId, key)}><DeleteIcon />
                         </IconButton></td>
                       </tr>
                     )

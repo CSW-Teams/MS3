@@ -56,8 +56,8 @@ public class ControllerDesiderata implements IControllerDesiderata{
         List<Desiderata> desiderataList = utente.getDesiderataList();
         for(int i = 0; i < desiderataList.size(); i++){
             if(desiderataList.get(i).getId().equals(idDesiderata)){
-                utente.getDesiderataList().remove(i);
                 desiderataDao.deleteById(idDesiderata);
+                utente.getDesiderataList().remove(i);
             }
         }
         utenteDao.save(utente);

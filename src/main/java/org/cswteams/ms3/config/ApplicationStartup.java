@@ -58,6 +58,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private ScocciaturaDao scocciaturaDao;
+    private DesiderataDao desiderataDao;
+
 
 
     @SneakyThrows
@@ -195,6 +197,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         categoriaUtenteDao.save(repartoOncologia);
         CategoriaUtente ambulatorioOncologia = new CategoriaUtente(ambulatorio_oncologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
         categoriaUtenteDao.save(ambulatorioOncologia);
+
+
 
         //Creo utenti
         Utente u6 = new Utente("Giovanni","Cantone", "GVNTCT******", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", "passw", RuoloEnum.STRUTTURATO );
@@ -366,6 +370,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         turnoDao.saveAndFlush(t5);
         turnoDao.saveAndFlush(t6);
         turnoDao.saveAndFlush(salaOpCardio);
+
+        Desiderata desiderata = new Desiderata(LocalDate.of(2023,03,12),new ArrayList<>(), u3);
+        desiderataDao.save(desiderata);
 
     }
 
