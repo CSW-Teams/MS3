@@ -2,7 +2,7 @@ import React, {Component, useState} from "react"
 import {
   MDBCard,
   MDBCardBody,
-  MDBCardHeader,
+  MDBCardHeader, MDBCardText, MDBCardTitle,
   MDBCol,
   MDBContainer,
   MDBRow, MDBTable, MDBTableBody, MDBTableHead,
@@ -15,7 +15,13 @@ import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
 import {toast} from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-
+function defaultComparator(prop1, prop2){
+  if (prop1 < prop2)
+    return -1;
+  if (prop1 > prop2)
+    return 1;
+  return 0;
+}
 
 export default class Preference extends React.Component {
 
@@ -23,7 +29,18 @@ export default class Preference extends React.Component {
     super(props);
     this.state = {
       desiderate:[],
+      orderBy: "data",
+      comparator: defaultComparator
     }
+    this.setOrderBy = this.setOrderBy.bind(this);
+
+  }
+
+  setOrderBy(userProp){
+    this.setState({
+      orderBy: userProp,
+      comparator: defaultComparator
+    })
   }
 
   async componentDidMount() {
@@ -72,22 +89,34 @@ export default class Preference extends React.Component {
 
   render() {
 
+    this.state.desiderate.sort((u1, u2) => {
+
+      let p1 = u1[this.state.orderBy];
+      let p2 = u2[this.state.orderBy];
+
+      return this.state.comparator(p1, p2);
+
+    })
+
     return (
       <section style={{backgroundColor: '#eee'}}>
       <MDBContainer className="py-5">
         <MDBCard alignment='center'>
-          <MDBCardHeader>Inserisci le tue desiderate</MDBCardHeader>
           <MDBCardBody>
-          <MDBRow>
+            <MDBCardTitle>Inserisci le tue desiderate    <DatePick onSelectdate={() => this.componentDidMount()}/></MDBCardTitle>
+            <MDBRow>
             <MDBCol>
-              <DatePick onSelectdate={() => this.componentDidMount()}/>
             </MDBCol>
         </MDBRow>
             <MDBRow>
-              <MDBTable align="middle" >
+              <MDBTable align="middle"
+                        striped
+                        bordered
+                        small
+                        >
                 <MDBTableHead>
                   <tr>
-                    <th scope='col'  > Data </th>
+                    <th scope='col' onClick={() => this.setOrderBy("data")} >Data</th>
                     <th scope='col'  >  </th>
                   </tr>
                 </MDBTableHead>
@@ -95,7 +124,7 @@ export default class Preference extends React.Component {
                   {this.state.desiderate.map((data, key) => {
                     return (
                       <tr key={key}>
-                        <td>{data.giorno+"/"+data.mese+"/"+data.anno}</td>
+                        <td>{data.data}</td>
                         <td><IconButton aria-label="delete"onClick={() => this.handleDeleteDesiderata(data.idDesiderata)}><DeleteIcon /></IconButton></td>
                       </tr>
                     )
