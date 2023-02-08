@@ -130,7 +130,7 @@ public class ScheduleBuilder {
         //Se il controller della scocciatura è settato ordino gli utenti in base al valore di uffa
         if(controllerScocciatura != null){
             controllerScocciatura.addUffaTempUtenti(allUserScheduleState,assegnazione);
-            allUserScheduleState = controllerScocciatura.ordinaByUffa(allUserScheduleState);
+            controllerScocciatura.ordinaByUffa(allUserScheduleState);
         }
 
         for (UserScheduleState userScheduleState : allUserScheduleState){

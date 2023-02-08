@@ -5,6 +5,8 @@ import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.UserScheduleState;
 import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
+
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,14 +46,10 @@ public class ControllerScocciatura {
      * @param utenti
      * @return
      */
-    public List<UserScheduleState> ordinaByUffa(List<UserScheduleState> utenti){
+    public void ordinaByUffa(List<UserScheduleState> utenti){
 
-        List<UserScheduleState> sortedUsers = utenti
-                .stream()
-                .sorted(Comparator.comparing(UserScheduleState::getUffaCumulativo))
-                .collect(Collectors.toList());
-
-        return sortedUsers;
+        utenti.sort((u1, u2) -> u1.getUffaParziale() - u2.getUffaParziale());
+        return;
     }
 
     /**
