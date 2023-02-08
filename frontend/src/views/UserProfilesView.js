@@ -78,10 +78,10 @@ export default class UserProfilesView extends React.Component{
         <MDBCardBody className="text-center">
           <MDBCardTitle>Informazioni Utenti</MDBCardTitle>
           <MDBTable align="middle"
-                    striped
                     bordered
-                    small >
-            <MDBTableHead>
+                    small
+                    hover >
+            <MDBTableHead color='tempting-azure-gradient' textWhite>
               <tr>
                 <th scope='col' onClick={() => this.setOrderBy("nome")} > Nome </th>
                 <th scope='col' onClick={() => this.setOrderBy("cognome")} >Cognome</th>

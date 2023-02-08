@@ -110,12 +110,12 @@ export default class Preference extends React.Component {
         </MDBRow>
             <MDBRow>
               <MDBTable align="middle"
-                        striped
                         bordered
                         small
+                        hover
                         >
-                <MDBTableHead>
-                  <tr>
+                <MDBTableHead color='tempting-azure-gradient' textWhite>
+                <tr>
                     <th scope='col' onClick={() => this.setOrderBy("data")} >Data</th>
                     <th scope='col'  >  </th>
                   </tr>
@@ -124,8 +124,8 @@ export default class Preference extends React.Component {
                   {this.state.desiderate.map((data, key) => {
                     return (
                       <tr key={key}>
-                        <td>{data.data}</td>
-                        <td><IconButton aria-label="delete"onClick={() => this.handleDeleteDesiderata(data.idDesiderata)}><DeleteIcon /></IconButton></td>
+                        <td className="align-middle">{data.data}</td>
+                        <td className="align-middle" ><IconButton aria-label="delete"onClick={() => this.handleDeleteDesiderata(data.idDesiderata)}><DeleteIcon /></IconButton></td>
                       </tr>
                     )
                   })}
