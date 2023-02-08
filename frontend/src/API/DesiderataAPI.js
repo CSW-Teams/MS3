@@ -12,10 +12,9 @@ export  class DesiderateAPI {
       date_i= date[i].toString().split("/")
 
 
-      desiderata.giorno= date_i[0]
+      desiderata.anno= date_i[0]
       desiderata.mese=date_i[1]
-      desiderata.anno=date_i[2]
-      desiderata.tipologieTurni=["MATTUTINO","POMERIDIANO","NOTTURNO"]
+      desiderata.giorno=date_i[2]
 
       desiderate[i]=desiderata
 
@@ -48,7 +47,8 @@ export  class DesiderateAPI {
 
 
   async deleteDesiderate(idDesiderata, idUtente){
-    const response = await fetch('/api/desiderate/desiderate_id='+idDesiderata+'/utente_id='+idUtente, { method: 'DELETE' });
+    const response = await fetch('/api/desiderate/desiderata_id='+idDesiderata+'/utente_id='+idUtente,
+      { method: 'DELETE' });
     return response.status;
   }
 
