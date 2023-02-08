@@ -30,9 +30,14 @@ public class UserScheduleState {
     @OneToOne
     private Schedule schedule;
 
+    private int uffaParziale=0;
+    private int uffaCumulativo=0;
+
     /** tutti i turni assegnati a questo utente nella pianificazione corrente */
     @Transient
     List<AssegnazioneTurno> assegnazioniTurnoCache;
+
+
 
     public List<AssegnazioneTurno> getAssegnazioniTurnoCache(){
         
@@ -62,6 +67,14 @@ public class UserScheduleState {
             }
         }
         turniAssegnati.add(idInsert,nuovaAssegnazione);
+    }
+
+    public void saveUffaTemp(){
+        this.uffaCumulativo = this.uffaParziale;
+    }
+
+    public void addUffaTemp(int uffa){
+        this.uffaParziale =this.uffaCumulativo+ uffa;
     }
 
     public UserScheduleState() {

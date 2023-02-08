@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
+import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
@@ -40,6 +41,9 @@ public class ControllerScheduler implements IControllerScheduler{
 
     @Autowired
     private AssegnazioneTurnoDao assegnazioneTurnoDao;
+
+    @Autowired
+    private ScocciaturaDao scocciaturaDao;
 
 
 
@@ -85,6 +89,10 @@ public class ControllerScheduler implements IControllerScheduler{
             allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
             utenteDao.findAll() // tutti i candidati da allocare ai turni
             );
+
+        // Setto il controller che gestisce gli uffa points
+        this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDao.findAll()));
+
 
         return  scheduleDao.save(this.scheduleBuilder.build());
         

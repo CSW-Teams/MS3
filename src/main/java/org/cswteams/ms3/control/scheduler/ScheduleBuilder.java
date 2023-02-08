@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
+import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
@@ -35,6 +37,8 @@ public class ScheduleBuilder {
 
     /** Pianificazione in costruzione */
     private Schedule schedule;
+
+    private ControllerScocciatura controllerScocciatura;
 
 
     public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Vincolo> allConstraints, List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) {
@@ -115,9 +119,19 @@ public class ScheduleBuilder {
         
         int selectedUsers = 0;
 
-        //Randomizzo la scelta dell'utente dalla lista di tutti gli utenti
+
         List<UserScheduleState> allUserScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
-        Collections.shuffle(allUserScheduleState);
+
+        /*
+         *  Volendo posso randomizzare la scelta degli utenti con il seguente metodo:
+         *  Collections.shuffle(allUserScheduleState);
+         */
+
+        //Se il controller della scocciatura è settato ordino gli utenti in base al valore di uffa
+        if(controllerScocciatura != null){
+            controllerScocciatura.addUffaTempUtenti(allUserScheduleState,assegnazione);
+            allUserScheduleState = controllerScocciatura.ordinaByUffa(allUserScheduleState);
+        }
 
         for (UserScheduleState userScheduleState : allUserScheduleState){
             if (selectedUsers == numUtenti){
@@ -130,6 +144,7 @@ public class ScheduleBuilder {
             if (verificaTuttiVincoli(contesto, false)){
                 utentiDaPopolare.add(userScheduleState.getUtente());
                 userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
+                userScheduleState.saveUffaTemp();
                 selectedUsers++;    
             }
         }

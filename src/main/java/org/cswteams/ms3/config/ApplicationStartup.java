@@ -2,6 +2,8 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.entity.scocciature.Scocciatura;
+import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
@@ -54,6 +56,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private VincoloDao vincoloDao;
 
+    @Autowired
+    private ScocciaturaDao scocciaturaDao;
+
 
     @SneakyThrows
     @Override
@@ -61,7 +66,23 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         populateDB();
         registerHolidays();
         registerConstraints();
+        registerScocciature();
         //populateDBTestSchedule();
+    }
+
+    private void registerScocciature() {
+        int pesoDomenicaMattina=5;
+        int pesoDomenicaPomeriggio=10;
+        int pesoSabatoMattina=10;
+        int pesoSabatoPomeriggio=10;
+        int pesoSabatoNotte=10;
+
+
+        Scocciatura scocciaturaDomenicaMattina = new ScocciaturaAssegnazioneUtente(pesoDomenicaMattina,DayOfWeek.SUNDAY,TipologiaTurno.MATTUTINO);
+        Scocciatura scocciaturaDomenicaPomoriggio = new ScocciaturaAssegnazioneUtente(pesoDomenicaPomeriggio,DayOfWeek.SUNDAY,TipologiaTurno.POMERIDIANO);
+
+        scocciaturaDao.save(scocciaturaDomenicaPomoriggio);
+        scocciaturaDao.save(scocciaturaDomenicaMattina);
     }
 
     private void registerConstraints(){
