@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import {UploadFilesAPI} from "../../API/UploadFilesAPI"
-import {
-  MDBCard,
-  MDBCardBody, MDBCardSubTitle,
-  MDBCardText,
-  MDBCardTitle
-} from "mdb-react-ui-kit";
 
 const FilesUpload = () => {
 

@@ -23,11 +23,12 @@ public class MappaDesiderata {
     }
 
     public static DesiderataDTO desiderataToDto(Desiderata entity){
-        return new DesiderataDTO(entity.getData().getDayOfMonth(), entity.getData().getMonthValue(),entity.getData().getYear(), entity.getTipologieTurnoCoinvolte());
+        return new DesiderataDTO(entity.getId(), entity.getData().getDayOfMonth(), entity.getData().getMonthValue(),entity.getData().getYear(), entity.getTipologieTurnoCoinvolte());
     }
 
     public static List<DesiderataDTO> desiderataToDto(List<Desiderata> entities){
         List<DesiderataDTO> desiderataDTO = new ArrayList<>();
+
         for(Desiderata desiderata: entities){
             desiderataDTO.add(desiderataToDto(desiderata));
         }

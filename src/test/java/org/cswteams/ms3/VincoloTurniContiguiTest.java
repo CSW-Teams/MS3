@@ -68,9 +68,9 @@ public class VincoloTurniContiguiTest {
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizio1.getMansioni().add(MansioneEnum.AMBULATORIO);
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, true);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(23, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
+        Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
         
         userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE));
         userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE));
@@ -87,12 +87,12 @@ public class VincoloTurniContiguiTest {
         turnoDao.save(t3);
         turnoDao.save(t4);
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, true);
         
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
         //Crea utente
-        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com","", RuoloEnum.SPECIALIZZANDO );
         utenteDao.saveAndFlush(utente);
 
         //Aggiungi assegnazione turno

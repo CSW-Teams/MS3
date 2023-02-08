@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 public class DesiderataDTO {
 
+    private Long id;
     private int giorno;
     private int mese;
     private int anno;
@@ -19,6 +20,11 @@ public class DesiderataDTO {
         this.mese = mese;
         this.anno = anno;
         this.tipologieTurni = tipologieTurni;
+    }
+
+    public DesiderataDTO(Long id, int giorno, int mese, int anno, List<TipologiaTurno> tipologieTurni) {
+        this(giorno, mese, anno, tipologieTurni);
+        this.id = id;
     }
 
     public DesiderataDTO(){}
