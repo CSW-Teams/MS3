@@ -9,6 +9,7 @@ import GlobalScheduleView from "./views/GlobalScheduleView";
 import { SchedulerGeneratorView } from "./views/ScheduleGeneratorView";
 import SingleScheduleView from "./views/SingleScheduleView";
 import UserProfileView from "./views/UserProfileView"
+import Preference from "./views/Preference"
 import UserProfilesView from "./views/UserProfilesView"
 import UserProfileViewId from "./views/UserProfileViewId";
 import LoginView from "./views/LoginView"
@@ -56,6 +57,11 @@ export default [
     path: "/login/",
     layout: EmptyLayout,
     component: LoginView
+  },
+  {
+    path: "/preference/",
+    layout: DefaultLayout,
+    component: Preference
   },
 
 ];

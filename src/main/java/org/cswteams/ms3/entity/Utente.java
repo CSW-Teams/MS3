@@ -95,4 +95,5 @@ public class Utente {
         this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
         this.stato = stato;
     }
+
 }

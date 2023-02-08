@@ -71,8 +71,8 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -95,7 +95,7 @@ public class VincoloPersonaTurnoTest {
         CategoriaUtente incinta = new CategoriaUtente(categoriaIncinta, LocalDate.of(2023, 1, 4), LocalDate.of(2023, 10, 4));
         categoriaUtenteDao.saveAndFlush(incinta);
         //Crea utente - PERSONA INCINTA
-        Utente pregUser = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        Utente pregUser = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
         pregUser.getStato().add(incinta);
         utenteDao.saveAndFlush(pregUser);
         UserScheduleState pregUserState = new UserScheduleState(pregUser, null);
@@ -122,8 +122,8 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO, true);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO,  true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -146,7 +146,7 @@ public class VincoloPersonaTurnoTest {
         CategoriaUtente over62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         categoriaUtenteDao.saveAndFlush(over62);
         //Crea utente - PERSONA OVER 62
-        Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
+        Utente over62user = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO );
         over62user.getStato().add(over62);
         utenteDao.saveAndFlush(over62user);
         UserScheduleState over62userState = new UserScheduleState(over62user, null);
@@ -175,8 +175,8 @@ public class VincoloPersonaTurnoTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
 
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -199,7 +199,7 @@ public class VincoloPersonaTurnoTest {
         CategoriaUtente inmalattia = new CategoriaUtente(categoriaMalattia,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         categoriaUtenteDao.saveAndFlush(inmalattia);
         //Crea utente - PERSONA IN MALATTIA
-        Utente inmalattiauser = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
+        Utente inmalattiauser = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO );
         inmalattiauser.getStato().add(inmalattia);
         utenteDao.saveAndFlush(inmalattiauser);
         UserScheduleState inmalattiauserState = new UserScheduleState(inmalattiauser, null);
@@ -228,8 +228,8 @@ public class VincoloPersonaTurnoTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
 
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -251,8 +251,9 @@ public class VincoloPersonaTurnoTest {
         //Crea categoria IN MALATTIA
         CategoriaUtente inferie = new CategoriaUtente(categoriaFerie,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         categoriaUtenteDao.saveAndFlush(inferie);
-        //Crea utente - PERSONA IN MALATTIA
-        Utente inferieuser = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
+        //Crea utente - PERSONA IN FERIE
+        Utente inferieuser = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO );
+
         inferieuser.getStato().add(inferie);
         utenteDao.saveAndFlush(inferieuser);
         UserScheduleState inferieuserState = new UserScheduleState(inferieuser, null);
@@ -276,7 +277,7 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         servizioDao.saveAndFlush(servizio1);
-        Turno t1 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t1 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(cardiologia, t1, UserCategoryPolicyValue.INCLUDE),
@@ -293,11 +294,10 @@ public class VincoloPersonaTurnoTest {
         categoriaUtenteDao.saveAndFlush(cardiologo);
         CategoriaUtente ambulatorioInCardiologia = new CategoriaUtente(ambulatorioCardiologia,LocalDate.of(2023, 1, 3), LocalDate.of(2023, 10, 4));
         categoriaUtenteDao.saveAndFlush(ambulatorioInCardiologia);
-
-        Utente specializzandoCardiologia = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        Utente specializzandoCardiologia = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
         specializzandoCardiologia.getTurnazioni().add(ambulatorioInCardiologia);
         utenteDao.saveAndFlush(specializzandoCardiologia);
-        Utente specializzatoCardiologia = new Utente("Giacomo","Bianchi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO);
+        Utente specializzatoCardiologia = new Utente("Giacomo","Bianchi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com","", RuoloEnum.STRUTTURATO);
         specializzatoCardiologia.getSpecializzazioni().add(cardiologo);
         utenteDao.saveAndFlush(specializzatoCardiologia);
         UserScheduleState specializzato = new UserScheduleState(specializzatoCardiologia, null);
@@ -310,8 +310,7 @@ public class VincoloPersonaTurnoTest {
         }catch(ViolatedConstraintException ex){
             Assert.fail();
         }
-
-        Utente utenteacaso = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        Utente utenteacaso = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO );
         utenteDao.saveAndFlush(utenteacaso);
         UserScheduleState nonCardiologo = new UserScheduleState(utenteacaso, null);
         vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(nonCardiologo, turnoCardiologia));

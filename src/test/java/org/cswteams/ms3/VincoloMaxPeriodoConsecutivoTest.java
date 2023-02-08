@@ -65,9 +65,9 @@ public class VincoloMaxPeriodoConsecutivoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.POMERIDIANO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.NOTTURNO, Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.POMERIDIANO,true);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.NOTTURNO, true);
         //Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.DONNA_INCINTA, CategoriaUtentiEnum.OVER_62, CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)));
 
         userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t1, UserCategoryPolicyValue.EXCLUDE));
@@ -84,7 +84,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
         turnoDao.save(t3);
         //turnoDao.save(t4);
         //Crea utente
-        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", RuoloEnum.SPECIALIZZANDO );
+        Utente utente = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
         utenteDao.save(utente);
 
         //Aggiungi assegnazione turno
@@ -110,9 +110,9 @@ public class VincoloMaxPeriodoConsecutivoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.MATTUTINO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.POMERIDIANO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.NOTTURNO,Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1)));
+        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.MATTUTINO,true);
+        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.POMERIDIANO,true);
+        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.NOTTURNO,true);
         turnoDao.save(t1);
         turnoDao.save(t2);
         turnoDao.save(t3);
@@ -121,7 +121,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
         //turnoDao.save(t4);
         CategoriaUtente over62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         //Crea utente
-        Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com", RuoloEnum.STRUTTURATO );
+        Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com","", RuoloEnum.STRUTTURATO );
         over62user.getStato().add(over62);
 
         //Aggiungi assegnazione turno

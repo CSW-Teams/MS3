@@ -79,13 +79,13 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.saveAndFlush(servizio1);
         //Creo utente con categoria incinta
-        Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com","", RuoloEnum.SPECIALIZZANDO);
         CategoriaUtente ci = new CategoriaUtente(categoriaIncinta, LocalDate.now(), LocalDate.now().plusDays(10));
         categoriaUtenteDao.saveAndFlush(ci);
         pregUser.getStato().add(ci);
         utenteDao.saveAndFlush(pregUser);
         //Creo utente generico
-        Utente utente = new Utente("Manuel", "Rossi", "******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", RuoloEnum.SPECIALIZZANDO);
+        Utente utente = new Utente("Manuel", "Rossi", "******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "",RuoloEnum.SPECIALIZZANDO);
         utenteDao.saveAndFlush(utente);
         //Crea turni e servizio
         servizioDao.saveAndFlush(servizio1);
@@ -95,7 +95,7 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
                 servizio1,
                 MansioneEnum.REPARTO,
                 TipologiaTurno.NOTTURNO,
-                Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO, 1), new RuoloNumero(RuoloEnum.STRUTTURATO, 1))
+                true
                );
         turnoDao.saveAndFlush(t1);
         userCategoryPolicyDao.saveAndFlush(new UserCategoryPolicy(categoriaIncinta, t1, UserCategoryPolicyValue.EXCLUDE));
