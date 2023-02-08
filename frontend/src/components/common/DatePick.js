@@ -12,7 +12,7 @@ import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
 const weeksName= ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"]
 
-export default function DatePick() {
+export default function DatePick(props) {
   let id = localStorage.getItem("id");
 
   const datePickerRef = useRef()
@@ -25,7 +25,7 @@ export default function DatePick() {
     setOpen(false)
     let desiderate = await(new DesiderateAPI().salvaDesiderate(date,id))
 
-
+    props.onSelectdate();
     datePickerRef.current.closeCalendar()
 
   }

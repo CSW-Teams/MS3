@@ -11,7 +11,7 @@ import java.util.List;
 public class MappaDesiderata {
 
     public static Desiderata desiderataDtoToEntity(DesiderataDTO dto, Utente utente){
-        return new Desiderata(LocalDate.of(dto.getAnno(), dto.getMese(), dto.getAnno()), dto.getTipologieTurni(), utente);
+        return new Desiderata(LocalDate.of(dto.getAnno(), dto.getMese(), dto.getGiorno()), dto.getTipologieTurni(), utente);
     }
 
     public static List<Desiderata> desiderataDtoToEntity(List<DesiderataDTO> dtos, Utente utente){

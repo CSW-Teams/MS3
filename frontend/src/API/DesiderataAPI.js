@@ -4,22 +4,19 @@ export  class DesiderateAPI {
 
   async salvaDesiderate(date,id) {
     console.log(id)
-    let desiderate = new Object()
+
+    let desiderate = []
 
     for (let i = 0; i < date.length; i++) {
-      let date_i = new Object()
       let desiderata = new Object()
-      date_i= date[i].toString().split("/")
 
+      desiderata.anno= date[i].year
+      desiderata.mese= date[i].month.number
+      desiderata.giorno= date[i].day
 
-      desiderata.anno= date_i[0]
-      desiderata.mese=date_i[1]
-      desiderata.giorno=date_i[2]
-
-      desiderate[i]=desiderata
+      desiderate.push(desiderata)
 
     }
-    console.log(desiderate)
 
     const requestOptions = {
       method: 'POST',

@@ -80,7 +80,7 @@ export default class Preference extends React.Component {
           <MDBCardBody>
           <MDBRow>
             <MDBCol>
-              <DatePick />
+              <DatePick onSelectdate={() => this.componentDidMount()}/>
             </MDBCol>
         </MDBRow>
             <MDBRow>
