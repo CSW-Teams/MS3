@@ -1,10 +1,11 @@
 import { TurnoAPI } from "./TurnoAPI";
 import {blue, red, teal} from "@material-ui/core/colors";
 import { AssignedShift, SchedulableType } from "./Schedulable";
+import { Utente } from "./Utente";
 
 export  class AssegnazioneTurnoAPI {
 
-  /**
+   /**
    * Parses content of query response body to extract a list of shifts
    */
   parseAllocatedShifts(body){
@@ -23,34 +24,53 @@ export  class AssegnazioneTurnoAPI {
         let utenti_reperibili = [];
         let utenti_guardia_id = [];
         let utenti_reperibili_id = []
+        let utenti_rimossi = [];
+        let utenti_rimossi_id = [];
 
 
         for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
-          let utenteAllocato = new Object()
-          utenteAllocato.id = body[i].utentiDiGuardia[j].id;
-          utenteAllocato.nome = body[i].utentiDiGuardia[j].nome;
-          utenteAllocato.cognome = body[i].utentiDiGuardia[j].cognome;
-          utenteAllocato.ruoloEnum = body[i].utentiDiGuardia[j].ruoloEnum;
-          utenteAllocato.label = utenteAllocato.nome+" "+utenteAllocato.cognome+" - "+utenteAllocato.ruoloEnum;
+          let currentUserDto = body[i].utentiDiGuardia[j];
+          let utenteAllocato = new Utente(
+            currentUserDto.id,
+            currentUserDto.nome,
+            currentUserDto.cognome,
+            currentUserDto.ruoloEnum,
+          )
           utenti_guardia[j] = utenteAllocato;
           utenti_guardia_id[j] = utenteAllocato.id;
         }
 
         for (let j = 0; j < body[i].utentiReperibili.length; j++) {
-          let utenteReperibile = new Object()
-          utenteReperibile.id = body[i].utentiReperibili[j].id;
-          utenteReperibile.nome = body[i].utentiReperibili[j].nome;
-          utenteReperibile.cognome = body[i].utentiReperibili[j].cognome;
-          utenteReperibile.ruoloEnum = body[i].utentiReperibili[j].ruoloEnum;
-          utenteReperibile.label = utenteReperibile.nome+" "+utenteReperibile.cognome+" - "+utenteReperibile.ruoloEnum;
+          let currentUserDto = body[i].utentiReperibili[j];
+          let utenteReperibile = new Utente(
+            currentUserDto.id,
+            currentUserDto.nome,
+            currentUserDto.cognome,
+            currentUserDto.ruoloEnum,
+          )
           utenti_reperibili[j] = utenteReperibile;
           utenti_reperibili_id[j] = utenteReperibile.id;
         }
+
+        for (let j = 0; j < body[i].retiredUsers.length; j++) {
+          let currentUserDto = body[i].retiredUsers[j];
+          let utenteRimosso = new Utente(
+            currentUserDto.id,
+            currentUserDto.nome,
+            currentUserDto.cognome,
+            currentUserDto.ruoloEnum,
+          )
+          utenti_rimossi[j] = utenteRimosso;
+          utenti_rimossi_id[j] = utenteRimosso.id;
+        }
+
 
         turno.utenti_guardia = utenti_guardia;
         turno.utenti_reperibili = utenti_reperibili;
         turno.utenti_guardia_id = utenti_guardia_id;
         turno.utenti_reperibili_id = utenti_reperibili_id;
+        turno.utenti_rimossi = utenti_rimossi;
+        turno.utenti_rimossi_id = utenti_rimossi_id;
 
       turno.tipologia = body[i].tipologiaTurno;
       turno.servizio = body[i].servizio.nome;

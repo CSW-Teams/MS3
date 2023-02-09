@@ -207,6 +207,7 @@ export class AppointmentContent extends React.Component{
     this.state = {
       utenti_allocati: [],
       utenti_riserve: [], // corrispondono ai reperibili nelle mansioni di guardia
+      utenti_rimossi: [],
       formatDate: formatDate,
       ...data,
       restProps: {...restProps}
@@ -220,30 +221,18 @@ export class AppointmentContent extends React.Component{
      * Se questo schedulabile è un turno, recuperiamo i dettagli degli utenti
      * usando gli ids salvati nell'oggetto turno.
      */
-    if (this.state.data.schedulableType == SchedulableType.AssignedShift) {
-      this.setState({utenti_allocati: this.state.data.utenti_guardia})
-      this.setState({utenti_riserve: this.state.data.utenti_reperibili})
-      /*let utenteAPI = new UtenteAPI();
-      let utente;
-
-      this.state.data.utenti_guardia.forEach(async (userId) => {
-        utente = await utenteAPI.getUserDetails(userId);
-        this.setState({
-          utenti_allocati: [...this.state.utenti_allocati, utente]
-        });
-      });
-      this.state.data.utenti_reperibili.forEach(async (userId) => {
-        utente = await utenteAPI.getUserDetails(userId);
-        this.setState({
-          utenti_riserve: [...this.state.utenti_riserve, utente]
-        });
-      });
-*/    }
+    if (this.state.data.schedulableType === SchedulableType.AssignedShift) {
+      this.setState({ 
+        utenti_allocati: this.state.data.utenti_guardia,
+        utenti_reperibili: this.state.data.utenti_reperibili,
+        utenti_rimossi: this.state.data.utenti_rimossi,
+      })
+    }
   }
 
   render() {
   // mostriamo informazioni diverse a seconda del tipo di schedulabile
-  if (this.state.data.schedulableType == SchedulableType.AssignedShift) {
+  if (this.state.data.schedulableType === SchedulableType.AssignedShift) {
     /**
      * Mostriamo i cognomi dei partecipanti al turno, includendo i reperibili
      * se il turno è una GUARDIA
@@ -272,6 +261,14 @@ export class AppointmentContent extends React.Component{
           ) : (
               <div></div>
             )}
+            <div>
+              {this.state.utenti_rimossi.length !== 0? (<div>Rimossi:</div>) : <div></div> }
+            <ul>
+              {this.state.utenti_rimossi.map((user) => <li> <s>{user.cognome}</s></li>) }
+            </ul>
+            </div>
+            
+
           </div>
         </div>
       </StyledAppointmentsAppointmentContent>
