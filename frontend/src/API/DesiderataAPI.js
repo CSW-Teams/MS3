@@ -36,7 +36,10 @@ export  class DesiderateAPI {
     const desiderate = [];
 
     for (let i = 0; i < body.length; i++) {
-      desiderate[i] = body[i];
+      let des = new Object()
+      des.idDesiderata = body[i].idDesiderata
+      des.data= new Date(body[i].anno, body[i].mese, body[i].giorno).toLocaleDateString()
+      desiderate[i]=des;
     }
 
     return desiderate;

@@ -4,6 +4,8 @@ import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
+import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
+import org.cswteams.ms3.entity.scocciature.ScocciaturaVacanza;
 import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
@@ -76,16 +78,40 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private void registerScocciature() {
         int pesoDomenicaMattina=5;
         int pesoDomenicaPomeriggio=10;
-        int pesoSabatoMattina=10;
-        int pesoSabatoPomeriggio=10;
-        int pesoSabatoNotte=10;
+        int pesoDomenicaNotte=15;
 
+        int pesoSabatoMattina=5;
+        int pesoSabatoPomeriggio=10;
+        int pesoSabatoNotte=15;
+        int pesoVenerdiPomeriggio=5;
+        int pesoVenerdiNotte=10;
+        int pesoDesiderata= 50;
 
         Scocciatura scocciaturaDomenicaMattina = new ScocciaturaAssegnazioneUtente(pesoDomenicaMattina,DayOfWeek.SUNDAY,TipologiaTurno.MATTUTINO);
         Scocciatura scocciaturaDomenicaPomoriggio = new ScocciaturaAssegnazioneUtente(pesoDomenicaPomeriggio,DayOfWeek.SUNDAY,TipologiaTurno.POMERIDIANO);
+        Scocciatura scocciaturaDomenicaNotte = new ScocciaturaAssegnazioneUtente(pesoDomenicaNotte,DayOfWeek.SUNDAY,TipologiaTurno.NOTTURNO);
+
+        Scocciatura scocciaturaSabatoMattina = new ScocciaturaAssegnazioneUtente(pesoSabatoMattina,DayOfWeek.SATURDAY,TipologiaTurno.MATTUTINO);
+        Scocciatura scocciaturaSabatoPomoriggio = new ScocciaturaAssegnazioneUtente(pesoSabatoPomeriggio,DayOfWeek.SATURDAY,TipologiaTurno.POMERIDIANO);
+        Scocciatura scocciaturaSabatoNotte = new ScocciaturaAssegnazioneUtente(pesoSabatoNotte,DayOfWeek.SATURDAY,TipologiaTurno.NOTTURNO);
+
+        Scocciatura scocciaturaVenerdiPomoriggio = new ScocciaturaAssegnazioneUtente(pesoVenerdiPomeriggio,DayOfWeek.FRIDAY,TipologiaTurno.POMERIDIANO);
+        Scocciatura scocciaturaVenerdiNotte = new ScocciaturaAssegnazioneUtente(pesoVenerdiNotte,DayOfWeek.FRIDAY,TipologiaTurno.NOTTURNO);
+
+        Scocciatura scocciaturaDesiderata = new ScocciaturaDesiderata(pesoDesiderata);
 
         scocciaturaDao.save(scocciaturaDomenicaPomoriggio);
         scocciaturaDao.save(scocciaturaDomenicaMattina);
+        scocciaturaDao.save(scocciaturaDomenicaNotte);
+
+        scocciaturaDao.save(scocciaturaSabatoMattina);
+        scocciaturaDao.save(scocciaturaSabatoPomoriggio);
+        scocciaturaDao.save(scocciaturaSabatoNotte);
+
+        scocciaturaDao.save(scocciaturaVenerdiPomoriggio);
+        scocciaturaDao.save(scocciaturaVenerdiNotte);
+
+        scocciaturaDao.save(scocciaturaDesiderata);
     }
 
     private void registerConstraints(){

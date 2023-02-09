@@ -49,7 +49,7 @@ export default class UserProfilesView extends React.Component{
         comparator: comparator
       })
     }
-  
+
 
   async componentDidMount() {
     let utenti = await(new UtenteAPI().getAllUsersInfo());
@@ -60,7 +60,7 @@ export default class UserProfilesView extends React.Component{
 
   }
   render() {
-    
+
     // Ordina gli utenti in base alla proprietà specificata.
     // È possibile specificare la proprietà cliccando sulla colonna corrispondente.
     console.log(this.state)
@@ -72,13 +72,16 @@ export default class UserProfilesView extends React.Component{
       return this.state.comparator(p1, p2);
 
     })
-    
+
     return(
       <MDBCard>
         <MDBCardBody className="text-center">
           <MDBCardTitle>Informazioni Utenti</MDBCardTitle>
-          <MDBTable align="middle" >
-            <MDBTableHead>
+          <MDBTable align="middle"
+                    bordered
+                    small
+                    hover >
+            <MDBTableHead color='tempting-azure-gradient' textWhite>
               <tr>
                 <th scope='col' onClick={() => this.setOrderBy("nome")} > Nome </th>
                 <th scope='col' onClick={() => this.setOrderBy("cognome")} >Cognome</th>

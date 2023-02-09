@@ -18,13 +18,15 @@ import java.time.LocalDate;
 public class ScocciaturaVacanza extends Scocciatura {
 
     private int peso;
-    private LocalDate vacanza;
+    @ManyToOne
+    @JoinColumn(name = "vacanza_id")
+    private Holiday vacanza;
     private TipologiaTurno tipologiaTurno;
 
     public ScocciaturaVacanza() {
     }
 
-    public ScocciaturaVacanza(int peso, LocalDate vacanza, TipologiaTurno tipologiaTurno) {
+    public ScocciaturaVacanza(int peso, Holiday vacanza, TipologiaTurno tipologiaTurno) {
         this.peso = peso;
         this.vacanza = vacanza;
         this.tipologiaTurno = tipologiaTurno;
@@ -36,7 +38,7 @@ public class ScocciaturaVacanza extends Scocciatura {
         TipologiaTurno tipologiaTurno = contesto.getAssegnazioneTurno().getTurno().getTipologiaTurno();
         LocalDate data = contesto.getAssegnazioneTurno().getData();
 
-        if(data.equals(this.vacanza) && tipologiaTurno.equals(this.tipologiaTurno))
+        if(data.equals(this.vacanza.getStartDate()) && tipologiaTurno.equals(this.tipologiaTurno))
             return this.peso;
 
         return 0;
