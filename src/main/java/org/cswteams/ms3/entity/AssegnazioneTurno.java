@@ -26,6 +26,13 @@ public class AssegnazioneTurno{
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> utentiReperibili;
 
+    /**
+     * Utenti rimossi dall'assegnazione turno, ad esempio per una rinuncia dell'utente stesso,
+     * oppure a causa di uno scambio.
+     */
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Utente> retiredUsers;
+
     private long dataEpochDay;
 
     @ManyToOne
@@ -54,6 +61,40 @@ public class AssegnazioneTurno{
         this.utentiReperibili = utentiReperibili;
         this.dataEpochDay = dataEpochDay;
         this.turno = turno;
+    }
+
+    private boolean isUserIn(Utente u, List<Utente> utenti){
+        for (Utente utente : utenti) {
+            if (utente.getId().equals(u.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * true se l'utente è assegnato al turno tra gli allocati
+     */
+    public boolean isAllocated(Utente u){
+
+        return isUserIn(u, new ArrayList<>(utentiDiGuardia));
+    }
+
+    /**
+     * true se l'utente è stato assegnato al turno in precedenza
+     * ma non è più assegnato ora.
+     */
+    public boolean isRetired(Utente u){
+        return isUserIn(u, new ArrayList<>(retiredUsers));
+    }
+
+    /**
+     * true se l'utente è in riserva per il turno.
+     * Se il turno prevede la reperibilità, l'appartenenza dell'utente 
+     * alle riserve implica che esso è in reperiilità.
+     */
+    public boolean isReserve(Utente u){
+        return isUserIn(u, new ArrayList<>(utentiReperibili));
     }
 
     public LocalDate getData() {

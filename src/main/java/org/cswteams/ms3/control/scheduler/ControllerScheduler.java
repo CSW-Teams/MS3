@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.*;
@@ -19,8 +18,6 @@ import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
@@ -203,6 +200,8 @@ public class ControllerScheduler implements IControllerScheduler{
         AssegnazioneTurno assegnazioneTurnoOld  = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
         AssegnazioneTurno assegnazioneTurnoNew = assegnazioneTurnoOld.clone();
 
+        List<Utente> allUsersOld = assegnazioneTurnoOld.getUtentiAsList();
+
         //Apporto le modifiche sugli utenti allocati , se necessario
         if(modificaAssegnazioneTurnoDTO.getUtenti_guardia()!= null){
             assegnazioneTurnoNew.setUtentiDiGuardia(new HashSet<>());
@@ -217,9 +216,19 @@ public class ControllerScheduler implements IControllerScheduler{
             for (long idReperibile: modificaAssegnazioneTurnoDTO.getUtenti_guardia()) {
                 assegnazioneTurnoNew.addUtenteReperibile(utenteDao.findById(idReperibile));
             }
-
         }
 
+        /**
+         * registriamo gli utenti allocati nella vecchia assegnazione turno che non sono
+         * presenti nella nuova asegnazione turno come utenti rimossi.
+         */
+        assegnazioneTurnoNew.setRetiredUsers(new HashSet<>());
+        for (Utente utente: allUsersOld) {
+            if (!assegnazioneTurnoNew.isAllocated(utente) && !assegnazioneTurnoNew.isReserve(utente)){
+                assegnazioneTurnoNew.getRetiredUsers().add(utente);
+            }
+        }
+        
         //rimuovo la vecchia assegnazione e provo ad aggiungere la nuova
         this.rimuoviAssegnazioneTurno(assegnazioneTurnoOld);
         Schedule schedule = this.aggiungiAssegnazioneTurno(assegnazioneTurnoNew, true);

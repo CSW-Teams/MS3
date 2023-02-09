@@ -1,9 +1,6 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
-import org.cswteams.ms3.entity.Utente;
-
-import java.util.List;
 
 @Data
 public class ModificaAssegnazioneTurnoDTO {

@@ -3,9 +3,6 @@ package org.cswteams.ms3.control.utils;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.entity.Utente;
-import org.cswteams.ms3.exception.TurnoException;
 
 import java.sql.Timestamp;
 import java.time.*;
@@ -17,7 +14,7 @@ public class MappaAssegnazioneTurni {
 
 
   /*  public static AssegnazioneTurno assegnazioneTurnoDTOToEntity(AssegnazioneTurnoDTO dto) throws TurnoException {
-        // DA SISTEMARE, DEVE PRENDERLO DAL DB
+        // FIXME: DA SISTEMARE, DEVE PRENDERLO DAL DB
         Turno turno = new Turno(dto.getIdTurno(), dto.getInizio().toLocalDateTime().toLocalTime(), dto.getFine().toLocalDateTime().toLocalTime(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getTipologiaTurno(),dto.isGiornoSuccessivoTurno());
         Set<Utente> diGuardia = MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia());
         Set<Utente> reperibili = MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili());
@@ -45,8 +42,10 @@ public class MappaAssegnazioneTurni {
         Timestamp timestampFine = new Timestamp(datefine.getTime());
         Set<UtenteDTO> diGuardiaDto = MappaUtenti.utentiEntitytoDTO(entity.getUtentiDiGuardia());
         Set<UtenteDTO> reperibiliDto = MappaUtenti.utentiEntitytoDTO(entity.getUtentiReperibili());
+        Set<UtenteDTO> rimossiDto = MappaUtenti.utentiEntitytoDTO(entity.getRetiredUsers());
         AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(), entity.getTurno().getId(), timestampInizio, timestampFine, diGuardiaDto, reperibiliDto, MappaServizio.servizioEntitytoDTO(entity.getTurno().getServizio()), entity.getTurno().getTipologiaTurno(), entity.getTurno().isGiornoSuccessivo(), entity.getTurno().isReperibilitaAttiva());
         dto.setMansione(entity.getTurno().getMansione());
+        dto.setRetiredUsers(rimossiDto);
         return dto;
     }
 

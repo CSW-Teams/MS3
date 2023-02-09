@@ -96,6 +96,10 @@ public class Turno {
         this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, ruoliNumero, reperibilitaAttiva);
     }
 
+    public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero) throws  TurnoException {
+        this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, ruoliNumero, false);
+    }
+
     public Turno(LocalTime oraInizio, LocalTime oraFine, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean reperibilitaAttiva) throws  TurnoException {
         this(oraInizio, oraFine, servizio, mansione, tipologia, tipologia == TipologiaTurno.NOTTURNO, new ArrayList<>(Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1),new RuoloNumero(RuoloEnum.STRUTTURATO,1))), reperibilitaAttiva);
     }

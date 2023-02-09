@@ -41,7 +41,8 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurniAssegnati()  {
         Set<AssegnazioneTurno> turniSet = new HashSet<>(assegnazioneTurnoDao.findAll());
-        return MappaAssegnazioneTurni.assegnazioneTurnoToDTO(turniSet);
+        Set<AssegnazioneTurnoDTO> turniDTOSet = MappaAssegnazioneTurni.assegnazioneTurnoToDTO(turniSet);
+        return turniDTOSet;
     }
 
     @Override

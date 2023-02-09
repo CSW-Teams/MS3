@@ -29,6 +29,8 @@ public class AssegnazioneTurnoDTO {
 
     private boolean reperibilitaAttiva;
 
+    private Set<UtenteDTO> retiredUsers;
+
     public AssegnazioneTurnoDTO(Long id, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
         this.id = id;
         this.inizio = inizio;
