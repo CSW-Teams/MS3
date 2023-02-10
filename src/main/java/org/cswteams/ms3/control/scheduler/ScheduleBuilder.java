@@ -144,7 +144,14 @@ public class ScheduleBuilder {
             if (verificaTuttiVincoli(contesto, false)){
                 utentiDaPopolare.add(userScheduleState.getUtente());
                 userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
-                userScheduleState.saveUffaTemp();
+
+                /*
+                 * Se il turno a cui ho associato l'utente ha la reperibilità attiva, oppure ho aggiunto l'utente in servizio
+                 * allora devo aggiornare il suo uffa cumulato.
+                 */
+                if(contesto.getAssegnazioneTurno().getTurno().isReperibilitaAttiva() || contesto.getAssegnazioneTurno().getUtentiDiGuardia().size() < contesto.getAssegnazioneTurno().getTurno().getNumRequiredUsers())
+                    userScheduleState.saveUffaTemp();
+
                 selectedUsers++;    
             }
         }
@@ -203,6 +210,9 @@ public class ScheduleBuilder {
         if(!schedule.isIllegal()){
             for (Utente u : at.getUtenti()){
                 this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
+
+                if(at.getTurno().isReperibilitaAttiva() || at.getUtentiDiGuardia().contains(u))
+                    this.allUserScheduleStates.get(u.getId()).saveUffaTemp();
             }
             this.schedule.getAssegnazioniTurno().add(at);
         }
