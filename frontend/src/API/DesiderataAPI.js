@@ -13,9 +13,7 @@ export  class DesiderateAPI {
       desiderata.anno= date[i].year
       desiderata.mese= date[i].month.number
       desiderata.giorno= date[i].day
-
       desiderate.push(desiderata)
-
     }
 
     const requestOptions = {
@@ -38,11 +36,21 @@ export  class DesiderateAPI {
     for (let i = 0; i < body.length; i++) {
       let des = new Object()
       des.idDesiderata = body[i].idDesiderata
-      des.data= new Date(body[i].anno, body[i].mese, body[i].giorno).toLocaleDateString()
+      des.data= new Date(body[i].anno, body[i].mese-1, body[i].giorno).toLocaleDateString()
       desiderate[i]=des;
+      console.log(body[i].mese)
+      console.log(des.data)
     }
-
     return desiderate;
+  }
+
+  async getDesiderateDate(id){
+    let desiderate = await(this.getDesiderate(id))
+    let desiderateDate = []
+    for(let i = 0; i < desiderate.length; i++){
+      desiderateDate[i] = desiderate[i].data
+    }
+    return desiderateDate
   }
 
 

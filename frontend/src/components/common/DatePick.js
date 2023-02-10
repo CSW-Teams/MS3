@@ -10,20 +10,22 @@ import {DesiderateAPI} from "../../API/DesiderataAPI"
 import {toast, ToastContainer} from "react-toastify";
 
 const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
-const weeksName= ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"]
+const weeksName= ["Dom","Lun","Mar","Mer","Gio","Ven","Sab"]
 
 export default function DatePick(props) {
   let id = localStorage.getItem("id");
+  let desiderataApi = new DesiderateAPI();
 
   const datePickerRef = useRef()
   let current = new DateObject({ calendar: gregorian, locale: gregorian_en });
-  const [date, setDate] = useState(current);
+  const [date, setDate] = useState([]);
   const [open, setOpen] = useState(true);
+  const [desiderateUtente, setDesiderateUtente] = useState(getDesiderate())
 
   async function saveDesiderate() {
     console.log(date)
     setOpen(false)
-    let response = await(new DesiderateAPI().salvaDesiderate(date,id))
+    let response = await(desiderataApi.salvaDesiderate(date,id))
     let responseStatus  = response.status
     props.onSelectdate();
     datePickerRef.current.closeCalendar()
@@ -52,11 +54,41 @@ export default function DatePick(props) {
         theme: "colored",
       });
     }
+    setDate([])
+    setDesiderateUtente(getDesiderate())
     }
 
+    async function getDesiderate(){
+      let desiderateUtente = await(desiderataApi.getDesiderateDate(id))
+      setDesiderateUtente(desiderateUtente)
+    }
 
   return ( <Button>
+
       <DatePicker
+        mapDays={({ date }) => {
+          let desiderataPresente = false
+          for(let i=0; i < desiderateUtente.length; i++){
+            if(date.format("DD/M/YYYY") === desiderateUtente[i]){
+              desiderataPresente = true
+              break
+            }
+          }
+          if (desiderataPresente) return {
+            disabled: true,
+            style: { color: "#ccc" },
+            onClick: () => toast.error('Desiderata già inserita', {
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            })
+          }
+        }}
         ref={datePickerRef}
         open={open}
         className="teal"

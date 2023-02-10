@@ -400,7 +400,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         turnoDao.saveAndFlush(t6);
         turnoDao.saveAndFlush(salaOpCardio);
 
-        Desiderata desiderata = new Desiderata(LocalDate.of(2023,03,12),new ArrayList<>(), u3);
+        Desiderata desiderata = new Desiderata(LocalDate.of(2023,3,12),new ArrayList<>(), u3);
         u3.getDesiderataList().add(desiderata);
 
         desiderataDao.save(desiderata);
