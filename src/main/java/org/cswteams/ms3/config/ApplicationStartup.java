@@ -348,12 +348,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
 
-        /*Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
+        Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
         t1.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
                 new UserCategoryPolicy(categoriaFerie, t1,  UserCategoryPolicyValue.EXCLUDE)
         ));
-*/
+
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
         t2.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE),
@@ -393,7 +393,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         salaOpCardio.setGiorniDiValidità(bitmask.addDayOfWeek(DayOfWeek.MONDAY));
 
         //Salvataggio dei Turni nel DB
-        //turnoDao.saveAndFlush(t1);
+        turnoDao.saveAndFlush(t1);
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
