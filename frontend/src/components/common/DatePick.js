@@ -7,7 +7,6 @@ import React, {useRef, useState} from "react";
 import gregorian from "react-date-object/calendars/gregorian";
 import gregorian_en from "react-date-object/locales/gregorian_en";
 import {DesiderateAPI} from "../../API/DesiderataAPI"
-import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 
 const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
 const weeksName= ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"]
@@ -63,7 +62,7 @@ export default function DatePick(props) {
         weekDays={weeksName}
         currentDate={true}
         numberOfMonths={1}
-        maxDate={new Date().setDate(15)}
+        minDate={new Date()}
         onChange={setDate}
         value={date}
         calendarPosition="top-right"

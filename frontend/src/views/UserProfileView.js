@@ -131,9 +131,7 @@ export default class UserProfileView extends React.Component{
         return <MDBCol>
           <MDBCard>
             <MDBCardBody className="text-center">
-              <MDBCardTitle>Rotazioni
-                <AggiungiCategoria onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></AggiungiCategoria>
-              </MDBCardTitle>
+              <MDBCardTitle>Rotazioni <AggiungiCategoria onPostAssegnazione = {()=>{this.componentDidMount()}}/> </MDBCardTitle>
               <MDBTable align="middle">
                 <MDBTableHead>
                   <tr>
@@ -166,8 +164,7 @@ export default class UserProfileView extends React.Component{
     function getCategoriaStatoUtente() {
       return <MDBCard>
         <MDBCardBody className="text-center">
-          <MDBCardTitle>Categorie utente
-            <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></AggiungiCategoriaStato>
+          <MDBCardTitle>Categorie utente <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} />
           </MDBCardTitle>
           <MDBTable align="middle">
             <MDBTableHead>
