@@ -20,10 +20,9 @@ export default function DatePick(props) {
   let current = new DateObject({ calendar: gregorian, locale: gregorian_en });
   const [date, setDate] = useState([]);
   const [open, setOpen] = useState(true);
-  const [desiderateUtente, setDesiderateUtente] = useState(getDesiderate())
+  const [desiderateUtente, setDesiderateUtente] = useState([])
 
   async function saveDesiderate() {
-    console.log(date)
     setOpen(false)
     let response = await(desiderataApi.salvaDesiderate(date,id))
     let responseStatus  = response.status

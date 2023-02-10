@@ -3,7 +3,6 @@
 export  class DesiderateAPI {
 
   async salvaDesiderate(date,id) {
-    console.log(id)
 
     let desiderate = []
 
@@ -38,8 +37,6 @@ export  class DesiderateAPI {
       des.idDesiderata = body[i].idDesiderata
       des.data= new Date(body[i].anno, body[i].mese-1, body[i].giorno).toLocaleDateString()
       desiderate[i]=des;
-      console.log(body[i].mese)
-      console.log(des.data)
     }
     return desiderate;
   }
