@@ -7,12 +7,10 @@ import {
   MDBContainer,
   MDBRow, MDBTable, MDBTableBody, MDBTableHead,
 } from "mdb-react-ui-kit";
-import {UtenteAPI} from "../API/UtenteAPI";
 import DatePick from "../components/common/DatePick";
 import IconButton from "@mui/material/IconButton";
 import {DesiderateAPI} from "../API/DesiderataAPI";
-import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
-import {toast} from "react-toastify";
+import {toast, ToastContainer} from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 function defaultComparator(prop1, prop2){
@@ -54,13 +52,13 @@ export default class Preference extends React.Component {
 
   async handleDeleteDesiderata(idDesiderata) {
     let id = localStorage.getItem("id");
-    console.log(idDesiderata)
     let desiderata = new DesiderateAPI();
     let responseStatus;
     responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
     console.log(responseStatus)
 
     if (responseStatus === 200) {
+      this.componentDidMount()
       toast.success('Desiderata cancellata con successo', {
         position: "top-center",
         autoClose: 5000,
@@ -71,7 +69,6 @@ export default class Preference extends React.Component {
         progress: undefined,
         theme: "colored",
       });
-      this.componentDidMount()
     } else if (responseStatus === 400) {
       toast.error('Errore nella cancellazione', {
         position: "top-center",
@@ -135,6 +132,18 @@ export default class Preference extends React.Component {
         </MDBCardBody>
         </MDBCard>
       </MDBContainer>
+        <ToastContainer
+          position="top-center"
+          autoClose={5000}
+          hideProgressBar={true}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </section>
     )
   }
