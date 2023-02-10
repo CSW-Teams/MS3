@@ -18,13 +18,6 @@ export  class UtenteAPI {
       utenti[i]=utente;
     }
 
-    //Dummy user to change holiday color
-    const dummy = new Object;
-    dummy.text ="";
-    dummy.id = -1;
-    dummy.color = red;
-    utenti[body.length] = dummy
-
     return utenti;
 
   }

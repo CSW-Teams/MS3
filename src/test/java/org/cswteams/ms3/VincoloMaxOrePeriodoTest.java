@@ -8,6 +8,7 @@ import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
@@ -56,10 +57,10 @@ public class VincoloMaxOrePeriodoTest {
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
     public void maxOrePeriodoTest() throws ViolatedConstraintException, TurnoException {
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
 
         //categorieDao.saveAll(Arrays.asList(categoriaIncinta,categoriaMalattia,categoriaFerie,categoriaOVER62));
 

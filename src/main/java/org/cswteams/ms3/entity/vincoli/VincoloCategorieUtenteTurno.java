@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity.vincoli;
 
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.RuoloEnum;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloCategorieUtenteTurnoException;
 
@@ -25,21 +26,21 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
         
         // Se sto considerando lo specializzando non prendo in considerazione categorie di tipo specializzazione,
         // Se sto considerando lo strutturato, non prendo in considerazione categorie di tipo turnazione
-        int tipoCategoria = ucp.getCategoria().getTipo();
-        if((tipoCategoria == 1 && utente.getRuoloEnum() == RuoloEnum.SPECIALIZZANDO) || (tipoCategoria == 2 && utente.getRuoloEnum() == RuoloEnum.STRUTTURATO)){
+        TipoCategoriaEnum tipoCategoria = ucp.getCategoria().getTipo();
+        if((tipoCategoria == TipoCategoriaEnum.SPECIALIZZAZIONE && utente.getRuoloEnum() == RuoloEnum.SPECIALIZZANDO) || (tipoCategoria == TipoCategoriaEnum.TURNAZIONE && utente.getRuoloEnum() == RuoloEnum.STRUTTURATO)){
             return true;
         }
 
         Categoria categoria = ucp.getCategoria();
         List<CategoriaUtente> daControllare = new ArrayList<>();
-        switch(tipoCategoria){
-            case 0:
+        switch(tipoCategoria.toString()){
+            case "STATO":
                 daControllare = utente.getStato();
                 break;
-            case 1:
+            case "SPECIALIZZAZIONE":
                 daControllare = utente.getSpecializzazioni();
                 break;
-            case 2:
+            case "TURNAZIONE":
                 daControllare = utente.getTurnazioni();
                 break;
         }

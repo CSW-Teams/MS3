@@ -3,6 +3,7 @@ package org.cswteams.ms3;
 import org.cswteams.ms3.config.ApplicationStartup;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
 import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.dao.*;
@@ -65,10 +66,10 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
     public void populateDBTestSchedule() throws TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA",  TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE",  TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA",  TipoCategoriaEnum.STATO);
 
         categorieDao.saveAndFlush(categoriaOVER62);
         categorieDao.saveAndFlush(categoriaIncinta);

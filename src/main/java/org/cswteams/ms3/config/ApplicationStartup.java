@@ -69,7 +69,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         populateDB();
-        registerHolidays();
         registerConstraints();
         registerScocciature();
         //populateDBTestSchedule();
@@ -133,7 +132,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
 
         Vincolo vincolo1 = new VincoloCategorieUtenteTurno();
-        Vincolo vincolo2 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo,categoriaDao.findAll());
+        Vincolo vincolo2 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo);
         Vincolo vincolo3 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguoOver62,Arrays.asList(categoriaDao.findAllByNome("OVER_62")));
         Vincolo vincolo4 = new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti);
         Vincolo vincolo5 = new VincoloUbiquità();
@@ -159,39 +158,25 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloDao.saveAndFlush(vincolo6);
 
     }
-    
-    private void registerHolidays(){
-        /*
-        try {
-            LoadHoliday();
-        } catch (IOException e) {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, e.getMessage());
-        }
-        */
-
-        // registra le domeniche nel ventennio 2021-2023 (ridurre overhead di comunicazione)
-        // holidayController.registerSundays(LocalDate.of(2021, 1, 1), 3);
-
-    }
 
 
     private void populateDB() throws TurnoException {
 
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO.ordinal());
-        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO.ordinal());
-        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO.ordinal());
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO.ordinal());
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
 
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE (INCLUSIVE)
-        Categoria cardiologia = new Categoria("CARDIOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE.ordinal());
-        Categoria oncologia = new Categoria("ONCOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE.ordinal());
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE);
+        Categoria oncologia = new Categoria("ONCOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE);
 
         //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
-        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
-        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
-        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
-        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE.ordinal());
+        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE);
+        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE);
+        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE);
+        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE);
 
         categoriaDao.save(categoriaFerie);
         categoriaDao.save(categoriaOVER62);

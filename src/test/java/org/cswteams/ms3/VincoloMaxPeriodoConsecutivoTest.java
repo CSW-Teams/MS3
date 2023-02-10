@@ -1,6 +1,5 @@
 package org.cswteams.ms3;
 
-import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloMaxPeriodoConsecutivo;
@@ -12,6 +11,7 @@ import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
@@ -57,10 +57,10 @@ public class VincoloMaxPeriodoConsecutivoTest {
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
     public void oreConsecutiveTEST() throws ViolatedConstraintException, TurnoException {
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
         //Crea turni e servizio
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
@@ -98,7 +98,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
 
         UserScheduleState pregUserState = new UserScheduleState(utente, scheduleTest);
 
-        Vincolo vincoloMaxOreConsecutive = new VincoloMaxPeriodoConsecutivo(12*60,new ArrayList<>());
+        Vincolo vincoloMaxOreConsecutive = new VincoloMaxPeriodoConsecutivo(12*60);
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
         vincoloMaxOreConsecutive.verificaVincolo(new ContestoVincolo(pregUserState,turnoNotturno));
     }
@@ -117,7 +117,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
         turnoDao.save(t2);
         turnoDao.save(t3);
 
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
         //turnoDao.save(t4);
         CategoriaUtente over62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         //Crea utente

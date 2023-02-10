@@ -6,6 +6,7 @@ import org.cswteams.ms3.control.utils.MappaCategoriePerTipo;
 import org.cswteams.ms3.dao.CategorieDao;
 import org.cswteams.ms3.dto.CategoriaDTO;
 import org.cswteams.ms3.entity.Categoria;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,16 +21,16 @@ public class ControllerCategorie implements IControllerCategorie {
 
     @Override
     public Set<CategoriaDTO> leggiCategorieStato() throws ParseException {
-        return MappaCategoriePerTipo.categoriaSetEntityToDTO(categorieDao.findAllByTipo(0));
+        return MappaCategoriePerTipo.categoriaSetEntityToDTO(categorieDao.findAllByTipo(TipoCategoriaEnum.STATO));
     }
 
     @Override
     public Set<CategoriaDTO> leggiCategorieSpecializzazioni() throws ParseException {
-        return MappaCategoriePerTipo.categoriaSetEntityToDTO(categorieDao.findAllByTipo(1));
+        return MappaCategoriePerTipo.categoriaSetEntityToDTO(categorieDao.findAllByTipo(TipoCategoriaEnum.SPECIALIZZAZIONE));
     }
 
     @Override
     public Set<CategoriaDTO> leggiCategorieTurnazioni() throws ParseException {
-        return MappaCategoriePerTipo.categoriaSetEntityToDTO(categorieDao.findAllByTipo(2));
+        return MappaCategoriePerTipo.categoriaSetEntityToDTO(categorieDao.findAllByTipo(TipoCategoriaEnum.TURNAZIONE));
     }
 }

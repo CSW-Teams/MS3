@@ -30,6 +30,11 @@ public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno 
         this.categorieVincolate = categorieVincolate;
     }
 
+    public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes){
+        this.maxConsecutiveMinutes = maxConsecutiveMinutes;
+        this.categorieVincolate = new ArrayList<>();
+    }
+
 
     @Override
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {

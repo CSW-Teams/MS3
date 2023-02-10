@@ -3,6 +3,7 @@ package org.cswteams.ms3;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloCategorieUtenteTurno;
 import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.dao.*;
@@ -59,10 +60,10 @@ public class VincoloPersonaTurnoTest {
     public void pregnancyTEST() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
         categorieDao.saveAndFlush(categoriaOVER62);
         categorieDao.saveAndFlush(categoriaIncinta);
         categorieDao.saveAndFlush(categoriaFerie);
@@ -109,10 +110,10 @@ public class VincoloPersonaTurnoTest {
     public void over62TEST() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
 
         categorieDao.saveAndFlush(categoriaOVER62);
         categorieDao.saveAndFlush(categoriaIncinta);
@@ -161,10 +162,10 @@ public class VincoloPersonaTurnoTest {
     public void InMalattiaTEST() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
 
         categorieDao.saveAndFlush(categoriaOVER62);
         categorieDao.saveAndFlush(categoriaIncinta);
@@ -214,10 +215,10 @@ public class VincoloPersonaTurnoTest {
     public void InFerieTEST() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
 
         categorieDao.saveAndFlush(categoriaOVER62);
         categorieDao.saveAndFlush(categoriaIncinta);
@@ -268,8 +269,8 @@ public class VincoloPersonaTurnoTest {
     public void turnoInCardiologiaTest() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE E TURNAZIONE (ESCLUSIVE PER I TURNI)
-        Categoria cardiologia = new Categoria("CARDIOLOGIA", 1);
-        Categoria ambulatorioCardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", 2);
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE);
+        Categoria ambulatorioCardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE);
 
         categorieDao.saveAndFlush(cardiologia);
         categorieDao.saveAndFlush(ambulatorioCardiologia);

@@ -7,6 +7,7 @@ import org.cswteams.ms3.entity.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
@@ -56,10 +57,10 @@ public class VincoloTurniContiguiTest {
     public void testTurniContigui() throws ViolatedConstraintException, TurnoException {
         //Crea turni e servizio
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        Categoria categoriaOVER62 = new Categoria("OVER_62", 0);
-        Categoria categoriaIncinta = new Categoria("INCINTA", 0);
-        Categoria categoriaFerie = new Categoria("IN_FERIE", 0);
-        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", 0);
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
         categorieDao.save(categoriaFerie);
         categorieDao.save(categoriaIncinta);
         categorieDao.save(categoriaMalattia);

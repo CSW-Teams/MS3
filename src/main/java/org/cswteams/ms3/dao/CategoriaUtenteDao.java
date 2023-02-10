@@ -19,4 +19,5 @@ public interface CategoriaUtenteDao extends JpaRepository<CategoriaUtente,Long> 
     Set<CategoriaUtente> findTurnazioniUtente(@Param("idPersona") Long id);
 
 
+
 }

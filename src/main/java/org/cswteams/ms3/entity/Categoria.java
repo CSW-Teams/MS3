@@ -3,6 +3,7 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 
 import javax.persistence.*;
 
@@ -17,12 +18,12 @@ public class Categoria {
 
     private String nome;
 
-    private int tipo; //0 : STATO, - 1: SPECIALIZZAZIONE, - 2 TURNAZIONE
+    private TipoCategoriaEnum tipo;
 
     public Categoria() {
     }
 
-    public Categoria(String nome, int tipo) {
+    public Categoria(String nome, TipoCategoriaEnum tipo) {
         this.nome=nome;
         this.tipo=tipo;
     }
