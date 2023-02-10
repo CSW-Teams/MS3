@@ -75,42 +75,59 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     }
 
     private void registerScocciature() {
-        int pesoDomenicaMattina=5;
-        int pesoDomenicaPomeriggio=10;
+        int pesoDesiderata= 100;
+
+        int pesoDomenicaPomeriggio=20;
+        int pesoDomenicaMattina=20;
+        int pesoSabatoNotte=20;
+
+        int pesoSabatoPomeriggio=15;
+        int pesoSabatoMattina=15;
+        int pesoVenerdiNotte=15;
         int pesoDomenicaNotte=15;
 
-        int pesoSabatoMattina=5;
-        int pesoSabatoPomeriggio=10;
-        int pesoSabatoNotte=15;
-        int pesoVenerdiPomeriggio=5;
-        int pesoVenerdiNotte=10;
-        int pesoDesiderata= 50;
+        int pesoVenerdiPomeriggio=10;
+
+        int pesoFerialeSemplice=5;
+        int pesoFerialeNotturno=10;
 
         Scocciatura scocciaturaDomenicaMattina = new ScocciaturaAssegnazioneUtente(pesoDomenicaMattina,DayOfWeek.SUNDAY,TipologiaTurno.MATTUTINO);
-        Scocciatura scocciaturaDomenicaPomoriggio = new ScocciaturaAssegnazioneUtente(pesoDomenicaPomeriggio,DayOfWeek.SUNDAY,TipologiaTurno.POMERIDIANO);
+        Scocciatura scocciaturaDomenicaPomeriggio = new ScocciaturaAssegnazioneUtente(pesoDomenicaPomeriggio,DayOfWeek.SUNDAY,TipologiaTurno.POMERIDIANO);
         Scocciatura scocciaturaDomenicaNotte = new ScocciaturaAssegnazioneUtente(pesoDomenicaNotte,DayOfWeek.SUNDAY,TipologiaTurno.NOTTURNO);
 
         Scocciatura scocciaturaSabatoMattina = new ScocciaturaAssegnazioneUtente(pesoSabatoMattina,DayOfWeek.SATURDAY,TipologiaTurno.MATTUTINO);
-        Scocciatura scocciaturaSabatoPomoriggio = new ScocciaturaAssegnazioneUtente(pesoSabatoPomeriggio,DayOfWeek.SATURDAY,TipologiaTurno.POMERIDIANO);
+        Scocciatura scocciaturaSabatoPomeriggio = new ScocciaturaAssegnazioneUtente(pesoSabatoPomeriggio,DayOfWeek.SATURDAY,TipologiaTurno.POMERIDIANO);
         Scocciatura scocciaturaSabatoNotte = new ScocciaturaAssegnazioneUtente(pesoSabatoNotte,DayOfWeek.SATURDAY,TipologiaTurno.NOTTURNO);
 
-        Scocciatura scocciaturaVenerdiPomoriggio = new ScocciaturaAssegnazioneUtente(pesoVenerdiPomeriggio,DayOfWeek.FRIDAY,TipologiaTurno.POMERIDIANO);
+        Scocciatura scocciaturaVenerdiPomeriggio = new ScocciaturaAssegnazioneUtente(pesoVenerdiPomeriggio,DayOfWeek.FRIDAY,TipologiaTurno.POMERIDIANO);
         Scocciatura scocciaturaVenerdiNotte = new ScocciaturaAssegnazioneUtente(pesoVenerdiNotte,DayOfWeek.FRIDAY,TipologiaTurno.NOTTURNO);
 
         Scocciatura scocciaturaDesiderata = new ScocciaturaDesiderata(pesoDesiderata);
 
-        scocciaturaDao.save(scocciaturaDomenicaPomoriggio);
+        scocciaturaDao.save(scocciaturaDomenicaPomeriggio);
         scocciaturaDao.save(scocciaturaDomenicaMattina);
         scocciaturaDao.save(scocciaturaDomenicaNotte);
 
         scocciaturaDao.save(scocciaturaSabatoMattina);
-        scocciaturaDao.save(scocciaturaSabatoPomoriggio);
+        scocciaturaDao.save(scocciaturaSabatoPomeriggio);
         scocciaturaDao.save(scocciaturaSabatoNotte);
 
-        scocciaturaDao.save(scocciaturaVenerdiPomoriggio);
+        scocciaturaDao.save(scocciaturaVenerdiPomeriggio);
         scocciaturaDao.save(scocciaturaVenerdiNotte);
 
         scocciaturaDao.save(scocciaturaDesiderata);
+
+        List<DayOfWeek> giorniFeriali = Arrays.asList(DayOfWeek.MONDAY,DayOfWeek.TUESDAY,DayOfWeek.WEDNESDAY,DayOfWeek.THURSDAY,DayOfWeek.FRIDAY);
+        for(DayOfWeek giornoFeriale: giorniFeriali){
+            ScocciaturaAssegnazioneUtente scocciaturaFerialeMattina = new ScocciaturaAssegnazioneUtente(pesoFerialeSemplice,giornoFeriale,TipologiaTurno.MATTUTINO);
+            scocciaturaDao.save(scocciaturaFerialeMattina);
+            if(giornoFeriale != DayOfWeek.FRIDAY){
+                ScocciaturaAssegnazioneUtente scocciaturaFerialePomeriggio = new ScocciaturaAssegnazioneUtente(pesoFerialeSemplice,giornoFeriale,TipologiaTurno.POMERIDIANO);
+                scocciaturaDao.save(scocciaturaFerialePomeriggio);
+                ScocciaturaAssegnazioneUtente scocciaturaFerialeNotturno = new ScocciaturaAssegnazioneUtente(pesoFerialeNotturno,giornoFeriale,TipologiaTurno.NOTTURNO);
+                scocciaturaDao.save(scocciaturaFerialeNotturno);
+            }
+        }
     }
 
     private void registerConstraints(){
@@ -331,12 +348,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
 
-        Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
+        /*Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
         t1.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
                 new UserCategoryPolicy(categoriaFerie, t1,  UserCategoryPolicyValue.EXCLUDE)
         ));
-
+*/
         Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
         t2.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE),
@@ -376,7 +393,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         salaOpCardio.setGiorniDiValidità(bitmask.addDayOfWeek(DayOfWeek.MONDAY));
 
         //Salvataggio dei Turni nel DB
-        turnoDao.saveAndFlush(t1);
+        //turnoDao.saveAndFlush(t1);
         turnoDao.saveAndFlush(t2);
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
