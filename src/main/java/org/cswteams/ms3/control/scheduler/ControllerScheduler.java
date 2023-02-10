@@ -213,7 +213,7 @@ public class ControllerScheduler implements IControllerScheduler{
         //Apporto le modifiche sugli utenti di riserva , se necessario
         if(modificaAssegnazioneTurnoDTO.getUtenti_reperibili()!=null){
             assegnazioneTurnoNew.setUtentiReperibili(new HashSet<>());
-            for (long idReperibile: modificaAssegnazioneTurnoDTO.getUtenti_guardia()) {
+            for (long idReperibile: modificaAssegnazioneTurnoDTO.getUtenti_reperibili()) {
                 assegnazioneTurnoNew.addUtenteReperibile(utenteDao.findById(idReperibile));
             }
         }

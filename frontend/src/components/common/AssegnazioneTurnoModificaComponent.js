@@ -109,7 +109,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      */
     async function buildAssegnazioneModificata(contesto){
 
-      let response = await assegnazioneTurnoApi.richiediRinunciaTurno(utentiSelezionati,appointmentData,1)
+      let response = await assegnazioneTurnoApi.richiediRinunciaTurno(utentiSelezionati,appointmentData,localStorage.getItem("id"))
       let responseStatusClass = Math.floor(response.status / 100)
 
         if(responseStatusClass==5){

@@ -161,7 +161,7 @@ class ScheduleView extends React.Component{
         }
 
 
-        let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],1);
+        let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],localStorage.getItem("id"));
         let responseStatusClass = Math.floor(response.status / 100)
 
         if(responseStatusClass==5){
