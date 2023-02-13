@@ -155,7 +155,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
           });
 
           //Aggiorno i turni sull'interfaccia
-          let turni = await assegnazioneTurnoApi.getTurnByIdUser('1');
+          let turni = await assegnazioneTurnoApi.getTurnByIdUser(localStorage.getItem("id"));
           contesto.setState({data:turni});
 
 

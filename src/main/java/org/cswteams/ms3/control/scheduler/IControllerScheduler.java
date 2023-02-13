@@ -26,7 +26,7 @@ public interface IControllerScheduler {
     Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno, boolean forced);
     Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO assegnazioneTurno);
 
-    void rimuoviAssegnazioneTurno(AssegnazioneTurno assegnazioneTurnoOld);
+    void rimuoviAssegnazioneTurnoSchedulo(AssegnazioneTurno assegnazioneTurnoOld);
     boolean rimuoviAssegnazioneTurno(Long idAssegnazione);
 
     Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException ;

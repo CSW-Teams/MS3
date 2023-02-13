@@ -20,6 +20,8 @@ import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 
 @Service
 public class ControllerScheduler implements IControllerScheduler{
@@ -116,18 +118,20 @@ public class ControllerScheduler implements IControllerScheduler{
         
         // we commit changes to schedule only if they do not taint it
         if (!schedule.isIllegal()){
-            scheduleDao.save(schedule);
+            scheduleDao.flush();
         }
         
         return schedule;
     }
 
-    public void rimuoviAssegnazioneTurno(AssegnazioneTurno assegnazioneTurnoOld) {
+    /**
+     * Rimuove un assegnazione turno solo dallo schedulo ma non dal database.
+     * @param assegnazioneTurnoOld
+     */
+    public void rimuoviAssegnazioneTurnoSchedulo(AssegnazioneTurno assegnazioneTurnoOld) {
         Schedule schedule = scheduleDao.findByDateBetween(assegnazioneTurnoOld.getDataEpochDay());
         schedule.getAssegnazioniTurno().remove(assegnazioneTurnoOld);
-
         scheduleDao.flush();
-        assegnazioneTurnoDao.delete(assegnazioneTurnoOld);
     }
 
     @Override
@@ -136,7 +140,8 @@ public class ControllerScheduler implements IControllerScheduler{
         if(assegnazioneTurno.isEmpty())
             return false;
 
-        this.rimuoviAssegnazioneTurno(assegnazioneTurno.get());
+        this.rimuoviAssegnazioneTurnoSchedulo(assegnazioneTurno.get());
+        assegnazioneTurnoDao.delete(assegnazioneTurno.get());
         return true;
     }
 
@@ -195,6 +200,7 @@ public class ControllerScheduler implements IControllerScheduler{
      * @return
      */
     @Override
+    @Transactional
     public Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO) {
 
         AssegnazioneTurno assegnazioneTurnoOld  = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
@@ -230,14 +236,17 @@ public class ControllerScheduler implements IControllerScheduler{
         }
         
         //rimuovo la vecchia assegnazione e provo ad aggiungere la nuova
-        this.rimuoviAssegnazioneTurno(assegnazioneTurnoOld);
+        this.rimuoviAssegnazioneTurnoSchedulo(assegnazioneTurnoOld);
         Schedule schedule = this.aggiungiAssegnazioneTurno(assegnazioneTurnoNew, true);
 
         // Se un vincolo è violato riaggiungo l'assegnazione che avevo in precedenza eliminato
         if (schedule.isIllegal()) {
-            assegnazioneTurnoOld.setId(null);
             schedule.getAssegnazioniTurno().add(assegnazioneTurnoOld);
             scheduleDao.flush();
+        }
+        else{
+            //Rimuovo la vecchia assegnazione turno anche dal database
+            this.rimuoviAssegnazioneTurno(assegnazioneTurnoOld.getId());
         }
 
         return schedule;
