@@ -280,6 +280,11 @@ public class ControllerScheduler implements IControllerScheduler{
         return MappaSchedulo.scheduloEntitytoDTO(scheduleDao.findAll());
     }
 
+    @Override
+    public Set<ScheduloDTO> leggiSchedulazioniIllegali() {
+        return scheduleDao.leggiSchedulazioniIllegali();
+    }
+
     /**
      * Permette la rimozione di uno schedulo. La rimozione può essere eseguita correttamente solo sulle generazioni future
      * e non quelle passate.

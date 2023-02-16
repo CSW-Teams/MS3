@@ -73,6 +73,14 @@ public class ScheduloRestEndpoint {
 
     }
 
+    @RequestMapping(method = RequestMethod.GET,path = "illegali")
+    public ResponseEntity<?> leggiSchedulazioniIllegali()  {
+
+        Set<ScheduloDTO> set = controllerScheduler.leggiSchedulazioniIllegali();
+        return new ResponseEntity<>( set, HttpStatus.FOUND);
+
+    }
+
     @RequestMapping(method = RequestMethod.DELETE, path = "id={id}")
     public ResponseEntity<?> deleteSchedulo(@PathVariable Long id)  {
 

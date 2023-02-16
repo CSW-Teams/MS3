@@ -38,6 +38,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { HolidaysAPI } from '../API/HolidaysAPI';
 import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
 import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../components/common/AssegnazioneTurnoModificaComponent';
+import ButtonLegalSchedulation from '../components/common/ButtonLegalSchedulation';
 
 
 /**
@@ -357,7 +358,9 @@ class ScheduleView extends React.Component{
               >
                 {this.state.openOptionFilter?"Chiudi":"Filtra"}
               </Button>
-
+              
+              <ButtonLegalSchedulation ></ButtonLegalSchedulation>
+                           
               <Scheduler
                 locale={"it-IT"}
                 firstDayOfWeek={1}
@@ -377,7 +380,9 @@ class ScheduleView extends React.Component{
                   cellDuration={60}
                 />
                 <MonthView displayName="Mensile" />
-                <Toolbar />
+                <Toolbar/>
+                
+
                 <EditingState onCommitChanges={this.commitChanges}/>
                 <IntegratedEditing/>
                 <Appointments appointmentContentComponent={AppointmentContent} />
@@ -386,11 +391,13 @@ class ScheduleView extends React.Component{
                   data={resources}
                 />
                 <DateNavigator />
+                
                 <TodayButton  buttonComponent={(props) => {
                   return (
                     <Button onClick={() => props.setCurrentDate(new Date())}>
                       Oggi
                     </Button>
+
                   );
                 }}/>
                 <ViewSwitcher />
@@ -456,6 +463,7 @@ class ScheduleView extends React.Component{
                   theme="light"
                 />
             </Paper>
+
           </React.Fragment>
 
         );

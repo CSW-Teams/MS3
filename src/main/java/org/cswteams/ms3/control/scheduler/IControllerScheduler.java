@@ -26,10 +26,11 @@ public interface IControllerScheduler {
      */
     Schedule createSchedule(LocalDate startDate, LocalDate endDate) throws UnableToBuildScheduleException;
     boolean rigeneraSchedule(long id) throws UnableToBuildScheduleException;
-
     Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno, boolean forced);
     Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO assegnazioneTurno);
     Set<ScheduloDTO> leggiSchedulazioni();
+    Set<ScheduloDTO> leggiSchedulazioniIllegali();
+
     boolean rimuoviSchedulo(long id);
     void rimuoviAssegnazioneTurnoSchedulo(AssegnazioneTurno assegnazioneTurnoOld);
     boolean rimuoviAssegnazioneTurno(Long idAssegnazione);

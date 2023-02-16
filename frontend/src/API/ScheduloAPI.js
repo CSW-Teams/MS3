@@ -7,6 +7,12 @@ export  class ScheduloAPI {
     return body;
   }
 
+  async getSchedulaziniIllegali() {
+    const response = await fetch('/api/schedule/illegali');
+    const body = await response.json();
+    return body;
+  }
+
 
   async deleteSchedulo(idSchedulo){
     const response = await fetch('/api/schedule/id='+idSchedulo,
