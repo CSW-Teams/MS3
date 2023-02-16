@@ -29,6 +29,7 @@ export default class UserProfileView extends React.Component{
       cognome: "",
       ruolo: "",
       email: "",
+      attore : "",
       categorie: "",
       dataNascita: "",
       categorie_utente: [],
@@ -38,8 +39,8 @@ export default class UserProfileView extends React.Component{
 
   }
   async componentDidMount() {
-    let id = this.props.match.params.idUser
-    let attore = localStorage.getItem("attore")
+    let id = this.props.match.params.idUser;
+    let attore = localStorage.getItem("attore");
     let utente = await(new UtenteAPI().getUserDetails(id));
     let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
     let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
