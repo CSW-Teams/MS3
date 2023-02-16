@@ -34,6 +34,8 @@ public class Utente {
 
     private AttoreEnum attore;
 
+
+
     @OneToMany
     private List<Desiderata> desiderataList;
 

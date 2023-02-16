@@ -42,7 +42,6 @@ export default class UserProfileView extends React.Component{
   async componentDidMount() {
     let id = localStorage.getItem("id");
     let utente = await(new UtenteAPI().getUserDetails(id));
-    console.log(utente.attore)
     let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
     let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
     let turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(id));

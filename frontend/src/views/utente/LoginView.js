@@ -73,7 +73,7 @@ export default class LoginView extends React.Component {
       <div className="Auth-form-container">
         <form className="Auth-form">
           <div className="Auth-form-content">
-            <h3 className="Auth-form-title">M3S Login</h3>
+            <h3 className="Auth-form-title">Login</h3>
             <div className="form-group mt-3">
               <label>Indirizzo Email</label>
               <input
