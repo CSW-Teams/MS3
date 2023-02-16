@@ -1,4 +1,4 @@
-/**
+  /**
  * Questo file contiene tutte le componenti necessarie per modificare il template grafico in base alle nostre esigenze.
  * Il templete grafico utilizzato mette già a disposizione componenti grafici per poter effettuare la modifica di un turno.
  * Le componenti presenti in questo file servono per personalizzare le componenti grafiche già esistenti.
