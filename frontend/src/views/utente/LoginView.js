@@ -50,6 +50,7 @@ export default class LoginView extends React.Component {
           pathname: '/pianificazione-globale',
           state: utente,
         })
+        window.location.reload();
 
         break;
       default:
