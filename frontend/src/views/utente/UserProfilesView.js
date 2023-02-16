@@ -88,8 +88,9 @@ export default class UserProfilesView extends React.Component{
                 <th scope='col' onClick={() => this.setOrderBy("cognome")} >Cognome</th>
                 <th scope='col' onClick={() => this.setOrderBy("dataNascita")} >Data Nascita</th>
                 <th scope='col' onClick={() => this.setOrderBy("ruoloEnum")} >Ruolo</th>
-                {this.state.attore!=="UTENTE" && <th scope='col'>Modifica</th>}
                 {this.state.attore==="UTENTE" && <th scope='col'>Info</th>}
+                {this.state.attore!=="UTENTE" && <th scope='col'>Modifica</th>}
+
               </tr>
             </MDBTableHead>
             <MDBTableBody>

@@ -128,7 +128,6 @@ export default class UserProfileView extends React.Component{
   render() {
 
     function getTurnazioniSpecializzando() {
-      if(this.state.ruolo!=="STRUTTURATO")
         return <MDBCol>
           <MDBCard>
             <MDBCardBody className="text-center">
@@ -197,7 +196,6 @@ export default class UserProfileView extends React.Component{
 
 
     function getSpecializzazioneStrutturato() {
-      if(this.state.ruolo==="STRUTTURATO")
         return <MDBRow>
           <MDBCol sm="3">
             <MDBCardText>Indirizzo</MDBCardText>
@@ -285,13 +283,13 @@ export default class UserProfileView extends React.Component{
                           className="text-muted">{this.state.ruolo}</MDBCardText>
                       </MDBCol>
                     </MDBRow>
-                    {getSpecializzazioneStrutturato.call(this)}
+                    {(this.state.ruolo==="STRUTTURATO") && getSpecializzazioneStrutturato.call(this)}
                   </MDBCardBody>
                 </MDBCard>
               </MDBCol>
             </MDBRow>
             <MDBRow>
-              {getTurnazioniSpecializzando.call(this)}
+              { (this.state.ruolo!=="STRUTTURATO") && getTurnazioniSpecializzando.call(this)}
               <MDBCol>
                 {getCategoriaStatoUtente.call(this)}
               </MDBCol>
