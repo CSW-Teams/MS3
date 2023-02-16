@@ -1,16 +1,15 @@
 package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
+import org.cswteams.ms3.control.utils.MappaSchedulo;
 import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
@@ -95,6 +94,31 @@ public class ControllerScheduler implements IControllerScheduler{
 
         return  scheduleDao.save(this.scheduleBuilder.build());
         
+    }
+
+    /**
+     * Permette la rigenerazione di una schedulazione. Non è possibile rigenerare schedulazioni passate. Solo schedulazioni future.
+     * @param id
+     * @return
+     * @throws UnableToBuildScheduleException
+     */
+    @Override
+    public boolean rigeneraSchedule(long id) throws UnableToBuildScheduleException {
+        Optional<Schedule> optionalSchedule = scheduleDao.findById(id);
+        if(optionalSchedule.isEmpty())
+            return false;
+
+
+        Schedule schedule = optionalSchedule.get();
+        LocalDate startDate = schedule.getStartDate();
+        LocalDate endDate = schedule.getEndDate();
+
+        //Non è possibile eliminare una vecchia schedulazione.
+        if(!rimuoviSchedulo(id))
+            return false;
+
+        createSchedule(startDate,endDate);
+        return true;
     }
 
     /**
@@ -252,5 +276,37 @@ public class ControllerScheduler implements IControllerScheduler{
         }
 
         return schedule;
+    }
+
+    public Set<ScheduloDTO> leggiSchedulazioni(){
+        return MappaSchedulo.scheduloEntitytoDTO(scheduleDao.findAll());
+    }
+
+    @Override
+    public Set<ScheduloDTO> leggiSchedulazioniIllegali() {
+        return scheduleDao.leggiSchedulazioniIllegali();
+    }
+
+    /**
+     * Permette la rimozione di uno schedulo. La rimozione può essere eseguita correttamente solo sulle generazioni future
+     * e non quelle passate.
+     * @param id
+     * @return
+     */
+    public boolean rimuoviSchedulo(long id){
+
+        Optional<Schedule> scheduleOptional = scheduleDao.findById(id);
+
+        if(scheduleOptional.isEmpty())
+            return false;
+
+        //Verifico se lo schedulo che voglio eliminare è uno schedulo futuro e non passato
+        if(scheduleOptional.get().getEndDate().isBefore(LocalDate.now()))
+            return false;
+
+        scheduleDao.deleteById(id);
+
+        return true;
+
     }
 }

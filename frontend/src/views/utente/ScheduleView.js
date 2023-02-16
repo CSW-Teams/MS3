@@ -3,9 +3,9 @@
 import React from 'react';
 import {ViewState} from '@devexpress/dx-react-scheduler';
 import {AllDayPanel} from '@devexpress/dx-react-scheduler-material-ui';
-import { ServizioAPI } from '../API/ServizioAPI';
+import { ServizioAPI } from '../../API/ServizioAPI';
 import Stack from '@mui/material/Stack';
-import {AppointmentContent, Content} from "../components/common/CustomAppointmentComponents.js"
+import {AppointmentContent, Content} from "../../components/common/CustomAppointmentComponents.js"
 import Collapse from '@mui/material/Collapse';
 import {
   Button,
@@ -31,13 +31,14 @@ import { ToastContainer, toast } from 'react-toastify';
 import {
    EditingState,IntegratedEditing
 } from '@devexpress/dx-react-scheduler';
-import { ServiceFilterSelectorButton } from '../components/common/ServiceFilterSelectorButton';
-import { UtenteAPI } from '../API/UtenteAPI';
+import { ServiceFilterSelectorButton } from '../../components/common/ServiceFilterSelectorButton';
+import { UtenteAPI } from '../../API/UtenteAPI';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import { HolidaysAPI } from '../API/HolidaysAPI';
-import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
-import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../components/common/AssegnazioneTurnoModificaComponent';
+import { HolidaysAPI } from '../../API/HolidaysAPI';
+import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
+import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../../components/common/AssegnazioneTurnoModificaComponent';
+import ButtonLegalSchedulation from '../../components/common/ButtonLegalSchedulation';
 
 
 /**
@@ -70,6 +71,7 @@ class ScheduleView extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
+            attore : localStorage.getItem("attore"),
             data: [],   // list of shifts to display in schedule (not filtered yet)
             mainResourceName: 'utenti_guardia',
             resources: [ // TODO: queste risorse sarebbero i dettagli da scrivere nelle carte dei turni assegnati? Ulteriori dettagli andrebbero aggiunti qui?
@@ -357,7 +359,9 @@ class ScheduleView extends React.Component{
               >
                 {this.state.openOptionFilter?"Chiudi":"Filtra"}
               </Button>
-
+              
+              <ButtonLegalSchedulation ></ButtonLegalSchedulation>
+                           
               <Scheduler
                 locale={"it-IT"}
                 firstDayOfWeek={1}
@@ -377,7 +381,9 @@ class ScheduleView extends React.Component{
                   cellDuration={60}
                 />
                 <MonthView displayName="Mensile" />
-                <Toolbar />
+                <Toolbar/>
+                
+
                 <EditingState onCommitChanges={this.commitChanges}/>
                 <IntegratedEditing/>
                 <Appointments appointmentContentComponent={AppointmentContent} />
@@ -386,17 +392,19 @@ class ScheduleView extends React.Component{
                   data={resources}
                 />
                 <DateNavigator />
+                
                 <TodayButton  buttonComponent={(props) => {
                   return (
                     <Button onClick={() => props.setCurrentDate(new Date())}>
                       Oggi
                     </Button>
+
                   );
                 }}/>
                 <ViewSwitcher />
 
 
-                {view=="global"?
+                {view==="global" && this.state.attore!=="UTENTE" &&
                   //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
                   <AppointmentTooltip
                     showCloseButton
@@ -404,7 +412,15 @@ class ScheduleView extends React.Component{
                     showDeleteButton
                     contentComponent={Content} //go to CustomContent.js
                   />
-                  :
+                }
+
+                {view === "global" && this.state.attore === "UTENTE" &&
+                < AppointmentTooltip
+                  contentComponent={Content} //go to CustomContent.js
+                />
+                }
+
+                {view!=="global" &&
                   //Se sono sulla schermata "singola" non visualizzo il bottone per eliminare l'assegnazione turno
                   <AppointmentTooltip
                     showCloseButton
@@ -419,7 +435,7 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
-                {view=="global"?
+                {view=="global" && this.state.attore!=="UTENTE" ?
                   <AppointmentForm
                     overlayComponent = {Overlay}
                     textEditorComponent={Nullcomponent}
@@ -443,19 +459,9 @@ class ScheduleView extends React.Component{
 
 
               </Scheduler>
-              <ToastContainer
-                  position="top-center"
-                  autoClose={5000}
-                  hideProgressBar={true}
-                  newestOnTop={false}
-                  closeOnClick
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  theme="light"
-                />
+             
             </Paper>
+
           </React.Fragment>
 
         );

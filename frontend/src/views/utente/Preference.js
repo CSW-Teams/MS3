@@ -7,9 +7,9 @@ import {
   MDBContainer,
   MDBRow, MDBTable, MDBTableBody, MDBTableHead,
 } from "mdb-react-ui-kit";
-import DatePick from "../components/common/DatePick";
+import DatePick from "../../components/common/DatePick";
 import IconButton from "@mui/material/IconButton";
-import {DesiderateAPI} from "../API/DesiderataAPI";
+import {DesiderateAPI} from "../../API/DesiderataAPI";
 import {toast, ToastContainer} from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -58,6 +58,7 @@ export default class Preference extends React.Component {
     console.log(responseStatus)
 
     if (responseStatus === 200) {
+      //window.location.reload()
       this.componentDidMount()
       toast.success('Desiderata cancellata con successo', {
         position: "top-center",
@@ -81,8 +82,8 @@ export default class Preference extends React.Component {
         theme: "colored",
       });
     }
-  }
 
+  }
 
   render() {
 
@@ -100,7 +101,7 @@ export default class Preference extends React.Component {
       <MDBContainer className="py-5" style={{height: '85vh',}}>
         <MDBCard alignment='center'>
           <MDBCardBody>
-            <MDBCardTitle>Inserisci le tue desiderate    <DatePick onSelectdate={() => this.componentDidMount()}/></MDBCardTitle>
+            <MDBCardTitle>Inserisci le tue desiderate    <DatePick onSelectdate={() => this.componentDidMount()} desiderate={this.state.desiderate}/></MDBCardTitle>
             <MDBRow>
             <MDBCol>
             </MDBCol>

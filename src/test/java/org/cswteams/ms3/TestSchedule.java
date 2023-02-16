@@ -2,14 +2,11 @@ package org.cswteams.ms3;
 
 import org.cswteams.ms3.config.ApplicationStartup;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
-import org.cswteams.ms3.enums.MansioneEnum;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
+import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipologiaTurno;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,13 +77,13 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.saveAndFlush(servizio1);
         //Creo utente con categoria incinta
-        Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com","", RuoloEnum.SPECIALIZZANDO);
+        Utente pregUser = new Utente("Giulia", "Rossi", "GLRRSS******", LocalDate.of(1954, 3, 14), "glrss@gmail.com","", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE );
         CategoriaUtente ci = new CategoriaUtente(categoriaIncinta, LocalDate.now(), LocalDate.now().plusDays(10));
         categoriaUtenteDao.saveAndFlush(ci);
         pregUser.getStato().add(ci);
         utenteDao.saveAndFlush(pregUser);
         //Creo utente generico
-        Utente utente = new Utente("Manuel", "Rossi", "******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "",RuoloEnum.SPECIALIZZANDO);
+        Utente utente = new Utente("Manuel", "Rossi", "******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "",RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE );
         utenteDao.saveAndFlush(utente);
         //Crea turni e servizio
         servizioDao.saveAndFlush(servizio1);

@@ -1,9 +1,11 @@
 package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
@@ -23,9 +25,13 @@ public interface IControllerScheduler {
      * @throws UnableToBuildScheduleException controlla lo stack delle eccezioni per scoprire perché non è stato possibile creare la pianificazione
      */
     Schedule createSchedule(LocalDate startDate, LocalDate endDate) throws UnableToBuildScheduleException;
+    boolean rigeneraSchedule(long id) throws UnableToBuildScheduleException;
     Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno, boolean forced);
     Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO assegnazioneTurno);
+    Set<ScheduloDTO> leggiSchedulazioni();
+    Set<ScheduloDTO> leggiSchedulazioniIllegali();
 
+    boolean rimuoviSchedulo(long id);
     void rimuoviAssegnazioneTurnoSchedulo(AssegnazioneTurno assegnazioneTurnoOld);
     boolean rimuoviAssegnazioneTurno(Long idAssegnazione);
 

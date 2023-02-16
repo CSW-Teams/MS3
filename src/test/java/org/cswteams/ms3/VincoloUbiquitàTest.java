@@ -4,6 +4,7 @@ import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloUbiquità;
+import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
@@ -40,7 +41,7 @@ public class VincoloUbiquitàTest {
         Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,true);
         Turno t2 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,true);
 
-        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO );
+        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
 
         AssegnazioneTurno turnoAssegnato = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
         AssegnazioneTurno turnoDaAssegnare = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
@@ -65,7 +66,7 @@ public class VincoloUbiquitàTest {
         Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
         Turno t2 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
 
-        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO );
+        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE  );
 
         AssegnazioneTurno turnoAssegnato = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
         AssegnazioneTurno turnoDaAssegnare = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));

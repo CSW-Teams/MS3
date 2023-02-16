@@ -95,7 +95,6 @@ public class ScheduleBuilder {
                     logger.log(Level.SEVERE, vclEntry.toString());
                 }
 
-                return this.schedule;
             }
                 
             // Passo poi a riempire le riserve
