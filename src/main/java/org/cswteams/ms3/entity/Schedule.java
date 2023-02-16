@@ -30,10 +30,7 @@ public class Schedule {
     /** data di fine validità della pianificazione, memorizzata come giorni da epoch */
     private long endDateEpochDay;
 
-    /** Assegnazioni dei turni previste dalla pianificazione. Lasciare CascadeType.PERSIST. Non mettere CascadeType.ALL altrimenti
-     * non funziona correttamente la modifica di un assegnazione turno. Con questa configurazione quando eliminiamo un assegnazione turno
-     * dello schedulo NON viene cancellata anche dal databse.*/
-    @OneToMany(cascade = {CascadeType.PERSIST})
+    @OneToMany(cascade = {CascadeType.ALL})
     private List<AssegnazioneTurno> assegnazioniTurno;
 
     /** Log di messaggi corrispondenti a violazioni di vincoli.
@@ -85,4 +82,5 @@ public class Schedule {
         isIllegal = true;
         causeIllegal = cause;
     }
+
 }
