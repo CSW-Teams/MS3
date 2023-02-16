@@ -5,10 +5,7 @@ import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloTipologieTurniContigue;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.MansioneEnum;
-import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
-import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.junit.Test;
@@ -93,7 +90,7 @@ public class VincoloTurniContiguiTest {
         turnoDao.saveAndFlush(t3);
         turnoDao.saveAndFlush(t5);
         //Crea utente
-        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com","", RuoloEnum.SPECIALIZZANDO );
+        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com","", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
         utenteDao.saveAndFlush(utente);
 
         //Aggiungi assegnazione turno

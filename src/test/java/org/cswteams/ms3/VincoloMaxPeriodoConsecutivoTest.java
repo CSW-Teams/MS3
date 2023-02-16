@@ -9,10 +9,7 @@ import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dao.UserCategoryPolicyDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.MansioneEnum;
-import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
-import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.junit.Test;
@@ -84,7 +81,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
         turnoDao.save(t3);
         //turnoDao.save(t4);
         //Crea utente
-        Utente utente = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
+        Utente utente = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
         utenteDao.save(utente);
 
         //Aggiungi assegnazione turno
@@ -121,7 +118,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
         //turnoDao.save(t4);
         CategoriaUtente over62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         //Crea utente
-        Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com","", RuoloEnum.STRUTTURATO );
+        Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com","", RuoloEnum.STRUTTURATO ,AttoreEnum.UTENTE );
         over62user.getStato().add(over62);
 
         //Aggiungi assegnazione turno

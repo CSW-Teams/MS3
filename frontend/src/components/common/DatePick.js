@@ -17,10 +17,8 @@ export default function DatePick(props) {
   let desiderataApi = new DesiderateAPI();
 
   const datePickerRef = useRef()
-  let current = new DateObject({ calendar: gregorian, locale: gregorian_en });
   const [date, setDate] = useState([]);
   const [open, setOpen] = useState(true);
-  const [desiderateUtente, setDesiderateUtente] = useState([])
 
   async function saveDesiderate() {
     setOpen(false)
@@ -54,21 +52,16 @@ export default function DatePick(props) {
       });
     }
     setDate([])
-    setDesiderateUtente(getDesiderate())
     }
 
-    async function getDesiderate(){
-      let desiderateUtente = await(desiderataApi.getDesiderateDate(id))
-      setDesiderateUtente(desiderateUtente)
-    }
-
-  return ( <Button>
+  return (
+    <Button>
 
       <DatePicker
         mapDays={({ date }) => {
           let desiderataPresente = false
-          for(let i=0; i < desiderateUtente.length; i++){
-            if(date.format("DD/M/YYYY") === desiderateUtente[i]){
+          for(let i=0; i < props.desiderate.length; i++){
+            if(date.format("DD/M/YYYY") === props.desiderate[i].data){
               desiderataPresente = true
               break
             }

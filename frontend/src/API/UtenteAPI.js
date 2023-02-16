@@ -36,6 +36,7 @@ export  class UtenteAPI {
     utente.codiceFiscale = body.codiceFiscale;
     utente.ruoloEnum = body.ruoloEnum;
     utente.email = body.email;
+    utente.attore =body.attore;
     return utente;
 
   }
@@ -57,6 +58,7 @@ export  class UtenteAPI {
       utente.ruoloEnum = body[i].ruoloEnum;
       utente.email = body[i].email;
       utente.categorie = body[i].categorie;
+      utente.attore =body[i].attore;
 
       utenti[i]=utente;
     }

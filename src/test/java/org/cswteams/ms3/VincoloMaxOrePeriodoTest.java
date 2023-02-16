@@ -6,10 +6,7 @@ import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.MansioneEnum;
-import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
-import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.junit.Test;
@@ -87,7 +84,7 @@ public class VincoloMaxOrePeriodoTest {
 
         //turnoDao.save(t4);
         //Crea utente
-        Utente utente = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
+        Utente utente = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE );
         utenteDao.save(utente);
 
         //Aggiungi assegnazione turno

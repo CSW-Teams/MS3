@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -31,6 +32,8 @@ public class Utente {
 
     private String password;
 
+    private AttoreEnum attore;
+
     @OneToMany
     private List<Desiderata> desiderataList;
 
@@ -52,7 +55,7 @@ public class Utente {
 
     public Utente(String nome, String cognome, String codiceFiscale,
                   LocalDate dataNascita, String email, String password,
-                  RuoloEnum ruoloEnum) {
+                  RuoloEnum ruoloEnum, AttoreEnum attore) {
         this.nome = nome;
         this.cognome = cognome;
         this.codiceFiscale = codiceFiscale;
@@ -65,29 +68,30 @@ public class Utente {
         this.specializzazioni= new ArrayList<>();
         this.turnazioni = new ArrayList<>();
         this.desiderataList = new ArrayList<>();
+        this.attore=attore;
     }
 
     public Utente(Long id,String nome, String cognome, String codiceFiscale,
                   LocalDate dataNascita, String email, String password,
-                  RuoloEnum ruoloEnum) {
+                  RuoloEnum ruoloEnum, AttoreEnum attore) {
 
-        this(nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
+        this(nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum, attore);
         this.id = id;
     }
 
     public Utente(Long id, String nome, String cognome, LocalDate dataNascita,
                   String codiceFiscale, RuoloEnum ruoloEnum, String email,
-                  String password, int maxWeekSchedulableHours) {
+                  String password, int maxWeekSchedulableHours, AttoreEnum attore) {
 
-        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum, attore);
         this.maxWeekSchedulableHours = maxWeekSchedulableHours;
     }
 
      public Utente(Long id, String nome, String cognome, LocalDate dataNascita,
                    String codiceFiscale, RuoloEnum ruoloEnum, String email,
-                   String password, int maxWeekSchedulableHours, List<CategoriaUtente> stato) {
+                   String password, int maxWeekSchedulableHours, List<CategoriaUtente> stato, AttoreEnum attore) {
 
-        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum, attore);
         this.maxWeekSchedulableHours = maxWeekSchedulableHours;
         this.stato = stato;
     }
@@ -95,15 +99,17 @@ public class Utente {
 
     public Utente(Long id, String nome, String cognome, String codiceFiscale,
                   LocalDate dataNascita, String email, String password,
-                  RuoloEnum ruoloEnum, List<CategoriaUtente> stato) {
-        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
+                  RuoloEnum ruoloEnum, List<CategoriaUtente> stato,AttoreEnum attore) {
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum, attore);
         this.stato = stato;
     }
 
     public Utente(Long id, String nome, String cognome, String codiceFiscale, LocalDate dataNascita, String email, RuoloEnum ruoloEnum, List<CategoriaUtente> stato,
-                String password, List<Desiderata> desiderataList) {
-        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum);
+                String password, List<Desiderata> desiderataList,AttoreEnum attore) {
+        this(id,nome, cognome, codiceFiscale, dataNascita, email, password, ruoloEnum, attore);
         this.stato = stato;
         this.desiderataList = desiderataList;
     }
+
+
 }
