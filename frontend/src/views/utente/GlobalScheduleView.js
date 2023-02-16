@@ -1,7 +1,7 @@
 import ScheduleView from "./ScheduleView.js"
-import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
-import { UtenteAPI } from '../API/UtenteAPI';
-import TemporaryDrawer from "../components/common/BottomViewAssegnazioneTurno.js";
+import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
+import { UtenteAPI } from '../../API/UtenteAPI';
+import TemporaryDrawer from "../../components/common/BottomViewAssegnazioneTurno.js";
 import { Stack } from "@mui/system";
 
 class GlobalScheduleView extends ScheduleView {

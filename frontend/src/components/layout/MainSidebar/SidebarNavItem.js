@@ -3,8 +3,13 @@ import PropTypes from "prop-types";
 import { NavLink as RouteNavLink } from "react-router-dom";
 import { NavItem, NavLink } from "shards-react";
 
+const refreshPage = ()=>{
+  window.location.reload();
+}
+
 const SidebarNavItem = ({ item }) => (
   <NavItem>
+    {refreshPage}
     <NavLink tag={RouteNavLink} to={item.to}>
       {item.htmlBefore && (
         <div

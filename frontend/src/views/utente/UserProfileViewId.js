@@ -1,5 +1,5 @@
 import React from 'react';
-import {UtenteAPI} from "../API/UtenteAPI";
+import {UtenteAPI} from "../../API/UtenteAPI";
 import {
   MDBCard,
   MDBCardBody,
@@ -13,10 +13,10 @@ import {
   MDBTableBody,
    MDBCardTitle
 } from "mdb-react-ui-kit";
-import {CategoriaUtenteAPI} from "../API/CategoriaUtenteAPI";
+import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 import {Button} from "@material-ui/core";
-import AggiungiCategoria from "../components/common/BottomViewAggiungiTurnazione"
-import AggiungiCategoriaStato from "../components/common/BottomViewAggiungiCategoriaStat"
+import AggiungiCategoria from "../../components/common/BottomViewAggiungiTurnazione"
+import AggiungiCategoriaStato from "../../components/common/BottomViewAggiungiCategoriaStat"
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import {toast} from "react-toastify";
@@ -39,12 +39,14 @@ export default class UserProfileView extends React.Component{
   }
   async componentDidMount() {
     let id = this.props.match.params.idUser
+    let attore = localStorage.getItem("attore")
     let utente = await(new UtenteAPI().getUserDetails(id));
     let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
     let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
     let turnazioni_utente = await(new CategoriaUtenteAPI().getTurnazioniUtente(id))
 
     this.setState({
+      attore : attore,
       nome: utente.nome,
       cognome: utente.cognome,
       ruolo: utente.ruoloEnum,
@@ -57,11 +59,9 @@ export default class UserProfileView extends React.Component{
   }
 
   async handleDeleteRotazione(idRotazione, key) {
-    console.log(idRotazione + key)
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
     responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione, this.props.match.params.idUser);
-    console.log(responseStatus)
 
     if (responseStatus === 200) {
       toast.success('Rotazione cancellata con successo', {
@@ -90,11 +90,9 @@ export default class UserProfileView extends React.Component{
   }
 
   async handlerDeleteCategoriaStato(idRotazione, key) {
-    console.log(idRotazione + key)
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
     responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.props.match.params.idUser );
-    console.log(responseStatus)
 
     if (responseStatus === 200) {
       toast.success('Rotazione cancellata con successo', {
@@ -125,7 +123,6 @@ export default class UserProfileView extends React.Component{
   render() {
 
     function getTurnazioniSpecializzando() {
-      if(this.state.ruolo!=="STRUTTURATO")
         return <MDBCol>
           <MDBCard>
             <MDBCardBody className="text-center">
@@ -161,7 +158,6 @@ export default class UserProfileView extends React.Component{
     }
 
     function getSpecializzazioneStrutturato() {
-      if(this.state.ruolo==="STRUTTURATO")
           return <MDBRow>
             <MDBCol sm="3">
               <MDBCardText>Indirizzo</MDBCardText>
@@ -183,38 +179,42 @@ export default class UserProfileView extends React.Component{
     }
 
     function getCategoriaStatoUtente() {
-      return <MDBCard>
-        <MDBCardBody className="text-center">
-          <MDBCardTitle>Categorie utente
-            <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></AggiungiCategoriaStato>
-          </MDBCardTitle>
-          <MDBTable align="middle">
-            <MDBTableHead>
-              <tr>
-                <th scope='col'>Categoria</th>
-                <th scope='col'>Inizio validità</th>
-                <th scope='col'>Fine validità</th>
-                <th scope='col'></th>
-              </tr>
-            </MDBTableHead>
-            <MDBTableBody>
-              {this.state.categorie_utente.map((data, key) => {
-                return (
-                  <tr key={key}>
-                    <td>{data.categoria}</td>
-                    <td>{data.inizio}</td>
-                    <td>{data.fine}</td>
-                    <td><IconButton aria-label="delete" onClick={() => this.handlerDeleteCategoriaStato(data.categoriaUtenteId, key)}>
-                      <DeleteIcon />
-                    </IconButton></td>
-                  </tr>
-                )
-              })}
-            </MDBTableBody>
-          </MDBTable>
-        </MDBCardBody>
-      </MDBCard>;
-    }
+        return <MDBCard>
+          <MDBCardBody className="text-center">
+            <MDBCardTitle>Categorie utente
+              <AggiungiCategoriaStato onPostAssegnazione={() => {
+                this.componentDidMount();
+              }}></AggiungiCategoriaStato>
+            </MDBCardTitle>
+            <MDBTable align="middle">
+              <MDBTableHead>
+                <tr>
+                  <th scope='col'>Categoria</th>
+                  <th scope='col'>Inizio validità</th>
+                  <th scope='col'>Fine validità</th>
+                  <th scope='col'></th>
+                </tr>
+              </MDBTableHead>
+              <MDBTableBody>
+                {this.state.categorie_utente.map((data, key) => {
+                  return (
+                    <tr key={key}>
+                      <td>{data.categoria}</td>
+                      <td>{data.inizio}</td>
+                      <td>{data.fine}</td>
+                      <td><IconButton aria-label="delete"
+                                      onClick={() => this.handlerDeleteCategoriaStato(data.categoriaUtenteId, key)}>
+                        <DeleteIcon/>
+                      </IconButton></td>
+                    </tr>
+                  )
+                })}
+              </MDBTableBody>
+            </MDBTable>
+          </MDBCardBody>
+        </MDBCard>;
+      }
+
 
     return (
       <section style={{backgroundColor: '#eee'}}>
@@ -239,9 +239,6 @@ export default class UserProfileView extends React.Component{
               <MDBCard className="mb-4">
                 <MDBCardBody>
                   <MDBCardTitle>Informazioni utente
-                    <Button size="small"><i
-                      className="fas fa-edit fa-lg"> </i>
-                    </Button>
                   </MDBCardTitle>
                   <MDBRow>
                     <MDBCol sm="3">
@@ -288,15 +285,15 @@ export default class UserProfileView extends React.Component{
                         className="text-muted">{this.state.ruolo}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
-                  {getSpecializzazioneStrutturato.call(this)}
+                  { this.state.ruolo==="STRUTTURATO" && getSpecializzazioneStrutturato.call(this)}
                 </MDBCardBody>
               </MDBCard>
             </MDBCol>
           </MDBRow>
           <MDBRow>
-            {getTurnazioniSpecializzando.call(this)}
+            {this.state.attore!=="UTENTE" && this.state.ruolo!=="STRUTTURATO" && getTurnazioniSpecializzando.call(this)}
             <MDBCol>
-              {getCategoriaStatoUtente.call(this)}
+              {this.state.attore!=="UTENTE" && getCategoriaStatoUtente.call(this)}
             </MDBCol>
           </MDBRow>
         </MDBContainer>

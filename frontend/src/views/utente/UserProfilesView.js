@@ -1,5 +1,5 @@
 import React from "react";
-import {UtenteAPI} from "../API/UtenteAPI";
+import {UtenteAPI} from "../../API/UtenteAPI";
 import {
   MDBCard,
   MDBCardBody,
@@ -23,7 +23,8 @@ export default class UserProfilesView extends React.Component{
     this.state = {
       utenti: [],
       orderBy: "nome",
-      comparator: defaultComparator
+      comparator: defaultComparator,
+      attore : localStorage.getItem("attore"),
     }
     this.setOrderBy = this.setOrderBy.bind(this);
   }
@@ -87,7 +88,9 @@ export default class UserProfilesView extends React.Component{
                 <th scope='col' onClick={() => this.setOrderBy("cognome")} >Cognome</th>
                 <th scope='col' onClick={() => this.setOrderBy("dataNascita")} >Data Nascita</th>
                 <th scope='col' onClick={() => this.setOrderBy("ruoloEnum")} >Ruolo</th>
-                <th scope='col'>Modifica</th>
+                {this.state.attore==="UTENTE" && <th scope='col'>Info</th>}
+                {this.state.attore!=="UTENTE" && <th scope='col'>Modifica</th>}
+
               </tr>
             </MDBTableHead>
             <MDBTableBody>
@@ -98,10 +101,8 @@ export default class UserProfilesView extends React.Component{
                     <td>{data.cognome}</td>
                     <td>{data.dataNascita}</td>
                     <td>{data.ruoloEnum}</td>
-                    <td>
-                      <Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}>
-                       <i className="fas fa-edit fa-lg"> </i>
-                        </Button></td>
+                    {this.state.attore==="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-info-circle" > </i></Button></td>}
+                    {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
                   </tr>
                 )
               })}

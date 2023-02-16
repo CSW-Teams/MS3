@@ -1,8 +1,8 @@
 import React from "react";
 import Button from '@mui/material/Button';
-import BasicDatePicker from '../components/common/DataPicker';
+import BasicDatePicker from '../../components/common/DataPicker';
 import Stack from '@mui/material/Stack';
-import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
+import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -15,8 +15,8 @@ import {
 } from "mdb-react-ui-kit";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
-import TemporaryDrawerSchedulo from "../components/common/BottomViewAggiungiSchedulazione";
-import { ScheduloAPI } from "../API/ScheduloAPI";
+import TemporaryDrawerSchedulo from "../../components/common/BottomViewAggiungiSchedulazione";
+import {ScheduloAPI} from "../../API/ScheduloAPI";
 
 /*
 * Schermata che permette di generare un nuovo schedulo
@@ -30,25 +30,25 @@ export class SchedulerGeneratorView extends React.Component{
             schedulazioni: [{}]
 
         }
-        
+
         this.componentDidMount = this.componentDidMount.bind(this);
     }
 
     async componentDidMount() {
       let schedulazioni = await(new ScheduloAPI().getSchedulazini());
       console.log(schedulazioni[0]);
-      
+
       this.setState({
         schedulazioni: schedulazioni,
       })
-  
+
     }
 
     async handleDelete(idSchedulo) {
       let scheduloAPI = new ScheduloAPI();
       let responseStatus;
       responseStatus = await scheduloAPI.deleteSchedulo(idSchedulo);
-  
+
       if (responseStatus === 200) {
         this.componentDidMount()
         toast.success('Schedulazione cancellata con successo', {
@@ -91,7 +91,7 @@ export class SchedulerGeneratorView extends React.Component{
       let scheduloAPI = new ScheduloAPI();
       let responseStatus;
       responseStatus = await scheduloAPI.rigeneraSchedulo(idSchedulo);
-  
+
       if (responseStatus === 202) {
         this.componentDidMount()
         toast.success('Schedulazione ricreata con successo', {
@@ -116,7 +116,7 @@ export class SchedulerGeneratorView extends React.Component{
           theme: "colored",
         });
       }
-      
+
       else {
         toast.error('Errore nella ricreazione', {
           position: "top-center",
@@ -134,7 +134,7 @@ export class SchedulerGeneratorView extends React.Component{
 
     render(){
         return (
-            
+
 
           <section>
           <TemporaryDrawerSchedulo onPostGeneration= {this.componentDidMount}></TemporaryDrawerSchedulo>
@@ -192,11 +192,11 @@ export class SchedulerGeneratorView extends React.Component{
               pauseOnHover
               theme="light"
             />
-          
+
           </section>
 
 
-            
+
         )
     }
 

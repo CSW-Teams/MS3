@@ -1,7 +1,7 @@
-import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
-import { UtenteAPI } from '../API/UtenteAPI';
+import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
+import { UtenteAPI } from '../../API/UtenteAPI';
 import ScheduleView  from "./ScheduleView.js"
-import {AppointmentSingleContent} from "../components/common/CustomAppointmentComponents.js"
+import {AppointmentSingleContent} from "../../components/common/CustomAppointmentComponents.js"
 import React from "react";
 
 /**

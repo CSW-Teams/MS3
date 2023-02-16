@@ -5,14 +5,14 @@ import { Redirect } from "react-router-dom";
 import { DefaultLayout } from "./layouts";
 
 // Route Views
-import GlobalScheduleView from "./views/GlobalScheduleView";
-import { SchedulerGeneratorView } from "./views/ScheduleGeneratorView";
-import SingleScheduleView from "./views/SingleScheduleView";
-import UserProfileView from "./views/UserProfileView"
-import Preference from "./views/Preference"
-import UserProfilesView from "./views/UserProfilesView"
-import UserProfileViewId from "./views/UserProfileViewId";
-import LoginView from "./views/LoginView"
+import GlobalScheduleView from "./views/utente/GlobalScheduleView";
+import { SchedulerGeneratorView } from "./views/pianificatore/ScheduleGeneratorView";
+import SingleScheduleView from "./views/utente/SingleScheduleView";
+import UserProfileView from "./views/utente/UserProfileView"
+import Preference from "./views/utente/Preference"
+import UserProfilesView from "./views/utente/UserProfilesView"
+import UserProfileViewId from "./views/utente/UserProfileViewId";
+import LoginView from "./views/utente/LoginView"
 import EmptyLayout from "./layouts/LoginLayout/Empty";
 
 

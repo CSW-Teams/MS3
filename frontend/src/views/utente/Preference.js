@@ -7,9 +7,9 @@ import {
   MDBContainer,
   MDBRow, MDBTable, MDBTableBody, MDBTableHead,
 } from "mdb-react-ui-kit";
-import DatePick from "../components/common/DatePick";
+import DatePick from "../../components/common/DatePick";
 import IconButton from "@mui/material/IconButton";
-import {DesiderateAPI} from "../API/DesiderataAPI";
+import {DesiderateAPI} from "../../API/DesiderataAPI";
 import {toast, ToastContainer} from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
 
