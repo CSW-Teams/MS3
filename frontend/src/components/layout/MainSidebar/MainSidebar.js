@@ -6,12 +6,13 @@ import { Col } from "shards-react";
 import SidebarMainNavbar from "./SidebarMainNavbar";
 import SidebarSearch from "./SidebarSearch";
 import SidebarNavItems from "./SidebarNavItems";
-
 import { Store } from "../../../flux";
 
 class MainSidebar extends React.Component {
+
   constructor(props) {
     super(props);
+
 
     this.state = {
       menuVisible: false,
@@ -20,6 +21,8 @@ class MainSidebar extends React.Component {
 
     this.onChange = this.onChange.bind(this);
   }
+
+
 
   componentWillMount() {
     Store.addChangeListener(this.onChange);

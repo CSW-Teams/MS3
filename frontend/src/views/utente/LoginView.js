@@ -1,5 +1,5 @@
 import React from "react"
-import {LoginAPI} from "../API/LoginAPI";
+import {LoginAPI} from "../../API/LoginAPI";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -44,6 +44,7 @@ export default class LoginView extends React.Component {
         localStorage.setItem("id", utente.id)
         localStorage.setItem("nome", utente.nome)
         localStorage.setItem("cognome", utente.cognome)
+        localStorage.setItem("attore", utente.attore)
 
         this.props.history.push({
           pathname: '/pianificazione-globale',

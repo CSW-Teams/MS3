@@ -1,8 +1,8 @@
 import React from "react";
 import Button from '@mui/material/Button';
-import BasicDatePicker from '../components/common/DataPicker';
+import BasicDatePicker from '../../components/common/DataPicker';
 import Stack from '@mui/material/Stack';
-import { AssegnazioneTurnoAPI } from '../API/AssegnazioneTurnoAPI';
+import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
