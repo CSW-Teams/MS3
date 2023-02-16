@@ -38,7 +38,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { HolidaysAPI } from '../../API/HolidaysAPI';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../../components/common/AssegnazioneTurnoModificaComponent';
-import ButtonLegalSchedulation from '../components/common/ButtonLegalSchedulation';
+import ButtonLegalSchedulation from '../../components/common/ButtonLegalSchedulation';
 
 
 /**
