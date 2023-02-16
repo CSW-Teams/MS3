@@ -459,18 +459,7 @@ class ScheduleView extends React.Component{
 
 
               </Scheduler>
-              <ToastContainer
-                  position="top-center"
-                  autoClose={5000}
-                  hideProgressBar={true}
-                  newestOnTop={false}
-                  closeOnClick
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  theme="light"
-                />
+             
             </Paper>
 
           </React.Fragment>
