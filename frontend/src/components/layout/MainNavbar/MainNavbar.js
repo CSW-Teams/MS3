@@ -6,9 +6,13 @@ import {Container, Nav, Navbar, NavbarBrand} from "shards-react";
 import NavbarSearch from "./NavbarSearch";
 import NavbarNav from "./NavbarNav/NavbarNav";
 import NavbarToggle from "./NavbarToggle";
-import {Link} from "@mui/icons-material";
-import {MDBNavbarBrand} from "mdb-react-ui-kit";
-import {FormatItalic} from "@material-ui/icons";
+import {CenterFocusStrong, FormatItalic} from "@material-ui/icons";
+import {
+  AlignHorizontalCenter,
+  AlignHorizontalCenterRounded
+} from "@mui/icons-material";
+import {MDBCard, MDBContainer} from "mdbreact";
+import {ContainerClasses} from "@mui/material";
 
 const MainNavbar = ({ layout, stickyTop }) => {
   const classes = classNames(
@@ -21,15 +25,17 @@ const MainNavbar = ({ layout, stickyTop }) => {
     <div className={classes}>
       <Container className="p-0">
         <Navbar type="light" className="align-items-stretch flex-md-nowrap p-0" >
-          <Container>
+          <MDBContainer  className="flex-center" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }} >
             <NavbarBrand className="mr-auto" href="/pianificazione-globale">
-              <img src="https://s3-us-west-1.amazonaws.com/fraymework/multimedia/images/icons/apps/npicheck.png" style={{ height: 25 }} alt='logo' />
-              {' '}
-              <font style={{ fontWeight: 800 , fontstyle: FormatItalic } } >
-                M3S : MEDICAL STAFF SHIFT SCHEDULER
+              <font style={{ fontWeight: 800 , fontstyle: FormatItalic ,textAlign: AlignHorizontalCenterRounded} } >
+                MEDICAL STAFF SHIFT SCHEDULER
               </font>
             </NavbarBrand>
-          </Container>
+          </MDBContainer>
           <NavbarSearch />
           <NavbarNav />
           <NavbarToggle />
