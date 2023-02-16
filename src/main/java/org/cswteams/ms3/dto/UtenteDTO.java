@@ -2,6 +2,7 @@ package org.cswteams.ms3.dto;
 
 import lombok.Data;
 import org.cswteams.ms3.entity.CategoriaUtente;
+import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 
 import java.time.LocalDate;
@@ -30,12 +31,14 @@ public class UtenteDTO {
 
     private List<CategoriaUtente> specializzazioni;
 
+    private AttoreEnum attore;
+
     public UtenteDTO(){}
 
     public UtenteDTO(Long id, String nome, String cognome,
                      LocalDate dataNascita, String codiceFiscale,
                      RuoloEnum ruoloEnum, String email, String password,
-                     List<CategoriaUtente> categorie, List<CategoriaUtente> specializzazioni) {
+                     List<CategoriaUtente> categorie, List<CategoriaUtente> specializzazioni, AttoreEnum attore) {
         this.id = id;
         this.nome = nome;
         this.cognome = cognome;
@@ -46,6 +49,7 @@ public class UtenteDTO {
         this.password = password;
         this.categorie = categorie;
         this.specializzazioni=specializzazioni;
+        this.attore=attore;
     }
 
 }

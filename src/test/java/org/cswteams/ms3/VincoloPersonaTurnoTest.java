@@ -2,14 +2,11 @@ package org.cswteams.ms3;
 
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloCategorieUtenteTurno;
-import org.cswteams.ms3.enums.MansioneEnum;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
+import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipologiaTurno;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,7 +93,7 @@ public class VincoloPersonaTurnoTest {
         CategoriaUtente incinta = new CategoriaUtente(categoriaIncinta, LocalDate.of(2023, 1, 4), LocalDate.of(2023, 10, 4));
         categoriaUtenteDao.saveAndFlush(incinta);
         //Crea utente - PERSONA INCINTA
-        Utente pregUser = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
+        Utente pregUser = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO , AttoreEnum.UTENTE );
         pregUser.getStato().add(incinta);
         utenteDao.saveAndFlush(pregUser);
         UserScheduleState pregUserState = new UserScheduleState(pregUser, null);
@@ -147,7 +144,7 @@ public class VincoloPersonaTurnoTest {
         CategoriaUtente over62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         categoriaUtenteDao.saveAndFlush(over62);
         //Crea utente - PERSONA OVER 62
-        Utente over62user = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO );
+        Utente over62user = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE  );
         over62user.getStato().add(over62);
         utenteDao.saveAndFlush(over62user);
         UserScheduleState over62userState = new UserScheduleState(over62user, null);
@@ -200,7 +197,7 @@ public class VincoloPersonaTurnoTest {
         CategoriaUtente inmalattia = new CategoriaUtente(categoriaMalattia,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         categoriaUtenteDao.saveAndFlush(inmalattia);
         //Crea utente - PERSONA IN MALATTIA
-        Utente inmalattiauser = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO );
+        Utente inmalattiauser = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE  );
         inmalattiauser.getStato().add(inmalattia);
         utenteDao.saveAndFlush(inmalattiauser);
         UserScheduleState inmalattiauserState = new UserScheduleState(inmalattiauser, null);
@@ -253,7 +250,7 @@ public class VincoloPersonaTurnoTest {
         CategoriaUtente inferie = new CategoriaUtente(categoriaFerie,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         categoriaUtenteDao.saveAndFlush(inferie);
         //Crea utente - PERSONA IN FERIE
-        Utente inferieuser = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO );
+        Utente inferieuser = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE  );
 
         inferieuser.getStato().add(inferie);
         utenteDao.saveAndFlush(inferieuser);
@@ -295,10 +292,10 @@ public class VincoloPersonaTurnoTest {
         categoriaUtenteDao.saveAndFlush(cardiologo);
         CategoriaUtente ambulatorioInCardiologia = new CategoriaUtente(ambulatorioCardiologia,LocalDate.of(2023, 1, 3), LocalDate.of(2023, 10, 4));
         categoriaUtenteDao.saveAndFlush(ambulatorioInCardiologia);
-        Utente specializzandoCardiologia = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO );
+        Utente specializzandoCardiologia = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE  );
         specializzandoCardiologia.getTurnazioni().add(ambulatorioInCardiologia);
         utenteDao.saveAndFlush(specializzandoCardiologia);
-        Utente specializzatoCardiologia = new Utente("Giacomo","Bianchi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com","", RuoloEnum.STRUTTURATO);
+        Utente specializzatoCardiologia = new Utente("Giacomo","Bianchi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com","", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE );
         specializzatoCardiologia.getSpecializzazioni().add(cardiologo);
         utenteDao.saveAndFlush(specializzatoCardiologia);
         UserScheduleState specializzato = new UserScheduleState(specializzatoCardiologia, null);
@@ -311,7 +308,7 @@ public class VincoloPersonaTurnoTest {
         }catch(ViolatedConstraintException ex){
             Assert.fail();
         }
-        Utente utenteacaso = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO );
+        Utente utenteacaso = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE  );
         utenteDao.saveAndFlush(utenteacaso);
         UserScheduleState nonCardiologo = new UserScheduleState(utenteacaso, null);
         vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(nonCardiologo, turnoCardiologia));
