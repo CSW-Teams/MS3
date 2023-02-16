@@ -264,7 +264,8 @@ export default class UserProfileView extends React.Component{
                     </MDBCol>
                     <MDBCol sm="9">
                       <MDBCardText
-                        className="text-muted">{this.state.email}</MDBCardText>
+                        className="text-muted">{this.state.email}   <IconButton href={`mailto:${this.state.email}`}><i className="fa fa-envelope"
+                                                                                   aria-hidden="true"></i></IconButton> </MDBCardText>
                     </MDBCol>
                   </MDBRow>
                   <MDBRow>

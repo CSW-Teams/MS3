@@ -101,7 +101,7 @@ export default class UserProfilesView extends React.Component{
                     <td>{data.cognome}</td>
                     <td>{data.dataNascita}</td>
                     <td>{data.ruoloEnum}</td>
-                    {this.state.attore==="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-info-circle" > </i></Button></td>}
+                    {this.state.attore==="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
                     {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
                   </tr>
                 )
