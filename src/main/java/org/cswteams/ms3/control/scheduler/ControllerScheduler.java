@@ -226,7 +226,8 @@ public class ControllerScheduler implements IControllerScheduler{
 
         /**
          * registriamo gli utenti allocati nella vecchia assegnazione turno che non sono
-         * presenti nella nuova asegnazione turno come utenti rimossi.
+         * presenti nella nuova asegnazione turno come utenti rimossi, oltre a quelli che
+         * gia erano segnati come rimossi nella vecchia assegnazione turno
          */
         assegnazioneTurnoNew.setRetiredUsers(new HashSet<>());
         for (Utente utente: allUsersOld) {
@@ -234,6 +235,7 @@ public class ControllerScheduler implements IControllerScheduler{
                 assegnazioneTurnoNew.getRetiredUsers().add(utente);
             }
         }
+        assegnazioneTurnoNew.getRetiredUsers().addAll(assegnazioneTurnoOld.getRetiredUsers());
         
         //rimuovo la vecchia assegnazione e provo ad aggiungere la nuova
         this.rimuoviAssegnazioneTurnoSchedulo(assegnazioneTurnoOld);
