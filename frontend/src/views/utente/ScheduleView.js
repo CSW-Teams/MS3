@@ -39,6 +39,7 @@ import { HolidaysAPI } from '../../API/HolidaysAPI';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../../components/common/AssegnazioneTurnoModificaComponent';
 import ButtonLegalSchedulation from '../../components/common/ButtonLegalSchedulation';
+import { ShiftPrinterCSV } from "../../components/common/ShiftPrinterCSV";
 
 
 /**
@@ -71,10 +72,10 @@ class ScheduleView extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            attore : localStorage.getItem("attore"),
+          attore : localStorage.getItem("attore"),
             data: [],   // list of shifts to display in schedule (not filtered yet)
             mainResourceName: 'utenti_guardia',
-            resources: [ // TODO: queste risorse sarebbero i dettagli da scrivere nelle carte dei turni assegnati? Ulteriori dettagli andrebbero aggiunti qui?
+            resources: [
               {fieldName: 'utenti_guardia', title: 'Guardia', allowMultiple: true,instances: [{}]},
               {fieldName: 'utenti_reperibili', title: 'Reperibilità',allowMultiple: true, instances: [{}]},
             ],
@@ -97,6 +98,14 @@ class ScheduleView extends React.Component{
 
             /** Holidays to display */
             holidays: [],
+
+            /**
+             * Com'è andata l'ultima volta che abbiamo chiesto i turni al backend?
+             * "GOOD" --> I turni sono stati caricati con successo
+             * "BAD" --> C'è stato un errore nel caricamento dei turni
+             * "ABOUT_TO_ASK" --> Non abbiamo ancora chiesto i turni al backend, ma lo faremo appena possibile
+             */
+            shiftQueriedResponse: "ABOUT_TO_ASK",
 
           };
           /**
@@ -294,6 +303,7 @@ class ScheduleView extends React.Component{
             allServices: new Set(allServices),
             allUser : allUser,
             holidays: allHolidays,
+            shiftQueriedResponse: "GOOD",
         })
       }
 
@@ -311,12 +321,39 @@ class ScheduleView extends React.Component{
           );
         });
 
+        /**
+         * Prepariamo un messaggio diverso per il link al download del csv con i turni
+         * in base a se tali turni sono disponibili.
+         */
+        let shifts = data.slice();
+        let textLink = "";
+        switch(this.state.shiftQueriedResponse){
+          case "GOOD":
+            textLink="Scarica questi "+shifts.length+" turni come file CSV ⬇️"
+            break;
+          case "BAD":
+            textLink="Non è stato possibile caricare i turni dal backend. Riprova più tardi o contattare un tecnico. ❌"
+            break;
+          case "ABOUT_TO_ASK":
+            textLink="Caricamento... ⏳"
+            break;
+          default:
+            // this should never appear
+            textLink="Unexcpected shiftQueriedResponse value: "+this.state.shiftQueriedResponse + "🫠"
+            break;
+        }
+
         // add holidays to the schedulables to display
         data.push(...this.state.holidays);
 
         return (
           <React.Fragment>
             <Paper>
+              {/**
+               * Al click, scarica la pianificazione visualizzata in formato CSV, ma solo se siamo riusciti a
+               * caricare i turni dal backend.
+               */}
+               <ShiftPrinterCSV rawShifts={shifts} shiftsChanged={true} textLink={textLink} enable={this.state.shiftQueriedResponse === "GOOD"}></ShiftPrinterCSV>
               <Collapse in={this.state.openOptionFilter}>
                 <Stack spacing={1} style={{
                       display: 'flex',

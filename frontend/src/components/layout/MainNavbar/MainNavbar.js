@@ -11,7 +11,7 @@ import {
   AlignHorizontalCenter,
   AlignHorizontalCenterRounded
 } from "@mui/icons-material";
-import {MDBCard, MDBContainer} from "mdbreact";
+import {MDBCard, MDBContainer} from "mdb-react-ui-kit";
 import {ContainerClasses} from "@mui/material";
 
 const MainNavbar = ({ layout, stickyTop }) => {

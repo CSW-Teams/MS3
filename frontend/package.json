@@ -35,6 +35,7 @@
     "mdbreact": "^5.2.0",
     "prop-types": "*",
     "react": "^16.6.3",
+    "react-csv": "^2.2.2",
     "react-date-object": "^2.1.5",
     "react-dom": "^16.6.3",
     "react-ga": "^2.5.6",
