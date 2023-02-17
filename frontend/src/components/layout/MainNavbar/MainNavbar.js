@@ -1,12 +1,18 @@
 import React from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import {Container, Nav, Navbar} from "shards-react";
+import {Container, Nav, Navbar, NavbarBrand} from "shards-react";
 
 import NavbarSearch from "./NavbarSearch";
 import NavbarNav from "./NavbarNav/NavbarNav";
 import NavbarToggle from "./NavbarToggle";
-import {Link} from "@mui/icons-material";
+import {CenterFocusStrong, FormatItalic} from "@material-ui/icons";
+import {
+  AlignHorizontalCenter,
+  AlignHorizontalCenterRounded
+} from "@mui/icons-material";
+import {MDBCard, MDBContainer} from "mdbreact";
+import {ContainerClasses} from "@mui/material";
 
 const MainNavbar = ({ layout, stickyTop }) => {
   const classes = classNames(
@@ -18,7 +24,18 @@ const MainNavbar = ({ layout, stickyTop }) => {
   return (
     <div className={classes}>
       <Container className="p-0">
-        <Navbar type="light" className="align-items-stretch flex-md-nowrap p-0">
+        <Navbar type="light" className="align-items-stretch flex-md-nowrap p-0" >
+          <MDBContainer  className="flex-center" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }} >
+            <NavbarBrand className="mr-auto" href="/pianificazione-globale">
+              <font style={{ fontWeight: 800 , fontstyle: FormatItalic ,textAlign: AlignHorizontalCenterRounded} } >
+                MEDICAL STAFF SHIFT SCHEDULER
+              </font>
+            </NavbarBrand>
+          </MDBContainer>
           <NavbarSearch />
           <NavbarNav />
           <NavbarToggle />
