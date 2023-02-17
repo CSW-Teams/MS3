@@ -32,6 +32,7 @@
     "http-proxy-middleware": "2.0.6",
     "lodash.find": "^4.6.0",
     "mdb-react-ui-kit": "^5.1.0",
+    "mdbreact": "^5.2.0",
     "prop-types": "*",
     "react": "^16.6.3",
     "react-date-object": "^2.1.5",

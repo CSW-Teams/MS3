@@ -14,6 +14,7 @@ import UserProfilesView from "./views/utente/UserProfilesView"
 import UserProfileViewId from "./views/utente/UserProfileViewId";
 import LoginView from "./views/utente/LoginView"
 import EmptyLayout from "./layouts/LoginLayout/Empty";
+import ConfigurazioneVincoli from "./views/configuratore/ConfigurazioneVincoli";
 
 
 export default [
@@ -62,6 +63,11 @@ export default [
     path: "/preference/",
     layout: DefaultLayout,
     component: Preference
+  },
+  {
+    path: "/configurazione-vincoli/",
+    layout: DefaultLayout,
+    component: ConfigurazioneVincoli
   },
 
 ];

@@ -20,10 +20,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -63,6 +60,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private DesiderataDao desiderataDao;
 
+    @Autowired
+    private ConfigVincoliDao configVincoliDao;
+
+    @Autowired
+    private ConfigVincoloMaxPeriodoConsecutivoDao configVincoloMaxPeriodoConsecutivoDao;
 
 
     @SneakyThrows
@@ -71,7 +73,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         populateDB();
         registerConstraints();
         registerScocciature();
-        //populateDBTestSchedule();
     }
 
     private void registerScocciature() {
@@ -132,16 +133,32 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     private void registerConstraints(){
 
-        //Creo vincoli
-        final int massimoPeriodoContiguo = 12*60;
-        final int numGiorni = 7;
-        final int numMaxMinuti = 80*60;
-        final int massimoPeriodoContiguoOver62 = 6*60;
+        ConfigVincoli configVincoli;
+        try {
+            File file = new File("src/main/resources/configVincoliDefault.properties");
+            FileInputStream propsInput = new FileInputStream(file);
+            Properties prop = new Properties();
+            prop.load(propsInput);
 
+            ConfigVincoloMaxPeriodoConsecutivo confOver62 = new ConfigVincoloMaxPeriodoConsecutivo(categoriaDao.findAllByNome("OVER_62"),Integer.parseInt(prop.getProperty("numMaxOreConsecutiveOver62"))*60);
+            ConfigVincoloMaxPeriodoConsecutivo confIncinta = new ConfigVincoloMaxPeriodoConsecutivo(categoriaDao.findAllByNome("INCINTA"),Integer.parseInt(prop.getProperty("numMaxOreConsecutiveDonneIncinta"))*60);
+            configVincoloMaxPeriodoConsecutivoDao.saveAndFlush(confOver62);
+            configVincoloMaxPeriodoConsecutivoDao.saveAndFlush(confIncinta);
+            configVincoli = new ConfigVincoli(
+                    Integer.parseInt(prop.getProperty("numGiorniPeriodo")),
+                    Integer.parseInt(prop.getProperty("maxOrePeriodo")) * 60,
+                    Integer.parseInt(prop.getProperty("HorizonTurnoNotturno")),
+                    Integer.parseInt(prop.getProperty("numMaxOreConsecutivePerTutti")) * 60,
+                    Arrays.asList(confOver62,confIncinta)
+            );
+            configVincoliDao.save(configVincoli);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         // nessun turno può essere allocato a questa persona durante il suo smonto notte
         VincoloTipologieTurniContigue vincoloTurniContigui = new VincoloTipologieTurniContigue(
-            20,
+            configVincoli.getHorizonTurnoNotturno(),
             ChronoUnit.HOURS,
             TipologiaTurno.NOTTURNO,
             new HashSet<>(Arrays.asList(TipologiaTurno.values()))
@@ -149,18 +166,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
 
         Vincolo vincolo1 = new VincoloCategorieUtenteTurno();
-        Vincolo vincolo2 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguo);
-        Vincolo vincolo3 = new VincoloMaxPeriodoConsecutivo(massimoPeriodoContiguoOver62,Arrays.asList(categoriaDao.findAllByNome("OVER_62")));
-        Vincolo vincolo4 = new VincoloMaxOrePeriodo(numGiorni,numMaxMinuti);
+        Vincolo vincolo2 = new VincoloMaxPeriodoConsecutivo(configVincoli.getNumMaxMinutiConsecutiviPerTutti());
+        Vincolo vincolo4 = new VincoloMaxOrePeriodo(configVincoli.getNumGiorniPeriodo(), configVincoli.getMaxMinutiPeriodo());
         Vincolo vincolo5 = new VincoloUbiquità();
         Vincolo vincolo6 = new VincoloNumeroDiRuoloTurno();
 
         vincoloTurniContigui.setViolabile(true);
         vincolo1.setViolabile(true);
 
+        for(ConfigVincoloMaxPeriodoConsecutivo config : configVincoli.getConfigVincoloMaxPeriodoConsecutivoPerCategoria()){
+            Vincolo vincolo = new VincoloMaxPeriodoConsecutivo(config.getNumMaxMinutiConsecutivi(), config.getCategoriaVincolata());
+            vincolo.setDescrizione("Vincolo massimo periodo consecutivo per categoria "+config.getCategoriaVincolata().getNome());
+            vincoloDao.saveAndFlush(vincolo);
+        }
         vincolo1.setDescrizione("Vincolo Turno Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
         vincolo2.setDescrizione("Vincolo massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
-        vincolo3.setDescrizione("Vincolo massimo periodo consecutivo per categoria over65.");
         vincolo4.setDescrizione("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
         vincolo5.setDescrizione("Vincolo ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
         vincoloTurniContigui.setDescrizione("Vincolo turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
@@ -168,12 +188,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         vincoloDao.saveAndFlush(vincoloTurniContigui);
         vincoloDao.saveAndFlush(vincolo1);
-        vincoloDao.saveAndFlush(vincolo3);
         vincoloDao.saveAndFlush(vincolo2);
         vincoloDao.saveAndFlush(vincolo4);
         vincoloDao.saveAndFlush(vincolo5);
         vincoloDao.saveAndFlush(vincolo6);
 
+        List<Vincolo> vincoli = vincoloDao.findByType("VincoloMaxPeriodoConsecutivo");
+        System.out.println("ciao");
     }
 
 
@@ -235,7 +256,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u6.getStato().add(ferie);
         // Aggiungo la specializzazione
         u6.getSpecializzazioni().add(cardiologo);
-        Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        Utente u1 = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.CONFIGURATORE);
         u1.getTurnazioni().add(repartoCardiologia);
         Utente u2 = new Utente("Domenico","Verde", "DMNCVRD******", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
         u2.getTurnazioni().add(repartoCardiologia);

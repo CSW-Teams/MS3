@@ -1,5 +1,6 @@
 package org.cswteams.ms3.entity.vincoli;
 
+import lombok.Data;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
+@Data
 public class VincoloMaxOrePeriodo extends VincoloAssegnazioneTurnoTurno {
 
     private int numGiorniPeriodo;

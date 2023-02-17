@@ -1,5 +1,6 @@
 package org.cswteams.ms3.entity.vincoli;
 
+import lombok.Data;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Categoria;
 import org.cswteams.ms3.entity.CategoriaUtente;
@@ -7,7 +8,7 @@ import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
 import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,24 +16,25 @@ import java.util.List;
  * Implementa il vincolo del numero massimo di ore consecutive che un utente può fare
  */
 @Entity
+@Data
 public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno {
 
     private long maxConsecutiveMinutes;
-    @ManyToMany
-    private List<Categoria> categorieVincolate;
+    @ManyToOne
+    private Categoria categoriaVincolata;
 
 
     public VincoloMaxPeriodoConsecutivo() {
     }
 
-    public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes, List<Categoria> categorieVincolate){
+    public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes, Categoria categoriaVincolate){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;
-        this.categorieVincolate = categorieVincolate;
+        this.categoriaVincolata = categoriaVincolate;
     }
 
     public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;
-        this.categorieVincolate = new ArrayList<>();
+        this.categoriaVincolata = null;
     }
 
 
@@ -92,18 +94,17 @@ public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno 
     }
 
     private boolean verificaAppartenenzaCategoria(ContestoVincolo contesto){
-        if(categorieVincolate.size() == 0){
+        if(categoriaVincolata == null){
             return true;
         }
-         for(Categoria categoriaVincolo: this.categorieVincolate) {
-             for (CategoriaUtente categoriaUtente : contesto.getUserScheduleState().getUtente().getStato()) {
-                 if (categoriaUtente.getCategoria().getNome().compareTo(categoriaVincolo.getNome()) == 0) {
-                     if ((categoriaUtente.getInizioValidità().isBefore(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getInizioValidità().isEqual(contesto.getAssegnazioneTurno().getData())) && (categoriaUtente.getFineValidità().isAfter(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getFineValidità().isEqual(contesto.getAssegnazioneTurno().getData()))) {
-                         return true;
-                     }
+         for (CategoriaUtente categoriaUtente : contesto.getUserScheduleState().getUtente().getStato()) {
+             if (categoriaUtente.getCategoria().getNome().compareTo(categoriaVincolata.getNome()) == 0) {
+                 if ((categoriaUtente.getInizioValidità().isBefore(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getInizioValidità().isEqual(contesto.getAssegnazioneTurno().getData())) && (categoriaUtente.getFineValidità().isAfter(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getFineValidità().isEqual(contesto.getAssegnazioneTurno().getData()))) {
+                     return true;
                  }
              }
          }
-         return false;
+
+     return false;
     }
 }

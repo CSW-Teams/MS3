@@ -24,7 +24,7 @@ class GlobalScheduleView extends ScheduleView {
   render(){
     return (
       <Stack spacing={3}>
-        {localStorage.getItem("attore")!=="UTENTE" && <TemporaryDrawer onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></TemporaryDrawer>}
+        {localStorage.getItem("attore")!=="UTENTE" && localStorage.getItem("attore")!=="CONFIGURATORE" && <TemporaryDrawer onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></TemporaryDrawer>}
         {super.render("global")}
       </Stack>
       );

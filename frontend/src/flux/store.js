@@ -2,14 +2,16 @@ import { EventEmitter } from "events";
 
 import Dispatcher from "./dispatcher";
 import Constants from "./constants";
-import {attore, pianificatore} from "../data/sidebar-nav-items";
+import {attore, configuratore, pianificatore} from "../data/sidebar-nav-items";
 
 function getNavBar() {
   let att = localStorage.getItem("attore");
   if (att === "UTENTE"){
     return attore();
-  } else {
+  } else if((att === "PIANIFICATORE")){
     return pianificatore();
+  }else{
+    return configuratore();
   }
 }
 

@@ -359,9 +359,9 @@ class ScheduleView extends React.Component{
               >
                 {this.state.openOptionFilter?"Chiudi":"Filtra"}
               </Button>
-              
+
               <ButtonLegalSchedulation ></ButtonLegalSchedulation>
-                           
+
               <Scheduler
                 locale={"it-IT"}
                 firstDayOfWeek={1}
@@ -382,7 +382,7 @@ class ScheduleView extends React.Component{
                 />
                 <MonthView displayName="Mensile" />
                 <Toolbar/>
-                
+
 
                 <EditingState onCommitChanges={this.commitChanges}/>
                 <IntegratedEditing/>
@@ -392,7 +392,7 @@ class ScheduleView extends React.Component{
                   data={resources}
                 />
                 <DateNavigator />
-                
+
                 <TodayButton  buttonComponent={(props) => {
                   return (
                     <Button onClick={() => props.setCurrentDate(new Date())}>
@@ -404,7 +404,7 @@ class ScheduleView extends React.Component{
                 <ViewSwitcher />
 
 
-                {view==="global" && this.state.attore!=="UTENTE" &&
+                {view==="global" && this.state.attore!=="UTENTE" && this.state.attore!=="CONFIGURATORE" &&
                   //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
                   <AppointmentTooltip
                     showCloseButton
@@ -459,7 +459,7 @@ class ScheduleView extends React.Component{
 
 
               </Scheduler>
-             
+
             </Paper>
 
           </React.Fragment>
