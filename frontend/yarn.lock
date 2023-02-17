@@ -10439,6 +10439,11 @@ react-app-polyfill@^3.0.0:
     regenerator-runtime "^0.13.9"
     whatwg-fetch "^3.6.2"
 
+react-csv@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.npmjs.org/react-csv/-/react-csv-2.2.2.tgz"
+  integrity sha512-RG5hOcZKZFigIGE8LxIEV/OgS1vigFQT4EkaHeKgyuCbUAu9Nbd/1RYq++bJcJJ9VOqO/n9TZRADsXNDR4VEpw==
+
 react-date-object@^2.1.5:
   version "2.1.5"
   resolved "https://registry.npmjs.org/react-date-object/-/react-date-object-2.1.5.tgz"
