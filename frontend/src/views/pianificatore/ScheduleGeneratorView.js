@@ -165,7 +165,7 @@ export class SchedulerGeneratorView extends React.Component{
                       <tr key={key}>
                         <td className="align-middle">{schedulo.dataInizio}</td>
                         <td className="align-middle">{schedulo.dataFine}</td>
-                        <td className="align-middle">{schedulo.illegalita?"Incomppleta":"Completa"}</td>
+                        <td className="align-middle">{schedulo.illegalita?"Incompleta":"Completa"}</td>
                         <td className="align-middle" ><IconButton aria-label="delete" onClick={() => this.handleDelete(schedulo.id)}><DeleteIcon /></IconButton></td>
                         <td className="align-middle"><Button onClick={() => this.handleRegeneration(schedulo.id)}>Rigenera</Button></td>
                       </tr>

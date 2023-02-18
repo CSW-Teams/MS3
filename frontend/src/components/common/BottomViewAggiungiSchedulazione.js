@@ -34,10 +34,11 @@ export default function TemporaryDrawerSchedulo(props) {
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare un nuovo schedulo.
   const aggiungiSchedulo= async () => {
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI();
-    let assegnazione = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio,dataFine)
+    let status = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio,dataFine)
 
-    if(assegnazione==null){
-      toast.error('Errore nella generazione della pianificazione', {
+    if(status==202){
+
+      toast.success('Pianificazione creata con successo', {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -47,9 +48,37 @@ export default function TemporaryDrawerSchedulo(props) {
         progress: undefined,
         theme: "colored",
       });
+    
 
-    }else{
-      toast.success('Pianificazione creata con successo', {
+    }
+    
+    else if (status == 206){
+      toast.warning('Attenzione! Generata una pianificazione incompleta! ', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+
+    else if (status == 406){
+      toast.error('Nei giorni selezionati è stata già generata una pianificazione! ', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+    else{
+      toast.error('Errore nella generazione della pianificazione', {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,

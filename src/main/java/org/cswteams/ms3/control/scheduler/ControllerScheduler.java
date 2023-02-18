@@ -56,7 +56,11 @@ public class ControllerScheduler implements IControllerScheduler{
      * @throws UnableToBuildScheduleException
      */
     @Override
-    public Schedule createSchedule(LocalDate startDate, LocalDate endDate) throws UnableToBuildScheduleException {
+    public Schedule createSchedule(LocalDate startDate, LocalDate endDate)  {
+
+        //Verifico se esiste già uno schedulo per i giorni che voglio pianificare
+        if(!check(startDate,endDate))
+            return null;
 
         //Data che uso per scorre l'intervallo di giorni
         LocalDate currentDay = startDate;
@@ -90,8 +94,6 @@ public class ControllerScheduler implements IControllerScheduler{
 
         // Setto il controller che gestisce gli uffa points
         this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDao.findAll()));
-
-
         return  scheduleDao.save(this.scheduleBuilder.build());
         
     }
@@ -278,13 +280,13 @@ public class ControllerScheduler implements IControllerScheduler{
         return schedule;
     }
 
-    public Set<ScheduloDTO> leggiSchedulazioni(){
+    public List<ScheduloDTO> leggiSchedulazioni(){
         return MappaSchedulo.scheduloEntitytoDTO(scheduleDao.findAll());
     }
 
     @Override
-    public Set<ScheduloDTO> leggiSchedulazioniIllegali() {
-        return scheduleDao.leggiSchedulazioniIllegali();
+    public List<ScheduloDTO> leggiSchedulazioniIllegali() {
+        return MappaSchedulo.scheduloEntitytoDTO(scheduleDao.leggiSchedulazioniIllegali());
     }
 
     /**
@@ -305,6 +307,25 @@ public class ControllerScheduler implements IControllerScheduler{
             return false;
 
         scheduleDao.deleteById(id);
+
+        return true;
+
+    }
+
+
+    /**
+     * Verifica se esiste già uno schedulo esistente per i giorni che vogliamo pianificare
+     * @param startNewSchedule
+     * @return
+     */
+    public boolean check(LocalDate startNewSchedule,LocalDate endNewSchedule){
+        List<Schedule> allSchedule = scheduleDao.findAll();
+
+        for (Schedule schedule: allSchedule) {
+            if((schedule.getStartDate().isBefore(startNewSchedule) && schedule.getEndDate().isAfter(startNewSchedule)) ||
+                    (schedule.getStartDate().isBefore(endNewSchedule) && schedule.getEndDate().isAfter(endNewSchedule)))
+                return false;
+        }
 
         return true;
 

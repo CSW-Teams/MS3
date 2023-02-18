@@ -174,7 +174,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloTurniContigui.setViolabile(true);
         vincolo1.setViolabile(true);
 
-        for(ConfigVincoloMaxPeriodoConsecutivo config : configVincoli.getConfigVincoloMaxPeriodoConsecutivoPerCategoria()){
+        for(ConfigVincoloMaxPeriodoConsecutivo config : configVincoli.getConfigMaxPeriodoConsecutivoPerCategoria()){
             Vincolo vincolo = new VincoloMaxPeriodoConsecutivo(config.getNumMaxMinutiConsecutivi(), config.getCategoriaVincolata());
             vincolo.setDescrizione("Vincolo massimo periodo consecutivo per categoria "+config.getCategoriaVincolata().getNome());
             vincoloDao.saveAndFlush(vincolo);

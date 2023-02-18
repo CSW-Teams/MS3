@@ -3,6 +3,8 @@ import { UtenteAPI } from '../../API/UtenteAPI';
 import ScheduleView  from "./ScheduleView.js"
 import {AppointmentSingleContent} from "../../components/common/CustomAppointmentComponents.js"
 import React from "react";
+import { ToastContainer, toast } from 'react-toastify';
+
 
 /**
  * A view showing shift scheduling of a single user
@@ -27,7 +29,27 @@ export default class SingleScheduleView extends ScheduleView {
   }
 
   render() {
-    return super.render();
+  
+
+    return (
+      <div>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      { super.render()}
+    </div>
+
+    )
+
   }
 }
 

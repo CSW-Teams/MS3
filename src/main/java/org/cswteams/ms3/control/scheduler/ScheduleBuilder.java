@@ -69,7 +69,7 @@ public class ScheduleBuilder {
     /** invoca la creazione automatica della pianificazione 
      * @throws UnableToBuildScheduleException
      * */
-    public Schedule build() throws UnableToBuildScheduleException{
+    public Schedule build(){
 
         // we need to clear violations and illegal state, if any
         schedule.purify();

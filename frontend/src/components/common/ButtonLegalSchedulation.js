@@ -8,14 +8,15 @@ import Tooltip from '@mui/material/Tooltip';
 
 export default function ButtonLegalSchedulation() {
  
-  const [AllLegal,setallLegal] = React.useState()
+  const [AllLegal,setallLegal] = React.useState(true)
   const [title,setTitle] = React.useState()
 
   
   // Scarico le schedulazioni illegali dal server
   async function getScheduleIllegal() {
     let scheduloAPI = new ScheduloAPI();
-    let AllLegal = await scheduloAPI.getSchedulaziniIllegali().length!=0;
+    let responde = await scheduloAPI.getSchedulaziniIllegali();
+    let AllLegal = responde.length ==0;
     setallLegal(AllLegal);
 
     let title;

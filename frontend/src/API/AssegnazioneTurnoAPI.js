@@ -246,10 +246,7 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
       };
 
       const response = await fetch('/api/schedule/generation',requestOptions);
-      if(response.status != 202)
-        return null
-
-      return requestGeneration;
+      return response.status;
 
   }
 

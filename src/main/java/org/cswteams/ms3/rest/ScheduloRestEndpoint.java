@@ -3,6 +3,7 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
 import org.cswteams.ms3.dto.CategoriaUtenteDTO;
 import org.cswteams.ms3.dto.ScheduloDTO;
+import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.cswteams.ms3.dto.GenerazioneScheduloDTO;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -32,15 +34,15 @@ public class ScheduloRestEndpoint {
             //Considero solo le richieste di generazione con date ammissibili
             if(gs.getStartDate().isBefore(gs.getEndDate())){
 
-                try {
-                    //Chiedo la generazione dello schedulo al controller.
-                    return new ResponseEntity<>(controllerScheduler.createSchedule(gs.getStartDate(),gs.getEndDate()), HttpStatus.ACCEPTED);
+                //Chiedo la generazione dello schedulo al controller.
+                Schedule schedule = controllerScheduler.createSchedule(gs.getStartDate(),gs.getEndDate());
+                if(schedule == null)
+                    return new ResponseEntity<>( HttpStatus.NOT_ACCEPTABLE);
+                if(schedule.isIllegal())
+                    return new ResponseEntity<>( HttpStatus.PARTIAL_CONTENT);
+                else
+                    return new ResponseEntity<>( HttpStatus.ACCEPTED);
 
-                } catch (UnableToBuildScheduleException e) {
-
-                    //Non è possibile generare uno schedulo
-                    return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-                }
             }
 
         }
@@ -68,7 +70,7 @@ public class ScheduloRestEndpoint {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiSchedulazioni()  {
 
-        Set<ScheduloDTO> set = controllerScheduler.leggiSchedulazioni();
+        List<ScheduloDTO> set = controllerScheduler.leggiSchedulazioni();
         return new ResponseEntity<>( set, HttpStatus.FOUND);
 
     }
@@ -76,7 +78,7 @@ public class ScheduloRestEndpoint {
     @RequestMapping(method = RequestMethod.GET,path = "illegali")
     public ResponseEntity<?> leggiSchedulazioniIllegali()  {
 
-        Set<ScheduloDTO> set = controllerScheduler.leggiSchedulazioniIllegali();
+        List<ScheduloDTO> set = controllerScheduler.leggiSchedulazioniIllegali();
         return new ResponseEntity<>( set, HttpStatus.FOUND);
 
     }
