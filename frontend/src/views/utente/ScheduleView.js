@@ -441,8 +441,9 @@ class ScheduleView extends React.Component{
                 <ViewSwitcher />
 
 
-                {view==="global" && this.state.attore!=="UTENTE" && this.state.attore!=="CONFIGURATORE" &&
+                {view==="global" && this.state.attore==="PIANIFICATORE" &&
                   //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
+                 //SOLO IL PIANIFICATORE PUO' MODIFICARE I TURNI
                   <AppointmentTooltip
                     showCloseButton
                     showOpenButton
@@ -451,7 +452,7 @@ class ScheduleView extends React.Component{
                   />
                 }
 
-                {view === "global" && this.state.attore === "UTENTE" &&
+                {view === "global" && this.state.attore !== "PIANIFICATORE" &&
                 < AppointmentTooltip
                   contentComponent={Content} //go to CustomContent.js
                 />
