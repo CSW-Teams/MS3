@@ -13,6 +13,7 @@ import Preference from "./views/utente/Preference"
 import UserProfilesView from "./views/utente/UserProfilesView"
 import UserProfileViewId from "./views/utente/UserProfileViewId";
 import LoginView from "./views/utente/LoginView"
+import CambiaPasswordView from "./views/utente/CambiaPasswordView"
 import EmptyLayout from "./layouts/LoginLayout/Empty";
 import ConfigurazioneVincoli from "./views/configuratore/ConfigurazioneVincoli";
 
@@ -68,6 +69,11 @@ export default [
     path: "/configurazione-vincoli/",
     layout: DefaultLayout,
     component: ConfigurazioneVincoli
+  },
+  {
+    path: "/cambia-password/",
+    layout: DefaultLayout,
+    component: CambiaPasswordView
   },
 
 ];
