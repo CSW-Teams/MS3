@@ -47,6 +47,9 @@ export default class UserActions extends React.Component {
           <DropdownItem tag={Link} to="/user-profile/1">
             <i className="material-icons">&#xE7FD;</i> Profilo
           </DropdownItem>
+          <DropdownItem tag={Link} to="/cambia-password/">
+            <i className="material-icons">password</i> Modifica Password
+          </DropdownItem>
           <DropdownItem tag={Link} to="/preference">
             <i className="material-icons">&#xE8B8;</i> Modifica Preferenze
           </DropdownItem>
