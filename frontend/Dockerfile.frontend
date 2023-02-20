@@ -10,9 +10,9 @@ RUN apk add --no-cache python3 build-base && ln -sf python3 /usr/bin/python
 COPY ./package.json ./package.json
 RUN npm install --force
 
-# copy srcs 
-COPY . .
-#RUN npm run build
+COPY ./public ./public
+COPY .env .env
+COPY ./src ./src
 
 # launch server
 CMD ["npm", "start"]
