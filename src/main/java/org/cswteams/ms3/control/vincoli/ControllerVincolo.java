@@ -32,7 +32,7 @@ public class ControllerVincolo implements IControllerVincolo {
 
     @Override
     public ConfigVincoli aggiornaVincoli(ConfigVincoli configurazione) {
-        for(ConfigVincoloMaxPeriodoConsecutivo config: configurazione.getConfigMaxPeriodoConsecutivoPerCategoria()){
+        for(ConfigVincoloMaxPeriodoConsecutivo config: configurazione.getConfigVincoloMaxPeriodoConsecutivoPerCategoria()){
             ConfigVincoloMaxPeriodoConsecutivo configVincoloMaxPeriodoConsecutivo = configVincoloMaxPeriodoConsecutivoDao.findAllByCategoriaVincolataNome(config.getCategoriaVincolata().getNome()).get(0);
             config.setId(configVincoloMaxPeriodoConsecutivo.getId());
             configVincoloMaxPeriodoConsecutivoDao.save(config);
@@ -55,7 +55,7 @@ public class ControllerVincolo implements IControllerVincolo {
             if(vincoloMaxPeriodoConsecutivo.getCategoriaVincolata() == null){
                 vincoloMaxPeriodoConsecutivo.setMaxConsecutiveMinutes(configurazione.getNumMaxMinutiConsecutiviPerTutti());
             }else{
-                for(ConfigVincoloMaxPeriodoConsecutivo config: configurazione.getConfigMaxPeriodoConsecutivoPerCategoria()){
+                for(ConfigVincoloMaxPeriodoConsecutivo config: configurazione.getConfigVincoloMaxPeriodoConsecutivoPerCategoria()){
                     if(vincoloMaxPeriodoConsecutivo.getCategoriaVincolata().getNome().equals(config.getCategoriaVincolata().getNome())){
                         vincoloMaxPeriodoConsecutivo.setMaxConsecutiveMinutes(config.getNumMaxMinutiConsecutivi());
                     }

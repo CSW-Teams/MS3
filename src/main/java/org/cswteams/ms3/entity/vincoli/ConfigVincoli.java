@@ -25,14 +25,14 @@ public class ConfigVincoli {
     private int numMaxMinutiConsecutiviPerTutti;
 
     @OneToMany
-    private List<ConfigVincoloMaxPeriodoConsecutivo> configMaxPeriodoConsecutivoPerCategoria;
+    private List<ConfigVincoloMaxPeriodoConsecutivo> configVincoloMaxPeriodoConsecutivoPerCategoria;;
 
     public ConfigVincoli(int numGiorniPeriodo, int maxOrePeriodo, int horizonTurnoNotturno, int numMaxOreConsecutivePerTutti, List<ConfigVincoloMaxPeriodoConsecutivo> configVincoloMaxPeriodoConsecutivoPerCategoria) {
         this.numGiorniPeriodo = numGiorniPeriodo;
         this.maxMinutiPeriodo = maxOrePeriodo;
         this.horizonTurnoNotturno = horizonTurnoNotturno;
         this.numMaxMinutiConsecutiviPerTutti = numMaxOreConsecutivePerTutti;
-        this.configMaxPeriodoConsecutivoPerCategoria = configVincoloMaxPeriodoConsecutivoPerCategoria;
+        this.configVincoloMaxPeriodoConsecutivoPerCategoria = configVincoloMaxPeriodoConsecutivoPerCategoria;
     }
 
     public ConfigVincoli(){
