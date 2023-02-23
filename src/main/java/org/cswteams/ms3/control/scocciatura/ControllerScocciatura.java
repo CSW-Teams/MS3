@@ -48,8 +48,15 @@ public class ControllerScocciatura {
      */
     public void ordinaByUffa(List<UserScheduleState> utenti){
 
+        /*
+         * Mescoliamo prima la lista degli utenti e poi ordiniamo in base al valore di UFFA.
+         * In questo modo facciamo in modo che l'algoritmo di schedulazione peschi in maniera
+         * rendomica gli utenti che hanno lo stesso valore di uffa. Ciò è possibile perchè l'algoritmo di ordinamento
+         * è in place.
+         */
+        Collections.shuffle(utenti);
         utenti.sort((u1, u2) -> u1.getUffaParziale() - u2.getUffaParziale());
-        return;
+
     }
 
     /**

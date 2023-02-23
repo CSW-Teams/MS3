@@ -121,11 +121,6 @@ public class ScheduleBuilder {
 
         List<UserScheduleState> allUserScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
 
-        /*
-         *  Volendo posso randomizzare la scelta degli utenti con il seguente metodo:
-         *  Collections.shuffle(allUserScheduleState);
-         */
-
         //Se il controller della scocciatura è settato ordino gli utenti in base al valore di uffa
         if(controllerScocciatura != null){
             controllerScocciatura.addUffaTempUtenti(allUserScheduleState,assegnazione);
