@@ -101,7 +101,7 @@ export default class Preference extends React.Component {
       <MDBContainer className="py-5" style={{height: '85vh',}}>
         <MDBCard alignment='center'>
           <MDBCardBody>
-            <MDBCardTitle>Inserisci le tue desiderate    <DatePick onSelectdate={() => this.componentDidMount()} desiderate={this.state.desiderate}/></MDBCardTitle>
+            <MDBCardTitle>Inserisci le tue desiderata   <DatePick onSelectdate={() => this.componentDidMount()} desiderate={this.state.desiderate}/></MDBCardTitle>
             <MDBRow>
             <MDBCol>
             </MDBCol>

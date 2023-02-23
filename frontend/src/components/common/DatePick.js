@@ -99,7 +99,7 @@ export default function DatePick(props) {
               close: "chiudi"
             }}
           />,
-          <Button position="bottom" onClick={saveDesiderate} >Conferma preferenze</Button>
+          <Button position="bottom" onClick={saveDesiderate} >Salva</Button>
         ]}
         multiple
         containerStyle={{ width: "100%" }}
