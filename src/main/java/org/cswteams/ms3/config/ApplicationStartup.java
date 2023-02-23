@@ -70,9 +70,16 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        populateDB();
-        registerConstraints();
-        registerScocciature();
+        
+        /**
+         * FIXME: sostiutire count con controllo su entità Config
+         */
+        if (utenteDao.count() == 0) {
+            populateDB();
+            registerConstraints();
+            registerScocciature();
+        }
+        
     }
 
     private void registerScocciature() {
