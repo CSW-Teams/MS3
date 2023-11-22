@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestEnv extends AbstractTransactionalJUnit4SpringContextTests {
-
     @Autowired
     protected CategorieDao categorieDao;
     @Autowired
@@ -27,18 +26,9 @@ public class TestEnv extends AbstractTransactionalJUnit4SpringContextTests {
     protected UserCategoryPolicyDao userCategoryPolicyDao;
     @Autowired
     protected ServizioDao servizioDao;
-    /**
-     * TODO
-     *
-     * @throws TurnoException
-     */
 
     @Before
     public void populateDBTestSchedule() throws TurnoException {
-        //   TestSchedule ts = new TestSchedule();
-        // ts.populateDBTestSchedule();
-        //Crea turni e servizio
-        //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
         Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
         Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
         Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
@@ -76,8 +66,6 @@ public class TestEnv extends AbstractTransactionalJUnit4SpringContextTests {
         UserCategoryPolicy ucp3 = new UserCategoryPolicy(categoriaFerie, t1, UserCategoryPolicyValue.EXCLUDE);
         UserCategoryPolicy ucp4 = new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE);
 
-
-
         //------------------------
         List<UserCategoryPolicy> cplist = new ArrayList<>();
         cplist.add(ucp1);
@@ -87,17 +75,10 @@ public class TestEnv extends AbstractTransactionalJUnit4SpringContextTests {
         t1.setCategoryPolicies(cplist);
         //------------------------
 
-
-
         turnoDao.saveAndFlush(t1);
         userCategoryPolicyDao.saveAndFlush(ucp1);
         userCategoryPolicyDao.saveAndFlush(ucp2);
         userCategoryPolicyDao.saveAndFlush(ucp3);
         userCategoryPolicyDao.saveAndFlush(ucp4);
-
-
     }
-
-
-
 }

@@ -13,7 +13,6 @@ public class ControllerSchedulerTests extends TestEnv{
     @Autowired
     protected ControllerScheduler instance;
 
-
     protected static Map<TestDatesEnum, LocalDate> testDates;
 
     public enum TestDatesEnum {
@@ -22,7 +21,6 @@ public class ControllerSchedulerTests extends TestEnv{
         FUTURE_START,
         FUTURE_END,
         TODAY
-
     }
 
     public ControllerSchedulerTests() {
@@ -33,6 +31,4 @@ public class ControllerSchedulerTests extends TestEnv{
         testDates.put(FUTURE_END, LocalDate.of(2025, 1, 7));
         testDates.put(TODAY, LocalDate.now());
     }
-
-
 }

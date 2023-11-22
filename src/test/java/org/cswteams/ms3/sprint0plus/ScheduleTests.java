@@ -31,54 +31,41 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @AutoConfigureMockMvc
 @Profile("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-//@RunWith(Parameterized.class)
-// The spring application context will be considered "dirty" before each test method, and will be rebuilt. It means that
 public class ScheduleTests extends ControllerSchedulerTests {
 
-
-
-
     static Stream<Arguments> createScheduleValidTestParams() {
-        //public static List<Object[]> data() {
-
-        //List<Object[]> p = new ArrayList<>();
-        // p.add(new LocalDate[]{testDates.get("PREVIOUS_START"),  testDates.get("PREVIOUS_END")});
-        // p.add(new LocalDate[]{ testDates.get("PREVIOUS_END"), testDates.get("PREVIOUS_START")});
-
-        // ArrayList<Arguments> p = new ArrayList<Arguments>();
         return Stream.of(
+
+                // A schedule in the past.
                 Arguments.of((Object) new LocalDate[]{testDates.get(PREVIOUS_START), testDates.get(PREVIOUS_END)}),
+
+                // A schedule in the future.
                 Arguments.of((Object) new LocalDate[]{testDates.get(FUTURE_START), testDates.get(FUTURE_END)}),
+
+                // A schedule from today to the next 5 days.
                 Arguments.of((Object) new LocalDate[]{testDates.get(TODAY), testDates.get(TODAY).plusDays(5)}),
+
+                // A schedule terminating today.
                 Arguments.of((Object) new LocalDate[]{testDates.get(TODAY).minusDays(5), testDates.get(TODAY)})
                 /* ,
                 too much execution time! --> Arguments.of((Object) new LocalDate[]{previousStart,futureEnd})*/
-                //  Arguments.of((Object) new LocalDate[]{tooEarly, tooLate})
         );
-        // return Stream.of(p);
-        //return p;
     }
 
     static Stream<Arguments> createScheduleInvalidTestParams() {
-        //public static List<Object[]> data() {
-        //List<Object[]> p = new ArrayList<>();
-        // p.add(new LocalDate[]{testDates.get("PREVIOUS_START"),  testDates.get("PREVIOUS_END")});
-        // p.add(new LocalDate[]{ testDates.get("PREVIOUS_END"), testDates.get("PREVIOUS_START")});
-
-        // ArrayList<Arguments> p = new ArrayList<Arguments>();
         return Stream.of(
-                // Oss.: verifiche solo lato front-end/REST Endpoint!
+
+                // End and start dates are inverted.
                 Arguments.of((Object) new LocalDate[]{testDates.get(PREVIOUS_END), testDates.get(PREVIOUS_START)}),
+
+                // Same date for start and end
                 Arguments.of((Object) new LocalDate[]{testDates.get(PREVIOUS_START), testDates.get(PREVIOUS_START)})
 
         );
-        // return Stream.of(p);
-        //return p;
     }
 
     static Stream<Arguments> overlapCheckTestsParams() {
         return Stream.of(
-                // Oss.: verifiche solo lato front-end/REST Endpoint!
 
                 // already registered: [TODAY, TODAY+5]
 
@@ -105,9 +92,6 @@ public class ScheduleTests extends ControllerSchedulerTests {
         );
     }
 
-    /**
-     * Questo test verifica la corretta aggiunta di nuove Schedule nel sistema
-     */
 
     @ParameterizedTest
     @MethodSource(value = "createScheduleValidTestParams")
@@ -135,26 +119,16 @@ public class ScheduleTests extends ControllerSchedulerTests {
     @ParameterizedTest
     @MethodSource(value = "overlapCheckTestsParams")
     public void createOverlappingSchedulesTest(LocalDate[] date) {
-        Schedule schedule = this.instance.createSchedule(testDates.get(TODAY), testDates.get(TODAY).plusDays(5));
+        this.instance.createSchedule(testDates.get(TODAY), testDates.get(TODAY).plusDays(5));
         Schedule overlapping = this.instance.createSchedule(date[0], date[1]);
         assertNull(overlapping);
     }
 
-    /**
-     * Questo test verifica la corretta lettura di Schedule già esistenti nel sistema
-     */
     @Test
     public void readScheduleTest() {
+        this.instance.createSchedule(LocalDate.now(), LocalDate.now().plusDays(5));
+        this.instance.createSchedule(LocalDate.now().plusDays(5), LocalDate.now().plusDays(10));
 
-        //TODO mock?
-        Schedule mocked = this.instance.createSchedule(LocalDate.now(), LocalDate.now().plusDays(5));
-        Schedule mocked2 = this.instance.createSchedule(LocalDate.now().plusDays(5), LocalDate.now().plusDays(10));
-     /*   LocalDate start = LocalDate.of(2030, 1, 1);
-        LocalDate end = LocalDate.of(2030, 1, 2);
-
-        // LocalDate start = LocalDate.now();
-        // LocalDate end = start.plusDays(5);
-        Schedule schedulea = this.instance.createSchedule(start, end);*/
         List<ScheduloDTO> scheduleDTOList = this.instance.leggiSchedulazioni();
         Assert.assertNotNull(scheduleDTOList);
         Assert.assertFalse(scheduleDTOList.isEmpty());
@@ -167,25 +141,25 @@ public class ScheduleTests extends ControllerSchedulerTests {
     @Test
     public void readIllegalScheduleTest() {
         //TODO mock?
-        Schedule mocked = this.instance.createSchedule(LocalDate.now(), LocalDate.now().plusDays(5));
-        Schedule mocked2 = this.instance.createSchedule(LocalDate.now().plusDays(5), LocalDate.now().plusDays(10));
-        Schedule mocked3 = this.instance.createSchedule(LocalDate.now().plusDays(10), LocalDate.now().plusDays(15));
-        mocked2.setIllegal(true);
-        mocked3.setIllegal(true);
+        this.instance.createSchedule(LocalDate.now(), LocalDate.now().plusDays(5));
+        Schedule schedule = this.instance.createSchedule(LocalDate.now().plusDays(5), LocalDate.now().plusDays(10));
+        Schedule schedule2 = this.instance.createSchedule(LocalDate.now().plusDays(10), LocalDate.now().plusDays(15));
+        schedule.setIllegal(true);
+        schedule2.setIllegal(true);
         List<ScheduloDTO> scheduleDTOList = this.instance.leggiSchedulazioniIllegali();
         Assert.assertNotNull(scheduleDTOList);
         Assert.assertFalse(scheduleDTOList.isEmpty());
         Assert.assertEquals(2, scheduleDTOList.size());
-        for (ScheduloDTO schedule : scheduleDTOList) {
-            Assert.assertTrue(schedule.getId() > 0);
-            Assert.assertTrue(schedule.isIllegalita());
+        for (ScheduloDTO s : scheduleDTOList) {
+            Assert.assertTrue(s.getId() > 0);
+            Assert.assertTrue(s.isIllegalita());
         }
     }
 
     @ParameterizedTest
     @ValueSource(longs = {0, 1, Long.MAX_VALUE})
     public void removeScheduleByIdValidTest(long data) {
-        //TODO mock?
+
         Schedule mocked = this.instance.createSchedule(testDates.get(FUTURE_START), testDates.get(FUTURE_END));
         mocked.setId(data);
         boolean ret = this.instance.rimuoviSchedulo(data);
@@ -201,15 +175,12 @@ public class ScheduleTests extends ControllerSchedulerTests {
         Assertions.assertThrows(Exception.class, () -> this.instance.rimuoviSchedulo(data));
     }
 
-
     @ParameterizedTest
     @MethodSource(value = "overlapCheckTestsParams")
     public void removeScheduleByOverlappingCheckTest(LocalDate[] data) {
-        //TODO mock?
-        Schedule mocked = this.instance.createSchedule(data[0], data[1]);
+        Schedule schedule = this.instance.createSchedule(data[0], data[1]);
 
-        boolean ret = this.instance.rimuoviSchedulo(mocked.getId());
+        boolean ret = this.instance.rimuoviSchedulo(schedule.getId());
         Assert.assertEquals(!data[0].isBefore(testDates.get(TODAY)), ret);
     }
-    // TODO regenerate
 }

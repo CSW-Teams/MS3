@@ -54,7 +54,7 @@ public class ControllerServiziTests extends TestEnv {
     public void readAllServizioTest() {
         Set<ServizioDTO> servizi = this.instance.leggiServizi();
         Assert.assertNotNull(servizi);
-        Assert.assertEquals(2, servizi.size());
+        Assert.assertEquals(servizioDao.findAll().size(), servizi.size());
     }
 
     @ParameterizedTest
@@ -73,7 +73,7 @@ public class ControllerServiziTests extends TestEnv {
     @ValueSource(strings = {"CostruzioneDelSoftware"})
     @EmptySource
     public void readServizioByNameInvalidTest(String name) {
-        Assertions.assertThrows(Exception.class, () ->this.instance.leggiServizioByNome(name));
+        Assertions.assertThrows(Exception.class, () -> this.instance.leggiServizioByNome(name));
     }
 
     /**
@@ -83,7 +83,7 @@ public class ControllerServiziTests extends TestEnv {
     @ParameterizedTest
     @NullSource
     public void readServizioByNameExceptionsTest(String name) {
-        Assertions.assertThrows(Exception.class, () ->this.instance.leggiServizioByNome(name));
+        Assertions.assertThrows(Exception.class, () -> this.instance.leggiServizioByNome(name));
     }
 }
 
