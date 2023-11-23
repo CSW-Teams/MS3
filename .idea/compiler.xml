@@ -8,7 +8,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ms3" />
-        <module name="MS3" />
       </profile>
     </annotationProcessing>
   </component>
