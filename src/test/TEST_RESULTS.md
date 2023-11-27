@@ -9,3 +9,6 @@
 In total we have the 40,15% of test passing (102/254)
 
 ### ControllerGiustificaForzatura
+- [BUG] We can add a forced constraint of a turn that doesn't exist (Check on date insertion)
+
+In total we have the 79,17% of test passing (19/24)
