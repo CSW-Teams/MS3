@@ -1,6 +1,7 @@
 .vscode/
 target/
 .idea/
+.settings/
 frontend/package-lock.json
 frontend/yarn.lock
 ms3.iml
