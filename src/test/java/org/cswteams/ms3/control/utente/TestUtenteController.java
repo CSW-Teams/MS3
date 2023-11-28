@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.control.utente;
 
 import org.cswteams.ms3.control.utente.ControllerUtente;
 import org.cswteams.ms3.dao.UtenteDao;

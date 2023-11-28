@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.control.preferenze;
 
 import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.dao.HolidayDao;
