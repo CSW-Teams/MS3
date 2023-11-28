@@ -33,10 +33,6 @@ services:
     
   # postgres
   db:
-    # ***************** export db container to host machine (for debug purpose only) *******************
-    ports:
-      - "127.0.0.1:5432:5432"
-    # **************************************************************************************************
     image: postgres:15.2-alpine3.17
     volumes:
       - db_data:/var/lib/postgresql/data
