@@ -6,7 +6,6 @@ import org.cswteams.ms3.dao.LiberatoriaDao;
 import org.cswteams.ms3.dao.GiustificazioneFozaturaDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Liberatoria;
 import org.cswteams.ms3.entity.GiustificazioneForzaturaVincoli;
 import org.cswteams.ms3.entity.Utente;
@@ -17,8 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
 
 @Service
 public class ControllerGiustificaForzatura implements IControllerGiustificaForzatura {

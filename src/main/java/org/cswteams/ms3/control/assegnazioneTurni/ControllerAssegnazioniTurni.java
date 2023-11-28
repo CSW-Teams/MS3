@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+
 @Service
 public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni{
     @Autowired
@@ -38,6 +40,10 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     @Autowired
     private ScheduleDao scheduleDao;
 
+    /**
+     *
+     * @return
+     */
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurniAssegnati()  {
         Set<AssegnazioneTurno> turniSet = new HashSet<>(assegnazioneTurnoDao.findAll());
@@ -45,6 +51,12 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
         return turniDTOSet;
     }
 
+    /**
+     *
+     * @param dto
+     * @return
+     * @throws AssegnazioneTurnoException
+     */
     @Override
     public AssegnazioneTurno creaTurnoAssegnato(@NotNull RegistraAssegnazioneTurnoDTO dto) throws AssegnazioneTurnoException {
 
@@ -57,7 +69,12 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
         return assegnazioneTurnoDao.save(assegnazioneTurno);
     }
 
-
+    /**
+     *
+     * @param idPersona
+     * @return
+     * @throws ParseException
+     */
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurniUtente(@NotNull Long idPersona) throws ParseException {
         Set<AssegnazioneTurno> turniAllocatiERiserve = assegnazioneTurnoDao.findTurniUtente(idPersona);

@@ -6,13 +6,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
-import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
-import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
-import org.cswteams.ms3.exception.NotEnoughFeasibleUsersException;
-import org.cswteams.ms3.exception.UnableToBuildScheduleException;
-import org.cswteams.ms3.exception.ViolatedConstraintException;
+import org.cswteams.ms3.exception.*;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.RuoloNumero;
 import org.cswteams.ms3.entity.Schedule;
@@ -21,6 +17,8 @@ import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
 
 import lombok.Data;
+
+import javax.validation.constraints.NotNull;
 
 @Data
 public class ScheduleBuilder {
@@ -40,8 +38,30 @@ public class ScheduleBuilder {
 
     private ControllerScocciatura controllerScocciatura;
 
+    /**
+     * Method to validate dates parameters passed to the schedule builder
+     * @param startDate Date of the start of the schedule
+     * @param endDate Date of the end of the schedule
+     */
+    private void validateDates(LocalDate startDate, LocalDate endDate) throws IllegalScheduleException {
+        if(startDate.isAfter(endDate) || startDate.isEqual(endDate))
+            throw new IllegalScheduleException();
+        else if(startDate.isBefore(LocalDate.now()))
+            throw new IllegalScheduleException("[ERROR] Cannot create a schedule from a date previous than today!");
+    }
 
-    public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Vincolo> allConstraints, List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) {
+
+    /**
+     * Class that has the responsibility to create a new instance of schedule and save it in persistence
+     * @param startDate Date of the start of the new schedule
+     * @param endDate Date of the end of the new schedule
+     * @param allConstraints Set of constraints to not be violated
+     * @param allAssignedShifts Set of all shifts that are already assigned to a set of people
+     * @param users Set of users that is possible to add in the schedule
+     * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
+     */
+    public ScheduleBuilder(@NotNull LocalDate startDate, @NotNull LocalDate endDate, @NotNull  List<Vincolo> allConstraints, List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) throws IllegalScheduleException {
+        validateDates(startDate,endDate);
         this.schedule = new Schedule(startDate, endDate);
         this.schedule.setAssegnazioniTurno(allAssignedShifts);
         this.allConstraints = allConstraints;
@@ -49,15 +69,24 @@ public class ScheduleBuilder {
         initializeUserScheduleStates(users);
     }
 
-    public ScheduleBuilder(List<Vincolo> allConstraints, List<Utente> all, Schedule schedule) {
+
+    /**
+     * This class has the responsibility of creating a new valid schedule from an existing one
+     * @param allConstraints Set of constraints to not be violated
+     * @param users Set of users that is possible to add in the schedule
+     * @param schedule An existing schedule from which to start a new one
+     */
+    public ScheduleBuilder(@NotNull List<Vincolo> allConstraints, List<Utente> users, @NotNull Schedule schedule) {
         this.allConstraints = allConstraints;
         this.schedule=schedule;
         this.allUserScheduleStates = new HashMap<>();
-        initializeUserScheduleStates(all);
-
+        initializeUserScheduleStates(users);
     }
 
-    /** Imposta stato per tutti gli utenti disponibili per la pianificazione */
+    /**
+     * Inner calls that has the responsibility of initializing the state of the schedule for all user
+     * @param users Set of users that is possible to add in the schedule
+     */
     private void initializeUserScheduleStates(List<Utente> users){
         
         for (Utente u : users){

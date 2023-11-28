@@ -7,6 +7,7 @@ ENV SPRING_PROFILES_ACTIVE=container
 COPY .mvn .mvn
 COPY ./mvnw ./mvnw
 COPY ./pom.xml ./pom.xml
+RUN chmod -R 777 ./mvnw
 RUN ./mvnw dependency:go-offline
 
 # copy sources and compile them in a jar
