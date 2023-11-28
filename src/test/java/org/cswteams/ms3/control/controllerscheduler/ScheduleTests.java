@@ -1,8 +1,8 @@
 package org.cswteams.ms3.control.controllerscheduler;
 
+import org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests;
 import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -177,8 +177,8 @@ public class ScheduleTests extends ControllerSchedulerTests {
     @MethodSource(value = "overlapCheckTestsParams")
     public void removeScheduleByOverlappingCheckTest(LocalDate[] data) {
         Schedule schedule = this.instance.createSchedule(data[0], data[1]);
-
-        boolean ret = this.instance.rimuoviSchedulo(schedule.getId());
-        Assert.assertEquals(!data[0].isBefore(testDates.get(TODAY)), ret);
+        if(data[0].isBefore(testDates.get(TODAY))){
+            Assertions.assertThrows(Exception.class, ()->this.instance.rimuoviSchedulo(schedule.getId()));
+        }
     }
 }
