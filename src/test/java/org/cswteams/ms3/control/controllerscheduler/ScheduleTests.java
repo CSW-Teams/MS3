@@ -168,7 +168,6 @@ public class ScheduleTests extends ControllerSchedulerTests {
     @ParameterizedTest
     @ValueSource(ints = {-1})
     public void removeScheduleByIdInvalidTest(long data) {
-        //TODO mock?
         Schedule mocked = this.instance.createSchedule(testDates.get(FUTURE_START), testDates.get(FUTURE_END));
         mocked.setId(data);
         Assertions.assertThrows(Exception.class, () -> this.instance.rimuoviSchedulo(data));
