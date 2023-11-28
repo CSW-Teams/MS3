@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.control.vincoli;
 
 import org.cswteams.ms3.control.vincoli.IControllerVincolo;
 import org.cswteams.ms3.dao.*;

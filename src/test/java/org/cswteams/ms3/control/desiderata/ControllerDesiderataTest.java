@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.control.desiderata;
 
 import org.cswteams.ms3.control.desiderata.IControllerDesiderata;
 import org.cswteams.ms3.dao.UtenteDao;
