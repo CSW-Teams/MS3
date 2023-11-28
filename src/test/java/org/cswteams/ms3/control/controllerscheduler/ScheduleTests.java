@@ -1,8 +1,8 @@
-package org.cswteams.ms3.sprint0plus;
+package org.cswteams.ms3.control.controllerscheduler;
 
 import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.sprint0plus.utils.ControllerSchedulerTests;
+import org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.cswteams.ms3.sprint0plus.utils.ControllerSchedulerTests.TestDatesEnum.*;
+import static org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests.TestDatesEnum.*;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 

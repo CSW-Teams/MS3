@@ -1,4 +1,4 @@
-package org.cswteams.ms3.sprint0plus;
+package org.cswteams.ms3.control.controllerscheduler;
 
 import org.cswteams.ms3.control.servizi.ControllerServizi;
 import org.cswteams.ms3.control.turni.ControllerTurni;
@@ -17,7 +17,7 @@ import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.TurnoException;
-import org.cswteams.ms3.sprint0plus.utils.ControllerSchedulerTests;
+import org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +41,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static org.cswteams.ms3.sprint0plus.utils.ControllerSchedulerTests.TestDatesEnum.TODAY;
+import static org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests.TestDatesEnum.TODAY;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)

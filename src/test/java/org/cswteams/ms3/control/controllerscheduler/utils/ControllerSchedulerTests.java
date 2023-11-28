@@ -1,4 +1,4 @@
-package org.cswteams.ms3.sprint0plus.utils;
+package org.cswteams.ms3.control.controllerscheduler.utils;
 
 import org.cswteams.ms3.control.scheduler.ControllerScheduler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static org.cswteams.ms3.sprint0plus.utils.ControllerSchedulerTests.TestDatesEnum.*;
+import static org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests.TestDatesEnum.*;
 
 public class ControllerSchedulerTests extends TestEnv{
     @Autowired
