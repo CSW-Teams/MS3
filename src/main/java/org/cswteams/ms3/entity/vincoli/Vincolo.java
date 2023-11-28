@@ -14,7 +14,7 @@ public abstract class  Vincolo {
     private Long id;
 
     /** True se il vincolo è non-stringente */
-    private boolean violabile;
+    private boolean violabile = false;
 
     /** TODO: descrizione di che cosa in particolare del vincolo? */
     private String descrizione;
