@@ -5,6 +5,7 @@ import lombok.Data;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class Utente {
 
     private RuoloEnum ruoloEnum;
 
+    @Email
     private String email;
 
     private String password;
