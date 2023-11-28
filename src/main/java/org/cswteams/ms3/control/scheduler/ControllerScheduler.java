@@ -15,6 +15,7 @@ import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,8 +53,7 @@ public class ControllerScheduler implements IControllerScheduler{
      * Permette la creazione di un nuovo schedulo specificando data inizio e data fine della generazione.
      * @param startDate giorno di inizio della validità della pianificazione
      * @param endDate giorno di fine (compreso) della validità della pianificazione
-     * @return
-     * @throws UnableToBuildScheduleException
+     * @return An instance of schedule, if correctly created and saved in persistence, null otherwise
      */
     @Override
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate)  {
@@ -84,18 +84,22 @@ public class ControllerScheduler implements IControllerScheduler{
         }
 
         //Creo uno schedule builder ad ogni nuova pianificazione
-        this.scheduleBuilder = new ScheduleBuilder(
-            startDate,  // data inizio pianificazione
-            endDate,    // data fine pianificazione
-            vincoloDao.findAll(),    // tutti i vincoli da rispettare quando si assegna una persona a un turno
-            allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
-            utenteDao.findAll() // tutti i candidati da allocare ai turni
-            );
+        try {
+            this.scheduleBuilder = new ScheduleBuilder(
+                startDate,  // data inizio pianificazione
+                endDate,    // data fine pianificazione
+                vincoloDao.findAll(),    // tutti i vincoli da rispettare quando si assegna una persona a un turno
+                allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
+                utenteDao.findAll() // tutti i candidati da allocare ai turni
+                );
 
-        // Setto il controller che gestisce gli uffa points
-        this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDao.findAll()));
-        return  scheduleDao.save(this.scheduleBuilder.build());
-        
+            this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDao.findAll()));
+            // Setto il controller che gestisce gli uffa points
+            return  scheduleDao.save(this.scheduleBuilder.build());
+
+        } catch (IllegalScheduleException e) {
+            return null;
+        }
     }
 
     /**
