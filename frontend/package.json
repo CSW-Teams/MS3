@@ -46,7 +46,7 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "^5.0.1",
     "react-swipeable-views": "*",
-    "react-toastify": "^9.1.1",
+    "react-toastify": "^8.2.0",
     "shards-react": "^1.0.0",
     "shards-ui": "^2.1.0",
     "shortid": "^2.2.14"
