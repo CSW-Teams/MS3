@@ -35,7 +35,6 @@ public class ControllerServiziTests extends TestEnv {
 
     @Test
     public void createServizioTest() {
-        //TODO mock?
         String servizioName = "ServizioTest";
         List<MansioneEnum> mansioni = new ArrayList<>();
         mansioni.add(MansioneEnum.REPARTO);

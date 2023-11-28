@@ -140,7 +140,6 @@ public class ScheduleTests extends ControllerSchedulerTests {
 
     @Test
     public void readIllegalScheduleTest() {
-        //TODO mock?
         this.instance.createSchedule(LocalDate.now(), LocalDate.now().plusDays(5));
         Schedule schedule = this.instance.createSchedule(LocalDate.now().plusDays(5), LocalDate.now().plusDays(10));
         Schedule schedule2 = this.instance.createSchedule(LocalDate.now().plusDays(10), LocalDate.now().plusDays(15));
