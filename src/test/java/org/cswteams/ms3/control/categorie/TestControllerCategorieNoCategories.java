@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.control.categorie;
 
 import org.cswteams.ms3.control.categorie.IControllerCategorie;
 import org.cswteams.ms3.dto.CategoriaDTO;
