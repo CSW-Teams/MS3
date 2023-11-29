@@ -1,6 +1,7 @@
 package org.cswteams.ms3.control.controllerscheduler;
 
 import org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests;
+import org.cswteams.ms3.dao.ScheduleDao;
 import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.Schedule;
 import org.junit.Assert;
@@ -12,6 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
@@ -20,6 +22,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests.TestDatesEnum.*;
@@ -32,6 +35,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @Profile("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ScheduleTests extends ControllerSchedulerTests {
+
+    @Autowired
+    ScheduleDao scheduleDao;
 
     static Stream<Arguments> createScheduleValidTestParams() {
         return Stream.of(
@@ -155,22 +161,63 @@ public class ScheduleTests extends ControllerSchedulerTests {
         }
     }
 
-    @ParameterizedTest
-    @ValueSource(longs = {0, 1, Long.MAX_VALUE})
-    public void removeScheduleByIdValidTest(long data) {
-
+    @Test
+    public void removeScheduleByIdValidTest() {
         Schedule mocked = this.instance.createSchedule(testDates.get(FUTURE_START), testDates.get(FUTURE_END));
-        mocked.setId(data);
-        boolean ret = this.instance.rimuoviSchedulo(data);
+        Assert.assertNotEquals(Optional.empty(),this.scheduleDao.findById(mocked.getId()));
+        Assert.assertNotNull(this.scheduleDao.findById(mocked.getId()));
+        boolean ret = this.instance.rimuoviSchedulo(mocked.getId());
         Assert.assertTrue(ret);
     }
 
+    /**
+     * (Domain partitioning/BVA) - Id management is totally handled by Spring/Hibernate, so it is
+     * not (theoretically) possible to persist Schedule records with some "strange" Ids programmatically.
+     * Hence, here we can only try to do it anyways, and check that Hibernate correctly reacts
+     * to malformed requests.
+     *
+     * @param data
+     */
+    @ParameterizedTest
+    @ValueSource(longs = {0, 1, Long.MAX_VALUE})
+    public void removeScheduleByIdBoundaryValidTest(long data) {
+        Assert.assertEquals(Optional.empty(),this.scheduleDao.findById(data));
+        Schedule mocked = this.instance.createSchedule(testDates.get(FUTURE_START), testDates.get(FUTURE_END));
+        mocked.setId(data);
+
+        // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
+        this.scheduleDao.save(mocked);
+        Assert.assertEquals(Optional.empty(),this.scheduleDao.findById(data));
+        Assertions.assertThrows(Exception.class, () ->  this.instance.leggiSchedulazioni());
+
+        // ... hence, the removal should fail (=> false is returned)
+        boolean ret = this.instance.rimuoviSchedulo(data);
+        Assert.assertFalse(ret);
+    }
+
+    /**
+     * (Domain partitioning/BVA) - Id management is totally handled by Spring/Hibernate, so it is
+     * not (theoretically) possible to persist Schedule records with some "strange" Ids programmatically.
+     * Hence, here we can only try to do it anyways, and check that Hibernate correctly reacts
+     * to malformed requests.
+     *
+     * @param data
+     */
     @ParameterizedTest
     @ValueSource(ints = {-1})
     public void removeScheduleByIdInvalidTest(long data) {
+        Assert.assertEquals(Optional.empty(),this.scheduleDao.findById(data));
         Schedule mocked = this.instance.createSchedule(testDates.get(FUTURE_START), testDates.get(FUTURE_END));
         mocked.setId(data);
-        Assertions.assertThrows(Exception.class, () -> this.instance.rimuoviSchedulo(data));
+
+        // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
+        this.scheduleDao.save(mocked);
+        Assert.assertEquals(Optional.empty(),this.scheduleDao.findById(data));
+        Assertions.assertThrows(Exception.class, () ->  this.instance.leggiSchedulazioni());
+
+        // ... hence, the removal should fail (=> false is returned)
+        boolean ret = this.instance.rimuoviSchedulo(data);
+        Assert.assertFalse(ret);
     }
 
     @ParameterizedTest
@@ -181,4 +228,4 @@ public class ScheduleTests extends ControllerSchedulerTests {
             Assertions.assertThrows(Exception.class, ()->this.instance.rimuoviSchedulo(schedule.getId()));
         }
     }
-}
+  }
