@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Profile("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt. It means that
 @Transactional
-class ControllerAssegnazioniTurniTest {
+public class ControllerAssegnazioniTurniTest {
     @Autowired
     private ServizioDao servizioDao;
     @Autowired
@@ -57,7 +57,7 @@ class ControllerAssegnazioniTurniTest {
     /**
      * Test che verifica che dai turni assegnati non vengono messi letti anche i turni non assegnati
      */
-    void leggiTurniAssegnati() throws TurnoException, ParseException{
+    public void leggiTurniAssegnati() throws TurnoException, ParseException{
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.save(servizio1);
@@ -85,7 +85,7 @@ class ControllerAssegnazioniTurniTest {
     /**
      * Test verifica che il turno venga assegnato al giusto utente
      */
-    void leggiTurniUtente() throws TurnoException, ParseException {
+    public void leggiTurniUtente() throws TurnoException, ParseException {
         Utente utente = new Utente("Martina", "Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
         utente=this.utenteDao.saveAndFlush(utente);
         Servizio servizio1 = new Servizio("cardiologia");
