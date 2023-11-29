@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt. It means that
-@Transactional
 @ActiveProfiles(value = "test")
 public class TestControllerCategorieMisc {
 
@@ -37,12 +36,11 @@ public class TestControllerCategorieMisc {
     @Autowired
     private CategorieDao dao ;
 
-
     @Test
     public void testNullCategoryInsertion() {
 
         try {
-            dao.save(new Categoria()) ;
+            dao.saveAndFlush(new Categoria()) ;
 
             List<Categoria> categorie = dao.findAll() ;
 
