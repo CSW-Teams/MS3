@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.control.turni;
 
 import org.cswteams.ms3.control.turni.ControllerTurni;
 import org.cswteams.ms3.dto.ServizioDTO;
