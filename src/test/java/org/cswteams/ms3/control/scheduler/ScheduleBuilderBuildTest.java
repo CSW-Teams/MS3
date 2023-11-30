@@ -5,6 +5,7 @@ import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
+import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,8 +21,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -191,279 +191,279 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
     private static Stream<Arguments> firstConstructorPartition() {
         return Stream.of(
                 // Date partition
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints,listOfUserShift, userList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, userList, false),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().plusDays(1),LocalDate.now(),correctConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(1),correctConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, userList, true),
 
                 // Add constraint partition
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints,listOfUserShift, userList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, userList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, userList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints,listOfUserShift, userList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, userList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, userList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null,listOfUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfUserShift, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfUserShift, userList, true),
 
 
                 // Add assignedShift partition
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints,listOfNoUserShift, userList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, userList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, userList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints,listOfNoUserShift, userList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, userList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, userList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints,listOfNoUserShift, userList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, userList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, userList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfNoUserShift, userList, true),
 
 
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints, null, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints, null, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints, null, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints, null, userList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints, null, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints, null, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints, null, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints, null, userList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints, null, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints, null, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints, null, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints, null, userList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null, null, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null, null, userList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null, null, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null, null, userList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null, null, userList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null, null, userList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null, null, userList, true),
 
 
 
                 // Add userList partition
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints,listOfUserShift, emptyUserList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints,listOfUserShift, emptyUserList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints,listOfUserShift, emptyUserList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null,listOfUserShift, emptyUserList, true),
-
-
-
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints,listOfNoUserShift, emptyUserList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints,listOfNoUserShift, emptyUserList, true),
-
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints,listOfNoUserShift, emptyUserList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints,listOfNoUserShift, emptyUserList, false),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints,listOfNoUserShift, emptyUserList, true),
-
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfUserShift, emptyUserList, true),
 
 
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null, null, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null, null, emptyUserList, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null, null, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfNoUserShift, emptyUserList, true),
 
 
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints, null, emptyUserList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints, null, emptyUserList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints, null, emptyUserList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null, null, emptyUserList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null, null, emptyUserList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null, null, emptyUserList, true),
 
 
 
 
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints,listOfUserShift, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints,listOfUserShift, null, true),
-
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints,listOfUserShift, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints,listOfUserShift, null, true),
-
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints,listOfUserShift, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints,listOfUserShift, null, true),
-
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null,listOfUserShift, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null,listOfUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null,listOfUserShift, null, true),
 
 
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, null, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints,listOfNoUserShift, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, null, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints,listOfNoUserShift, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, null, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints,listOfNoUserShift, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints,listOfNoUserShift, null, true),
-
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null,listOfNoUserShift, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null,listOfNoUserShift, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfUserShift, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfUserShift, null, true),
 
 
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),correctConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),correctConstraints, null, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),correctConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),correctConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),correctConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),correctConstraints, null, null, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, null, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),violatedConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),violatedConstraints, null, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),violatedConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),violatedConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),violatedConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),violatedConstraints, null, null, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, null, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),noConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),noConstraints, null, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),noConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),noConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),noConstraints, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),noConstraints, null, null, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, null, true),
 
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,27),null, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,27),null, null, null, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.of(2023,11,23),LocalDate.of(2023,11,23),null, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,24),LocalDate.of(2023,11,23),null, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,20),LocalDate.of(2023,11,20),null, null, null, true),
-                Arguments.of(LocalDate.of(2023,11,21),LocalDate.of(2023,11,20),null, null, null, true)
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfNoUserShift, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfNoUserShift, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfNoUserShift, null, true),
+
+
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints, null, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints, null, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints, null, null, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints, null, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints, null, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints, null, null, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints, null, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints, null, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints, null, null, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null, null, null, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null, null, null, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null, null, null, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null, null, null, true)
 
 
 
@@ -554,7 +554,12 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         ScheduleBuilder scheduleBuilder;
 
         if (!expectedException) {
-            scheduleBuilder = new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users);
+            assertDoesNotThrow(() -> new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users));
+            try {
+                scheduleBuilder = new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users);
+            } catch (IllegalScheduleException e) {
+                throw new RuntimeException(e);
+            }
             // Act
             Schedule resultSchedule = scheduleBuilder.build();
 

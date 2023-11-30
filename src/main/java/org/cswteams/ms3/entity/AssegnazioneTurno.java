@@ -46,6 +46,7 @@ public class AssegnazioneTurno{
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
+        this.retiredUsers = new HashSet<>();
         this.turno = turno;
     }
 
@@ -53,6 +54,7 @@ public class AssegnazioneTurno{
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = new HashSet<>();
         this.utentiReperibili = new HashSet<>();
+        this.retiredUsers = new HashSet<>();
         this.turno = turno;
     }
 
@@ -60,6 +62,7 @@ public class AssegnazioneTurno{
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.dataEpochDay = dataEpochDay;
+        this.retiredUsers = new HashSet<>();
         this.turno = turno;
     }
 
