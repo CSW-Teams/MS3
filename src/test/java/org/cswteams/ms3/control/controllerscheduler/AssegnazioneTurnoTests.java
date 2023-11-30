@@ -16,6 +16,7 @@ import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.TurnoException;
 import org.cswteams.ms3.control.controllerscheduler.utils.ControllerSchedulerTests;
 import org.junit.Assert;
@@ -208,6 +209,8 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTests {
         } catch (
                 AssegnazioneTurnoException e) {
             throw new RuntimeException(e);
+        }catch (IllegalScheduleException i){
+            schedule = null;
         }
         Assert.assertNotNull(schedule);
 
@@ -261,7 +264,12 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTests {
                 uGuardiaList.get(0).getId()
         );
 
-        Schedule modifiedSchedule = this.instance.modificaAssegnazioneTurno(mat);
+        Schedule modifiedSchedule;
+        try {
+            modifiedSchedule = this.instance.modificaAssegnazioneTurno(mat);
+        } catch (IllegalScheduleException e) {
+            modifiedSchedule = null;
+        }
         Assert.assertNotNull(modifiedSchedule);
 
         // check if the AssegnazioneTurno still exists...
