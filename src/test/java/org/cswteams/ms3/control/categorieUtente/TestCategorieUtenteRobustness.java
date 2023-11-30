@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(Parameterized.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -145,27 +146,24 @@ public class TestCategorieUtenteRobustness {
         if(positive) {
             try {
                 if(toSave.getCategoria() != null) {
-                    categorieDao.save(toSave.getCategoria()) ;
+                    categorieDao.saveAndFlush(toSave.getCategoria()) ;
                 }
-                dao.save(toSave) ;
+                dao.saveAndFlush(toSave) ;
             } catch (Exception e) {
-                e.printStackTrace();
                 fail() ;
             }
         } else
         {
             try {
-                dao.save(toSave) ;
+                if(toSave.getCategoria() != null) {
+                    categorieDao.saveAndFlush(toSave.getCategoria()) ;
+                }
+                dao.saveAndFlush(toSave) ;
             } catch (Exception e) {
                 return;
             }
 
             fail() ;
         }
-    }
-
-    @After
-    public void clean() {
-        dao.deleteAll();
     }
 }

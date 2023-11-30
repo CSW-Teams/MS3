@@ -3,9 +3,11 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.NonNull;
 import org.cswteams.ms3.enums.TipoCategoriaEnum;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Data
@@ -16,8 +18,10 @@ public class Categoria {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @NotNull
     private String nome;
 
+    @NotNull
     private TipoCategoriaEnum tipo;
 
     public Categoria() {
