@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.control.categorieUtente;
 
 import org.cswteams.ms3.control.categorieUtente.ControllerCategorieUtente;
 import org.cswteams.ms3.dao.CategoriaUtenteDao;
