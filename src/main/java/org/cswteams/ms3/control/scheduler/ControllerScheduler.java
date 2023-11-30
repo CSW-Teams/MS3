@@ -103,13 +103,12 @@ public class ControllerScheduler implements IControllerScheduler{
     }
 
     /**
-     * Permette la rigenerazione di una schedulazione. Non è possibile rigenerare schedulazioni passate. Solo schedulazioni future.
-     * @param id
-     * @return
-     * @throws UnableToBuildScheduleException
+     * Permette la rigenerazione di una schedulazione. Non &egrave; possibile rigenerare schedulazioni passate. Solo schedulazioni future.
+     * @param id An existing schedule ID
+     * @return Boolean that represents if the regeneration ended succesfully
      */
     @Override
-    public boolean rigeneraSchedule(long id) throws UnableToBuildScheduleException {
+    public boolean rigeneraSchedule(long id) {
         Optional<Schedule> optionalSchedule = scheduleDao.findById(id);
         if(optionalSchedule.isEmpty())
             return false;
@@ -133,7 +132,7 @@ public class ControllerScheduler implements IControllerScheduler{
      * Se forced è true l'assegnazione verrà aggiunta solo se vengono rispetatti i vincoli non violabili.
      * Se forced è false l'assegnazione verà aggiunta se vengono rispettati tutti i vincoli.
      */
-    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno,boolean forced) {
+    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno,boolean forced) throws IllegalScheduleException {
 
         Schedule schedule;
         
@@ -176,11 +175,11 @@ public class ControllerScheduler implements IControllerScheduler{
     }
 
     @Override
-    public Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException {
+    public Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
         // Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere
         // presente nel database
         List<Turno> turni = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno());
-        if(turni.size() == 0)
+        if(turni.isEmpty())
             throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",tipologia turno: "+assegnazione.getTipologiaTurno().toString());
         Turno turno = null;
         for(Turno turnodb: turni){
@@ -231,7 +230,7 @@ public class ControllerScheduler implements IControllerScheduler{
      */
     @Override
     @Transactional
-    public Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO) {
+    public Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO) throws IllegalScheduleException {
 
         AssegnazioneTurno assegnazioneTurnoOld  = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
         AssegnazioneTurno assegnazioneTurnoNew = assegnazioneTurnoOld.clone();

@@ -1,24 +1,17 @@
 package org.cswteams.ms3.control.scheduler;
 
+import lombok.Data;
+import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
+import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
+import org.cswteams.ms3.exception.*;
+
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
-import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
-import org.cswteams.ms3.entity.vincoli.Vincolo;
-import org.cswteams.ms3.exception.*;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.RuoloNumero;
-import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.entity.UserScheduleState;
-import org.cswteams.ms3.entity.Utente;
-import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
-
-import lombok.Data;
-
-import javax.validation.constraints.NotNull;
 
 @Data
 public class ScheduleBuilder {
@@ -26,6 +19,7 @@ public class ScheduleBuilder {
     private Logger logger = Logger.getLogger(ScheduleBuilder.class.getName());
     
     /** Lista di vincoli da applicare a ogni coppia AssegnazioneTurno, Utente */
+    @NotNull
     private List<Vincolo> allConstraints;
 
     /** Oggetti che rappresentano lo stato relativo alla costruzione della pianificazione
@@ -42,6 +36,7 @@ public class ScheduleBuilder {
      * Method to validate dates parameters passed to the schedule builder
      * @param startDate Date of the start of the schedule
      * @param endDate Date of the end of the schedule
+     * @throws IllegalScheduleException An exception highlighting the incoherent state of the passed parameters
      */
     private void validateDates(LocalDate startDate, LocalDate endDate) throws IllegalScheduleException {
         if(startDate.isAfter(endDate) || startDate.isEqual(endDate))
@@ -50,6 +45,35 @@ public class ScheduleBuilder {
             throw new IllegalScheduleException("[ERROR] Cannot create a schedule from a date previous than today!");
     }
 
+    /**
+     * This class has the responsibility of checking if the shifts have assigned users which
+     * are listed in the available user list
+     * @param allAssignedShifts List of shifts containing the assigned user
+     * @param users List of users which are available for a certain shift
+     * @throws IllegalScheduleException An exception highlighting the incoherent state of the passed parameters
+     */
+    private void validateUsers(List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) throws IllegalScheduleException {
+        for (AssegnazioneTurno shift: allAssignedShifts){
+            for(Utente shiftUser: shift.getUtenti()){
+                if(!users.contains(shiftUser))
+                    throw new IllegalScheduleException("[ERROR] Inchoerent state between users assigned in the shift and users listed in the available ones");
+            }
+        }
+    }
+
+    /**
+     * This class has the responsibility of checking if the constraints aren't a null object
+     * @param allConstraints Constraints passed as parameters of the schedule builder
+     * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
+     */
+    private void validateConstraints(List<Vincolo> allConstraints) throws IllegalScheduleException {
+        if(allConstraints == null)
+            throw new IllegalScheduleException("[ERROR] Cannot have null constraints");
+
+        for(Vincolo constraint: allConstraints)
+            if (constraint == null)
+                throw new IllegalScheduleException("[ERROR] Cannot have null constraints");
+    }
 
     /**
      * Class that has the responsibility to create a new instance of schedule and save it in persistence
@@ -60,8 +84,13 @@ public class ScheduleBuilder {
      * @param users Set of users that is possible to add in the schedule
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(@NotNull LocalDate startDate, @NotNull LocalDate endDate, @NotNull  List<Vincolo> allConstraints, List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) throws IllegalScheduleException {
+    public ScheduleBuilder(LocalDate startDate,LocalDate endDate, List<Vincolo> allConstraints, List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) throws IllegalScheduleException {
+        // Checks on the parameters state
         validateDates(startDate,endDate);
+        validateUsers(allAssignedShifts,users);
+        validateConstraints(allConstraints);
+
+        // Actual initialization
         this.schedule = new Schedule(startDate, endDate);
         this.schedule.setAssegnazioniTurno(allAssignedShifts);
         this.allConstraints = allConstraints;
@@ -69,19 +98,36 @@ public class ScheduleBuilder {
         initializeUserScheduleStates(users);
     }
 
+    /**
+     * This class has the responsibility of checking if the schedule isn't a null object
+     * @param schedule Schedule from which we want to generate a new one
+     */
+    private void validateSchedule(Schedule schedule) throws IllegalScheduleException {
+        if(schedule == null)
+            throw new IllegalScheduleException("[ERROR] Cannot create new schedule from a null one");
+        else if (schedule.isIllegal())
+            throw new IllegalScheduleException("[ERROR] Cannot create new schedule from an illegal one");
+    }
 
     /**
      * This class has the responsibility of creating a new valid schedule from an existing one
      * @param allConstraints Set of constraints to not be violated
      * @param users Set of users that is possible to add in the schedule
      * @param schedule An existing schedule from which to start a new one
+     * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(@NotNull List<Vincolo> allConstraints, List<Utente> users, @NotNull Schedule schedule) {
+    public ScheduleBuilder(List<Vincolo> allConstraints, List<Utente> users,Schedule schedule) throws IllegalScheduleException {
+        // Checks on the parameters state
+        validateConstraints(allConstraints);
+        validateSchedule(schedule);
+
         this.allConstraints = allConstraints;
         this.schedule=schedule;
         this.allUserScheduleStates = new HashMap<>();
         initializeUserScheduleStates(users);
     }
+
+
 
     /**
      * Inner calls that has the responsibility of initializing the state of the schedule for all user

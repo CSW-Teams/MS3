@@ -69,6 +69,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         List<RuoloNumero> roleList = new ArrayList<>();
         List<RuoloNumero> emptyRoleList = new ArrayList<>();
         Utente user = new Utente(
+                278831L,
                 "Simone",
                 "Staccone",
                 "STCASMO00O",
@@ -78,6 +79,12 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
                 RuoloEnum.SPECIALIZZANDO,
                 AttoreEnum.UTENTE
         );
+        Vincolo violatedConstraint = new Vincolo() {
+            @Override
+            public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
+                throw new ViolatedConstraintException();
+            }
+        };
 
         // Global variable initialization (all the variables that will be used in the tests)
         noConstraints = new ArrayList<>();
@@ -100,16 +107,14 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         // Initialize constraints in the system
         correctConstraints.add(new Vincolo() {
             @Override
-            public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
+            public void verificaVincolo(ContestoVincolo contesto){
             }
         });
 
-        violatedConstraints.add(new Vincolo() {
-            @Override
-            public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
-                throw new ViolatedConstraintException();
-            }
-        });
+
+        violatedConstraints.add(violatedConstraint);
+
+
 
 
 
@@ -222,21 +227,21 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
 
                 // Add assignedShift partition
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, userList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, userList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, userList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, userList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, userList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, userList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, userList, true),
@@ -283,21 +288,21 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
 
                 // Add userList partition
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfUserShift, emptyUserList, true),
@@ -313,21 +318,21 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
 
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, emptyUserList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyUserList, false),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
                 Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, emptyUserList, true),
                 Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, emptyUserList, true),
@@ -483,15 +488,15 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         return Stream.of(
                 //Add constraint partition
                 Arguments.of(correctConstraints,userList,schedule, false),
-                Arguments.of(violatedConstraints,userList,schedule, true),
+                Arguments.of(violatedConstraints,userList,schedule, false),
                 Arguments.of(noConstraints,userList,schedule, false),
                 Arguments.of(null,userList,schedule, true),
 
                 //Add users constraints
                 Arguments.of(correctConstraints,emptyUserList,schedule, false),
-                Arguments.of(violatedConstraints,emptyUserList,schedule, true),
+                Arguments.of(violatedConstraints,emptyUserList,schedule, false),
                 Arguments.of(noConstraints,emptyUserList,schedule, false),
-                Arguments.of(null,userList,emptyUserList, true),
+                Arguments.of(null,userList,schedule, true),
 
                 Arguments.of(correctConstraints,null,schedule, true),
                 Arguments.of(violatedConstraints,null,schedule, true),
@@ -557,15 +562,20 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
             assertDoesNotThrow(() -> new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users));
             try {
                 scheduleBuilder = new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users);
+                // Act
+                Schedule resultSchedule = scheduleBuilder.build();
+
+                // Assert
+                assertEquals(startDate, resultSchedule.getStartDate());
+                assertEquals(endDate, resultSchedule.getEndDate());
+
+                if(!resultSchedule.getViolatedConstraintLog().isEmpty()) {
+                    assertEquals(resultSchedule.getViolatedConstraintLog().size(),constraints.size());
+                }
             } catch (IllegalScheduleException e) {
                 throw new RuntimeException(e);
             }
-            // Act
-            Schedule resultSchedule = scheduleBuilder.build();
 
-            // Assert
-            assertEquals(startDate, resultSchedule.getStartDate());
-            assertEquals(endDate, resultSchedule.getEndDate());
         } else {
             assertThrows(Exception.class, () -> new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users));
 
@@ -579,7 +589,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
     @ParameterizedTest
     @MethodSource("secondConstructorPartition")
     public void secondConstructorTest(
-            List<Vincolo> allConstraints,
+            List<Vincolo> constraints,
             List<Utente> users,
             Schedule schedule,
             boolean expectedException
@@ -587,15 +597,27 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         ScheduleBuilder scheduleBuilder;
 
         if (!expectedException) {
-            scheduleBuilder = new ScheduleBuilder(allConstraints, users, schedule);
-            // Act
-            Schedule resultSchedule = scheduleBuilder.build();
+            assertDoesNotThrow(() -> new ScheduleBuilder(constraints, users, schedule));
 
-            // Assert
-            assertEquals(schedule.getStartDate(), resultSchedule.getStartDate());
-            assertEquals(schedule.getEndDate(), resultSchedule.getEndDate());
+            try {
+                scheduleBuilder = new ScheduleBuilder(constraints, users, schedule);
+                // Act
+                Schedule resultSchedule = scheduleBuilder.build();
+
+                // Assert
+                assertEquals(schedule.getStartDate(), resultSchedule.getStartDate());
+                assertEquals(schedule.getEndDate(), resultSchedule.getEndDate());
+
+                if(!resultSchedule.getViolatedConstraintLog().isEmpty()) {
+                    assertEquals(resultSchedule.getViolatedConstraintLog().size(),constraints.size());
+                }
+
+            } catch (IllegalScheduleException e) {
+                throw new RuntimeException(e);
+            }
+
         } else {
-            assertThrows(Exception.class, () -> new ScheduleBuilder(allConstraints, users, schedule));
+            assertThrows(Exception.class, () -> new ScheduleBuilder(constraints, users, schedule));
 
         }
 
