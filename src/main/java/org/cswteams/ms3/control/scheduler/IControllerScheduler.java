@@ -10,6 +10,7 @@ import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 
 /**
@@ -27,8 +28,8 @@ public interface IControllerScheduler {
      */
     Schedule createSchedule(LocalDate startDate, LocalDate endDate);
     boolean rigeneraSchedule(long id) throws UnableToBuildScheduleException;
-    Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno, boolean forced);
-    Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO assegnazioneTurno);
+    Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno, boolean forced) throws IllegalScheduleException;
+    Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO assegnazioneTurno) throws IllegalScheduleException;
     List<ScheduloDTO> leggiSchedulazioni();
     List<ScheduloDTO> leggiSchedulazioniIllegali();
 
@@ -36,5 +37,5 @@ public interface IControllerScheduler {
     void rimuoviAssegnazioneTurnoSchedulo(AssegnazioneTurno assegnazioneTurnoOld);
     boolean rimuoviAssegnazioneTurno(Long idAssegnazione);
 
-    Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException ;
+    Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException;
 }
