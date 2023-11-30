@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.control.login;
 
 import org.cswteams.ms3.control.login.ControllerLogin;
 import org.cswteams.ms3.dto.LoginDTO;
