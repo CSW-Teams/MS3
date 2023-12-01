@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -99,7 +100,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTests {
         turnoDTO.setRuoliNumero(List.of(rn));
 
         turnoDTO.setOraInizio(LocalTime.of(22, 0));
-        turnoDTO.setOraFine(LocalTime.of(23, 0));
+        turnoDTO.setDurata(Duration.ofHours(1));
         try {
             ct.creaTurno(turnoDTO);
         } catch (TurnoException e) {

@@ -1,16 +1,10 @@
 package org.cswteams.ms3.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NonNull;
-import org.cswteams.ms3.dao.CategorieDao;
+
+import javax.persistence.*;
 
 /**
  * Modella se una categoria utente è vietata o necessaria per un turno

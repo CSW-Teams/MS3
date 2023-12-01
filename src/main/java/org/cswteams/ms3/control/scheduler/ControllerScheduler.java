@@ -140,7 +140,7 @@ public class ControllerScheduler implements IControllerScheduler{
         this.scheduleBuilder = new ScheduleBuilder(
                 vincoloDao.findAll(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
                 utenteDao.findAll(),  // tutti i candidati da allocare ai turni
-                scheduleDao.findByDateBetween(assegnazioneTurno.getDataEpochDay()) //Schedulo gia esistente
+                scheduleDao.findByDateBetween(assegnazioneTurno.getData()) //Schedulo gia esistente
         );
 
         schedule = this.scheduleBuilder.addAssegnazioneTurno(assegnazioneTurno,forced);
@@ -158,7 +158,7 @@ public class ControllerScheduler implements IControllerScheduler{
      * @param assegnazioneTurnoOld
      */
     public void rimuoviAssegnazioneTurnoSchedulo(AssegnazioneTurno assegnazioneTurnoOld) {
-        Schedule schedule = scheduleDao.findByDateBetween(assegnazioneTurnoOld.getDataEpochDay());
+        Schedule schedule = scheduleDao.findByDateBetween(assegnazioneTurnoOld.getData());
         schedule.getAssegnazioniTurno().remove(assegnazioneTurnoOld);
         scheduleDao.flush();
     }

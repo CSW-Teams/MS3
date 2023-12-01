@@ -3,6 +3,7 @@ package org.cswteams.ms3.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import lombok.Getter;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
@@ -13,17 +14,22 @@ import java.util.Set;
 @AllArgsConstructor
 public class AssegnazioneTurnoDTO {
 
+    @Getter
     private Long id;
+    @Getter
     private Long idTurno;
+    @Getter
     private Timestamp inizio;
+    @Getter
     private Timestamp fine;
 
     private Set<UtenteDTO> utentiDiGuardia;
     private Set<UtenteDTO> utentiReperibili;
 
+    @Getter
     private ServizioDTO servizio;
+    @Getter
     private TipologiaTurno tipologiaTurno;
-    private boolean giornoSuccessivoTurno;
 
     private MansioneEnum mansione;
 
@@ -41,7 +47,7 @@ public class AssegnazioneTurnoDTO {
         this.servizio = servizio;
     }
 
-    public AssegnazioneTurnoDTO(Long id,Long idTurno, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno, boolean giornoSuccessivoTurno, boolean reperibilitaAttiva) {
+    public AssegnazioneTurnoDTO(Long id,Long idTurno, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno, boolean reperibilitaAttiva) {
         this.id = id;
         this.inizio = inizio;
         this.fine = fine;
@@ -50,7 +56,6 @@ public class AssegnazioneTurnoDTO {
         this.tipologiaTurno = turno;
         this.servizio = servizio;
         this.idTurno=idTurno;
-        this.giornoSuccessivoTurno = giornoSuccessivoTurno;
         this.reperibilitaAttiva = reperibilitaAttiva;
     }
 
@@ -65,33 +70,4 @@ public class AssegnazioneTurnoDTO {
         this.servizio = servizio;
     }
 
-    public Long getId() {
-        return id;
-    }
-    public Long getIdTurno() {
-        return idTurno;
-    }
-    public Timestamp getInizio() {
-        return inizio;
-    }
-
-    public Timestamp getFine() {
-        return fine;
-    }
-
-    public Set<UtenteDTO> getUtentiDiGuardia() {
-        return utentiDiGuardia;
-    }
-
-    public Set<UtenteDTO> getUtentiReperibili() {
-        return utentiReperibili;
-    }
-
-    public ServizioDTO getServizio() {
-        return servizio;
-    }
-
-    public TipologiaTurno getTipologiaTurno() {
-        return tipologiaTurno;
-    }
 }

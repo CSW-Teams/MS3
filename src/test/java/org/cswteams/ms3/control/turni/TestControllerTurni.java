@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.transaction.Transactional;
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +36,9 @@ public class TestControllerTurni {
                 return new TurnoDTO(1,
                         TipologiaTurno.NOTTURNO,
                         LocalTime.of(22, 0),
-                        LocalTime.of(6, 0),
+                        Duration.ofHours(8),
                         servizioDTO,
                         MansioneEnum.AMBULATORIO,
-                        true,
                         false,
                         null
                 );
@@ -46,10 +46,9 @@ public class TestControllerTurni {
                 return new TurnoDTO(1,
                         TipologiaTurno.MATTUTINO,
                         LocalTime.of(22, 0),
-                        LocalTime.of(6, 0),
+                        Duration.ofHours(8),
                         null,
                         MansioneEnum.AMBULATORIO,
-                        false,
                         false,
                         null
                 );

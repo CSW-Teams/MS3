@@ -18,6 +18,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -38,8 +39,8 @@ public class VincoloUbiquitàTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         //Servizio servizio2 = new Servizio("ambulatorio");
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,true);
-        Turno t2 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,true);
+        Turno t2 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,true);
 
         Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
 
@@ -63,8 +64,8 @@ public class VincoloUbiquitàTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         Servizio servizio2 = new Servizio("cardiologia");
         servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
-        Turno t2 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Turno t2 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
 
         Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE  );
 

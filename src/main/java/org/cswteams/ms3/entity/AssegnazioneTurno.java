@@ -2,27 +2,34 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.Getter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AssegnazioneTurno{
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
 
     /** Utenti assegnati per il turno. Da non confondere con la mansione GUARDIA */
+    @Getter
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> utentiDiGuardia;
 
     /** Utenti in riserva per il turno. Questi utenti sono eligibili per L'assegnazione al turno,
      * ma non sono stati assegnati. Da non confondere con la reperibilità prevista dalla mansione GUARDIA
      */
+    @Getter
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> utentiReperibili;
 
@@ -33,8 +40,10 @@ public class AssegnazioneTurno{
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> retiredUsers;
 
-    private long dataEpochDay;
+    @Getter
+    private LocalDate data;
 
+    @Getter
     @ManyToOne
     private Turno turno;
 
@@ -43,7 +52,7 @@ public class AssegnazioneTurno{
     }
 
     public AssegnazioneTurno(LocalDate data, Turno turno, Set<Utente> utentiReperibili, Set<Utente> utentiDiGuardia) {
-        this.dataEpochDay = data.toEpochDay();
+        this.data = data;
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.retiredUsers = new HashSet<>();
@@ -51,17 +60,17 @@ public class AssegnazioneTurno{
     }
 
     public AssegnazioneTurno(LocalDate data, Turno turno) {
-        this.dataEpochDay = data.toEpochDay();
+        this.data = data;
         this.utentiDiGuardia = new HashSet<>();
         this.utentiReperibili = new HashSet<>();
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
     }
 
-    public AssegnazioneTurno(Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, long dataEpochDay, Turno turno) {
+    public AssegnazioneTurno(Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, LocalDate data, Turno turno) {
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
-        this.dataEpochDay = dataEpochDay;
+        this.data = data;
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
     }
@@ -100,22 +109,6 @@ public class AssegnazioneTurno{
         return isUserIn(u, new ArrayList<>(utentiReperibili));
     }
 
-    public LocalDate getData() {
-        return LocalDate.ofEpochDay(this.dataEpochDay);
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Set<Utente> getUtentiDiGuardia() {
-        return utentiDiGuardia;
-    }
-
-    public Set<Utente> getUtentiReperibili() {
-        return utentiReperibili;
-    }
-
     public Set<Utente> getUtenti(){
         Set<Utente> utenti = new HashSet<>();
         utenti.addAll(utentiDiGuardia);
@@ -130,14 +123,6 @@ public class AssegnazioneTurno{
         return utenti;
     }
 
-    public long getDataEpochDay() {
-        return dataEpochDay;
-    }
-
-    public Turno getTurno() {
-        return turno;
-    }
-
     public void addUtentediGuardia(Utente u) {
         this.utentiDiGuardia.add(u);
     }
@@ -149,7 +134,7 @@ public class AssegnazioneTurno{
         return new AssegnazioneTurno(
                 new HashSet<>(this.utentiDiGuardia),
                 new HashSet<>(this.utentiReperibili),
-                this.dataEpochDay,
+                this.data,
                 this.turno);
     }
 }
