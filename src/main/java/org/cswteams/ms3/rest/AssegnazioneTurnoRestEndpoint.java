@@ -13,6 +13,7 @@ import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,8 @@ public class AssegnazioneTurnoRestEndpoint {
                 schedule = controllerScheduler.aggiungiAssegnazioneTurno(assegnazione, assegnazione.isForced());
             } catch (AssegnazioneTurnoException e) {
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            } catch (IllegalScheduleException e) {
+                schedule = null;
             }
 
             if(schedule!=null){
@@ -94,7 +97,12 @@ public class AssegnazioneTurnoRestEndpoint {
     public ResponseEntity<?> modificaAssegnazioneTurno(@RequestBody ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO)  {
 
         //Chiedo al controller di modificare e salvare nel database l'assegnazione turno modificata
-        Schedule schedule= controllerScheduler.modificaAssegnazioneTurno(modificaAssegnazioneTurnoDTO);
+        Schedule schedule;
+        try {
+            schedule = controllerScheduler.modificaAssegnazioneTurno(modificaAssegnazioneTurnoDTO);
+        } catch (IllegalScheduleException e) {
+            schedule=null;
+        }
 
         // Se la modifica dell'assegnazione turno comporta una violazione dei vincoli, la modifica non va a buon fine
         if (schedule.isIllegal()) {

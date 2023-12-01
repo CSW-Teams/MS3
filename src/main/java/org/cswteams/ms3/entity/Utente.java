@@ -6,6 +6,7 @@ import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,24 +17,34 @@ import java.util.List;
 public class Utente {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq")
+    @SequenceGenerator(name = "user_id_seq", sequenceName = "user_id_seq")
+    @NotNull
     private Long id;
-
+    
+    @NotNull
     private String nome;
 
+    @NotNull
     private String cognome;
 
+    @NotNull
     private LocalDate dataNascita;
 
+    @NotNull
     private String codiceFiscale;
 
+    @NotNull
     private RuoloEnum ruoloEnum;
 
     @Email
+    @NotNull
     private String email;
 
+    @NotNull
     private String password;
 
+    @NotNull
     private AttoreEnum attore;
 
 

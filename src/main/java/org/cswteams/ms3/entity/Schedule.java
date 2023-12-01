@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 import lombok.Data;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,16 +22,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class Schedule {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "schedule_id_seq")
+    @SequenceGenerator(name = "schedule_id_seq", sequenceName = "schedule_id_seq")
+    @NotNull
     private Long id;
     
     /** data di inizio validità della pianificazione, memorizzata come giorni da epoch */
+    @NotNull
     private long startDateEpochDay;
 
     /** data di fine validità della pianificazione, memorizzata come giorni da epoch */
+    @NotNull
     private long endDateEpochDay;
 
     @OneToMany(cascade = {CascadeType.ALL})
+    @NotNull
     private List<AssegnazioneTurno> assegnazioniTurno;
 
     /** Log di messaggi corrispondenti a violazioni di vincoli.

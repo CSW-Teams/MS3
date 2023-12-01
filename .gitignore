@@ -5,4 +5,3 @@ target/
 frontend/package-lock.json
 frontend/yarn.lock
 ms3.iml
-src/test/TEST_RESULTS.md
