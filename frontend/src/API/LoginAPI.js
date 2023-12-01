@@ -41,5 +41,25 @@ export  class LoginAPI {
 
     return response;
   }
+
+  /**
+   * Richiede al backend la registrazione di un nuovo utente.
+   * @param {*} datiAnagrafici (nome, cognome, dataNascita, codiceFiscale, ruolo, username, password, attore)
+   * @returns La risposta del backend
+   *
+   */
+  async postRegistration(datiAnagrafici) {
+
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(datiAnagrafici)
+    };
+
+    const response = await fetch('/api/registrazione/', requestOptions);
+
+    return response;
+  }
+
 }
 

@@ -60,6 +60,8 @@ export default class UserProfilesView extends React.Component{
     })
 
   }
+
+
   render() {
 
     // Ordina gli utenti in base alla proprietà specificata.
@@ -77,7 +79,14 @@ export default class UserProfilesView extends React.Component{
     return(
       <MDBCard>
         <MDBCardBody className="text-center">
-          <MDBCardTitle>Informazioni Utenti</MDBCardTitle>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                      <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>Informazioni Utenti</MDBCardTitle>
+                      {this.state.attore !== "UTENTE" && (
+                        <Button variant="contained" color="primary" href="/nuovo-utente" style={{ marginLeft: 450, marginBottom: 10 }}>
+                          Registra nuovo utente
+                        </Button>
+                      )}
+                    </div>
           <MDBTable align="middle"
                     bordered
                     small

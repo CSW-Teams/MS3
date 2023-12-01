@@ -13,21 +13,23 @@ public class RegistrazioneDTO {
     private String cognome;
     private LocalDate dataNascita;
     private String codiceFiscale;
-    private RuoloEnum ruoloEnum;
+    private RuoloEnum ruolo;
     private String email;
     private String password;
-    private AttoreEnum attoreEnum;
+    private AttoreEnum attore;
 
     public RegistrazioneDTO(){}
 
-    public RegistrazioneDTO(String nome, String cognome, LocalDate dataNascita, String codiceFiscale, RuoloEnum ruoloEnum, String email, String password, AttoreEnum attoreEnum) {
+    public RegistrazioneDTO(String nome, String cognome, LocalDate dataNascita, String codiceFiscale, RuoloEnum ruolo, String email, String password, AttoreEnum attore) {
         this.nome = nome;
         this.cognome = cognome;
         this.dataNascita = dataNascita;
         this.codiceFiscale = codiceFiscale;
-        this.ruoloEnum = ruoloEnum;
         this.email = email;
         this.password = password;
-        this.attoreEnum = attoreEnum;
+        this.ruolo = ruolo;
+        this.attore = attore;
+
     }
+
 }

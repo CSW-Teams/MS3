@@ -16,6 +16,7 @@ import LoginView from "./views/utente/LoginView"
 import CambiaPasswordView from "./views/utente/CambiaPasswordView"
 import EmptyLayout from "./layouts/LoginLayout/Empty";
 import ConfigurazioneVincoli from "./views/configuratore/ConfigurazioneVincoli";
+import RegistraUtenteView from "./views/configuratore/RegistraUtenteView";
 
 
 export default [
@@ -74,6 +75,11 @@ export default [
     path: "/cambia-password/",
     layout: DefaultLayout,
     component: CambiaPasswordView
+  },
+  {
+    path: "/nuovo-utente/",
+    layout: DefaultLayout,
+    component: RegistraUtenteView
   },
 
 ];

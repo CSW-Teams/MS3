@@ -18,20 +18,21 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
 
     @Override
     public UtenteDTO registraUtente(@NotNull RegistrazioneDTO registrazioneDTO) {
+
         Utente u = new Utente(registrazioneDTO.getNome(),
                 registrazioneDTO.getCognome(),
                 registrazioneDTO.getCodiceFiscale(),
                 registrazioneDTO.getDataNascita(),
                 registrazioneDTO.getEmail(),
                 registrazioneDTO.getPassword(),
-                registrazioneDTO.getRuoloEnum(),
-                registrazioneDTO.getAttoreEnum()
+                registrazioneDTO.getRuolo(),
+                registrazioneDTO.getAttore()
                 );
 
         utenteDao.saveAndFlush(u);
 
-
         return MappaUtenti.utenteEntitytoDTO(u);
+
     }
 
 }
