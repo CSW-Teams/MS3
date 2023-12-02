@@ -13,6 +13,8 @@ import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Questo controller si occupa di gestire le richieste di creazione di
  * una pianificazione e della sua gestione.
@@ -26,16 +28,16 @@ public interface IControllerScheduler {
      * @return  la pianificazione creata 
      * @throws UnableToBuildScheduleException controlla lo stack delle eccezioni per scoprire perché non è stato possibile creare la pianificazione
      */
-    Schedule createSchedule(LocalDate startDate, LocalDate endDate);
+    Schedule createSchedule(@NotNull LocalDate startDate, @NotNull LocalDate endDate);
     boolean rigeneraSchedule(long id) throws UnableToBuildScheduleException;
-    Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno, boolean forced) throws IllegalScheduleException;
-    Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO assegnazioneTurno) throws IllegalScheduleException;
+    Schedule aggiungiAssegnazioneTurno(@NotNull AssegnazioneTurno assegnazioneTurno, boolean forced) throws IllegalScheduleException;
+    Schedule modificaAssegnazioneTurno(@NotNull ModificaAssegnazioneTurnoDTO assegnazioneTurno) throws IllegalScheduleException;
     List<ScheduloDTO> leggiSchedulazioni();
     List<ScheduloDTO> leggiSchedulazioniIllegali();
 
     boolean rimuoviSchedulo(long id);
-    void rimuoviAssegnazioneTurnoSchedulo(AssegnazioneTurno assegnazioneTurnoOld);
-    boolean rimuoviAssegnazioneTurno(Long idAssegnazione);
+    void rimuoviAssegnazioneTurnoSchedulo(@NotNull AssegnazioneTurno assegnazioneTurnoOld);
+    boolean rimuoviAssegnazioneTurno(@NotNull Long idAssegnazione);
 
-    Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException;
+    Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException;
 }

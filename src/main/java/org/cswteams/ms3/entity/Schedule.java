@@ -54,7 +54,7 @@ public class Schedule {
     /** Se non è null, indica la causa della malformazione della pianificazione */
     private Exception causeIllegal;
 
-    public Schedule(LocalDate startDate, LocalDate endDate) {
+    public Schedule(@NotNull LocalDate startDate, @NotNull LocalDate endDate) {
         this.startDateEpochDay = startDate.toEpochDay();
         this.endDateEpochDay = endDate.toEpochDay();
     }
@@ -84,7 +84,7 @@ public class Schedule {
      }
 
     /** rende illegale la pianificazione specificando una causa */
-    public void taint(Exception cause) {
+    public void taint(@NotNull Exception cause) {
         isIllegal = true;
         causeIllegal = cause;
     }
