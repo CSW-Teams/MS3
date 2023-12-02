@@ -36,17 +36,11 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
     static Stream<Arguments> createScheduleValidTestParams() {
         return Stream.of(
 
-                // A schedule in the past.
-                Arguments.of((Object) new LocalDate[]{PREVIOUS_START.getDate(), PREVIOUS_END.getDate()}),
-
                 // A schedule in the future.
                 Arguments.of((Object) new LocalDate[]{FUTURE_START.getDate(), FUTURE_END.getDate()}),
 
                 // A schedule from today to the next 5 days.
-                Arguments.of((Object) new LocalDate[]{TODAY.getDate(), TODAY.getDate().plusDays(5)}),
-
-                // A schedule terminating today.
-                Arguments.of((Object) new LocalDate[]{TODAY.getDate().minusDays(5), TODAY.getDate()})
+                Arguments.of((Object) new LocalDate[]{TODAY.getDate(), TODAY.getDate().plusDays(5)})
                 /* ,
                 too much execution time! --> Arguments.of((Object) new LocalDate[]{previousStart,futureEnd})*/
         );
@@ -54,6 +48,12 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
 
     static Stream<Arguments> createScheduleInvalidTestParams() {
         return Stream.of(
+
+                // A schedule in the past.
+                Arguments.of((Object) new LocalDate[]{PREVIOUS_START.getDate(), PREVIOUS_END.getDate()}),
+
+                // A schedule terminating today.
+                Arguments.of((Object) new LocalDate[]{TODAY.getDate().minusDays(5), TODAY.getDate()}),
 
                 // End and start dates are inverted.
                 Arguments.of((Object) new LocalDate[]{PREVIOUS_END.getDate(), PREVIOUS_START.getDate()}),
@@ -90,7 +90,6 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
                 Arguments.of((Object) new LocalDate[]{TODAY.getDate().plusDays(5), TODAY.getDate().plusDays(5 + 5)})
         );
     }
-
 
     @ParameterizedTest
     @MethodSource(value = "createScheduleValidTestParams")
