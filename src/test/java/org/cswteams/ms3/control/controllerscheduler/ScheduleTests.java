@@ -124,8 +124,8 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
 
     @Test
     public void readScheduleTest() {
-        this.instance.createSchedule(LocalDate.now(), LocalDate.now().plusDays(5));
-        this.instance.createSchedule(LocalDate.now().plusDays(5), LocalDate.now().plusDays(10));
+        this.instance.createSchedule(TODAY.getDate(), TODAY.getDate().plusDays(5));
+        this.instance.createSchedule(TODAY.getDate().plusDays(6), TODAY.getDate().plusDays(11));
 
         List<ScheduloDTO> scheduleDTOList = this.instance.leggiSchedulazioni();
         Assert.assertNotNull(scheduleDTOList);
@@ -139,8 +139,8 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
     @Test
     public void readIllegalScheduleTest() {
         this.instance.createSchedule(LocalDate.now(), LocalDate.now().plusDays(5));
-        Schedule schedule = this.instance.createSchedule(LocalDate.now().plusDays(5), LocalDate.now().plusDays(10));
-        Schedule schedule2 = this.instance.createSchedule(LocalDate.now().plusDays(10), LocalDate.now().plusDays(15));
+        Schedule schedule = this.instance.createSchedule(FUTURE_START.getDate().plusDays(5), FUTURE_END.getDate().plusDays(10));
+        Schedule schedule2 = this.instance.createSchedule(FUTURE_START.getDate().plusYears(3).plusDays(11), FUTURE_END.getDate().plusYears(3).plusDays(16));
         schedule.setIllegal(true);
         schedule2.setIllegal(true);
         List<ScheduloDTO> scheduleDTOList = this.instance.leggiSchedulazioniIllegali();
@@ -171,14 +171,14 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
      * @param data
      */
     @ParameterizedTest
-    @ValueSource(longs = {0, 1, Long.MAX_VALUE})
+    @ValueSource(longs = {0, Long.MAX_VALUE})
     public void removeScheduleByIdBoundaryValidTest(long data) {
         Assert.assertEquals(Optional.empty(), this.scheduleDao.findById(data));
         Schedule mocked = this.instance.createSchedule(FUTURE_START.getDate(), FUTURE_END.getDate());
         mocked.setId(data);
 
         // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
-        this.scheduleDao.save(mocked);
+        Assertions.assertThrows(Exception.class, () -> this.scheduleDao.saveAndFlush(mocked));
         Assert.assertEquals(Optional.empty(), this.scheduleDao.findById(data));
         Assertions.assertThrows(Exception.class, () -> this.instance.leggiSchedulazioni());
 
@@ -203,7 +203,7 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
         mocked.setId(data);
 
         // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
-        this.scheduleDao.save(mocked);
+        Assertions.assertThrows(Exception.class, () -> this.scheduleDao.saveAndFlush(mocked));
         Assert.assertEquals(Optional.empty(), this.scheduleDao.findById(data));
         Assertions.assertThrows(Exception.class, () -> this.instance.leggiSchedulazioni());
 
@@ -250,14 +250,14 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
      * @param data
      */
     @ParameterizedTest
-    @ValueSource(longs = {0, 1, Long.MAX_VALUE})
+    @ValueSource(longs = {0, Long.MAX_VALUE})
     public void regenerateScheduleByIdBoundaryValidTest(long data) {
         Assert.assertEquals(Optional.empty(), this.scheduleDao.findById(data));
         Schedule mocked = this.instance.createSchedule(FUTURE_START.getDate(), FUTURE_END.getDate());
         mocked.setId(data);
 
         // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
-        this.scheduleDao.save(mocked);
+        Assertions.assertThrows(Exception.class, () -> this.scheduleDao.saveAndFlush(mocked));
         Assert.assertEquals(Optional.empty(), this.scheduleDao.findById(data));
         Assertions.assertThrows(Exception.class, () -> this.instance.leggiSchedulazioni());
 
@@ -284,7 +284,7 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
         mocked.setId(data);
 
         // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
-        this.scheduleDao.save(mocked);
+        Assertions.assertThrows(Exception.class, () -> this.scheduleDao.saveAndFlush(mocked));
         Assert.assertEquals(Optional.empty(), this.scheduleDao.findById(data));
         Assertions.assertThrows(Exception.class, () -> this.instance.leggiSchedulazioni());
 

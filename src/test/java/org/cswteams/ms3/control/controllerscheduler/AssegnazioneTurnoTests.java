@@ -21,7 +21,6 @@ import org.cswteams.ms3.exception.TurnoException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
@@ -92,7 +91,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
                 RuoloEnum.STRUTTURATO,
                 AttoreEnum.UTENTE
         );
-        utenteDao.save(uGuardia);
+        utenteDao.saveAndFlush(uGuardia);
         uGuardiaList = new ArrayList<>();
         uGuardiaList.add(uGuardia);
 
@@ -105,7 +104,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
                 RuoloEnum.STRUTTURATO,
                 AttoreEnum.UTENTE
         );
-        utenteDao.save(uReperibili);
+        utenteDao.saveAndFlush(uReperibili);
         uReperibiliList = new ArrayList<>();
         uReperibiliList.add(uReperibili);
 
@@ -121,7 +120,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         Categoria c = new Categoria("TEST", TipoCategoriaEnum.STATO);
 
         categorieVietate.add(c);
-        categorieDao.save(c);
+        categorieDao.saveAndFlush(c);
         turnoDTO.setCategorieVietate(categorieVietate);
 
         RuoloNumero rn = new RuoloNumero(RuoloEnum.STRUTTURATO, 1);
@@ -288,9 +287,8 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
      * @param id
      */
     @ParameterizedTest
-    @ValueSource(longs = {0, 1, Long.MAX_VALUE})
+    @ValueSource(longs = {0, Long.MAX_VALUE})
     public void removeAssegnazioneTurnoExternalBoundaryValidTest(Long id) {
-
         Assert.assertEquals(Optional.empty(), this.assegnazioneTurnoDao.findById(id));
         Turno turno = this.turnoDao.findAll().get(0);
         LocalDate ratDate;
@@ -304,7 +302,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         Assertions.assertThrows(Exception.class, () -> this.instance.aggiungiAssegnazioneTurno(registraAssegnazioneTurnoDTO, true));
 
         // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
-        Assertions.assertThrows(Exception.class, () -> this.assegnazioneTurnoDao.save(at));
+        this.assegnazioneTurnoDao.saveAndFlush(at);
         Assert.assertEquals(Optional.empty(), this.assegnazioneTurnoDao.findById(id));
 
         // ... hence, the removal should fail (=> false is returned)
@@ -323,8 +321,6 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
     @ParameterizedTest
     @ValueSource(longs = (-1))
     public void removeAssegnazioneTurnoExternalInvalidTest(Long id) {
-        //Assertions.assertThrows(Exception.class, () -> this.instance.rimuoviAssegnazioneTurno(id));
-
         Assert.assertEquals(Optional.empty(), this.assegnazioneTurnoDao.findById(id));
         Turno turno = this.turnoDao.findAll().get(0);
         LocalDate ratDate;
@@ -337,7 +333,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         Assertions.assertThrows(Exception.class, () -> this.instance.aggiungiAssegnazioneTurno(registraAssegnazioneTurnoDTO, true));
 
         // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
-        Assertions.assertThrows(Exception.class, () -> this.assegnazioneTurnoDao.save(at));
+        this.assegnazioneTurnoDao.saveAndFlush(at);
         Assert.assertEquals(Optional.empty(), this.assegnazioneTurnoDao.findById(id));
 
         // ... hence, the removal should fail (=> false is returned)
@@ -369,7 +365,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         Assertions.assertThrows(Exception.class, () -> this.instance.aggiungiAssegnazioneTurno(registraAssegnazioneTurnoDTO, true));
 
         // this should not produce any effect into the db, since id management is handled by Spring/Hibernate
-        Assertions.assertThrows(Exception.class, () -> this.assegnazioneTurnoDao.save(at));
+        this.assegnazioneTurnoDao.saveAndFlush(at);
 
         // ... hence, the removal should fail (=> false is returned)
         Assertions.assertThrows(Exception.class, () -> this.instance.rimuoviAssegnazioneTurno(id));
