@@ -1,4 +1,4 @@
-package org.cswteams.ms3.control.controllerscheduler;
+package org.cswteams.ms3.control.servizi;
 
 import org.cswteams.ms3.control.servizi.ControllerServizi;
 import org.cswteams.ms3.dao.ServizioDao;
