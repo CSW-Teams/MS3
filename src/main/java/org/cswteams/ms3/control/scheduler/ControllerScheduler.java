@@ -324,9 +324,8 @@ public class ControllerScheduler implements IControllerScheduler{
     public boolean check(LocalDate startNewSchedule,LocalDate endNewSchedule){
         List<Schedule> allSchedule = scheduleDao.findAll();
 
-        for (Schedule schedule: allSchedule) {
-            if((schedule.getStartDate().isBefore(startNewSchedule) && schedule.getEndDate().isAfter(startNewSchedule)) ||
-                    (schedule.getStartDate().isBefore(endNewSchedule) && schedule.getEndDate().isAfter(endNewSchedule)))
+        for (Schedule schedule : allSchedule) {
+            if (!schedule.getStartDate().isAfter(endNewSchedule) && !schedule.getEndDate().isBefore(startNewSchedule))
                 return false;
         }
 
