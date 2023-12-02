@@ -1,15 +1,17 @@
 package org.cswteams.ms3.control.controllerscheduler;
 
 import org.cswteams.ms3.control.servizi.ControllerServizi;
+import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dto.ServizioDTO;
 import org.cswteams.ms3.entity.Servizio;
 import org.cswteams.ms3.enums.MansioneEnum;
-import org.cswteams.ms3.control.controllerscheduler.utils.TestEnv;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
@@ -23,15 +25,27 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Profile("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class ControllerServiziTests extends TestEnv {
+public class ControllerServiziTests /*extends ControllerSchedulerTestEnv*/ {
     @Autowired
     private ControllerServizi instance;
+
+    @Autowired
+    protected ServizioDao servizioDao;
+
+    public Stream<String> servizioValidNamesParams() {
+        List<String> servizioList = this.servizioDao.findAll()
+                .stream().map(Servizio::getNome).collect(Collectors.toUnmodifiableList());
+        return servizioList.stream();
+    }
 
     @Test
     public void createServizioTest() {
@@ -57,7 +71,7 @@ public class ControllerServiziTests extends TestEnv {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = "cardiologia")
+    @MethodSource(value = "servizioValidNamesParams")
     public void readServizioByNameValidTest(String name) {
         ServizioDTO servizio = this.instance.leggiServizioByNome(name);
         Assert.assertNotNull(servizio);

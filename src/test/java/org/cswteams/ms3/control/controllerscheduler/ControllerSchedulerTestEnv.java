@@ -1,33 +1,23 @@
-package org.cswteams.ms3.control.controllerscheduler.utils;
+package org.cswteams.ms3.control.controllerscheduler;
 
-import org.cswteams.ms3.dao.*;
-import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.*;
-import org.cswteams.ms3.exception.TurnoException;
-import org.junit.Before;
+import org.cswteams.ms3.control.scheduler.ControllerScheduler;
+import org.cswteams.ms3.dao.ScheduleDao;
+import org.cswteams.ms3.dao.UtenteDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+public abstract class ControllerSchedulerTestEnv extends AbstractTransactionalJUnit4SpringContextTests {
 
-public class TestEnv extends AbstractTransactionalJUnit4SpringContextTests {
     @Autowired
-    protected CategorieDao categorieDao;
+    protected ControllerScheduler instance;
+
     @Autowired
-    protected CategoriaUtenteDao categoriaUtenteDao;
+    protected ScheduleDao scheduleDao;
+
     @Autowired
     protected UtenteDao utenteDao;
-    @Autowired
-    protected TurnoDao turnoDao;
-    @Autowired
-    protected UserCategoryPolicyDao userCategoryPolicyDao;
-    @Autowired
-    protected ServizioDao servizioDao;
-
-    @Before
+/*
+    //@Before
     public void populateDBTestSchedule() throws TurnoException {
         Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
         Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
@@ -80,5 +70,5 @@ public class TestEnv extends AbstractTransactionalJUnit4SpringContextTests {
         userCategoryPolicyDao.saveAndFlush(ucp2);
         userCategoryPolicyDao.saveAndFlush(ucp3);
         userCategoryPolicyDao.saveAndFlush(ucp4);
-    }
+    }*/
 }
