@@ -29,6 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
 import java.text.ParseException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
@@ -61,9 +62,9 @@ public class ControllerAssegnazioniTurniTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.MATTUTINO,true);
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.POMERIDIANO,true);
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.NOTTURNO,true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.MATTUTINO,true);
+        Turno t2 = new Turno(LocalTime.of(14, 0),Duration.ofHours(6), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.POMERIDIANO,true);
+        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.NOTTURNO,true);
         turnoDao.save(t1);
         turnoDao.save(t2);
         turnoDao.save(t3);
@@ -91,7 +92,7 @@ public class ControllerAssegnazioniTurniTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), LocalTime.of(14, 0), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.MATTUTINO,true);
+        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.MATTUTINO,true);
         t1=turnoDao.save(t1);
         AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
         assegnazioneTurnoDao.saveAndFlush(turnoPomeriggio);
