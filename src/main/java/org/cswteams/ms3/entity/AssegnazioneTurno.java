@@ -41,7 +41,7 @@ public class AssegnazioneTurno{
     private Set<Utente> retiredUsers;
 
     @Getter
-    private LocalDate data;
+    private long dataEpochDay;
 
     @Getter
     @ManyToOne
@@ -52,7 +52,7 @@ public class AssegnazioneTurno{
     }
 
     public AssegnazioneTurno(LocalDate data, Turno turno, Set<Utente> utentiReperibili, Set<Utente> utentiDiGuardia) {
-        this.data = data;
+        this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.retiredUsers = new HashSet<>();
@@ -60,17 +60,17 @@ public class AssegnazioneTurno{
     }
 
     public AssegnazioneTurno(LocalDate data, Turno turno) {
-        this.data = data;
+        this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = new HashSet<>();
         this.utentiReperibili = new HashSet<>();
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
     }
 
-    public AssegnazioneTurno(Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, LocalDate data, Turno turno) {
+    public AssegnazioneTurno(Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, long dataEpochDay, Turno turno) {
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
-        this.data = data;
+        this.dataEpochDay = dataEpochDay;
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
     }
@@ -116,6 +116,10 @@ public class AssegnazioneTurno{
         return utenti;
     }
 
+    public LocalDate getData() {
+        return LocalDate.ofEpochDay(this.dataEpochDay);
+    }
+
     public List<Utente> getUtentiAsList(){
         List<Utente> utenti = new ArrayList<>();
         utenti.addAll(utentiDiGuardia);
@@ -134,7 +138,7 @@ public class AssegnazioneTurno{
         return new AssegnazioneTurno(
                 new HashSet<>(this.utentiDiGuardia),
                 new HashSet<>(this.utentiReperibili),
-                this.data,
+                this.dataEpochDay,
                 this.turno);
     }
 }

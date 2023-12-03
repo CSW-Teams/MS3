@@ -7,7 +7,6 @@ import lombok.Getter;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
-import java.sql.Timestamp;
 import java.util.Set;
 
 @Data
@@ -19,9 +18,9 @@ public class AssegnazioneTurnoDTO {
     @Getter
     private Long idTurno;
     @Getter
-    private Timestamp inizio;
+    private long inizioEpoch;
     @Getter
-    private Timestamp fine;
+    private long fineEpoch;
 
     private Set<UtenteDTO> utentiDiGuardia;
     private Set<UtenteDTO> utentiReperibili;
@@ -37,20 +36,20 @@ public class AssegnazioneTurnoDTO {
 
     private Set<UtenteDTO> retiredUsers;
 
-    public AssegnazioneTurnoDTO(Long id, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
+    public AssegnazioneTurnoDTO(Long id, long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
         this.id = id;
-        this.inizio = inizio;
-        this.fine = fine;
+        this.inizioEpoch = inizioEpoch;
+        this.fineEpoch = fineEpoch;
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.tipologiaTurno = turno;
         this.servizio = servizio;
     }
 
-    public AssegnazioneTurnoDTO(Long id,Long idTurno, Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno, boolean reperibilitaAttiva) {
+    public AssegnazioneTurnoDTO(Long id,Long idTurno, long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno, boolean reperibilitaAttiva) {
         this.id = id;
-        this.inizio = inizio;
-        this.fine = fine;
+        this.inizioEpoch = inizioEpoch;
+        this.fineEpoch = fineEpoch;
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.tipologiaTurno = turno;
@@ -61,9 +60,9 @@ public class AssegnazioneTurnoDTO {
 
     public AssegnazioneTurnoDTO(){}
 
-    public AssegnazioneTurnoDTO(Timestamp inizio, Timestamp fine, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
-        this.inizio = inizio;
-        this.fine = fine;
+    public AssegnazioneTurnoDTO(long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
+        this.inizioEpoch = inizioEpoch;
+        this.fineEpoch = fineEpoch;
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.tipologiaTurno = turno;
