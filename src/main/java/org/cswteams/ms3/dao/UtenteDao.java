@@ -11,4 +11,6 @@ public interface UtenteDao extends JpaRepository<Utente,Long> {
      Utente findById(long id);
      Utente findByEmailAndPassword(String email, String password);
 
+     Utente findByEmail(String email);
+
 }

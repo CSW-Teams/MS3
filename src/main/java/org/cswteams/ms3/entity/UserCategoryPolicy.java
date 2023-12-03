@@ -22,26 +22,26 @@ import org.cswteams.ms3.dao.CategorieDao;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class UserCategoryPolicy {
+ public class UserCategoryPolicy {
+    
+    @Id
+    @GeneratedValue
+    private Long id;
 
-   @Id
-   @GeneratedValue
-   private Long id;
+    @ManyToOne
+    @NonNull
+    private Categoria categoria;
 
-   @ManyToOne
-   @NonNull
-   private Categoria categoria;
-
-   @ManyToOne
-   @JsonIgnore
-   @NonNull
-   private Turno turno;
-
-   /**
-    * La registrazione di questa policy nel db implica che tale categoria è da escludere
-    * o da includere per un turno. Se così non fosse, non sarebbe stata registrata.
-    *
-    *
+    @ManyToOne
+    @JsonIgnore
+    @NonNull
+    private Turno turno;
+    
+    /** 
+     * La registrazione di questa policy nel db implica che tale categoria è da escludere
+     * o da includere per un turno. Se così non fosse, non sarebbe stata registrata.
+     * 
+     * 
     */
    @NonNull
    @Enumerated(value = EnumType.STRING)

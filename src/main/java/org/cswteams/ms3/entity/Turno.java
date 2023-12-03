@@ -13,7 +13,9 @@ import java.time.LocalTime;
 import java.util.*;
 
 @Entity
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Turno {
 
