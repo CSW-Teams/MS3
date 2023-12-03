@@ -1,6 +1,8 @@
 package org.cswteams.ms3.entity;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
 import javax.persistence.*;
@@ -8,7 +10,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 public class Desiderata {
 
     @Id

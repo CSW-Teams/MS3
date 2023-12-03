@@ -8,15 +8,20 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.cswteams.ms3.dao.CategorieDao;
 
 /**
  * Modella se una categoria utente è vietata o necessaria per un turno
  */
 @Entity
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
  public class UserCategoryPolicy {
     
     @Id

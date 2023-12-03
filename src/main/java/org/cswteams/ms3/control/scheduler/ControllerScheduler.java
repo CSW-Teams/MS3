@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 
 
 @Service
@@ -56,7 +57,7 @@ public class ControllerScheduler implements IControllerScheduler{
      * @return An instance of schedule, if correctly created and saved in persistence, null otherwise
      */
     @Override
-    public Schedule createSchedule(LocalDate startDate, LocalDate endDate)  {
+    public Schedule createSchedule(@NotNull LocalDate startDate, @NotNull LocalDate endDate)  {
 
         //Verifico se esiste già uno schedulo per i giorni che voglio pianificare
         if(!check(startDate,endDate))
@@ -132,7 +133,7 @@ public class ControllerScheduler implements IControllerScheduler{
      * Se forced è true l'assegnazione verrà aggiunta solo se vengono rispetatti i vincoli non violabili.
      * Se forced è false l'assegnazione verà aggiunta se vengono rispettati tutti i vincoli.
      */
-    public Schedule aggiungiAssegnazioneTurno(AssegnazioneTurno assegnazioneTurno,boolean forced) throws IllegalScheduleException {
+    public Schedule aggiungiAssegnazioneTurno(@NotNull AssegnazioneTurno assegnazioneTurno,boolean forced) throws IllegalScheduleException {
 
         Schedule schedule;
         
@@ -157,14 +158,14 @@ public class ControllerScheduler implements IControllerScheduler{
      * Rimuove un assegnazione turno solo dallo schedulo ma non dal database.
      * @param assegnazioneTurnoOld
      */
-    public void rimuoviAssegnazioneTurnoSchedulo(AssegnazioneTurno assegnazioneTurnoOld) {
+    public void rimuoviAssegnazioneTurnoSchedulo(@NotNull AssegnazioneTurno assegnazioneTurnoOld) {
         Schedule schedule = scheduleDao.findByDateBetween(assegnazioneTurnoOld.getDataEpochDay());
         schedule.getAssegnazioniTurno().remove(assegnazioneTurnoOld);
         scheduleDao.flush();
     }
 
     @Override
-    public boolean rimuoviAssegnazioneTurno(Long idAssegnazione) {
+    public boolean rimuoviAssegnazioneTurno(@NotNull Long idAssegnazione) {
         Optional<AssegnazioneTurno> assegnazioneTurno = assegnazioneTurnoDao.findById(idAssegnazione);
         if(assegnazioneTurno.isEmpty())
             return false;
@@ -175,7 +176,7 @@ public class ControllerScheduler implements IControllerScheduler{
     }
 
     @Override
-    public Schedule aggiungiAssegnazioneTurno(RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
+    public Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
         // Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere
         // presente nel database
         List<Turno> turni = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno());
@@ -208,7 +209,7 @@ public class ControllerScheduler implements IControllerScheduler{
 
     }
 
-    private boolean checkAssegnazioneTurno(AssegnazioneTurno turno) {
+    private boolean checkAssegnazioneTurno(@NotNull AssegnazioneTurno turno) {
 
         for(Utente utente1: turno.getUtentiDiGuardia()){
             for(Utente utente2: turno.getUtentiReperibili()){
@@ -230,7 +231,7 @@ public class ControllerScheduler implements IControllerScheduler{
      */
     @Override
     @Transactional
-    public Schedule modificaAssegnazioneTurno(ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO) throws IllegalScheduleException {
+    public Schedule modificaAssegnazioneTurno(@NotNull ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO) throws IllegalScheduleException {
 
         AssegnazioneTurno assegnazioneTurnoOld  = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
         AssegnazioneTurno assegnazioneTurnoNew = assegnazioneTurnoOld.clone();
@@ -321,12 +322,11 @@ public class ControllerScheduler implements IControllerScheduler{
      * @param startNewSchedule
      * @return
      */
-    public boolean check(LocalDate startNewSchedule,LocalDate endNewSchedule){
+    public boolean check(@NotNull LocalDate startNewSchedule, @NotNull LocalDate endNewSchedule){
         List<Schedule> allSchedule = scheduleDao.findAll();
 
-        for (Schedule schedule: allSchedule) {
-            if((schedule.getStartDate().isBefore(startNewSchedule) && schedule.getEndDate().isAfter(startNewSchedule)) ||
-                    (schedule.getStartDate().isBefore(endNewSchedule) && schedule.getEndDate().isAfter(endNewSchedule)))
+        for (Schedule schedule : allSchedule) {
+            if (!schedule.getStartDate().isAfter(endNewSchedule) && !schedule.getEndDate().isBefore(startNewSchedule))
                 return false;
         }
 
