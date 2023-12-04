@@ -2,7 +2,11 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import org.cswteams.ms3.jpa_constraints.temporal_consistency.BeforeInTime;
+import org.cswteams.ms3.jpa_constraints.temporal_consistency.DateTimeComparator;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
@@ -17,7 +21,7 @@ import java.time.LocalDate;
 
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-
+@BeforeInTime(firstParam = "inizioValidità", secondParam = "fineValidità", comparator = DateTimeComparator.class)
 public class CategoriaUtente {
 
     @Id
@@ -25,10 +29,13 @@ public class CategoriaUtente {
     private Long id;
 
     @ManyToOne
+    @NotNull
     private Categoria categoria;
-   
+
+    @NotNull
     private LocalDate inizioValidità;
 
+    @NotNull
     private LocalDate fineValidità;
 
     public CategoriaUtente() {
