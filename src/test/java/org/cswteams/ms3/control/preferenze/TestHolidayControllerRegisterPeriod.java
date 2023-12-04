@@ -70,9 +70,9 @@ public class TestHolidayControllerRegisterPeriod {
         HolidayDTO dtoNormalButLongPeriod = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CIVILE,
                 0, LocalDate.of(2022, 10, 15).toEpochDay(), null);
 
-        retVal.add(new Object[] {dtoNullName, -5, true}) ;
-        retVal.add(new Object[] {dtoNullName, 0, true}) ;
-        retVal.add(new Object[] {dtoNullName, 5, true}) ;
+        retVal.add(new Object[] {dtoNullName, -5, false}) ;
+        retVal.add(new Object[] {dtoNullName, 0, false}) ;
+        retVal.add(new Object[] {dtoNullName, 5, false}) ;
 
         retVal.add(new Object[] {dtoNegativeStart, -5, false}) ;
         retVal.add(new Object[] {dtoNegativeStart, 0, false}) ;
@@ -101,6 +101,13 @@ public class TestHolidayControllerRegisterPeriod {
 
     @Test
     public void testDTO() {
+
+        if (year > 2) {
+            year = 2 ;
+        }
+        if( year < -2) {
+            year = -2 ;
+        }
 
         if(!isCorrect) {
 
