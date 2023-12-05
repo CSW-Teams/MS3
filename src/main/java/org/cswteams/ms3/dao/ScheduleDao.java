@@ -1,12 +1,10 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.Set;
 
 public interface ScheduleDao extends JpaRepository<Schedule,Long> {
 

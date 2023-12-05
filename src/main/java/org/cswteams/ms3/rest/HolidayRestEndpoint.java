@@ -11,6 +11,7 @@ import org.cswteams.ms3.control.utils.MappaHolidays;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.exception.CalendarServiceException;
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/holidays")
 public class HolidayRestEndpoint {
-    
+    private static Logger log = Logger.getLogger(HolidayRestEndpoint.class);
+
     @Autowired
     private IHolidayController holidayController;
 
@@ -33,7 +35,7 @@ public class HolidayRestEndpoint {
     private CalendarSetting setting;
 
     public HolidayRestEndpoint() {
-    	this.setting = new CalendarSetting("https://date.nager.at/api/v3/PublicHolidays");
+    	this.setting = new CalendarSetting("https://date.nager.at/api/v3/publicholidays");
     }
     
     
@@ -46,18 +48,45 @@ public class HolidayRestEndpoint {
 
         List<Holiday> holidays = holidayController.readHolidays();
 
+        /**
+         * DEBUG TO DELETE
+         */
+        for(Holiday holiday : holidays){
+            log.info("[DEBUG] " + holiday.getName());
+        }
+
+
         // Se il database non contiene nessuna festività e nessuna domenica, questa informaizoni vengono pescatae dall'api esterna
         if(holidays.size() == 0) {
 
+            /*
             this.setting.addURLParameter("/" + currentYear);
             this.setting.addURLParameter("/" + currentCountry);
+*/
+            this.setting.setYear(currentYear);
+            this.setting.setCountry(currentCountry);
+
+            this.setting.getURL();
+
+            /**
+             * DEBUG TO DELETE
+             */
+            log.info("[DEBUG] " + this.setting.getURL());
 
             calendarServiceManager.init(this.setting);
+
 
             try {
                 holidays = calendarServiceManager.getHolidays();
             } catch (CalendarServiceException e) {
                 e.printStackTrace();
+            }
+
+            /**
+             * DEBUG TO DELETE
+             */
+            for(Holiday holiday:holidays){
+                log.info("[DEBUG] " + holiday.getName() + " " + holiday.getCategory() + " " + holiday.getId() + " " + holiday.getStartDate() + " " + holiday.getEndDate());
             }
 
             holidayController.registerHoliday(holidays);

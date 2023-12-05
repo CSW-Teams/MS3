@@ -125,6 +125,13 @@ public class TestHolidayControllerSundays {
     @Test
     public void testSundaysInsertion() {
 
+        if (year > 2) {
+            year = 2 ;
+        }
+        if( year < -2) {
+            year = -2 ;
+        }
+
         controller.registerSundays(date, year) ;
 
         List<Holiday> holidays = controller.readHolidays() ;

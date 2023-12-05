@@ -377,20 +377,20 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
 
-        Turno t1 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
+        Turno t1 = new Turno(LocalTime.of(14, 0), Duration.ofHours(8), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
         t1.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
                 new UserCategoryPolicy(categoriaFerie, t1,  UserCategoryPolicyValue.EXCLUDE)
         ));
 
-        Turno t2 = new Turno(LocalTime.of(14, 0), LocalTime.of(20, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
+        Turno t2 = new Turno(LocalTime.of(14, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
         t2.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t2,  UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(reparto_cardiologia, t2, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t3 = new Turno(LocalTime.of(20, 0), LocalTime.of(8, 0), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,false);
+        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,false);
         t3.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t3,  UserCategoryPolicyValue.EXCLUDE),
@@ -399,7 +399,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             new UserCategoryPolicy(reparto_cardiologia, t3, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, false);
+        Turno t5 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, false);
         t5.setCategoryPolicies(Arrays.asList(
             new UserCategoryPolicy(categoriaMalattia, t5, UserCategoryPolicyValue.EXCLUDE),
             new UserCategoryPolicy(categoriaFerie, t5,  UserCategoryPolicyValue.EXCLUDE),
@@ -407,7 +407,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             new UserCategoryPolicy(ambulatorio_cardiologia, t5, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t6 = new Turno(LocalTime.of(10, 0), LocalTime.of(12, 0), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
+        Turno t6 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
         t6.setCategoryPolicies(Arrays.asList(
                 new UserCategoryPolicy(categoriaMalattia, t6, UserCategoryPolicyValue.EXCLUDE),
                 new UserCategoryPolicy(categoriaFerie, t6,  UserCategoryPolicyValue.EXCLUDE),
@@ -416,7 +416,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         ));
 
         // Creazione del turno in sala operatoria in cardiologia ogni lunedì
-        Turno salaOpCardio = new Turno(LocalTime.of(10, 0), LocalTime.of(23, 59), servizio1, MansioneEnum.SALA_OPERATORIA, TipologiaTurno.MATTUTINO, false);
+        Turno salaOpCardio = new Turno(LocalTime.of(10, 0), Duration.ofHours(13).plusMinutes(59), servizio1, MansioneEnum.SALA_OPERATORIA, TipologiaTurno.MATTUTINO, false);
         GiorniDellaSettimanaBitMask bitmask= new GiorniDellaSettimanaBitMask();
         bitmask.disableAllDays();
         salaOpCardio.setGiorniDiValidità(bitmask.addDayOfWeek(DayOfWeek.MONDAY));

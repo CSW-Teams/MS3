@@ -8,6 +8,7 @@ COPY .mvn .mvn
 COPY ./mvnw ./mvnw
 COPY ./pom.xml ./pom.xml
 RUN chmod -R 777 ./mvnw
+# in case the following command fails with error "mvnw not found", download dos2unix and run it on the mvnw file
 RUN ./mvnw dependency:go-offline
 
 # copy sources and compile them in a jar

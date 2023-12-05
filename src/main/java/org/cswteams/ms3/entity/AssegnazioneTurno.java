@@ -2,27 +2,34 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.Getter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AssegnazioneTurno{
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
 
     /** Utenti assegnati per il turno. Da non confondere con la mansione GUARDIA */
+    @Getter
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> utentiDiGuardia;
 
     /** Utenti in riserva per il turno. Questi utenti sono eligibili per L'assegnazione al turno,
      * ma non sono stati assegnati. Da non confondere con la reperibilità prevista dalla mansione GUARDIA
      */
+    @Getter
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> utentiReperibili;
 
@@ -33,8 +40,10 @@ public class AssegnazioneTurno{
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Utente> retiredUsers;
 
+    @Getter
     private long dataEpochDay;
 
+    @Getter
     @ManyToOne
     private Turno turno;
 
@@ -100,22 +109,6 @@ public class AssegnazioneTurno{
         return isUserIn(u, new ArrayList<>(utentiReperibili));
     }
 
-    public LocalDate getData() {
-        return LocalDate.ofEpochDay(this.dataEpochDay);
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Set<Utente> getUtentiDiGuardia() {
-        return utentiDiGuardia;
-    }
-
-    public Set<Utente> getUtentiReperibili() {
-        return utentiReperibili;
-    }
-
     public Set<Utente> getUtenti(){
         Set<Utente> utenti = new HashSet<>();
         utenti.addAll(utentiDiGuardia);
@@ -123,19 +116,15 @@ public class AssegnazioneTurno{
         return utenti;
     }
 
+    public LocalDate getData() {
+        return LocalDate.ofEpochDay(this.dataEpochDay);
+    }
+
     public List<Utente> getUtentiAsList(){
         List<Utente> utenti = new ArrayList<>();
         utenti.addAll(utentiDiGuardia);
         utenti.addAll(utentiReperibili);
         return utenti;
-    }
-
-    public long getDataEpochDay() {
-        return dataEpochDay;
-    }
-
-    public Turno getTurno() {
-        return turno;
     }
 
     public void addUtentediGuardia(Utente u) {

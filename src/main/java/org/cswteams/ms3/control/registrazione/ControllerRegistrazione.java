@@ -80,13 +80,18 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
 
     }
 
+    private boolean checkEmail(String email) {
+        Utente utente = utenteDao.findByEmail(email);
+        return utente == null;
+    }
+
 
 
     @Override
     public UtenteDTO registraUtente(@NotNull RegistrazioneDTO registrazioneDTO) {
 
         //sanity check sull'input: il nuovo utente deve avere un nome, un cognome, un codice fiscale e una password correttamente inizializzati
-        if(registrazioneDTO.getNome() == "" || registrazioneDTO.getCognome() == "" || !validaCodiceFiscale(registrazioneDTO.getCodiceFiscale()) || registrazioneDTO.getPassword() == "") {
+        if(registrazioneDTO.getNome() == "" || registrazioneDTO.getCognome() == "" || !validaCodiceFiscale(registrazioneDTO.getCodiceFiscale()) || registrazioneDTO.getPassword() == "" || !checkEmail(registrazioneDTO.getEmail())) {
             return null;
         }
 
