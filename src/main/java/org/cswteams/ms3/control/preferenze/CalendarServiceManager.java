@@ -5,8 +5,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -15,16 +13,19 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.cswteams.ms3.entity.Holiday;
+import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class CalendarServiceManager implements ICalendarServiceManager {
+	private static Logger log = Logger.getLogger(CalendarServiceManager.class);
 
 	@Autowired
 	IHolidayController holidayController ;
@@ -35,7 +36,7 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 	}
 	
 	public void init(CalendarSetting setting) {
-		this.serviceURL = setting.getServiceURL();
+		this.serviceURL = setting.getURL();
 		this.dateFormat = setting.getDateFormat();
 	}
 	
@@ -43,6 +44,12 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 		HttpRequest request = HttpRequest.newBuilder(URI.create(this.serviceURL)).header("accept", "application/json").build();
 		HttpClient client = HttpClient.newHttpClient();
 		HttpResponse<String> response = null;
+
+		/**
+		 * DEBUG TO DELETE
+		 */
+		log.info("[DEBUG] " + request.uri());
+
 		try {
 			response = client.send(request, BodyHandlers.ofString());
 		} catch (IOException e) {
@@ -70,7 +77,7 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 							));*/
 					holidays.add(new Holiday(
 							JSONItem.get("localName").toString(),
-							null, //HolidayCategory category, 
+							HolidayCategory.NAZIONALE, //Default value to be changed
 							LocalDate.parse(JSONItem.get("date").toString()).toEpochDay(), //long startDateEpochDay, Nel JSON le festività sono indicate giorno per giorno
 							LocalDate.parse(JSONItem.get("date").toString()).toEpochDay(), //long endDateEpochDay, Non so se esistono festività che durono più di un giorno e per quanto ne so durono l'intera giornata
 							JSONItem.get("countryCode").toString()
