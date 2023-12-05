@@ -2,9 +2,16 @@ import React from "react"
 import {LoginAPI} from "../../API/LoginAPI";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-
+import { withRouter } from 'react-router-dom';
 
 export default class LoginView extends React.Component {
+
+  passaAllAltraVista = () => {
+    const { history } = this.props;
+    history.push('/info-utenti');
+  };
+
+
   constructor(props){
     super(props);
     this.state = {
@@ -56,6 +63,7 @@ export default class LoginView extends React.Component {
           progress: undefined,
           theme: "colored",
         });
+        this.passaAllAltraVista();
 
         break;
       default:

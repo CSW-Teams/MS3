@@ -43,13 +43,13 @@ import org.cswteams.ms3.dao.CategorieDao;
      * 
      * 
     */
-    @NonNull
-    @Enumerated(value = EnumType.STRING)
-    private UserCategoryPolicyValue policy;
+   @NonNull
+   @Enumerated(value = EnumType.STRING)
+   private UserCategoryPolicyValue policy;
 
-    public UserCategoryPolicy(){
+   public UserCategoryPolicy(){
 
-    }
+   }
 
    public UserCategoryPolicy(Categoria categoria, Turno turno, UserCategoryPolicyValue value){
       this.categoria = categoria;

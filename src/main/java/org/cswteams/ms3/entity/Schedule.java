@@ -1,14 +1,12 @@
 package org.cswteams.ms3.entity;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-
-import lombok.Data;
-import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Rappresenta una pianificazione dei turni assegnati in un intervallo di date */
 @Entity

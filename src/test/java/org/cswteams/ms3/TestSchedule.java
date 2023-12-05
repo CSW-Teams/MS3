@@ -19,6 +19,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import javax.transaction.Transactional;
@@ -89,7 +91,7 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
         servizioDao.saveAndFlush(servizio1);
         Turno t1 = new Turno(
                 LocalTime.of(20, 0),
-                LocalTime.of(8, 0),
+                Duration.ofHours(12),
                 servizio1,
                 MansioneEnum.REPARTO,
                 TipologiaTurno.NOTTURNO,

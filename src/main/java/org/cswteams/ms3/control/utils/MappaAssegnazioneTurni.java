@@ -4,9 +4,8 @@ import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 
-import java.sql.Timestamp;
-import java.time.*;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,26 +23,19 @@ public class MappaAssegnazioneTurni {
     }*/
 
     public static AssegnazioneTurnoDTO assegnazioneTurnoToDTO(AssegnazioneTurno entity) {
+        ZoneId zone = ZoneId.systemDefault();
 
-        LocalDateTime inizio = LocalDateTime.of(entity.getData(), entity.getTurno().getOraInizio());
-        LocalDateTime fine = LocalDateTime.of(entity.getData(), entity.getTurno().getOraFine());
+        LocalDateTime localDateTimeInizio = LocalDateTime.of(entity.getData(), entity.getTurno().getOraInizio());
+        long inizioEpoch = localDateTimeInizio.atZone(zone).toEpochSecond();
 
-        if(entity.getTurno().isGiornoSuccessivo()){
-            fine = LocalDateTime.of(entity.getData().plusDays(1), entity.getTurno().getOraFine());
-        }
+        LocalDateTime localDateTimeFine = localDateTimeInizio.plus(entity.getTurno().getDurata());
+        long fineEpoch = localDateTimeFine.atZone(zone).toEpochSecond();
 
-        Instant instantinizio = inizio.atZone(ZoneId.systemDefault()).toInstant();
-        Instant instantfine = fine.atZone(ZoneId.systemDefault()).toInstant();
-
-        Date dateinizio = Date.from(instantinizio);
-        Date datefine = Date.from(instantfine);
-
-        Timestamp timestampInizio = new Timestamp(dateinizio.getTime());
-        Timestamp timestampFine = new Timestamp(datefine.getTime());
         Set<UtenteDTO> diGuardiaDto = MappaUtenti.utentiEntitytoDTO(entity.getUtentiDiGuardia());
         Set<UtenteDTO> reperibiliDto = MappaUtenti.utentiEntitytoDTO(entity.getUtentiReperibili());
         Set<UtenteDTO> rimossiDto = MappaUtenti.utentiEntitytoDTO(entity.getRetiredUsers());
-        AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(), entity.getTurno().getId(), timestampInizio, timestampFine, diGuardiaDto, reperibiliDto, MappaServizio.servizioEntitytoDTO(entity.getTurno().getServizio()), entity.getTurno().getTipologiaTurno(), entity.getTurno().isGiornoSuccessivo(), entity.getTurno().isReperibilitaAttiva());
+
+        AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(), entity.getTurno().getId(), inizioEpoch, fineEpoch, diGuardiaDto, reperibiliDto, MappaServizio.servizioEntitytoDTO(entity.getTurno().getServizio()), entity.getTurno().getTipologiaTurno(), entity.getTurno().isReperibilitaAttiva());
         dto.setMansione(entity.getTurno().getMansione());
         dto.setRetiredUsers(rimossiDto);
         return dto;
