@@ -81,7 +81,7 @@ export default class UserProfilesView extends React.Component{
         <MDBCardBody className="text-center">
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                       <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>Informazioni Utenti</MDBCardTitle>
-                      {this.state.attore !== "UTENTE" && (
+                      {this.state.attore === "CONFIGURATORE" && (
                         <Button variant="contained" color="primary" href="/nuovo-utente" style={{ marginLeft: 450, marginBottom: 10 }}>
                           Registra nuovo utente
                         </Button>
