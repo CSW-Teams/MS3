@@ -3,12 +3,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Deprecated
 public class CalendarSetting {
 	
 	private String baseURL;
 	private List<KeyValue<String, String>> URLParameters;
-	
+	private String year;
+	private String country;
+
 	private String dateFormat = "yyyy-MM-dd";
 	
 	public CalendarSetting(String baseURL) {
@@ -27,7 +28,18 @@ public class CalendarSetting {
 	public void addURLParameter(String key, String value) {
 		this.URLParameters.add(new KeyValue<>(key, value));
 	}
-	
+
+	public String getURL(){
+		String url = this.baseURL;
+
+		url = url + "/" + year + "/" + country;
+
+
+		return url;
+	}
+
+
+	@Deprecated
 	public String getServiceURL() {
 		String serviceURL = this.baseURL;
 		for (KeyValue<String, String> parameter : this.URLParameters) {
@@ -43,7 +55,15 @@ public class CalendarSetting {
 	public String getDateFormat() {
 		return this.dateFormat;
 	}
-		
+
+	public void setYear(String year) {
+		this.year = year;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
 	private class KeyValue<K, V> implements Map.Entry<K, V> {
 
 		K key;

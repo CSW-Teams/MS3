@@ -6,6 +6,6 @@ public class EpochDayComparator implements Comparator{
         long first_num = (Long) first ;
         long second_num = (Long) second ;
 
-        return first_num < second_num ;
+        return first_num <= second_num ;
     }
 }
