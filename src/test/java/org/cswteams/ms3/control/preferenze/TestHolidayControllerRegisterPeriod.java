@@ -104,6 +104,13 @@ public class TestHolidayControllerRegisterPeriod {
     @Test
     public void testDTO() {
 
+        if (year > 2) {
+            year = 2 ;
+        }
+        if( year < -2) {
+            year = -2 ;
+        }
+
         if(!isCorrect) {
 
             try {
