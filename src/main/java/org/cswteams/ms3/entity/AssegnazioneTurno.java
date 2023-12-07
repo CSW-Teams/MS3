@@ -51,6 +51,7 @@ public class AssegnazioneTurno{
      * (Eventuali) richieste di rimozione dal turno da parte degli utenti a esso assegnati.
      */
     @Getter
+    @OneToMany(mappedBy = "assegnazioneTurno", fetch = FetchType.EAGER)
     private Set<RichiestaRimozioneDaTurno> richiesteRimozioneDaTurno;
 
     public AssegnazioneTurno() {
