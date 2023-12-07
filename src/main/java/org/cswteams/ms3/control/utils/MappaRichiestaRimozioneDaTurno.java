@@ -9,7 +9,9 @@ import java.util.List;
 public class MappaRichiestaRimozioneDaTurno {
 
     public static RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoToDTO(RichiestaRimozioneDaTurno richiestaRimozioneDaTurno) {
-        return new RichiestaRimozioneDaTurnoDTO(richiestaRimozioneDaTurno.getUtente().getNome(),
+        return new RichiestaRimozioneDaTurnoDTO(
+                richiestaRimozioneDaTurno.getAssegnazioneTurno().getId(),
+                richiestaRimozioneDaTurno.getUtente().getNome(),
                 richiestaRimozioneDaTurno.getUtente().getCognome(),
                 ConvertitoreData.daStandardVersoTestuale(richiestaRimozioneDaTurno.getUtente().getDataNascita().toString()),
                 richiestaRimozioneDaTurno.getUtente().getRuoloEnum(),
@@ -18,9 +20,9 @@ public class MappaRichiestaRimozioneDaTurno {
                 richiestaRimozioneDaTurno.getDescrizione());
     }
 
-    public static List<RichiestaRimozioneDaTurnoDTO> richiestaRimozioneDaTurnoEntitytoDTO(List<RichiestaRimozioneDaTurno> richiestaRimozioneDaTurnoList){
+    public static List<RichiestaRimozioneDaTurnoDTO> richiestaRimozioneDaTurnoEntitytoDTO(List<RichiestaRimozioneDaTurno> richiestaRimozioneDaTurnoList) {
         List<RichiestaRimozioneDaTurnoDTO> richiestaRimozioneDaTurnoDTOS = new ArrayList<>();
-        for (RichiestaRimozioneDaTurno entity: richiestaRimozioneDaTurnoList){
+        for (RichiestaRimozioneDaTurno entity : richiestaRimozioneDaTurnoList) {
             richiestaRimozioneDaTurnoDTOS.add(richiestaRimozioneDaTurnoToDTO(entity));
         }
         return richiestaRimozioneDaTurnoDTOS;
