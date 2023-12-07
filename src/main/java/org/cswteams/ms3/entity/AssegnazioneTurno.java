@@ -47,6 +47,12 @@ public class AssegnazioneTurno{
     @ManyToOne
     private Turno turno;
 
+    /**
+     * (Eventuali) richieste di rimozione dal turno da parte degli utenti a esso assegnati.
+     */
+    @Getter
+    private Set<RichiestaRimozioneDaTurno> richiesteRimozioneDaTurno;
+
     public AssegnazioneTurno() {
 
     }
@@ -57,6 +63,7 @@ public class AssegnazioneTurno{
         this.utentiReperibili = utentiReperibili;
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
+        this.richiesteRimozioneDaTurno = new HashSet<>();
     }
 
     public AssegnazioneTurno(LocalDate data, Turno turno) {
@@ -65,6 +72,7 @@ public class AssegnazioneTurno{
         this.utentiReperibili = new HashSet<>();
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
+        this.richiesteRimozioneDaTurno = new HashSet<>();
     }
 
     public AssegnazioneTurno(Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, long dataEpochDay, Turno turno) {
@@ -73,6 +81,7 @@ public class AssegnazioneTurno{
         this.dataEpochDay = dataEpochDay;
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
+        this.richiesteRimozioneDaTurno = new HashSet<>();
     }
 
     private boolean isUserIn(Utente u, List<Utente> utenti){
