@@ -37,7 +37,8 @@ public class RichiestaRimozioneDaTurno {
     public RichiestaRimozioneDaTurno() {
     }
 
-    public RichiestaRimozioneDaTurno(@NotNull Utente utente, String descrizione) {
+    public RichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utente, String descrizione) {
+        this.assegnazioneTurno = assegnazioneTurno;
         this.utente = utente;
         this.descrizione = descrizione;
     }
