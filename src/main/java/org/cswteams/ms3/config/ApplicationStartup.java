@@ -417,7 +417,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         // Creazione del turno in sala operatoria in cardiologia ogni lunedì
         Turno salaOpCardio = new Turno(LocalTime.of(10, 0), Duration.ofHours(13).plusMinutes(59), servizio1, MansioneEnum.SALA_OPERATORIA, TipologiaTurno.MATTUTINO, false);
-        GiorniDellaSettimanaBitMask bitmask= new GiorniDellaSettimanaBitMask();
+        GiorniDellaSettimanaBitMask bitmask = new GiorniDellaSettimanaBitMask();
         bitmask.disableAllDays();
         salaOpCardio.setGiorniDiValidità(bitmask.addDayOfWeek(DayOfWeek.MONDAY));
 
