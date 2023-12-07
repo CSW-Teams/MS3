@@ -19,15 +19,23 @@ public class RichiestaRimozioneDaTurno {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "assegnazioneturno_id")
+    private AssegnazioneTurno assegnazioneTurno;
+
     /**
      * Utente richiedente.
      */
+    @OneToOne
     private Utente utente;
 
     /**
      * Eventuale descrizione della motivazione della richiesta.
      */
     private String descrizione;
+
+    public RichiestaRimozioneDaTurno() {
+    }
 
     public RichiestaRimozioneDaTurno(@NotNull Utente utente, String descrizione) {
         this.utente = utente;
