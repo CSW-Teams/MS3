@@ -68,6 +68,10 @@ function ViolationLog(props){
  */
 class ScheduleView extends React.Component{
 
+  async handleConfirmRetirement(e) {
+    e.setConfirmationDialogOpen(false);
+  }
+
     constructor(props) {
         super(props);
         this.state = {
@@ -513,3 +517,9 @@ class ScheduleView extends React.Component{
 }
 
 export default ScheduleView;
+export const handleRetirement = async (justification) => {
+  let id = localStorage.getItem("id");
+  let utente = await(new UtenteAPI().getUserDetails(id));
+  console.log(justification);
+  console.log(utente.nome, utente.cognome);
+};

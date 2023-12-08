@@ -12,6 +12,8 @@ import { SchedulableType } from "../../API/Schedulable";
 import { UtenteAPI } from "../../API/UtenteAPI";
 import Button from "@mui/material/Button";
 
+import { handleRetirement } from '../../views/utente/ScheduleView';
+
 import {
   Dialog,
   DialogTitle,
@@ -50,6 +52,7 @@ export const AppointmentSingleContent = ({
   </StyledAppointmentsAppointmentContent>
 );
 
+
 //Appointment Tooltip generico
 /** Questo componente mostra i dettagli di uno schedulabile, i quali appaiono
  * dopo aver cliccato sull'Appointment corrispondente.
@@ -72,17 +75,17 @@ export const Content = ({
   const [isConfirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [justification, setJustification] = useState('');
 
+  const handleConfirmRetirement = () => {
+    setConfirmationDialogOpen(false);
+    handleRetirement(justification);
+  }
+
   const openConfirmationDialog = () => {
     setConfirmationDialogOpen(true);
   };
 
   const closeConfirmationDialog = () => {
     setConfirmationDialogOpen(false);
-  };
-
-  const handleConfirmRetirement = () => {
-    setConfirmationDialogOpen(false);
-    // TODO implement
   };
 
   const handleRetireButtonClick = () => {
@@ -231,7 +234,7 @@ export const Content = ({
               <Button onClick={closeConfirmationDialog} color="primary">
                 Annulla
               </Button>
-              <Button onClick={closeConfirmationDialog} color="primary">
+              <Button onClick={handleConfirmRetirement} color="primary">
                 Conferma
               </Button>
             </DialogActions>
