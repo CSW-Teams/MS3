@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {Grid} from "@mui/material";
 import {Appointments} from "@devexpress/dx-react-scheduler-material-ui";
 import AccessTime from '@mui/icons-material/AccessTime';
@@ -11,6 +11,17 @@ import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 import { UtenteAPI } from "../../API/UtenteAPI";
 import Button from "@mui/material/Button";
+
+import { handleRetirement } from '../../views/utente/ScheduleView';
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from '@mui/material';
+
 
 // AppointmentContent di SingleScheduleView
 export const AppointmentSingleContent = ({
@@ -41,6 +52,7 @@ export const AppointmentSingleContent = ({
   </StyledAppointmentsAppointmentContent>
 );
 
+
 //Appointment Tooltip generico
 /** Questo componente mostra i dettagli di uno schedulabile, i quali appaiono
  * dopo aver cliccato sull'Appointment corrispondente.
@@ -52,11 +64,41 @@ export const Content = ({
                           appointmentResources,
                           formatDate,
                           recurringIconComponent: RecurringIcon,
+                          view,
                           ...restProps
                         }) => {
   const weekDays = viewBoundText(
     appointmentData.startDate, appointmentData.endDate, WEEKDAY_INTERVAL,
     appointmentData.startDate, 1, formatDate,
+  );
+
+  const [isConfirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [justification, setJustification] = useState('');
+
+  const handleConfirmRetirement = () => {
+    setConfirmationDialogOpen(false);
+    handleRetirement(justification);
+  }
+
+  const openConfirmationDialog = () => {
+    setConfirmationDialogOpen(true);
+  };
+
+  const closeConfirmationDialog = () => {
+    setConfirmationDialogOpen(false);
+  };
+
+  const handleRetireButtonClick = () => {
+    openConfirmationDialog();
+  };
+
+  const retireFromShiftButton = view!=="global" && (
+    <Button
+      style={{ marginTop: '20px' }}
+      onClick={handleRetireButtonClick}
+    >
+      Ritirati dal turno
+    </Button>
   );
 
   // contents of tooltip may vary depending on the type of the corresponding schedulable
@@ -167,6 +209,37 @@ export const Content = ({
               <div></div>
             ) }
           </Grid>
+          {retireFromShiftButton}
+
+          {/* Dialogo di conferma */}
+          <Dialog
+            open={isConfirmationDialogOpen}
+            onClose={closeConfirmationDialog}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle>Conferma Ritiro</DialogTitle>
+            <DialogContent>
+              <TextField
+                id={"motivazione"}
+                margin={"normal"}
+                label="Inserisci motivazione"
+                fullWidth
+                value={justification}
+                onChange={(e) => setJustification(e.target.value)}
+                autoFocus
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeConfirmationDialog} color="primary">
+                Annulla
+              </Button>
+              <Button onClick={handleConfirmRetirement} color="primary">
+                Conferma
+              </Button>
+            </DialogActions>
+          </Dialog>
+
           {children}
         </StyledDiv>
       );
@@ -222,7 +295,7 @@ export class AppointmentContent extends React.Component{
      * usando gli ids salvati nell'oggetto turno.
      */
     if (this.state.data.schedulableType === SchedulableType.AssignedShift) {
-      this.setState({ 
+      this.setState({
         utenti_allocati: this.state.data.utenti_guardia,
         utenti_reperibili: this.state.data.utenti_reperibili,
         utenti_rimossi: this.state.data.utenti_rimossi,
@@ -267,8 +340,6 @@ export class AppointmentContent extends React.Component{
               {this.state.utenti_rimossi.map((user) => <li> <s>{user.cognome}</s></li>) }
             </ul>
             </div>
-            
-
           </div>
         </div>
       </StyledAppointmentsAppointmentContent>
