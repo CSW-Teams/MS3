@@ -19,9 +19,11 @@ public @interface BeforeInTime {
 
     Class<? extends Payload>[] payload() default { };
 
-    String firstParam () ;
 
-    String secondParam () ;
+    String firstParam() ;
+
+    String secondParam() ;
+
 
     Class<? extends Comparator> comparator() ;
 }

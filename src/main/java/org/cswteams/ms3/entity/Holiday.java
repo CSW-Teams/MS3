@@ -7,10 +7,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 import org.cswteams.ms3.enums.HolidayCategory;
 
 import lombok.Data;
+import org.cswteams.ms3.jpa_constraints.temporal_consistency.BeforeInTime;
+import org.cswteams.ms3.jpa_constraints.temporal_consistency.EpochDayComparator;
 
 /**
  * Questa Entità modella un periodo di giorni appartenenti ad una festività.
@@ -24,6 +27,7 @@ import lombok.Data;
     })
 })
 @Data
+@BeforeInTime(firstParam = "startDateEpochDay", secondParam = "endDateEpochDay", comparator = EpochDayComparator.class)
 public class Holiday {
 
     public Holiday() {
@@ -42,12 +46,16 @@ public class Holiday {
     private Long id;
     
     /** nome della festività */
+    @NotNull
     private String name; 
     /** una targetta per raggruppare diverse festività */
+    @NotNull
     private HolidayCategory category;
     /** data di inizio della festività, in giorni dall'Epoch */
+    @NotNull
     private long startDateEpochDay;
     /** data di fine della festività, in giorni dall'Epoch */
+    @NotNull
     private long endDateEpochDay;
     /** locazione */
     private String location;
