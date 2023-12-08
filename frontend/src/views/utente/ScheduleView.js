@@ -27,7 +27,6 @@ import {
 } from '@devexpress/dx-react-scheduler-material-ui';
 import { ToastContainer, toast } from 'react-toastify';
 
-
 import {
    EditingState,IntegratedEditing
 } from '@devexpress/dx-react-scheduler';
@@ -339,7 +338,7 @@ class ScheduleView extends React.Component{
             break;
           default:
             // this should never appear
-            textLink="Unexcpected shiftQueriedResponse value: "+this.state.shiftQueriedResponse + "🫠"
+            textLink="Unexpected shiftQueriedResponse value: "+this.state.shiftQueriedResponse + "🫠"
             break;
         }
 
@@ -448,13 +447,17 @@ class ScheduleView extends React.Component{
                     showCloseButton
                     showOpenButton
                     showDeleteButton
-                    contentComponent={Content} //go to CustomContent.js
+                    contentComponent={(props) => (
+                      <Content {...props} view={view} />
+                    )}
                   />
                 }
 
                 {view === "global" && this.state.attore !== "PIANIFICATORE" &&
                 < AppointmentTooltip
-                  contentComponent={Content} //go to CustomContent.js
+                  contentComponent={(props) => (
+                    <Content {...props} view={view} />
+                  )}
                 />
                 }
 
@@ -463,7 +466,9 @@ class ScheduleView extends React.Component{
                   <AppointmentTooltip
                     showCloseButton
                     showOpenButton
-                    contentComponent={Content} //go to CustomContent.js
+                    contentComponent={(props) => (
+                      <Content {...props} view={view} />
+                    )}
                   />
                 }
 
@@ -499,7 +504,6 @@ class ScheduleView extends React.Component{
               </Scheduler>
 
             </Paper>
-
           </React.Fragment>
 
         );
