@@ -9,12 +9,12 @@ public class ViolatedVincoloRuoloNumeroException extends ViolatedConstraintExcep
 
     public ViolatedVincoloRuoloNumeroException(AssegnazioneTurno assegnaione, Doctor doctor) {
         super(String.format("Il turno %s %s del giorno %s in %s non può essere allocato. Sono stati allocati troppi utenti con ruolo %s. Il problema riguarda l'utente %s %s",
-        assegnaione.getTurno().getMansione(), assegnaione.getTurno().getTipologiaTurno(), ConvertitoreData.daStandardVersoTestuale(assegnaione.getData().toString()), assegnaione.getTurno().getServizio().getNome(), doctor.getRuoloEnum().toString(), doctor.getNome(), doctor.getCognome()));
+        assegnaione.getShift().getMansione(), assegnaione.getShift().getTipologiaTurno(), ConvertitoreData.daStandardVersoTestuale(assegnaione.getData().toString()), assegnaione.getShift().getServizio().getNome(), doctor.getRuoloEnum().toString(), doctor.getName(), doctor.getLastname()));
     }
 
     public ViolatedVincoloRuoloNumeroException(AssegnazioneTurno assegnaione, RuoloNumero ruoloNumero, int numero) {
         super(String.format("Il turno %s del giorno %s in %s non può essere allocato. Sono stati allocati troppi/pochi utenti con ruolo %s. Come minimo devono essere associati %d utenti di quel ruolo, ma ne sono stati assegnati %d ",
-                assegnaione.getTurno().getTipologiaTurno(), ConvertitoreData.daStandardVersoTestuale(assegnaione.getData().toString()), assegnaione.getTurno().getServizio().getNome(), ruoloNumero.getRuolo().toString(), ruoloNumero.getNumero(), numero));
+                assegnaione.getShift().getTipologiaTurno(), ConvertitoreData.daStandardVersoTestuale(assegnaione.getData().toString()), assegnaione.getShift().getServizio().getNome(), ruoloNumero.getRuolo().toString(), ruoloNumero.getNumero(), numero));
     }
 
 

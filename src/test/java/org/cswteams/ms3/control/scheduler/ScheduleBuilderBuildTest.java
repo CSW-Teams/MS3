@@ -60,8 +60,8 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         AssegnazioneTurno noUserAssignmentShift = mock(AssegnazioneTurno.class);
         // Shift with only one doctor, which is a "SPECIALIZZANDO"
         AssegnazioneTurno assigmentShift = mock(AssegnazioneTurno.class);
-        Turno dummyShift = mock(Turno.class);
-        Turno dummyNoUserShift = mock(Turno.class);
+        Shift dummyShift = mock(Shift.class);
+        Shift dummyNoUserShift = mock(Shift.class);
 
 
         log.info("[DEBUG] [TEST] Setup for first partition started");
@@ -123,8 +123,8 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         when(noUserAssignmentShift.getUtenti()).thenReturn(new HashSet<>());
         when(assigmentShift.getUtenti()).thenReturn(new HashSet<>(doctorList));
 
-        when(noUserAssignmentShift.getTurno()).thenReturn(dummyNoUserShift);
-        when(assigmentShift.getTurno()).thenReturn(dummyShift);
+        when(noUserAssignmentShift.getShift()).thenReturn(dummyNoUserShift);
+        when(assigmentShift.getShift()).thenReturn(dummyShift);
 
         when(noUserAssignmentShift.getUtenti()).thenReturn(null);
         when(assigmentShift.getUtenti()).thenReturn(new HashSet<>(doctorList));

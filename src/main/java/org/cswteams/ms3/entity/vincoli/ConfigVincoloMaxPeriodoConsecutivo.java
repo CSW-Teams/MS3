@@ -1,6 +1,7 @@
 package org.cswteams.ms3.entity.vincoli;
 
 import lombok.Data;
+import org.cswteams.ms3.entity.category.TemporaryCondition;
 
 import javax.persistence.*;
 
@@ -10,11 +11,11 @@ public class ConfigVincoloMaxPeriodoConsecutivo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "max_periodo_id", nullable = false)
     private Long id;
 
     @ManyToOne
-    private Condifdio categoriaVincolata;
+    private TemporaryCondition categoriaVincolata;
 
     private int numMaxMinutiConsecutivi;
 
@@ -23,7 +24,7 @@ public class ConfigVincoloMaxPeriodoConsecutivo {
 
     }
 
-    public ConfigVincoloMaxPeriodoConsecutivo(Categoria categoriaVincolata, int numMaxOreConsecutive) {
+    public ConfigVincoloMaxPeriodoConsecutivo(TemporaryCondition categoriaVincolata, int numMaxOreConsecutive) {
         this.categoriaVincolata = categoriaVincolata;
         this.numMaxMinutiConsecutivi = numMaxOreConsecutive;
     }

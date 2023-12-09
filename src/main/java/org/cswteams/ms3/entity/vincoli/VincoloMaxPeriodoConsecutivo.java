@@ -1,7 +1,10 @@
 package org.cswteams.ms3.entity.vincoli;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.category.Condition;
+import org.cswteams.ms3.entity.category.TemporaryCondition;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
@@ -15,17 +18,18 @@ import java.util.List;
  */
 @Entity
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno {
 
     private long maxConsecutiveMinutes;
     @ManyToOne
-    private Categoria categoriaVincolata;
+    private TemporaryCondition categoriaVincolata;
 
 
     public VincoloMaxPeriodoConsecutivo() {
     }
 
-    public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes, Categoria categoriaVincolate){
+    public VincoloMaxPeriodoConsecutivo(int maxConsecutiveMinutes, TemporaryCondition categoriaVincolate){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;
         this.categoriaVincolata = categoriaVincolate;
     }
@@ -81,7 +85,7 @@ public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno 
             long minutiConsecutivi = 0;
             // Controllo che la somma delle ore non sia superata con la nuova assegnazione
             for (AssegnazioneTurno turno : turniConsecutivi) {
-                minutiConsecutivi += turno.getTurno().getMinutidiLavoro();
+                minutiConsecutivi += turno.getShift().getMinutidiLavoro();
             }
             if (minutiConsecutivi > maxConsecutiveMinutes) {
                 throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getDoctor(), maxConsecutiveMinutes);
@@ -95,11 +99,11 @@ public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno 
         if(categoriaVincolata == null){
             return true;
         }
-         for (CategoriaUtente categoriaUtente : contesto.getUserScheduleState().getDoctor().getStato()) {
-             if (categoriaUtente.getCategoria().getNome().compareTo(categoriaVincolata.getNome()) == 0) {
-                 if ((categoriaUtente.getInizioValidità().isBefore(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getInizioValidità().isEqual(contesto.getAssegnazioneTurno().getData())) && (categoriaUtente.getFineValidità().isAfter(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getFineValidità().isEqual(contesto.getAssegnazioneTurno().getData()))) {
+         for (Condition categoriaUtente : contesto.getUserScheduleState().getDoctor().getPermanentConditions()) {
+             if (categoriaUtente.getType().compareTo(categoriaVincolata.getType()) == 0) {
+                 //if ((categoriaUtente.getFineValidità().isBefore(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getInizioValidità().isEqual(contesto.getAssegnazioneTurno().getData())) && (categoriaUtente.getFineValidità().isAfter(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getFineValidità().isEqual(contesto.getAssegnazioneTurno().getData()))) {
                      return true;
-                 }
+                 //}
              }
          }
 

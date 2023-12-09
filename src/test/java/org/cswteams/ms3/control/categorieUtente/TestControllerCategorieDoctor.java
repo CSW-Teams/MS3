@@ -2,7 +2,6 @@ package org.cswteams.ms3.control.categorieUtente;
 
 import org.cswteams.ms3.dao.ConditionDao;
 import org.cswteams.ms3.dao.UtenteDao;
-import org.cswteams.ms3.dto.CategoriaUtenteDTO;
 import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;

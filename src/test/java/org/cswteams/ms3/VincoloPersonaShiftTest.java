@@ -28,7 +28,7 @@ import java.util.Arrays;
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt. It means that
 @Transactional
-public class VincoloPersonaTurnoTest {
+public class VincoloPersonaShiftTest {
 
     @Autowired
     private UtenteDao utenteDao;
@@ -71,8 +71,8 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
-        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
+        Shift t1 = new Shift(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Shift t3 = new Shift(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new ConditionPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -122,8 +122,8 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1,MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO, true);
-        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO,  true);
+        Shift t1 = new Shift(LocalTime.of(8, 0), Duration.ofHours(6), servizio1,MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO, true);
+        Shift t3 = new Shift(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO,  true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new ConditionPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -175,8 +175,8 @@ public class VincoloPersonaTurnoTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
         servizioDao.save(servizio1);
 
-        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
-        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,true);
+        Shift t1 = new Shift(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Shift t3 = new Shift(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new ConditionPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -228,8 +228,8 @@ public class VincoloPersonaTurnoTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.AMBULATORIO, MansioneEnum.REPARTO));
 
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
-        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
+        Shift t1 = new Shift(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Shift t3 = new Shift(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
             new ConditionPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
@@ -277,7 +277,7 @@ public class VincoloPersonaTurnoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         servizioDao.saveAndFlush(servizio1);
-        Turno t1 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, true);
+        Shift t1 = new Shift(LocalTime.of(10, 0), Duration.ofHours(2), servizio1, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, true);
 
         t1.setCategoryPolicies(Arrays.asList(
                 new ConditionPolicy(cardiologia, t1, UserCategoryPolicyValue.INCLUDE),

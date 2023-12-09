@@ -2,9 +2,8 @@ package org.cswteams.ms3.entity.policy;
 
 import lombok.Getter;
 import lombok.NonNull;
-import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.UserCategoryPolicyValue;
-import org.cswteams.ms3.entity.category.Condition;
 import org.cswteams.ms3.entity.category.Specialization;
 
 import javax.persistence.Entity;
@@ -18,11 +17,11 @@ public class SpecializationPolicy extends Policy{
     private Specialization specialization;
 
     protected SpecializationPolicy(){
-        super(new Turno(), UserCategoryPolicyValue.EXCLUDE);
+        super(new Shift(), UserCategoryPolicyValue.EXCLUDE);
     }
 
-    public SpecializationPolicy(Specialization specialization, Turno turno, UserCategoryPolicyValue value){
-        super(turno,value);
+    public SpecializationPolicy(Specialization specialization, Shift shift, UserCategoryPolicyValue value){
+        super(shift,value);
         this.specialization = specialization;
     }
 }

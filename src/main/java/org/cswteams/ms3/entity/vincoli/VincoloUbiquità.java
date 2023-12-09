@@ -14,11 +14,11 @@ public class VincoloUbiquità extends VincoloAssegnazioneTurnoTurno{
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
         if(!contesto.getUserScheduleState().getAssegnazioniTurnoCache().isEmpty()){
             for(AssegnazioneTurno turnoAssegnato: contesto.getUserScheduleState().getAssegnazioniTurnoCache()){
-                LocalDateTime startA = LocalDateTime.of(turnoAssegnato.getData(),turnoAssegnato.getTurno().getOraInizio());
-                LocalDateTime startB = LocalDateTime.of(contesto.getAssegnazioneTurno().getData(),contesto.getAssegnazioneTurno().getTurno().getOraInizio());
+                LocalDateTime startA = LocalDateTime.of(turnoAssegnato.getData(),turnoAssegnato.getShift().getOraInizio());
+                LocalDateTime startB = LocalDateTime.of(contesto.getAssegnazioneTurno().getData(),contesto.getAssegnazioneTurno().getShift().getOraInizio());
 
-                LocalDateTime endA =  startA.plus(turnoAssegnato.getTurno().getDurata());
-                LocalDateTime endB = startB.plus(contesto.getAssegnazioneTurno().getTurno().getDurata());
+                LocalDateTime endA =  startA.plus(turnoAssegnato.getShift().getDurata());
+                LocalDateTime endB = startB.plus(contesto.getAssegnazioneTurno().getShift().getDurata());
 
                 if(!((startA.isBefore(startB) && (endA.isBefore(startB) || endA.isEqual(startB))) || (startB.isBefore(startA) && (endB.isBefore(startA) || endB.isEqual(startA))))){
                     throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), turnoAssegnato, contesto.getUserScheduleState().getDoctor());

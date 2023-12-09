@@ -78,7 +78,7 @@ public class ControllerDesiderata implements IControllerDesiderata{
     }
 
     @Override
-    public List<Desiderata> getDesiderateUtente(long userID) {
-        return desiderataDao.findAllByUserId(userID);
+    public List<Desiderata> getDesiderateUtente(long doctorID) {
+        return desiderataDao.findAllByDoctorId(doctorID);
     }
 }

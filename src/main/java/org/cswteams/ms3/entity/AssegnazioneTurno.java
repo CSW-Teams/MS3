@@ -22,12 +22,12 @@ public class AssegnazioneTurno{
     @Column(name = "id", nullable = false)
     private Long id;
 
-    /** Utenti assegnati per il turno. Da non confondere con la mansione GUARDIA */
+    /** Utenti assegnati per il shift. Da non confondere con la mansione GUARDIA */
     @Getter
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Doctor> utentiDiGuardia;
 
-    /** Utenti in riserva per il turno. Questi utenti sono eligibili per L'assegnazione al turno,
+    /** Utenti in riserva per il shift. Questi utenti sono eligibili per L'assegnazione al shift,
      * ma non sono stati assegnati. Da non confondere con la reperibilità prevista dalla mansione GUARDIA
      */
     @Getter
@@ -35,7 +35,7 @@ public class AssegnazioneTurno{
     private Set<Doctor> utentiReperibili;
 
     /**
-     * Utenti rimossi dall'assegnazione turno, ad esempio per una rinuncia dell'utente stesso,
+     * Utenti rimossi dall'assegnazione shift, ad esempio per una rinuncia dell'utente stesso,
      * oppure a causa di uno scambio.
      */
     @ManyToMany(fetch = FetchType.EAGER)
@@ -46,34 +46,34 @@ public class AssegnazioneTurno{
 
     @Getter
     @ManyToOne
-    private Turno turno;
+    private Shift shift;
 
     public AssegnazioneTurno() {
 
     }
 
-    public AssegnazioneTurno(LocalDate data, Turno turno, Set<Doctor> utentiReperibili, Set<Doctor> utentiDiGuardia) {
+    public AssegnazioneTurno(LocalDate data, Shift shift, Set<Doctor> utentiReperibili, Set<Doctor> utentiDiGuardia) {
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.retiredDoctors = new HashSet<>();
-        this.turno = turno;
+        this.shift = shift;
     }
 
-    public AssegnazioneTurno(LocalDate data, Turno turno) {
+    public AssegnazioneTurno(LocalDate data, Shift shift) {
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = new HashSet<>();
         this.utentiReperibili = new HashSet<>();
         this.retiredDoctors = new HashSet<>();
-        this.turno = turno;
+        this.shift = shift;
     }
 
-    public AssegnazioneTurno(Set<Doctor> utentiDiGuardia, Set<Doctor> utentiReperibili, long dataEpochDay, Turno turno) {
+    public AssegnazioneTurno(Set<Doctor> utentiDiGuardia, Set<Doctor> utentiReperibili, long dataEpochDay, Shift shift) {
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.dataEpochDay = dataEpochDay;
         this.retiredDoctors = new HashSet<>();
-        this.turno = turno;
+        this.shift = shift;
     }
 
     private boolean isUserIn(Doctor u, List<Doctor> utenti){
@@ -86,7 +86,7 @@ public class AssegnazioneTurno{
     }
     
     /**
-     * true se l'utente è assegnato al turno tra gli allocati
+     * true se l'utente è assegnato al shift tra gli allocati
      */
     public boolean isAllocated(Doctor u){
 
@@ -94,7 +94,7 @@ public class AssegnazioneTurno{
     }
 
     /**
-     * true se l'utente è stato assegnato al turno in precedenza
+     * true se l'utente è stato assegnato al shift in precedenza
      * ma non è più assegnato ora.
      */
     public boolean isRetired(Doctor u){
@@ -102,8 +102,8 @@ public class AssegnazioneTurno{
     }
 
     /**
-     * true se l'utente è in riserva per il turno.
-     * Se il turno prevede la reperibilità, l'appartenenza dell'utente 
+     * true se l'utente è in riserva per il shift.
+     * Se il shift prevede la reperibilità, l'appartenenza dell'utente
      * alle riserve implica che esso è in reperiilità.
      */
     public boolean isReserve(Doctor u){
@@ -140,6 +140,6 @@ public class AssegnazioneTurno{
                 new HashSet<>(this.utentiDiGuardia),
                 new HashSet<>(this.utentiReperibili),
                 this.dataEpochDay,
-                this.turno);
+                this.shift);
     }
 }

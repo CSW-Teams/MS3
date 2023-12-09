@@ -40,8 +40,8 @@ public class VincoloUbiquitàTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         //Servizio servizio2 = new Servizio("ambulatorio");
-        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,true);
-        Turno t2 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,true);
+        Shift t1 = new Shift(LocalTime.of(8, 0), Duration.ofHours(6), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,true);
+        Shift t2 = new Shift(LocalTime.of(10, 0), Duration.ofHours(2), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,true);
 
         Doctor doctor = new Doctor("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
 
@@ -65,8 +65,8 @@ public class VincoloUbiquitàTest {
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         Servizio servizio2 = new Servizio("cardiologia");
         servizio2.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
-        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
-        Turno t2 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Shift t1 = new Shift(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
+        Shift t2 = new Shift(LocalTime.of(8, 0), Duration.ofHours(6), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
 
         Doctor doctor = new Doctor("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE  );
 

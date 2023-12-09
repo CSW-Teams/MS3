@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface DesiderataDao extends JpaRepository<Desiderata, Long> {
 
-    List<Desiderata> findAllByUserId(Long userId);
+    List<Desiderata> findAllByDoctorId(Long doctorId);
 
 }

@@ -2,6 +2,7 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.category.*;
 import org.cswteams.ms3.entity.doctor.*;
 import org.cswteams.ms3.entity.policy.ConditionPolicy;
@@ -10,11 +11,9 @@ import org.cswteams.ms3.entity.policy.SpecializationPolicy;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
-import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.entity.vincoli.*;
 import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component()
@@ -196,7 +194,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             vincolo.setDescrizione("Vincolo massimo periodo consecutivo per categoria "+config.getCategoriaVincolata().getNome());
             vincoloDao.saveAndFlush(vincolo);
         }
-        vincolo1.setDescrizione("Vincolo Turno Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
+        vincolo1.setDescrizione("Vincolo Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
         vincolo2.setDescrizione("Vincolo massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
         vincolo4.setDescrizione("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
         vincolo5.setDescrizione("Vincolo ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
@@ -230,10 +228,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Specialization oncologia = new Specialization("ONCOLOGIA");
 
         //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
-        Rotation repartoCardiologia = new Rotation("REPARTO CARDIOLOGIA");
-        Rotation repartoOncologia = new Rotation("REPARTO ONCOLOGIA");
-        Rotation ambulatorioCardiologia = new Rotation("AMBULATORIO CARDIOLOGIA");
-        Rotation ambulatorioOncologia = new Rotation("AMBULATORIO ONCOLOGIA");
+        org.cswteams.ms3.entity.category.Rotation repartoCardiologia = new org.cswteams.ms3.entity.category.Rotation("REPARTO CARDIOLOGIA");
+        org.cswteams.ms3.entity.category.Rotation repartoOncologia = new org.cswteams.ms3.entity.category.Rotation("REPARTO ONCOLOGIA");
+        org.cswteams.ms3.entity.category.Rotation ambulatorioCardiologia = new org.cswteams.ms3.entity.category.Rotation("AMBULATORIO CARDIOLOGIA");
+        org.cswteams.ms3.entity.category.Rotation ambulatorioOncologia = new org.cswteams.ms3.entity.category.Rotation("AMBULATORIO ONCOLOGIA");
 
         // Save in persistence all possible conditions
         temporaryConditionDao.save(vacation);
@@ -255,8 +253,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //Creo utenti
         Doctor u6 = new Doctor("Giovanni","Cantone", "GVNCTN48M22D429*", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", "passw", RuoloEnum.STRUTTURATO , AttoreEnum.PIANIFICATORE);
-        u6.getConditions().add(over62);
-        u6.getConditions().add(vacation);
+        u6.getPermanentConditions().add(over62);
+        u6.getTemporaryConditions().add(vacation);
         // Aggiungo la specializzazione
         u6.getSpecializations().add(cardiologia);
         Doctor u1 = new Doctor("Martina","Salvati", "SLVMTN97T56H501*", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.CONFIGURATORE);
@@ -373,27 +371,27 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
 
-        Turno t1 = new Turno(LocalTime.of(14, 0), Duration.ofHours(8), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
+        Shift t1 = new Shift(LocalTime.of(14, 0), Duration.ofHours(8), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
         t1.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(sick, t1, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(vacation, t1,  UserCategoryPolicyValue.EXCLUDE)
+                new ConditionPolicy(null,sick, t1, UserCategoryPolicyValue.EXCLUDE),
+                new ConditionPolicy(null,vacation, t1,  UserCategoryPolicyValue.EXCLUDE)
         ));
 
-        Turno t2 = new Turno(LocalTime.of(14, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
+        Shift t2 = new Shift(LocalTime.of(14, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
         t2.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(sick, t2, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(vacation, t2,  UserCategoryPolicyValue.EXCLUDE)
+                new ConditionPolicy(null,sick, t2, UserCategoryPolicyValue.EXCLUDE),
+                new ConditionPolicy(null,vacation, t2,  UserCategoryPolicyValue.EXCLUDE)
         ));
 
         t2.setRotationPolicies(List.of(
                 new RotationPolicy(repartoCardiologia, t2, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,false);
+        Shift t3 = new Shift(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,false);
         t3.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(sick, t3, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(vacation, t3,  UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(pregnant, t3,  UserCategoryPolicyValue.EXCLUDE),
+                new ConditionPolicy(null,sick, t3, UserCategoryPolicyValue.EXCLUDE),
+                new ConditionPolicy(null,vacation, t3,  UserCategoryPolicyValue.EXCLUDE),
+                new ConditionPolicy(null,pregnant, t3,  UserCategoryPolicyValue.EXCLUDE),
                 new ConditionPolicy(over62, t3,  UserCategoryPolicyValue.EXCLUDE)
         ));
 
@@ -401,10 +399,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 new RotationPolicy(repartoCardiologia, t3, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t5 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, false);
+        Shift t5 = new Shift(LocalTime.of(10, 0), Duration.ofHours(2), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, false);
         t5.setConditionPolicies(Arrays.asList(
-            new ConditionPolicy(sick, t5, UserCategoryPolicyValue.EXCLUDE),
-            new ConditionPolicy(vacation, t5,  UserCategoryPolicyValue.EXCLUDE)
+            new ConditionPolicy(null,sick, t5, UserCategoryPolicyValue.EXCLUDE),
+            new ConditionPolicy(null,vacation, t5,  UserCategoryPolicyValue.EXCLUDE)
         ));
 
         t5.setSpecializationPolicies(List.of(
@@ -415,10 +413,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 new RotationPolicy(ambulatorioCardiologia, t5, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Turno t6 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
+        Shift t6 = new Shift(LocalTime.of(10, 0), Duration.ofHours(2), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
         t6.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(sick, t6, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(vacation, t6,  UserCategoryPolicyValue.EXCLUDE)
+                new ConditionPolicy(null,sick, t6, UserCategoryPolicyValue.EXCLUDE),
+                new ConditionPolicy(null,vacation, t6,  UserCategoryPolicyValue.EXCLUDE)
         ));
 
         t6.setSpecializationPolicies(List.of(
@@ -430,7 +428,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         ));
 
         // Creazione del turno in sala operatoria in cardiologia ogni lunedì
-        Turno salaOpCardio = new Turno(LocalTime.of(10, 0), Duration.ofHours(13).plusMinutes(59), servizio1, MansioneEnum.SALA_OPERATORIA, TipologiaTurno.MATTUTINO, false);
+        Shift salaOpCardio = new Shift(LocalTime.of(10, 0), Duration.ofHours(13).plusMinutes(59), servizio1, MansioneEnum.SALA_OPERATORIA, TipologiaTurno.MATTUTINO, false);
         GiorniDellaSettimanaBitMask bitmask = new GiorniDellaSettimanaBitMask();
         bitmask.disableAllDays();
         salaOpCardio.setGiorniDiValidità(bitmask.addDayOfWeek(DayOfWeek.MONDAY));

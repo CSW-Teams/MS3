@@ -1,12 +1,8 @@
 package org.cswteams.ms3.entity.category;
 
-import lombok.Getter;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-@Entity
-@Getter
 @MappedSuperclass
 public abstract class Condition implements Category{
     @Id

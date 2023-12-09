@@ -33,11 +33,11 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
      */
     protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2, TemporalUnit tu, long delta){
 
-        LocalDateTime aTurno1Start = aTurno1.getData().atTime(aTurno1.getTurno().getOraInizio());
-        LocalDateTime aTurno1End = aTurno1Start.plus(aTurno1.getTurno().getDurata());
+        LocalDateTime aTurno1Start = aTurno1.getData().atTime(aTurno1.getShift().getOraInizio());
+        LocalDateTime aTurno1End = aTurno1Start.plus(aTurno1.getShift().getDurata());
 
-        LocalDateTime aTurno2Start = aTurno2.getData().atTime(aTurno2.getTurno().getOraInizio());
-        LocalDateTime aTurno2End = aTurno2Start.plus(aTurno2.getTurno().getDurata());
+        LocalDateTime aTurno2Start = aTurno2.getData().atTime(aTurno2.getShift().getOraInizio());
+        LocalDateTime aTurno2End = aTurno2Start.plus(aTurno2.getShift().getDurata());
 
         if (aTurno1Start.isBefore(aTurno2Start)){
             return Math.abs(aTurno1End.until(aTurno2Start, tu)) <= delta;
@@ -51,7 +51,7 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
     protected int getAssegnazioneTurnoPrecedenteIdx(List<AssegnazioneTurno> turniAssegnati, AssegnazioneTurno turnoDaAssegnare){
         for(int i = 0; i < turniAssegnati.size(); i++){
             if(turniAssegnati.get(i).getData().isAfter(turnoDaAssegnare.getData()) || turniAssegnati.get(i).getData().isEqual(turnoDaAssegnare.getData())){
-                if(turniAssegnati.get(i).getTurno().getOraInizio().isAfter(turnoDaAssegnare.getTurno().getOraInizio()) || turniAssegnati.get(i).getTurno().getOraInizio().equals(turnoDaAssegnare.getTurno().getOraInizio())) {
+                if(turniAssegnati.get(i).getShift().getOraInizio().isAfter(turnoDaAssegnare.getShift().getOraInizio()) || turniAssegnati.get(i).getShift().getOraInizio().equals(turnoDaAssegnare.getShift().getOraInizio())) {
                     return i - 1;
                 }
             }

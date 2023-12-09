@@ -13,14 +13,14 @@ public class ViolatedVincoloCategorieUtenteTurnoException extends ViolatedConstr
 	public ViolatedVincoloCategorieUtenteTurnoException(AssegnazioneTurno assegnazione, List<ConditionPolicy> brokenPolicies, Doctor doctor) {
         super(String.format("l'utente %s %s non rispetta le policies %s " +
 				" per il turno %s in %s. La violazione riguarda il giorno %s", 
-				doctor.getNome(), doctor.getCognome(), printBrokenPolicies(brokenPolicies), assegnazione.getTurno().getTipologiaTurno(),
-				assegnazione.getTurno().getServizio().getNome(), ConvertitoreData.daStandardVersoTestuale(assegnazione.getData().toString())));
+				doctor.getName(), doctor.getLastname(), printBrokenPolicies(brokenPolicies), assegnazione.getShift().getTipologiaTurno(),
+				assegnazione.getShift().getServizio().getNome(), ConvertitoreData.daStandardVersoTestuale(assegnazione.getData().toString())));
 	}
 
 	private static String printBrokenPolicies(List<ConditionPolicy> brokenPolicies) {
 		StringBuilder sb = new StringBuilder();
 		for(ConditionPolicy ucp: brokenPolicies){
-			sb.append(ucp.getCategoria().getNome());
+			sb.append(ucp.getPermanentCondition().getType());
 			sb.append(":");
 			sb.append(ucp.getPolicy());
 			sb.append(" ");

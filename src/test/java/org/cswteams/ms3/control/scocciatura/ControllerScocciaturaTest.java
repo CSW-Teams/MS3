@@ -44,14 +44,14 @@ public class ControllerScocciaturaTest {
 
         ControllerScocciatura controller = new ControllerScocciatura(scocciature);
 
-        Turno turno = new Turno();
-        turno.setTipologiaTurno(TipologiaTurno.MATTUTINO);
+        Shift shift = new Shift();
+        shift.setTipologiaTurno(TipologiaTurno.MATTUTINO);
 
         Doctor doctor = new Doctor("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE );
         UserScheduleState userScheduleState = new UserScheduleState();
         userScheduleState.setDoctor(doctor);
 
-        AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(LocalDate.of(2023, 11, 20), turno);
+        AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(LocalDate.of(2023, 11, 20), shift);
         ContestoScocciatura contestoScocciatura = new ContestoScocciatura(userScheduleState, assegnazioneTurno);
 
         int expectedUffa = 5;

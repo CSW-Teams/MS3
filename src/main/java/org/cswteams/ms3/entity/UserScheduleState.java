@@ -12,7 +12,7 @@ import org.cswteams.ms3.entity.doctor.Doctor;
 @Data
 @Table(uniqueConstraints={
     @UniqueConstraint(columnNames={
-        "user_id",
+        "doctor_id",
         "schedule_id",
     })
 })
@@ -62,7 +62,7 @@ public class UserScheduleState {
         int idInsert = turniAssegnati.size();
         for(int i = 0; i < turniAssegnati.size(); i++){
             if(turniAssegnati.get(i).getData().isAfter(nuovaAssegnazione.getData()) || turniAssegnati.get(i).getData().isEqual(nuovaAssegnazione.getData())){
-                if(turniAssegnati.get(i).getTurno().getOraInizio().isAfter(nuovaAssegnazione.getTurno().getOraInizio())) {
+                if(turniAssegnati.get(i).getShift().getOraInizio().isAfter(nuovaAssegnazione.getShift().getOraInizio())) {
                     idInsert = i;
                 }
             }

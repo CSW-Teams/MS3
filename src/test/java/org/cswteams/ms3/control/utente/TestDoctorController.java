@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.utente;
 
 import org.cswteams.ms3.dao.UtenteDao;
-import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.dto.DoctorDTO;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.junit.After;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class TestDoctorController {
 
     @Test
     public void testNullUtente() {
-        UtenteDTO dto = new UtenteDTO() ;
+        DoctorDTO dto = new DoctorDTO() ;
 
         try {
             controller.creaUtente(dto) ;
@@ -52,7 +52,7 @@ public class TestDoctorController {
 
     @Test
     public void testNullAnagrafica() {
-        UtenteDTO dto = new UtenteDTO() ;
+        DoctorDTO dto = new DoctorDTO() ;
 
         dto.setAttore(AttoreEnum.UTENTE) ;
         dto.setEmail("e.mail@mail.it") ;
@@ -69,7 +69,7 @@ public class TestDoctorController {
 
     @Test
     public void testNullCredenziali() {
-        UtenteDTO dto = new UtenteDTO() ;
+        DoctorDTO dto = new DoctorDTO() ;
 
         dto.setAttore(AttoreEnum.PIANIFICATORE) ;
         dto.setCognome("ggfgf");
@@ -90,7 +90,7 @@ public class TestDoctorController {
 
     @Test
     public void multipleUsersSameMail() {
-        UtenteDTO dto = new UtenteDTO() ;
+        DoctorDTO dto = new DoctorDTO() ;
 
         dto.setAttore(AttoreEnum.UTENTE) ;
         dto.setEmail("e.mail@mail.it") ;
@@ -100,8 +100,8 @@ public class TestDoctorController {
         dto.setPassword("2jrfejbcn") ;
         controller.creaUtente(dto) ;
 
-        Set<UtenteDTO> users =  controller.leggiUtenti() ;
-        List<UtenteDTO> usersConverted = List.copyOf(users) ;
+        Set<DoctorDTO> users =  controller.leggiUtenti() ;
+        List<DoctorDTO> usersConverted = List.copyOf(users) ;
 
         assertNotEquals(usersConverted.get(0).getPassword(), usersConverted.get(1).getPassword());
         assertEquals(usersConverted.get(0).getEmail(), usersConverted.get(1).getEmail());
@@ -110,7 +110,7 @@ public class TestDoctorController {
 
     @Test
     public void testUtenteWithoutRoleAndNullPassword() {
-        UtenteDTO dto = new UtenteDTO() ;
+        DoctorDTO dto = new DoctorDTO() ;
         dto.setNome("Romolo");
         dto.setCognome("Di Giuseppe");
         dto.setEmail("djkedn");
@@ -129,7 +129,7 @@ public class TestDoctorController {
 
     @Test
     public void testAssignWrongCategories() {
-        UtenteDTO dto = new UtenteDTO() ;
+        DoctorDTO dto = new DoctorDTO() ;
 
         CategoriaUtente cu = new CategoriaUtente(new Categoria("Specializz.1", TipoCategoriaEnum.SPECIALIZZAZIONE),
                 LocalDate.of(2000, 3, 3), LocalDate.of(2023, 12, 12)) ;

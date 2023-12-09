@@ -2,7 +2,7 @@ package org.cswteams.ms3.control.turni;
 
 import org.cswteams.ms3.control.utils.MappaTurni;
 import org.cswteams.ms3.dao.TurnoDao;
-import org.cswteams.ms3.dto.TurnoDTO;
+import org.cswteams.ms3.dto.RotationDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,19 +17,19 @@ public class ControllerTurni implements IControllerTurni {
     TurnoDao turnoDao;
 
     @Override
-    public Set<TurnoDTO> leggiTurniDiServizio(String servizio) {
+    public Set<RotationDTO> leggiTurniDiServizio(String servizio) {
         return MappaTurni.turnoEntityToDTO(turnoDao.findAllByServizioNome(servizio));
     }
 
     @Override
-    public Set<TurnoDTO> leggiTurni() {
+    public Set<RotationDTO> leggiTurni() {
         return MappaTurni.turnoEntityToDTO(turnoDao.findAll());
     }
 
     @Override
-    public Turno creaTurno(TurnoDTO turno) throws TurnoException {
-        Turno turnoEntity = MappaTurni.turnoDTOToEntity(turno);
-        return turnoDao.save(turnoEntity);
+    public Shift creaTurno(RotationDTO turno) throws TurnoException {
+        Shift shiftEntity = MappaTurni.turnoDTOToEntity(turno);
+        return turnoDao.save(shiftEntity);
     }
 
 }

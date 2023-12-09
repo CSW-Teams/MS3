@@ -1,8 +1,8 @@
 package org.cswteams.ms3.control.giustificaForzatura;
 
+import org.cswteams.ms3.dto.DoctorDTO;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
@@ -68,7 +68,7 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
 
 
     private static GiustificazioneForzaturaVincoliDTO constructorGiustificazioneForzaturaVincoliDTOPartition(
-            Set<UtenteDTO> setUtenti,
+            Set<DoctorDTO> setUtenti,
             int year,
             int day,
             int month,
@@ -100,13 +100,13 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
         GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoliDTO;
 
         // Initialize the system having only one user
-        Set<UtenteDTO> setUtenti = new HashSet<>();
+        Set<DoctorDTO> setUtenti = new HashSet<>();
         List<CategoriaUtente> categorie = new ArrayList<>();
         List<CategoriaUtente> specializzazioni = new ArrayList<>();
         categorie.add(new CategoriaUtente());
         specializzazioni.add(new CategoriaUtente());
 
-        UtenteDTO user = new UtenteDTO(
+        DoctorDTO user = new DoctorDTO(
                 (long) 1,
                 "Simone",
                 "Staccone",
@@ -120,7 +120,7 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
                 AttoreEnum.UTENTE
         );
 
-        UtenteDTO emptyUser = new UtenteDTO();
+        DoctorDTO emptyUser = new DoctorDTO();
 
 
 
@@ -238,7 +238,7 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
     *               ...
     *           )
     * (null instance)
-    * The main difference in invalid instance is the difference between UtenteDTO and test case
+    * The main difference in invalid instance is the difference between DoctorDTO and test case
     * configuration: this is a single class domain partitioning for all attributes except for
     * setUsers (good/wrong/null)
     * **********************************************************************/

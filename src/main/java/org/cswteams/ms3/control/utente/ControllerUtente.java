@@ -2,7 +2,7 @@ package org.cswteams.ms3.control.utente;
 
 import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.UtenteDao;
-import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.dto.DoctorDTO;
 import org.cswteams.ms3.entity.doctor.Doctor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,20 +16,20 @@ public class ControllerUtente implements IControllerUtente {
     private UtenteDao utenteDao;
 
     @Override
-    public Set<UtenteDTO> leggiUtenti() {
+    public Set<DoctorDTO> leggiUtenti() {
         List<Doctor> utentiList = utenteDao.findAll();
-        return MappaUtenti.utentiEntitytoDTO(utentiList);
+        return MappaUtenti.utentiEntityToDTO(utentiList);
     }
 
     @Override
-    public Object creaUtente(UtenteDTO s) {
+    public Object creaUtente(DoctorDTO s) {
         return utenteDao.save(MappaUtenti.utenteDTOtoEntity(s));
     }
 
     @Override
-    public UtenteDTO leggiUtente(long idUtente) {
+    public DoctorDTO leggiUtente(long idUtente) {
         Doctor doctor = utenteDao.findById(idUtente);
-        return MappaUtenti.utenteEntitytoDTO(doctor);
+        return MappaUtenti.utenteEntityToDTO(doctor);
     }
 
 }

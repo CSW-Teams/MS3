@@ -1,15 +1,12 @@
 package org.cswteams.ms3.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import org.cswteams.ms3.entity.category.Condition;
+import org.cswteams.ms3.entity.category.PermanentCondition;
 import org.cswteams.ms3.entity.category.Rotation;
 import org.cswteams.ms3.entity.category.Specialization;
 import org.cswteams.ms3.entity.policy.ConditionPolicy;
-import org.cswteams.ms3.entity.policy.Policy;
 import org.cswteams.ms3.entity.policy.RotationPolicy;
 import org.cswteams.ms3.entity.policy.SpecializationPolicy;
 import org.cswteams.ms3.enums.MansioneEnum;
@@ -23,15 +20,14 @@ import java.time.LocalTime;
 import java.util.*;
 
 @Entity
-@Getter
-@Setter
+@Data
 @EqualsAndHashCode
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Turno {
+//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Shift {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false)
+    @Column(name = "shift_id", nullable = false)
     private Long id;
 
     private TipologiaTurno tipologiaTurno;
@@ -75,7 +71,7 @@ public class Turno {
     @OneToMany(cascade = CascadeType.ALL)
     private List<SpecializationPolicy> specializationPolicies;
 
-    public Turno(LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero, boolean reperibilitaAttiva) throws  TurnoException {
+    public Shift(LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero, boolean reperibilitaAttiva) throws  TurnoException {
 
         //Controllo che la mansione inserita è presente per il servizio inserito
         boolean check = false;
@@ -98,26 +94,26 @@ public class Turno {
         this.reperibilitaAttiva = reperibilitaAttiva;
     }
 
-    public Turno(LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero) throws  TurnoException {
+    public Shift(LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero) throws  TurnoException {
         this(oraInizio, durata, servizio, mansione, tipologia, ruoliNumero, false);
     }
 
-    public Turno(LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean reperibilitaAttiva) throws  TurnoException {
+    public Shift(LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean reperibilitaAttiva) throws  TurnoException {
         this(oraInizio, durata, servizio, mansione, tipologia, new ArrayList<>(Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1),new RuoloNumero(RuoloEnum.STRUTTURATO,1))), reperibilitaAttiva);
     }
 
-    public Turno(long id,LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean reperibilitaAttiva) throws  TurnoException {
+    public Shift(long id, LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, boolean reperibilitaAttiva) throws  TurnoException {
         this(oraInizio, durata, servizio, mansione, tipologia, new ArrayList<>(Arrays.asList(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1),new RuoloNumero(RuoloEnum.STRUTTURATO,1))),reperibilitaAttiva);
         this.id = id;
     }
 
-    public Turno(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, Duration durata,
-            GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, MansioneEnum mansione, boolean reperibilitaAttiva) throws  TurnoException {
+    public Shift(Long id, TipologiaTurno tipologiaTurno, LocalTime oraInizio, Duration durata,
+                 GiorniDellaSettimanaBitMask giorniDiValidità, Servizio servizio, MansioneEnum mansione, boolean reperibilitaAttiva) throws  TurnoException {
         this(id, oraInizio, durata, servizio, mansione, tipologiaTurno, reperibilitaAttiva);
         this.giorniDiValidità = giorniDiValidità;
     }
 
-    public Turno() {
+    public Shift() {
         this.ruoliNumero = new ArrayList<>();
         ruoliNumero.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
         ruoliNumero.add(new RuoloNumero(RuoloEnum.STRUTTURATO,1));
@@ -131,14 +127,14 @@ public class Turno {
     public void setBannedConditions(Set<Condition> categorieVietate){
         List<ConditionPolicy> policies = new ArrayList<>();
         for (Condition cu : categorieVietate) {
-            policies.add(new ConditionPolicy(cu, this, UserCategoryPolicyValue.EXCLUDE));
+            policies.add(new ConditionPolicy((PermanentCondition) cu, this, UserCategoryPolicyValue.EXCLUDE));
         }
         this.setConditionPolicies(policies);
     }
 
     public void setBannedRotations(Set<Rotation> categorieVietate){
         List<RotationPolicy> policies = new ArrayList<>();
-        for (Rotation cu : categorieVietate) {
+        for (org.cswteams.ms3.entity.category.Rotation cu : categorieVietate) {
             policies.add(new RotationPolicy(cu, this, UserCategoryPolicyValue.EXCLUDE));
         }
         this.setRotationPolicies(policies);
@@ -156,7 +152,7 @@ public class Turno {
         Set<Condition> bannedCategories = new HashSet<>();
         for (ConditionPolicy p : this.getConditionPolicies()) {
             if (p.getPolicy().equals(UserCategoryPolicyValue.EXCLUDE)) {
-                bannedCategories.add(p.getCondition());
+                bannedCategories.add(p.getPermanentCondition());
             }
         }
         return bannedCategories;

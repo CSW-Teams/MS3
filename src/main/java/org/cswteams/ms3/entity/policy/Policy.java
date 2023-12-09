@@ -3,7 +3,7 @@ package org.cswteams.ms3.entity.policy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NonNull;
-import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.UserCategoryPolicyValue;
 
 import javax.persistence.*;
@@ -18,11 +18,11 @@ public abstract class Policy {
     @ManyToOne
     @JsonIgnore
     @NonNull
-    private Turno turno;
+    private Shift shift;
 
     /**
      * La registrazione di questa policy nel db implica che tale categoria è da escludere
-     * o da includere per un turno. Se così non fosse, non sarebbe stata registrata.
+     * o da includere per un shift. Se così non fosse, non sarebbe stata registrata.
      *
      *
      */
@@ -31,8 +31,8 @@ public abstract class Policy {
     private UserCategoryPolicyValue policy;
 
 
-    public Policy(Turno turno, UserCategoryPolicyValue value){
-        this.turno = turno;
+    public Policy(Shift shift, UserCategoryPolicyValue value){
+        this.shift = shift;
         this.policy = value;
     }
 

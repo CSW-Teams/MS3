@@ -2,8 +2,8 @@ package org.cswteams.ms3.control.registrazione;
 
 import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dto.DoctorDTO;
 import org.cswteams.ms3.dto.RegistrazioneDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.doctor.Doctor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,7 +88,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
 
 
     @Override
-    public UtenteDTO registraUtente(@NotNull RegistrazioneDTO registrazioneDTO) {
+    public DoctorDTO registraUtente(@NotNull RegistrazioneDTO registrazioneDTO) {
 
         //sanity check sull'input: il nuovo utente deve avere un nome, un cognome, un codice fiscale e una password correttamente inizializzati
         if(registrazioneDTO.getNome() == "" || registrazioneDTO.getCognome() == "" || !validaCodiceFiscale(registrazioneDTO.getCodiceFiscale()) || registrazioneDTO.getPassword() == "" || !checkEmail(registrazioneDTO.getEmail())) {
@@ -107,7 +107,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
 
         utenteDao.saveAndFlush(u);
 
-        return MappaUtenti.utenteEntitytoDTO(u);
+        return MappaUtenti.utenteEntityToDTO(u);
 
     }
 

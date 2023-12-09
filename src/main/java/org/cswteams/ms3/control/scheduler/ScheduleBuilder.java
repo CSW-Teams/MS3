@@ -156,7 +156,7 @@ public class ScheduleBuilder {
                 
                 // Prima pensiamo a riempire le allocazioni, che sono le più importante
                 
-                for (RuoloNumero rn : at.getTurno().getRuoliNumero()){
+                for (RuoloNumero rn : at.getShift().getRuoliNumero()){
                     this.aggiungiUtenti(at, rn.getNumero(), at.getUtentiDiGuardia());
                 }
             } catch (NotEnoughFeasibleUsersException e) {
@@ -175,7 +175,7 @@ public class ScheduleBuilder {
                 
             // Passo poi a riempire le riserve
             try {
-                for (RuoloNumero rn : at.getTurno().getRuoliNumero()){
+                for (RuoloNumero rn : at.getShift().getRuoliNumero()){
                     this.aggiungiUtenti(at, rn.getNumero(), at.getUtentiReperibili());
                 }
             } catch (NotEnoughFeasibleUsersException e){
@@ -219,7 +219,7 @@ public class ScheduleBuilder {
                  * Se il turno a cui ho associato l'utente ha la reperibilità attiva, oppure ho aggiunto l'utente in servizio
                  * allora devo aggiornare il suo uffa cumulato.
                  */
-                if(contesto.getAssegnazioneTurno().getTurno().isReperibilitaAttiva() || contesto.getAssegnazioneTurno().getUtentiDiGuardia().size() < contesto.getAssegnazioneTurno().getTurno().getNumRequiredUsers())
+                if(contesto.getAssegnazioneTurno().getShift().isReperibilitaAttiva() || contesto.getAssegnazioneTurno().getUtentiDiGuardia().size() < contesto.getAssegnazioneTurno().getShift().getNumRequiredUsers())
                     userScheduleState.saveUffaTemp();
 
                 selectedUsers++;    
@@ -281,7 +281,7 @@ public class ScheduleBuilder {
             for (Doctor u : at.getUtenti()){
                 this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
 
-                if(at.getTurno().isReperibilitaAttiva() || at.getUtentiDiGuardia().contains(u))
+                if(at.getShift().isReperibilitaAttiva() || at.getUtentiDiGuardia().contains(u))
                     this.allUserScheduleStates.get(u.getId()).saveUffaTemp();
             }
             this.schedule.getAssegnazioniTurno().add(at);

@@ -67,10 +67,10 @@ public class VincoloMaxOrePeriodoTest {
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         servizioDao.save(servizio1);
-        Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,true);
-        Turno t2 = new Turno(LocalTime.of(14, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO,TipologiaTurno.POMERIDIANO,true);
-        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO,true);
-        //Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.DONNA_INCINTA, CategoriaUtentiEnum.OVER_62, CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)));
+        Shift t1 = new Shift(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,true);
+        Shift t2 = new Shift(LocalTime.of(14, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO,TipologiaTurno.POMERIDIANO,true);
+        Shift t3 = new Shift(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO,TipologiaTurno.NOTTURNO,true);
+        //Shift t4 = new Shift(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.DONNA_INCINTA, CategoriaUtentiEnum.OVER_62, CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)));
         turnoDao.save(t1);
         turnoDao.save(t2);
         turnoDao.save(t3);

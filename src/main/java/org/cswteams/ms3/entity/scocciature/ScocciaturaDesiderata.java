@@ -1,6 +1,7 @@
 package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.Desiderata;
 
 import javax.persistence.Entity;
@@ -9,8 +10,10 @@ import java.util.List;
 /**
  * Calcola quanto pesa ad un utente essere messo di turno in un giorno in cui ha espresso di non lavorare
  */
-@Data
+
 @Entity
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class ScocciaturaDesiderata extends Scocciatura {
 
     private int peso;

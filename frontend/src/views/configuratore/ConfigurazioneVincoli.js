@@ -107,7 +107,7 @@ export default class ConfigurazioneVincoli extends React.Component{
                   wrapperClass='col-auto'
                   type='text'
                   name='horizonTurnoNotturno'
-                  label='Numero di ore non allocabili prima e dopo il turno notturno'
+                  label='Numero di ore non allocabili prima e dopo il shift notturno'
                   id='formTextExample2'
                   aria-describedby='textExample2'
                   value={this.state.horizonTurnoNotturno}

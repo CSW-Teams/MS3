@@ -1,20 +1,22 @@
 package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 /**
  * Calcola quanto pesa ad un utente essere messo di turno in una vacanza
  */
-@Data
+
 @Entity
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class ScocciaturaVacanza extends Scocciatura {
 
     private int peso;
@@ -35,7 +37,7 @@ public class ScocciaturaVacanza extends Scocciatura {
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        TipologiaTurno tipologiaTurno = contesto.getAssegnazioneTurno().getTurno().getTipologiaTurno();
+        TipologiaTurno tipologiaTurno = contesto.getAssegnazioneTurno().getShift().getTipologiaTurno();
         LocalDate data = contesto.getAssegnazioneTurno().getData();
 
         if(data.equals(this.vacanza.getStartDate()) && tipologiaTurno.equals(this.tipologiaTurno))

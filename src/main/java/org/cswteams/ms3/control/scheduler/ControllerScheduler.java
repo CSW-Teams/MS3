@@ -11,8 +11,8 @@ import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
@@ -69,12 +69,12 @@ public class ControllerScheduler implements IControllerScheduler{
         // creo assegnazioni associando una data a ogni turno.
         //Scorro tutti i giorni dell'intervallo. Per ogni giorno scorro tutti i turni.
         while(!currentDay.isAfter(endDate)){
-            for(Turno turno : turnoDao.findAll()){
+            for(Shift shift : turnoDao.findAll()){
                 
-                // Possiamo assegnare questo turno a questo giorno solo se il giorno
-                // della settimana è previsto tra quelli ammissibili del turno
-                if (turno.getGiorniDiValidità().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
-                    allAssegnazioni.add(new AssegnazioneTurno(currentDay,turno));
+                // Possiamo assegnare questo shift a questo giorno solo se il giorno
+                // della settimana è previsto tra quelli ammissibili del shift
+                if (shift.getGiorniDiValidità().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
+                    allAssegnazioni.add(new AssegnazioneTurno(currentDay, shift));
                 }
                 
             }
@@ -176,24 +176,24 @@ public class ControllerScheduler implements IControllerScheduler{
 
     @Override
     public Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
-        // Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere
+        // Per convertire il dto in un entità ho bisogno di un shift che dovrebbe essere
         // presente nel database
-        List<Turno> turni = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno());
+        List<Shift> turni = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno());
         if(turni.isEmpty())
-            throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",tipologia turno: "+assegnazione.getTipologiaTurno().toString());
-        Turno turno = null;
-        for(Turno turnodb: turni){
+            throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",tipologia shift: "+assegnazione.getTipologiaTurno().toString());
+        Shift shift = null;
+        for(Shift turnodb: turni){
             if(turnodb.getMansione().equals(assegnazione.getMansione())){
-                turno = turnodb;
+                shift = turnodb;
                 break;
             }
         }
-        if(turno == null){
-            throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",mansione: "+assegnazione.getMansione().toString());
+        if(shift == null){
+            throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",mansione: "+assegnazione.getMansione().toString());
         }
         AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(
                 LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(), assegnazione.getGiorno()),
-                turno,
+                shift,
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia()));
 

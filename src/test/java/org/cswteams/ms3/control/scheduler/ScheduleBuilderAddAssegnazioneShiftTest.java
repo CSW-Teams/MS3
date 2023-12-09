@@ -2,7 +2,7 @@ package org.cswteams.ms3.control.scheduler;
 
 import org.junit.jupiter.api.Test;
 
-public class ScheduleBuilderAddAssegnazioneTurnoTest extends ScheduleBuilderTest{
+public class ScheduleBuilderAddAssegnazioneShiftTest extends ScheduleBuilderTest{
 
     @Test
     @Override

@@ -22,14 +22,14 @@ public class VincoloNumeroDiRuoloTurno extends Vincolo{
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
 
         //Verifico se sono stati allocati già tutti gli utenti necessari in guardia
-        if (contesto.getAssegnazioneTurno().getUtentiDiGuardia().size() != contesto.getAssegnazioneTurno().getTurno().getNumRequiredUsers()) {
+        if (contesto.getAssegnazioneTurno().getUtentiDiGuardia().size() != contesto.getAssegnazioneTurno().getShift().getNumRequiredUsers()) {
 
             //Verifico se è possibile aggiungere l'utente in guardia
             verifica(contesto,contesto.getAssegnazioneTurno().getUtentiDiGuardia());
         }
 
         //Verifico se sono stati allocati già tutti gli utenti necessari in reperibilità
-        else if(contesto.getAssegnazioneTurno().getUtentiReperibili().size() != contesto.getAssegnazioneTurno().getTurno().getNumRequiredUsers()){
+        else if(contesto.getAssegnazioneTurno().getUtentiReperibili().size() != contesto.getAssegnazioneTurno().getShift().getNumRequiredUsers()){
 
             //Verifico se è possibile aggiungere l'utente in reperibilità
             verifica(contesto,contesto.getAssegnazioneTurno().getUtentiReperibili());
@@ -64,7 +64,7 @@ public class VincoloNumeroDiRuoloTurno extends Vincolo{
         }
 
         /* Per ogni Ruolo richiesto dall'assegnazione turno */
-        for (RuoloNumero ruoloNumero : contesto.getAssegnazioneTurno().getTurno().getRuoliNumero()) {
+        for (RuoloNumero ruoloNumero : contesto.getAssegnazioneTurno().getShift().getRuoliNumero()) {
             /* Se il numero richiesto di utenti con quel ruolo è già stato raggiunto allora solleva un'eccezione
                Altrimenti aggiungi l'utente all'assegnazione turno
              */
@@ -99,7 +99,7 @@ public class VincoloNumeroDiRuoloTurno extends Vincolo{
         }
 
         // verifico se nell'assegnazione ho il numero corretto di ruoli
-        for (RuoloNumero ruoloNumero: contesto.getAssegnazioneTurno().getTurno().getRuoliNumero()) {
+        for (RuoloNumero ruoloNumero: contesto.getAssegnazioneTurno().getShift().getRuoliNumero()) {
             if (counter.get(ruoloNumero.getRuolo()) != null && counter.get(ruoloNumero.getRuolo()) < ruoloNumero.getNumero())
                 throw new ViolatedVincoloRuoloNumeroException(contesto.getAssegnazioneTurno(), ruoloNumero, counter.get(ruoloNumero.getRuolo()));
             if (counter.get(ruoloNumero.getRuolo()) == null)

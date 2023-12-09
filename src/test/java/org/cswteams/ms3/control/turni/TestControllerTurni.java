@@ -1,8 +1,7 @@
 package org.cswteams.ms3.control.turni;
 
-import org.cswteams.ms3.control.turni.ControllerTurni;
+import org.cswteams.ms3.dto.RotationDTO;
 import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.dto.TurnoDTO;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.junit.jupiter.api.Assertions;
@@ -27,13 +26,13 @@ public class TestControllerTurni {
         INVALID
     }
 
-    private static TurnoDTO getTurnoDTOInstance(InstanceValidity validity) {
+    private static RotationDTO getTurnoDTOInstance(InstanceValidity validity) {
         List<MansioneEnum> mansioni = new ArrayList<>();
         mansioni.add(MansioneEnum.AMBULATORIO);
         ServizioDTO servizioDTO = new ServizioDTO("cardiologia", mansioni);
         switch (validity) {
             case VALID:
-                return new TurnoDTO(1,
+                return new RotationDTO(1,
                         TipologiaTurno.NOTTURNO,
                         LocalTime.of(22, 0),
                         Duration.ofHours(8),
@@ -43,7 +42,7 @@ public class TestControllerTurni {
                         null
                 );
             case INVALID:
-                return new TurnoDTO(1,
+                return new RotationDTO(1,
                         TipologiaTurno.MATTUTINO,
                         LocalTime.of(22, 0),
                         Duration.ofHours(8),
@@ -67,10 +66,10 @@ public class TestControllerTurni {
 
     @ParameterizedTest
     @MethodSource("creaTurnoParams")
-    public void testCreaTurno(TurnoDTO turnoDTO, boolean exceptionExpected) {
+    public void testCreaTurno(RotationDTO rotationDTO, boolean exceptionExpected) {
         ControllerTurni controllerTurni = new ControllerTurni();
         try {
-            controllerTurni.creaTurno(turnoDTO);
+            controllerTurni.creaTurno(rotationDTO);
             Assertions.assertFalse(exceptionExpected);
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,7 +78,7 @@ public class TestControllerTurni {
     }
 
     /*
-    * FAIL: NullPointerException su categorieVietate, ma non c'è modo di settare l'attributo categorieVietate nel TurnoDTO;
+    * FAIL: NullPointerException su categorieVietate, ma non c'è modo di settare l'attributo categorieVietate nel RotationDTO;
     * FAIL: non viene controllato il booleano giornoSuccessivo
     * */
 

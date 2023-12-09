@@ -15,8 +15,8 @@ public class RegistraAssegnazioneTurnoDTO {
     private TipologiaTurno tipologiaTurno;
 
     private MansioneEnum mansione;
-    private Set<UtenteDTO> utentiDiGuardia;
-    private Set<UtenteDTO> utentiReperibili;
+    private Set<DoctorDTO> utentiDiGuardia;
+    private Set<DoctorDTO> utentiReperibili;
     private ServizioDTO servizio;
     private boolean forced;
 

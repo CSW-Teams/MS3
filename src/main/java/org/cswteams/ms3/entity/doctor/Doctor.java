@@ -2,9 +2,7 @@ package org.cswteams.ms3.entity.doctor;
 
 import lombok.Data;
 import org.cswteams.ms3.entity.Desiderata;
-import org.cswteams.ms3.entity.category.Condition;
-import org.cswteams.ms3.entity.category.Rotation;
-import org.cswteams.ms3.entity.category.Specialization;
+import org.cswteams.ms3.entity.category.*;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 
@@ -57,7 +55,9 @@ public class Doctor {
     private List<Desiderata> desiderataList;
 
     @ManyToMany
-    private List<Condition> conditions;
+    private List<PermanentCondition> permanentConditions;
+    @ManyToMany
+    private List<TemporaryCondition> temporaryConditions;
 
     @ManyToMany
     private  List<Specialization> specializations;
@@ -83,7 +83,7 @@ public class Doctor {
         this.password = password;
         this.ruoloEnum = ruoloEnum;
         this.maxWeekSchedulableHours = -1;
-        this.conditions = new ArrayList<>();
+        this.permanentConditions = new ArrayList<>();
         this.specializations = new ArrayList<>();
         this.rotations = new ArrayList<>();
         this.desiderataList = new ArrayList<>();
@@ -108,25 +108,25 @@ public class Doctor {
 
      public Doctor(Long id, String name, String lastname, LocalDate birthDate,
                    String taxCode, RuoloEnum ruoloEnum, String email,
-                   String password, int maxWeekSchedulableHours, List<Condition> conditions, AttoreEnum attore) {
+                   String password, int maxWeekSchedulableHours, List<PermanentCondition> permanentConditions, AttoreEnum attore) {
 
         this(id,name, lastname, taxCode, birthDate, email, password, ruoloEnum, attore);
         this.maxWeekSchedulableHours = maxWeekSchedulableHours;
-        this.conditions = conditions;
+        this.permanentConditions = permanentConditions;
     }
 
 
     public Doctor(Long id, String name, String lastname, String taxCode,
                   LocalDate birthDate, String email, String password,
-                  RuoloEnum ruoloEnum, List<Condition> conditions, AttoreEnum attore) {
+                  RuoloEnum ruoloEnum, List<PermanentCondition> permanentConditions, AttoreEnum attore) {
         this(id,name, lastname, taxCode, birthDate, email, password, ruoloEnum, attore);
-        this.conditions = conditions;
+        this.permanentConditions = permanentConditions;
     }
 
-    public Doctor(Long id, String nome, String lastname, String taxCode, LocalDate birthDate, String email, RuoloEnum ruoloEnum, List<Condition> conditions,
+    public Doctor(Long id, String nome, String lastname, String taxCode, LocalDate birthDate, String email, RuoloEnum ruoloEnum, List<PermanentCondition> permanentConditions,
                   String password, List<Desiderata> desiderataList, AttoreEnum attore) {
         this(id,nome, lastname, taxCode, birthDate, email, password, ruoloEnum, attore);
-        this.conditions = conditions;
+        this.permanentConditions = permanentConditions;
         this.desiderataList = desiderataList;
     }
 

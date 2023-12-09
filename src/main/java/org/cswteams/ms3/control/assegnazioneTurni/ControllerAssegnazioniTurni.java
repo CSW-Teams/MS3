@@ -9,7 +9,7 @@ import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +56,11 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     @Override
     public AssegnazioneTurno creaTurnoAssegnato(@NotNull RegistraAssegnazioneTurnoDTO dto) throws AssegnazioneTurnoException {
 
-        Turno turno = turnoDao.findAllByServizioNomeAndTipologiaTurno(dto.getServizio().getNome(), dto.getTipologiaTurno()).get(0);
-        if(turno == null)
-            throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia turno: "+dto.getTipologiaTurno().toString());
+        Shift shift = turnoDao.findAllByServizioNomeAndTipologiaTurno(dto.getServizio().getNome(), dto.getTipologiaTurno()).get(0);
+        if(shift == null)
+            throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia shift: "+dto.getTipologiaTurno().toString());
 
-        AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()),turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
+        AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()), shift, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
 
         return assegnazioneTurnoDao.save(assegnazioneTurno);
     }
@@ -76,7 +76,7 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
         Set<AssegnazioneTurno> turniAllocatiERiserve = assegnazioneTurnoDao.findTurniUtente(idPersona);
         Set<AssegnazioneTurnoDTO> turniAllocati = new HashSet<>();
         for(AssegnazioneTurno assegnazioneTurno: turniAllocatiERiserve){
-            if(assegnazioneTurno.getTurno().isReperibilitaAttiva() || !utenteInReperibilita(assegnazioneTurno, idPersona))
+            if(assegnazioneTurno.getShift().isReperibilitaAttiva() || !utenteInReperibilita(assegnazioneTurno, idPersona))
                 turniAllocati.add(MappaAssegnazioneTurni.assegnazioneTurnoToDTO(assegnazioneTurno));
         }
         return turniAllocati;

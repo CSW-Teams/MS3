@@ -64,7 +64,7 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
         List<ConditionPolicy> brokenPolicies = new ArrayList<>();
 
         // confronta le policies con le categorie dell'utente
-        for(ConditionPolicy ucp : aTurno.getTurno().getCategoryPolicies()){
+        for(ConditionPolicy ucp : aTurno.getShift().getCategoryPolicies()){
 
             if(!checkPolicy(ucp, doctor, aTurno.getData())){
                 brokenPolicies.add(ucp);

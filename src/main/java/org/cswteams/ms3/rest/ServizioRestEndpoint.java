@@ -1,10 +1,7 @@
 package org.cswteams.ms3.rest;
 
-import org.cswteams.ms3.control.servizi.ControllerServizi;
 import org.cswteams.ms3.control.servizi.IControllerServizi;
-import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
