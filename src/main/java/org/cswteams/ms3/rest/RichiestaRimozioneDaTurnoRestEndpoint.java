@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/assegnazioneturni/richiesterimozione")
+@RequestMapping("/assegnazioneturni/richiesterimozione/")
 public class RichiestaRimozioneDaTurnoRestEndpoint {
 
     @Autowired

@@ -20,17 +20,19 @@ public interface RichiestaRimozioneDaTurnoDao extends JpaRepository<RichiestaRim
     List<RichiestaRimozioneDaTurno> findAllPending();
 
     /**
-     * Controlla se esiste già, in base dati, una richiesta di rimozione da turno assegnato
-     * per lo stesso utente e per lo stesso turno
+     * Ritorna una lista di tutte le richieste di rimozione da turno assegnato
+     * per una specifica <code>AssegnazioneTurno</code> ed uno specifico <code>Utente</code>.
+     * La cardinalità di tale lista dovrebbe essere sempre 0 o 1 (se la richiesta esiste, è unica).
      *
      * @param assegnazioneTurnoId id assegnazione turno
      * @param UtenteId            id utente
-     * @return <code>true</code> se già esistente in base dati, <code>false</code> altrimenti.
+     * @return lista, eventualmente vuota, di richieste di rimozione da turno assegnato per la specifica
+     * <code>AssegnazioneTurno</code> e per lo specifico <code>Utente</code>
      */
-    @Query("SELECT  1 " +
+    @Query("SELECT  r " +
             "FROM   RichiestaRimozioneDaTurno r " +
             "WHERE  r.assegnazioneTurno.id = ?1 " +
             "       AND " +
             "       r.utente.id = ?2")
-    boolean checkIfAlreadyPresent(Long assegnazioneTurnoId, Long UtenteId);
+    List<RichiestaRimozioneDaTurno> findAllByAssegnazioneTurnoIdAndUtenteId(Long assegnazioneTurnoId, Long UtenteId);
 }

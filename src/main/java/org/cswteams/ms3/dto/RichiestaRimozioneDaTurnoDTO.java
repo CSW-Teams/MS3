@@ -31,36 +31,13 @@ public class RichiestaRimozioneDaTurnoDTO {
     @NotEmpty
     String descrizione;
 
-    //-----------------------------------------
-    // TODO scremare gli attributi seguenti
-    private String nome;
-    private String cognome;
-    private String dataNascita;
-    private RuoloEnum ruoloEnum;
-    private List<CategoriaUtente> stato;
-    private List<CategoriaUtente> specializzazioni;
-
-
     public RichiestaRimozioneDaTurnoDTO() {
     }
 
-    public RichiestaRimozioneDaTurnoDTO(Long assegnazioneTurnoId,
-                                        Long utenteId,
-                                        String nome,
-                                        String cognome,
-                                        String dataNascita,
-                                        RuoloEnum ruoloEnum,
-                                        List<CategoriaUtente> stato,
-                                        List<CategoriaUtente> specializzazioni,
-                                        String descrizione) {
+    public RichiestaRimozioneDaTurnoDTO(Long assegnazioneTurnoId, Long utenteId, boolean esito, String descrizione) {
         this.assegnazioneTurnoId = assegnazioneTurnoId;
         this.utenteId = utenteId;
-        this.nome = nome;
-        this.cognome = cognome;
-        this.dataNascita = dataNascita;
-        this.ruoloEnum = ruoloEnum;
-        this.stato = stato;
-        this.specializzazioni = specializzazioni;
+        this.esito = esito;
         this.descrizione = descrizione;
     }
 }

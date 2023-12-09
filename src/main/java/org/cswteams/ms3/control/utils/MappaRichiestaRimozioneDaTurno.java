@@ -13,12 +13,7 @@ public class MappaRichiestaRimozioneDaTurno {
         return new RichiestaRimozioneDaTurnoDTO(
                 richiestaRimozioneDaTurno.getAssegnazioneTurno().getId(),
                 richiestaRimozioneDaTurno.getUtente().getId(),
-                richiestaRimozioneDaTurno.getUtente().getNome(),
-                richiestaRimozioneDaTurno.getUtente().getCognome(),
-                ConvertitoreData.daStandardVersoTestuale(richiestaRimozioneDaTurno.getUtente().getDataNascita().toString()),
-                richiestaRimozioneDaTurno.getUtente().getRuoloEnum(),
-                richiestaRimozioneDaTurno.getUtente().getStato(),
-                richiestaRimozioneDaTurno.getUtente().getSpecializzazioni(),
+                richiestaRimozioneDaTurno.isEsito(),
                 richiestaRimozioneDaTurno.getDescrizione());
     }
 

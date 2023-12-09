@@ -56,7 +56,7 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
 
     @Override
     public RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utente, @NotNull String descrizione) {
-        if (richiestaRimozioneDaTurnoDao.checkIfAlreadyPresent(assegnazioneTurno.getId(), utente.getId())) {
+        if (!richiestaRimozioneDaTurnoDao.findAllByAssegnazioneTurnoIdAndUtenteId(assegnazioneTurno.getId(), utente.getId()).isEmpty()) {
             throw new RuntimeException("Esiste già una richiesta di rimozione da turno assegnato per l'utente " + utente + " per il la assegnazione " + assegnazioneTurno);
         }
         if (!assegnazioneTurno.isAllocated(utente) && !assegnazioneTurno.isReserve(utente)) {
