@@ -26,7 +26,7 @@ import {
   AppointmentForm,
 } from '@devexpress/dx-react-scheduler-material-ui';
 import { ToastContainer, toast } from 'react-toastify';
-
+import 'react-toastify/dist/ReactToastify.css';
 import {
    EditingState,IntegratedEditing
 } from '@devexpress/dx-react-scheduler';
@@ -39,6 +39,9 @@ import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../../components/common/AssegnazioneTurnoModificaComponent';
 import ButtonLegalSchedulation from '../../components/common/ButtonLegalSchedulation';
 import { ShiftPrinterCSV } from "../../components/common/ShiftPrinterCSV";
+import {
+  RichiestaRimozioneDaTurnoAPI
+} from "../../API/RichiestaRimozioneDaTurnoAPI";
 
 
 /**
@@ -67,10 +70,6 @@ function ViolationLog(props){
  *
  */
 class ScheduleView extends React.Component{
-
-  async handleConfirmRetirement(e) {
-    e.setConfirmationDialogOpen(false);
-  }
 
     constructor(props) {
         super(props);
@@ -109,7 +108,10 @@ class ScheduleView extends React.Component{
              * "ABOUT_TO_ASK" --> Non abbiamo ancora chiesto i turni al backend, ma lo faremo appena possibile
              */
             shiftQueriedResponse: "ABOUT_TO_ASK",
-
+            idUser: localStorage.getItem("id"),
+            justification: "",
+            outcome: false,
+            idShift: 0
           };
           /**
            * All filtering functions.
@@ -149,6 +151,47 @@ class ScheduleView extends React.Component{
       this.setState({ mainResourceName });
     }
 
+
+    handleRetirement = async (justification, idShift) => {
+      this.state.justification = justification;
+      this.state.idShift = idShift;
+
+      const subState = {
+        assegnazioneTurnoId: this.state.idShift,
+        utenteId: this.state.idUser,
+        descrizione: this.state.justification,
+        esito: this.state.outcome
+      }
+
+      let richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
+      let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(subState);
+
+      console.log(httpResponse);  // todo remove
+
+      if (httpResponse.status === 202) {
+        toast.success('Richiesta inoltrata con successo', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+      } else {
+        toast.error('Non è stato possibile inoltrare la richiesta', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+      }
+    }
 
     /**
      * Questa funzione verrà invocata nel momento in cui il pianificatore effettua una modifica su una assegnazione turno.
@@ -471,7 +514,7 @@ class ScheduleView extends React.Component{
                     showCloseButton
                     showOpenButton
                     contentComponent={(props) => (
-                      <Content {...props} view={view} />
+                      <Content {...props} view={view} onRetirement={this.handleRetirement} />
                     )}
                   />
                 }
@@ -517,9 +560,4 @@ class ScheduleView extends React.Component{
 }
 
 export default ScheduleView;
-export const handleRetirement = async (justification) => {
-  let id = localStorage.getItem("id");
-  let utente = await(new UtenteAPI().getUserDetails(id));
-  console.log(justification);
-  console.log(utente.nome, utente.cognome);
-};
+
