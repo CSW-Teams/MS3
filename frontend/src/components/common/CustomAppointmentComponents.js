@@ -12,7 +12,7 @@ import { SchedulableType } from "../../API/Schedulable";
 import { UtenteAPI } from "../../API/UtenteAPI";
 import Button from "@mui/material/Button";
 
-import { handleRetirement } from '../../views/utente/ScheduleView';
+import ScheduleView, { handleRetirement } from '../../views/utente/ScheduleView';
 
 import {
   Dialog,
@@ -65,6 +65,7 @@ export const Content = ({
                           formatDate,
                           recurringIconComponent: RecurringIcon,
                           view,
+                          onRetirement,
                           ...restProps
                         }) => {
   const weekDays = viewBoundText(
@@ -77,7 +78,7 @@ export const Content = ({
 
   const handleConfirmRetirement = () => {
     setConfirmationDialogOpen(false);
-    handleRetirement(justification);
+    onRetirement(justification, appointmentData.id);
   }
 
   const openConfirmationDialog = () => {
