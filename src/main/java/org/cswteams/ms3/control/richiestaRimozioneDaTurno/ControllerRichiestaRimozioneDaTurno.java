@@ -8,6 +8,7 @@ import org.cswteams.ms3.dto.RichiestaRimozioneDaTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.RichiestaRimozioneDaTurno;
 import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,11 +30,11 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
     private UtenteDao utenteDao;
 
     @Override
-    public RichiestaRimozioneDaTurno creaRichiestaRimozioneDaTurno(@NotNull RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException {
+    public RichiestaRimozioneDaTurno creaRichiestaRimozioneDaTurno(@NotNull RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException {
         // 1. ricerca AssegnazioneTurno --------------------------------------------------------------
         Long assegnazioneTurnoId = richiestaRimozioneDaTurnoDTO.getAssegnazioneTurnoId();
         if (assegnazioneTurnoId == null) {
-            throw new NullPointerException("Id AssegnazioneTurno non valida");
+            throw new DatabaseException("Id AssegnazioneTurno non valida");
         }
         Optional<AssegnazioneTurno> assegnazioneTurno = assegnazioneTurnoDao.findById(assegnazioneTurnoId);
         if (assegnazioneTurno.isEmpty()) {
@@ -43,7 +44,7 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
         // 2. ricerca Utente -------------------------------------------------------------------------
         Long utenteId = richiestaRimozioneDaTurnoDTO.getUtenteId();
         if (utenteId == null) {
-            throw new NullPointerException("Id Utente non valido");
+            throw new DatabaseException("Id Utente non valido");
         }
         Optional<Utente> utente = utenteDao.findById(utenteId);
         if (utente.isEmpty()) {
@@ -55,12 +56,12 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
     }
 
     @Override
-    public RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utente, @NotNull String descrizione) {
+    public RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utente, @NotNull String descrizione) throws DatabaseException, AssegnazioneTurnoException {
         if (!richiestaRimozioneDaTurnoDao.findAllByAssegnazioneTurnoIdAndUtenteId(assegnazioneTurno.getId(), utente.getId()).isEmpty()) {
-            throw new RuntimeException("Esiste già una richiesta di rimozione da turno assegnato per l'utente " + utente + " per il la assegnazione " + assegnazioneTurno);
+            throw new DatabaseException("Esiste già una richiesta di rimozione da turno assegnato per l'utente " + utente + " per il la assegnazione " + assegnazioneTurno);
         }
         if (!assegnazioneTurno.isAllocated(utente) && !assegnazioneTurno.isReserve(utente)) {
-            throw new RuntimeException("L'utente " + utente + " non risulta essere coinvolto nella assegnazione turno " + assegnazioneTurno);
+            throw new AssegnazioneTurnoException("L'utente " + utente + " non risulta essere coinvolto nella assegnazione turno " + assegnazioneTurno);
         }
         RichiestaRimozioneDaTurno richiestaRimozioneDaTurno = new RichiestaRimozioneDaTurno(assegnazioneTurno, utente, descrizione);
         richiestaRimozioneDaTurnoDao.saveAndFlush(richiestaRimozioneDaTurno);

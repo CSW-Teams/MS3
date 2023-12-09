@@ -4,6 +4,7 @@ import org.cswteams.ms3.dto.RichiestaRimozioneDaTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.RichiestaRimozioneDaTurno;
 import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
 
 import java.util.Optional;
@@ -16,9 +17,10 @@ public interface IControllerRichiestaRimozioneDaTurno {
      *
      * @param richiestaRimozioneDaTurnoDTO DTO relativo all'oggetto richiesta
      * @return oggetto <code>RichiestaRimozioneDaTurno</code> relativo alla richiesta
-     * @throws DatabaseException in caso di errori durante la ricerca di dati in base dati
+     * @throws DatabaseException          in caso di errori durante la ricerca di dati in base dati
+     * @throws AssegnazioneTurnoException in caso di errori durante la ricerca di dati in base dati
      */
-    RichiestaRimozioneDaTurno creaRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException;
+    RichiestaRimozioneDaTurno creaRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException;
 
     /**
      * Registra una nuova richiesta di rimozione da turno, dati l'utente richiedente ed il turno per il quale si fa richiesta.
@@ -27,9 +29,10 @@ public interface IControllerRichiestaRimozioneDaTurno {
      * @param utente            l'utente facente richiesta di rimozione
      * @param descrizione       motivazione addotta alla richiesta di rimozione dal turno
      * @return oggetto <code>RichiestaRimozioneDaTurno</code> relativo alla richiesta
-     * @throws DatabaseException in caso di errori durante la ricerca di dati in base dati
+     * @throws DatabaseException          in caso di errori durante la ricerca di dati in base dati
+     * @throws AssegnazioneTurnoException in caso di errori durante la ricerca di dati in base dati
      */
-    RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(AssegnazioneTurno assegnazioneTurno, Utente utente, String descrizione) throws DatabaseException;
+    RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(AssegnazioneTurno assegnazioneTurno, Utente utente, String descrizione) throws DatabaseException, AssegnazioneTurnoException;
 
     /**
      * Lettura di tutte le richieste di rimozione da turno presenti in base dati.
