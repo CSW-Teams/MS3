@@ -5,6 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.cswteams.ms3.entity.category.Condition;
+import org.cswteams.ms3.entity.category.Rotation;
+import org.cswteams.ms3.entity.category.Specialization;
+import org.cswteams.ms3.entity.policy.ConditionPolicy;
+import org.cswteams.ms3.entity.policy.Policy;
+import org.cswteams.ms3.entity.policy.RotationPolicy;
+import org.cswteams.ms3.entity.policy.SpecializationPolicy;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
@@ -54,7 +61,19 @@ public class Turno {
      * Le categorie utenti richieste o vietate per questo turno
      */
     @OneToMany(cascade = CascadeType.ALL)
-    private List<UserCategoryPolicy> categoryPolicies;
+    private List<ConditionPolicy> conditionPolicies;
+
+    /**
+     * Le categorie utenti richieste o vietate per questo turno
+     */
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<RotationPolicy> rotationPolicies;
+
+    /**
+     * Le categorie utenti richieste o vietate per questo turno
+     */
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<SpecializationPolicy> specializationPolicies;
 
     public Turno(LocalTime oraInizio, Duration durata, Servizio servizio, MansioneEnum mansione, TipologiaTurno tipologia, List<RuoloNumero> ruoliNumero, boolean reperibilitaAttiva) throws  TurnoException {
 
@@ -109,22 +128,58 @@ public class Turno {
         return durata.toMinutes();
     }
 
-    public void setCategorieVietate(Set<Categoria> categorieVietate){
-        List<UserCategoryPolicy> policies = new ArrayList<>();
-        for (Categoria cu : categorieVietate) {
-            policies.add(new UserCategoryPolicy(cu, this, UserCategoryPolicyValue.EXCLUDE));
+    public void setBannedConditions(Set<Condition> categorieVietate){
+        List<ConditionPolicy> policies = new ArrayList<>();
+        for (Condition cu : categorieVietate) {
+            policies.add(new ConditionPolicy(cu, this, UserCategoryPolicyValue.EXCLUDE));
         }
-        this.setCategoryPolicies(policies);
+        this.setConditionPolicies(policies);
     }
 
-    public Set<Categoria> getCategorieVietate(){
-        Set<Categoria> categorieVietate = new HashSet<>();
-        for (UserCategoryPolicy p : this.getCategoryPolicies()) {
+    public void setBannedRotations(Set<Rotation> categorieVietate){
+        List<RotationPolicy> policies = new ArrayList<>();
+        for (Rotation cu : categorieVietate) {
+            policies.add(new RotationPolicy(cu, this, UserCategoryPolicyValue.EXCLUDE));
+        }
+        this.setRotationPolicies(policies);
+    }
+
+    public void setBannedSpecialization(Set<Specialization> categorieVietate){
+        List<SpecializationPolicy> policies = new ArrayList<>();
+        for (Specialization cu : categorieVietate) {
+            policies.add(new SpecializationPolicy(cu, this, UserCategoryPolicyValue.EXCLUDE));
+        }
+        this.setSpecializationPolicies(policies);
+    }
+
+    public Set<Condition> getBannedConditions(){
+        Set<Condition> bannedCategories = new HashSet<>();
+        for (ConditionPolicy p : this.getConditionPolicies()) {
             if (p.getPolicy().equals(UserCategoryPolicyValue.EXCLUDE)) {
-                categorieVietate.add(p.getCategoria());
+                bannedCategories.add(p.getCondition());
             }
         }
-        return categorieVietate;
+        return bannedCategories;
+    }
+
+    public Set<Rotation> getBannedRotations(){
+        Set<Rotation> bannedRotation = new HashSet<>();
+        for (RotationPolicy p : this.getRotationPolicies()) {
+            if (p.getPolicy().equals(UserCategoryPolicyValue.EXCLUDE)) {
+                bannedRotation.add(p.getRotation());
+            }
+        }
+        return bannedRotation;
+    }
+
+    public Set<Specialization> getBannedSpecializations(){
+        Set<Specialization> bannedSpecializations = new HashSet<>();
+        for (SpecializationPolicy p : this.getSpecializationPolicies()) {
+            if (p.getPolicy().equals(UserCategoryPolicyValue.EXCLUDE)) {
+                bannedSpecializations.add(p.getSpecialization());
+            }
+        }
+        return bannedSpecializations;
     }
 
     /**

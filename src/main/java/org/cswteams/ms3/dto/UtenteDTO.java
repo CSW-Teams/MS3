@@ -1,7 +1,6 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
-import org.cswteams.ms3.entity.CategoriaUtente;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 

@@ -3,7 +3,6 @@ package org.cswteams.ms3.control.giustificaForzatura;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.cswteams.ms3.dto.ServizioDTO;
 import org.cswteams.ms3.dto.UtenteDTO;
-import org.cswteams.ms3.entity.CategoriaUtente;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;

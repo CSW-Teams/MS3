@@ -1,9 +1,8 @@
 package org.cswteams.ms3.control.cambiaPassword;
 
-import org.cswteams.ms3.control.cambiaPassword.ControllerPassword;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.PasswordDTO;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,14 +32,14 @@ public class ControllerPasswordTest {
     @Autowired
     private ControllerPassword controllerPassword;
 
-    Utente savedUtente;
+    Doctor savedDoctor;
     Long userId;
 
     @BeforeEach
     public void setup() {
-        Utente utente = new Utente("Franco","Marinato", "FRMTN******", LocalDate.of(1994, 3, 14),"salvatimrtina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE );
-        savedUtente = utenteDao.save(utente);
-        userId = savedUtente.getId();
+        Doctor doctor = new Doctor("Franco","Marinato", "FRMTN******", LocalDate.of(1994, 3, 14),"salvatimrtina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE );
+        savedDoctor = utenteDao.save(doctor);
+        userId = savedDoctor.getId();
     }
 
     static Stream<Object[]> testData() {

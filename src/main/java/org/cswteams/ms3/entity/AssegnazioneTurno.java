@@ -3,6 +3,7 @@ package org.cswteams.ms3.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.Getter;
+import org.cswteams.ms3.entity.doctor.Doctor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -24,21 +25,21 @@ public class AssegnazioneTurno{
     /** Utenti assegnati per il turno. Da non confondere con la mansione GUARDIA */
     @Getter
     @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Utente> utentiDiGuardia;
+    private Set<Doctor> utentiDiGuardia;
 
     /** Utenti in riserva per il turno. Questi utenti sono eligibili per L'assegnazione al turno,
      * ma non sono stati assegnati. Da non confondere con la reperibilità prevista dalla mansione GUARDIA
      */
     @Getter
     @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Utente> utentiReperibili;
+    private Set<Doctor> utentiReperibili;
 
     /**
      * Utenti rimossi dall'assegnazione turno, ad esempio per una rinuncia dell'utente stesso,
      * oppure a causa di uno scambio.
      */
     @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Utente> retiredUsers;
+    private Set<Doctor> retiredDoctors;
 
     @Getter
     private long dataEpochDay;
@@ -51,11 +52,11 @@ public class AssegnazioneTurno{
 
     }
 
-    public AssegnazioneTurno(LocalDate data, Turno turno, Set<Utente> utentiReperibili, Set<Utente> utentiDiGuardia) {
+    public AssegnazioneTurno(LocalDate data, Turno turno, Set<Doctor> utentiReperibili, Set<Doctor> utentiDiGuardia) {
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
-        this.retiredUsers = new HashSet<>();
+        this.retiredDoctors = new HashSet<>();
         this.turno = turno;
     }
 
@@ -63,21 +64,21 @@ public class AssegnazioneTurno{
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = new HashSet<>();
         this.utentiReperibili = new HashSet<>();
-        this.retiredUsers = new HashSet<>();
+        this.retiredDoctors = new HashSet<>();
         this.turno = turno;
     }
 
-    public AssegnazioneTurno(Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, long dataEpochDay, Turno turno) {
+    public AssegnazioneTurno(Set<Doctor> utentiDiGuardia, Set<Doctor> utentiReperibili, long dataEpochDay, Turno turno) {
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.dataEpochDay = dataEpochDay;
-        this.retiredUsers = new HashSet<>();
+        this.retiredDoctors = new HashSet<>();
         this.turno = turno;
     }
 
-    private boolean isUserIn(Utente u, List<Utente> utenti){
-        for (Utente utente : utenti) {
-            if (utente.getId().equals(u.getId())) {
+    private boolean isUserIn(Doctor u, List<Doctor> utenti){
+        for (Doctor doctor : utenti) {
+            if (doctor.getId().equals(u.getId())) {
                 return true;
             }
         }
@@ -87,7 +88,7 @@ public class AssegnazioneTurno{
     /**
      * true se l'utente è assegnato al turno tra gli allocati
      */
-    public boolean isAllocated(Utente u){
+    public boolean isAllocated(Doctor u){
 
         return isUserIn(u, new ArrayList<>(utentiDiGuardia));
     }
@@ -96,8 +97,8 @@ public class AssegnazioneTurno{
      * true se l'utente è stato assegnato al turno in precedenza
      * ma non è più assegnato ora.
      */
-    public boolean isRetired(Utente u){
-        return isUserIn(u, new ArrayList<>(retiredUsers));
+    public boolean isRetired(Doctor u){
+        return isUserIn(u, new ArrayList<>(retiredDoctors));
     }
 
     /**
@@ -105,12 +106,12 @@ public class AssegnazioneTurno{
      * Se il turno prevede la reperibilità, l'appartenenza dell'utente 
      * alle riserve implica che esso è in reperiilità.
      */
-    public boolean isReserve(Utente u){
+    public boolean isReserve(Doctor u){
         return isUserIn(u, new ArrayList<>(utentiReperibili));
     }
 
-    public Set<Utente> getUtenti(){
-        Set<Utente> utenti = new HashSet<>();
+    public Set<Doctor> getUtenti(){
+        Set<Doctor> utenti = new HashSet<>();
         utenti.addAll(utentiDiGuardia);
         utenti.addAll(utentiReperibili);
         return utenti;
@@ -120,17 +121,17 @@ public class AssegnazioneTurno{
         return LocalDate.ofEpochDay(this.dataEpochDay);
     }
 
-    public List<Utente> getUtentiAsList(){
-        List<Utente> utenti = new ArrayList<>();
+    public List<Doctor> getUtentiAsList(){
+        List<Doctor> utenti = new ArrayList<>();
         utenti.addAll(utentiDiGuardia);
         utenti.addAll(utentiReperibili);
         return utenti;
     }
 
-    public void addUtentediGuardia(Utente u) {
+    public void addUtentediGuardia(Doctor u) {
         this.utentiDiGuardia.add(u);
     }
-    public void addUtenteReperibile(Utente u) {
+    public void addUtenteReperibile(Doctor u) {
         this.utentiReperibili.add(u);
     }
 

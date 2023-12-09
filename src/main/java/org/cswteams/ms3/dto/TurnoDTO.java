@@ -2,7 +2,6 @@ package org.cswteams.ms3.dto;
 
 import lombok.Data;
 import lombok.Getter;
-import org.cswteams.ms3.entity.Categoria;
 import org.cswteams.ms3.entity.RuoloNumero;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;

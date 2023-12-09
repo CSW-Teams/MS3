@@ -1,5 +1,7 @@
 package org.cswteams.ms3;
 
+import org.cswteams.ms3.entity.doctor.Doctor;
+import org.cswteams.ms3.entity.policy.ConditionPolicy;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloMaxPeriodoConsecutivo;
@@ -68,33 +70,33 @@ public class VincoloMaxPeriodoConsecutivoTest {
         Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.NOTTURNO, true);
         //Turno t4 = new Turno(LocalTime.of(0, 0), LocalTime.of(8, 0), servizio1, TipologiaTurno.NOTTURNO, new HashSet<>(Arrays.asList(CategoriaUtentiEnum.DONNA_INCINTA, CategoriaUtentiEnum.OVER_62, CategoriaUtentiEnum.IN_MALATTIA, CategoriaUtentiEnum.IN_FERIE)));
 
-        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t1, UserCategoryPolicyValue.EXCLUDE));
-        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t1, UserCategoryPolicyValue.EXCLUDE));
-        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE));
-        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t2, UserCategoryPolicyValue.EXCLUDE));
-        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaIncinta, t3, UserCategoryPolicyValue.EXCLUDE));
-        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaOVER62, t3, UserCategoryPolicyValue.EXCLUDE));
-        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE));
-        userCategoryPolicyDao.save(new UserCategoryPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new ConditionPolicy(categoriaOVER62, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new ConditionPolicy(categoriaIncinta, t1, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new ConditionPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new ConditionPolicy(categoriaFerie, t2, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new ConditionPolicy(categoriaIncinta, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new ConditionPolicy(categoriaOVER62, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new ConditionPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE));
+        userCategoryPolicyDao.save(new ConditionPolicy(categoriaFerie, t3, UserCategoryPolicyValue.EXCLUDE));
 
         turnoDao.save(t1);
         turnoDao.save(t2);
         turnoDao.save(t3);
         //turnoDao.save(t4);
         //Crea utente
-        Utente utente = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
-        utenteDao.save(utente);
+        Doctor doctor = new Doctor("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
+        utenteDao.save(doctor);
 
         //Aggiungi assegnazione turno
-        AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
-        AssegnazioneTurno turnoNotturno = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
+        AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor)));
+        AssegnazioneTurno turnoNotturno = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor)));
         assegnazioneTurnoDao.save(turnoPomeriggio);
         assegnazioneTurnoDao.save(turnoNotturno);
 
         Schedule scheduleTest = new Schedule();
         scheduleTest.setAssegnazioniTurno(new ArrayList<>(Collections.singletonList(turnoPomeriggio)));
 
-        UserScheduleState pregUserState = new UserScheduleState(utente, scheduleTest);
+        UserScheduleState pregUserState = new UserScheduleState(doctor, scheduleTest);
 
         Vincolo vincoloMaxOreConsecutive = new VincoloMaxPeriodoConsecutivo(12*60);
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
@@ -119,18 +121,18 @@ public class VincoloMaxPeriodoConsecutivoTest {
         //turnoDao.save(t4);
         CategoriaUtente over62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2023, 1, 4), LocalDate.of(2100, 10, 4));
         //Crea utente
-        Utente over62user = new Utente("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com","", RuoloEnum.STRUTTURATO ,AttoreEnum.UTENTE );
-        over62user.getStato().add(over62);
+        Doctor over62Doctor = new Doctor("Stefano","Rossi", "STFRSS******", LocalDate.of(1953, 3, 14),"stfrss@gmail.com","", RuoloEnum.STRUTTURATO ,AttoreEnum.UTENTE );
+        over62Doctor.getStato().add(over62);
 
         //Aggiungi assegnazione turno
-        AssegnazioneTurno turnoMattina = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(over62user)));
-        AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(over62user)));
-        AssegnazioneTurno turnoNotturno = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,new HashSet<>(),new HashSet<>(Collections.singletonList(over62user)));
+        AssegnazioneTurno turnoMattina = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(over62Doctor)));
+        AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(over62Doctor)));
+        AssegnazioneTurno turnoNotturno = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,new HashSet<>(),new HashSet<>(Collections.singletonList(over62Doctor)));
 
         Schedule scheduleTest = new Schedule();
         scheduleTest.setAssegnazioniTurno(new ArrayList<>(Arrays.asList(turnoMattina,turnoNotturno)));
 
-        UserScheduleState pregUserState = new UserScheduleState(over62user, scheduleTest);
+        UserScheduleState pregUserState = new UserScheduleState(over62Doctor, scheduleTest);
 
       //  Vincolo vincoloMaxOreConsecutive = new VincoloMaxPeriodoConsecutivo(9*60, Collections.singletonList(categoriaOVER62));
 

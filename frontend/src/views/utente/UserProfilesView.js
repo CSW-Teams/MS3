@@ -82,8 +82,8 @@ export default class UserProfilesView extends React.Component{
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                       <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>Informazioni Utenti</MDBCardTitle>
                       {this.state.attore === "CONFIGURATORE" && (
-                        <Button variant="contained" color="primary" href="/nuovo-utente" style={{ marginLeft: 450, marginBottom: 10 }}>
-                          Registra nuovo utente
+                        <Button variant="contained" color="primary" href="/nuovo-doctor" style={{ marginLeft: 450, marginBottom: 10 }}>
+                          Registra nuovo doctor
                         </Button>
                       )}
                     </div>
@@ -110,8 +110,8 @@ export default class UserProfilesView extends React.Component{
                     <td>{data.cognome}</td>
                     <td>{data.dataNascita}</td>
                     <td>{data.ruoloEnum}</td>
-                    {this.state.attore==="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
-                    {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
+                    {this.state.attore==="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-doctor/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
+                    {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-doctor/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
                   </tr>
                 )
               })}

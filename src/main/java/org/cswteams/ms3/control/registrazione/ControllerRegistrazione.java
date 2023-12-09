@@ -4,7 +4,7 @@ import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.RegistrazioneDTO;
 import org.cswteams.ms3.dto.UtenteDTO;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -81,8 +81,8 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
     }
 
     private boolean checkEmail(String email) {
-        Utente utente = utenteDao.findByEmail(email);
-        return utente == null;
+        Doctor doctor = utenteDao.findByEmail(email);
+        return doctor == null;
     }
 
 
@@ -95,7 +95,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
             return null;
         }
 
-        Utente u = new Utente(registrazioneDTO.getNome(),
+        Doctor u = new Doctor(registrazioneDTO.getNome(),
                 registrazioneDTO.getCognome(),
                 registrazioneDTO.getCodiceFiscale(),
                 registrazioneDTO.getDataNascita(),

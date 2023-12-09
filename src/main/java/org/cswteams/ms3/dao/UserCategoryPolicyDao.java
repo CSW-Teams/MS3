@@ -1,9 +1,11 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.entity.UserCategoryPolicy;
+import org.cswteams.ms3.entity.policy.ConditionPolicy;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface UserCategoryPolicyDao extends JpaRepository<UserCategoryPolicy, Long>{
+@Repository
+public interface UserCategoryPolicyDao extends JpaRepository<ConditionPolicy, Long>{
 
 
     

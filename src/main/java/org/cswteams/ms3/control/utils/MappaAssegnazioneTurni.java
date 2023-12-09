@@ -33,7 +33,7 @@ public class MappaAssegnazioneTurni {
 
         Set<UtenteDTO> diGuardiaDto = MappaUtenti.utentiEntitytoDTO(entity.getUtentiDiGuardia());
         Set<UtenteDTO> reperibiliDto = MappaUtenti.utentiEntitytoDTO(entity.getUtentiReperibili());
-        Set<UtenteDTO> rimossiDto = MappaUtenti.utentiEntitytoDTO(entity.getRetiredUsers());
+        Set<UtenteDTO> rimossiDto = MappaUtenti.utentiEntitytoDTO(entity.getRetiredDoctors());
 
         AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(), entity.getTurno().getId(), inizioEpoch, fineEpoch, diGuardiaDto, reperibiliDto, MappaServizio.servizioEntitytoDTO(entity.getTurno().getServizio()), entity.getTurno().getTipologiaTurno(), entity.getTurno().isReperibilitaAttiva());
         dto.setMansione(entity.getTurno().getMansione());

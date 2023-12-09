@@ -2,10 +2,8 @@ package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
 import org.cswteams.ms3.entity.Desiderata;
-import org.cswteams.ms3.enums.TipologiaTurno;
 
 import javax.persistence.Entity;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -27,7 +25,7 @@ public class ScocciaturaDesiderata extends Scocciatura {
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        List<Desiderata> desiderate = contesto.getUserScheduleState().getUtente().getDesiderataList();
+        List<Desiderata> desiderate = contesto.getUserScheduleState().getDoctor().getDesiderataList();
 
         for(Desiderata desiderata: desiderate){
             if(desiderata.getData().equals(contesto.getAssegnazioneTurno().getData()))

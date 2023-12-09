@@ -1,6 +1,5 @@
 package org.cswteams.ms3.control.desiderata;
 
-import org.cswteams.ms3.control.desiderata.IControllerDesiderata;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.DesiderataDTO;
 import org.cswteams.ms3.entity.Desiderata;
@@ -50,7 +49,7 @@ public class ControllerDesiderataTest {
         Assert.assertEquals(16, desiderata.getData().getDayOfMonth());
         Assert.assertEquals(2, desiderata.getData().getMonthValue());
         Assert.assertEquals(2024, desiderata.getData().getYear());
-        Assert.assertEquals(utenteId, (long) desiderata.getUtente().getId());
+        Assert.assertEquals(utenteId, (long) desiderata.getDoctor().getId());
 
     }
 
@@ -72,7 +71,7 @@ public class ControllerDesiderataTest {
         Assert.assertEquals(16, desiderata.getData().getDayOfMonth());
         Assert.assertEquals(2, desiderata.getData().getMonthValue());
         Assert.assertEquals(2024, desiderata.getData().getYear());
-        Assert.assertEquals(utenteId, (long) desiderata.getUtente().getId());
+        Assert.assertEquals(utenteId, (long) desiderata.getDoctor().getId());
 
     }
 
@@ -146,12 +145,12 @@ public class ControllerDesiderataTest {
         Assert.assertEquals(16, listaDesiderata.get(0).getData().getDayOfMonth());
         Assert.assertEquals(2, listaDesiderata.get(0).getData().getMonthValue());
         Assert.assertEquals(2024, listaDesiderata.get(0).getData().getYear());
-        Assert.assertEquals(utenteId, (long) listaDesiderata.get(0).getUtente().getId());
+        Assert.assertEquals(utenteId, (long) listaDesiderata.get(0).getDoctor().getId());
 
         Assert.assertEquals(26, listaDesiderata.get(1).getData().getDayOfMonth());
         Assert.assertEquals(5, listaDesiderata.get(1).getData().getMonthValue());
         Assert.assertEquals(2024, listaDesiderata.get(1).getData().getYear());
-        Assert.assertEquals(utenteId, (long) listaDesiderata.get(1).getUtente().getId());
+        Assert.assertEquals(utenteId, (long) listaDesiderata.get(1).getDoctor().getId());
 
     }
 

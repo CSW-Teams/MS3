@@ -1,10 +1,8 @@
 package org.cswteams.ms3.control.preferenze;
 
-import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.dao.HolidayDao;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.HolidayCategory;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;

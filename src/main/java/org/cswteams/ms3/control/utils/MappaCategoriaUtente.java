@@ -1,13 +1,8 @@
 package org.cswteams.ms3.control.utils;
 
 
-import org.cswteams.ms3.dao.CategorieDao;
 import org.cswteams.ms3.dto.CategoriaUtenteDTO;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.entity.CategoriaUtente;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;

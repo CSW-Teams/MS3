@@ -1,8 +1,9 @@
 package org.cswteams.ms3.entity.vincoli;
 
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.doctor.Doctor;
+import org.cswteams.ms3.entity.policy.ConditionPolicy;
 import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloCategorieUtenteTurnoException;
 
@@ -22,12 +23,12 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
      * 
      * @return @{code true} se la policy è rispettata, {@code false} altrimenti
      */
-    private boolean checkPolicy(UserCategoryPolicy ucp, Utente utente, LocalDate dataTurno){
-        
+    private boolean checkPolicy(ConditionPolicy ucp, Doctor doctor, LocalDate dataTurno){
+        /*
         // Se sto considerando lo specializzando non prendo in considerazione categorie di tipo specializzazione,
         // Se sto considerando lo strutturato, non prendo in considerazione categorie di tipo turnazione
         TipoCategoriaEnum tipoCategoria = ucp.getCategoria().getTipo();
-        if((tipoCategoria == TipoCategoriaEnum.SPECIALIZZAZIONE && utente.getRuoloEnum() == RuoloEnum.SPECIALIZZANDO) || (tipoCategoria == TipoCategoriaEnum.TURNAZIONE && utente.getRuoloEnum() == RuoloEnum.STRUTTURATO)){
+        if((tipoCategoria == TipoCategoriaEnum.SPECIALIZZAZIONE && doctor.getRuoloEnum() == RuoloEnum.SPECIALIZZANDO) || (tipoCategoria == TipoCategoriaEnum.TURNAZIONE && doctor.getRuoloEnum() == RuoloEnum.STRUTTURATO)){
             return true;
         }
 
@@ -35,13 +36,13 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
         List<CategoriaUtente> daControllare = new ArrayList<>();
         switch(tipoCategoria.toString()){
             case "STATO":
-                daControllare = utente.getStato();
+                daControllare = doctor.getStato();
                 break;
             case "SPECIALIZZAZIONE":
-                daControllare = utente.getSpecializzazioni();
+                daControllare = doctor.getSpecializzazioni();
                 break;
             case "TURNAZIONE":
-                daControllare = utente.getTurnazioni();
+                daControllare = doctor.getTurnazioni();
                 break;
         }
         
@@ -52,26 +53,27 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
             }
         }
 
-        return ucp.getPolicy() == UserCategoryPolicyValue.EXCLUDE;
+        return ucp.getPolicy() == UserCategoryPolicyValue.EXCLUDE;*/
+        return true;
     }
     
     @Override
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
-        Utente utente = contesto.getUserScheduleState().getUtente();
+        /*Doctor doctor = contesto.getUserScheduleState().getDoctor();
         AssegnazioneTurno aTurno = contesto.getAssegnazioneTurno();
-        List<UserCategoryPolicy> brokenPolicies = new ArrayList<>();
+        List<ConditionPolicy> brokenPolicies = new ArrayList<>();
 
         // confronta le policies con le categorie dell'utente
-        for(UserCategoryPolicy ucp : aTurno.getTurno().getCategoryPolicies()){
+        for(ConditionPolicy ucp : aTurno.getTurno().getCategoryPolicies()){
 
-            if(!checkPolicy(ucp, utente, aTurno.getData())){
+            if(!checkPolicy(ucp, doctor, aTurno.getData())){
                 brokenPolicies.add(ucp);
             }
                 
         }
         if(!brokenPolicies.isEmpty()){
-            throw new ViolatedVincoloCategorieUtenteTurnoException(aTurno, brokenPolicies, utente);
+            throw new ViolatedVincoloCategorieUtenteTurnoException(aTurno, brokenPolicies, doctor);
         }
-
+*/
     }
 }

@@ -13,10 +13,9 @@ import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
-import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -211,9 +210,9 @@ public class ControllerScheduler implements IControllerScheduler{
 
     private boolean checkAssegnazioneTurno(@NotNull AssegnazioneTurno turno) {
 
-        for(Utente utente1: turno.getUtentiDiGuardia()){
-            for(Utente utente2: turno.getUtentiReperibili()){
-                if (utente1.getId().longValue() == utente2.getId().longValue()){
+        for(Doctor doctor1 : turno.getUtentiDiGuardia()){
+            for(Doctor doctor2 : turno.getUtentiReperibili()){
+                if (doctor1.getId().longValue() == doctor2.getId().longValue()){
                     return false;
                 }
             }
@@ -236,7 +235,7 @@ public class ControllerScheduler implements IControllerScheduler{
         AssegnazioneTurno assegnazioneTurnoOld  = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
         AssegnazioneTurno assegnazioneTurnoNew = assegnazioneTurnoOld.clone();
 
-        List<Utente> allUsersOld = assegnazioneTurnoOld.getUtentiAsList();
+        List<Doctor> allUsersOld = assegnazioneTurnoOld.getUtentiAsList();
 
         //Apporto le modifiche sugli utenti allocati , se necessario
         if(modificaAssegnazioneTurnoDTO.getUtenti_guardia()!= null){
@@ -259,13 +258,13 @@ public class ControllerScheduler implements IControllerScheduler{
          * presenti nella nuova asegnazione turno come utenti rimossi, oltre a quelli che
          * gia erano segnati come rimossi nella vecchia assegnazione turno
          */
-        assegnazioneTurnoNew.setRetiredUsers(new HashSet<>());
-        for (Utente utente: allUsersOld) {
-            if (!assegnazioneTurnoNew.isAllocated(utente) && !assegnazioneTurnoNew.isReserve(utente)){
-                assegnazioneTurnoNew.getRetiredUsers().add(utente);
+        assegnazioneTurnoNew.setRetiredDoctors(new HashSet<>());
+        for (Doctor doctor : allUsersOld) {
+            if (!assegnazioneTurnoNew.isAllocated(doctor) && !assegnazioneTurnoNew.isReserve(doctor)){
+                assegnazioneTurnoNew.getRetiredDoctors().add(doctor);
             }
         }
-        assegnazioneTurnoNew.getRetiredUsers().addAll(assegnazioneTurnoOld.getRetiredUsers());
+        assegnazioneTurnoNew.getRetiredDoctors().addAll(assegnazioneTurnoOld.getRetiredDoctors());
         
         //rimuovo la vecchia assegnazione e provo ad aggiungere la nuova
         this.rimuoviAssegnazioneTurnoSchedulo(assegnazioneTurnoOld);

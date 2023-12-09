@@ -2,9 +2,6 @@ package org.cswteams.ms3.control.utils;
 
 import lombok.Data;
 import org.cswteams.ms3.dto.CategoriaDTO;
-import org.cswteams.ms3.dto.CategoriaUtenteDTO;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.entity.CategoriaUtente;
 
 import java.util.HashSet;
 import java.util.Set;

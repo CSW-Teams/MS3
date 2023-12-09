@@ -21,7 +21,7 @@ public class VincoloUbiquità extends VincoloAssegnazioneTurnoTurno{
                 LocalDateTime endB = startB.plus(contesto.getAssegnazioneTurno().getTurno().getDurata());
 
                 if(!((startA.isBefore(startB) && (endA.isBefore(startB) || endA.isEqual(startB))) || (startB.isBefore(startA) && (endB.isBefore(startA) || endB.isEqual(startA))))){
-                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), turnoAssegnato, contesto.getUserScheduleState().getUtente());
+                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), turnoAssegnato, contesto.getUserScheduleState().getDoctor());
                 }
             }
         }

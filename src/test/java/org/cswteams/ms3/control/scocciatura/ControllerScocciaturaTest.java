@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.scocciatura;
 
-import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.entity.scocciature.*;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
@@ -47,9 +47,9 @@ public class ControllerScocciaturaTest {
         Turno turno = new Turno();
         turno.setTipologiaTurno(TipologiaTurno.MATTUTINO);
 
-        Utente utente = new Utente("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE );
+        Doctor doctor = new Doctor("Martina","Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE );
         UserScheduleState userScheduleState = new UserScheduleState();
-        userScheduleState.setUtente(utente);
+        userScheduleState.setDoctor(doctor);
 
         AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(LocalDate.of(2023, 11, 20), turno);
         ContestoScocciatura contestoScocciatura = new ContestoScocciatura(userScheduleState, assegnazioneTurno);

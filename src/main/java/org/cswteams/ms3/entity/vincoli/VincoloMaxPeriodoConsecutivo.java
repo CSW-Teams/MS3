@@ -2,8 +2,6 @@ package org.cswteams.ms3.entity.vincoli;
 
 import lombok.Data;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.entity.CategoriaUtente;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
@@ -86,7 +84,7 @@ public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno 
                 minutiConsecutivi += turno.getTurno().getMinutidiLavoro();
             }
             if (minutiConsecutivi > maxConsecutiveMinutes) {
-                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getUtente(), maxConsecutiveMinutes);
+                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getDoctor(), maxConsecutiveMinutes);
             }
         }
 
@@ -97,7 +95,7 @@ public class VincoloMaxPeriodoConsecutivo extends VincoloAssegnazioneTurnoTurno 
         if(categoriaVincolata == null){
             return true;
         }
-         for (CategoriaUtente categoriaUtente : contesto.getUserScheduleState().getUtente().getStato()) {
+         for (CategoriaUtente categoriaUtente : contesto.getUserScheduleState().getDoctor().getStato()) {
              if (categoriaUtente.getCategoria().getNome().compareTo(categoriaVincolata.getNome()) == 0) {
                  if ((categoriaUtente.getInizioValidità().isBefore(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getInizioValidità().isEqual(contesto.getAssegnazioneTurno().getData())) && (categoriaUtente.getFineValidità().isAfter(contesto.getAssegnazioneTurno().getData()) || categoriaUtente.getFineValidità().isEqual(contesto.getAssegnazioneTurno().getData()))) {
                      return true;

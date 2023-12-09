@@ -1,10 +1,7 @@
 package org.cswteams.ms3.control.categorie;
 
-import org.cswteams.ms3.control.categorie.IControllerCategorie;
-import org.cswteams.ms3.dao.CategorieDao;
+import org.cswteams.ms3.dao.ConditionDao;
 import org.cswteams.ms3.dto.CategoriaDTO;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,8 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import javax.transaction.Transactional;
 
 import java.text.ParseException;
 import java.util.List;
@@ -34,7 +29,7 @@ public class TestControllerCategorieMisc {
     private IControllerCategorie controller ;
 
     @Autowired
-    private CategorieDao dao ;
+    private ConditionDao dao ;
 
     @Test
     public void testNullCategoryInsertion() {

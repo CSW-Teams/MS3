@@ -1,16 +1,15 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.entity.Desiderata;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
+@Repository
+public interface UtenteDao extends JpaRepository<Doctor,Long> {
 
-public interface UtenteDao extends JpaRepository<Utente,Long> {
+     Doctor findById(long id);
+     Doctor findByEmailAndPassword(String email, String password);
 
-     Utente findById(long id);
-     Utente findByEmailAndPassword(String email, String password);
-
-     Utente findByEmail(String email);
+     Doctor findByEmail(String email);
 
 }

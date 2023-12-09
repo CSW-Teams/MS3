@@ -1,7 +1,6 @@
 package org.cswteams.ms3.entity.vincoli;
 
 import lombok.Data;
-import org.cswteams.ms3.entity.Categoria;
 
 import javax.persistence.*;
 
@@ -15,7 +14,7 @@ public class ConfigVincoloMaxPeriodoConsecutivo {
     private Long id;
 
     @ManyToOne
-    private Categoria categoriaVincolata;
+    private Condifdio categoriaVincolata;
 
     private int numMaxMinutiConsecutivi;
 

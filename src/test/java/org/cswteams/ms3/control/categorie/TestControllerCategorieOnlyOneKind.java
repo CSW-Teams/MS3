@@ -1,11 +1,7 @@
 package org.cswteams.ms3.control.categorie;
 
-import lombok.RequiredArgsConstructor;
-import org.cswteams.ms3.control.categorie.IControllerCategorie;
-import org.cswteams.ms3.dao.CategorieDao;
+import org.cswteams.ms3.dao.ConditionDao;
 import org.cswteams.ms3.dto.CategoriaDTO;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -17,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
@@ -44,7 +39,7 @@ public class TestControllerCategorieOnlyOneKind {
     public final SpringMethodRule smr = new SpringMethodRule();
 
     @Autowired
-    private CategorieDao categorieDao ;
+    private ConditionDao conditionDao;
 
     @Autowired
     private IControllerCategorie controller ;
@@ -75,7 +70,7 @@ public class TestControllerCategorieOnlyOneKind {
 
         for (int i = 0 ; i < categorySize ; i++) {
 
-            categorieDao.save(new Categoria(String.format("%d", i), categoria)) ;
+            conditionDao.save(new Categoria(String.format("%d", i), categoria)) ;
         }
     }
 

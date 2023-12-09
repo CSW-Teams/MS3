@@ -1,9 +1,7 @@
 package org.cswteams.ms3.control.vincoli;
 
-import org.cswteams.ms3.control.vincoli.IControllerVincolo;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.vincoli.*;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,7 +32,7 @@ public class ControllerVincoloTest {
     private IControllerVincolo controllerVincolo;
 
     @Autowired
-    private CategorieDao categorieDao;
+    private ConditionDao conditionDao;
 
     @Autowired
     private ConfigVincoloMaxPeriodoConsecutivoDao configVincoloMaxPeriodoConsecutivoDao;
@@ -61,11 +59,11 @@ public class ControllerVincoloTest {
         //VincoloMaxPeriodoConsecutivo
         VincoloMaxPeriodoConsecutivo vincoloPeriodoConsecutivoOver62 = new VincoloMaxPeriodoConsecutivo(
                 360,
-                categorieDao.findAllByNome("OVER_62")
+                conditionDao.findAllByNome("OVER_62")
         );
         VincoloMaxPeriodoConsecutivo vincoloPeriodoConsecutivoIncinta = new VincoloMaxPeriodoConsecutivo(
                 360,
-                categorieDao.findAllByNome("INCINTA")
+                conditionDao.findAllByNome("INCINTA")
         );
         List<Vincolo> vincoliMaxPeriodoConsecutivo = new LinkedList<>(Arrays.asList(vincoloPeriodoConsecutivoOver62, vincoloPeriodoConsecutivoIncinta));
 

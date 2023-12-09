@@ -67,7 +67,7 @@ public class VincoloTipologieTurniContigue extends VincoloAssegnazioneTurnoTurno
             for (AssegnazioneTurno at : ats) {
                 if (at.getTurno().getTipologiaTurno() == tipologiaTurno
                         && verificaContiguitàAssegnazioneTurni(at, contesto.getAssegnazioneTurno(), tUnit, horizon)) {
-                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(at, contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getUtente());
+                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(at, contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getDoctor());
                 }
             }
         }

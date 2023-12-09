@@ -1,12 +1,8 @@
 package org.cswteams.ms3.control.utente;
 
-import org.cswteams.ms3.control.utente.ControllerUtente;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.UtenteDTO;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.entity.CategoriaUtente;
 import org.cswteams.ms3.enums.AttoreEnum;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +28,7 @@ import static org.junit.Assert.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt. It means that
 @Transactional
 @ActiveProfiles(value = "test")
-public class TestUtenteController {
+public class TestDoctorController {
 
     @Autowired
     private ControllerUtente controller ;

@@ -8,7 +8,7 @@ import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.cswteams.ms3.entity.Liberatoria;
 import org.cswteams.ms3.entity.GiustificazioneForzaturaVincoli;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -32,7 +32,7 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
     @Override
     public void saveGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoliDTO) {
         //giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
-        Utente giustificatore = utenteDao.findById(Long.parseLong(giustificazioneForzaturaVincoliDTO.getUtenteGiustificatoreId()));
+        Doctor giustificatore = utenteDao.findById(Long.parseLong(giustificazioneForzaturaVincoliDTO.getUtenteGiustificatoreId()));
         GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(),giustificazioneForzaturaVincoliDTO.getTipologiaTurno(), MappaServizio.servizioDTOtoEntity(giustificazioneForzaturaVincoliDTO.getServizio()),LocalDate.of(giustificazioneForzaturaVincoliDTO.getAnno(), giustificazioneForzaturaVincoliDTO.getMese(), giustificazioneForzaturaVincoliDTO.getGiorno()), MappaUtenti.utenteDTOtoEntity(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()), giustificatore);
         giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
     }

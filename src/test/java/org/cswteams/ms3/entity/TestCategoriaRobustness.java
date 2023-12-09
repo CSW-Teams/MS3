@@ -1,7 +1,6 @@
 package org.cswteams.ms3.entity;
 
-import org.cswteams.ms3.dao.CategorieDao;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
+import org.cswteams.ms3.dao.ConditionDao;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -35,7 +34,7 @@ public class TestCategoriaRobustness {
     public final SpringMethodRule smr = new SpringMethodRule();
 
     @Autowired
-    private CategorieDao dao ;
+    private ConditionDao dao ;
 
     private Categoria toTest ;
 

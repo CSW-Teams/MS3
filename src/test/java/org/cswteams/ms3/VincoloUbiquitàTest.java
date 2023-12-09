@@ -1,6 +1,7 @@
 package org.cswteams.ms3;
 
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.entity.vincoli.VincoloUbiquità;
@@ -42,15 +43,15 @@ public class VincoloUbiquitàTest {
         Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1,  MansioneEnum.REPARTO,TipologiaTurno.MATTUTINO,true);
         Turno t2 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio1,  MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO,true);
 
-        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
+        Doctor doctor = new Doctor("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE  );
 
-        AssegnazioneTurno turnoAssegnato = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
-        AssegnazioneTurno turnoDaAssegnare = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
+        AssegnazioneTurno turnoAssegnato = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor)));
+        AssegnazioneTurno turnoDaAssegnare = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor)));
 
         Schedule scheduleTest = new Schedule(LocalDate.of(2023,1,10),LocalDate.of(2023,1,17));
         scheduleTest.setAssegnazioniTurno(new ArrayList<>(Arrays.asList(turnoAssegnato)));
 
-        UserScheduleState pregUserState = new UserScheduleState(utente, scheduleTest);
+        UserScheduleState pregUserState = new UserScheduleState(doctor, scheduleTest);
 
         Vincolo vincoloUbiquità = new VincoloUbiquità();
 
@@ -67,15 +68,15 @@ public class VincoloUbiquitàTest {
         Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
         Turno t2 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio2, MansioneEnum.REPARTO, TipologiaTurno.MATTUTINO,true);
 
-        Utente utente = new Utente("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE  );
+        Doctor doctor = new Doctor("Giulia","Rossi", "GLRRSS******", LocalDate.of(1999, 3, 14),"glrss@gmail.com", "",RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE  );
 
-        AssegnazioneTurno turnoAssegnato = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
-        AssegnazioneTurno turnoDaAssegnare = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
+        AssegnazioneTurno turnoAssegnato = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor)));
+        AssegnazioneTurno turnoDaAssegnare = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor)));
 
         Schedule scheduleTest = new Schedule(LocalDate.of(2023,1,10),LocalDate.of(2023,1,17));
         scheduleTest.setAssegnazioniTurno(new ArrayList<>(Arrays.asList(turnoAssegnato)));
 
-        UserScheduleState pregUserState = new UserScheduleState(utente, scheduleTest);
+        UserScheduleState pregUserState = new UserScheduleState(doctor, scheduleTest);
 
         Vincolo vincoloUbiquità = new VincoloUbiquità();
 

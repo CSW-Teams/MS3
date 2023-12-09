@@ -1,9 +1,7 @@
 package org.cswteams.ms3.control.utils;
 
 import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.Servizio;
-import org.cswteams.ms3.entity.Utente;
 
 import java.util.HashSet;
 import java.util.List;

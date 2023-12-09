@@ -2,13 +2,11 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.utente.IControllerUtente;
 import org.cswteams.ms3.dto.UtenteDTO;
-import org.cswteams.ms3.entity.Utente;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
 
 @RestController

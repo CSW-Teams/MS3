@@ -1,7 +1,6 @@
 package org.cswteams.ms3.control.assegnazioneTurni;
 
 
-import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.ServizioDao;
 import org.cswteams.ms3.dao.TurnoDao;
@@ -10,7 +9,7 @@ import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Servizio;
 import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
@@ -19,7 +18,6 @@ import org.cswteams.ms3.exception.TurnoException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,7 +34,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
@@ -68,12 +65,12 @@ public class ControllerAssegnazioniTurniTest {
         turnoDao.save(t1);
         turnoDao.save(t2);
         turnoDao.save(t3);
-        Utente utente = new Utente("Martina", "Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
-        this.utenteDao.saveAndFlush(utente);
-        Utente utente2 = new Utente("Matteo", "Federico", "FDRMTT******", LocalDate.of(1998, 11, 20), "matteofederico@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
-        this.utenteDao.saveAndFlush(utente2);
-        AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
-        AssegnazioneTurno turnoNotturno = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,new HashSet<>(),new HashSet<>(Collections.singletonList(utente2)));
+        Doctor doctor = new Doctor("Martina", "Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
+        this.utenteDao.saveAndFlush(doctor);
+        Doctor doctor2 = new Doctor("Matteo", "Federico", "FDRMTT******", LocalDate.of(1998, 11, 20), "matteofederico@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
+        this.utenteDao.saveAndFlush(doctor2);
+        AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor)));
+        AssegnazioneTurno turnoNotturno = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t3,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor2)));
         assegnazioneTurnoDao.saveAndFlush(turnoPomeriggio);
         assegnazioneTurnoDao.saveAndFlush(turnoNotturno);
         Set<AssegnazioneTurnoDTO> set = controllerAssegnazioneTurni.leggiTurniAssegnati();
@@ -87,16 +84,16 @@ public class ControllerAssegnazioniTurniTest {
      * Test verifica che il turno venga assegnato al giusto utente
      */
     public void leggiTurniUtente() throws TurnoException, ParseException {
-        Utente utente = new Utente("Martina", "Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
-        utente=this.utenteDao.saveAndFlush(utente);
+        Doctor doctor = new Doctor("Martina", "Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
+        doctor =this.utenteDao.saveAndFlush(doctor);
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.save(servizio1);
         Turno t1 = new Turno(LocalTime.of(8, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO,  TipologiaTurno.MATTUTINO,true);
         t1=turnoDao.save(t1);
-        AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
+        AssegnazioneTurno turnoPomeriggio = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t1,new HashSet<>(),new HashSet<>(Collections.singletonList(doctor)));
         assegnazioneTurnoDao.saveAndFlush(turnoPomeriggio);
-        Set<AssegnazioneTurnoDTO> setTurni = controllerAssegnazioneTurni.leggiTurniUtente(utente.getId());
+        Set<AssegnazioneTurnoDTO> setTurni = controllerAssegnazioneTurni.leggiTurniUtente(doctor.getId());
         for (AssegnazioneTurnoDTO app:setTurni){
            Assert.assertEquals(app.getIdTurno(),t1.getId());
         }

@@ -1,6 +1,7 @@
 package org.cswteams.ms3.control.scheduler;
 
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
 import org.cswteams.ms3.enums.AttoreEnum;
@@ -41,8 +42,8 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
     private static List<Vincolo> noConstraints;
     private static List<Vincolo> correctConstraints;
     private static List<Vincolo> violatedConstraints;
-    private static List<Utente> userList;
-    private static List<Utente> emptyUserList;
+    private static List<Doctor> doctorList;
+    private static List<Doctor> emptyDoctorList;
     private static Schedule schedule;
     private static Schedule ilelaglSchedule;
 
@@ -55,9 +56,9 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         log.info("[TEST] Starting ScheduleBuilderConstructorTest...");
         // Mock initialization
 
-        // Shift without any user
+        // Shift without any doctor
         AssegnazioneTurno noUserAssignmentShift = mock(AssegnazioneTurno.class);
-        // Shift with only one user, which is a "SPECIALIZZANDO"
+        // Shift with only one doctor, which is a "SPECIALIZZANDO"
         AssegnazioneTurno assigmentShift = mock(AssegnazioneTurno.class);
         Turno dummyShift = mock(Turno.class);
         Turno dummyNoUserShift = mock(Turno.class);
@@ -68,7 +69,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         // Initialize variable to return in the mocks returns
         List<RuoloNumero> roleList = new ArrayList<>();
         List<RuoloNumero> emptyRoleList = new ArrayList<>();
-        Utente user = new Utente(
+        Doctor doctor = new Doctor(
                 278831L,
                 "Simone",
                 "Staccone",
@@ -90,11 +91,11 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         noConstraints = new ArrayList<>();
         correctConstraints = new ArrayList<>();
         violatedConstraints = new ArrayList<>();
-        userList = new ArrayList<>();
-        emptyUserList = new ArrayList<>();
+        doctorList = new ArrayList<>();
+        emptyDoctorList = new ArrayList<>();
 
         // Initialize users in the system
-        userList.add(user);
+        doctorList.add(doctor);
         roleList.add(new RuoloNumero(RuoloEnum.SPECIALIZZANDO,1));
 
         // Initialize shift list
@@ -120,19 +121,19 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
         // Mock assignment shifts
         when(noUserAssignmentShift.getUtenti()).thenReturn(new HashSet<>());
-        when(assigmentShift.getUtenti()).thenReturn(new HashSet<>(userList));
+        when(assigmentShift.getUtenti()).thenReturn(new HashSet<>(doctorList));
 
         when(noUserAssignmentShift.getTurno()).thenReturn(dummyNoUserShift);
         when(assigmentShift.getTurno()).thenReturn(dummyShift);
 
         when(noUserAssignmentShift.getUtenti()).thenReturn(null);
-        when(assigmentShift.getUtenti()).thenReturn(new HashSet<>(userList));
+        when(assigmentShift.getUtenti()).thenReturn(new HashSet<>(doctorList));
 
         when(noUserAssignmentShift.getUtentiReperibili()).thenReturn(null);
-        when(assigmentShift.getUtentiReperibili()).thenReturn(new HashSet<>(userList));
+        when(assigmentShift.getUtentiReperibili()).thenReturn(new HashSet<>(doctorList));
 
         when(noUserAssignmentShift.getUtentiDiGuardia()).thenReturn(null);
-        when(assigmentShift.getUtentiDiGuardia()).thenReturn(new HashSet<>(userList));
+        when(assigmentShift.getUtentiDiGuardia()).thenReturn(new HashSet<>(doctorList));
 
         when(assigmentShift.getData()).thenReturn(LocalDate.of(2023,11,23));
         when(noUserAssignmentShift.getData()).thenReturn(LocalDate.of(2023,11,23));
@@ -171,8 +172,8 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         noConstraints = null;
         correctConstraints = null;
         violatedConstraints = null;
-        userList = null;
-        emptyUserList = null;
+        doctorList = null;
+        emptyDoctorList = null;
         schedule = null;
         ilelaglSchedule = null;
 
@@ -196,185 +197,185 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
     private static Stream<Arguments> firstConstructorPartition() {
         return Stream.of(
                 // Date partition
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, userList, false),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().plusDays(1),LocalDate.now(),correctConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(1),correctConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, doctorList, false),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(1),LocalDate.now(),correctConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(1),correctConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, doctorList, true),
 
                 // Add constraint partition
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, userList, false),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, doctorList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, doctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, userList, false),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, doctorList, false),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, doctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfUserShift, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfUserShift, doctorList, true),
 
 
                 // Add assignedShift partition
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, doctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, doctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, doctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfNoUserShift, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfNoUserShift, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfNoUserShift, userList, true),
-
-
-
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints, null, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints, null, userList, true),
-
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints, null, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints, null, userList, true),
-
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints, null, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints, null, userList, true),
-
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null, null, userList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),null, null, userList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null, null, userList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null, null, userList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfNoUserShift, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfNoUserShift, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfNoUserShift, doctorList, true),
 
 
 
-                // Add userList partition
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints, null, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints, null, doctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints, null, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints, null, doctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints, null, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints, null, doctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfUserShift, emptyUserList, true),
-
-
-
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, emptyUserList, true),
-
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, emptyUserList, true),
-
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, emptyUserList, true),
-
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfNoUserShift, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfNoUserShift, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfNoUserShift, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null, null, doctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null, null, doctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null, null, doctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null, null, doctorList, true),
 
 
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints, null, emptyUserList, true),
+                // Add doctorList partition
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfUserShift, emptyDoctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfUserShift, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfUserShift, emptyDoctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints, null, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints, null, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfUserShift, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfUserShift, emptyDoctorList, true),
 
-                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null, null, emptyUserList, true), // Actual date after start date, should throw an error
-                Arguments.of(LocalDate.now(),LocalDate.now(),null, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null, null, emptyUserList, true),
-                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null, null, emptyUserList, true),
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfUserShift, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfUserShift, emptyDoctorList, true),
+
+
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints,listOfNoUserShift, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints,listOfNoUserShift, emptyDoctorList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints,listOfNoUserShift, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints,listOfNoUserShift, emptyDoctorList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints,listOfNoUserShift, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints,listOfNoUserShift, emptyDoctorList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null,listOfNoUserShift, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null,listOfNoUserShift, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null,listOfNoUserShift, emptyDoctorList, true),
+
+
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),correctConstraints, null, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),correctConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),correctConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),correctConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),correctConstraints, null, emptyDoctorList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),violatedConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),violatedConstraints, null, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),violatedConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),violatedConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),violatedConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),violatedConstraints, null, emptyDoctorList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),noConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),noConstraints, null, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),noConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),noConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),noConstraints, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),noConstraints, null, emptyDoctorList, true),
+
+                Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),null, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().plusDays(7),null, null, emptyDoctorList, true), // Actual date after start date, should throw an error
+                Arguments.of(LocalDate.now(),LocalDate.now(),null, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().plusDays(7),LocalDate.now(),null, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(2),LocalDate.now().minusDays(2),null, null, emptyDoctorList, true),
+                Arguments.of(LocalDate.now().minusDays(1),LocalDate.now().minusDays(2),null, null, emptyDoctorList, true),
 
 
 
@@ -487,16 +488,16 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
     private static Stream<Arguments> secondConstructorPartition() {
         return Stream.of(
                 //Add constraint partition
-                Arguments.of(correctConstraints,userList,schedule, false),
-                Arguments.of(violatedConstraints,userList,schedule, false),
-                Arguments.of(noConstraints,userList,schedule, false),
-                Arguments.of(null,userList,schedule, true),
+                Arguments.of(correctConstraints, doctorList,schedule, false),
+                Arguments.of(violatedConstraints, doctorList,schedule, false),
+                Arguments.of(noConstraints, doctorList,schedule, false),
+                Arguments.of(null, doctorList,schedule, true),
 
                 //Add users constraints
-                Arguments.of(correctConstraints,emptyUserList,schedule, false),
-                Arguments.of(violatedConstraints,emptyUserList,schedule, false),
-                Arguments.of(noConstraints,emptyUserList,schedule, false),
-                Arguments.of(null,userList,schedule, true),
+                Arguments.of(correctConstraints, emptyDoctorList,schedule, false),
+                Arguments.of(violatedConstraints, emptyDoctorList,schedule, false),
+                Arguments.of(noConstraints, emptyDoctorList,schedule, false),
+                Arguments.of(null, doctorList,schedule, true),
 
                 Arguments.of(correctConstraints,null,schedule, true),
                 Arguments.of(violatedConstraints,null,schedule, true),
@@ -505,15 +506,15 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
 
                 // Add schedule constraints
-                Arguments.of(correctConstraints,userList,ilelaglSchedule, true),
-                Arguments.of(violatedConstraints,userList,ilelaglSchedule, true),
-                Arguments.of(noConstraints,userList,ilelaglSchedule, true),
-                Arguments.of(null,userList,ilelaglSchedule, true),
+                Arguments.of(correctConstraints, doctorList,ilelaglSchedule, true),
+                Arguments.of(violatedConstraints, doctorList,ilelaglSchedule, true),
+                Arguments.of(noConstraints, doctorList,ilelaglSchedule, true),
+                Arguments.of(null, doctorList,ilelaglSchedule, true),
 
-                Arguments.of(correctConstraints,emptyUserList,ilelaglSchedule, true),
-                Arguments.of(violatedConstraints,emptyUserList,ilelaglSchedule, true),
-                Arguments.of(noConstraints,emptyUserList,ilelaglSchedule, true),
-                Arguments.of(null,emptyUserList, ilelaglSchedule ,true),
+                Arguments.of(correctConstraints, emptyDoctorList,ilelaglSchedule, true),
+                Arguments.of(violatedConstraints, emptyDoctorList,ilelaglSchedule, true),
+                Arguments.of(noConstraints, emptyDoctorList,ilelaglSchedule, true),
+                Arguments.of(null, emptyDoctorList, ilelaglSchedule ,true),
 
                 Arguments.of(correctConstraints,null,ilelaglSchedule, true),
                 Arguments.of(violatedConstraints,null,ilelaglSchedule, true),
@@ -522,15 +523,15 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
 
 
-                Arguments.of(correctConstraints,userList,null, true),
-                Arguments.of(violatedConstraints,userList,null, true),
-                Arguments.of(noConstraints,userList,null, true),
-                Arguments.of(null,userList,null, true),
+                Arguments.of(correctConstraints, doctorList,null, true),
+                Arguments.of(violatedConstraints, doctorList,null, true),
+                Arguments.of(noConstraints, doctorList,null, true),
+                Arguments.of(null, doctorList,null, true),
 
-                Arguments.of(correctConstraints,emptyUserList,null, true),
-                Arguments.of(violatedConstraints,emptyUserList,null, true),
-                Arguments.of(noConstraints,emptyUserList,null, true),
-                Arguments.of(null,emptyUserList,null , true),
+                Arguments.of(correctConstraints, emptyDoctorList,null, true),
+                Arguments.of(violatedConstraints, emptyDoctorList,null, true),
+                Arguments.of(noConstraints, emptyDoctorList,null, true),
+                Arguments.of(null, emptyDoctorList,null , true),
 
                 Arguments.of(correctConstraints,null,schedule, true),
                 Arguments.of(violatedConstraints,null,schedule, true),
@@ -552,16 +553,16 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
             LocalDate endDate,
             List<Vincolo> constraints,
             List<AssegnazioneTurno> allAssignedShifts,
-            List<Utente> users,
+            List<Doctor> doctors,
             boolean expectedException
         ) {
         // Arrange
         ScheduleBuilder scheduleBuilder;
 
         if (!expectedException) {
-            assertDoesNotThrow(() -> new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users));
+            assertDoesNotThrow(() -> new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, doctors));
             try {
-                scheduleBuilder = new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users);
+                scheduleBuilder = new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, doctors);
                 // Act
                 Schedule resultSchedule = scheduleBuilder.build();
 
@@ -577,7 +578,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
             }
 
         } else {
-            assertThrows(Exception.class, () -> new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users));
+            assertThrows(Exception.class, () -> new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, doctors));
 
         }
     }
@@ -590,17 +591,17 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
     @MethodSource("secondConstructorPartition")
     public void secondConstructorTest(
             List<Vincolo> constraints,
-            List<Utente> users,
+            List<Doctor> doctors,
             Schedule schedule,
             boolean expectedException
     ) {
         ScheduleBuilder scheduleBuilder;
 
         if (!expectedException) {
-            assertDoesNotThrow(() -> new ScheduleBuilder(constraints, users, schedule));
+            assertDoesNotThrow(() -> new ScheduleBuilder(constraints, doctors, schedule));
 
             try {
-                scheduleBuilder = new ScheduleBuilder(constraints, users, schedule);
+                scheduleBuilder = new ScheduleBuilder(constraints, doctors, schedule);
                 // Act
                 Schedule resultSchedule = scheduleBuilder.build();
 
@@ -617,7 +618,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
             }
 
         } else {
-            assertThrows(Exception.class, () -> new ScheduleBuilder(constraints, users, schedule));
+            assertThrows(Exception.class, () -> new ScheduleBuilder(constraints, doctors, schedule));
 
         }
 

@@ -2,7 +2,6 @@ package org.cswteams.ms3.dto;
 
 
 import lombok.Data;
-import org.cswteams.ms3.entity.Categoria;
 
 @Data
 public class CategoriaUtenteDTO {

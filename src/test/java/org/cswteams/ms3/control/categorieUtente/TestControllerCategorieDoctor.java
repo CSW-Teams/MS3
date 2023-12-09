@@ -1,34 +1,22 @@
 package org.cswteams.ms3.control.categorieUtente;
 
-import org.cswteams.ms3.control.categorieUtente.ControllerCategorieUtente;
-import org.cswteams.ms3.dao.CategoriaUtenteDao;
-import org.cswteams.ms3.dao.CategorieDao;
+import org.cswteams.ms3.dao.ConditionDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.CategoriaUtenteDTO;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.entity.CategoriaUtente;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.enums.AttoreEnum;
 import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
-import org.cswteams.ms3.exception.DatabaseException;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -40,7 +28,7 @@ import java.util.stream.Stream;
 
 @SpringBootTest
 @Transactional
-public class TestControllerCategorieUtente {
+public class TestControllerCategorieDoctor {
 
     private enum InstanceValidity {
         VALID,
@@ -54,12 +42,12 @@ public class TestControllerCategorieUtente {
     }
 
     private static long idUtente;
-    private Utente testUser;
+    private Doctor testDoctor;
 
     @Autowired
     private ControllerCategorieUtente controllerCategorieUtente = new ControllerCategorieUtente();
     @Autowired
-    private CategorieDao categorieDao;
+    private ConditionDao conditionDao;
 
     @Autowired
     private UtenteDao utenteDao;
@@ -136,12 +124,12 @@ public class TestControllerCategorieUtente {
     public void testAggiungiTurnazioneUtente(InstanceValidity validityIdUtente, InstanceValidity validityCategoriaUtente, boolean exceptionExpected) {
 
         Categoria categoriaTurnazione = new Categoria("turnazione", TipoCategoriaEnum.TURNAZIONE);
-        categorieDao.saveAndFlush(categoriaTurnazione);
+        conditionDao.saveAndFlush(categoriaTurnazione);
 
         if (validityIdUtente == InstanceValidity.VALID) {
-            testUser = new Utente("Mario", "Rossi", "RSSMRA******", LocalDate.of(2000, 1, 1), "mario@gmail.com", "", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
-            utenteDao.saveAndFlush(testUser);
-            idUtente = testUser.getId();
+            testDoctor = new Doctor("Mario", "Rossi", "RSSMRA******", LocalDate.of(2000, 1, 1), "mario@gmail.com", "", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
+            utenteDao.saveAndFlush(testDoctor);
+            idUtente = testDoctor.getId();
         } else {
             idUtente = -1;
         }
@@ -184,12 +172,12 @@ public class TestControllerCategorieUtente {
     @MethodSource("aggiungiStatoUtenteParams")
     public void testAggiungiStatoUtente(InstanceValidity validityIdUtente, InstanceValidity validityCategoriaUtente, boolean exceptionExpected) {
         Categoria categoriaStato = new Categoria("stato", TipoCategoriaEnum.STATO);
-        categorieDao.saveAndFlush(categoriaStato);
+        conditionDao.saveAndFlush(categoriaStato);
 
         if (validityIdUtente == InstanceValidity.VALID) {
-            testUser = new Utente("Mario", "Rossi", "RSSMRA******", LocalDate.of(2000, 1, 1), "mario@gmail.com", "", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
-            utenteDao.saveAndFlush(testUser);
-            idUtente = testUser.getId();
+            testDoctor = new Doctor("Mario", "Rossi", "RSSMRA******", LocalDate.of(2000, 1, 1), "mario@gmail.com", "", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
+            utenteDao.saveAndFlush(testDoctor);
+            idUtente = testDoctor.getId();
         } else {
             idUtente = -1;
         }
@@ -197,7 +185,7 @@ public class TestControllerCategorieUtente {
         CategoriaUtenteDTO c = getCategoriaUtenteDTOInstance(categoriaStato, validityCategoriaUtente);
         try {
             controllerCategorieUtente.aggiungiStatoUtente(c, idUtente);
-            assertEquals(testUser.getStato().get(0).getCategoria(), categoriaStato);
+            assertEquals(testDoctor.getStato().get(0).getCategoria(), categoriaStato);
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(exceptionExpected);
@@ -219,12 +207,12 @@ public class TestControllerCategorieUtente {
     @MethodSource("cancellaStatoParams")
     public void testCancellaStato(InstanceValidity validityIdUtente, InstanceValidity validityIdCategoria, boolean exceptionExpected) {
         Categoria categoriaStato = new Categoria("stato", TipoCategoriaEnum.STATO);
-        categorieDao.saveAndFlush(categoriaStato);
+        conditionDao.saveAndFlush(categoriaStato);
 
         if (validityIdUtente == InstanceValidity.VALID) {
-            testUser = new Utente("Mario", "Rossi", "RSSMRA******", LocalDate.of(2000, 1, 1), "mario@gmail.com", "", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
-            utenteDao.saveAndFlush(testUser);
-            idUtente = testUser.getId();
+            testDoctor = new Doctor("Mario", "Rossi", "RSSMRA******", LocalDate.of(2000, 1, 1), "mario@gmail.com", "", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
+            utenteDao.saveAndFlush(testDoctor);
+            idUtente = testDoctor.getId();
         } else {
             idUtente = -1;
         }
@@ -241,14 +229,14 @@ public class TestControllerCategorieUtente {
 
         if (validityIdCategoria == InstanceValidity.VALID) {
             try {
-                controllerCategorieUtente.cancellaStato(testUser.getStato().get(0).getId(), idUtente);
-                assertTrue(testUser.getStato().isEmpty());
+                controllerCategorieUtente.cancellaStato(testDoctor.getStato().get(0).getId(), idUtente);
+                assertTrue(testDoctor.getStato().isEmpty());
             } catch (Exception e) {
                 assertTrue(exceptionExpected);
             }
         } else {
             try {
-                controllerCategorieUtente.cancellaStato(testUser.getStato().get(0).getId(), idUtente);      // FAIL: non viene controllato che lo stato sia presente
+                controllerCategorieUtente.cancellaStato(testDoctor.getStato().get(0).getId(), idUtente);      // FAIL: non viene controllato che lo stato sia presente
                 assert false;
             } catch (Exception e) {
                 assertTrue(exceptionExpected);
@@ -271,12 +259,12 @@ public class TestControllerCategorieUtente {
     @MethodSource("cancellaStatoParams")
     public void testCancellaRotazione(InstanceValidity validityIdUtente, InstanceValidity validityIdCategoria, boolean exceptionExpected) {
         Categoria categoriaTurnazione = new Categoria("turnazione", TipoCategoriaEnum.TURNAZIONE);
-        categorieDao.saveAndFlush(categoriaTurnazione);
+        conditionDao.saveAndFlush(categoriaTurnazione);
 
         if (validityIdUtente == InstanceValidity.VALID) {
-            testUser = new Utente("Mario", "Rossi", "RSSMRA******", LocalDate.of(2000, 1, 1), "mario@gmail.com", "", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
-            utenteDao.saveAndFlush(testUser);
-            idUtente = testUser.getId();
+            testDoctor = new Doctor("Mario", "Rossi", "RSSMRA******", LocalDate.of(2000, 1, 1), "mario@gmail.com", "", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
+            utenteDao.saveAndFlush(testDoctor);
+            idUtente = testDoctor.getId();
         } else {
             idUtente = -1;
         }
@@ -293,14 +281,14 @@ public class TestControllerCategorieUtente {
 
         if (validityIdCategoria == InstanceValidity.VALID) {
             try {
-                controllerCategorieUtente.cancellaRotazione(testUser.getTurnazioni().get(0).getId(), idUtente);
-                assertTrue(testUser.getTurnazioni().isEmpty());
+                controllerCategorieUtente.cancellaRotazione(testDoctor.getTurnazioni().get(0).getId(), idUtente);
+                assertTrue(testDoctor.getTurnazioni().isEmpty());
             } catch (Exception e) {
                 assertTrue(exceptionExpected);
             }
         } else {
             try {
-                controllerCategorieUtente.cancellaRotazione(testUser.getTurnazioni().get(0).getId(), idUtente);      // FAIL: non viene controllato che la turnazione sia presente
+                controllerCategorieUtente.cancellaRotazione(testDoctor.getTurnazioni().get(0).getId(), idUtente);      // FAIL: non viene controllato che la turnazione sia presente
                 assert false;
             } catch (Exception e) {
                 assertTrue(exceptionExpected);
