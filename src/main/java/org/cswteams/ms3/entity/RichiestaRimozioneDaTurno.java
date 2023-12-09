@@ -17,7 +17,6 @@ public class RichiestaRimozioneDaTurno {
     @Id
     @Getter
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false)
     private Long id;
 
     @NotNull
