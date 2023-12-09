@@ -15,4 +15,23 @@ export class RichiestaRimozioneDaTurnoAPI {
 
     return response;
   }
+
+  async getAllRequests() {
+    const response = await fetch('/api/assegnazioneturni/richiesterimozione')
+    const body = await response.json();
+
+    const requests = [];
+
+    for (let i = 0; i < body.length; i++) {
+      const request = new Object();
+      request.id = body.assegnazioneTurnoId;
+      request.idUser = body.utenteId;
+      request.justification = body.descrizione;
+      request.outcome = body.esito;
+
+      requests[i] = request;
+    }
+
+    return requests;
+  }
 }
