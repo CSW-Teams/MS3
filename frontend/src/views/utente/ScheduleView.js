@@ -39,6 +39,9 @@ import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../../components/common/AssegnazioneTurnoModificaComponent';
 import ButtonLegalSchedulation from '../../components/common/ButtonLegalSchedulation';
 import { ShiftPrinterCSV } from "../../components/common/ShiftPrinterCSV";
+import {
+  RichiestaRimozioneDaTurnoAPI
+} from "../../API/RichiestaRimozioneDaTurnoAPI";
 
 
 /**
@@ -109,7 +112,10 @@ class ScheduleView extends React.Component{
              * "ABOUT_TO_ASK" --> Non abbiamo ancora chiesto i turni al backend, ma lo faremo appena possibile
              */
             shiftQueriedResponse: "ABOUT_TO_ASK",
-
+            idUser: localStorage.getItem("id"),
+            justification: "",
+            outcome: false,
+            idShift: 0
           };
           /**
            * All filtering functions.
@@ -149,6 +155,26 @@ class ScheduleView extends React.Component{
       this.setState({ mainResourceName });
     }
 
+
+    handleRetirement = async (justification, idShift) => {
+      this.state.justification = justification;
+      let utente = await(new UtenteAPI().getUserDetails(this.state.idUser));
+      this.state.idShift = idShift;
+      console.log(utente.nome, utente.cognome, this.state.idShift, this.state.justification, this.state.outcome)
+
+      const subState = {
+        assegnazioneTurnoId: this.state.idShift,
+        utenteId: this.state.idUser,
+        descrizione: this.state.justification,
+        esito: this.state.outcome
+      }
+
+      let richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
+      let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(subState);
+
+      console.log(httpResponse);
+
+    }
 
     /**
      * Questa funzione verrà invocata nel momento in cui il pianificatore effettua una modifica su una assegnazione turno.
@@ -471,7 +497,7 @@ class ScheduleView extends React.Component{
                     showCloseButton
                     showOpenButton
                     contentComponent={(props) => (
-                      <Content {...props} view={view} />
+                      <Content {...props} view={view} onRetirement={this.handleRetirement} />
                     )}
                   />
                 }
@@ -517,9 +543,4 @@ class ScheduleView extends React.Component{
 }
 
 export default ScheduleView;
-export const handleRetirement = async (justification) => {
-  let id = localStorage.getItem("id");
-  let utente = await(new UtenteAPI().getUserDetails(id));
-  console.log(justification);
-  console.log(utente.nome, utente.cognome);
-};
+
