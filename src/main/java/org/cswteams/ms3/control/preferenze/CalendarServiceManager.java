@@ -25,40 +25,31 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CalendarServiceManager implements ICalendarServiceManager {
-	private static Logger log = Logger.getLogger(CalendarServiceManager.class);
+	private static final Logger log = Logger.getLogger(CalendarServiceManager.class);
 
 	@Autowired
 	IHolidayController holidayController ;
 	private String serviceURL;
-	private String dateFormat;
-	
-	public CalendarServiceManager() {
+
+    public CalendarServiceManager() {
 	}
 	
 	public void init(CalendarSetting setting) {
 		this.serviceURL = setting.getURL();
-		this.dateFormat = setting.getDateFormat();
-	}
+    }
 	
 	public List<Holiday> getHolidays() throws CalendarServiceException {
 		HttpRequest request = HttpRequest.newBuilder(URI.create(this.serviceURL)).header("accept", "application/json").build();
 		HttpClient client = HttpClient.newHttpClient();
 		HttpResponse<String> response = null;
 
-		/**
-		 * DEBUG TO DELETE
-		 */
-		log.info("[DEBUG] " + request.uri());
-
 		try {
 			response = client.send(request, BodyHandlers.ofString());
-		} catch (IOException e) {
-			throw new CalendarServiceException(e);
-		} catch (InterruptedException e) {
+		} catch (IOException | InterruptedException e) {
 			throw new CalendarServiceException(e);
 		}
-		
-		if (response.body() != null && !response.body().isEmpty()) {
+
+        if (response.body() != null && !response.body().isEmpty()) {
 			List<Holiday> holidays = new ArrayList<Holiday>();
 			try {
 				JSONArray JSONData = (JSONArray) JSONValue.parse(response.body());
@@ -97,7 +88,7 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 
 	public List<Date> getAllSundays(int year) {
 	    Calendar calendar = new GregorianCalendar();
-	    calendar.set(year, 0, 1, 0, 0, 0);
+	    calendar.set(year, Calendar.JANUARY, 1, 0, 0, 0);
 	    List<Date> sundays = new ArrayList<>();
 	    while (calendar.get(Calendar.YEAR) == year) {
 	    	sundays.add(calendar.getTime());

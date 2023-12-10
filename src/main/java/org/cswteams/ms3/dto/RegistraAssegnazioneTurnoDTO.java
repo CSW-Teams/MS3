@@ -3,14 +3,14 @@ package org.cswteams.ms3.dto;
 import lombok.Data;
 import org.cswteams.ms3.enums.MansioneEnum;
 import org.cswteams.ms3.enums.TipologiaTurno;
+
+import java.time.LocalDate;
 import java.util.Set;
 
 @Data
 public class RegistraAssegnazioneTurnoDTO {
 
-    private int giorno;
-    private int mese;
-    private int anno;
+    private LocalDate giorno;
 
     private TipologiaTurno tipologiaTurno;
 
