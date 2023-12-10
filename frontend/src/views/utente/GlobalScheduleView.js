@@ -1,3 +1,4 @@
+import React from "react"
 import ScheduleView from "./ScheduleView.js"
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { UtenteAPI } from '../../API/UtenteAPI';
