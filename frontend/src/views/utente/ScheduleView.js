@@ -61,6 +61,12 @@ function ViolationLog(props){
   );
 }
 
+const CustomTooltipHeader = ({...restProps }) => (
+  <div {...restProps} style={{backgroundColor: "black"}}>
+    Personalizzato
+  </div>
+);
+
 
 
 /**
@@ -111,7 +117,8 @@ class ScheduleView extends React.Component{
             idUser: localStorage.getItem("id"),
             justification: "",
             outcome: false,
-            idShift: 0
+            idShift: 0,
+            requests: []
           };
           /**
            * All filtering functions.
@@ -151,6 +158,30 @@ class ScheduleView extends React.Component{
       this.setState({ mainResourceName });
     }
 
+    pendingRetirementRequestForShiftExist = async (idShift) => {
+      //console.log(idUser, this.state.requests.some(request => request.id === idShift));
+      //return this.state.requests.some(request => request.id === idShift);
+
+      let idUser = -1;
+
+      for (let i = 0; i < this.state.requests.length; i++) {
+        if (this.state.requests[i].id === idShift) {
+          idUser = this.state.requests[i].idUser;
+          break;
+        }
+      }
+
+      if (idUser !== -1) {
+        let api = new UtenteAPI();
+        const userDetails = await api.getUserDetails(idUser);
+        let name = userDetails.nome;
+        let surname = userDetails.cognome;
+        return `${name} ${surname}`
+      }
+
+      return idUser;
+
+    }
 
     handleRetirement = async (justification, idShift) => {
       this.state.justification = justification;
@@ -327,7 +358,10 @@ class ScheduleView extends React.Component{
     }
 
 
-    async componentDidMount(turni, utenti){
+    async componentDidMount(turni, utenti) {
+
+      let api = new RichiestaRimozioneDaTurnoAPI();
+      let requestsArray = await api.getAllPendingRequests();
 
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UtenteAPI().getAllUsersInfo();
@@ -335,28 +369,39 @@ class ScheduleView extends React.Component{
 
       this.setState(
         {
-          data:turni,
+          requests: requestsArray,
+          data: turni,
           mainResourceName: 'utenti_guardia_id',
           resources:
             [
               {
-                fieldName: 'utenti_guardia_id', title: 'Guardia',allowMultiple: true, instances: utenti,
+                fieldName: 'utenti_guardia_id',
+                title: 'Guardia',
+                allowMultiple: true,
+                instances: utenti,
               }
-              ,{
-             fieldName:'utenti_reperibili_id', title: 'Reperibilità',allowMultiple: true, instances: utenti,
+              , {
+              fieldName: 'utenti_reperibili_id',
+              title: 'Reperibilità',
+              allowMultiple: true,
+              instances: utenti,
             },
             ],
-            allServices: new Set(allServices),
-            allUser : allUser,
-            holidays: allHolidays,
-            shiftQueriedResponse: "GOOD",
+          allServices: new Set(allServices),
+          allUser: allUser,
+          holidays: allHolidays,
+          shiftQueriedResponse: "GOOD",
         })
-      }
+
+    }
 
 
     render(view){
 
-        // add shifts to the schedulables to display
+      console.log("Richieste:    ",this.state.requests)
+
+
+      // add shifts to the schedulables to display
         let { data, resources} = this.state;
 
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
@@ -469,7 +514,11 @@ class ScheduleView extends React.Component{
 
                 <EditingState onCommitChanges={this.commitChanges}/>
                 <IntegratedEditing/>
-                <Appointments appointmentContentComponent={AppointmentContent} />
+                <Appointments
+                  appointmentContentComponent={(props) => (
+                    <AppointmentContent attore={this.state.attore} {...props} />
+                  )}
+                />
                 <AllDayPanel/>
                 <Resources
                   data={resources}
@@ -491,11 +540,12 @@ class ScheduleView extends React.Component{
                   //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
                  //SOLO IL PIANIFICATORE PUO' MODIFICARE I TURNI
                   <AppointmentTooltip
+                    header
                     showCloseButton
                     showOpenButton
                     showDeleteButton
                     contentComponent={(props) => (
-                      <Content {...props} view={view} />
+                      <Content {...props} view={view} actor={this.state.attore} checkRequests={this.pendingRetirementRequestForShiftExist} />
                     )}
                   />
                 }
@@ -503,7 +553,7 @@ class ScheduleView extends React.Component{
                 {view === "global" && this.state.attore !== "PIANIFICATORE" &&
                 < AppointmentTooltip
                   contentComponent={(props) => (
-                    <Content {...props} view={view} />
+                    <Content {...props} view={view} actor={this.state.attore} />
                   )}
                 />
                 }
@@ -514,7 +564,7 @@ class ScheduleView extends React.Component{
                     showCloseButton
                     showOpenButton
                     contentComponent={(props) => (
-                      <Content {...props} view={view} onRetirement={this.handleRetirement} />
+                      <Content {...props} view={view} onRetirement={this.handleRetirement} actor={this.state.attore} />
                     )}
                   />
                 }
@@ -560,4 +610,3 @@ class ScheduleView extends React.Component{
 }
 
 export default ScheduleView;
-
