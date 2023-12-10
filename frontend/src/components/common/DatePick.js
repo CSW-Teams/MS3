@@ -4,8 +4,6 @@ import DatePanel from "react-multi-date-picker/plugins/date_panel";
 import ToolBar from "react-multi-date-picker/plugins/toolbar";
 import Button from "@mui/material/Button";
 import React, {useRef, useState} from "react";
-import gregorian from "react-date-object/calendars/gregorian";
-import gregorian_en from "react-date-object/locales/gregorian_en";
 import {DesiderateAPI} from "../../API/DesiderataAPI"
 import {toast, ToastContainer} from "react-toastify";
 

@@ -5,11 +5,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.cswteams.ms3.entity.Holiday;
@@ -41,7 +40,7 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 	public List<Holiday> getHolidays() throws CalendarServiceException {
 		HttpRequest request = HttpRequest.newBuilder(URI.create(this.serviceURL)).header("accept", "application/json").build();
 		HttpClient client = HttpClient.newHttpClient();
-		HttpResponse<String> response = null;
+		HttpResponse<String> response;
 
 		try {
 			response = client.send(request, BodyHandlers.ofString());
@@ -86,14 +85,16 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 		}
 	}
 
-	public List<Date> getAllSundays(int year) {
-	    Calendar calendar = new GregorianCalendar();
-	    calendar.set(year, Calendar.JANUARY, 1, 0, 0, 0);
-	    List<Date> sundays = new ArrayList<>();
-	    while (calendar.get(Calendar.YEAR) == year) {
-	    	sundays.add(calendar.getTime());
-	    	calendar.add(Calendar.DAY_OF_MONTH, 7);
-	    }
-	    return sundays;
+	public List<LocalDate> getAllSundays(int year) {
+		List<LocalDate> sundays = new ArrayList<>();
+		LocalDate date = LocalDate.of(year, Month.JANUARY, 1);
+
+		while (date.getYear() == year) {
+			if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+				sundays.add(date);
+			}
+			date = date.plusDays(1);
+		}
+		return sundays;
 	}
 }
