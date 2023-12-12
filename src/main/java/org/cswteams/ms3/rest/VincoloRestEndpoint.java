@@ -1,7 +1,6 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.vincoli.IControllerVincolo;
-import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.vincoli.ConfigVincoli;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

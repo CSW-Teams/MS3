@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
-import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
@@ -44,7 +44,7 @@ public class VincoloTipologieTurniContigue extends VincoloAssegnazioneTurnoTurno
     @Enumerated(EnumType.STRING)
     private TipologiaTurno tipologiaTurno;
 
-    /** Tipologie Turno vietate da questo vincolo */
+    /** Tipologie Shift vietate da questo vincolo */
     @ElementCollection
     @Enumerated(EnumType.STRING)
     private Set<TipologiaTurno> tipologieTurnoVietate;
@@ -60,14 +60,14 @@ public class VincoloTipologieTurniContigue extends VincoloAssegnazioneTurnoTurno
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
                 
         // we check if the shift to be allocated is of the type that must be excluded the constraint
-        if (tipologieTurnoVietate.contains(contesto.getAssegnazioneTurno().getTurno().getTipologiaTurno())){
+        if (tipologieTurnoVietate.contains(contesto.getConcreteShift().getShift().getTipologiaTurno())){
             
             // we search for another allocated shift of the same user in the horizon
-            List<AssegnazioneTurno> ats = contesto.getUserScheduleState().getAssegnazioniTurnoCache();
-            for (AssegnazioneTurno at : ats) {
-                if (at.getTurno().getTipologiaTurno() == tipologiaTurno
-                        && verificaContiguitàAssegnazioneTurni(at, contesto.getAssegnazioneTurno(), tUnit, horizon)) {
-                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(at, contesto.getAssegnazioneTurno(), contesto.getUserScheduleState().getUtente());
+            List<ConcreteShift> ats = contesto.getUserScheduleState().getAssegnazioniTurnoCache();
+            for (ConcreteShift at : ats) {
+                if (at.getShift().getTipologiaTurno() == tipologiaTurno
+                        && verificaContiguitàAssegnazioneTurni(at, contesto.getConcreteShift(), tUnit, horizon)) {
+                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(at, contesto.getConcreteShift(), contesto.getUserScheduleState().getDoctor());
                 }
             }
         }

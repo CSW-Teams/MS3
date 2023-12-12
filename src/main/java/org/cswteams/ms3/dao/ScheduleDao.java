@@ -3,9 +3,11 @@ package org.cswteams.ms3.dao;
 import org.cswteams.ms3.entity.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface ScheduleDao extends JpaRepository<Schedule,Long> {
 
     @Query("select sc from Schedule sc where sc.startDateEpochDay <= ?1 and sc.endDateEpochDay >= ?1")

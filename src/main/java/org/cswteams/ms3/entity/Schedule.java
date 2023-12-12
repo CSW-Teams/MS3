@@ -35,7 +35,7 @@ public class Schedule {
 
     @OneToMany(cascade = {CascadeType.ALL})
     @NotNull
-    private List<AssegnazioneTurno> assegnazioniTurno;
+    private List<ConcreteShift> assegnazioniTurno;
 
     /** Log di messaggi corrispondenti a violazioni di vincoli.
      * Questa lista dovrebbe contenere al più un messaggio per ogni vincolo violato.

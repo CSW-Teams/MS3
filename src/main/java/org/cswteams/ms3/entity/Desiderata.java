@@ -3,6 +3,7 @@ package org.cswteams.ms3.entity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
 import javax.persistence.*;
@@ -27,12 +28,12 @@ public class Desiderata {
     private List<TipologiaTurno> tipologieTurnoCoinvolte;
 
     @ManyToOne
-    private Utente utente;
+    private Doctor doctor;
 
-    public Desiderata(LocalDate data, List<TipologiaTurno> tipologieTurnoCoinvolte, Utente utente){
+    public Desiderata(LocalDate data, List<TipologiaTurno> tipologieTurnoCoinvolte, Doctor doctor){
         this.data = data;
         this.tipologieTurnoCoinvolte = tipologieTurnoCoinvolte;
-        this.utente = utente;
+        this.doctor = doctor;
     }
 
     public Desiderata(){

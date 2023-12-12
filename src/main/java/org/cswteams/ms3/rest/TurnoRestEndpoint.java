@@ -1,8 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.turni.IControllerTurni;
-import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.dto.TurnoDTO;
+import org.cswteams.ms3.dto.RotationDTO;
 import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,14 +20,14 @@ public class TurnoRestEndpoint {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiTurni() throws ParseException {
-        Set<TurnoDTO> tuttiITurni = controllerTurni.leggiTurni();
+        Set<RotationDTO> tuttiITurni = controllerTurni.leggiTurni();
         return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/servizio={nomeServizio}")
     public ResponseEntity<?> leggiTurniServizio(@PathVariable String nomeServizio) throws ParseException {
         if (nomeServizio != null) {
-            Set<TurnoDTO> turni = controllerTurni.leggiTurniDiServizio(nomeServizio);
+            Set<RotationDTO> turni = controllerTurni.leggiTurniDiServizio(nomeServizio);
             if (turni == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             return new ResponseEntity<>(turni, HttpStatus.FOUND);
         }
@@ -36,7 +35,7 @@ public class TurnoRestEndpoint {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaTurno(@RequestBody(required = true) TurnoDTO turno) {
+    public ResponseEntity<?> creaTurno(@RequestBody(required = true) RotationDTO turno) {
         if (turno != null) {
             try {
                 return new ResponseEntity<>(controllerTurni.creaTurno(turno), HttpStatus.ACCEPTED);

@@ -89,7 +89,7 @@ public enum Country {
     VIETNAM("VN"),
     ZIMBABWE("ZW");
 
-    private String countryCode;
+    private final String countryCode;
 
     Country(String countryCode) {
         this.countryCode = countryCode;

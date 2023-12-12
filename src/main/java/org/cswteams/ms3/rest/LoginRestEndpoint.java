@@ -3,7 +3,7 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.login.IControllerLogin;
 import org.cswteams.ms3.dto.LoginDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.dto.DoctorDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class LoginRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDto) {
-        UtenteDTO u = controllerLogin.autenticaUtente(loginDto);
+        DoctorDTO u = controllerLogin.autenticaUtente(loginDto);
             if (u != null) {
                 return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
             }

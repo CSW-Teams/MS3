@@ -2,7 +2,7 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.registrazione.IControllerRegistrazione;
 import org.cswteams.ms3.dto.RegistrazioneDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.dto.DoctorDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class RegistrazioneRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> registrazione(@RequestBody RegistrazioneDTO registrazioneDTO) {
-        UtenteDTO u = controllerRegistrazione.registraUtente(registrazioneDTO);
+        DoctorDTO u = controllerRegistrazione.registraUtente(registrazioneDTO);
         if (u != null) {
             return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
         }

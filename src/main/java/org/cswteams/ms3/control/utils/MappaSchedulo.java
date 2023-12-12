@@ -1,14 +1,10 @@
 package org.cswteams.ms3.control.utils;
 
 import org.cswteams.ms3.dto.ScheduloDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
 import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.entity.Utente;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class MappaSchedulo {
 

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 
-import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.ConcreteShift;
 
 import javax.persistence.Entity;
 
@@ -16,7 +16,7 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
     /**
      * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1
      */
-    protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2) {
+    protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift aTurno1, ConcreteShift aTurno2) {
 
         return verificaContiguitàAssegnazioneTurni(aTurno1, aTurno2, ChronoUnit.MINUTES, 0);
     }
@@ -31,13 +31,13 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
      * @param delta numero di unità temporali tollerabili per considerare i turni contigui
      * @return
      */
-    protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2, TemporalUnit tu, long delta){
+    protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift aTurno1, ConcreteShift aTurno2, TemporalUnit tu, long delta){
 
-        LocalDateTime aTurno1Start = aTurno1.getData().atTime(aTurno1.getTurno().getOraInizio());
-        LocalDateTime aTurno1End = aTurno1Start.plus(aTurno1.getTurno().getDurata());
+        LocalDateTime aTurno1Start = aTurno1.getData().atTime(aTurno1.getShift().getOraInizio());
+        LocalDateTime aTurno1End = aTurno1Start.plus(aTurno1.getShift().getDurata());
 
-        LocalDateTime aTurno2Start = aTurno2.getData().atTime(aTurno2.getTurno().getOraInizio());
-        LocalDateTime aTurno2End = aTurno2Start.plus(aTurno2.getTurno().getDurata());
+        LocalDateTime aTurno2Start = aTurno2.getData().atTime(aTurno2.getShift().getOraInizio());
+        LocalDateTime aTurno2End = aTurno2Start.plus(aTurno2.getShift().getDurata());
 
         if (aTurno1Start.isBefore(aTurno2Start)){
             return Math.abs(aTurno1End.until(aTurno2Start, tu)) <= delta;
@@ -48,10 +48,10 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
 
     }
 
-    protected int getAssegnazioneTurnoPrecedenteIdx(List<AssegnazioneTurno> turniAssegnati, AssegnazioneTurno turnoDaAssegnare){
+    protected int getAssegnazioneTurnoPrecedenteIdx(List<ConcreteShift> turniAssegnati, ConcreteShift turnoDaAssegnare){
         for(int i = 0; i < turniAssegnati.size(); i++){
             if(turniAssegnati.get(i).getData().isAfter(turnoDaAssegnare.getData()) || turniAssegnati.get(i).getData().isEqual(turnoDaAssegnare.getData())){
-                if(turniAssegnati.get(i).getTurno().getOraInizio().isAfter(turnoDaAssegnare.getTurno().getOraInizio()) || turniAssegnati.get(i).getTurno().getOraInizio().equals(turnoDaAssegnare.getTurno().getOraInizio())) {
+                if(turniAssegnati.get(i).getShift().getOraInizio().isAfter(turnoDaAssegnare.getShift().getOraInizio()) || turniAssegnati.get(i).getShift().getOraInizio().equals(turnoDaAssegnare.getShift().getOraInizio())) {
                     return i - 1;
                 }
             }

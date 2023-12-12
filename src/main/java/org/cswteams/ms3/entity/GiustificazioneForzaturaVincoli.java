@@ -3,6 +3,7 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.enums.TipologiaTurno;
 
 import javax.persistence.*;
@@ -27,7 +28,7 @@ public class GiustificazioneForzaturaVincoli {
     private LocalDate data;
 
     @ManyToMany
-    private Set<Utente> utentiAllocati;
+    private Set<Doctor> utentiAllocati;
 
     @ManyToOne
     private Servizio servizio;
@@ -37,19 +38,19 @@ public class GiustificazioneForzaturaVincoli {
     private String motivazione;
 
     @ManyToOne
-    private Utente utenteGiustificatore;
+    private Doctor doctorGiustificatore;
 
     public GiustificazioneForzaturaVincoli() {
 
     }
 
 
-    public GiustificazioneForzaturaVincoli(String message, TipologiaTurno turnoViolante, Servizio servizio, LocalDate data, Set<Utente> utentiAllocati, Utente utenteGiustificatore) {
+    public GiustificazioneForzaturaVincoli(String message, TipologiaTurno turnoViolante, Servizio servizio, LocalDate data, Set<Doctor> utentiAllocati, Doctor doctorGiustificatore) {
         this.turnoViolante = turnoViolante;
         this.data = data;
         this.utentiAllocati = utentiAllocati;
         this.servizio = servizio;
         this.motivazione = message;
-        this.utenteGiustificatore = utenteGiustificatore;
+        this.doctorGiustificatore = doctorGiustificatore;
     }
 }

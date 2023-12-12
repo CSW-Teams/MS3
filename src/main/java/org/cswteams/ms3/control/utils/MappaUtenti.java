@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.utils;
 
-import org.cswteams.ms3.dto.UtenteDTO;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.dto.DoctorDTO;
+import org.cswteams.ms3.entity.doctor.Doctor;
 
 import java.util.HashSet;
 import java.util.List;
@@ -9,37 +9,37 @@ import java.util.Set;
 
 public class MappaUtenti {
 
-    public static Utente utenteDTOtoEntity(UtenteDTO utenteDTO) {
-        return new Utente(utenteDTO.getId(),utenteDTO.getNome(),utenteDTO.getCognome(),utenteDTO.getCodiceFiscale(),utenteDTO.getDataNascita(),utenteDTO.getEmail(), utenteDTO.getPassword(), utenteDTO.getRuoloEnum(),utenteDTO.getCategorie(),utenteDTO.getAttore());
+    public static Doctor utenteDTOtoEntity(DoctorDTO doctorDTO) {
+        return new Doctor(doctorDTO.getId(), doctorDTO.getNome(), doctorDTO.getCognome(), doctorDTO.getCodiceFiscale(), doctorDTO.getDataNascita(), doctorDTO.getEmail(), doctorDTO.getPassword(), doctorDTO.getRuoloEnum(), doctorDTO.getPermanentConditions(), doctorDTO.getAttore());
     }
 
-    public static Set<Utente> utenteDTOtoEntity(Set<UtenteDTO> utentiDto) {
-        Set<Utente> utenti = new HashSet<>();
-        for (UtenteDTO dto: utentiDto){
+    public static Set<Doctor> utenteDTOtoEntity(Set<DoctorDTO> utentiDto) {
+        Set<Doctor> utenti = new HashSet<>();
+        for (DoctorDTO dto: utentiDto){
             utenti.add(utenteDTOtoEntity(dto));
         }
         return utenti;
     }
 
 
-    public static UtenteDTO utenteEntitytoDTO(Utente utente) {
-        return new UtenteDTO(utente.getId(), utente.getNome(), utente.getCognome(), utente.getDataNascita(), utente.getCodiceFiscale(), utente.getRuoloEnum(), utente.getEmail(), utente.getPassword(), utente.getStato(), utente.getSpecializzazioni(), utente.getAttore());
+    public static DoctorDTO utenteEntityToDTO(Doctor doctor) {
+        return new DoctorDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthday(), doctor.getTaxCode(), doctor.getRole(), doctor.getEmail(), doctor.getPassword(), doctor.getPermanentConditions(), doctor.getSpecializations(), doctor.getAttore());
     }
 
-    public static Set<UtenteDTO> utentiEntitytoDTO(Set<Utente> utenti){
-        Set<UtenteDTO> utenteDTOS = new HashSet<>();
-        for (Utente entity: utenti){
-            utenteDTOS.add(utenteEntitytoDTO(entity));
+    public static Set<DoctorDTO> utentiEntityToDTO(Set<Doctor> utenti){
+        Set<DoctorDTO> doctorDTOS = new HashSet<>();
+        for (Doctor entity: utenti){
+            doctorDTOS.add(utenteEntityToDTO(entity));
         }
-        return utenteDTOS;
+        return doctorDTOS;
     }
 
-    public static Set<UtenteDTO> utentiEntitytoDTO(List<Utente> utenti){
-        Set<UtenteDTO> utenteDTOS = new HashSet<>();
-        for (Utente entity: utenti){
-            utenteDTOS.add(utenteEntitytoDTO(entity));
+    public static Set<DoctorDTO> utentiEntityToDTO(List<Doctor> utenti){
+        Set<DoctorDTO> doctorDTOS = new HashSet<>();
+        for (Doctor entity: utenti){
+            doctorDTOS.add(utenteEntityToDTO(entity));
         }
-        return utenteDTOS;
+        return doctorDTOS;
     }
 
 }

@@ -1,14 +1,16 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.TipologiaTurno;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface TurnoDao extends JpaRepository<Turno,Long> {
+@Repository
+public interface TurnoDao extends JpaRepository<Shift,Long> {
 
-    List<Turno> findAllByServizioNome(String nomeServizio);
-    List<Turno> findAllByServizioNomeAndTipologiaTurno(String nomeServizio, TipologiaTurno tipologiaTurno);
+    List<Shift> findAllByServizioNome(String nomeServizio);
+    List<Shift> findAllByServizioNomeAndTipologiaTurno(String nomeServizio, TipologiaTurno tipologiaTurno);
 
 }

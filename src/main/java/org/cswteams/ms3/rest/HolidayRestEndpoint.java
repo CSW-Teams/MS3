@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/holidays")
 public class HolidayRestEndpoint {
-    private static Logger log = Logger.getLogger(HolidayRestEndpoint.class);
+    private static final Logger log = Logger.getLogger(HolidayRestEndpoint.class);
 
     @Autowired
     private IHolidayController holidayController;
@@ -32,10 +32,10 @@ public class HolidayRestEndpoint {
     private ICalendarServiceManager calendarServiceManager;
     
     
-    private CalendarSetting setting;
+    private final CalendarSetting setting;
 
     public HolidayRestEndpoint() {
-    	this.setting = new CalendarSetting("https://date.nager.at/api/v3/publicholidays");
+    	this.setting = new CalendarSetting("https://date.nager.at/api/v3/PublicHolidays");
     }
     
     
@@ -47,13 +47,6 @@ public class HolidayRestEndpoint {
     public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable String currentYear, @PathVariable String currentCountry){
 
         List<Holiday> holidays = holidayController.readHolidays();
-
-        /**
-         * DEBUG TO DELETE
-         */
-        for(Holiday holiday : holidays){
-            log.info("[DEBUG] " + holiday.getName());
-        }
 
 
         // Se il database non contiene nessuna festività e nessuna domenica, questa informaizoni vengono pescatae dall'api esterna
@@ -68,11 +61,6 @@ public class HolidayRestEndpoint {
 
             this.setting.getURL();
 
-            /**
-             * DEBUG TO DELETE
-             */
-            log.info("[DEBUG] " + this.setting.getURL());
-
             calendarServiceManager.init(this.setting);
 
 
@@ -80,13 +68,6 @@ public class HolidayRestEndpoint {
                 holidays = calendarServiceManager.getHolidays();
             } catch (CalendarServiceException e) {
                 e.printStackTrace();
-            }
-
-            /**
-             * DEBUG TO DELETE
-             */
-            for(Holiday holiday:holidays){
-                log.info("[DEBUG] " + holiday.getName() + " " + holiday.getCategory() + " " + holiday.getId() + " " + holiday.getStartDate() + " " + holiday.getEndDate());
             }
 
             holidayController.registerHoliday(holidays);

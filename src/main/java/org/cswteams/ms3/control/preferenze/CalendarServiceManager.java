@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CalendarServiceManager implements ICalendarServiceManager {
-	private static Logger log = Logger.getLogger(CalendarServiceManager.class);
+	private static final Logger log = Logger.getLogger(CalendarServiceManager.class);
 
 	@Autowired
 	IHolidayController holidayController ;

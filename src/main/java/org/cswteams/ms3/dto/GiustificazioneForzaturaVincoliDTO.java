@@ -18,7 +18,7 @@ public class GiustificazioneForzaturaVincoliDTO {
     private int anno;
 
     private TipologiaTurno tipologiaTurno;
-    private Set<UtenteDTO> utentiAllocati;
+    private Set<DoctorDTO> utentiAllocati;
     private ServizioDTO servizio;
 
 

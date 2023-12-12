@@ -44,7 +44,7 @@ export default class LoginView extends React.Component {
     let loginAPI = new LoginAPI();
     let httpResponse = await loginAPI.postRegistration(this.state);
 
-    /* Se la registrazione del nuovo utente ha esito positivo, viene
+    /* Se la registrazione del nuovo doctor ha esito positivo, viene
            mostrato un toast... altrimenti viene mostrato
            un altro toast :)
          */
@@ -86,7 +86,7 @@ export default class LoginView extends React.Component {
       <div className="Auth-form-container">
         <form className="Auth-form">
           <div className="Auth-form-content">
-            <h3 className="Auth-form-title">Registra un nuovo utente</h3>
+            <h3 className="Auth-form-title">Registra un nuovo doctor</h3>
             <div className="form-group mt-3">
               <label>Nome</label>
               <input
@@ -194,13 +194,13 @@ export default class LoginView extends React.Component {
               <div>
                 <input
                   type="radio"
-                  id="utente"
+                  id="doctor"
                   name="attore"
                   value="UTENTE"
                   checked={this.state.attore === "UTENTE"}
                   onChange={e => this.handleChange(e)}
                 />
-                <label htmlFor="utente">Utente</label>
+                <label htmlFor="doctor">Utente</label>
               </div>
               <div>
                 <input

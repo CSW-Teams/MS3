@@ -48,10 +48,10 @@ import org.cswteams.ms3.exception.CalendarServiceException;
  */
 public interface ICalendarServiceManager {
 	
-	public void init(CalendarSetting setting);
+	void init(CalendarSetting setting);
 	
-	public List<Holiday> getHolidays() throws CalendarServiceException;
+	List<Holiday> getHolidays() throws CalendarServiceException;
 	
-	public List<Date> getAllSundays(int year);
+	List<Date> getAllSundays(int year);
 
 }

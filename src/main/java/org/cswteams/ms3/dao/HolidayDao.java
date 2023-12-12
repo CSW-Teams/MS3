@@ -5,7 +5,9 @@ import java.util.List;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface HolidayDao extends JpaRepository<Holiday, Long>{
 
     /** Ritrova tutte le festività registrate*/

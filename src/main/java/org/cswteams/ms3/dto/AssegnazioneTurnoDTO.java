@@ -22,8 +22,8 @@ public class AssegnazioneTurnoDTO {
     @Getter
     private long fineEpoch;
 
-    private Set<UtenteDTO> utentiDiGuardia;
-    private Set<UtenteDTO> utentiReperibili;
+    private Set<DoctorDTO> utentiDiGuardia;
+    private Set<DoctorDTO> utentiReperibili;
 
     @Getter
     private ServizioDTO servizio;
@@ -34,9 +34,9 @@ public class AssegnazioneTurnoDTO {
 
     private boolean reperibilitaAttiva;
 
-    private Set<UtenteDTO> retiredUsers;
+    private Set<DoctorDTO> retiredUsers;
 
-    public AssegnazioneTurnoDTO(Long id, long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
+    public AssegnazioneTurnoDTO(Long id, long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
         this.id = id;
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
@@ -46,7 +46,7 @@ public class AssegnazioneTurnoDTO {
         this.servizio = servizio;
     }
 
-    public AssegnazioneTurnoDTO(Long id,Long idTurno, long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno, boolean reperibilitaAttiva) {
+    public AssegnazioneTurnoDTO(Long id, Long idTurno, long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno, boolean reperibilitaAttiva) {
         this.id = id;
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
@@ -60,7 +60,7 @@ public class AssegnazioneTurnoDTO {
 
     public AssegnazioneTurnoDTO(){}
 
-    public AssegnazioneTurnoDTO(long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
+    public AssegnazioneTurnoDTO(long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
         this.utentiDiGuardia = utentiDiGuardia;
