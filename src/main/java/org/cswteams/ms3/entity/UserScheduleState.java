@@ -36,15 +36,15 @@ public class UserScheduleState {
 
     /** tutti i turni assegnati a questo utente nella pianificazione corrente */
     @Transient
-    List<AssegnazioneTurno> assegnazioniTurnoCache;
+    List<ConcreteShift> assegnazioniTurnoCache;
 
 
 
-    public List<AssegnazioneTurno> getAssegnazioniTurnoCache(){
+    public List<ConcreteShift> getAssegnazioniTurnoCache(){
         
         if (assegnazioniTurnoCache == null){
             this.assegnazioniTurnoCache = new ArrayList<>();
-            for (AssegnazioneTurno at: schedule.getAssegnazioniTurno()){
+            for (ConcreteShift at: schedule.getAssegnazioniTurno()){
                 for (Doctor collega : at.getUtenti()){
                     if (collega.getId() == this.doctor.getId()){
                         assegnazioniTurnoCache.add(at);
@@ -57,8 +57,8 @@ public class UserScheduleState {
     }
 
     /**Aggiunge in ordine la nuova assegnazione alla lista delle assegnazioni dell'utente **/
-    public void addAssegnazioneTurno(AssegnazioneTurno nuovaAssegnazione){
-        List<AssegnazioneTurno> turniAssegnati = getAssegnazioniTurnoCache();
+    public void addAssegnazioneTurno(ConcreteShift nuovaAssegnazione){
+        List<ConcreteShift> turniAssegnati = getAssegnazioniTurnoCache();
         int idInsert = turniAssegnati.size();
         for(int i = 0; i < turniAssegnati.size(); i++){
             if(turniAssegnati.get(i).getData().isAfter(nuovaAssegnazione.getData()) || turniAssegnati.get(i).getData().isEqual(nuovaAssegnazione.getData())){

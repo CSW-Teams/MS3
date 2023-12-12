@@ -37,8 +37,8 @@ public class ScocciaturaVacanza extends Scocciatura {
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        TipologiaTurno tipologiaTurno = contesto.getAssegnazioneTurno().getShift().getTipologiaTurno();
-        LocalDate data = contesto.getAssegnazioneTurno().getData();
+        TipologiaTurno tipologiaTurno = contesto.getConcreteShift().getShift().getTipologiaTurno();
+        LocalDate data = contesto.getConcreteShift().getData();
 
         if(data.equals(this.vacanza.getStartDate()) && tipologiaTurno.equals(this.tipologiaTurno))
             return this.peso;

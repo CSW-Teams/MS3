@@ -1,6 +1,5 @@
 package org.cswteams.ms3.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.Getter;
 import org.cswteams.ms3.entity.doctor.Doctor;
@@ -14,8 +13,7 @@ import java.util.Set;
 
 @Entity
 @Data
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class AssegnazioneTurno{
+public class ConcreteShift {
     @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -48,11 +46,11 @@ public class AssegnazioneTurno{
     @ManyToOne
     private Shift shift;
 
-    public AssegnazioneTurno() {
+    public ConcreteShift() {
 
     }
 
-    public AssegnazioneTurno(LocalDate data, Shift shift, Set<Doctor> utentiReperibili, Set<Doctor> utentiDiGuardia) {
+    public ConcreteShift(LocalDate data, Shift shift, Set<Doctor> utentiReperibili, Set<Doctor> utentiDiGuardia) {
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
@@ -60,7 +58,7 @@ public class AssegnazioneTurno{
         this.shift = shift;
     }
 
-    public AssegnazioneTurno(LocalDate data, Shift shift) {
+    public ConcreteShift(LocalDate data, Shift shift) {
         this.dataEpochDay = data.toEpochDay();
         this.utentiDiGuardia = new HashSet<>();
         this.utentiReperibili = new HashSet<>();
@@ -68,7 +66,7 @@ public class AssegnazioneTurno{
         this.shift = shift;
     }
 
-    public AssegnazioneTurno(Set<Doctor> utentiDiGuardia, Set<Doctor> utentiReperibili, long dataEpochDay, Shift shift) {
+    public ConcreteShift(Set<Doctor> utentiDiGuardia, Set<Doctor> utentiReperibili, long dataEpochDay, Shift shift) {
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
         this.dataEpochDay = dataEpochDay;
@@ -135,8 +133,8 @@ public class AssegnazioneTurno{
         this.utentiReperibili.add(u);
     }
 
-    public AssegnazioneTurno clone(){
-        return new AssegnazioneTurno(
+    public ConcreteShift clone(){
+        return new ConcreteShift(
                 new HashSet<>(this.utentiDiGuardia),
                 new HashSet<>(this.utentiReperibili),
                 this.dataEpochDay,

@@ -6,13 +6,12 @@ import org.cswteams.ms3.dao.SpecializationDao;
 import org.cswteams.ms3.dao.TemporaryConditionDAO;
 import org.cswteams.ms3.dto.category.*;
 import org.cswteams.ms3.entity.category.PermanentCondition;
-import org.cswteams.ms3.entity.category.Rotation;
+import org.cswteams.ms3.entity.category.Structure;
 import org.cswteams.ms3.entity.category.Specialization;
 import org.cswteams.ms3.entity.category.TemporaryCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -64,11 +63,11 @@ public class ControllerCategorie implements IControllerCategorie {
 
     @Override
     public Set<RotationDTO> readRotations() {
-        List<Rotation> rotationList = rotationDao.findAll();
+        List<Structure> structureList = rotationDao.findAll();
         Set<RotationDTO> rotationDTOSet = new HashSet<>();
 
-        for(Rotation rotation : rotationList){
-            rotationDTOSet.add(new RotationDTO(rotation.getType()));
+        for(Structure structure : structureList){
+            rotationDTOSet.add(new RotationDTO(structure.getType()));
         }
 
         return rotationDTOSet;

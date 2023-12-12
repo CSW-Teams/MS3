@@ -23,7 +23,7 @@ public class MappaUtenti {
 
 
     public static DoctorDTO utenteEntityToDTO(Doctor doctor) {
-        return new DoctorDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthDate(), doctor.getTaxCode(), doctor.getRuoloEnum(), doctor.getEmail(), doctor.getPassword(), doctor.getPermanentConditions(), doctor.getSpecializations(), doctor.getAttore());
+        return new DoctorDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthday(), doctor.getTaxCode(), doctor.getRole(), doctor.getEmail(), doctor.getPassword(), doctor.getPermanentConditions(), doctor.getSpecializations(), doctor.getAttore());
     }
 
     public static Set<DoctorDTO> utentiEntityToDTO(Set<Doctor> utenti){

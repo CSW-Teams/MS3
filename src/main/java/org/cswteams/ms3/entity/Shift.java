@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.category.Condition;
 import org.cswteams.ms3.entity.category.PermanentCondition;
-import org.cswteams.ms3.entity.category.Rotation;
+import org.cswteams.ms3.entity.category.Structure;
 import org.cswteams.ms3.entity.category.Specialization;
 import org.cswteams.ms3.entity.policy.ConditionPolicy;
 import org.cswteams.ms3.entity.policy.RotationPolicy;
@@ -22,7 +22,6 @@ import java.util.*;
 @Entity
 @Data
 @EqualsAndHashCode
-//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Shift {
 
     @Id
@@ -132,9 +131,9 @@ public class Shift {
         this.setConditionPolicies(policies);
     }
 
-    public void setBannedRotations(Set<Rotation> categorieVietate){
+    public void setBannedRotations(Set<Structure> categorieVietate){
         List<RotationPolicy> policies = new ArrayList<>();
-        for (org.cswteams.ms3.entity.category.Rotation cu : categorieVietate) {
+        for (Structure cu : categorieVietate) {
             policies.add(new RotationPolicy(cu, this, UserCategoryPolicyValue.EXCLUDE));
         }
         this.setRotationPolicies(policies);
@@ -158,14 +157,14 @@ public class Shift {
         return bannedCategories;
     }
 
-    public Set<Rotation> getBannedRotations(){
-        Set<Rotation> bannedRotation = new HashSet<>();
+    public Set<Structure> getBannedRotations(){
+        Set<Structure> bannedStructure = new HashSet<>();
         for (RotationPolicy p : this.getRotationPolicies()) {
             if (p.getPolicy().equals(UserCategoryPolicyValue.EXCLUDE)) {
-                bannedRotation.add(p.getRotation());
+                bannedStructure.add(p.getStructure());
             }
         }
-        return bannedRotation;
+        return bannedStructure;
     }
 
     public Set<Specialization> getBannedSpecializations(){

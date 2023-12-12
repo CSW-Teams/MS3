@@ -19,7 +19,7 @@ public class ScheduleBuilder {
     
     private Logger logger = Logger.getLogger(ScheduleBuilder.class.getName());
     
-    /** Lista di vincoli da applicare a ogni coppia AssegnazioneTurno, Utente */
+    /** Lista di vincoli da applicare a ogni coppia ConcreteShift, Utente */
     @NotNull
     private List<Vincolo> allConstraints;
 
@@ -53,8 +53,8 @@ public class ScheduleBuilder {
      * @param doctors List of doctors which are available for a certain shift
      * @throws IllegalScheduleException An exception highlighting the incoherent state of the passed parameters
      */
-    private void validateUsers(List<AssegnazioneTurno> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
-        for (AssegnazioneTurno shift: allAssignedShifts){
+    private void validateUsers(List<ConcreteShift> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
+        for (ConcreteShift shift: allAssignedShifts){
             for(Doctor shiftDoctor : shift.getUtenti()){
                 if(!doctors.contains(shiftDoctor))
                     throw new IllegalScheduleException("[ERROR] Inchoerent state between doctors assigned in the shift and doctors listed in the available ones");
@@ -85,7 +85,7 @@ public class ScheduleBuilder {
      * @param doctors Set of doctors that is possible to add in the schedule
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(LocalDate startDate,LocalDate endDate, List<Vincolo> allConstraints, List<AssegnazioneTurno> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
+    public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Vincolo> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
         // Checks on the parameters state
         validateDates(startDate,endDate);
         validateUsers(allAssignedShifts, doctors);
@@ -150,7 +150,7 @@ public class ScheduleBuilder {
         // we need to clear violations and illegal state, if any
         schedule.purify();
 
-        for( AssegnazioneTurno at : this.schedule.getAssegnazioniTurno()){
+        for( ConcreteShift at : this.schedule.getAssegnazioniTurno()){
             
             try {
                 
@@ -190,7 +190,7 @@ public class ScheduleBuilder {
     /** aggiunge gli utenti per una lista di utenti assegnati per una assegnazione di turno 
      * @throws NotEnoughFeasibleUsersException
      * */
-    private void aggiungiUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Doctor> utentiDaPopolare) throws NotEnoughFeasibleUsersException{
+    private void aggiungiUtenti(ConcreteShift assegnazione, int numUtenti, Set<Doctor> utentiDaPopolare) throws NotEnoughFeasibleUsersException{
         
         int selectedUsers = 0;
 
@@ -213,13 +213,13 @@ public class ScheduleBuilder {
             // TODO: parametrizzare la costruzione della schedulazione su forzare vincoli stringenti o meno
             if (verificaTuttiVincoli(contesto, false)){
                 utentiDaPopolare.add(userScheduleState.getDoctor());
-                userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
+                userScheduleState.addAssegnazioneTurno(contesto.getConcreteShift());
 
                 /*
                  * Se il turno a cui ho associato l'utente ha la reperibilità attiva, oppure ho aggiunto l'utente in servizio
                  * allora devo aggiornare il suo uffa cumulato.
                  */
-                if(contesto.getAssegnazioneTurno().getShift().isReperibilitaAttiva() || contesto.getAssegnazioneTurno().getUtentiDiGuardia().size() < contesto.getAssegnazioneTurno().getShift().getNumRequiredUsers())
+                if(contesto.getConcreteShift().getShift().isReperibilitaAttiva() || contesto.getConcreteShift().getUtentiDiGuardia().size() < contesto.getConcreteShift().getShift().getNumRequiredUsers())
                     userScheduleState.saveUffaTemp();
 
                 selectedUsers++;    
@@ -268,7 +268,7 @@ public class ScheduleBuilder {
     /** Aggiunge un'assegnazione turno manualmente alla pianificazione.
      * L'assegnazione deve già essere compilata con la data e gli utenti.
      */
-    public Schedule addAssegnazioneTurno(AssegnazioneTurno at, boolean forced){
+    public Schedule addAssegnazioneTurno(ConcreteShift at, boolean forced){
         
         schedule.purify();
         for (Doctor u : at.getUtenti()){

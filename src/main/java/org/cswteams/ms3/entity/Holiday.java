@@ -12,8 +12,8 @@ import javax.validation.constraints.NotNull;
 import org.cswteams.ms3.enums.HolidayCategory;
 
 import lombok.Data;
-import org.cswteams.ms3.jpa_constraints.temporal_consistency.BeforeInTime;
-import org.cswteams.ms3.jpa_constraints.temporal_consistency.EpochDayComparator;
+import org.cswteams.ms3.utils.temporal_consistency.BeforeInTime;
+import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
 
 /**
  * Questa Entità modella un periodo di giorni appartenenti ad una festività.

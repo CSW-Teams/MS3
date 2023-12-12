@@ -125,7 +125,7 @@ export  class AssegnazioneTurnoAPI {
    */
   async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,mansione,forced) {
 
-      let assegnazioneTurno = new Object();
+      let assegnazioneTurno = {};
 
       assegnazioneTurno.giorno = data.$d.getDate();
       assegnazioneTurno.mese = data.$d.getMonth()+1;
@@ -154,7 +154,7 @@ export  class AssegnazioneTurnoAPI {
 
   async aggiornaAssegnazioneTurno(appointmentChanged,changes,idLoggato) {
 
-    let assegnazioneModificata = new Object();
+    let assegnazioneModificata = {};
     assegnazioneModificata.idAssegnazione = appointmentChanged.id;
     assegnazioneModificata.utenti_guardia = changes.utenti_guardia_id
     assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili_id
@@ -174,7 +174,7 @@ export  class AssegnazioneTurnoAPI {
 }
 
 async richiediRinunciaTurno(utenteCambio,assegnazione,idLoggato) {
-  let assegnazioneConModifiche = new Object()
+  let assegnazioneConModifiche = {}
   assegnazioneConModifiche.idAssegnazione = assegnazione.id;
   assegnazioneConModifiche.utenti_guardia = []
   assegnazioneConModifiche.utenti_reperibili = []
@@ -229,7 +229,7 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
 
     async postGenerationSchedule(dataStart,dataEnd) {
 
-      let requestGeneration = new Object();
+      let requestGeneration = {};
 
       requestGeneration.giornoInizio = dataStart.$d.getDate();
       requestGeneration.meseInizio = dataStart.$d.getMonth()+1;

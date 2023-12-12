@@ -60,7 +60,7 @@ public class VincoloCategorieUtenteTurno extends Vincolo {
     @Override
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
         /*Doctor doctor = contesto.getUserScheduleState().getDoctor();
-        AssegnazioneTurno aTurno = contesto.getAssegnazioneTurno();
+        ConcreteShift aTurno = contesto.getConcreteShift();
         List<ConditionPolicy> brokenPolicies = new ArrayList<>();
 
         // confronta le policies con le categorie dell'utente

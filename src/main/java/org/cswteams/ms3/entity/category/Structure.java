@@ -8,20 +8,20 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Getter
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public class Rotation implements Category{
+public class Structure implements Category{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "rotation_id", nullable = false)
+    @Column(name = "structure_id", nullable = false)
     private Long id;
 
     @NotNull
     private String type;
 
-    public Rotation(String type){
+    public Structure(String type){
         this.type = type;
     }
 
-    protected Rotation() {
+    protected Structure() {
 
     }
 

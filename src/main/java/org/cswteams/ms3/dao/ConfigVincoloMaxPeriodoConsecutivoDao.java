@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ConfigVincoloMaxPeriodoConsecutivoDao extends JpaRepository<ConfigVincoloMaxPeriodoConsecutivo, Long> {
 
-    List<ConfigVincoloMaxPeriodoConsecutivo> findAllByCategoriaVincolataNome(String name);
+    List<ConfigVincoloMaxPeriodoConsecutivo> findAllByCategoriaVincolataType(String type);
 }

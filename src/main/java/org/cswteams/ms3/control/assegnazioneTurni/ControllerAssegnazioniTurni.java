@@ -8,7 +8,7 @@ import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
@@ -42,7 +42,7 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
      */
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurniAssegnati()  {
-        Set<AssegnazioneTurno> turniSet = new HashSet<>(assegnazioneTurnoDao.findAll());
+        Set<ConcreteShift> turniSet = new HashSet<>(assegnazioneTurnoDao.findAll());
         Set<AssegnazioneTurnoDTO> turniDTOSet = MappaAssegnazioneTurni.assegnazioneTurnoToDTO(turniSet);
         return turniDTOSet;
     }
@@ -54,15 +54,15 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
      * @throws AssegnazioneTurnoException
      */
     @Override
-    public AssegnazioneTurno creaTurnoAssegnato(@NotNull RegistraAssegnazioneTurnoDTO dto) throws AssegnazioneTurnoException {
+    public ConcreteShift creaTurnoAssegnato(@NotNull RegistraAssegnazioneTurnoDTO dto) throws AssegnazioneTurnoException {
 
         Shift shift = turnoDao.findAllByServizioNomeAndTipologiaTurno(dto.getServizio().getNome(), dto.getTipologiaTurno()).get(0);
         if(shift == null)
             throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia shift: "+dto.getTipologiaTurno().toString());
 
-        AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()), shift, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
+        ConcreteShift concreteShift = new ConcreteShift(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()), shift, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
 
-        return assegnazioneTurnoDao.save(assegnazioneTurno);
+        return assegnazioneTurnoDao.save(concreteShift);
     }
 
     /**
@@ -73,17 +73,17 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
      */
     @Override
     public Set<AssegnazioneTurnoDTO> leggiTurniUtente(@NotNull Long idPersona) throws ParseException {
-        Set<AssegnazioneTurno> turniAllocatiERiserve = assegnazioneTurnoDao.findTurniUtente(idPersona);
+        Set<ConcreteShift> turniAllocatiERiserve = assegnazioneTurnoDao.findTurniUtente(idPersona);
         Set<AssegnazioneTurnoDTO> turniAllocati = new HashSet<>();
-        for(AssegnazioneTurno assegnazioneTurno: turniAllocatiERiserve){
-            if(assegnazioneTurno.getShift().isReperibilitaAttiva() || !utenteInReperibilita(assegnazioneTurno, idPersona))
-                turniAllocati.add(MappaAssegnazioneTurni.assegnazioneTurnoToDTO(assegnazioneTurno));
+        for(ConcreteShift concreteShift : turniAllocatiERiserve){
+            if(concreteShift.getShift().isReperibilitaAttiva() || !utenteInReperibilita(concreteShift, idPersona))
+                turniAllocati.add(MappaAssegnazioneTurni.assegnazioneTurnoToDTO(concreteShift));
         }
         return turniAllocati;
     }
 
-    private boolean utenteInReperibilita(AssegnazioneTurno assegnazioneTurno, Long idPersona){
-        for(Doctor doctorReperibile : assegnazioneTurno.getUtentiReperibili()){
+    private boolean utenteInReperibilita(ConcreteShift concreteShift, Long idPersona){
+        for(Doctor doctorReperibile : concreteShift.getUtentiReperibili()){
             if(doctorReperibile.getId().longValue() == idPersona.longValue())
                 return true;
         }
@@ -92,7 +92,7 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
 
 
     @Override
-    public AssegnazioneTurno leggiTurnoByID(long idAssegnazione) {
+    public ConcreteShift leggiTurnoByID(long idAssegnazione) {
         return assegnazioneTurnoDao.findById(idAssegnazione).get();
     }
 

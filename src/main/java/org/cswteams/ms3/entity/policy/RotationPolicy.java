@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.UserCategoryPolicyValue;
-import org.cswteams.ms3.entity.category.Rotation;
+import org.cswteams.ms3.entity.category.Structure;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -14,14 +14,14 @@ import javax.persistence.ManyToOne;
 public class RotationPolicy extends Policy{
     @ManyToOne
     @NonNull
-    private Rotation rotation;
+    private Structure structure;
 
     protected RotationPolicy(){
         super(new Shift(), UserCategoryPolicyValue.EXCLUDE);
     }
 
-    public RotationPolicy(Rotation rotation, Shift shift, UserCategoryPolicyValue value){
+    public RotationPolicy(Structure structure, Shift shift, UserCategoryPolicyValue value){
         super(shift,value);
-        this.rotation = rotation;
+        this.structure = structure;
     }
 }

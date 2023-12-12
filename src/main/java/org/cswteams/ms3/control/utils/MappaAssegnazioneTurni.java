@@ -2,7 +2,7 @@ package org.cswteams.ms3.control.utils;
 
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.DoctorDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.ConcreteShift;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -12,17 +12,17 @@ import java.util.Set;
 public class MappaAssegnazioneTurni {
 
 
-  /*  public static AssegnazioneTurno assegnazioneTurnoDTOToEntity(AssegnazioneTurnoDTO dto) throws TurnoException {
+  /*  public static ConcreteShift assegnazioneTurnoDTOToEntity(AssegnazioneTurnoDTO dto) throws TurnoException {
         // FIXME: DA SISTEMARE, DEVE PRENDERLO DAL DB
         Shift turno = new Shift(dto.getIdTurno(), dto.getInizio().toLocalDateTime().toLocalTime(), dto.getFine().toLocalDateTime().toLocalTime(), MappaServizio.servizioDTOtoEntity(dto.getServizio()), dto.getTipologiaTurno(),dto.isGiornoSuccessivoTurno());
         Set<Utente> diGuardia = MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia());
         Set<Utente> reperibili = MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili());
         turno.setMansione(dto.getMansione());
 
-        return new AssegnazioneTurno(dto.getInizio().toLocalDateTime().toLocalDate(), turno, reperibili, diGuardia);
+        return new ConcreteShift(dto.getInizio().toLocalDateTime().toLocalDate(), turno, reperibili, diGuardia);
     }*/
 
-    public static AssegnazioneTurnoDTO assegnazioneTurnoToDTO(AssegnazioneTurno entity) {
+    public static AssegnazioneTurnoDTO assegnazioneTurnoToDTO(ConcreteShift entity) {
         ZoneId zone = ZoneId.systemDefault();
 
         LocalDateTime localDateTimeInizio = LocalDateTime.of(entity.getData(), entity.getShift().getOraInizio());
@@ -41,9 +41,9 @@ public class MappaAssegnazioneTurni {
         return dto;
     }
 
-    public static Set<AssegnazioneTurnoDTO> assegnazioneTurnoToDTO(Set<AssegnazioneTurno> turni) {
+    public static Set<AssegnazioneTurnoDTO> assegnazioneTurnoToDTO(Set<ConcreteShift> turni) {
         Set<AssegnazioneTurnoDTO> assegnazioneTurnoDTOS = new HashSet<>();
-        for (AssegnazioneTurno entity : turni) {
+        for (ConcreteShift entity : turni) {
             assegnazioneTurnoDTOS.add(assegnazioneTurnoToDTO(entity));
         }
         return assegnazioneTurnoDTOS;

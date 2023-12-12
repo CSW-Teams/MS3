@@ -5,12 +5,12 @@ import java.util.Map;
 
 public class CalendarSetting {
 	
-	private String baseURL;
+	private final String baseURL;
 	private List<KeyValue<String, String>> URLParameters;
 	private String year;
 	private String country;
 
-	private String dateFormat = "yyyy-MM-dd";
+	private final String dateFormat = "yyyy-MM-dd";
 	
 	public CalendarSetting(String baseURL) {
 		this.baseURL = baseURL;

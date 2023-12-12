@@ -228,10 +228,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Specialization oncologia = new Specialization("ONCOLOGIA");
 
         //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
-        org.cswteams.ms3.entity.category.Rotation repartoCardiologia = new org.cswteams.ms3.entity.category.Rotation("REPARTO CARDIOLOGIA");
-        org.cswteams.ms3.entity.category.Rotation repartoOncologia = new org.cswteams.ms3.entity.category.Rotation("REPARTO ONCOLOGIA");
-        org.cswteams.ms3.entity.category.Rotation ambulatorioCardiologia = new org.cswteams.ms3.entity.category.Rotation("AMBULATORIO CARDIOLOGIA");
-        org.cswteams.ms3.entity.category.Rotation ambulatorioOncologia = new org.cswteams.ms3.entity.category.Rotation("AMBULATORIO ONCOLOGIA");
+        Structure repartoCardiologia = new Structure("REPARTO CARDIOLOGIA");
+        Structure repartoOncologia = new Structure("REPARTO ONCOLOGIA");
+        Structure ambulatorioCardiologia = new Structure("AMBULATORIO CARDIOLOGIA");
+        Structure ambulatorioOncologia = new Structure("AMBULATORIO ONCOLOGIA");
 
         // Save in persistence all possible conditions
         temporaryConditionDao.save(vacation);
@@ -258,9 +258,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         // Aggiungo la specializzazione
         u6.getSpecializations().add(cardiologia);
         Doctor u1 = new Doctor("Martina","Salvati", "SLVMTN97T56H501*", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.CONFIGURATORE);
-        u1.getRotations().add(repartoCardiologia);
+        u1.getStructures().add(repartoCardiologia);
         Doctor u2 = new Doctor("Domenico","Verde", "VRDDMC96H16H501*", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u2.getRotations().add(repartoCardiologia);
+        u2.getStructures().add(repartoCardiologia);
         Doctor u3 = new Doctor("Federica","Villani", "VLNFDR98P03H501*", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
         //u3.getTurnazioni().add(repartoCardiologia);
         Doctor u4 = new Doctor("Daniele","Colavecchi", "CLVDNL82C21H501*", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
@@ -272,15 +272,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u8 = new Doctor("Manuel","Mastrofini", "MSTMNL80M20H501*", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
         u8.getSpecializations().add(cardiologia);
         Doctor u9 = new Doctor("Giulia","Cantone", "CTNGLI78E44H501*", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u9.getRotations().add(repartoOncologia);
+        u9.getStructures().add(repartoOncologia);
         Doctor u10 = new Doctor("Fabio","Valenzi", "VLZFBA90A03H501*", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u10.getRotations().add(repartoOncologia);
+        u10.getStructures().add(repartoOncologia);
         Doctor u11 = new Doctor("Giada","Rossi", "RSSGDI92H68H501*", LocalDate.of(1997, 3, 14),"giada.rossi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO ,AttoreEnum.UTENTE);
-        u11.getRotations().add(repartoOncologia);
+        u11.getStructures().add(repartoOncologia);
         Doctor u12 = new Doctor("Camilla","Verdi", "VRDCML95B41H501*", LocalDate.of(1997, 5, 23),"camilla.verdi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u12.getRotations().add(repartoCardiologia);
+        u12.getStructures().add(repartoCardiologia);
         Doctor u13 = new Doctor("Federica","Pollini", "PLLFDR94S70H501*", LocalDate.of(1998, 2, 12),"federica.pollini@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u13.getRotations().add(repartoCardiologia);
+        u13.getStructures().add(repartoCardiologia);
         Doctor u14 = new Doctor("Claudia","Rossi", "RSSCLD91C52H501*", LocalDate.of(1982, 7, 6),"claudia.rossi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
         u14.getSpecializations().add(oncologia);
         Doctor u15 = new Doctor("Giorgio","Bianchi", "BNCGRG88E21H501*", LocalDate.of(1993, 2, 12),"giorgio.bianchi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
@@ -288,19 +288,19 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u16 = new Doctor("Claudio","Gialli", "GLLCLD89B14H501*", LocalDate.of(1998, 8, 12),"claudia.gialli@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
         u16.getSpecializations().add(cardiologia);
         Doctor u17 = new Doctor("Filippo","Neri", "NREFLP92R24H501*", LocalDate.of(1998, 2, 12),"filippo.neru@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u17.getRotations().add(ambulatorioCardiologia);
+        u17.getStructures().add(ambulatorioCardiologia);
         Doctor u18 = new Doctor("Vincenzo","Grassi", "GRSVNC60A19H501*", LocalDate.of(1998, 8, 12),"vincenzo.grassi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
         u18.getSpecializations().add(oncologia);
         Doctor u19 = new Doctor("Diana","Pasquali", "PSQDNI97D22H501*", LocalDate.of(1998, 2, 12),"diana.pasquali@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u19.getRotations().add(ambulatorioCardiologia);
+        u19.getStructures().add(ambulatorioCardiologia);
         Doctor u20 = new Doctor("Francesco","Lo Presti", "LPSFRC66T05G071*", LocalDate.of(1998, 8, 12),"francesco.lopresti@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u20.getRotations().add(ambulatorioOncologia);
+        u20.getStructures().add(ambulatorioOncologia);
         Doctor u21 = new Doctor("Andrea","Pepe", "PPENDR99M05I150*", LocalDate.of(1998, 8, 12),"andrea.pepe@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u21.getRotations().add(ambulatorioOncologia);
+        u21.getStructures().add(ambulatorioOncologia);
         Doctor u22 = new Doctor("Matteo","Fanfarillo", "FNFMTT99E10A123E", LocalDate.of(1999, 9, 10),"matteo.fanfarillo99@gmail.com","passw", RuoloEnum.STRUTTURATO,AttoreEnum.PIANIFICATORE);
-        u22.getRotations().add(repartoOncologia);
+        u22.getStructures().add(repartoOncologia);
         Doctor u23 = new Doctor("Matteo","Ciccaglione", "CCCMTT99H15C439*", LocalDate.of(1998, 8, 12),"matteo.ciccaglione@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u23.getRotations().add(repartoOncologia);
+        u23.getStructures().add(repartoOncologia);
         Doctor u24 = new Doctor("Vittoria","De Nitto", "DNTVTT60C59E612*", LocalDate.of(1998, 8, 12),"vittoria.denitto@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
         u24.getSpecializations().add(oncologia);
         Doctor u25 = new Doctor("Valeria","Cardellini", "CRDVLR68L44H501*", LocalDate.of(1998, 8, 12),"valeria.cardellini@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
@@ -310,19 +310,19 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u27 = new Doctor("Giovanni","Saggio", "SGGGVN65D30H501*", LocalDate.of(1998, 8, 12),"giovanni.saggio@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
         u27.getSpecializations().add(cardiologia);
         Doctor u28 = new Doctor("Livia","Simoncini", "SMNLVI98L17H501*", LocalDate.of(1998, 8, 12),"livia.simoncini@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u28.getRotations().add(repartoCardiologia);
+        u28.getStructures().add(repartoCardiologia);
         Doctor u29 = new Doctor("Ludovico","Zarrelli", "ZRRLDV99E03I370*", LocalDate.of(1998, 8, 12),"ludovico.zerrelli@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u29.getRotations().add(repartoCardiologia);
+        u29.getStructures().add(repartoCardiologia);
         Doctor u30 = new Doctor("Alessandro","Montenegro", "MNTLSS96P20H501*", LocalDate.of(1998, 8, 12),"alessandro.montenegro@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u30.getRotations().add(ambulatorioOncologia);
+        u30.getStructures().add(ambulatorioOncologia);
         Doctor u31 = new Doctor("Daniel","Lungu", "LNGDNL98T04H501*", LocalDate.of(1998, 8, 12),"daniel.lungu@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u31.getRotations().add(repartoCardiologia);
+        u31.getStructures().add(repartoCardiologia);
         Doctor u32 = new Doctor("Andrea","Tosti", "TSTNDR97A10H501*", LocalDate.of(1998, 8, 12),"andrea.tosti@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u32.getRotations().add(repartoCardiologia);
+        u32.getStructures().add(repartoCardiologia);
         Doctor u33 = new Doctor("Giorgio","Pesce", "PSCGRG98E08H501*", LocalDate.of(1998, 8, 12),"giorgia.pesce@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u33.getRotations().add(repartoOncologia);
+        u33.getStructures().add(repartoOncologia);
         Doctor u34 = new Doctor("Valerio","Palmerini", "PLMVLR93B12H501*", LocalDate.of(1998, 8, 12),"valerio.palmerini@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u34.getRotations().add(repartoOncologia);
+        u34.getStructures().add(repartoOncologia);
 
         u6 = utenteDao.saveAndFlush(u6);
         u7 = utenteDao.saveAndFlush(u7);
@@ -469,7 +469,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             line = br.readLine();
         }
         for(List<String> list : data) {
-            String HolidayData = Arrays.asList(list.get(0).split(";")).get(0).toString();
+            String HolidayData = Arrays.asList(list.get(0).split(";")).get(0);
             final String[] HolidayDataS = HolidayData.split("/");
             int year = Integer.parseInt(HolidayDataS[2].replaceAll("[^0-9]", ""));
             int month = Integer.parseInt(HolidayDataS[1].replaceAll("[^0-9]", ""));

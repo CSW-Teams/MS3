@@ -7,7 +7,7 @@ import org.cswteams.ms3.entity.RuoloNumero;
 import org.cswteams.ms3.entity.UserCategoryPolicyValue;
 import org.cswteams.ms3.entity.category.Condition;
 import org.cswteams.ms3.entity.category.PermanentCondition;
-import org.cswteams.ms3.entity.category.Rotation;
+import org.cswteams.ms3.entity.category.Structure;
 import org.cswteams.ms3.entity.category.Specialization;
 import org.cswteams.ms3.entity.policy.ConditionPolicy;
 import org.cswteams.ms3.entity.policy.RotationPolicy;
@@ -73,9 +73,9 @@ public class RotationDTO {
         this.setConditionPolicies(policies);
     }
 
-    public void setBannedRotations(Set<org.cswteams.ms3.entity.category.Rotation> categorieVietate){
+    public void setBannedRotations(Set<Structure> categorieVietate){
         Set<RotationPolicy> policies = new HashSet<>();
-        for (org.cswteams.ms3.entity.category.Rotation cu : categorieVietate) {
+        for (Structure cu : categorieVietate) {
             policies.add(new RotationPolicy(cu, new Shift(), UserCategoryPolicyValue.EXCLUDE));
         }
         this.setRotationPolicies(policies);
@@ -100,14 +100,14 @@ public class RotationDTO {
         return bannedCategories;
     }
 
-    public Set<Rotation> getBannedRotations(){
-        Set<org.cswteams.ms3.entity.category.Rotation> bannedRotation = new HashSet<>();
+    public Set<Structure> getBannedRotations(){
+        Set<Structure> bannedStructure = new HashSet<>();
         for (RotationPolicy p : this.getRotationPolicies()) {
             if (p.getPolicy().equals(UserCategoryPolicyValue.EXCLUDE)) {
-                bannedRotation.add(p.getRotation());
+                bannedStructure.add(p.getStructure());
             }
         }
-        return bannedRotation;
+        return bannedStructure;
     }
 
     public Set<Specialization> getBannedSpecializations(){

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 
-import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.ConcreteShift;
 
 import javax.persistence.Entity;
 
@@ -16,7 +16,7 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
     /**
      * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1
      */
-    protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2) {
+    protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift aTurno1, ConcreteShift aTurno2) {
 
         return verificaContiguitàAssegnazioneTurni(aTurno1, aTurno2, ChronoUnit.MINUTES, 0);
     }
@@ -31,7 +31,7 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
      * @param delta numero di unità temporali tollerabili per considerare i turni contigui
      * @return
      */
-    protected boolean verificaContiguitàAssegnazioneTurni(AssegnazioneTurno aTurno1, AssegnazioneTurno aTurno2, TemporalUnit tu, long delta){
+    protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift aTurno1, ConcreteShift aTurno2, TemporalUnit tu, long delta){
 
         LocalDateTime aTurno1Start = aTurno1.getData().atTime(aTurno1.getShift().getOraInizio());
         LocalDateTime aTurno1End = aTurno1Start.plus(aTurno1.getShift().getDurata());
@@ -48,7 +48,7 @@ public abstract class VincoloAssegnazioneTurnoTurno extends Vincolo{
 
     }
 
-    protected int getAssegnazioneTurnoPrecedenteIdx(List<AssegnazioneTurno> turniAssegnati, AssegnazioneTurno turnoDaAssegnare){
+    protected int getAssegnazioneTurnoPrecedenteIdx(List<ConcreteShift> turniAssegnati, ConcreteShift turnoDaAssegnare){
         for(int i = 0; i < turniAssegnati.size(); i++){
             if(turniAssegnati.get(i).getData().isAfter(turnoDaAssegnare.getData()) || turniAssegnati.get(i).getData().isEqual(turnoDaAssegnare.getData())){
                 if(turniAssegnati.get(i).getShift().getOraInizio().isAfter(turnoDaAssegnare.getShift().getOraInizio()) || turniAssegnati.get(i).getShift().getOraInizio().equals(turnoDaAssegnare.getShift().getOraInizio())) {

@@ -1,4 +1,4 @@
-package org.cswteams.ms3.jpa_constraints.temporal_consistency;
+package org.cswteams.ms3.utils.temporal_consistency;
 
 public interface Comparator {
 

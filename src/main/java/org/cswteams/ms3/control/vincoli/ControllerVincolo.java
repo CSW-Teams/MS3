@@ -33,7 +33,7 @@ public class ControllerVincolo implements IControllerVincolo {
     @Override
     public ConfigVincoli aggiornaVincoli(ConfigVincoli configurazione) {
         for(ConfigVincoloMaxPeriodoConsecutivo config: configurazione.getConfigVincoloMaxPeriodoConsecutivoPerCategoria()){
-            ConfigVincoloMaxPeriodoConsecutivo configVincoloMaxPeriodoConsecutivo = configVincoloMaxPeriodoConsecutivoDao.findAllByCategoriaVincolataNome(config.getCategoriaVincolata().getType()).get(0);
+            ConfigVincoloMaxPeriodoConsecutivo configVincoloMaxPeriodoConsecutivo = configVincoloMaxPeriodoConsecutivoDao.findAllByCategoriaVincolataType(config.getCategoriaVincolata().getType()).get(0);
             config.setId(configVincoloMaxPeriodoConsecutivo.getId());
             configVincoloMaxPeriodoConsecutivoDao.save(config);
         }

@@ -34,8 +34,8 @@ public class ScocciaturaAssegnazioneUtente extends Scocciatura {
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        TipologiaTurno tipologiaTurno = contesto.getAssegnazioneTurno().getShift().getTipologiaTurno();
-        DayOfWeek giornoSettimana = contesto.getAssegnazioneTurno().getData().getDayOfWeek();
+        TipologiaTurno tipologiaTurno = contesto.getConcreteShift().getShift().getTipologiaTurno();
+        DayOfWeek giornoSettimana = contesto.getConcreteShift().getData().getDayOfWeek();
 
         if(giornoSettimana.equals(this.giornoSettimana) && tipologiaTurno.equals(this.tipologiaTurno))
             return this.peso;

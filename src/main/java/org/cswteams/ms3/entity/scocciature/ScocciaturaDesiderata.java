@@ -31,7 +31,7 @@ public class ScocciaturaDesiderata extends Scocciatura {
         List<Desiderata> desiderate = contesto.getUserScheduleState().getDoctor().getDesiderataList();
 
         for(Desiderata desiderata: desiderate){
-            if(desiderata.getData().equals(contesto.getAssegnazioneTurno().getData()))
+            if(desiderata.getData().equals(contesto.getConcreteShift().getData()))
                 return peso;
         }
 
