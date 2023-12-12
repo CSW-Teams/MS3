@@ -7,7 +7,7 @@ export  class DesiderateAPI {
     let desiderate = []
 
     for (let i = 0; i < date.length; i++) {
-      let desiderata = new Object()
+      let desiderata = {}
 
       desiderata.anno= date[i].year
       desiderata.mese= date[i].month.number
@@ -33,7 +33,7 @@ export  class DesiderateAPI {
     const desiderate = [];
 
     for (let i = 0; i < body.length; i++) {
-      let des = new Object()
+      let des = {}
       des.idDesiderata = body[i].idDesiderata
       des.data= new Date(body[i].anno, body[i].mese-1, body[i].giorno).toLocaleDateString()
       desiderate[i]=des;

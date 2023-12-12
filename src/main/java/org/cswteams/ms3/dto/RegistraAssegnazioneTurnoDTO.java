@@ -22,9 +22,5 @@ public class RegistraAssegnazioneTurnoDTO {
 
     public RegistraAssegnazioneTurnoDTO(){}
 
-    public void setForced(boolean forced) {
-        this.forced = forced;
-    }
-
 
 }

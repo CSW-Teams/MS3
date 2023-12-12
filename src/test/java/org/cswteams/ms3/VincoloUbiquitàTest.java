@@ -21,10 +21,7 @@ import javax.transaction.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -48,7 +45,7 @@ public class VincoloUbiquitàTest {
         AssegnazioneTurno turnoDaAssegnare = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
 
         Schedule scheduleTest = new Schedule(LocalDate.of(2023,1,10),LocalDate.of(2023,1,17));
-        scheduleTest.setAssegnazioniTurno(new ArrayList<>(Arrays.asList(turnoAssegnato)));
+        scheduleTest.setAssegnazioniTurno(new ArrayList<>(List.of(turnoAssegnato)));
 
         UserScheduleState pregUserState = new UserScheduleState(utente, scheduleTest);
 
@@ -73,7 +70,7 @@ public class VincoloUbiquitàTest {
         AssegnazioneTurno turnoDaAssegnare = new AssegnazioneTurno(LocalDate.of(2023,1, 10),t2,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)));
 
         Schedule scheduleTest = new Schedule(LocalDate.of(2023,1,10),LocalDate.of(2023,1,17));
-        scheduleTest.setAssegnazioniTurno(new ArrayList<>(Arrays.asList(turnoAssegnato)));
+        scheduleTest.setAssegnazioniTurno(new ArrayList<>(List.of(turnoAssegnato)));
 
         UserScheduleState pregUserState = new UserScheduleState(utente, scheduleTest);
 

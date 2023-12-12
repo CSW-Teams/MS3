@@ -47,10 +47,10 @@ public class TestHolidayControllerRegisterPeriod {
     @Autowired
     private HolidayDao dao ;
 
-    private HolidayDTO date ;
+    private final HolidayDTO date ;
     private int year ;
 
-    private boolean isCorrect ;
+    private final boolean isCorrect ;
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {

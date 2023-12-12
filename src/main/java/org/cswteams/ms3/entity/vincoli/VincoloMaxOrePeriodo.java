@@ -40,7 +40,7 @@ public class VincoloMaxOrePeriodo extends VincoloAssegnazioneTurnoTurno {
                 endPeriodDate = endPeriodDate.plusDays(numGiorniPeriodo);
             }
             // Conto i minuti dei turni assegnati all'utente nel periodo considerato + il turno da assegnare
-            long minutiComplessivi = contesto.getAssegnazioneTurno().getTurno().getMinutidiLavoro();;
+            long minutiComplessivi = contesto.getAssegnazioneTurno().getTurno().getMinutidiLavoro();
             for(AssegnazioneTurno at: turniAssegnati){
                 if(at.getData().isBefore(endPeriodDate) && (at.getData().isAfter(startPeriodDate) || at.getData().isEqual(startPeriodDate))){
                     minutiComplessivi += at.getTurno().getMinutidiLavoro();

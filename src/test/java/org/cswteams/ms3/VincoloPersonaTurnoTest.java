@@ -44,7 +44,7 @@ public class VincoloPersonaTurnoTest {
     @Autowired
     private CategoriaUtenteDao categoriaUtenteDao;
 
-    private VincoloCategorieUtenteTurno vincoloPersonaTurno = new VincoloCategorieUtenteTurno();
+    private final VincoloCategorieUtenteTurno vincoloPersonaTurno = new VincoloCategorieUtenteTurno();
 
     @Autowired
     private UserCategoryPolicyDao userCategoryPolicyDao;

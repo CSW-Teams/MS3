@@ -48,10 +48,10 @@ import java.util.List;
  */
 public interface ICalendarServiceManager {
 	
-	public void init(CalendarSetting setting);
+	void init(CalendarSetting setting);
 	
-	public List<Holiday> getHolidays() throws CalendarServiceException;
+	List<Holiday> getHolidays() throws CalendarServiceException;
 	
-	public List<LocalDate> getAllSundays(int year);
+	List<LocalDate> getAllSundays(int year);
 
 }

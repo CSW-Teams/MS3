@@ -40,8 +40,8 @@ public class TestHoliday {
     @Autowired
     private HolidayDao dao ;
 
-    private Holiday holiday;
-    private boolean result ;
+    private final Holiday holiday;
+    private final boolean result ;
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {

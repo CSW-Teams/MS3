@@ -37,9 +37,9 @@ public class TestCategoriaRobustness {
     @Autowired
     private CategorieDao dao ;
 
-    private Categoria toTest ;
+    private final Categoria toTest ;
 
-    private boolean positive ;
+    private final boolean positive ;
 
     public TestCategoriaRobustness(Categoria categoria, boolean positive) {
         this.toTest = categoria ;
