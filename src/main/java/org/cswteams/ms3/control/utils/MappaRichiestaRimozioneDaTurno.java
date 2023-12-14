@@ -11,10 +11,12 @@ public class MappaRichiestaRimozioneDaTurno {
 
     public static RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoToDTO(RichiestaRimozioneDaTurno richiestaRimozioneDaTurno) {
         return new RichiestaRimozioneDaTurnoDTO(
+                richiestaRimozioneDaTurno.getId(),
                 richiestaRimozioneDaTurno.getAssegnazioneTurno().getId(),
                 richiestaRimozioneDaTurno.getUtente().getId(),
                 richiestaRimozioneDaTurno.isEsito(),
-                richiestaRimozioneDaTurno.getDescrizione());
+                richiestaRimozioneDaTurno.getDescrizione(),
+                richiestaRimozioneDaTurno.getAllegato());
     }
 
     public static Set<RichiestaRimozioneDaTurnoDTO> richiestaRimozioneDaTurnoEntitytoDTO(List<RichiestaRimozioneDaTurno> richiestaRimozioneDaTurnoList) {

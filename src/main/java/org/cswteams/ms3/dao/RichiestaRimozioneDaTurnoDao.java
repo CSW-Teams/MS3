@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface RichiestaRimozioneDaTurnoDao extends JpaRepository<RichiestaRimozioneDaTurno, String> {
+public interface RichiestaRimozioneDaTurnoDao extends JpaRepository<RichiestaRimozioneDaTurno, Long> {
 
     /**
      * Ritorna una lista di tutte le richieste di rimozione da turno assegnato <i>pending</i>,
@@ -35,4 +35,9 @@ public interface RichiestaRimozioneDaTurnoDao extends JpaRepository<RichiestaRim
             "       AND " +
             "       r.utente.id = ?2")
     List<RichiestaRimozioneDaTurno> findAllByAssegnazioneTurnoIdAndUtenteId(Long assegnazioneTurnoId, Long UtenteId);
+
+    @Query("SELECT  r " +
+            "FROM   RichiestaRimozioneDaTurno r " +
+            "WHERE  r.utente.id = ?1")
+    List<RichiestaRimozioneDaTurno> findAllByUser(Long UtenteId);
 }

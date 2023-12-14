@@ -9,11 +9,10 @@ import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Set;
 
 @RestController
@@ -49,8 +48,18 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
+    @RequestMapping(method = RequestMethod.GET, path = "/utente/{idUtente}")
+    public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPerUtente(@PathVariable Long idUtente) {
+        Set<RichiestaRimozioneDaTurnoDTO> richiesteRimozioneDaTurnoPendenti = controller.leggiRichiesteRimozioneDaTurnoPerUtente(idUtente);
+        return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
+    }
+
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<?> risolviRichiestaRimozioneDaTurno(@RequestBody RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) {
+        //TODO - implementazione da discutere
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+        /*
         RichiestaRimozioneDaTurno r = null;
         if (richiestaRimozioneDaTurnoDTO == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -59,6 +68,18 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
             r = controller.risolviRichiestaRimozioneDaTurno(richiestaRimozioneDaTurnoDTO.getId(), richiestaRimozioneDaTurnoDTO.isEsito());
         } catch (DatabaseException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoToDTO(r), HttpStatus.ACCEPTED);
+    */
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/{idRichiestaRimozioneDaTurno}/caricaAllegato")
+    public ResponseEntity<?> caricaAllegato(@PathVariable Long idRichiestaRimozioneDaTurno, @RequestParam("allegato") MultipartFile allegato) {
+        RichiestaRimozioneDaTurno r;
+        try {
+            r = controller.caricaAllegato(idRichiestaRimozioneDaTurno, allegato);
+        } catch (IOException | DatabaseException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
         return new ResponseEntity<>(MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoToDTO(r), HttpStatus.ACCEPTED);
     }

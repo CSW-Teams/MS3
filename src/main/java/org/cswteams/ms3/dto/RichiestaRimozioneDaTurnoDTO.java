@@ -1,12 +1,9 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
-import org.cswteams.ms3.entity.CategoriaUtente;
-import org.cswteams.ms3.enums.RuoloEnum;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Data
 public class RichiestaRimozioneDaTurnoDTO {
@@ -29,15 +26,19 @@ public class RichiestaRimozioneDaTurnoDTO {
 
     @NotNull
     @NotEmpty
-    String descrizione;
+    private String descrizione;
+
+    private byte[] allegato;
 
     public RichiestaRimozioneDaTurnoDTO() {
     }
 
-    public RichiestaRimozioneDaTurnoDTO(Long assegnazioneTurnoId, Long utenteId, boolean esito, String descrizione) {
+    public RichiestaRimozioneDaTurnoDTO(Long richiestaRimozioneDaTurnoId, Long assegnazioneTurnoId, Long utenteId, boolean esito, String descrizione, byte[] allegato) {
+        this.id = richiestaRimozioneDaTurnoId;
         this.assegnazioneTurnoId = assegnazioneTurnoId;
         this.utenteId = utenteId;
         this.esito = esito;
         this.descrizione = descrizione;
+        this.allegato = allegato;
     }
 }

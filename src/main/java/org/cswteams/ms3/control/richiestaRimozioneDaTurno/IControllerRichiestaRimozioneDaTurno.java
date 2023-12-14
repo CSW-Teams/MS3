@@ -6,7 +6,10 @@ import org.cswteams.ms3.entity.RichiestaRimozioneDaTurno;
 import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,6 +52,14 @@ public interface IControllerRichiestaRimozioneDaTurno {
     Set<RichiestaRimozioneDaTurnoDTO> leggiRichiesteRimozioneDaTurnoPendenti();
 
     /**
+     * Lettura di tutte le richieste di rimozione da turno, filtrate per id utente
+     *
+     * @param utenteId id utente per il filtraggio
+     * @return lista di oggetti relativi alle richieste di rimozione da turno per l'utente specificato
+     */
+    Set<RichiestaRimozioneDaTurnoDTO> leggiRichiesteRimozioneDaTurnoPerUtente(Long utenteId);
+
+    /**
      * Lettura di una specifica richiesta di rimozione da turno, dato un id.
      *
      * @param idRichiesta id della richiesta da prelevare da base dati.
@@ -65,4 +76,15 @@ public interface IControllerRichiestaRimozioneDaTurno {
      * @throws DatabaseException in caso di errori durante la ricerca di dati in base dati
      */
     RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(Long idRichiesta, boolean esito) throws DatabaseException;
+
+    /**
+     * Permette il caricamento di un allegato (facoltativo) per una data richiesta di rimozione da turno assegnato.
+     *
+     * @param idRichiestaRimozioneDaTurno id della richiesta di rimozione da turno alla quale aggiungere l'allegato
+     * @param allegato                    file da allegare
+     * @return richiesta rimozione da turno aggiornata con il file allegato
+     * @throws IOException       in caso di errori di I/O
+     * @throws DatabaseException in caso di errori durante la ricerca di dati in base dati
+     */
+    RichiestaRimozioneDaTurno caricaAllegato(@NotNull Long idRichiestaRimozioneDaTurno, @NotNull MultipartFile allegato) throws IOException, DatabaseException;
 }
