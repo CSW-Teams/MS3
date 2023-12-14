@@ -49,9 +49,9 @@ public class TestControllerCategorieOnlyOneKind {
     @Autowired
     private IControllerCategorie controller ;
 
-    private TipoCategoriaEnum categoria ;
+    private final TipoCategoriaEnum categoria ;
 
-    private int categorySize ;
+    private final int categorySize ;
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {

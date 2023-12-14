@@ -42,7 +42,7 @@ public class CalendarSettingTest {
         calendarSetting.addURLParameter("");
 
         System.out.println(calendarSetting.getServiceURL());
-        assertFalse(calendarSetting.getServiceURL().contains("" + "=" + ""));
+        assertFalse(calendarSetting.getServiceURL().contains("="));
     }
 
     @Test

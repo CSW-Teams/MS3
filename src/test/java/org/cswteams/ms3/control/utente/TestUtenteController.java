@@ -81,7 +81,7 @@ public class TestUtenteController {
         dto.setCodiceFiscale("Iirvcnn");
         dto.setDataNascita(LocalDate.of(2000, 12, 23)) ;
         dto.setCategorie(new ArrayList<>()) ;
-        dto.setSpecializzazioni(new ArrayList<>()); ;
+        dto.setSpecializzazioni(new ArrayList<>());
 
         try {
             controller.creaUtente(dto) ;

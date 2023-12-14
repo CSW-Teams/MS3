@@ -11,7 +11,7 @@ export  class UtenteAPI {
     const utenti = [];
 
     for (let i = 0; i < body.length; i++) {
-      const utente = new Object();
+      const utente = {};
       utente.text = body[i].nome+" "+body[i].cognome+"  - "+ body[i].ruoloEnum;
       utente.id =body[i].id;
       utente.color = teal;
@@ -26,7 +26,7 @@ export  class UtenteAPI {
     const response = await fetch('/api/utenti/utente_id=' + id);
     const body = await response.json();
 
-    const utente = new Object();
+    const utente = {};
 
     utente.label = body.nome+" "+body.cognome;
     utente.id = body.id;
@@ -48,7 +48,7 @@ export  class UtenteAPI {
     const utenti = [];
 
     for (let i = 0; i < body.length; i++) {
-      const utente = new Object();
+      const utente = {};
       utente.label = body[i].nome+" "+body[i].cognome+" "+body[i].ruoloEnum.substring(0, 3);
       utente.id = body[i].id;
       utente.nome = body[i].nome;

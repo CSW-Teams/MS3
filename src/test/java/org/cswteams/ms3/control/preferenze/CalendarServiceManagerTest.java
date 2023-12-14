@@ -1,7 +1,5 @@
 package org.cswteams.ms3.control.preferenze;
-import org.cswteams.ms3.control.preferenze.CalendarServiceManager;
-import org.cswteams.ms3.control.preferenze.CalendarSetting;
-import org.cswteams.ms3.control.preferenze.ICalendarServiceManager;
+
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.junit.Assert;
@@ -16,9 +14,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -58,11 +57,11 @@ class CalendarServiceManagerTest {
      * */
     public void getSundayInYearTest() throws CalendarServiceException {
         //questo non solleva un eccezzione
-        List<Date> date=calendarServiceManager.getAllSundays(2024);
-        List<Date> dateEuristic= euristicSunday(2024);
+        List<LocalDate> date=calendarServiceManager.getAllSundays(2024);
+        List<LocalDate> dateEuristic = euristicSunday(2024);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         System.out.println("domenihe nel " + 2024 + ":");
-        for (Date sabato : dateEuristic) {
+        for (LocalDate sabato : dateEuristic) {
             System.out.println(sdf.format(sabato));
         }
         System.out.println(dateEuristic.size());
@@ -71,16 +70,16 @@ class CalendarServiceManagerTest {
             Assert.assertEquals(date.get(i),dateEuristic.get(i));
         }
     }
-    private static List<Date> euristicSunday(int anno) {
-        List<Date> sunday = new ArrayList<>();
-        Calendar cal = Calendar.getInstance();
-        cal.set(anno, Calendar.JANUARY, 1); // Imposta la data all'inizio dell'anno
-        while (cal.get(Calendar.YEAR) == anno) {
-            if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-                sunday.add(cal.getTime());
+    private static List<LocalDate> euristicSunday(int anno) {
+        List<LocalDate> sundays = new ArrayList<>();
+        LocalDate date = LocalDate.of(anno, Month.JANUARY, 1);
+
+        while (date.getYear() == anno) {
+            if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                sundays.add(date);
             }
-            cal.add(Calendar.DAY_OF_MONTH,1); // Passa al giorno successivo
+            date = date.plusDays(1);
         }
-        return sunday;
+        return sundays;
     }
 }

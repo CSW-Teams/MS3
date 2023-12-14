@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/holidays")
 public class HolidayRestEndpoint {
-    private static Logger log = Logger.getLogger(HolidayRestEndpoint.class);
+    private static final Logger log = Logger.getLogger(HolidayRestEndpoint.class);
 
     @Autowired
     private IHolidayController holidayController;
@@ -32,7 +32,7 @@ public class HolidayRestEndpoint {
     private ICalendarServiceManager calendarServiceManager;
     
     
-    private CalendarSetting setting;
+    private final CalendarSetting setting;
 
     public HolidayRestEndpoint() {
     	this.setting = new CalendarSetting("https://date.nager.at/api/v3/publicholidays");

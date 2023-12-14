@@ -47,7 +47,7 @@ public class TestHolidayControllerSundays {
     @Autowired
     private HolidayDao dao ;
 
-    private LocalDate date ;
+    private final LocalDate date ;
     private int year ;
 
     @Parameterized.Parameters

@@ -17,7 +17,7 @@ export class CategoriaUtenteAPI {
     const categorie = [];
 
     for (let i = 0; i < body.length; i++) {
-      let categoria = new Object();
+      let categoria = {};
       categoria.categoriaUtenteId = body[i].id
       categoria.categoria = body[i].categoria.nome
       categoria.inizio = body[i].inizioValidita
@@ -35,7 +35,7 @@ export class CategoriaUtenteAPI {
     const categorie = [];
 
     for (let i = 0; i < body.length; i++) {
-      let categoria = new Object();
+      let categoria = {};
       categoria.categoriaUtenteId = body[i].id
       categoria.categoria = body[i].categoria.nome
       categoria.inizio = body[i].inizioValidita
@@ -52,7 +52,7 @@ export class CategoriaUtenteAPI {
     const categorie = [];
 
     for (let i = 0; i < body.length; i++) {
-      let categoria = new Object();
+      let categoria = {};
       categoria.categoriaUtenteId = body[i].id
       categoria.categoria = body[i].categoria.nome
       categoria.inizio = body[i].inizioValidita
@@ -65,11 +65,11 @@ export class CategoriaUtenteAPI {
 
   async postAggiungiTurnazione(categoria,dataInizio,dataFine, utente_id) {
 
-    let cat = new Object;
+    let cat = {};
     cat.nome = categoria;
     cat.tipo = 2; // = tipo turnazione
 
-    let turnazione = new Object();
+    let turnazione = {};
 
     turnazione.categoria = cat
     turnazione.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
@@ -91,11 +91,11 @@ export class CategoriaUtenteAPI {
 
   async postAggiungiStato(categoria,dataInizio,dataFine, utente_id) {
 
-    let cat = new Object;
+    let cat = {};
     cat.nome = categoria;
     cat.tipo = 0; // = tipo stato
 
-    let stato = new Object();
+    let stato = {};
 
     stato.categoria = cat
     stato.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();

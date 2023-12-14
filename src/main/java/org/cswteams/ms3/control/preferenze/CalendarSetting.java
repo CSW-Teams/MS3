@@ -1,15 +1,21 @@
 package org.cswteams.ms3.control.preferenze;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class CalendarSetting {
 	
-	private String baseURL;
+	private final String baseURL;
 	private List<KeyValue<String, String>> URLParameters;
+	@Setter
 	private String year;
+	@Setter
 	private String country;
 
+	@Getter
 	private String dateFormat = "yyyy-MM-dd";
 	
 	public CalendarSetting(String baseURL) {
@@ -51,20 +57,8 @@ public class CalendarSetting {
 		}
 		return serviceURL;
 	}
-	
-	public String getDateFormat() {
-		return this.dateFormat;
-	}
 
-	public void setYear(String year) {
-		this.year = year;
-	}
-
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
-	private class KeyValue<K, V> implements Map.Entry<K, V> {
+	private static class KeyValue<K, V> implements Map.Entry<K, V> {
 
 		K key;
 		V value;

@@ -51,7 +51,7 @@ export default class ConfigurazioneVincoli extends React.Component{
 
   async handleSalvataggio(){
     let vincoliApi = new VincoloAPI()
-    let conf = new Object()
+    let conf = {}
     conf = this.state
     console.log("SALVATAGGIO")
     console.log(conf)
