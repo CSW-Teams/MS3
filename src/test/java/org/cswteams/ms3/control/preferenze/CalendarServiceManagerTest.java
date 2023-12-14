@@ -36,25 +36,20 @@ class CalendarServiceManagerTest {
      */
     public void getHolidayTest() throws CalendarServiceException {
         //questo non solleva un eccezzione
-        CalendarSetting setting1 = new CalendarSetting("https://date.nager.at/api/v3/PublicHolidays");
-        setting1.addURLParameter("/2022");
-        setting1.addURLParameter("/IT");
-        calendarServiceManager.init(setting1);
+        CalendarSettingBuilder b = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
+        calendarServiceManager.init(b.create("2024","IT"));
         List<Holiday> holidayList1 = calendarServiceManager.getHolidays();
-        CalendarSetting setting2= new CalendarSetting("https://date.nager.at/api/v3/PublicHolidays");
-        setting2.addURLParameter("/2023");
-        setting2.addURLParameter("/IT");
-        calendarServiceManager.init(setting2);
+        calendarServiceManager.init(b.create("2023","IT"));
         List<Holiday> holidayList2 = calendarServiceManager.getHolidays();
         Assert.assertEquals(holidayList2.size(),holidayList1.size());
         for(int i=0;i<holidayList1.size();i++){
             Assert.assertEquals(holidayList2.get(i).getName(),holidayList1.get(i).getName());
         }
     }
-    @Test
+    /*@Test*/
     /**
      * Test per verificare che anche negli anni bisestile
-     * */
+     *
     public void getSundayInYearTest() throws CalendarServiceException {
         //questo non solleva un eccezzione
         List<LocalDate> date=calendarServiceManager.getAllSundays(2024);
@@ -82,4 +77,5 @@ class CalendarServiceManagerTest {
         }
         return sundays;
     }
+     */
 }

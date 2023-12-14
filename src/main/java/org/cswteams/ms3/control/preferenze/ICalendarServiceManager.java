@@ -50,8 +50,8 @@ public interface ICalendarServiceManager {
 	
 	void init(CalendarSetting setting);
 	
-	List<Holiday> getHolidays() throws CalendarServiceException;
-	
-	List<LocalDate> getAllSundays(int year);
+	public List<Holiday> getHolidays() throws CalendarServiceException;
+
+
 
 }
