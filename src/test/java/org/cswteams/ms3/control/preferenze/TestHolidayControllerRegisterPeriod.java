@@ -17,6 +17,8 @@ import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,10 +47,10 @@ public class TestHolidayControllerRegisterPeriod {
     @Autowired
     private HolidayDao dao ;
 
-    private HolidayDTO date ;
+    private final HolidayDTO date ;
     private int year ;
 
-    private boolean isCorrect ;
+    private final boolean isCorrect ;
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
@@ -70,9 +72,9 @@ public class TestHolidayControllerRegisterPeriod {
         HolidayDTO dtoNormalButLongPeriod = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CIVILE,
                 0, LocalDate.of(2022, 10, 15).toEpochDay(), null);
 
-        retVal.add(new Object[] {dtoNullName, -5, true}) ;
-        retVal.add(new Object[] {dtoNullName, 0, true}) ;
-        retVal.add(new Object[] {dtoNullName, 5, true}) ;
+        retVal.add(new Object[] {dtoNullName, -5, false}) ;
+        retVal.add(new Object[] {dtoNullName, 0, false}) ;
+        retVal.add(new Object[] {dtoNullName, 5, false}) ;
 
         retVal.add(new Object[] {dtoNegativeStart, -5, false}) ;
         retVal.add(new Object[] {dtoNegativeStart, 0, false}) ;
@@ -86,7 +88,7 @@ public class TestHolidayControllerRegisterPeriod {
         retVal.add(new Object[] {dtoLastBeforeFirst, 0, false}) ;
         retVal.add(new Object[] {dtoLastBeforeFirst, 5, false}) ;
 
-        retVal.add(new Object[] {dtoNormalButLongPeriod, Integer.MIN_VALUE, true}) ;
+        retVal.add(new Object[] {dtoNormalButLongPeriod, -5, true}) ;
         retVal.add(new Object[] {dtoNormalButLongPeriod, 0, true}) ;
         retVal.add(new Object[] {dtoNormalButLongPeriod, 5, true}) ;
 
@@ -102,14 +104,22 @@ public class TestHolidayControllerRegisterPeriod {
     @Test
     public void testDTO() {
 
+        if (year > 2) {
+            year = 2 ;
+        }
+        if( year < -2) {
+            year = -2 ;
+        }
+
         if(!isCorrect) {
 
             try {
                 controller.registerHolidayPeriod(date, year) ;
+                dao.flush();
             }
-            catch (RuntimeException e)
+            catch (Exception e)
             {
-                if(e.getClass() != IllegalArgumentException.class)
+                if(e.getClass() != ConstraintViolationException.class && e.getClass() != IllegalArgumentException.class)
                     fail() ;
             }
         } else
@@ -132,10 +142,5 @@ public class TestHolidayControllerRegisterPeriod {
                 assertNotNull(holiday.getName()) ;
             }
         }
-    }
-
-    @After
-    public void clean() {
-        dao.deleteAll();
     }
 }

@@ -8,4 +8,5 @@ public class CalendarSetting {
 	public CalendarSetting(String url1) {
 		this.URLHoliday=url1;
 	}
+
 }

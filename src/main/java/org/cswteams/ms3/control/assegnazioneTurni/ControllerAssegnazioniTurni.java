@@ -7,10 +7,8 @@ import org.cswteams.ms3.dao.ScheduleDao;
 import org.cswteams.ms3.dao.TurnoDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
@@ -19,10 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 import java.text.ParseException;
-import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 
@@ -64,7 +59,7 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
         if(turno == null)
             throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia turno: "+dto.getTipologiaTurno().toString());
 
-        AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()),turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
+        AssegnazioneTurno assegnazioneTurno= new AssegnazioneTurno(dto.getGiorno(),turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
 
         return assegnazioneTurnoDao.save(assegnazioneTurno);
     }

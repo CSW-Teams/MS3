@@ -25,7 +25,7 @@ public interface IHolidayController {
     /**
      * Registra le domeniche come festività per il numero di anni specificato
      */
-    public void registerSundays(LocalDate start, int years);
+    void registerSundays(LocalDate start, int years);
 
     void registerHoliday(List<Holiday> holidays);
 

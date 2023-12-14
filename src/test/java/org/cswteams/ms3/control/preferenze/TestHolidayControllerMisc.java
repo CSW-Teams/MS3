@@ -1,6 +1,5 @@
 package org.cswteams.ms3.control.preferenze;
 
-import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.dao.HolidayDao;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.Holiday;
@@ -36,14 +35,30 @@ public class TestHolidayControllerMisc {
     @Test
     public void testSundaysNullValues() {
 
+        int exceptions = 0 ;
+
         try {
             controller.registerSundays(null, 0);
+        } catch (NullPointerException ignored)
+        {
+            exceptions++ ;
+        }
+
+        try {
             controller.registerSundays(null, 100);
+        } catch (NullPointerException e)
+        {
+            exceptions++ ;
+        }
+
+        try {
             controller.registerSundays(null, -34);
         } catch (NullPointerException e)
         {
-            fail() ;
+            exceptions++ ;
         }
+
+        assertEquals(3, exceptions) ;
     }
 
     @Test

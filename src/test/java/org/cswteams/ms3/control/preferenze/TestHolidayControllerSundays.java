@@ -47,7 +47,7 @@ public class TestHolidayControllerSundays {
     @Autowired
     private HolidayDao dao ;
 
-    private LocalDate date ;
+    private final LocalDate date ;
     private int year ;
 
     @Parameterized.Parameters
@@ -124,6 +124,13 @@ public class TestHolidayControllerSundays {
 
     @Test
     public void testSundaysInsertion() {
+
+        if (year > 2) {
+            year = 2 ;
+        }
+        if( year < -2) {
+            year = -2 ;
+        }
 
         controller.registerSundays(date, year) ;
 

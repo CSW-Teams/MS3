@@ -1,8 +1,5 @@
 package org.cswteams.ms3.control.scheduler;
 
-import java.time.LocalDate;
-import java.util.*;
-
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.MappaSchedulo;
 import org.cswteams.ms3.control.utils.MappaUtenti;
@@ -16,12 +13,16 @@ import org.cswteams.ms3.entity.Turno;
 import org.cswteams.ms3.entity.Utente;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
-import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -193,7 +194,7 @@ public class ControllerScheduler implements IControllerScheduler{
             throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",mansione: "+assegnazione.getMansione().toString());
         }
         AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(
-                LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(), assegnazione.getGiorno()),
+                assegnazione.getGiorno(),
                 turno,
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia()));

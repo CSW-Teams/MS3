@@ -190,7 +190,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
       </Stack>
       </AppointmentForm.BasicLayout>
     );
-  };
+  }
 
 
 
@@ -229,7 +229,7 @@ export function Overlay({
       </Drawer>
 
     );
-  };
+  }
 
 
   /**

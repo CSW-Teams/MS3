@@ -1,20 +1,16 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
-import org.cswteams.ms3.dto.CategoriaUtenteDTO;
+import org.cswteams.ms3.dto.GenerazioneScheduloDTO;
 import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.exception.DatabaseException;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
-import org.cswteams.ms3.dto.GenerazioneScheduloDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/schedule/")
@@ -32,10 +28,10 @@ public class ScheduloRestEndpoint {
         if (gs != null) {
 
             //Considero solo le richieste di generazione con date ammissibili
-            if(gs.getStartDate().isBefore(gs.getEndDate())){
+            if(gs.getGiornoInizio().isBefore(gs.getGiornoFine())){
 
                 //Chiedo la generazione dello schedulo al controller.
-                Schedule schedule = controllerScheduler.createSchedule(gs.getStartDate(),gs.getEndDate());
+                Schedule schedule = controllerScheduler.createSchedule(gs.getGiornoInizio(),gs.getGiornoFine());
                 if(schedule == null)
                     return new ResponseEntity<>( HttpStatus.NOT_ACCEPTABLE);
                 if(schedule.isIllegal())

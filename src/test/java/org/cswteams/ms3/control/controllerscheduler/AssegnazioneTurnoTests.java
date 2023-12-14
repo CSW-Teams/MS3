@@ -145,9 +145,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         this.registraAssegnazioneTurnoDTO.setUtentiReperibili(MappaUtenti.utentiEntitytoDTO(uReperibiliList));
         this.registraAssegnazioneTurnoDTO.setTipologiaTurno(TipologiaTurno.NOTTURNO);
         this.registraAssegnazioneTurnoDTO.setMansione(MansioneEnum.REPARTO);
-        this.registraAssegnazioneTurnoDTO.setAnno(TODAY.getDate().getYear());
-        this.registraAssegnazioneTurnoDTO.setMese(TODAY.getDate().getMonthValue());
-        this.registraAssegnazioneTurnoDTO.setGiorno(TODAY.getDate().getDayOfMonth() + 1);
+        this.registraAssegnazioneTurnoDTO.setGiorno(LocalDate.now().plusDays(1));
     }
 
     public Stream<Arguments> assegnazioneTurnoInvalidParams() {
@@ -171,9 +169,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         int ctr = 0;
         Schedule containingSchedule = null;
         LocalDate ratDate;
-        ratDate = LocalDate.of(this.registraAssegnazioneTurnoDTO.getAnno(),
-                this.registraAssegnazioneTurnoDTO.getMese(),
-                this.registraAssegnazioneTurnoDTO.getGiorno());
+        ratDate = this.registraAssegnazioneTurnoDTO.getGiorno();
         for (Schedule s : scheduleList) {
             if (s.getStartDate().isBefore(ratDate.plusDays(1)) && s.getEndDate().isAfter(ratDate.minusDays(1))) {
                 containingSchedule = s;
@@ -214,9 +210,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
                     this.registraAssegnazioneTurnoDTO.getTipologiaTurno().equals(a.getTurno().getTipologiaTurno())
                             && this.registraAssegnazioneTurnoDTO.getServizio().getNome().equals(MappaTurni.turnoEntityToDTO(a.getTurno()).getServizio().getNome())
                             && this.registraAssegnazioneTurnoDTO.getMansione().equals(MappaTurni.turnoEntityToDTO(a.getTurno()).getMansione())
-                            && this.registraAssegnazioneTurnoDTO.getAnno() == (a.getData().getYear())
-                            && this.registraAssegnazioneTurnoDTO.getMese() == (a.getData().getMonthValue())
-                            && this.registraAssegnazioneTurnoDTO.getGiorno() == (a.getData().getDayOfMonth())
+                            && this.registraAssegnazioneTurnoDTO.getGiorno() == a.getData()
             ) {
                 found = true;
                 break;
@@ -293,9 +287,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         Assert.assertEquals(Optional.empty(), this.assegnazioneTurnoDao.findById(id));
         Turno turno = this.turnoDao.findAll().get(0);
         LocalDate ratDate;
-        ratDate = LocalDate.of(this.registraAssegnazioneTurnoDTO.getAnno(),
-                this.registraAssegnazioneTurnoDTO.getMese(),
-                this.registraAssegnazioneTurnoDTO.getGiorno());
+        ratDate = this.registraAssegnazioneTurnoDTO.getGiorno();
         AssegnazioneTurno at = new AssegnazioneTurno(ratDate, turno);
         at.setId(id);
         this.testSchedule = this.instance.createSchedule(TODAY.getDate().plusYears(12), TODAY.getDate().plusYears(12).plusDays(5));
@@ -325,9 +317,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         Assert.assertEquals(Optional.empty(), this.assegnazioneTurnoDao.findById(id));
         Turno turno = this.turnoDao.findAll().get(0);
         LocalDate ratDate;
-        ratDate = LocalDate.of(this.registraAssegnazioneTurnoDTO.getAnno(),
-                this.registraAssegnazioneTurnoDTO.getMese(),
-                this.registraAssegnazioneTurnoDTO.getGiorno());
+        ratDate = this.registraAssegnazioneTurnoDTO.getGiorno();
         AssegnazioneTurno at = new AssegnazioneTurno(ratDate, turno);
         at.setId(id);
         this.testSchedule = this.instance.createSchedule(TODAY.getDate().plusYears(12), TODAY.getDate().plusYears(12).plusDays(5));
@@ -356,9 +346,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         Assertions.assertThrows(Exception.class, () -> this.assegnazioneTurnoDao.findById(id));
         Turno turno = this.turnoDao.findAll().get(0);
         LocalDate ratDate;
-        ratDate = LocalDate.of(this.registraAssegnazioneTurnoDTO.getAnno(),
-                this.registraAssegnazioneTurnoDTO.getMese(),
-                this.registraAssegnazioneTurnoDTO.getGiorno());
+        ratDate = this.registraAssegnazioneTurnoDTO.getGiorno();
         AssegnazioneTurno at = new AssegnazioneTurno(ratDate, turno);
         at.setId(id);
         this.testSchedule = this.instance.createSchedule(TODAY.getDate().plusYears(12), TODAY.getDate().plusYears(12).plusDays(5));

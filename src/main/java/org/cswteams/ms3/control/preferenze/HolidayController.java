@@ -27,6 +27,12 @@ public class HolidayController implements IHolidayController {
         LocalDate sunday;
         HolidayDTO sundayDTO = new HolidayDTO();
 
+        if(years > 0)
+            years = Math.min(years, 2) ;
+        else if (years < 0) {
+            years = Math.max(years, -2) ;
+        }
+
         // we move the start date back in time if the repeat is in the past
         if (years < 0){
             start = start.plusYears(years);
