@@ -95,10 +95,7 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
 
     @Override
     public RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(Long idRichiesta, boolean esito) throws DatabaseException {
-        //TODO - implementazione da discutere
-        throw new RuntimeException("Not implemented");
-        /*
-        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiesta.toString());
+        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiesta);
         if (r.isEmpty()) {
             throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + idRichiesta);
         }
@@ -116,7 +113,6 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
         r.get().setEsaminata(true);
         richiestaRimozioneDaTurnoDao.saveAndFlush(r.get());
         return r.get();
-        */
     }
 
     @Override
