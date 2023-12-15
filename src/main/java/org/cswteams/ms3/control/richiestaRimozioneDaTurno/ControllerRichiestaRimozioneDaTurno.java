@@ -12,8 +12,11 @@ import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -79,13 +82,22 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
     }
 
     @Override
+    @Transactional
+    public Set<RichiestaRimozioneDaTurnoDTO> leggiRichiesteRimozioneDaTurnoPerUtente(Long utenteId) {
+        return MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoEntitytoDTO(richiestaRimozioneDaTurnoDao.findAllByUser(utenteId));
+    }
+
+    @Override
     public Optional<RichiestaRimozioneDaTurnoDTO> leggiRichiestaRimozioneDaTurno(Long idRichiesta) {
-        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiesta.toString());
+        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiesta);
         return r.map(MappaRichiestaRimozioneDaTurno::richiestaRimozioneDaTurnoToDTO);
     }
 
     @Override
     public RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(Long idRichiesta, boolean esito) throws DatabaseException {
+        //TODO - implementazione da discutere
+        throw new RuntimeException("Not implemented");
+        /*
         Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiesta.toString());
         if (r.isEmpty()) {
             throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + idRichiesta);
@@ -102,6 +114,19 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
             r.get().setEsito(false);
         }
         r.get().setEsaminata(true);
+        richiestaRimozioneDaTurnoDao.saveAndFlush(r.get());
+        return r.get();
+        */
+    }
+
+    @Override
+    @Transactional
+    public RichiestaRimozioneDaTurno caricaAllegato(@NotNull Long idRichiestaRimozioneDaTurno, @NotNull MultipartFile allegato) throws IOException, DatabaseException {
+        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiestaRimozioneDaTurno);
+        if (r.isEmpty()) {
+            throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + idRichiestaRimozioneDaTurno);
+        }
+        r.get().setAllegato(allegato.getBytes());
         richiestaRimozioneDaTurnoDao.saveAndFlush(r.get());
         return r.get();
     }

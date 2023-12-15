@@ -53,6 +53,13 @@ public class RichiestaRimozioneDaTurno {
     @NotNull
     private boolean esito;
 
+    /**
+     * File che l'utente richiedente la rimozione può (facoltativamente) allegare,
+     * e.g. certificato attestante condizione di malattia.
+     */
+    @Lob
+    private byte[] allegato;
+
     public RichiestaRimozioneDaTurno() {
     }
 
@@ -62,5 +69,6 @@ public class RichiestaRimozioneDaTurno {
         this.descrizione = descrizione;
         this.esaminata = false;
         this.esito = false;
+        this.allegato = null;
     }
 }
