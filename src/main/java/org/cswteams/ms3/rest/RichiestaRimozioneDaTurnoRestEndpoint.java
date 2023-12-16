@@ -54,12 +54,8 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.POST, path = "/risolvi")
     public ResponseEntity<?> risolviRichiestaRimozioneDaTurno(@RequestBody RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) {
-        //TODO - implementazione da discutere
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
-        /*
         RichiestaRimozioneDaTurno r = null;
         if (richiestaRimozioneDaTurnoDTO == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -70,7 +66,6 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoToDTO(r), HttpStatus.ACCEPTED);
-    */
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/{idRichiestaRimozioneDaTurno}/caricaAllegato")
