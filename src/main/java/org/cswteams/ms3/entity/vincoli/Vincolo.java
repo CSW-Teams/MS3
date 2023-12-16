@@ -1,6 +1,8 @@
 package org.cswteams.ms3.entity.vincoli;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -9,6 +11,8 @@ import javax.validation.constraints.NotNull;
 @Data
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class  Vincolo {
+    @Setter
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "constraint_id_seq")
     @SequenceGenerator(name = "constraint_id_seq", sequenceName = "constraint_id_seq")
@@ -21,14 +25,6 @@ public abstract class  Vincolo {
 
     /** TODO: descrizione di che cosa in particolare del vincolo? */
     private String descrizione;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     /**
      * @throws ViolatedConstraintException : se il vincolo è violato

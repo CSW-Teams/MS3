@@ -16,6 +16,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class ControllerDesiderataTest {
         Desiderata desiderata;
 
         //CREAZIONE DI UN NUOVO DTO DESIDERATA + IDENTIFICAZIONE DELL'UTENTE DA COINVOLGERE
-        DesiderataDTO dto = new DesiderataDTO(16, 2, 2024);
+        DesiderataDTO dto = new DesiderataDTO(LocalDate.of(2024, 2, 16));
         long utenteId = utenteDao.findByEmailAndPassword("domenicoverde@gmail.com", "passw").getId();
 
         //INVOCAZIONE DEL CONTROLLER APPLICATIVO PER AGGIUNGERE UN DESIDERATA + CHECK SULL'ENTITY DESIDERATA RESTITUITA
@@ -63,7 +64,7 @@ public class ControllerDesiderataTest {
         Desiderata desiderata;
 
         //CREAZIONE DI UN NUOVO DTO DESIDERATA + IDENTIFICAZIONE DELL'UTENTE DA COINVOLGERE
-        DesiderataDTO dto = new DesiderataDTO(16, 2, 2024);
+        DesiderataDTO dto = new DesiderataDTO(LocalDate.of(2024, 2, 16));
         long utenteId = utenteDao.findByEmailAndPassword("***@gmail.com@gmail.com", "passw").getId();
 
         //INVOCAZIONE DEL CONTROLLER APPLICATIVO PER AGGIUNGERE UN DESIDERATA + CHECK SULL'ENTITY DESIDERATA RESTITUITA
@@ -82,7 +83,7 @@ public class ControllerDesiderataTest {
     @Transactional
     public void testAggiungiDesiderataFail() throws DatabaseException {
         //CREAZIONE DI UN NUOVO DTO DESIDERATA + DEFINIZIONE DI UN UTENTE ID INESISTENTE
-        DesiderataDTO dto = new DesiderataDTO(16, 2, 2024);
+        DesiderataDTO dto = new DesiderataDTO(LocalDate.of(2024, 2, 16));
         long utenteId = -100;
 
         //INVOCAZIONE DEL CONTROLLER APPLICATIVO (CHE DOVREBBE LANCIARE L'ECCEZIONE)
@@ -99,7 +100,7 @@ public class ControllerDesiderataTest {
         Desiderata desiderata;
 
         //CREAZIONE DI UN NUOVO DTO DESIDERATA + IDENTIFICAZIONE DELL'UTENTE DA COINVOLGERE
-        DesiderataDTO dto = new DesiderataDTO(16, 2, 2024);
+        DesiderataDTO dto = new DesiderataDTO(LocalDate.of(2024, 2, 16));
         long utenteId = utenteDao.findByEmailAndPassword("domenicoverde@gmail.com", "passw").getId();
 
         //INVOCAZIONE DEL CONTROLLER APPLICATIVO PER AGGIUNGERE UN DESIDERATA E POI RIMUOVERLO
@@ -117,7 +118,7 @@ public class ControllerDesiderataTest {
         Desiderata desiderata;
 
         //CREAZIONE DI UN NUOVO DTO DESIDERATA + IDENTIFICAZIONE DELL'UTENTE DA COINVOLGERE
-        DesiderataDTO dto = new DesiderataDTO(16, 2, 2024);
+        DesiderataDTO dto = new DesiderataDTO(LocalDate.of(2024, 2, 16));
         long utenteId = utenteDao.findByEmailAndPassword("domenicoverde@gmail.com", "passw").getId();
 
         //INVOCAZIONE DEL CONTROLLER APPLICATIVO PER AGGIUNGERE UN DESIDERATA E POI TENTARE DI RIMUOVERE UN DESIDERATA RELATIVO A UN UTENTE INESISTENTE
@@ -136,8 +137,8 @@ public class ControllerDesiderataTest {
         List<Desiderata> listaDesiderata;
 
         //CREAZIONE DI ALCUNI DTO DESIDERATA + IDENTIFICAZIONE DELL'UTENTE DA COINVOLGERE
-        dtos.add(new DesiderataDTO(16, 2, 2024));
-        dtos.add(new DesiderataDTO(26, 5, 2024));
+        dtos.add(new DesiderataDTO(LocalDate.of(2024, 2, 16)));
+        dtos.add(new DesiderataDTO(LocalDate.of(2024, 5, 26)));
         long utenteId = utenteDao.findByEmailAndPassword("domenicoverde@gmail.com", "passw").getId();
 
         //INVOCAZIONE DEL CONTROLLER APPLICATIVO PER AGGIUNGERE I DESIDERATA + CHECK SUI DESIDERATA RESTITUITI

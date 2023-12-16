@@ -1,10 +1,10 @@
 package org.cswteams.ms3.control.preferenze;
 
-import java.util.Date;
-import java.util.List;
-
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.exception.CalendarServiceException;
+
+import java.time.LocalDate;
+import java.util.List;
 
 
 /**
@@ -48,10 +48,10 @@ import org.cswteams.ms3.exception.CalendarServiceException;
  */
 public interface ICalendarServiceManager {
 	
-	public void init(CalendarSetting setting);
+	void init(CalendarSetting setting);
 	
 	public List<Holiday> getHolidays() throws CalendarServiceException;
-	
-	public List<Date> getAllSundays(int year);
+
+
 
 }

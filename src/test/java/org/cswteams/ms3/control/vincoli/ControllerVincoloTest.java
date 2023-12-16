@@ -124,7 +124,7 @@ public class ControllerVincoloTest {
         Assert.assertEquals(TipoCategoriaEnum.STATO, vincoloMaxPeriodoConsecutivoAggiornato2.getCategoriaVincolata().getTipo());
         VincoloMaxPeriodoConsecutivo vincoloMaxPeriodoConsecutivoAggiornato3 = (VincoloMaxPeriodoConsecutivo) vincoliAggiornati.get(11);
         Assert.assertEquals(780, vincoloMaxPeriodoConsecutivoAggiornato3.getMaxConsecutiveMinutes());
-        Assert.assertEquals(null, vincoloMaxPeriodoConsecutivoAggiornato3.getCategoriaVincolata());
+        Assert.assertNull(vincoloMaxPeriodoConsecutivoAggiornato3.getCategoriaVincolata());
 
     }
 

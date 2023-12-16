@@ -2,6 +2,7 @@ package org.cswteams.ms3.dto;
 
 import java.time.LocalDate;
 
+import lombok.Getter;
 import org.cswteams.ms3.enums.HolidayCategory;
 
 import lombok.Data;
@@ -19,68 +20,28 @@ public class HolidayDTO {
         this.setLocation(location);
     }
 
+    @Getter
     private String name;
+    @Getter
     private HolidayCategory category;
-    private int startYear;
-    private int startMonth;
-    private int startDayOfMonth;
-    private int endYear;
-    private int endMonth;
-    private int endDayOfMonth;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String Location;
 
 
     public long getStartDateEpochDay(){
-        return LocalDate.of(startYear, startMonth, startDayOfMonth).toEpochDay();
+        return startDate.toEpochDay();
     }
 
     public long getEndDateEpochDay(){
-        return LocalDate.of(endYear, endMonth, endDayOfMonth).toEpochDay();
+        return endDate.toEpochDay();
     }
 
     public void setStartDateEpochDay(long startDateEpochDay){
-        LocalDate startDate = LocalDate.ofEpochDay(startDateEpochDay);
-        this.startYear = startDate.getYear();
-        this.startMonth = startDate.getMonthValue();
-        this.startDayOfMonth = startDate.getDayOfMonth();
+        this.startDate = LocalDate.ofEpochDay(startDateEpochDay);
     }
 
     public void setEndDateEpochDay(long endDateEpochDay){
-        LocalDate endDate = LocalDate.ofEpochDay(endDateEpochDay);
-        this.endYear = endDate.getYear();
-        this.endMonth = endDate.getMonthValue();
-        this.endDayOfMonth = endDate.getDayOfMonth();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public HolidayCategory getCategory() {
-        return category;
-    }
-
-    public int getStartYear() {
-        return startYear;
-    }
-
-    public int getStartMonth() {
-        return startMonth;
-    }
-
-    public int getStartDayOfMonth() {
-        return startDayOfMonth;
-    }
-
-    public int getEndYear() {
-        return endYear;
-    }
-
-    public int getEndMonth() {
-        return endMonth;
-    }
-
-    public int getEndDayOfMonth() {
-        return endDayOfMonth;
+        this.endDate = LocalDate.ofEpochDay(endDateEpochDay);
     }
 }
