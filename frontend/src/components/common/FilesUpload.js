@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import {UploadFilesAPI} from "../../API/UploadFilesAPI"
 
-const FilesUpload = () => {
+const FilesUpload = ({type, idRequest}) => {
+
+  console.log("Valore di type e di idRequest:", type, idRequest);
 
   const [selectedFiles, setSelectedFiles] = useState('');
   const [progressInfos, setProgressInfos] = useState({ val: [] });
@@ -24,12 +26,22 @@ const FilesUpload = () => {
   const upload = async (idx, file) => {
     let _progressInfos = [...progressInfosRef.current.val];
     let uploadAPI = new UploadFilesAPI();
-    let response = await uploadAPI.uploadFile(file, (event) => {
-      _progressInfos[idx].percentage = Math.round(
-        (100 * event.loaded) / event.total
-      );
-      setProgressInfos({ val: _progressInfos });
-    })
+    let response = null;
+    if (type === "retirement") {
+      response = await uploadAPI.uploadFileRetirement(file, (event) => {
+        _progressInfos[idx].percentage = Math.round(
+          (100 * event.loaded) / event.total
+        );
+        setProgressInfos({ val: _progressInfos });
+      }, idRequest)
+    } else {
+      response = await uploadAPI.uploadGiustifica(file, (event) => {
+        _progressInfos[idx].percentage = Math.round(
+          (100 * event.loaded) / event.total
+        );
+        setProgressInfos({val: _progressInfos});
+      })
+    }
     if(response.status === 202){
       setMessage((prevMessage) => ([
         ...prevMessage,

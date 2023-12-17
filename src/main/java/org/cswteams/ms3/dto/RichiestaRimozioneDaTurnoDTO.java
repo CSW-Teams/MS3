@@ -28,17 +28,21 @@ public class RichiestaRimozioneDaTurnoDTO {
     @NotEmpty
     private String descrizione;
 
+    @NotNull
+    private boolean esaminata;
+
     private byte[] allegato;
 
     public RichiestaRimozioneDaTurnoDTO() {
     }
 
-    public RichiestaRimozioneDaTurnoDTO(Long richiestaRimozioneDaTurnoId, Long assegnazioneTurnoId, Long utenteId, boolean esito, String descrizione, byte[] allegato) {
+    public RichiestaRimozioneDaTurnoDTO(Long richiestaRimozioneDaTurnoId, Long assegnazioneTurnoId, Long utenteId, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
         this.id = richiestaRimozioneDaTurnoId;
         this.assegnazioneTurnoId = assegnazioneTurnoId;
         this.utenteId = utenteId;
         this.esito = esito;
         this.descrizione = descrizione;
         this.allegato = allegato;
+        this.esaminata = esaminata;
     }
 }

@@ -61,13 +61,6 @@ function ViolationLog(props){
   );
 }
 
-const CustomTooltipHeader = ({...restProps }) => (
-  <div {...restProps} style={{backgroundColor: "black"}}>
-    Personalizzato
-  </div>
-);
-
-
 
 /**
  * This view defines a generic shift schedule view.
@@ -398,9 +391,6 @@ class ScheduleView extends React.Component{
 
     render(view){
 
-      console.log("Richieste:    ",this.state.requests)
-
-
       // add shifts to the schedulables to display
         let { data, resources} = this.state;
 
@@ -439,6 +429,18 @@ class ScheduleView extends React.Component{
 
         return (
           <React.Fragment>
+            {(view !== "global" || this.state.attore === "PIANIFICATORE") &&
+            <Button
+              style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: view !== 'global' ? '1%' : '2%',
+              marginBottom: view !== "global" ? '1%' : '0%'
+              }}
+              href={view === "global" ? "/richieste-ritiro" : "/richieste-ritiro?locale=true"}
+            > Visualizza storico richieste di ritiro
+            </Button>
+            }
             <Paper>
               {/**
                * Al click, scarica la pianificazione visualizzata in formato CSV, ma solo se siamo riusciti a
