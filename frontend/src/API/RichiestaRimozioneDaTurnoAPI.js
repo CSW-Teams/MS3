@@ -43,8 +43,6 @@ export class RichiestaRimozioneDaTurnoAPI {
     const response = await fetch('/api/assegnazioneturni/richiesterimozione/pendenti')
     const body = await response.json();
 
-    console.log("Richieste pendenti:", body);
-
     const requests = [];
 
     for (let i = 0; i < body.length; i++) {
@@ -59,6 +57,7 @@ export class RichiestaRimozioneDaTurnoAPI {
 
       requests[i] = request;
     }
+
 
     return requests;
   }
@@ -80,6 +79,7 @@ export class RichiestaRimozioneDaTurnoAPI {
 
       requests[i] = request;
     }
+
 
     return requests;
   }

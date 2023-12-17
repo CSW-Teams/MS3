@@ -359,7 +359,7 @@ export class AppointmentContent extends React.Component{
     if (this.state.attore !== "PIANIFICATORE") {
       appointmentStyle = {backgroundColor: '#4db6ac'}
     } else {
-      let pendingRequestExists = this.state.requests.some(request => request.id === this.state.data.id);
+      let pendingRequestExists = this.state.requests.some(request => request.idShift === this.state.data.id);
 
       if (pendingRequestExists) {
         appointmentStyle = {backgroundColor: 'red'}
@@ -423,7 +423,7 @@ export class AppointmentContent extends React.Component{
         }}
       >
         <div className={classes.container}>
-          <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "font-weight": "bold" }}>
+          <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "fontWeight": "bold" }}>
             {this.state.data.title}
           </div>
         </div>
