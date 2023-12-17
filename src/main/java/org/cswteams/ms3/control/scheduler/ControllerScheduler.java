@@ -223,64 +223,7 @@ public class ControllerScheduler implements IControllerScheduler{
         return true;
     }
 
-    /**
-     * Questo metodo crea una richiesta di modifica turno.
-     * @param requestTurnChangeDto
-     * @return
-     */
-    @Override
-    @Transactional
-    public void requestTurnChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException {
-        Optional<AssegnazioneTurno> assegnazioneTurno= assegnazioneTurnoDao.findById(requestTurnChangeDto.getConcreteShiftId());
-        if(assegnazioneTurno.isEmpty()){
-            throw new AssegnazioneTurnoException("Turno non presente");
-        }
 
-        Optional<Utente> senderOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getSenderId()));
-        if(senderOptional.isEmpty()){
-            throw new AssegnazioneTurnoException("Utente richiedente non presente nel database");
-        }
-
-
-        Optional<Utente> receiverOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getReceiverId()));
-        if(receiverOptional.isEmpty()){
-            throw new AssegnazioneTurnoException("Utente richiesto non presente nel database");
-        }
-
-        AssegnazioneTurno concreteShift = assegnazioneTurno.get();
-
-        List<Long> userDiGuardiaIds = concreteShift.getUtentiDiGuardia().stream()
-                .map(Utente::getId)
-                .collect(Collectors.toList());
-
-        List<Long> userReperibiliIds = concreteShift.getUtentiReperibili().stream()
-                .map(Utente::getId)
-                .collect(Collectors.toList());
-
-        if(!userDiGuardiaIds.contains(requestTurnChangeDto.getSenderId()) && !userReperibiliIds.contains(requestTurnChangeDto.getSenderId())){
-            throw new AssegnazioneTurnoException("Utente richiedente non assegnato al turno");
-        }
-
-        if(userDiGuardiaIds.contains(requestTurnChangeDto.getReceiverId()) || userReperibiliIds.contains(requestTurnChangeDto.getReceiverId())){
-            throw new AssegnazioneTurnoException("Utente richiesto già assegnato al turno");
-        }
-
-
-
-        Request request = new Request(senderOptional.get(), receiverOptional.get(), concreteShift);
-
-        List<Request> requests = requestTurnChangeDao.findBySenderIdAndTurnIdAndStatus(requestTurnChangeDto.getSenderId(), requestTurnChangeDto.getConcreteShiftId(), RequestENUM.PENDING);
-
-        if(!requests.isEmpty()){
-            throw new AssegnazioneTurnoException("esiste già una richiesta in corso per la modifica di questo turno");
-        }
-
-        try {
-            requestTurnChangeDao.saveAndFlush(request);
-        } catch(ConstraintViolationException e){
-            throw new AssegnazioneTurnoException("esiste già un cambio pendente");
-        }
-    }
 
     /**
      * Questo metodo modifica un assegnazione turno già esistente. Il suo compito è quello di eliminare

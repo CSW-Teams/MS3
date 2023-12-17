@@ -40,7 +40,5 @@ public interface IControllerScheduler {
     void rimuoviAssegnazioneTurnoSchedulo(@NotNull AssegnazioneTurno assegnazioneTurnoOld);
     boolean rimuoviAssegnazioneTurno(@NotNull Long idAssegnazione);
 
-    void requestTurnChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException;
-
     Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException;
 }

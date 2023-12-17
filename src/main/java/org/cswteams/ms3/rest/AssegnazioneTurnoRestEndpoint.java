@@ -1,12 +1,11 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
+import org.cswteams.ms3.control.scambioTurno.IControllerScambioTurno;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
-import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.RequestTurnChangeDto;
+import org.cswteams.ms3.dto.*;
+import org.cswteams.ms3.entity.Request;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
@@ -17,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -28,6 +28,9 @@ public class AssegnazioneTurnoRestEndpoint {
 
     @Autowired
     private IControllerScheduler controllerScheduler;
+
+    @Autowired
+    private IControllerScambioTurno controllerScambioTurno;
 
 
     @RequestMapping(method = RequestMethod.POST)
@@ -102,13 +105,44 @@ public class AssegnazioneTurnoRestEndpoint {
         //Chiedo al controller di modificare e salvare nel database l'assegnazione turno modificata
         String message;
         try {
-            controllerScheduler.requestTurnChange(requestTurnChangeDto);
+            controllerScambioTurno.requestTurnChange(requestTurnChangeDto);
         } catch (AssegnazioneTurnoException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity<>("SUCCESS", HttpStatus.ACCEPTED);
     }
+
+    /**
+     * Ritorna le richieste iniziate dall'id indicato
+     * @param userId
+     */
+    @RequestMapping(method = RequestMethod.GET, path = "/scambio/by/utente_id={idUtente}")
+    public ResponseEntity<?> getRequestsBySender(@PathVariable Long userId)  {
+
+        if (userId != null) {
+            List<ViewUserTurnRequestsDTO> requests = controllerScambioTurno.getRequestsBySender(userId);
+            if (requests == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>( requests, HttpStatus.FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/scambio/to/utente_id={idUtente}")
+    public ResponseEntity<?> getRequestsToSender(@PathVariable Long userId)  {
+
+        if (userId != null) {
+            List<ViewUserTurnRequestsDTO> requests = controllerScambioTurno.getRequestsToSender(userId);
+            if (requests == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>( requests, HttpStatus.FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
 
     /**
      * Permette la modifica di un assegnazione turno già esistente.
