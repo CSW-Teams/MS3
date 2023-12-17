@@ -1,5 +1,6 @@
 package org.cswteams.ms3.control.richiestaRimozioneDaTurno;
 
+import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
 import org.cswteams.ms3.control.utils.MappaRichiestaRimozioneDaTurno;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
 import org.cswteams.ms3.dao.RichiestaRimozioneDaTurnoDao;
@@ -27,6 +28,9 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
     private RichiestaRimozioneDaTurnoDao richiestaRimozioneDaTurnoDao;
 
     @Autowired
+    private IControllerAssegnazioneTurni controllerAssegnazioneTurni;
+
+    @Autowired
     private AssegnazioneTurnoDao assegnazioneTurnoDao;
 
     @Autowired
@@ -35,7 +39,7 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
     @Override
     public RichiestaRimozioneDaTurno creaRichiestaRimozioneDaTurno(@NotNull RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException {
         // 1. ricerca AssegnazioneTurno --------------------------------------------------------------
-        Long assegnazioneTurnoId = richiestaRimozioneDaTurnoDTO.getAssegnazioneTurnoId();
+        Long assegnazioneTurnoId = richiestaRimozioneDaTurnoDTO.getIdAssegnazioneTurno();
         if (assegnazioneTurnoId == null) {
             throw new DatabaseException("Id AssegnazioneTurno non valida");
         }
@@ -45,28 +49,29 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
         }
 
         // 2. ricerca Utente -------------------------------------------------------------------------
-        Long utenteId = richiestaRimozioneDaTurnoDTO.getUtenteId();
-        if (utenteId == null) {
+        Long utenteRichiedenteId = richiestaRimozioneDaTurnoDTO.getIdUtenteRichiedente();
+        if (utenteRichiedenteId == null) {
             throw new DatabaseException("Id Utente non valido");
         }
-        Optional<Utente> utente = utenteDao.findById(utenteId);
-        if (utente.isEmpty()) {
+        Optional<Utente> utenteRichiedente = utenteDao.findById(utenteRichiedenteId);
+        if (utenteRichiedente.isEmpty()) {
             throw new DatabaseException("AssegnazioneTurno non trovata per id = " + assegnazioneTurnoId);
         }
 
         // 3. chiamata a metodo interno -----------------------------------------------------------
-        return this._creaRichiestaRimozioneDaTurno(assegnazioneTurno.get(), utente.get(), richiestaRimozioneDaTurnoDTO.getDescrizione());
+        return this._creaRichiestaRimozioneDaTurno(assegnazioneTurno.get(), utenteRichiedente.get(), richiestaRimozioneDaTurnoDTO.getDescrizione());
     }
 
     @Override
-    public RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utente, @NotNull String descrizione) throws DatabaseException, AssegnazioneTurnoException {
-        if (!richiestaRimozioneDaTurnoDao.findAllByAssegnazioneTurnoIdAndUtenteId(assegnazioneTurno.getId(), utente.getId()).isEmpty()) {
-            throw new DatabaseException("Esiste già una richiesta di rimozione da turno assegnato per l'utente " + utente + " per il la assegnazione " + assegnazioneTurno);
+    public RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utenteRichiedente, @NotNull String descrizione) throws DatabaseException, AssegnazioneTurnoException {
+        if (!richiestaRimozioneDaTurnoDao.findAllByAssegnazioneTurnoIdAndUtenteId(assegnazioneTurno.getId(), utenteRichiedente.getId()).isEmpty()) {
+            throw new DatabaseException("Esiste già una richiesta di rimozione da turno assegnato per l'utente " + utenteRichiedente + " per il la assegnazione " + assegnazioneTurno);
         }
-        if (!assegnazioneTurno.isAllocated(utente) && !assegnazioneTurno.isReserve(utente)) {
-            throw new AssegnazioneTurnoException("L'utente " + utente + " non risulta essere coinvolto nella assegnazione turno " + assegnazioneTurno);
+        if (!assegnazioneTurno.isAllocated(utenteRichiedente) && !assegnazioneTurno.isReserve(utenteRichiedente)) {
+            throw new AssegnazioneTurnoException("L'utente " + utenteRichiedente + " non risulta essere coinvolto nella assegnazione turno " + assegnazioneTurno);
         }
-        RichiestaRimozioneDaTurno richiestaRimozioneDaTurno = new RichiestaRimozioneDaTurno(assegnazioneTurno, utente, descrizione);
+        RichiestaRimozioneDaTurno richiestaRimozioneDaTurno = new RichiestaRimozioneDaTurno(assegnazioneTurno, utenteRichiedente, descrizione);
+
         richiestaRimozioneDaTurnoDao.saveAndFlush(richiestaRimozioneDaTurno);
         return richiestaRimozioneDaTurno;
     }
@@ -94,7 +99,7 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
     }
 
     @Override
-    public RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(Long idRichiesta, boolean esito) throws DatabaseException {
+    public RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(Long idRichiesta, boolean esito) throws DatabaseException, AssegnazioneTurnoException {
         Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiesta);
         if (r.isEmpty()) {
             throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + idRichiesta);
@@ -104,9 +109,15 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
         }
         if (esito) {
             AssegnazioneTurno assegnazioneTurno = r.get().getAssegnazioneTurno();
-            assegnazioneTurno.retireAssignedUser(r.get().getUtente());
-            assegnazioneTurnoDao.saveAndFlush(assegnazioneTurno);
+            Utente richiedente = r.get().getUtenteRichiedente();
+            Utente sostituto = r.get().getUtenteSostituto();
+            try {
+                controllerAssegnazioneTurni.sostituisciUtenteAssegnato(assegnazioneTurno, richiedente, sostituto);
+            } catch (AssegnazioneTurnoException e) {
+                throw new AssegnazioneTurnoException("Impossibile sostituire.");
+            }
             r.get().setEsito(true);
+            r.get().setUtenteSostituto(sostituto);
         } else {
             r.get().setEsito(false);
         }

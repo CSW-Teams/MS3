@@ -11,9 +11,9 @@ public class MappaRichiestaRimozioneDaTurno {
 
     public static RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoToDTO(RichiestaRimozioneDaTurno richiestaRimozioneDaTurno) {
         return new RichiestaRimozioneDaTurnoDTO(
-                richiestaRimozioneDaTurno.getId(),
+                richiestaRimozioneDaTurno.getIdRichiestaRimozioneDaTurno(),
                 richiestaRimozioneDaTurno.getAssegnazioneTurno().getId(),
-                richiestaRimozioneDaTurno.getUtente().getId(),
+                richiestaRimozioneDaTurno.getUtenteRichiedente().getId(),
                 richiestaRimozioneDaTurno.isEsito(),
                 richiestaRimozioneDaTurno.getDescrizione(),
                 richiestaRimozioneDaTurno.getAllegato(),

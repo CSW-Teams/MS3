@@ -33,11 +33,19 @@ public interface RichiestaRimozioneDaTurnoDao extends JpaRepository<RichiestaRim
             "FROM   RichiestaRimozioneDaTurno r " +
             "WHERE  r.assegnazioneTurno.id = ?1 " +
             "       AND " +
-            "       r.utente.id = ?2")
+            "       r.utenteRichiedente.id = ?2")
     List<RichiestaRimozioneDaTurno> findAllByAssegnazioneTurnoIdAndUtenteId(Long assegnazioneTurnoId, Long UtenteId);
 
+    /**
+     * Ritorna una lista di tutte le richieste di rimozione da turno assegnato
+     * per uno specifico <code>Utente</code>.
+     *
+     * @param UtenteId id utente
+     * @return lista, eventualmente vuota, di richieste di rimozionde da turno assegnato
+     * per lo specifico <code>Utente</code>.
+     */
     @Query("SELECT  r " +
             "FROM   RichiestaRimozioneDaTurno r " +
-            "WHERE  r.utente.id = ?1")
+            "WHERE  r.utenteRichiedente.id = ?1")
     List<RichiestaRimozioneDaTurno> findAllByUser(Long UtenteId);
 }

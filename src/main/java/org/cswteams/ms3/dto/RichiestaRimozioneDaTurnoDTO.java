@@ -10,13 +10,15 @@ public class RichiestaRimozioneDaTurnoDTO {
     /**
      * <code>null</code> all'atto della creazione della richiesta
      */
-    private Long id;
+    private Long idRichiestaRimozioneDaTurno;
 
     @NotNull
-    private Long assegnazioneTurnoId;
+    private Long idAssegnazioneTurno;
 
     @NotNull
-    private Long utenteId;
+    private Long idUtenteRichiedente;
+
+    private Long idUtenteSostituto;
 
     /**
      * Considerato solo all'atto della risoluzione della richiesta da parte del <i>Pianificatore</i>
@@ -36,10 +38,10 @@ public class RichiestaRimozioneDaTurnoDTO {
     public RichiestaRimozioneDaTurnoDTO() {
     }
 
-    public RichiestaRimozioneDaTurnoDTO(Long richiestaRimozioneDaTurnoId, Long assegnazioneTurnoId, Long utenteId, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
-        this.id = richiestaRimozioneDaTurnoId;
-        this.assegnazioneTurnoId = assegnazioneTurnoId;
-        this.utenteId = utenteId;
+    public RichiestaRimozioneDaTurnoDTO(Long richiestaRimozioneDaTurnoId, Long IdAssegnazioneTurno, Long idUtenteRichiedente, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
+        this.idRichiestaRimozioneDaTurno = richiestaRimozioneDaTurnoId;
+        this.idAssegnazioneTurno = IdAssegnazioneTurno;
+        this.idUtenteRichiedente = idUtenteRichiedente;
         this.esito = esito;
         this.descrizione = descrizione;
         this.allegato = allegato;
