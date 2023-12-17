@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.Schedule;
@@ -38,6 +39,8 @@ public interface IControllerScheduler {
     boolean rimuoviSchedulo(long id);
     void rimuoviAssegnazioneTurnoSchedulo(@NotNull AssegnazioneTurno assegnazioneTurnoOld);
     boolean rimuoviAssegnazioneTurno(@NotNull Long idAssegnazione);
+
+    void requestTurnChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException;
 
     Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException;
 }

@@ -6,6 +6,7 @@ import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.ViolatedConstraintLogEntry;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
@@ -81,6 +82,32 @@ public class AssegnazioneTurnoRestEndpoint {
     public ResponseEntity<?> leggiTurniAssegnati() throws ParseException {
         Set<AssegnazioneTurnoDTO> tuttiITurni = controllerAssegnazioneTurni.leggiTurniAssegnati();
         return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
+    }
+
+    /**
+     * Permette la modifica di un assegnazione turno già esistente.
+     * @param requestTurnChangeDto
+     */
+    @RequestMapping(method = RequestMethod.PUT, path = "/scambio")
+    public ResponseEntity<?> requestTurnChange(@RequestBody RequestTurnChangeDto requestTurnChangeDto)  {
+
+        System.out.println("MI HANNO CHIESTO QUALCOSA");
+
+        System.out.println(requestTurnChangeDto.getConcreteShiftId());
+        System.out.println(requestTurnChangeDto.getSenderId());
+        System.out.println(requestTurnChangeDto.getReceiverId());
+
+        System.out.println("FINE PARAMETRI");
+
+        //Chiedo al controller di modificare e salvare nel database l'assegnazione turno modificata
+        String message;
+        try {
+            controllerScheduler.requestTurnChange(requestTurnChangeDto);
+        } catch (AssegnazioneTurnoException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>("SUCCESS", HttpStatus.ACCEPTED);
     }
 
     /**

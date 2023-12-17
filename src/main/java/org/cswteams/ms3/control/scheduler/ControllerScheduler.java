@@ -6,23 +6,21 @@ import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ScheduloDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.entity.Turno;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.enums.RequestENUM;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -45,6 +43,9 @@ public class ControllerScheduler implements IControllerScheduler{
 
     @Autowired
     private ScocciaturaDao scocciaturaDao;
+
+    @Autowired
+    private RequestTurnChangeDao requestTurnChangeDao;
 
 
 
@@ -223,6 +224,65 @@ public class ControllerScheduler implements IControllerScheduler{
     }
 
     /**
+     * Questo metodo crea una richiesta di modifica turno.
+     * @param requestTurnChangeDto
+     * @return
+     */
+    @Override
+    @Transactional
+    public void requestTurnChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException {
+        Optional<AssegnazioneTurno> assegnazioneTurno= assegnazioneTurnoDao.findById(requestTurnChangeDto.getConcreteShiftId());
+        if(assegnazioneTurno.isEmpty()){
+            throw new AssegnazioneTurnoException("Turno non presente");
+        }
+
+        Optional<Utente> senderOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getSenderId()));
+        if(senderOptional.isEmpty()){
+            throw new AssegnazioneTurnoException("Utente richiedente non presente nel database");
+        }
+
+
+        Optional<Utente> receiverOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getReceiverId()));
+        if(receiverOptional.isEmpty()){
+            throw new AssegnazioneTurnoException("Utente richiesto non presente nel database");
+        }
+
+        AssegnazioneTurno concreteShift = assegnazioneTurno.get();
+
+        List<Long> userDiGuardiaIds = concreteShift.getUtentiDiGuardia().stream()
+                .map(Utente::getId)
+                .collect(Collectors.toList());
+
+        List<Long> userReperibiliIds = concreteShift.getUtentiReperibili().stream()
+                .map(Utente::getId)
+                .collect(Collectors.toList());
+
+        if(!userDiGuardiaIds.contains(requestTurnChangeDto.getSenderId()) && !userReperibiliIds.contains(requestTurnChangeDto.getSenderId())){
+            throw new AssegnazioneTurnoException("Utente richiedente non assegnato al turno");
+        }
+
+        if(userDiGuardiaIds.contains(requestTurnChangeDto.getReceiverId()) || userReperibiliIds.contains(requestTurnChangeDto.getReceiverId())){
+            throw new AssegnazioneTurnoException("Utente richiesto già assegnato al turno");
+        }
+
+
+
+        Request request = new Request(senderOptional.get(), receiverOptional.get(), concreteShift);
+
+        List<Request> requests = requestTurnChangeDao.findBySenderIdAndTurnIdAndStatus(requestTurnChangeDto.getSenderId(), requestTurnChangeDto.getConcreteShiftId(), RequestENUM.PENDING);
+
+        if(!requests.isEmpty()){
+            throw new AssegnazioneTurnoException("esiste già una richiesta in corso per la modifica di questo turno");
+        }
+
+        try {
+            requestTurnChangeDao.saveAndFlush(request);
+        } catch(ConstraintViolationException e){
+            throw new AssegnazioneTurnoException("esiste già un cambio pendente");
+        }
+    }
+
+    /**
      * Questo metodo modifica un assegnazione turno già esistente. Il suo compito è quello di eliminare
      * la vecchia assegnazione turno, verificare che la nuova assegnazione turno modificata rispetti tuitti  i
      * vincoli e in caso di successo salvarla nel database. Se qualche vincolo invece è violato la vecchia assegnazione
@@ -233,56 +293,62 @@ public class ControllerScheduler implements IControllerScheduler{
     @Override
     @Transactional
     public Schedule modificaAssegnazioneTurno(@NotNull ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO) throws IllegalScheduleException {
+        System.out.println("SONO ARRIVATO QUI");
+        try {
+            AssegnazioneTurno assegnazioneTurnoOld = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
+            AssegnazioneTurno assegnazioneTurnoNew = assegnazioneTurnoOld.clone();
 
-        AssegnazioneTurno assegnazioneTurnoOld  = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
-        AssegnazioneTurno assegnazioneTurnoNew = assegnazioneTurnoOld.clone();
+            List<Utente> allUsersOld = assegnazioneTurnoOld.getUtentiAsList();
 
-        List<Utente> allUsersOld = assegnazioneTurnoOld.getUtentiAsList();
-
-        //Apporto le modifiche sugli utenti allocati , se necessario
-        if(modificaAssegnazioneTurnoDTO.getUtenti_guardia()!= null){
-            assegnazioneTurnoNew.setUtentiDiGuardia(new HashSet<>());
-            for (long idGuardia: modificaAssegnazioneTurnoDTO.getUtenti_guardia()) {
-                assegnazioneTurnoNew.addUtentediGuardia(utenteDao.findById(idGuardia));
+            //Apporto le modifiche sugli utenti allocati , se necessario
+            if (modificaAssegnazioneTurnoDTO.getUtenti_guardia() != null) {
+                assegnazioneTurnoNew.setUtentiDiGuardia(new HashSet<>());
+                for (long idGuardia : modificaAssegnazioneTurnoDTO.getUtenti_guardia()) {
+                    assegnazioneTurnoNew.addUtentediGuardia(utenteDao.findById(idGuardia));
+                }
             }
-        }
 
-        //Apporto le modifiche sugli utenti di riserva , se necessario
-        if(modificaAssegnazioneTurnoDTO.getUtenti_reperibili()!=null){
-            assegnazioneTurnoNew.setUtentiReperibili(new HashSet<>());
-            for (long idReperibile: modificaAssegnazioneTurnoDTO.getUtenti_reperibili()) {
-                assegnazioneTurnoNew.addUtenteReperibile(utenteDao.findById(idReperibile));
+            //Apporto le modifiche sugli utenti di riserva , se necessario
+            if (modificaAssegnazioneTurnoDTO.getUtenti_reperibili() != null) {
+                assegnazioneTurnoNew.setUtentiReperibili(new HashSet<>());
+                for (long idReperibile : modificaAssegnazioneTurnoDTO.getUtenti_reperibili()) {
+                    assegnazioneTurnoNew.addUtenteReperibile(utenteDao.findById(idReperibile));
+                }
             }
-        }
 
-        /**
-         * registriamo gli utenti allocati nella vecchia assegnazione turno che non sono
-         * presenti nella nuova asegnazione turno come utenti rimossi, oltre a quelli che
-         * gia erano segnati come rimossi nella vecchia assegnazione turno
-         */
-        assegnazioneTurnoNew.setRetiredUsers(new HashSet<>());
-        for (Utente utente: allUsersOld) {
-            if (!assegnazioneTurnoNew.isAllocated(utente) && !assegnazioneTurnoNew.isReserve(utente)){
-                assegnazioneTurnoNew.getRetiredUsers().add(utente);
+            /**
+             * registriamo gli utenti allocati nella vecchia assegnazione turno che non sono
+             * presenti nella nuova asegnazione turno come utenti rimossi, oltre a quelli che
+             * gia erano segnati come rimossi nella vecchia assegnazione turno
+             */
+            assegnazioneTurnoNew.setRetiredUsers(new HashSet<>());
+            for (Utente utente : allUsersOld) {
+                if (!assegnazioneTurnoNew.isAllocated(utente) && !assegnazioneTurnoNew.isReserve(utente)) {
+                    assegnazioneTurnoNew.getRetiredUsers().add(utente);
+                }
             }
-        }
-        assegnazioneTurnoNew.getRetiredUsers().addAll(assegnazioneTurnoOld.getRetiredUsers());
-        
-        //rimuovo la vecchia assegnazione e provo ad aggiungere la nuova
-        this.rimuoviAssegnazioneTurnoSchedulo(assegnazioneTurnoOld);
-        Schedule schedule = this.aggiungiAssegnazioneTurno(assegnazioneTurnoNew, true);
+            assegnazioneTurnoNew.getRetiredUsers().addAll(assegnazioneTurnoOld.getRetiredUsers());
 
-        // Se un vincolo è violato riaggiungo l'assegnazione che avevo in precedenza eliminato
-        if (schedule.isIllegal()) {
-            schedule.getAssegnazioniTurno().add(assegnazioneTurnoOld);
-            scheduleDao.flush();
-        }
-        else{
-            //Rimuovo la vecchia assegnazione turno anche dal database
-            this.rimuoviAssegnazioneTurno(assegnazioneTurnoOld.getId());
+            //rimuovo la vecchia assegnazione e provo ad aggiungere la nuova
+            this.rimuoviAssegnazioneTurnoSchedulo(assegnazioneTurnoOld);
+            Schedule schedule = this.aggiungiAssegnazioneTurno(assegnazioneTurnoNew, true);
+
+            // Se un vincolo è violato riaggiungo l'assegnazione che avevo in precedenza eliminato
+            if (schedule.isIllegal()) {
+                schedule.getAssegnazioniTurno().add(assegnazioneTurnoOld);
+                scheduleDao.flush();
+            } else {
+                //Rimuovo la vecchia assegnazione turno anche dal database
+                this.rimuoviAssegnazioneTurno(assegnazioneTurnoOld.getId());
+            }
+
+            return schedule;
+
+        } catch(NoSuchElementException e){
+            System.out.println("The proposed turn change is invalid: the assigned turn does not exist");
         }
 
-        return schedule;
+    return null;
     }
 
     public List<ScheduloDTO> leggiSchedulazioni(){
