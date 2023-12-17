@@ -4,6 +4,7 @@ import ScheduleView  from "./ScheduleView.js"
 import {AppointmentSingleContent} from "../../components/common/CustomAppointmentComponents.js"
 import React from "react";
 import { ToastContainer, toast } from 'react-toastify';
+import {Button} from "@mui/material";
 
 
 /**
@@ -29,7 +30,7 @@ export default class SingleScheduleView extends ScheduleView {
   }
 
   render() {
-  
+
 
     return (
       <div>

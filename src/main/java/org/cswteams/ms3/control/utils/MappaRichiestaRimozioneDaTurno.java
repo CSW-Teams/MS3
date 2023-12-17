@@ -16,7 +16,8 @@ public class MappaRichiestaRimozioneDaTurno {
                 richiestaRimozioneDaTurno.getUtente().getId(),
                 richiestaRimozioneDaTurno.isEsito(),
                 richiestaRimozioneDaTurno.getDescrizione(),
-                richiestaRimozioneDaTurno.getAllegato());
+                richiestaRimozioneDaTurno.getAllegato(),
+                richiestaRimozioneDaTurno.isEsaminata());
     }
 
     public static Set<RichiestaRimozioneDaTurnoDTO> richiestaRimozioneDaTurnoEntitytoDTO(List<RichiestaRimozioneDaTurno> richiestaRimozioneDaTurnoList) {
