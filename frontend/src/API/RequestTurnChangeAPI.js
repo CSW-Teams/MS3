@@ -15,9 +15,10 @@ export class RequestTurnChangeAPI{
       const fineDate = new Date(fineEpochMilliseconds);
 
       const userDetails = body[i].userDetails;
+      const status = body[i].status;
 
       requests[i] = new RequestTurnChange(
-        requestId, turnDescription, inizioDate, fineDate, userDetails);
+        requestId, turnDescription, inizioDate, fineDate, userDetails, status);
     }
 
     return requests;
@@ -25,6 +26,13 @@ export class RequestTurnChangeAPI{
 
   async getTurnChangeRequestsByIdUser(id) {
     const response = await fetch('/api/assegnazioneturni/scambio/by/utente_id=' + id);
+    const body = await response.json();
+
+    return this.parseRequests(body);
+  }
+
+  async getTurnChangeRequestsToIdUser(id) {
+    const response = await fetch('/api/assegnazioneturni/scambio/to/utente_id=' + id);
     const body = await response.json();
 
     return this.parseRequests(body);

@@ -94,16 +94,6 @@ public class AssegnazioneTurnoRestEndpoint {
     @RequestMapping(method = RequestMethod.PUT, path = "/scambio")
     public ResponseEntity<?> requestTurnChange(@RequestBody RequestTurnChangeDto requestTurnChangeDto)  {
 
-        System.out.println("MI HANNO CHIESTO QUALCOSA");
-
-        System.out.println(requestTurnChangeDto.getConcreteShiftId());
-        System.out.println(requestTurnChangeDto.getSenderId());
-        System.out.println(requestTurnChangeDto.getReceiverId());
-
-        System.out.println("FINE PARAMETRI");
-
-        //Chiedo al controller di modificare e salvare nel database l'assegnazione turno modificata
-        String message;
         try {
             controllerScambioTurno.requestTurnChange(requestTurnChangeDto);
         } catch (AssegnazioneTurnoException e) {
@@ -115,13 +105,13 @@ public class AssegnazioneTurnoRestEndpoint {
 
     /**
      * Ritorna le richieste iniziate dall'id indicato
-     * @param userId
+     * @param idUtente
      */
     @RequestMapping(method = RequestMethod.GET, path = "/scambio/by/utente_id={idUtente}")
-    public ResponseEntity<?> getRequestsBySender(@PathVariable Long userId)  {
+    public ResponseEntity<?> getRequestsBySender(@PathVariable Long idUtente)  {
 
-        if (userId != null) {
-            List<ViewUserTurnRequestsDTO> requests = controllerScambioTurno.getRequestsBySender(userId);
+        if (idUtente != null) {
+            List<ViewUserTurnRequestsDTO> requests = controllerScambioTurno.getRequestsBySender(idUtente);
             if (requests == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -131,10 +121,10 @@ public class AssegnazioneTurnoRestEndpoint {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/scambio/to/utente_id={idUtente}")
-    public ResponseEntity<?> getRequestsToSender(@PathVariable Long userId)  {
+    public ResponseEntity<?> getRequestsToSender(@PathVariable Long idUtente)  {
 
-        if (userId != null) {
-            List<ViewUserTurnRequestsDTO> requests = controllerScambioTurno.getRequestsToSender(userId);
+        if (idUtente != null) {
+            List<ViewUserTurnRequestsDTO> requests = controllerScambioTurno.getRequestsToSender(idUtente);
             if (requests == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }

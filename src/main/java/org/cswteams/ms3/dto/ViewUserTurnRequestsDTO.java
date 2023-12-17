@@ -11,4 +11,5 @@ public class ViewUserTurnRequestsDTO {
     private long inizioEpoch;
     private long fineEpoch;
     private String userDetails;
+    private String status;
 }

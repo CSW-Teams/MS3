@@ -122,8 +122,9 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
 
             String turnDescription = r.getTurn().getTurno().getMansione()+" in "+r.getTurn().getTurno().getServizio().getNome();
             String userDetails = r.getReceiver().getNome() + " " + r.getReceiver().getCognome();
+            String status = r.getStatus().toString();
 
-            ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails);
+            ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
             dtos.add(dto);
         }
 
@@ -145,8 +146,9 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
 
             String turnDescription = r.getTurn().getTurno().getMansione()+" in "+r.getTurn().getTurno().getServizio().getNome();
             String userDetails = r.getSender().getNome() + " " + r.getReceiver().getCognome();
+            String status = r.getStatus().toString();
 
-            ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails);
+            ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
             dtos.add(dto);
         }
 

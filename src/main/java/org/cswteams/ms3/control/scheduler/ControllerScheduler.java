@@ -236,7 +236,6 @@ public class ControllerScheduler implements IControllerScheduler{
     @Override
     @Transactional
     public Schedule modificaAssegnazioneTurno(@NotNull ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO) throws IllegalScheduleException {
-        System.out.println("SONO ARRIVATO QUI");
         try {
             AssegnazioneTurno assegnazioneTurnoOld = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
             AssegnazioneTurno assegnazioneTurnoNew = assegnazioneTurnoOld.clone();

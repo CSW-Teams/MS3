@@ -9,27 +9,30 @@ export default class TurnChangeView extends React.Component {
     super(props);
 
     this.state = {
-      turnChangeRequests: []
+      turnChangeRequestsBySender: [],
+      turnChangeRequestsToSender: []
     };
 
     let requestAPI = new RequestTurnChangeAPI();
-    let turnChangeRequests = requestAPI.getTurnChangeRequestsByIdUser(localStorage.getItem("id"));
+    let turnChangeRequestsBySender = requestAPI.getTurnChangeRequestsByIdUser(localStorage.getItem("id"));
+    let turnChangeRequestsToSender = requestAPI.getTurnChangeRequestsToIdUser(localStorage.getItem("id"));
 
-    turnChangeRequests.then(data => {
-      this.setState({ turnChangeRequests: data }); // Update state with the fetched data
+    turnChangeRequestsBySender.then(data => {
+      this.setState({ turnChangeRequestsBySender: data });
     }).catch(error => {
       console.error("Error fetching turn change requests:", error);
+    });
+
+    turnChangeRequestsToSender.then(data => {
+      this.setState({ turnChangeRequestsToSender: data });
+    }).catch(error => {
+      console.error("Error fetching turn change requests to sender:", error);
     });
   }
 
   render() {
-    const { turnChangeRequests } = this.state;
-    // Sample data (replace with your actual data)
-    const objects = [
-      { id: 1, name: 'Object 1', description: 'Description for Object 1' },
-      { id: 2, name: 'Object 2', description: 'Description for Object 2' },
-      // Add more objects as needed
-    ];
+    const { turnChangeRequestsBySender } = this.state;
+    const { turnChangeRequestsToSender } = this.state;
 
     return (
       <div className="Table-page-container">
@@ -45,15 +48,13 @@ export default class TurnChangeView extends React.Component {
           </tr>
           </thead>
           <tbody>
-          {/* Map through objects and render table rows */}
-          {objects.map((obj, index) => (
-            <tr key={objects.id}>
-              <td>{obj.id}</td>
-              <td>{obj.name}</td>
-              <td>{obj.description}</td>
-              <td>{obj.name}</td>
+          {turnChangeRequestsToSender.map((request, index) => (
+            <tr key={request.requestId}>
+              <td>{request.turnDescription}</td>
+              <td>{request.inizioDate.toString()}</td>
+              <td>{request.fineDate.toString()}</td>
+              <td>{request.userDetails}</td>
               <td>
-                {/* Buttons for each row */}
                 <button className="btn btn-primary">Accetta</button>
                 <button className="btn btn-secondary">Rifiuta</button>
               </td>
@@ -69,15 +70,17 @@ export default class TurnChangeView extends React.Component {
             <th>Data e Ora Inizio</th>
             <th>Data e Ora Fine</th>
             <th>Destinatario</th>
+            <th>Status</th>
           </tr>
           </thead>
           <tbody>
-          {turnChangeRequests.map((request, index) => (
+          {turnChangeRequestsBySender.map((request, index) => (
             <tr key={request.requestId}>
               <td>{request.turnDescription}</td>
-              <td>{request.inizioDate}</td>
-              <td>{request.fineDate}</td>
+              <td>{request.inizioDate.toString()}</td>
+              <td>{request.fineDate.toString()}</td>
               <td>{request.userDetails}</td>
+              <td>{request.status}</td>
             </tr>
           ))}
           </tbody>
