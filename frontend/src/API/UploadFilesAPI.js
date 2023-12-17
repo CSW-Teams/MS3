@@ -4,7 +4,7 @@ export class UploadFilesAPI {
   constructor() {
   }
 
-  async uploadFile(file, onUploadProgress) {
+  async uploadGiustifica(file, onUploadProgress) {
 
     let formData = new FormData();
 
@@ -16,6 +16,19 @@ export class UploadFilesAPI {
       onUploadProgress,
     });
   }
+
+  async uploadFileRetirement(file, onUploadProgress, idRequest) {
+    let formData = new FormData();
+
+    formData.append("allegato",file)
+    return await fetch(`/api/assegnazioneturni/richiesterimozione/${idRequest}/caricaAllegato`, {
+      // content-type header should not be specified!
+    method: 'POST',
+    body: formData,
+    onUploadProgress,
+    });
+  }
+
 
   async getFiles() {
     return [];  //To do..

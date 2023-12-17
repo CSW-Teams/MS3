@@ -16,6 +16,29 @@ export class RichiestaRimozioneDaTurnoAPI {
     return response;
   }
 
+  async getAllRequests() {
+    const response = await fetch('/api/assegnazioneturni/richiesterimozione/')
+    const body = await response.json();
+    console.log("Body della richesta:", body);
+
+    const requests = [];
+
+    for (let i = 0; i < body.length; i++) {
+      const request = new Object();
+      request.id = body[i].id;
+      request.idShift = body[i].assegnazioneTurnoId;
+      request.idUser = body[i].utenteId;
+      request.justification = body[i].descrizione;
+      request.examinated = body[i].esaminata;
+      request.outcome = body[i].esito;
+      request.file = body[i].allegato;
+
+      requests[i] = request;
+    }
+
+    return requests;
+  }
+
   async getAllPendingRequests() {
     const response = await fetch('/api/assegnazioneturni/richiesterimozione/pendenti')
     const body = await response.json();
@@ -24,14 +47,39 @@ export class RichiestaRimozioneDaTurnoAPI {
 
     for (let i = 0; i < body.length; i++) {
       const request = new Object();
-      request.id = body[i].assegnazioneTurnoId;
+      request.id = body[i].id;
+      request.idShift = body[i].assegnazioneTurnoId;
       request.idUser = body[i].utenteId;
       request.justification = body[i].descrizione;
+      request.examinated = body[i].esaminata;
       request.outcome = body[i].esito;
+      request.file = body[i].allegato;
 
       requests[i] = request;
     }
 
     return requests;
   }
+
+  async getAllRequestsForUser(idUser) {
+    const response = await fetch(`/api/assegnazioneturni/richiesterimozione/utente/${idUser}`)
+    const body = await response.json();
+    const requests = [];
+
+    for (let i = 0; i < body.length; i++) {
+      const request = new Object();
+      request.id = body[i].id;
+      request.idShift = body[i].assegnazioneTurnoId;
+      request.idUser = body[i].utenteId;
+      request.justification = body[i].descrizione;
+      request.examinated = body[i].esaminata;
+      request.outcome = body[i].esito;
+      request.file = body[i].allegato;
+
+      requests[i] = request;
+    }
+
+    return requests;
+  }
+
 }
