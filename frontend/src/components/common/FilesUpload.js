@@ -73,6 +73,7 @@ const FilesUpload = ({type, idRequest}) => {
         setFileInfos(files.data);
       });
 
+
     setMessage([]);
   };
 
