@@ -61,9 +61,11 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
-            r = controller.risolviRichiestaRimozioneDaTurno(richiestaRimozioneDaTurnoDTO.getId(), richiestaRimozioneDaTurnoDTO.isEsito());
+            r = controller.risolviRichiestaRimozioneDaTurno(richiestaRimozioneDaTurnoDTO.getIdRichiestaRimozioneDaTurno(), richiestaRimozioneDaTurnoDTO.isEsito());
         } catch (DatabaseException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (AssegnazioneTurnoException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoToDTO(r), HttpStatus.ACCEPTED);
     }

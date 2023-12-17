@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -12,12 +13,13 @@ import javax.validation.constraints.NotNull;
  * Gli utenti richiedenti possono fornire una motivazione/descrizione tramite l'apposito attributo.
  */
 @Entity
-@Data
+@Getter
+@Setter
 public class RichiestaRimozioneDaTurno {
     @Id
     @Getter
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Long idRichiestaRimozioneDaTurno;
 
     @NotNull
     @ManyToOne
@@ -25,11 +27,17 @@ public class RichiestaRimozioneDaTurno {
     private AssegnazioneTurno assegnazioneTurno;
 
     /**
-     * Utente richiedente.
+     * Utente richiedente la sostituzione.
      */
     @NotNull
     @OneToOne
-    private Utente utente;
+    private Utente utenteRichiedente;
+
+    /**
+     * Utente che, in caso di accettazione della richiesta, andrà a sostituire il richiedente.
+     */
+    @OneToOne
+    private Utente utenteSostituto;
 
     /**
      * Eventuale descrizione della motivazione della richiesta.
@@ -63,9 +71,9 @@ public class RichiestaRimozioneDaTurno {
     public RichiestaRimozioneDaTurno() {
     }
 
-    public RichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utente, String descrizione) {
+    public RichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utenteRichiedente, String descrizione) {
         this.assegnazioneTurno = assegnazioneTurno;
-        this.utente = utente;
+        this.utenteRichiedente = utenteRichiedente;
         this.descrizione = descrizione;
         this.esaminata = false;
         this.esito = false;

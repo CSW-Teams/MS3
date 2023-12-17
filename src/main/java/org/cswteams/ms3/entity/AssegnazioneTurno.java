@@ -147,12 +147,6 @@ public class AssegnazioneTurno{
         this.utentiReperibili.add(u);
     }
 
-    public void retireAssignedUser(Utente u) {
-        this.utentiDiGuardia.removeIf(utente -> utente.getId().equals(u.getId()));
-        this.utentiReperibili.removeIf(utente -> utente.getId().equals(u.getId()));
-        this.retiredUsers.add(u);
-    }
-
     public AssegnazioneTurno clone(){
         return new AssegnazioneTurno(
                 new HashSet<>(this.utentiDiGuardia),
