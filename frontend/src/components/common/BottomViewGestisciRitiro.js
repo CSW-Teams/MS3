@@ -9,6 +9,8 @@ import {AppBar, Checkbox, Toolbar} from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import {RichiestaRimozioneDaTurnoAPI} from "../../API/RichiestaRimozioneDaTurnoAPI";
+
 
 const TemporaryDrawerRetirement = ({request, shifts, users}) => {
   const [open, setOpen] = useState(false);
@@ -27,14 +29,48 @@ const TemporaryDrawerRetirement = ({request, shifts, users}) => {
     setSelectedReperibile(userId);
   };
 
-  const handleApprove = (idReperibile) => {
-    console.log("Approvato ritiro dell'utente con id", retiringUser.id, ". Verrà sostituito dall'utente con id", selectedReperibile);
+  const richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
+
+  const handleApprove = () => {
+
     handleClose();
+
+    const params = {
+      idRichiestaRimozioneDaTurno: request.id,
+      idAssegnazioneTurno: request.idShift,
+      idUtenteRichiedente: request.idUser,
+      idUtenteSostituto: selectedReperibile,
+      esito: true,
+      descrizione: request.justification,
+      esaminata: true,
+      allegato: request.file
+    }
+
+    console.log("Params:", params)
+
+
+    return richiestaRimozioneDaTurnoAPI.risolviRichiesta(params);
+
   };
 
   const handleReject = () => {
-    console.log("Ritiro rifiutato");
     handleClose();
+
+    const params = {
+      idRichiestaRimozioneDaTurno: request.id,
+      idAssegnazioneTurno: request.idShift,
+      idUtenteRichiedente: request.idUser,
+      idUtenteSostituto: null,
+      esito: false,
+      descrizione: request.justification,
+      esaminata: true,
+      allegato: request.file
+    }
+
+    console.log("Params:", params)
+
+
+    return richiestaRimozioneDaTurnoAPI.risolviRichiesta(params);
   };
 
   return (

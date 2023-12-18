@@ -16,6 +16,18 @@ export class RichiestaRimozioneDaTurnoAPI {
     return response;
   }
 
+  async risolviRichiesta(params) {
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(params)
+    };
+
+    const response = await fetch('/api/assegnazioneturni/richiesterimozione/risolvi', requestOptions);
+    console.log(response);
+    return response;
+  }
+
   async getAllRequests() {
     const response = await fetch('/api/assegnazioneturni/richiesterimozione/')
     const body = await response.json();
@@ -28,6 +40,7 @@ export class RichiestaRimozioneDaTurnoAPI {
       request.id = body[i].idRichiestaRimozioneDaTurno;
       request.idShift = body[i].idAssegnazioneTurno;
       request.idUser = body[i].idUtenteRichiedente;
+      request.idSubstitute = body[i].idUtenteSostituto;
       request.justification = body[i].descrizione;
       request.examinated = body[i].esaminata;
       request.outcome = body[i].esito;
@@ -50,6 +63,7 @@ export class RichiestaRimozioneDaTurnoAPI {
       request.id = body[i].idRichiestaRimozioneDaTurno;
       request.idShift = body[i].idAssegnazioneTurno;
       request.idUser = body[i].idUtenteRichiedente;
+      request.idSubstitute = body[i].idUtenteSostituto;
       request.justification = body[i].descrizione;
       request.examinated = body[i].esaminata;
       request.outcome = body[i].esito;
@@ -72,6 +86,7 @@ export class RichiestaRimozioneDaTurnoAPI {
       request.id = body[i].idRichiestaRimozioneDaTurno;
       request.idShift = body[i].idAssegnazioneTurno;
       request.idUser = body[i].idUtenteRichiedente;
+      request.idSubstitute = body[i].idUtenteSostituto;
       request.justification = body[i].descrizione;
       request.examinated = body[i].esaminata;
       request.outcome = body[i].esito;
