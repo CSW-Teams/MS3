@@ -51,6 +51,11 @@ const ModalLinkFile = ({request}) => {
   );
 };
 
+const getSubstitute = (request, users) => {
+  let u = users.find(user => user.id === request.idSubstitute);
+  console.log("Sostituto:", u);
+}
+
 export default class RichiesteRitiroView extends React.Component {
 
   constructor(props) {
@@ -89,86 +94,6 @@ export default class RichiesteRitiroView extends React.Component {
 
   }
 
-  getSubstitute = (request, users) => {
-    let u = users.find(user => user.id === request.idSubstitute);
-    console.log("Sostituto:", u);
-  }
-
-
-
-  RequestsTable = ({ requests, isLocal, shifts, users }) => {
-    console.log("Richieste:", requests);
-    return (
-      <Box mt={2} ml={2} mr={2} mb={2}>
-        <TableContainer component={Paper}>
-          <Table>
-            <caption> Richieste di ritiro da turni </caption>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>ID Utente</TableCell>
-                <TableCell>Giustificazione</TableCell>
-                <TableCell>Stato</TableCell>
-                <TableCell>Esito</TableCell>
-                {isLocal &&
-                  <TableCell>
-                    Allegato
-                  </TableCell>
-                }
-                {!isLocal &&
-                  <TableCell>
-                    Processamento
-                  </TableCell>
-                }
-                {/* <TableCell>Sostituto</TableCell> */}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {requests.map((request) => (
-                <TableRow key={request.id}>
-                  <TableCell>{request.id}</TableCell>
-                  <TableCell>{request.idUser}</TableCell>
-                  <TableCell>{request.justification}</TableCell>
-                  <TableCell>{request.examinated ? 'Esaminata' : 'In attesa'}</TableCell>
-                  <TableCell>
-                    <div
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        backgroundColor: request.examinated ?
-                          request.outcome ?
-                            'green'
-                            : 'red'
-                          : 'lightgray',
-                      }}
-                    />
-                  </TableCell>
-                  {isLocal &&
-                    <TableCell>
-                      {request.file === null ?
-                        <ModalLinkFile request={request}/>
-                        : "Allegato presente"}
-                    </TableCell>
-                  }
-                  {!isLocal &&
-                    <TableCell>
-                      {request.examinated ?
-                        "Richiesta processata"
-                        : <TemporaryDrawerRetirement request={request} shifts={shifts} users={users}/>
-                      }
-                    </TableCell>
-                  }
-                  {/*<TableCell>{getSubstitute(request, users)}</TableCell>*/}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
-    );
-  };
-
   render(view) {
     if (this.state.isLocal) {
       console.log("Richieste di ritiro:", this.state.userRequests);
@@ -181,19 +106,19 @@ export default class RichiesteRitiroView extends React.Component {
                 <TableHead>
                   <TableRow>
                     <TableCell>ID</TableCell>
-                    <TableCell>ID Utente</TableCell>
+                    <TableCell>Richiedente</TableCell>
                     <TableCell>Giustificazione</TableCell>
                     <TableCell>Stato</TableCell>
                     <TableCell>Esito</TableCell>
                     <TableCell>Allegato</TableCell>
-                    {/* <TableCell>Sostituto</TableCell> */}
+                    <TableCell>Sostituto</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {this.state.userRequests.map((request) => (
                     <TableRow key={request.id}>
                       <TableCell>{request.id}</TableCell>
-                      <TableCell>{request.idUser}</TableCell>
+                      <TableCell>{this.state.users.find(user => user.id === request.idUser).text}</TableCell>
                       <TableCell>{request.justification}</TableCell>
                       <TableCell>{request.examinated ? 'Esaminata' : 'In attesa'}</TableCell>
                       <TableCell>
@@ -215,7 +140,7 @@ export default class RichiesteRitiroView extends React.Component {
                           <ModalLinkFile request={request}/>
                           : "Allegato presente"}
                       </TableCell>
-                      {/*<TableCell>{getSubstitute(request, users)}</TableCell>*/}
+                      <TableCell>{this.state.users.find(user => user.id === request.idSubstitute).text}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -234,19 +159,19 @@ export default class RichiesteRitiroView extends React.Component {
                 <TableHead>
                   <TableRow>
                     <TableCell>ID</TableCell>
-                    <TableCell>ID Utente</TableCell>
+                    <TableCell>Richiedente</TableCell>
                     <TableCell>Giustificazione</TableCell>
                     <TableCell>Stato</TableCell>
                     <TableCell>Esito</TableCell>
                     <TableCell>Processamento</TableCell>
-                    {/* <TableCell>Sostituto</TableCell> */}
+                    <TableCell>Sostituto</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {this.state.requests.map((request) => (
                     <TableRow key={request.id}>
                       <TableCell>{request.id}</TableCell>
-                      <TableCell>{request.idUser}</TableCell>
+                      <TableCell>{this.state.users.find(user => user.id === request.idUser).text}</TableCell>
                       <TableCell>{request.justification}</TableCell>
                       <TableCell>{request.examinated ? 'Esaminata' : 'In attesa'}</TableCell>
                       <TableCell>
@@ -269,7 +194,7 @@ export default class RichiesteRitiroView extends React.Component {
                           : <TemporaryDrawerRetirement request={request} shifts={this.state.shifts} users={this.state.users}/>
                         }
                       </TableCell>
-                      {/*<TableCell>{getSubstitute(request, users)}</TableCell>*/}
+                      <TableCell>{this.state.users.find(user => user.id === request.idSubstitute).text}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
