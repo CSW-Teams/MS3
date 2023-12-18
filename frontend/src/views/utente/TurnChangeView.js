@@ -32,12 +32,40 @@ export default class TurnChangeView extends React.Component {
 
   render() {
     const { turnChangeRequestsBySender } = this.state;
+
+    const sortedRequestsBySender = turnChangeRequestsBySender.sort((a, b) => {
+      return new Date(a.inizioDate) - new Date(b.inizioDate);
+    });
+
     const { turnChangeRequestsToSender } = this.state;
 
+    const sortedRequestsToSender = turnChangeRequestsToSender.sort((a, b) => {
+      return new Date(a.inizioDate) - new Date(b.inizioDate);
+    });
+
+    const options = {
+      timeZone: 'Europe/Berlin',
+      weekday: 'long',
+      day: "numeric",
+      month: 'long',
+      year: 'numeric',
+      hour12: false,
+      hour: 'numeric',
+      minute: 'numeric',
+    };
+
     return (
-      <div className="Table-page-container">
-        <h2>Richieste Ricevute</h2>
-        <table className="table">
+      <div className="Table-page-container" style={{padding: '20px'}}>
+        <style>
+          {`
+            .h2-padding {
+              margin-top: 20px;
+              margin-bottom: 20px;
+            }
+          `}
+        </style>
+        <h2 className="h2-padding">Richieste Ricevute</h2>
+        <table className="table" style={{borderRadius: '8px'}}>
           <thead>
           <tr>
             <th>Turno</th>
@@ -48,22 +76,24 @@ export default class TurnChangeView extends React.Component {
           </tr>
           </thead>
           <tbody>
-          {turnChangeRequestsToSender.map((request, index) => (
+          {sortedRequestsToSender.map((request, index) => (
             <tr key={request.requestId}>
               <td>{request.turnDescription}</td>
-              <td>{request.inizioDate.toString()}</td>
-              <td>{request.fineDate.toString()}</td>
+              <td>{request.inizioDate.toLocaleString('it-IT', options)}</td>
+              <td>{request.fineDate.toLocaleString('it-IT', options)}</td>
               <td>{request.userDetails}</td>
               <td>
-                <button className="btn btn-primary">Accetta</button>
+                <button className="btn btn-primary"
+                        style={{marginRight: '8px'}}>Accetta
+                </button>
                 <button className="btn btn-secondary">Rifiuta</button>
               </td>
             </tr>
           ))}
           </tbody>
         </table>
-        <h2>Richieste Inviate</h2>
-        <table className="table">
+        <h2 className="h2-padding">Richieste Inviate</h2>
+        <table className="table" style={{borderRadius: '8px'}}>
           <thead>
           <tr>
             <th>Turno</th>
@@ -74,11 +104,11 @@ export default class TurnChangeView extends React.Component {
           </tr>
           </thead>
           <tbody>
-          {turnChangeRequestsBySender.map((request, index) => (
+          {sortedRequestsBySender.map((request, index) => (
             <tr key={request.requestId}>
               <td>{request.turnDescription}</td>
-              <td>{request.inizioDate.toString()}</td>
-              <td>{request.fineDate.toString()}</td>
+              <td>{request.inizioDate.toLocaleString('it-IT', options)}</td>
+              <td>{request.fineDate.toLocaleString('it-IT', options)}</td>
               <td>{request.userDetails}</td>
               <td>{request.status}</td>
             </tr>
@@ -97,6 +127,7 @@ export default class TurnChangeView extends React.Component {
           pauseOnHover
           theme="light"
         />
+        <div style={{marginTop: 'auto'}}></div>
       </div>
     )
   }
