@@ -145,7 +145,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             long fineEpoch = list.get(1);
 
             String turnDescription = r.getTurn().getTurno().getMansione()+" in "+r.getTurn().getTurno().getServizio().getNome();
-            String userDetails = r.getSender().getNome() + " " + r.getReceiver().getCognome();
+            String userDetails = r.getSender().getNome() + " " + r.getSender().getCognome();
             String status = r.getStatus().toString();
 
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
