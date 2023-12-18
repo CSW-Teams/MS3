@@ -181,8 +181,8 @@ class ScheduleView extends React.Component{
       this.state.idShift = idShift;
 
       const subState = {
-        assegnazioneTurnoId: this.state.idShift,
-        utenteId: this.state.idUser,
+        idAssegnazioneTurno: this.state.idShift,
+        idUtenteRichiedente: this.state.idUser,
         descrizione: this.state.justification,
         esito: this.state.outcome
       }

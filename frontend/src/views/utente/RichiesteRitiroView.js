@@ -21,6 +21,8 @@ export default class RichiesteRitiroView extends React.Component {
 
   async componentDidMount() {
 
+    console.log("mounting component")
+
     let apiUser = new UtenteAPI();
     let apiRetirement = new RichiestaRimozioneDaTurnoAPI();
     let apiShifts = new AssegnazioneTurnoAPI();
