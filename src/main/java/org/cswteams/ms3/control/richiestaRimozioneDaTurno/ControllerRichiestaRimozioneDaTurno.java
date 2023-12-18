@@ -99,25 +99,31 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
     }
 
     @Override
-    public RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(Long idRichiesta, boolean esito) throws DatabaseException, AssegnazioneTurnoException {
-        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiesta);
+    public RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException {
+        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(richiestaRimozioneDaTurnoDTO.getIdRichiestaRimozioneDaTurno());
         if (r.isEmpty()) {
-            throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + idRichiesta);
+            throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + r.get().getIdRichiestaRimozioneDaTurno());
         }
         if (r.get().isEsaminata()) {
-            throw new DatabaseException("La RichiestaRimozioneDaTurno avente id = " + idRichiesta + " risulta essere già stata esaminata");
+            throw new DatabaseException("La RichiestaRimozioneDaTurno avente id = " + r.get().getIdRichiestaRimozioneDaTurno() + " risulta essere già stata esaminata");
         }
-        if (esito) {
+        if (richiestaRimozioneDaTurnoDTO.isEsito()) {
             AssegnazioneTurno assegnazioneTurno = r.get().getAssegnazioneTurno();
-            Utente richiedente = r.get().getUtenteRichiedente();
-            Utente sostituto = r.get().getUtenteSostituto();
+            Optional<Utente> richiedente = utenteDao.findById(richiestaRimozioneDaTurnoDTO.getIdUtenteRichiedente());
+            Optional<Utente> sostituto = utenteDao.findById(richiestaRimozioneDaTurnoDTO.getIdUtenteSostituto());
+
+            if (richiedente.isEmpty())
+                throw new DatabaseException("L'utente richiedente non esiste");
+            if (sostituto.isEmpty())
+                throw new DatabaseException("L'utente sostituto non esiste");
+
             try {
-                controllerAssegnazioneTurni.sostituisciUtenteAssegnato(assegnazioneTurno, richiedente, sostituto);
+                controllerAssegnazioneTurni.sostituisciUtenteAssegnato(assegnazioneTurno, richiedente.get(), sostituto.get());
             } catch (AssegnazioneTurnoException e) {
                 throw new AssegnazioneTurnoException("Impossibile sostituire.");
             }
             r.get().setEsito(true);
-            r.get().setUtenteSostituto(sostituto);
+            r.get().setUtenteSostituto(sostituto.get());
         } else {
             r.get().setEsito(false);
         }

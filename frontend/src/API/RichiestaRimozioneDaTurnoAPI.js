@@ -25,9 +25,9 @@ export class RichiestaRimozioneDaTurnoAPI {
 
     for (let i = 0; i < body.length; i++) {
       const request = new Object();
-      request.id = body[i].id;
-      request.idShift = body[i].assegnazioneTurnoId;
-      request.idUser = body[i].utenteId;
+      request.id = body[i].idRichiestaRimozioneDaTurno;
+      request.idShift = body[i].idAssegnazioneTurno;
+      request.idUser = body[i].idUtenteRichiedente;
       request.justification = body[i].descrizione;
       request.examinated = body[i].esaminata;
       request.outcome = body[i].esito;
@@ -47,9 +47,9 @@ export class RichiestaRimozioneDaTurnoAPI {
 
     for (let i = 0; i < body.length; i++) {
       const request = new Object();
-      request.id = body[i].id;
-      request.idShift = body[i].assegnazioneTurnoId;
-      request.idUser = body[i].utenteId;
+      request.id = body[i].idRichiestaRimozioneDaTurno;
+      request.idShift = body[i].idAssegnazioneTurno;
+      request.idUser = body[i].idUtenteRichiedente;
       request.justification = body[i].descrizione;
       request.examinated = body[i].esaminata;
       request.outcome = body[i].esito;
@@ -57,6 +57,7 @@ export class RichiestaRimozioneDaTurnoAPI {
 
       requests[i] = request;
     }
+
 
     return requests;
   }
@@ -68,9 +69,9 @@ export class RichiestaRimozioneDaTurnoAPI {
 
     for (let i = 0; i < body.length; i++) {
       const request = new Object();
-      request.id = body[i].id;
-      request.idShift = body[i].assegnazioneTurnoId;
-      request.idUser = body[i].utenteId;
+      request.id = body[i].idRichiestaRimozioneDaTurno;
+      request.idShift = body[i].idAssegnazioneTurno;
+      request.idUser = body[i].idUtenteRichiedente;
       request.justification = body[i].descrizione;
       request.examinated = body[i].esaminata;
       request.outcome = body[i].esito;
@@ -78,6 +79,7 @@ export class RichiestaRimozioneDaTurnoAPI {
 
       requests[i] = request;
     }
+
 
     return requests;
   }

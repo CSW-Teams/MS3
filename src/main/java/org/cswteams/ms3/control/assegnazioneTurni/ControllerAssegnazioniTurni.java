@@ -99,7 +99,8 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
             throw new AssegnazioneTurnoException("Si sta cercando di sostituire l'utente " + utenteSostituto + " nella assegnazione turno " + assegnazioneTurno + ", ma egli non fa parte degli utenti di guardia per questa assegnazione turno.");
         }
         // controlla se l'utente sostituendo è reperibile per questa assegnazione turno
-        if (!assegnazioneTurno.getUtentiDiGuardia().contains(utenteSostituto)) {
+        if (!assegnazioneTurno.getUtentiReperibili().contains(utenteSostituto)) {
+            System.out.println(assegnazioneTurno.getUtentiReperibili());
             throw new AssegnazioneTurnoException("Si sta cercando di spostare in guardia l'utente " + utenteSostituto + " nella assegnazione turno " + assegnazioneTurno + ", ma egli non fa parte degli utenti reperibili per questa assegnazione turno.");
         }
         // effettua lo scambio

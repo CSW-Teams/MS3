@@ -70,12 +70,11 @@ public interface IControllerRichiestaRimozioneDaTurno {
     /**
      * Assegnazione dell'esito della richiesta di rimozione da turno assegnato, da parte del <i>Pianificatore</i>.
      *
-     * @param idRichiesta id della richiesta da prelevare da base dati
-     * @param esito       <code>true</code> se il <i>Pianificatore</i> approva la richiesta, <code>false</code> altrimenti
+     * @param richiestaRimozioneDaTurnoDTO dto dell'oggetto RichiestaRimozioneDaTurno
      * @return oggetto relativo alla richiesta di rimozione da turno, opportunamente aggiornato con l'esito fornito
      * @throws DatabaseException in caso di errori durante la ricerca di dati in base dati
      */
-    RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(Long idRichiesta, boolean esito) throws DatabaseException, AssegnazioneTurnoException;
+    RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException;
 
     /**
      * Permette il caricamento di un allegato (facoltativo) per una data richiesta di rimozione da turno assegnato.
