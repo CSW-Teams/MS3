@@ -91,7 +91,6 @@ export const Content = ({
         if (result === -1) {
           setHasPendingRequest(false);
         } else {
-          console.log("Risultato:", result);
           setHasPendingRequest(true);
           setRetiredUser(result);
         }

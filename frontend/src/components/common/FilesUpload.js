@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import {UploadFilesAPI} from "../../API/UploadFilesAPI"
 
-const FilesUpload = ({type, idRequest}) => {
+const FilesUpload = ({type, request, updateRequest}) => {
 
-  console.log("Valore di type e di idRequest:", type, idRequest);
 
   const [selectedFiles, setSelectedFiles] = useState('');
   const [progressInfos, setProgressInfos] = useState({ val: [] });
@@ -33,7 +32,7 @@ const FilesUpload = ({type, idRequest}) => {
           (100 * event.loaded) / event.total
         );
         setProgressInfos({ val: _progressInfos });
-      }, idRequest)
+      }, request.idRichiestaRimozioneDaTurno)
     } else {
       response = await uploadAPI.uploadGiustifica(file, (event) => {
         _progressInfos[idx].percentage = Math.round(
