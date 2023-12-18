@@ -177,39 +177,23 @@ export  class AssegnazioneTurnoAPI {
 
     console.log(assegnazioneModificata)
 
-    const response = await fetch('/api/assegnazioneturni/',requestOptions);
-    return response;
+    return await fetch('/api/assegnazioneturni/', requestOptions);
 
 }
 
-async richiediRinunciaTurno(utenteCambio,assegnazione,idLoggato) {
-  let assegnazioneConModifiche = {}
-  assegnazioneConModifiche.idAssegnazione = assegnazione.id;
-  assegnazioneConModifiche.utenti_guardia = []
-  assegnazioneConModifiche.utenti_reperibili = []
-  assegnazioneConModifiche.utenteModificatoreId = idLoggato;
-
-  for(let i =0; i<assegnazione.utenti_guardia.length; i++){
-    assegnazioneConModifiche.utenti_guardia[i] = assegnazione.utenti_guardia_id[i]
-    if(assegnazione.utenti_guardia_id[i] === idLoggato)
-      assegnazioneConModifiche.utenti_guardia[i] = utenteCambio.id;
-  }
-
-  for(let i =0; i<assegnazione.utenti_reperibili.length; i++){
-    assegnazioneConModifiche.utenti_reperibili[i] = assegnazione.utenti_reperibili_id[i]
-    if(assegnazione.utenti_reperibili_id[i] === idLoggato)
-      assegnazioneConModifiche.utenti_reperibili[i] = utenteCambio.id;
-  }
+async requestTurnChange(utenteCambio, assegnazione, idLoggato) {
+  let turnChangeRequest = {}
+  turnChangeRequest.concreteShiftId = assegnazione.id;
+  turnChangeRequest.senderId = idLoggato;
+  turnChangeRequest.receiverId = utenteCambio.id;
 
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(assegnazioneConModifiche)
+    body: JSON.stringify(turnChangeRequest)
   };
 
-  const response = await fetch('/api/assegnazioneturni/',requestOptions);
-  return response;
-
+  return await fetch('/api/assegnazioneturni/scambio', requestOptions);
 }
 
 

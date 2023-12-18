@@ -81,7 +81,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
   };
 
   /**
-   * Queto componente è invece utilizzato da SingleScheduleView. Quando si vorrà modificare un turno da SingleScheduleView
+   * Questo componente è invece utilizzato da SingleScheduleView. Quando si vorrà modificare un turno da SingleScheduleView
    * è perchè si vuole richiedere di scambiare un turno con un altro utente. Questo componente contiene
    * la logica per chiedere al backend di modificare un assegnazione turno.
    * @param {*} param0
@@ -109,10 +109,10 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      */
     async function buildAssegnazioneModificata(contesto){
 
-      let response = await assegnazioneTurnoApi.richiediRinunciaTurno(utentiSelezionati,appointmentData,localStorage.getItem("id"))
+      let response = await assegnazioneTurnoApi.requestTurnChange(utentiSelezionati,appointmentData,localStorage.getItem("id"))
       let responseStatusClass = Math.floor(response.status / 100)
 
-        if(responseStatusClass==5){
+        if(responseStatusClass===5){
 
           toast.error('Errore nel server!', {
             position: "top-center",
@@ -126,11 +126,11 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
           });
         }
 
-        else if(responseStatusClass!= 2){
+        else if(responseStatusClass!== 2){
 
           let responseBody = await response.json();
 
-          toast.error(ViolationLog({log : responseBody.messagges}), {
+          toast.error(ViolationLog({log : responseBody.messages}), {
             position: "top-center",
             hideProgressBar: false,
             closeOnClick: true,

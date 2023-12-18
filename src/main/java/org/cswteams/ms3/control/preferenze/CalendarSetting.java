@@ -4,7 +4,7 @@ public class CalendarSetting {
 	public String getURLHoliday() {
 		return URLHoliday;
 	}
-	private String URLHoliday;
+	private final String URLHoliday;
 	public CalendarSetting(String url1) {
 		this.URLHoliday=url1;
 	}

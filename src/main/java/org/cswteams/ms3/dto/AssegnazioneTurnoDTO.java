@@ -36,16 +36,6 @@ public class AssegnazioneTurnoDTO {
 
     private Set<UtenteDTO> retiredUsers;
 
-    public AssegnazioneTurnoDTO(Long id, long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
-        this.id = id;
-        this.inizioEpoch = inizioEpoch;
-        this.fineEpoch = fineEpoch;
-        this.utentiDiGuardia = utentiDiGuardia;
-        this.utentiReperibili = utentiReperibili;
-        this.tipologiaTurno = turno;
-        this.servizio = servizio;
-    }
-
     public AssegnazioneTurnoDTO(Long id,Long idTurno, long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno, boolean reperibilitaAttiva) {
         this.id = id;
         this.inizioEpoch = inizioEpoch;
@@ -56,17 +46,6 @@ public class AssegnazioneTurnoDTO {
         this.servizio = servizio;
         this.idTurno=idTurno;
         this.reperibilitaAttiva = reperibilitaAttiva;
-    }
-
-    public AssegnazioneTurnoDTO(){}
-
-    public AssegnazioneTurnoDTO(long inizioEpoch, long fineEpoch, Set<UtenteDTO> utentiDiGuardia, Set<UtenteDTO> utentiReperibili, ServizioDTO servizio, TipologiaTurno turno) {
-        this.inizioEpoch = inizioEpoch;
-        this.fineEpoch = fineEpoch;
-        this.utentiDiGuardia = utentiDiGuardia;
-        this.utentiReperibili = utentiReperibili;
-        this.tipologiaTurno = turno;
-        this.servizio = servizio;
     }
 
 }

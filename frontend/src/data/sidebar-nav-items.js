@@ -19,6 +19,11 @@ export function attore() {
           htmlBefore: '<i class="material-icons">view_module</i>',
           to: "/info-utenti",
         },
+         {
+           title: "Scambio Turni",
+           htmlBefore: '<i class="material-icons">view_module</i>',
+           to: "/scambio-turni",
+         },
       ];
 }
 
@@ -47,6 +52,11 @@ export function pianificatore() {
         htmlBefore: '<i class="material-icons">view_module</i>',
         to: "/info-utenti",
       },
+      {
+        title: "Scambio Turni",
+        htmlBefore: '<i class="material-icons">view_module</i>',
+        to: "/scambio-turni",
+      },
 
 
     ];
@@ -73,7 +83,12 @@ export function configuratore() {
       title: "Configurazione vincoli",
       htmlBefore: '<i class="material-icons">vertical_split</i>',
       to: "/configurazione-vincoli",
-    }
+    },
+    {
+      title: "Scambio Turni",
+      htmlBefore: '<i class="material-icons">view_module</i>',
+      to: "/scambio-turni",
+    },
 
   ];
 }

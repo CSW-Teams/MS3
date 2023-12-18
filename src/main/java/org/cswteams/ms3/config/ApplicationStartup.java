@@ -201,7 +201,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloDao.saveAndFlush(vincolo6);
 
         List<Vincolo> vincoli = vincoloDao.findByType("VincoloMaxPeriodoConsecutivo");
-        System.out.println("ciao");
     }
 
 
