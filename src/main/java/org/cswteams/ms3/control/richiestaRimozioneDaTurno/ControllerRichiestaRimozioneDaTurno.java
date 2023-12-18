@@ -102,25 +102,25 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
     public RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException {
         Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(richiestaRimozioneDaTurnoDTO.getIdRichiestaRimozioneDaTurno());
         if (r.isEmpty()) {
-            throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + r.get().getIdRichiestaRimozioneDaTurno());
+            throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + richiestaRimozioneDaTurnoDTO.getIdRichiestaRimozioneDaTurno());
         }
         if (r.get().isEsaminata()) {
-            throw new DatabaseException("La RichiestaRimozioneDaTurno avente id = " + r.get().getIdRichiestaRimozioneDaTurno() + " risulta essere già stata esaminata");
+            throw new RuntimeException("La RichiestaRimozioneDaTurno avente id = " + r.get().getIdRichiestaRimozioneDaTurno() + " risulta essere già stata esaminata");
         }
         if (richiestaRimozioneDaTurnoDTO.isEsito()) {
             AssegnazioneTurno assegnazioneTurno = r.get().getAssegnazioneTurno();
             Optional<Utente> richiedente = utenteDao.findById(richiestaRimozioneDaTurnoDTO.getIdUtenteRichiedente());
+            if (richiedente.isEmpty()) {
+                throw new DatabaseException("Utente richiedente non trovato per id = " + richiestaRimozioneDaTurnoDTO.getIdUtenteRichiedente());
+            }
             Optional<Utente> sostituto = utenteDao.findById(richiestaRimozioneDaTurnoDTO.getIdUtenteSostituto());
-
-            if (richiedente.isEmpty())
-                throw new DatabaseException("L'utente richiedente non esiste");
-            if (sostituto.isEmpty())
-                throw new DatabaseException("L'utente sostituto non esiste");
-
+            if (sostituto.isEmpty()) {
+                throw new DatabaseException("Utente sostituto non trovato per id = " + richiestaRimozioneDaTurnoDTO.getIdUtenteSostituto());
+            }
             try {
                 controllerAssegnazioneTurni.sostituisciUtenteAssegnato(assegnazioneTurno, richiedente.get(), sostituto.get());
             } catch (AssegnazioneTurnoException e) {
-                throw new AssegnazioneTurnoException("Impossibile sostituire.");
+                throw new AssegnazioneTurnoException("Impossibile sostituire l'utente " + richiedente.get() + " con l'utente " + sostituto.get() + " per la assegnazione turno " + assegnazioneTurno);
             }
             r.get().setEsito(true);
             r.get().setUtenteSostituto(sostituto.get());

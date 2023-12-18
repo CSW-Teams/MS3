@@ -47,4 +47,15 @@ public class RichiestaRimozioneDaTurnoDTO {
         this.allegato = allegato;
         this.esaminata = esaminata;
     }
+
+    public RichiestaRimozioneDaTurnoDTO(Long richiestaRimozioneDaTurnoId, Long IdAssegnazioneTurno, Long idUtenteRichiedente, Long idUtenteSostituto, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
+        this.idRichiestaRimozioneDaTurno = richiestaRimozioneDaTurnoId;
+        this.idAssegnazioneTurno = IdAssegnazioneTurno;
+        this.idUtenteRichiedente = idUtenteRichiedente;
+        this.idUtenteSostituto = idUtenteSostituto;
+        this.esito = esito;
+        this.descrizione = descrizione;
+        this.allegato = allegato;
+        this.esaminata = esaminata;
+    }
 }

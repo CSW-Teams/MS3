@@ -14,6 +14,7 @@ public class MappaRichiestaRimozioneDaTurno {
                 richiestaRimozioneDaTurno.getIdRichiestaRimozioneDaTurno(),
                 richiestaRimozioneDaTurno.getAssegnazioneTurno().getId(),
                 richiestaRimozioneDaTurno.getUtenteRichiedente().getId(),
+                richiestaRimozioneDaTurno.getUtenteSostituto() == null ? null : richiestaRimozioneDaTurno.getUtenteSostituto().getId(),
                 richiestaRimozioneDaTurno.isEsito(),
                 richiestaRimozioneDaTurno.getDescrizione(),
                 richiestaRimozioneDaTurno.getAllegato(),
