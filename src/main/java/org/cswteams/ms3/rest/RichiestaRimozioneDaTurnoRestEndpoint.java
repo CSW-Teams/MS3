@@ -63,10 +63,8 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         try {
             r = controller.risolviRichiestaRimozioneDaTurno(richiestaRimozioneDaTurnoDTO);
         } catch (DatabaseException e) {
-            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (AssegnazioneTurnoException e) {
-            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoToDTO(r), HttpStatus.ACCEPTED);
