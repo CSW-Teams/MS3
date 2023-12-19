@@ -57,7 +57,7 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
         if (turno == null)
             throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: " + dto.getServizio().getNome() + ",tipologia turno: " + dto.getTipologiaTurno().toString());
 
-        AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(LocalDate.of(dto.getAnno(), dto.getMese(), dto.getGiorno()), turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()), MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
+        AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(dto.getGiorno(), turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()), MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
         return assegnazioneTurnoDao.save(assegnazioneTurno);
     }
 

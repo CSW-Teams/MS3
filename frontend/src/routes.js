@@ -87,7 +87,8 @@ export default [
     path: "/richieste-ritiro/",
     layout: DefaultLayout,
     component: RichiesteRitiroView
-  }
+  },
+  {
     path: "/scambio-turni",
     layout: DefaultLayout,
     component:  TurnChangeView
