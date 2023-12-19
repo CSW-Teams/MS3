@@ -1,7 +1,6 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.entity.vincoli.Vincolo;
-import org.cswteams.ms3.entity.vincoli.VincoloMaxPeriodoConsecutivo;
+import org.cswteams.ms3.entity.constraint.Constraint;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -9,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface VincoloDao extends JpaRepository<Vincolo,Long> {
+public interface VincoloDao extends JpaRepository<Constraint,Long> {
 
-    @Query("select v from Vincolo v where dtype = ?1")
-    List<Vincolo> findByType(String typeValue);
+    @Query("select v from Constraint v where dtype = ?1")
+    List<Constraint> findByType(String typeValue);
 }

@@ -1,6 +1,6 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.entity.category.Specialization;
+import org.cswteams.ms3.entity.Specialization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -2,7 +2,7 @@ package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.enums.TimeSlot;
 
 import javax.persistence.Entity;
 import java.time.DayOfWeek;
@@ -20,24 +20,24 @@ public class ScocciaturaAssegnazioneUtente extends Scocciatura {
 
     private int peso;
     private DayOfWeek giornoSettimana;
-    private TipologiaTurno tipologiaTurno;
+    private TimeSlot timeSlot;
 
     public ScocciaturaAssegnazioneUtente() {
     }
 
-    public ScocciaturaAssegnazioneUtente(int peso, DayOfWeek giornoSettimana, TipologiaTurno tipologiaTurno) {
+    public ScocciaturaAssegnazioneUtente(int peso, DayOfWeek giornoSettimana, TimeSlot timeSlot) {
         this.peso = peso;
         this.giornoSettimana = giornoSettimana;
-        this.tipologiaTurno = tipologiaTurno;
+        this.timeSlot = timeSlot;
     }
 
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        TipologiaTurno tipologiaTurno = contesto.getConcreteShift().getShift().getTipologiaTurno();
-        DayOfWeek giornoSettimana = contesto.getConcreteShift().getData().getDayOfWeek();
+        TimeSlot timeSlot = contesto.getConcreteShift().getShift().getTimeSlot();
+        //DayOfWeek giornoSettimana = contesto.getConcreteShift().getDate();
 
-        if(giornoSettimana.equals(this.giornoSettimana) && tipologiaTurno.equals(this.tipologiaTurno))
+        if(giornoSettimana.equals(this.giornoSettimana) && timeSlot.equals(this.timeSlot))
             return this.peso;
 
         return 0;

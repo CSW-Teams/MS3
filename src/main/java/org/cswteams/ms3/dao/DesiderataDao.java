@@ -1,14 +1,14 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.entity.Desiderata;
+import org.cswteams.ms3.entity.Preference;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface DesiderataDao extends JpaRepository<Desiderata, Long> {
+public interface DesiderataDao extends JpaRepository<Preference, Long> {
 
-    List<Desiderata> findAllByDoctorId(Long doctorId);
+    List<Preference> findAllByDoctorsId(Long doctorId);
 
 }
