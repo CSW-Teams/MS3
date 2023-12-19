@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import {UploadFilesAPI} from "../../API/UploadFilesAPI"
 
-const FilesUpload = ({type, idRequest}) => {
+const FilesUpload = ({type, request, updateRequest}) => {
 
-  console.log("Valore di type e di idRequest:", type, idRequest);
 
   const [selectedFiles, setSelectedFiles] = useState('');
   const [progressInfos, setProgressInfos] = useState({ val: [] });
@@ -33,7 +32,7 @@ const FilesUpload = ({type, idRequest}) => {
           (100 * event.loaded) / event.total
         );
         setProgressInfos({ val: _progressInfos });
-      }, idRequest)
+      }, request.idRichiestaRimozioneDaTurno)
     } else {
       response = await uploadAPI.uploadGiustifica(file, (event) => {
         _progressInfos[idx].percentage = Math.round(
@@ -53,6 +52,12 @@ const FilesUpload = ({type, idRequest}) => {
         "Impossibile caricare il file: " + file.name+ "!",
       ]));
     }
+
+    /* todo questo è stato messo solo per fare in modo che la tabella si aggiorni dicendo che l'allegato è presente, va gestito meglio quando verrà implementato il download dell'allegato
+    *   probabilmente conviene mettere un booleano (tipo allegatoPresente), e recuperare il vero allegato nella fase di download
+    * */
+    request.allegato = true;
+    updateRequest(request);
   };
 
   const uploadFiles = () => {
@@ -75,6 +80,13 @@ const FilesUpload = ({type, idRequest}) => {
 
 
     setMessage([]);
+
+    /* todo questo è stato messo solo per fare in modo che la tabella si aggiorni dicendo che l'allegato è presente, va gestito meglio quando verrà implementato il download dell'allegato
+    *   probabilmente conviene mettere un booleano (tipo allegatoPresente), e recuperare il vero allegato nella fase di download
+    * */
+    request.allegato = true;
+    updateRequest(request);
+
   };
 
   return (

@@ -152,14 +152,11 @@ class ScheduleView extends React.Component{
     }
 
     pendingRetirementRequestForShiftExist = async (idShift) => {
-      //console.log(idUser, this.state.requests.some(request => request.id === idShift));
-      //return this.state.requests.some(request => request.id === idShift);
-
       let idUser = -1;
 
       for (let i = 0; i < this.state.requests.length; i++) {
-        if (this.state.requests[i].id === idShift) {
-          idUser = this.state.requests[i].idUser;
+        if (this.state.requests[i].idAssegnazioneTurno === idShift) {
+          idUser = this.state.requests[i].idUtenteRichiedente;
           break;
         }
       }
@@ -355,6 +352,8 @@ class ScheduleView extends React.Component{
 
       let api = new RichiestaRimozioneDaTurnoAPI();
       let requestsArray = await api.getAllPendingRequests();
+
+      console.log("Array:", requestsArray);
 
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UtenteAPI().getAllUsersInfo();

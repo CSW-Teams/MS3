@@ -12,17 +12,17 @@ import CloseIcon from "@mui/icons-material/Close";
 import {RichiestaRimozioneDaTurnoAPI} from "../../API/RichiestaRimozioneDaTurnoAPI";
 
 
-const TemporaryDrawerRetirement = ({request, shifts, users}) => {
+const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
   const [open, setOpen] = useState(false);
   const [selectedReperibile, setSelectedReperibile] = useState(null);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const shift = shifts.find(shift => shift.id === request.idShift);
+  const shift = shifts.find(shift => shift.id === request.idAssegnazioneTurno);
   console.log("Shift:", shift);
 
-  const retiringUser = users.find(user => user.id === request.idUser);
+  const retiringUser = users.find(user => user.id === request.idUtenteRichiedente);
   console.log(retiringUser);
 
   const handleCheckboxChange = (userId) => {
@@ -35,42 +35,45 @@ const TemporaryDrawerRetirement = ({request, shifts, users}) => {
 
     handleClose();
 
-    const params = {
-      idRichiestaRimozioneDaTurno: request.id,
-      idAssegnazioneTurno: request.idShift,
-      idUtenteRichiedente: request.idUser,
+    request = {
+      idRichiestaRimozioneDaTurno: request.idRichiestaRimozioneDaTurno,
+      idAssegnazioneTurno: request.idAssegnazioneTurno,
+      idUtenteRichiedente: request.idUtenteRichiedente,
       idUtenteSostituto: selectedReperibile,
       esito: true,
-      descrizione: request.justification,
+      descrizione: request.descrizione,
       esaminata: true,
-      allegato: request.file
+      allegato: request.allegato
     }
 
-    console.log("Params:", params)
+    console.log("Params:", request)
 
-
-    return richiestaRimozioneDaTurnoAPI.risolviRichiesta(params);
+    updateRequest(request);
+    return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
 
   };
 
   const handleReject = () => {
+    console.log("REJECT")
     handleClose();
 
-    const params = {
-      idRichiestaRimozioneDaTurno: request.id,
-      idAssegnazioneTurno: request.idShift,
-      idUtenteRichiedente: request.idUser,
+    console.log("[PROVA]",request);
+
+    request = {
+      idRichiestaRimozioneDaTurno: request.idRichiestaRimozioneDaTurno,
+      idAssegnazioneTurno: request.idAssegnazioneTurno,
+      idUtenteRichiedente: request.idUtenteRichiedente,
       idUtenteSostituto: null,
       esito: false,
-      descrizione: request.justification,
+      descrizione: request.descrizione,
       esaminata: true,
-      allegato: request.file
+      allegato: request.allegato
     }
 
-    console.log("Params:", params)
+    console.log("Params:", request)
 
-
-    return richiestaRimozioneDaTurnoAPI.risolviRichiesta(params);
+    updateRequest(request);
+    return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
   };
 
   return (

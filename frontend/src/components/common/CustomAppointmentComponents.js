@@ -86,12 +86,12 @@ export const Content = ({
   useEffect(() => {
     const checkPendingRequest = async () => {
       try {
+        console.log("[PROVA] Id del turno:", appointmentData.id);
         const result = await checkRequests(appointmentData.id);
 
         if (result === -1) {
           setHasPendingRequest(false);
         } else {
-          console.log("Risultato:", result);
           setHasPendingRequest(true);
           setRetiredUser(result);
         }
@@ -359,7 +359,7 @@ export class AppointmentContent extends React.Component{
     if (this.state.attore !== "PIANIFICATORE") {
       appointmentStyle = {backgroundColor: '#4db6ac'}
     } else {
-      let pendingRequestExists = this.state.requests.some(request => request.idShift === this.state.data.id);
+      let pendingRequestExists = this.state.requests.some(request => request.idAssegnazioneTurno === this.state.data.id);
 
       if (pendingRequestExists) {
         appointmentStyle = {backgroundColor: 'red'}
