@@ -2,18 +2,15 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
-import org.cswteams.ms3.entity.Shift;
-import org.cswteams.ms3.entity.category.*;
-import org.cswteams.ms3.entity.doctor.*;
-import org.cswteams.ms3.entity.policy.ConditionPolicy;
-import org.cswteams.ms3.entity.policy.RotationPolicy;
-import org.cswteams.ms3.entity.policy.SpecializationPolicy;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
+import org.cswteams.ms3.entity.scocciature.ScocciaturaVacanza;
+import org.cswteams.ms3.entity.vincoli.VincoloMaxOrePeriodo;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.vincoli.*;
 import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.TurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component()
@@ -46,16 +44,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private ServizioDao servizioDao;
 
     @Autowired
-    private PermanentConditionDao permanentConditionDao;
+    private CategoriaUtenteDao categoriaUtenteDao;
 
     @Autowired
-    private TemporaryConditionDAO temporaryConditionDao;
-
-    @Autowired
-    private RotationDao rotationDao;
-
-    @Autowired
-    private SpecializationDao specializationDao;
+    private CategorieDao categoriaDao;
 
     @Autowired
     private IHolidayController holidayController;
@@ -84,7 +76,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
          */
         if (utenteDao.count() == 0) {
             populateDB();
-            //registerConstraints();
+            registerConstraints();
             registerScocciature();
         }
         
@@ -145,7 +137,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             }
         }
     }
-/*
+
     private void registerConstraints(){
 
         ConfigVincoli configVincoli;
@@ -194,7 +186,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             vincolo.setDescrizione("Vincolo massimo periodo consecutivo per categoria "+config.getCategoriaVincolata().getNome());
             vincoloDao.saveAndFlush(vincolo);
         }
-        vincolo1.setDescrizione("Vincolo Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
+        vincolo1.setDescrizione("Vincolo Turno Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
         vincolo2.setDescrizione("Vincolo massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
         vincolo4.setDescrizione("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
         vincolo5.setDescrizione("Vincolo ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
@@ -209,120 +201,134 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloDao.saveAndFlush(vincolo6);
 
         List<Vincolo> vincoli = vincoloDao.findByType("VincoloMaxPeriodoConsecutivo");
+        System.out.println("ciao");
     }
-*/
+
 
     private void populateDB() throws TurnoException {
 
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-        // Condition may be structure specific TODO: Ask if it is needed a configuration file for that
-        PermanentCondition over62 = new PermanentCondition("OVER_62");
-        TemporaryCondition pregnant = new TemporaryCondition("INCINTA", LocalDate.now().toEpochDay(),LocalDate.now().plusMonths(9).toEpochDay());
-        TemporaryCondition maternity = new TemporaryCondition("IN_MATERNITA'",LocalDate.now().toEpochDay(),LocalDate.now().plusDays(60).toEpochDay());
-        TemporaryCondition vacation = new TemporaryCondition("IN_FERIE", LocalDate.now().toEpochDay(),LocalDate.now().plusDays(7).toEpochDay());
-        TemporaryCondition sick = new TemporaryCondition("IN_MALATTIA", LocalDate.now().toEpochDay(),LocalDate.now().plusDays(7).toEpochDay());
+        Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
+        Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
+        Categoria categoriaFerie = new Categoria("IN_FERIE", TipoCategoriaEnum.STATO);
+        Categoria categoriaMalattia = new Categoria("IN_MALATTIA", TipoCategoriaEnum.STATO);
 
-        
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE (INCLUSIVE)
-        Specialization cardiologia = new Specialization("CARDIOLOGIA");
-        Specialization oncologia = new Specialization("ONCOLOGIA");
+        Categoria cardiologia = new Categoria("CARDIOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE);
+        Categoria oncologia = new Categoria("ONCOLOGIA", TipoCategoriaEnum.SPECIALIZZAZIONE);
 
         //CREA LA CATEGORIE DI TIPO TURNAZIONE (INCLUSIVE)
-        Structure repartoCardiologia = new Structure("REPARTO CARDIOLOGIA");
-        Structure repartoOncologia = new Structure("REPARTO ONCOLOGIA");
-        Structure ambulatorioCardiologia = new Structure("AMBULATORIO CARDIOLOGIA");
-        Structure ambulatorioOncologia = new Structure("AMBULATORIO ONCOLOGIA");
+        Categoria reparto_cardiologia = new Categoria("REPARTO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE);
+        Categoria reparto_oncologia = new Categoria("REPARTO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE);
+        Categoria ambulatorio_cardiologia = new Categoria("AMBULATORIO CARDIOLOGIA", TipoCategoriaEnum.TURNAZIONE);
+        Categoria ambulatorio_oncologia = new Categoria("AMBULATORIO ONCOLOGIA", TipoCategoriaEnum.TURNAZIONE);
 
-        // Save in persistence all possible conditions
-        temporaryConditionDao.save(vacation);
-        permanentConditionDao.save(over62);
-        temporaryConditionDao.save(pregnant);
-        temporaryConditionDao.save(sick);
-        temporaryConditionDao.save(maternity);
+        categoriaDao.save(categoriaFerie);
+        categoriaDao.save(categoriaOVER62);
+        categoriaDao.save(categoriaIncinta);
+        categoriaDao.save(categoriaMalattia);
+        categoriaDao.save(cardiologia);
+        categoriaDao.save(oncologia);
+        categoriaDao.save(reparto_cardiologia);
+        categoriaDao.save(reparto_oncologia);
+        categoriaDao.save(ambulatorio_cardiologia);
+        categoriaDao.save(ambulatorio_oncologia);
 
-        // Save in persistence all possible specialization
-        specializationDao.save(cardiologia);
-        specializationDao.save(oncologia);
 
-        // Save in persistence all possible rotations
-        rotationDao.save(repartoCardiologia);
-        rotationDao.save(repartoOncologia);
-        rotationDao.save(ambulatorioCardiologia);
-        rotationDao.save(ambulatorioOncologia);
+        //Creo categorie stato per un utente specifico
+        CategoriaUtente categoriaOver62 = new CategoriaUtente(categoriaOVER62,LocalDate.of(2022,3,7), LocalDate.now().plusDays(1000));
+        categoriaUtenteDao.save(categoriaOver62);
+        CategoriaUtente ferie = new CategoriaUtente(categoriaFerie,LocalDate.now().minusDays(70), LocalDate.now().plusDays(7));
+        categoriaUtenteDao.save(ferie);
+        CategoriaUtente cardiologo = new CategoriaUtente(cardiologia,LocalDate.now().minusDays(70), LocalDate.now().plusDays(10000));
+        categoriaUtenteDao.save(cardiologo);
+        CategoriaUtente oncologo = new CategoriaUtente(oncologia,LocalDate.now().minusDays(70), LocalDate.now().plusDays(10000));
+        categoriaUtenteDao.save(oncologo);
+
+
+        CategoriaUtente repartoCardiologia = new CategoriaUtente(reparto_cardiologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(repartoCardiologia);
+        CategoriaUtente ambulatorioCardiologia = new CategoriaUtente(ambulatorio_cardiologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(ambulatorioCardiologia);
+        CategoriaUtente repartoOncologia = new CategoriaUtente(reparto_oncologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(repartoOncologia);
+        CategoriaUtente ambulatorioOncologia = new CategoriaUtente(ambulatorio_oncologia, LocalDate.now().minusMonths(2),LocalDate.now().plusMonths(2));
+        categoriaUtenteDao.save(ambulatorioOncologia);
+
 
 
         //Creo utenti
-        Doctor u6 = new Doctor("Giovanni","Cantone", "GVNCTN48M22D429*", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", "passw", RuoloEnum.STRUTTURATO , AttoreEnum.PIANIFICATORE);
-        u6.getPermanentConditions().add(over62);
-        u6.getTemporaryConditions().add(vacation);
+        Utente u6 = new Utente("Giovanni","Cantone", "GVNCTN48M22D429*", LocalDate.of(1960, 3, 7),"giovannicantone@gmail.com", "passw", RuoloEnum.STRUTTURATO , AttoreEnum.PIANIFICATORE);
+        u6.getStato().add(categoriaOver62);
+        u6.getStato().add(ferie);
         // Aggiungo la specializzazione
-        u6.getSpecializations().add(cardiologia);
-        Doctor u1 = new Doctor("Martina","Salvati", "SLVMTN97T56H501*", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.CONFIGURATORE);
-        u1.getStructures().add(repartoCardiologia);
-        Doctor u2 = new Doctor("Domenico","Verde", "VRDDMC96H16H501*", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u2.getStructures().add(repartoCardiologia);
-        Doctor u3 = new Doctor("Federica","Villani", "VLNFDR98P03H501*", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u6.getSpecializzazioni().add(cardiologo);
+        Utente u1 = new Utente("Martina","Salvati", "SLVMTN97T56H501*", LocalDate.of(1997, 3, 14),"salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.CONFIGURATORE);
+        u1.getTurnazioni().add(repartoCardiologia);
+        Utente u2 = new Utente("Domenico","Verde", "VRDDMC96H16H501*", LocalDate.of(1997, 5, 23),"domenicoverde@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u2.getTurnazioni().add(repartoCardiologia);
+        Utente u3 = new Utente("Federica","Villani", "VLNFDR98P03H501*", LocalDate.of(1998, 2, 12),"federicavillani@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
         //u3.getTurnazioni().add(repartoCardiologia);
-        Doctor u4 = new Doctor("Daniele","Colavecchi", "CLVDNL82C21H501*", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u4.getSpecializations().add(cardiologia);
-        Doctor u5 = new Doctor("Daniele","La Prova", "LPVDNL98R27H501*", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u5.getSpecializations().add(oncologia);
-        Doctor u7 = new Doctor("Luca","Fiscariello", "FSCLCU98L07B581*", LocalDate.of(1998, 8, 12),"lucafiscariello@gmail.com", "passw",RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u7.getSpecializations().add(oncologia);
-        Doctor u8 = new Doctor("Manuel","Mastrofini", "MSTMNL80M20H501*", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u8.getSpecializations().add(cardiologia);
-        Doctor u9 = new Doctor("Giulia","Cantone", "CTNGLI78E44H501*", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u9.getStructures().add(repartoOncologia);
-        Doctor u10 = new Doctor("Fabio","Valenzi", "VLZFBA90A03H501*", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u10.getStructures().add(repartoOncologia);
-        Doctor u11 = new Doctor("Giada","Rossi", "RSSGDI92H68H501*", LocalDate.of(1997, 3, 14),"giada.rossi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO ,AttoreEnum.UTENTE);
-        u11.getStructures().add(repartoOncologia);
-        Doctor u12 = new Doctor("Camilla","Verdi", "VRDCML95B41H501*", LocalDate.of(1997, 5, 23),"camilla.verdi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u12.getStructures().add(repartoCardiologia);
-        Doctor u13 = new Doctor("Federica","Pollini", "PLLFDR94S70H501*", LocalDate.of(1998, 2, 12),"federica.pollini@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u13.getStructures().add(repartoCardiologia);
-        Doctor u14 = new Doctor("Claudia","Rossi", "RSSCLD91C52H501*", LocalDate.of(1982, 7, 6),"claudia.rossi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u14.getSpecializations().add(oncologia);
-        Doctor u15 = new Doctor("Giorgio","Bianchi", "BNCGRG88E21H501*", LocalDate.of(1993, 2, 12),"giorgio.bianchi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u15.getSpecializations().add(oncologia);
-        Doctor u16 = new Doctor("Claudio","Gialli", "GLLCLD89B14H501*", LocalDate.of(1998, 8, 12),"claudia.gialli@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u16.getSpecializations().add(cardiologia);
-        Doctor u17 = new Doctor("Filippo","Neri", "NREFLP92R24H501*", LocalDate.of(1998, 2, 12),"filippo.neru@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u17.getStructures().add(ambulatorioCardiologia);
-        Doctor u18 = new Doctor("Vincenzo","Grassi", "GRSVNC60A19H501*", LocalDate.of(1998, 8, 12),"vincenzo.grassi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u18.getSpecializations().add(oncologia);
-        Doctor u19 = new Doctor("Diana","Pasquali", "PSQDNI97D22H501*", LocalDate.of(1998, 2, 12),"diana.pasquali@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u19.getStructures().add(ambulatorioCardiologia);
-        Doctor u20 = new Doctor("Francesco","Lo Presti", "LPSFRC66T05G071*", LocalDate.of(1998, 8, 12),"francesco.lopresti@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u20.getStructures().add(ambulatorioOncologia);
-        Doctor u21 = new Doctor("Andrea","Pepe", "PPENDR99M05I150*", LocalDate.of(1998, 8, 12),"andrea.pepe@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u21.getStructures().add(ambulatorioOncologia);
-        Doctor u22 = new Doctor("Matteo","Fanfarillo", "FNFMTT99E10A123E", LocalDate.of(1999, 9, 10),"matteo.fanfarillo99@gmail.com","passw", RuoloEnum.STRUTTURATO,AttoreEnum.PIANIFICATORE);
-        u22.getStructures().add(repartoOncologia);
-        Doctor u23 = new Doctor("Matteo","Ciccaglione", "CCCMTT99H15C439*", LocalDate.of(1998, 8, 12),"matteo.ciccaglione@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u23.getStructures().add(repartoOncologia);
-        Doctor u24 = new Doctor("Vittoria","De Nitto", "DNTVTT60C59E612*", LocalDate.of(1998, 8, 12),"vittoria.denitto@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u24.getSpecializations().add(oncologia);
-        Doctor u25 = new Doctor("Valeria","Cardellini", "CRDVLR68L44H501*", LocalDate.of(1998, 8, 12),"valeria.cardellini@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u25.getSpecializations().add(oncologia);
-        Doctor u26 = new Doctor("Roberto","Monte", "MNTRBT69R01D666*", LocalDate.of(1998, 8, 12),"roberto.monte@gmail.com","passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u26.getSpecializations().add(cardiologia);
-        Doctor u27 = new Doctor("Giovanni","Saggio", "SGGGVN65D30H501*", LocalDate.of(1998, 8, 12),"giovanni.saggio@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
-        u27.getSpecializations().add(cardiologia);
-        Doctor u28 = new Doctor("Livia","Simoncini", "SMNLVI98L17H501*", LocalDate.of(1998, 8, 12),"livia.simoncini@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u28.getStructures().add(repartoCardiologia);
-        Doctor u29 = new Doctor("Ludovico","Zarrelli", "ZRRLDV99E03I370*", LocalDate.of(1998, 8, 12),"ludovico.zerrelli@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u29.getStructures().add(repartoCardiologia);
-        Doctor u30 = new Doctor("Alessandro","Montenegro", "MNTLSS96P20H501*", LocalDate.of(1998, 8, 12),"alessandro.montenegro@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u30.getStructures().add(ambulatorioOncologia);
-        Doctor u31 = new Doctor("Daniel","Lungu", "LNGDNL98T04H501*", LocalDate.of(1998, 8, 12),"daniel.lungu@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u31.getStructures().add(repartoCardiologia);
-        Doctor u32 = new Doctor("Andrea","Tosti", "TSTNDR97A10H501*", LocalDate.of(1998, 8, 12),"andrea.tosti@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u32.getStructures().add(repartoCardiologia);
-        Doctor u33 = new Doctor("Giorgio","Pesce", "PSCGRG98E08H501*", LocalDate.of(1998, 8, 12),"giorgia.pesce@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u33.getStructures().add(repartoOncologia);
-        Doctor u34 = new Doctor("Valerio","Palmerini", "PLMVLR93B12H501*", LocalDate.of(1998, 8, 12),"valerio.palmerini@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
-        u34.getStructures().add(repartoOncologia);
+        Utente u4 = new Utente("Daniele","Colavecchi", "CLVDNL82C21H501*", LocalDate.of(1982, 7, 6),"danielecolavecchi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u4.getSpecializzazioni().add(cardiologo);
+        Utente u5 = new Utente("Daniele","La Prova", "LPVDNL98R27H501*", LocalDate.of(1998, 2, 12),"danielelaprova@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u5.getSpecializzazioni().add(oncologo);
+        Utente u7 = new Utente("Luca","Fiscariello", "FSCLCU98L07B581*", LocalDate.of(1998, 8, 12),"lucafiscariello@gmail.com", "passw",RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u7.getSpecializzazioni().add(oncologo);
+        Utente u8 = new Utente("Manuel","Mastrofini", "MSTMNL80M20H501*", LocalDate.of(1988, 5, 4),"manuelmastrofini@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u8.getSpecializzazioni().add(cardiologo);
+        Utente u9 = new Utente("Giulia","Cantone", "CTNGLI78E44H501*", LocalDate.of(1991, 2, 12),"giuliacantone@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u9.getTurnazioni().add(repartoOncologia);
+        Utente u10 = new Utente("Fabio","Valenzi", "VLZFBA90A03H501*", LocalDate.of(1989, 12, 6),"fabiovalenzi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u10.getTurnazioni().add(repartoOncologia);
+        Utente u11 = new Utente("Giada","Rossi", "RSSGDI92H68H501*", LocalDate.of(1997, 3, 14),"giada.rossi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO ,AttoreEnum.UTENTE);
+        u11.getTurnazioni().add(repartoOncologia);
+        Utente u12 = new Utente("Camilla","Verdi", "VRDCML95B41H501*", LocalDate.of(1997, 5, 23),"camilla.verdi@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u12.getTurnazioni().add(repartoCardiologia);
+        Utente u13 = new Utente("Federica","Pollini", "PLLFDR94S70H501*", LocalDate.of(1998, 2, 12),"federica.pollini@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u13.getTurnazioni().add(repartoCardiologia);
+        Utente u14 = new Utente("Claudia","Rossi", "RSSCLD91C52H501*", LocalDate.of(1982, 7, 6),"claudia.rossi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u14.getSpecializzazioni().add(oncologo);
+        Utente u15 = new Utente("Giorgio","Bianchi", "BNCGRG88E21H501*", LocalDate.of(1993, 2, 12),"giorgio.bianchi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u15.getSpecializzazioni().add(oncologo);
+        Utente u16 = new Utente("Claudio","Gialli", "GLLCLD89B14H501*", LocalDate.of(1998, 8, 12),"claudia.gialli@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u16.getSpecializzazioni().add(cardiologo);
+        Utente u17 = new Utente("Filippo","Neri", "NREFLP92R24H501*", LocalDate.of(1998, 2, 12),"filippo.neru@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u17.getTurnazioni().add(ambulatorioCardiologia);
+        Utente u18 = new Utente("Vincenzo","Grassi", "GRSVNC60A19H501*", LocalDate.of(1998, 8, 12),"vincenzo.grassi@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u18.getSpecializzazioni().add(oncologo);
+        Utente u19 = new Utente("Diana","Pasquali", "PSQDNI97D22H501*", LocalDate.of(1998, 2, 12),"diana.pasquali@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u19.getTurnazioni().add(ambulatorioCardiologia);
+        Utente u20 = new Utente("Francesco","Lo Presti", "LPSFRC66T05G071*", LocalDate.of(1998, 8, 12),"francesco.lopresti@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u20.getTurnazioni().add(ambulatorioOncologia);
+        Utente u21 = new Utente("Andrea","Pepe", "PPENDR99M05I150*", LocalDate.of(1998, 8, 12),"andrea.pepe@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u21.getTurnazioni().add(ambulatorioOncologia);
+        Utente u22 = new Utente("Matteo","Fanfarillo", "FNFMTT99E10A123E", LocalDate.of(1999, 9, 10),"matteo.fanfarillo99@gmail.com","passw", RuoloEnum.STRUTTURATO,AttoreEnum.PIANIFICATORE);
+        u22.getTurnazioni().add(repartoOncologia);
+        Utente u23 = new Utente("Matteo","Ciccaglione", "CCCMTT99H15C439*", LocalDate.of(1998, 8, 12),"matteo.ciccaglione@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u23.getTurnazioni().add(repartoOncologia);
+        Utente u24 = new Utente("Vittoria","De Nitto", "DNTVTT60C59E612*", LocalDate.of(1998, 8, 12),"vittoria.denitto@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u24.getSpecializzazioni().add(oncologo);
+        Utente u25 = new Utente("Valeria","Cardellini", "CRDVLR68L44H501*", LocalDate.of(1998, 8, 12),"valeria.cardellini@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u25.getSpecializzazioni().add(oncologo);
+        Utente u26 = new Utente("Roberto","Monte", "MNTRBT69R01D666*", LocalDate.of(1998, 8, 12),"roberto.monte@gmail.com","passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u26.getSpecializzazioni().add(cardiologo);
+        Utente u27 = new Utente("Giovanni","Saggio", "SGGGVN65D30H501*", LocalDate.of(1998, 8, 12),"giovanni.saggio@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE);
+        u27.getSpecializzazioni().add(cardiologo);
+        Utente u28 = new Utente("Livia","Simoncini", "SMNLVI98L17H501*", LocalDate.of(1998, 8, 12),"livia.simoncini@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u28.getTurnazioni().add(repartoCardiologia);
+        Utente u29 = new Utente("Ludovico","Zarrelli", "ZRRLDV99E03I370*", LocalDate.of(1998, 8, 12),"ludovico.zerrelli@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u29.getTurnazioni().add(repartoCardiologia);
+        Utente u30 = new Utente("Alessandro","Montenegro", "MNTLSS96P20H501*", LocalDate.of(1998, 8, 12),"alessandro.montenegro@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u30.getTurnazioni().add(ambulatorioOncologia);
+        Utente u31 = new Utente("Daniel","Lungu", "LNGDNL98T04H501*", LocalDate.of(1998, 8, 12),"daniel.lungu@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u31.getTurnazioni().add(repartoCardiologia);
+        Utente u32 = new Utente("Andrea","Tosti", "TSTNDR97A10H501*", LocalDate.of(1998, 8, 12),"andrea.tosti@gmail.com","passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u32.getTurnazioni().add(repartoCardiologia);
+        Utente u33 = new Utente("Giorgio","Pesce", "PSCGRG98E08H501*", LocalDate.of(1998, 8, 12),"giorgia.pesce@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u33.getTurnazioni().add(repartoOncologia);
+        Utente u34 = new Utente("Valerio","Palmerini", "PLMVLR93B12H501*", LocalDate.of(1998, 8, 12),"valerio.palmerini@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO,AttoreEnum.UTENTE);
+        u34.getTurnazioni().add(repartoOncologia);
 
         u6 = utenteDao.saveAndFlush(u6);
         u7 = utenteDao.saveAndFlush(u7);
@@ -371,64 +377,46 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         servizioDao.save(servizio2);
         servizioDao.save(servizio1);
 
-        Shift t1 = new Shift(LocalTime.of(14, 0), Duration.ofHours(8), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
-        t1.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(null,sick, t1, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,vacation, t1,  UserCategoryPolicyValue.EXCLUDE)
+        Turno t1 = new Turno(LocalTime.of(14, 0), Duration.ofHours(8), servizio1, MansioneEnum.GUARDIA, TipologiaTurno.POMERIDIANO,true);
+        t1.setCategoryPolicies(Arrays.asList(
+                new UserCategoryPolicy(categoriaMalattia, t1, UserCategoryPolicyValue.EXCLUDE),
+                new UserCategoryPolicy(categoriaFerie, t1,  UserCategoryPolicyValue.EXCLUDE)
         ));
 
-        Shift t2 = new Shift(LocalTime.of(14, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
-        t2.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(null,sick, t2, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,vacation, t2,  UserCategoryPolicyValue.EXCLUDE)
+        Turno t2 = new Turno(LocalTime.of(14, 0), Duration.ofHours(6), servizio1, MansioneEnum.REPARTO, TipologiaTurno.POMERIDIANO,false);
+        t2.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t2, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t2,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(reparto_cardiologia, t2, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        t2.setRotationPolicies(List.of(
-                new RotationPolicy(repartoCardiologia, t2, UserCategoryPolicyValue.INCLUDE)
+        Turno t3 = new Turno(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,false);
+        t3.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t3, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t3,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaIncinta, t3,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaOVER62, t3,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(reparto_cardiologia, t3, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        Shift t3 = new Shift(LocalTime.of(20, 0), Duration.ofHours(12), servizio1, MansioneEnum.REPARTO, TipologiaTurno.NOTTURNO,false);
-        t3.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(null,sick, t3, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,vacation, t3,  UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,pregnant, t3,  UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(over62, t3,  UserCategoryPolicyValue.EXCLUDE)
+        Turno t5 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, false);
+        t5.setCategoryPolicies(Arrays.asList(
+            new UserCategoryPolicy(categoriaMalattia, t5, UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(categoriaFerie, t5,  UserCategoryPolicyValue.EXCLUDE),
+            new UserCategoryPolicy(cardiologia, t5, UserCategoryPolicyValue.INCLUDE),
+            new UserCategoryPolicy(ambulatorio_cardiologia, t5, UserCategoryPolicyValue.INCLUDE)
         ));
 
-        t3.setRotationPolicies(List.of(
-                new RotationPolicy(repartoCardiologia, t3, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-        Shift t5 = new Shift(LocalTime.of(10, 0), Duration.ofHours(2), servizio1, MansioneEnum.AMBULATORIO,TipologiaTurno.MATTUTINO, false);
-        t5.setConditionPolicies(Arrays.asList(
-            new ConditionPolicy(null,sick, t5, UserCategoryPolicyValue.EXCLUDE),
-            new ConditionPolicy(null,vacation, t5,  UserCategoryPolicyValue.EXCLUDE)
-        ));
-
-        t5.setSpecializationPolicies(List.of(
-                new SpecializationPolicy(cardiologia, t5, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-        t5.setRotationPolicies(List.of(
-                new RotationPolicy(ambulatorioCardiologia, t5, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-        Shift t6 = new Shift(LocalTime.of(10, 0), Duration.ofHours(2), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
-        t6.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(null,sick, t6, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,vacation, t6,  UserCategoryPolicyValue.EXCLUDE)
-        ));
-
-        t6.setSpecializationPolicies(List.of(
-                new SpecializationPolicy(oncologia, t6, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-        t6.setRotationPolicies(List.of(
-                new RotationPolicy(ambulatorioOncologia, t6, UserCategoryPolicyValue.INCLUDE)
+        Turno t6 = new Turno(LocalTime.of(10, 0), Duration.ofHours(2), servizio2, MansioneEnum.AMBULATORIO, TipologiaTurno.MATTUTINO, false);
+        t6.setCategoryPolicies(Arrays.asList(
+                new UserCategoryPolicy(categoriaMalattia, t6, UserCategoryPolicyValue.EXCLUDE),
+                new UserCategoryPolicy(categoriaFerie, t6,  UserCategoryPolicyValue.EXCLUDE),
+                new UserCategoryPolicy(oncologia, t6, UserCategoryPolicyValue.INCLUDE),
+                new UserCategoryPolicy(ambulatorio_oncologia, t6, UserCategoryPolicyValue.INCLUDE)
         ));
 
         // Creazione del turno in sala operatoria in cardiologia ogni lunedì
-        Shift salaOpCardio = new Shift(LocalTime.of(10, 0), Duration.ofHours(13).plusMinutes(59), servizio1, MansioneEnum.SALA_OPERATORIA, TipologiaTurno.MATTUTINO, false);
+        Turno salaOpCardio = new Turno(LocalTime.of(10, 0), Duration.ofHours(13).plusMinutes(59), servizio1, MansioneEnum.SALA_OPERATORIA, TipologiaTurno.MATTUTINO, false);
         GiorniDellaSettimanaBitMask bitmask = new GiorniDellaSettimanaBitMask();
         bitmask.disableAllDays();
         salaOpCardio.setGiorniDiValidità(bitmask.addDayOfWeek(DayOfWeek.MONDAY));

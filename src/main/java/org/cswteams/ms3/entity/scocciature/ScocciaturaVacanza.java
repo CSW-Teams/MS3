@@ -3,7 +3,7 @@ package org.cswteams.ms3.entity.scocciature;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.Holiday;
-import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.enums.TimeSlot;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -23,25 +23,25 @@ public class ScocciaturaVacanza extends Scocciatura {
     @ManyToOne
     @JoinColumn(name = "vacanza_id")
     private Holiday vacanza;
-    private TipologiaTurno tipologiaTurno;
+    private TimeSlot timeSlot;
 
     public ScocciaturaVacanza() {
     }
 
-    public ScocciaturaVacanza(int peso, Holiday vacanza, TipologiaTurno tipologiaTurno) {
+    public ScocciaturaVacanza(int peso, Holiday vacanza, TimeSlot timeSlot) {
         this.peso = peso;
         this.vacanza = vacanza;
-        this.tipologiaTurno = tipologiaTurno;
+        this.timeSlot = timeSlot;
     }
 
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        TipologiaTurno tipologiaTurno = contesto.getConcreteShift().getShift().getTipologiaTurno();
-        LocalDate data = contesto.getConcreteShift().getData();
+        TimeSlot timeSlot = contesto.getConcreteShift().getShift().getTimeSlot();
+        //LocalDate data = contesto.getConcreteShift().getDate();
 
-        if(data.equals(this.vacanza.getStartDate()) && tipologiaTurno.equals(this.tipologiaTurno))
-            return this.peso;
+       // if(data.equals(this.vacanza.getStartDate()) && timeSlot.equals(this.timeSlot))
+       //     return this.peso;
 
         return 0;
     }

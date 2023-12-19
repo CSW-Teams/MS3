@@ -2,7 +2,7 @@ package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.cswteams.ms3.entity.Desiderata;
+import org.cswteams.ms3.entity.Preference;
 
 import javax.persistence.Entity;
 import java.util.List;
@@ -28,10 +28,10 @@ public class ScocciaturaDesiderata extends Scocciatura {
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        List<Desiderata> desiderate = contesto.getUserScheduleState().getDoctor().getDesiderataList();
+        List<Preference> desiderate = contesto.getDoctorScheduleState().getDoctor().getPreferenceList();
 
-        for(Desiderata desiderata: desiderate){
-            if(desiderata.getData().equals(contesto.getConcreteShift().getData()))
+        for(Preference preference : desiderate){
+            if(preference.getDate().equals(contesto.getConcreteShift().getDate()))
                 return peso;
         }
 
