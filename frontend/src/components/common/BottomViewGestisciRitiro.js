@@ -54,9 +54,12 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
   };
 
   const handleReject = () => {
+    console.log("REJECT")
     handleClose();
 
-    const request = {
+    console.log("[PROVA]",request);
+
+    request = {
       idRichiestaRimozioneDaTurno: request.idRichiestaRimozioneDaTurno,
       idAssegnazioneTurno: request.idAssegnazioneTurno,
       idUtenteRichiedente: request.idUtenteRichiedente,

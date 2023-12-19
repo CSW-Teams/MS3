@@ -52,6 +52,12 @@ const FilesUpload = ({type, request, updateRequest}) => {
         "Impossibile caricare il file: " + file.name+ "!",
       ]));
     }
+
+    /* todo questo è stato messo solo per fare in modo che la tabella si aggiorni dicendo che l'allegato è presente, va gestito meglio quando verrà implementato il download dell'allegato
+    *   probabilmente conviene mettere un booleano (tipo allegatoPresente), e recuperare il vero allegato nella fase di download
+    * */
+    request.allegato = true;
+    updateRequest(request);
   };
 
   const uploadFiles = () => {
@@ -74,6 +80,13 @@ const FilesUpload = ({type, request, updateRequest}) => {
 
 
     setMessage([]);
+
+    /* todo questo è stato messo solo per fare in modo che la tabella si aggiorni dicendo che l'allegato è presente, va gestito meglio quando verrà implementato il download dell'allegato
+    *   probabilmente conviene mettere un booleano (tipo allegatoPresente), e recuperare il vero allegato nella fase di download
+    * */
+    request.allegato = true;
+    updateRequest(request);
+
   };
 
   return (
