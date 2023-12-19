@@ -18,6 +18,7 @@ import EmptyLayout from "./layouts/LoginLayout/Empty";
 import ConfigurazioneVincoli from "./views/configuratore/ConfigurazioneVincoli";
 import RegistraUtenteView from "./views/configuratore/RegistraUtenteView";
 import RichiesteRitiroView from "./views/utente/RichiesteRitiroView";
+import TurnChangeView from "./views/utente/TurnChangeView";
 
 
 export default [
@@ -87,6 +88,10 @@ export default [
     layout: DefaultLayout,
     component: RichiesteRitiroView
   }
+    path: "/scambio-turni",
+    layout: DefaultLayout,
+    component:  TurnChangeView
+  },
 
 ];
 

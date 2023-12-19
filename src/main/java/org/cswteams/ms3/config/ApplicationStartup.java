@@ -201,7 +201,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloDao.saveAndFlush(vincolo6);
 
         List<Vincolo> vincoli = vincoloDao.findByType("VincoloMaxPeriodoConsecutivo");
-        System.out.println("ciao");
     }
 
 
@@ -457,7 +456,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             line = br.readLine();
         }
         for(List<String> list : data) {
-            String HolidayData = Arrays.asList(list.get(0).split(";")).get(0).toString();
+            String HolidayData = Arrays.asList(list.get(0).split(";")).get(0);
             final String[] HolidayDataS = HolidayData.split("/");
             int year = Integer.parseInt(HolidayDataS[2].replaceAll("[^0-9]", ""));
             int month = Integer.parseInt(HolidayDataS[1].replaceAll("[^0-9]", ""));

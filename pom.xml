@@ -16,7 +16,21 @@
 
 	<properties>
 		<java.version>1.8</java.version>
+		<spring.datasource.url>jdbc:postgresql://localhost:5432/ms3</spring.datasource.url>
+		<spring.datasource.driverClassName>org.postgresql.Driver</spring.datasource.driverClassName>
+		<spring.jpa.database-platform>org.hibernate.dialect.PostgreSQLDialect</spring.jpa.database-platform>
 	</properties>
+
+	<profiles>
+		<profile>
+			<id>h2-tests</id>
+			<properties>
+				<spring.datasource.url>jdbc:h2:mem:ms3</spring.datasource.url>
+				<spring.datasource.driverClassName>org.h2.Driver</spring.datasource.driverClassName>
+				<spring.jpa.database-platform>org.hibernate.dialect.H2Dialect</spring.jpa.database-platform>
+			</properties>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<dependency>
@@ -36,6 +50,12 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
@@ -84,7 +104,10 @@
 			<version>5.6.1</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -102,5 +125,11 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 	</build>
 </project>

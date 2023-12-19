@@ -2,12 +2,12 @@ package org.cswteams.ms3.control.giustificaForzatura;
 
 import org.cswteams.ms3.control.utils.MappaServizio;
 import org.cswteams.ms3.control.utils.MappaUtenti;
-import org.cswteams.ms3.dao.LiberatoriaDao;
 import org.cswteams.ms3.dao.GiustificazioneFozaturaDao;
+import org.cswteams.ms3.dao.LiberatoriaDao;
 import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
-import org.cswteams.ms3.entity.Liberatoria;
 import org.cswteams.ms3.entity.GiustificazioneForzaturaVincoli;
+import org.cswteams.ms3.entity.Liberatoria;
 import org.cswteams.ms3.entity.Utente;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
 
 @Service
 public class ControllerGiustificaForzatura implements IControllerGiustificaForzatura {
@@ -33,7 +32,7 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
     public void saveGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoliDTO) {
         //giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
         Utente giustificatore = utenteDao.findById(Long.parseLong(giustificazioneForzaturaVincoliDTO.getUtenteGiustificatoreId()));
-        GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(),giustificazioneForzaturaVincoliDTO.getTipologiaTurno(), MappaServizio.servizioDTOtoEntity(giustificazioneForzaturaVincoliDTO.getServizio()),LocalDate.of(giustificazioneForzaturaVincoliDTO.getAnno(), giustificazioneForzaturaVincoliDTO.getMese(), giustificazioneForzaturaVincoliDTO.getGiorno()), MappaUtenti.utenteDTOtoEntity(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()), giustificatore);
+        GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(),giustificazioneForzaturaVincoliDTO.getTipologiaTurno(), MappaServizio.servizioDTOtoEntity(giustificazioneForzaturaVincoliDTO.getServizio()), giustificazioneForzaturaVincoliDTO.getGiorno(), MappaUtenti.utenteDTOtoEntity(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()), giustificatore);
         giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
     }
 

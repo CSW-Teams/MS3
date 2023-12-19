@@ -1,7 +1,6 @@
-import { TurnoAPI } from "./TurnoAPI";
-import {blue, red, teal} from "@material-ui/core/colors";
-import { AssignedShift, SchedulableType } from "./Schedulable";
-import { Utente } from "./Utente";
+import {teal} from "@material-ui/core/colors";
+import {AssignedShift} from "./Schedulable";
+import {Utente} from "./Utente";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -12,10 +11,17 @@ export  class AssegnazioneTurnoAPI {
     let turni = [];
 
     for (let i = 0; i < body.length; i++) {
+
+        const inizioEpochMilliseconds = body[i].inizioEpoch*1000
+        const inizioDate = new Date(inizioEpochMilliseconds);
+
+        const fineEpochMilliseconds = body[i].fineEpoch*1000
+        const fineDate = new Date(fineEpochMilliseconds);
+
         let turno = new AssignedShift(
           body[i].mansione + " in " + body[i].servizio.nome,
-          body[i].inizio,
-          body[i].fine,
+          inizioDate,
+          fineDate,
           teal);
         turno.id = body[i].id;
         turno.type ="Assigned"
@@ -95,12 +101,12 @@ export  class AssegnazioneTurnoAPI {
 
     for (let i = 0; i < turni.length; i++) {
       for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
-        if (id == turni[i].utenti_guardia[j]) {
+        if (id === turni[i].utenti_guardia[j]) {
           turni[i].turno ="GUARDIA" ;
         }
       }
       for (let j = 0; j < body[i].utentiReperibili.length; j++) {
-        if (id == turni[i].utenti_reperibili[j]) {
+        if (id === turni[i].utenti_reperibili[j]) {
           turni[i].turno = "REPERIBILITA'";
         }
       }
@@ -125,11 +131,14 @@ export  class AssegnazioneTurnoAPI {
    */
   async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,mansione,forced) {
 
-      let assegnazioneTurno = new Object();
+      let assegnazioneTurno = {};
 
-      assegnazioneTurno.giorno = data.$d.getDate();
-      assegnazioneTurno.mese = data.$d.getMonth()+1;
-      assegnazioneTurno.anno = data.$d.getFullYear();
+      const giorno = data.$d.getDate();
+      const mese = data.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
+      const anno = data.$d.getFullYear();
+
+      // Creating an ISO 8601 formatted date string
+      assegnazioneTurno.giorno = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
 
       assegnazioneTurno.forced = forced;
 
@@ -154,7 +163,7 @@ export  class AssegnazioneTurnoAPI {
 
   async aggiornaAssegnazioneTurno(appointmentChanged,changes,idLoggato) {
 
-    let assegnazioneModificata = new Object();
+    let assegnazioneModificata = {};
     assegnazioneModificata.idAssegnazione = appointmentChanged.id;
     assegnazioneModificata.utenti_guardia = changes.utenti_guardia_id
     assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili_id
@@ -168,39 +177,23 @@ export  class AssegnazioneTurnoAPI {
 
     console.log(assegnazioneModificata)
 
-    const response = await fetch('/api/assegnazioneturni/',requestOptions);
-    return response;
+    return await fetch('/api/assegnazioneturni/', requestOptions);
 
 }
 
-async richiediRinunciaTurno(utenteCambio,assegnazione,idLoggato) {
-  let assegnazioneConModifiche = new Object()
-  assegnazioneConModifiche.idAssegnazione = assegnazione.id;
-  assegnazioneConModifiche.utenti_guardia = []
-  assegnazioneConModifiche.utenti_reperibili = []
-  assegnazioneConModifiche.utenteModificatoreId = idLoggato;
-
-  for(let i =0; i<assegnazione.utenti_guardia.length; i++){
-    assegnazioneConModifiche.utenti_guardia[i] = assegnazione.utenti_guardia_id[i]
-    if(assegnazione.utenti_guardia_id[i] == idLoggato)
-      assegnazioneConModifiche.utenti_guardia[i] = utenteCambio.id;
-  }
-
-  for(let i =0; i<assegnazione.utenti_reperibili.length; i++){
-    assegnazioneConModifiche.utenti_reperibili[i] = assegnazione.utenti_reperibili_id[i]
-    if(assegnazione.utenti_reperibili_id[i] == idLoggato)
-      assegnazioneConModifiche.utenti_reperibili[i] = utenteCambio.id;
-  }
+async requestTurnChange(utenteCambio, assegnazione, idLoggato) {
+  let turnChangeRequest = {}
+  turnChangeRequest.concreteShiftId = assegnazione.id;
+  turnChangeRequest.senderId = idLoggato;
+  turnChangeRequest.receiverId = utenteCambio.id;
 
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(assegnazioneConModifiche)
+    body: JSON.stringify(turnChangeRequest)
   };
 
-  const response = await fetch('/api/assegnazioneturni/',requestOptions);
-  return response;
-
+  return await fetch('/api/assegnazioneturni/scambio', requestOptions);
 }
 
 
@@ -229,15 +222,21 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
 
     async postGenerationSchedule(dataStart,dataEnd) {
 
-      let requestGeneration = new Object();
+      let requestGeneration = {};
 
-      requestGeneration.giornoInizio = dataStart.$d.getDate();
-      requestGeneration.meseInizio = dataStart.$d.getMonth()+1;
-      requestGeneration.annoInizio = dataStart.$d.getFullYear();
+      const giornoInizio = dataStart.$d.getDate();
+      const meseInizio = dataStart.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
+      const annoInizio = dataStart.$d.getFullYear();
 
-      requestGeneration.giornoFine= dataEnd.$d.getDate();
-      requestGeneration.meseFine = dataEnd.$d.getMonth()+1;
-      requestGeneration.annoFine = dataEnd.$d.getFullYear();
+      // Creating an ISO 8601 formatted date string
+      requestGeneration.giornoInizio = `${annoInizio}-${meseInizio.toString().padStart(2, '0')}-${giornoInizio.toString().padStart(2, '0')}`;
+
+      const giornoFine = dataEnd.$d.getDate();
+      const meseFine = dataEnd.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
+      const annoFine = dataEnd.$d.getFullYear();
+
+      // Creating an ISO 8601 formatted date string
+      requestGeneration.giornoFine = `${annoFine}-${meseFine.toString().padStart(2, '0')}-${giornoFine.toString().padStart(2, '0')}`;
 
       const requestOptions = {
         method: 'POST',

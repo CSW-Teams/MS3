@@ -4,14 +4,13 @@ import org.cswteams.ms3.dto.DesiderataDTO;
 import org.cswteams.ms3.entity.Desiderata;
 import org.cswteams.ms3.entity.Utente;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MappaDesiderata {
 
     public static Desiderata desiderataDtoToEntity(DesiderataDTO dto, Utente utente){
-        return new Desiderata(LocalDate.of(dto.getAnno(), dto.getMese(), dto.getGiorno()), dto.getTipologieTurni(), utente);
+        return new Desiderata(dto.getGiorno(), dto.getTipologieTurni(), utente);
     }
 
     public static List<Desiderata> desiderataDtoToEntity(List<DesiderataDTO> dtos, Utente utente){
@@ -23,7 +22,7 @@ public class MappaDesiderata {
     }
 
     public static DesiderataDTO desiderataToDto(Desiderata entity){
-        return new DesiderataDTO(entity.getId(), entity.getData().getDayOfMonth(), entity.getData().getMonthValue(),entity.getData().getYear(), entity.getTipologieTurnoCoinvolte());
+        return new DesiderataDTO(entity.getId(), entity.getData(), entity.getTipologieTurnoCoinvolte());
     }
 
     public static List<DesiderataDTO> desiderataToDto(List<Desiderata> entities){

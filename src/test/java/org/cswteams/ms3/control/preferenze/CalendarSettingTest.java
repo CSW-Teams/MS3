@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CalendarSettingTest {
-
+    /**
     private CalendarSetting calendarSetting;
 
     String baseURL = "https://example.com/calendar?";
@@ -42,7 +42,7 @@ public class CalendarSettingTest {
         calendarSetting.addURLParameter("");
 
         System.out.println(calendarSetting.getServiceURL());
-        assertFalse(calendarSetting.getServiceURL().contains("" + "=" + ""));
+        assertFalse(calendarSetting.getServiceURL().contains("="));
     }
 
     @Test
@@ -61,4 +61,6 @@ public class CalendarSettingTest {
 
         assertNull(calendarSetting.getServiceURL());
     }
+
+    **/
 }

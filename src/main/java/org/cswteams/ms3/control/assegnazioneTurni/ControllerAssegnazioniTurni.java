@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 import java.text.ParseException;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -59,7 +58,6 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
             throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: " + dto.getServizio().getNome() + ",tipologia turno: " + dto.getTipologiaTurno().toString());
 
         AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(LocalDate.of(dto.getAnno(), dto.getMese(), dto.getGiorno()), turno, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()), MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
-
         return assegnazioneTurnoDao.save(assegnazioneTurno);
     }
 
