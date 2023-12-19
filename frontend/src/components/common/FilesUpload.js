@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import {UploadFilesAPI} from "../../API/UploadFilesAPI"
 
-const FilesUpload = () => {
+const FilesUpload = ({type, request, updateRequest}) => {
+
 
   const [selectedFiles, setSelectedFiles] = useState('');
   const [progressInfos, setProgressInfos] = useState({ val: [] });
@@ -24,12 +25,22 @@ const FilesUpload = () => {
   const upload = async (idx, file) => {
     let _progressInfos = [...progressInfosRef.current.val];
     let uploadAPI = new UploadFilesAPI();
-    let response = await uploadAPI.uploadFile(file, (event) => {
-      _progressInfos[idx].percentage = Math.round(
-        (100 * event.loaded) / event.total
-      );
-      setProgressInfos({ val: _progressInfos });
-    })
+    let response = null;
+    if (type === "retirement") {
+      response = await uploadAPI.uploadFileRetirement(file, (event) => {
+        _progressInfos[idx].percentage = Math.round(
+          (100 * event.loaded) / event.total
+        );
+        setProgressInfos({ val: _progressInfos });
+      }, request.idRichiestaRimozioneDaTurno)
+    } else {
+      response = await uploadAPI.uploadGiustifica(file, (event) => {
+        _progressInfos[idx].percentage = Math.round(
+          (100 * event.loaded) / event.total
+        );
+        setProgressInfos({val: _progressInfos});
+      })
+    }
     if(response.status === 202){
       setMessage((prevMessage) => ([
         ...prevMessage,
@@ -41,6 +52,12 @@ const FilesUpload = () => {
         "Impossibile caricare il file: " + file.name+ "!",
       ]));
     }
+
+    /* todo questo è stato messo solo per fare in modo che la tabella si aggiorni dicendo che l'allegato è presente, va gestito meglio quando verrà implementato il download dell'allegato
+    *   probabilmente conviene mettere un booleano (tipo allegatoPresente), e recuperare il vero allegato nella fase di download
+    * */
+    request.allegato = true;
+    updateRequest(request);
   };
 
   const uploadFiles = () => {
@@ -61,7 +78,15 @@ const FilesUpload = () => {
         setFileInfos(files.data);
       });
 
+
     setMessage([]);
+
+    /* todo questo è stato messo solo per fare in modo che la tabella si aggiorni dicendo che l'allegato è presente, va gestito meglio quando verrà implementato il download dell'allegato
+    *   probabilmente conviene mettere un booleano (tipo allegatoPresente), e recuperare il vero allegato nella fase di download
+    * */
+    request.allegato = true;
+    updateRequest(request);
+
   };
 
   return (

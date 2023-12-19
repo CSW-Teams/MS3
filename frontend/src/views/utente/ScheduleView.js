@@ -26,8 +26,7 @@ import {
   AppointmentForm,
 } from '@devexpress/dx-react-scheduler-material-ui';
 import { ToastContainer, toast } from 'react-toastify';
-
-
+import 'react-toastify/dist/ReactToastify.css';
 import {
    EditingState,IntegratedEditing
 } from '@devexpress/dx-react-scheduler';
@@ -40,6 +39,9 @@ import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout } from '../../components/common/AssegnazioneTurnoModificaComponent';
 import ButtonLegalSchedulation from '../../components/common/ButtonLegalSchedulation';
 import { ShiftPrinterCSV } from "../../components/common/ShiftPrinterCSV";
+import {
+  RichiestaRimozioneDaTurnoAPI
+} from "../../API/RichiestaRimozioneDaTurnoAPI";
 
 
 /**
@@ -58,7 +60,6 @@ function ViolationLog(props){
     </div>
   );
 }
-
 
 
 /**
@@ -106,7 +107,11 @@ class ScheduleView extends React.Component{
              * "ABOUT_TO_ASK" --> Non abbiamo ancora chiesto i turni al backend, ma lo faremo appena possibile
              */
             shiftQueriedResponse: "ABOUT_TO_ASK",
-
+            idUser: localStorage.getItem("id"),
+            justification: "",
+            outcome: false,
+            idShift: 0,
+            requests: []
           };
           /**
            * All filtering functions.
@@ -146,6 +151,68 @@ class ScheduleView extends React.Component{
       this.setState({ mainResourceName });
     }
 
+    pendingRetirementRequestForShiftExist = async (idShift) => {
+      let idUser = -1;
+
+      for (let i = 0; i < this.state.requests.length; i++) {
+        if (this.state.requests[i].idAssegnazioneTurno === idShift) {
+          idUser = this.state.requests[i].idUtenteRichiedente;
+          break;
+        }
+      }
+
+      if (idUser !== -1) {
+        let api = new UtenteAPI();
+        const userDetails = await api.getUserDetails(idUser);
+        let name = userDetails.nome;
+        let surname = userDetails.cognome;
+        return `${name} ${surname}`
+      }
+
+      return idUser;
+
+    }
+
+    handleRetirement = async (justification, idShift) => {
+      this.state.justification = justification;
+      this.state.idShift = idShift;
+
+      const subState = {
+        idAssegnazioneTurno: this.state.idShift,
+        idUtenteRichiedente: this.state.idUser,
+        descrizione: this.state.justification,
+        esito: this.state.outcome
+      }
+
+      let richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
+      let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(subState);
+
+      console.log(httpResponse);  // todo remove
+
+      if (httpResponse.status === 202) {
+        toast.success('Richiesta inoltrata con successo', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+      } else {
+        toast.error('Non è stato possibile inoltrare la richiesta', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+      }
+    }
 
     /**
      * Questa funzione verrà invocata nel momento in cui il pianificatore effettua una modifica su una assegnazione turno.
@@ -281,7 +348,12 @@ class ScheduleView extends React.Component{
     }
 
 
-    async componentDidMount(turni, utenti){
+    async componentDidMount(turni, utenti) {
+
+      let api = new RichiestaRimozioneDaTurnoAPI();
+      let requestsArray = await api.getAllPendingRequests();
+
+      console.log("Array:", requestsArray);
 
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UtenteAPI().getAllUsersInfo();
@@ -289,28 +361,36 @@ class ScheduleView extends React.Component{
 
       this.setState(
         {
-          data:turni,
+          requests: requestsArray,
+          data: turni,
           mainResourceName: 'utenti_guardia_id',
           resources:
             [
               {
-                fieldName: 'utenti_guardia_id', title: 'Guardia',allowMultiple: true, instances: utenti,
+                fieldName: 'utenti_guardia_id',
+                title: 'Guardia',
+                allowMultiple: true,
+                instances: utenti,
               }
-              ,{
-             fieldName:'utenti_reperibili_id', title: 'Reperibilità',allowMultiple: true, instances: utenti,
+              , {
+              fieldName: 'utenti_reperibili_id',
+              title: 'Reperibilità',
+              allowMultiple: true,
+              instances: utenti,
             },
             ],
-            allServices: new Set(allServices),
-            allUser : allUser,
-            holidays: allHolidays,
-            shiftQueriedResponse: "GOOD",
+          allServices: new Set(allServices),
+          allUser: allUser,
+          holidays: allHolidays,
+          shiftQueriedResponse: "GOOD",
         })
-      }
+
+    }
 
 
     render(view){
 
-        // add shifts to the schedulables to display
+      // add shifts to the schedulables to display
         let { data, resources} = this.state;
 
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
@@ -339,7 +419,7 @@ class ScheduleView extends React.Component{
             break;
           default:
             // this should never appear
-            textLink="Unexcpected shiftQueriedResponse value: "+this.state.shiftQueriedResponse + "🫠"
+            textLink="Unexpected shiftQueriedResponse value: "+this.state.shiftQueriedResponse + "🫠"
             break;
         }
 
@@ -348,6 +428,18 @@ class ScheduleView extends React.Component{
 
         return (
           <React.Fragment>
+            {(view !== "global" || this.state.attore === "PIANIFICATORE") &&
+            <Button
+              style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: view !== 'global' ? '1%' : '2%',
+              marginBottom: view !== "global" ? '1%' : '0%'
+              }}
+              href={view === "global" ? "/richieste-ritiro" : "/richieste-ritiro?locale=true"}
+            > Visualizza storico richieste di ritiro
+            </Button>
+            }
             <Paper>
               {/**
                * Al click, scarica la pianificazione visualizzata in formato CSV, ma solo se siamo riusciti a
@@ -423,7 +515,11 @@ class ScheduleView extends React.Component{
 
                 <EditingState onCommitChanges={this.commitChanges}/>
                 <IntegratedEditing/>
-                <Appointments appointmentContentComponent={AppointmentContent} />
+                <Appointments
+                  appointmentContentComponent={(props) => (
+                    <AppointmentContent attore={this.state.attore} {...props} />
+                  )}
+                />
                 <AllDayPanel/>
                 <Resources
                   data={resources}
@@ -445,16 +541,21 @@ class ScheduleView extends React.Component{
                   //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
                  //SOLO IL PIANIFICATORE PUO' MODIFICARE I TURNI
                   <AppointmentTooltip
+                    header
                     showCloseButton
                     showOpenButton
                     showDeleteButton
-                    contentComponent={Content} //go to CustomContent.js
+                    contentComponent={(props) => (
+                      <Content {...props} view={view} actor={this.state.attore} checkRequests={this.pendingRetirementRequestForShiftExist} />
+                    )}
                   />
                 }
 
                 {view === "global" && this.state.attore !== "PIANIFICATORE" &&
                 < AppointmentTooltip
-                  contentComponent={Content} //go to CustomContent.js
+                  contentComponent={(props) => (
+                    <Content {...props} view={view} actor={this.state.attore} />
+                  )}
                 />
                 }
 
@@ -463,7 +564,9 @@ class ScheduleView extends React.Component{
                   <AppointmentTooltip
                     showCloseButton
                     showOpenButton
-                    contentComponent={Content} //go to CustomContent.js
+                    contentComponent={(props) => (
+                      <Content {...props} view={view} onRetirement={this.handleRetirement} actor={this.state.attore} />
+                    )}
                   />
                 }
 
@@ -499,7 +602,6 @@ class ScheduleView extends React.Component{
               </Scheduler>
 
             </Paper>
-
           </React.Fragment>
 
         );

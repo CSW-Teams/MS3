@@ -1,8 +1,9 @@
 package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -13,7 +14,9 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AssegnazioneTurno{
     @Getter
@@ -48,6 +51,13 @@ public class AssegnazioneTurno{
     @ManyToOne
     private Turno turno;
 
+    /**
+     * (Eventuali) richieste di rimozione dal turno da parte degli utenti a esso assegnati.
+     */
+    @Getter
+    @OneToMany(mappedBy = "assegnazioneTurno", fetch = FetchType.EAGER)
+    private Set<RichiestaRimozioneDaTurno> richiesteRimozioneDaTurno;
+
     public AssegnazioneTurno() {
 
     }
@@ -58,6 +68,7 @@ public class AssegnazioneTurno{
         this.utentiReperibili = utentiReperibili;
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
+        this.richiesteRimozioneDaTurno = new HashSet<>();
     }
 
     public AssegnazioneTurno(LocalDate data, Turno turno) {
@@ -66,6 +77,7 @@ public class AssegnazioneTurno{
         this.utentiReperibili = new HashSet<>();
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
+        this.richiesteRimozioneDaTurno = new HashSet<>();
     }
 
     public AssegnazioneTurno(Set<Utente> utentiDiGuardia, Set<Utente> utentiReperibili, long dataEpochDay, Turno turno) {
@@ -74,6 +86,7 @@ public class AssegnazioneTurno{
         this.dataEpochDay = dataEpochDay;
         this.retiredUsers = new HashSet<>();
         this.turno = turno;
+        this.richiesteRimozioneDaTurno = new HashSet<>();
     }
 
     private boolean isUserIn(Utente u, List<Utente> utenti){

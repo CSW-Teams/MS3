@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import {Grid} from "@mui/material";
 import {Appointments} from "@devexpress/dx-react-scheduler-material-ui";
 import AccessTime from '@mui/icons-material/AccessTime';
@@ -11,6 +11,20 @@ import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 import { UtenteAPI } from "../../API/UtenteAPI";
 import Button from "@mui/material/Button";
+
+import ScheduleView, { handleRetirement } from '../../views/utente/ScheduleView';
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from '@mui/material';
+import {
+  RichiestaRimozioneDaTurnoAPI
+} from "../../API/RichiestaRimozioneDaTurnoAPI";
+
 
 // AppointmentContent di SingleScheduleView
 export const AppointmentSingleContent = ({
@@ -41,6 +55,7 @@ export const AppointmentSingleContent = ({
   </StyledAppointmentsAppointmentContent>
 );
 
+
 //Appointment Tooltip generico
 /** Questo componente mostra i dettagli di uno schedulabile, i quali appaiono
  * dopo aver cliccato sull'Appointment corrispondente.
@@ -52,12 +67,69 @@ export const Content = ({
                           appointmentResources,
                           formatDate,
                           recurringIconComponent: RecurringIcon,
+                          view,
+                          onRetirement,
+                          actor,
+                          checkRequests,
                           ...restProps
                         }) => {
   const weekDays = viewBoundText(
     appointmentData.startDate, appointmentData.endDate, WEEKDAY_INTERVAL,
     appointmentData.startDate, 1, formatDate,
   );
+
+  const [isConfirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [justification, setJustification] = useState('');
+  const [hasPendingRequest, setHasPendingRequest] = useState(false);
+  const [retiredUser, setRetiredUser] = useState('');
+
+  useEffect(() => {
+    const checkPendingRequest = async () => {
+      try {
+        console.log("[PROVA] Id del turno:", appointmentData.id);
+        const result = await checkRequests(appointmentData.id);
+
+        if (result === -1) {
+          setHasPendingRequest(false);
+        } else {
+          setHasPendingRequest(true);
+          setRetiredUser(result);
+        }
+      } catch (error) {
+        console.error('Error checking requests:', error);
+      }
+    };
+
+    checkPendingRequest();
+  }, [appointmentData.id, checkRequests]);
+
+
+  const handleConfirmRetirement = () => {
+    setConfirmationDialogOpen(false);
+    onRetirement(justification, appointmentData.id);
+  }
+
+  const openConfirmationDialog = () => {
+    setConfirmationDialogOpen(true);
+  };
+
+  const closeConfirmationDialog = () => {
+    setConfirmationDialogOpen(false);
+  };
+
+  const handleRetireButtonClick = () => {
+    openConfirmationDialog();
+  };
+
+  const retireFromShiftButton = view!=="global" && (
+    <Button
+      style={{ marginTop: '20px' }}
+      onClick={handleRetireButtonClick}
+    >
+      Ritirati dal turno
+    </Button>
+  );
+
 
   // contents of tooltip may vary depending on the type of the corresponding schedulable
   switch(appointmentData.schedulableType){
@@ -78,6 +150,7 @@ export const Content = ({
 
       break;
     case SchedulableType.AssignedShift:
+
       /**
        * Lo schedulabile è un turno assegnato.
        * Per tutti i turni verranno mostrati tra i dettagli gli allocati al turno.
@@ -167,6 +240,43 @@ export const Content = ({
               <div></div>
             ) }
           </Grid>
+          {retireFromShiftButton}
+          {view === 'global' && actor === 'PIANIFICATORE' && hasPendingRequest === true && (
+            <div style={{ color: 'red', marginTop: '10px' }}>
+              <p>Attenzione: {retiredUser} ha richiesto di ritirarsi da questo turno.</p>
+            </div>
+          )}
+
+
+          {/* Dialogo di conferma */}
+          <Dialog
+            open={isConfirmationDialogOpen}
+            onClose={closeConfirmationDialog}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle>Conferma Ritiro</DialogTitle>
+            <DialogContent>
+              <TextField
+                id={"motivazione"}
+                margin={"normal"}
+                label="Inserisci motivazione"
+                fullWidth
+                value={justification}
+                onChange={(e) => setJustification(e.target.value)}
+                autoFocus
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeConfirmationDialog} color="primary">
+                Annulla
+              </Button>
+              <Button onClick={handleConfirmRetirement} color="primary">
+                Conferma
+              </Button>
+            </DialogActions>
+          </Dialog>
+
           {children}
         </StyledDiv>
       );
@@ -210,7 +320,9 @@ export class AppointmentContent extends React.Component{
       utenti_rimossi: [],
       formatDate: formatDate,
       ...data,
-      restProps: {...restProps}
+      restProps: {...restProps},
+      attore: data.attore,
+      requests: [],
     }
 
   }
@@ -222,23 +334,47 @@ export class AppointmentContent extends React.Component{
      * usando gli ids salvati nell'oggetto turno.
      */
     if (this.state.data.schedulableType === SchedulableType.AssignedShift) {
-      this.setState({ 
+      this.setState({
         utenti_allocati: this.state.data.utenti_guardia,
         utenti_reperibili: this.state.data.utenti_reperibili,
         utenti_rimossi: this.state.data.utenti_rimossi,
       })
     }
+
+    let api = new RichiestaRimozioneDaTurnoAPI();
+    let array = await api.getAllPendingRequests();
+    this.setState({ requests: array })
   }
+
 
   render() {
   // mostriamo informazioni diverse a seconda del tipo di schedulabile
   if (this.state.data.schedulableType === SchedulableType.AssignedShift) {
+
+    /* Se esistono richieste di ritiro pendenti per il turno, il rettangolo è di colore rosso, altrimenti è blu
+    *  Questa differenza è visibile solo ai pianificatori.
+    * */
+    let appointmentStyle = {};
+
+    if (this.state.attore !== "PIANIFICATORE") {
+      appointmentStyle = {backgroundColor: '#4db6ac'}
+    } else {
+      let pendingRequestExists = this.state.requests.some(request => request.idAssegnazioneTurno === this.state.data.id);
+
+      if (pendingRequestExists) {
+        appointmentStyle = {backgroundColor: 'red'}
+      } else {
+        appointmentStyle = {backgroundColor: '#4db6ac'}
+      }
+    }
+
+
     /**
      * Mostriamo i cognomi dei partecipanti al turno, includendo i reperibili
      * se il turno è una GUARDIA
      */
     return (
-      <StyledAppointmentsAppointmentContent {...this.state.restProps} formatDate={this.state.formatDate} data={this.state.data}>
+      <StyledAppointmentsAppointmentContent {...this.state.restProps} formatDate={this.state.formatDate} data={this.state.data} style={appointmentStyle}>
         <div className={classes.container}>
           <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "font-weight": "bold" }}>
             {this.state.data.title}
@@ -267,8 +403,6 @@ export class AppointmentContent extends React.Component{
               {this.state.utenti_rimossi.map((user) => <li> <s>{user.cognome}</s></li>) }
             </ul>
             </div>
-            
-
           </div>
         </div>
       </StyledAppointmentsAppointmentContent>
@@ -289,7 +423,7 @@ export class AppointmentContent extends React.Component{
         }}
       >
         <div className={classes.container}>
-          <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "font-weight": "bold" }}>
+          <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "fontWeight": "bold" }}>
             {this.state.data.title}
           </div>
         </div>
