@@ -1,6 +1,5 @@
 package org.cswteams.ms3.entity.constraint;
 
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 
@@ -11,7 +10,7 @@ import javax.persistence.Entity;
 import java.util.List;
 
 @Entity
-public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
+public abstract class ConstraintAssegnazioneTurnoTurno extends MS3Constraint {
 
     /**
      * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1

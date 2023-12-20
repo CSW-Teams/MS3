@@ -25,7 +25,7 @@ export  class TurnoAPI {
     const body = await response.json();
 
     for (let i = 0; i < body.length; i++) {
-        if( body[i].tipologiaTurno == tipologia)
+        if( body[i].tipologiaTurno === tipologia)
           return body[i];
     }
 

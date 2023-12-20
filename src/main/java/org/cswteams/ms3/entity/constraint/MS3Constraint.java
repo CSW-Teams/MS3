@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table(name = "ms3_constraint")
-public abstract class Constraint {
+public abstract class MS3Constraint {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "constraint_id_seq")
     @SequenceGenerator(name = "constraint_id_seq", sequenceName = "constraint_id_seq")
@@ -24,14 +24,6 @@ public abstract class Constraint {
     /** TODO: descrizione di che cosa in particolare del vincolo? */
     @NotNull
     private String descrizione;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     /**
      * @throws ViolatedConstraintException : se il vincolo è violato

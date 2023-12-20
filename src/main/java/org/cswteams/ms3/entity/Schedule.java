@@ -1,7 +1,7 @@
 package org.cswteams.ms3.entity;
 
 import lombok.Getter;
-import org.cswteams.ms3.entity.constraint.Constraint;
+import org.cswteams.ms3.entity.constraint.MS3Constraint;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -32,20 +32,20 @@ public class Schedule {
 
     @ManyToMany
     @NotNull
-    private List<Constraint> violatedConstraints;
+    private List<MS3Constraint> violatedMS3Constraints;
 
     /**
      * Class representing a valid schedule
      * @param startDate Date of the beginning of the schedule
      * @param endDate Date of the ending of the schedule
      * @param concreteShifts List of shifts that compose the schedule (THis is a composition, not an aggregation)
-     * @param violatedConstraints List of constraints that have been violated by the scheduler and that should be approved by the planner
+     * @param violatedMS3Constraints List of constraints that have been violated by the scheduler and that should be approved by the planner
      */
-    public Schedule(Long startDate, Long endDate, List<ConcreteShift> concreteShifts, List<Constraint> violatedConstraints) {
+    public Schedule(Long startDate, Long endDate, List<ConcreteShift> concreteShifts, List<MS3Constraint> violatedMS3Constraints) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.concreteShifts = concreteShifts;
-        this.violatedConstraints = violatedConstraints;
+        this.violatedMS3Constraints = violatedMS3Constraints;
     }
 
     /**
@@ -58,7 +58,7 @@ public class Schedule {
         this.startDate = startDate;
         this.endDate = endDate;
         this.concreteShifts = concreteShifts;
-        this.violatedConstraints = new ArrayList<>();
+        this.violatedMS3Constraints = new ArrayList<>();
     }
 
     /**

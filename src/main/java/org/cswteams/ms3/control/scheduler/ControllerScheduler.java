@@ -1,8 +1,5 @@
 package org.cswteams.ms3.control.scheduler;
 
-import java.time.LocalDate;
-import java.util.*;
-
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.MappaSchedulo;
 import org.cswteams.ms3.control.utils.MappaUtenti;
@@ -13,7 +10,7 @@ import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.entity.doctor.Doctor;
+import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +18,21 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 
 @Service
 public class ControllerScheduler implements IControllerScheduler{
 
     @Autowired
-    private UtenteDao utenteDao;
+    private DoctorDAO doctorDAO;
 
     @Autowired
-    private TurnoDao turnoDao;
+    private ShiftDAO shiftDAO;
 
     @Autowired
     private ScheduleDao scheduleDao;
@@ -69,7 +71,7 @@ public class ControllerScheduler implements IControllerScheduler{
         // creo assegnazioni associando una data a ogni turno.
         //Scorro tutti i giorni dell'intervallo. Per ogni giorno scorro tutti i turni.
         while(!currentDay.isAfter(endDate)){
-            for(Shift shift : turnoDao.findAll()){
+            for(Shift shift : shiftDAO.findAll()){
                 
                 // Possiamo assegnare questo shift a questo giorno solo se il giorno
                 // della settimana è previsto tra quelli ammissibili del shift
@@ -90,7 +92,7 @@ public class ControllerScheduler implements IControllerScheduler{
                 endDate,    // data fine pianificazione
                 vincoloDao.findAll(),    // tutti i vincoli da rispettare quando si assegna una persona a un turno
                 allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
-                utenteDao.findAll() // tutti i candidati da allocare ai turni
+                doctorDAO.findAll() // tutti i candidati da allocare ai turni
                 );
 
             this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDao.findAll()));
@@ -139,7 +141,7 @@ public class ControllerScheduler implements IControllerScheduler{
         //creo un nuovo builder passandogli uno schedulo già esistente
         this.scheduleBuilder = new ScheduleBuilder(
                 vincoloDao.findAll(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
-                utenteDao.findAll(),  // tutti i candidati da allocare ai turni
+                doctorDAO.findAll(),  // tutti i candidati da allocare ai turni
                 scheduleDao.findByDateBetween(concreteShift.getDataEpochDay()) //Schedulo gia esistente
         );
 
@@ -178,7 +180,7 @@ public class ControllerScheduler implements IControllerScheduler{
     public Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
         // Per convertire il dto in un entità ho bisogno di un shift che dovrebbe essere
         // presente nel database
-        List<Shift> turni = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno());
+        List<Shift> turni = shiftDAO.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno());
         if(turni.isEmpty())
             throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",tipologia shift: "+assegnazione.getTipologiaTurno().toString());
         Shift shift = null;
@@ -193,6 +195,9 @@ public class ControllerScheduler implements IControllerScheduler{
         }
         ConcreteShift concreteShift = new ConcreteShift(
                 LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(), assegnazione.getGiorno()),
+                shift,
+        AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(
+                assegnazione.getGiorno(),
                 shift,
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia()));
