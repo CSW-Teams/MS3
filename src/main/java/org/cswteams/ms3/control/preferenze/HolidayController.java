@@ -56,12 +56,10 @@ public class HolidayController implements IHolidayController {
 
     @Override
     public void registerHolidayPeriod(HolidayDTO holidayArgs){
-
         // last day of holiday cannot be before first day
         if (holidayArgs.getEndDateEpochDay() < holidayArgs.getStartDateEpochDay()) {
             throw new IllegalArgumentException(String.format("Holiday ends in date %s, which is before start date %s", LocalDate.ofEpochDay(holidayArgs.getEndDateEpochDay()), LocalDate.ofEpochDay(holidayArgs.getStartDateEpochDay())));
         }
-
         // stores the holiday period in the db
         holidayDao.save(new Holiday(holidayArgs.getName(), holidayArgs.getCategory(), holidayArgs.getStartDateEpochDay(), holidayArgs.getEndDateEpochDay(), holidayArgs.getLocation()));
     }

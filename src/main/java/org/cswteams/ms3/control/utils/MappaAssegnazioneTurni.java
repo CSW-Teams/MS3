@@ -4,6 +4,8 @@ import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.DoctorDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashSet;
@@ -22,22 +24,36 @@ public class MappaAssegnazioneTurni {
         return new ConcreteShift(dto.getInizio().toLocalDateTime().toLocalDate(), turno, reperibili, diGuardia);
     }*/
 
-    public static AssegnazioneTurnoDTO assegnazioneTurnoToDTO(ConcreteShift entity) {
-        ZoneId zone = ZoneId.systemDefault();
+    public static AssegnazioneTurnoDTO assegnazioneTurnoToDTO(AssegnazioneTurno entity) {
+        ZoneId gmtZone = ZoneId.of("GMT");
 
-        LocalDateTime localDateTimeInizio = LocalDateTime.of(entity.getData(), entity.getShift().getOraInizio());
-        long inizioEpoch = localDateTimeInizio.atZone(zone).toEpochSecond();
+        LocalDateTime localDateTimeInizio = LocalDateTime.of(entity.getData(), entity.getTurno().getOraInizio());
+        Instant inizioInstant = localDateTimeInizio.atZone(gmtZone).toInstant();
 
-        LocalDateTime localDateTimeFine = localDateTimeInizio.plus(entity.getShift().getDurata());
-        long fineEpoch = localDateTimeFine.atZone(zone).toEpochSecond();
+        Duration durata = entity.getTurno().getDurata();
+        Instant fineInstant = inizioInstant.plus(durata);
+
+        long inizioEpoch = inizioInstant.getEpochSecond();
+        long fineEpoch = fineInstant.getEpochSecond();
 
         Set<DoctorDTO> diGuardiaDto = MappaUtenti.utentiEntityToDTO(entity.getUtentiDiGuardia());
         Set<DoctorDTO> reperibiliDto = MappaUtenti.utentiEntityToDTO(entity.getUtentiReperibili());
         Set<DoctorDTO> rimossiDto = MappaUtenti.utentiEntityToDTO(entity.getRetiredDoctors());
 
-        AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(entity.getId(), entity.getShift().getId(), inizioEpoch, fineEpoch, diGuardiaDto, reperibiliDto, MappaServizio.servizioEntitytoDTO(entity.getShift().getServizio()), entity.getShift().getTipologiaTurno(), entity.getShift().isReperibilitaAttiva());
-        dto.setMansione(entity.getShift().getMansione());
+        AssegnazioneTurnoDTO dto = new AssegnazioneTurnoDTO(
+                entity.getId(),
+                entity.getShift().getId(),
+                inizioEpoch,
+                fineEpoch,
+                diGuardiaDto,
+                reperibiliDto,
+                MappaServizio.servizioEntitytoDTO(entity.getShift().getServizio()),
+                entity.getShift().getTipologiaTurno(),
+                entity.getShift().isReperibilitaAttiva()
+        );
+        dto.setMansione(entity.getShift).getMansione());
         dto.setRetiredUsers(rimossiDto);
+
         return dto;
     }
 

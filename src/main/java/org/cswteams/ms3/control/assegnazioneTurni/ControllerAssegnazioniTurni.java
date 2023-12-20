@@ -3,14 +3,14 @@ package org.cswteams.ms3.control.assegnazioneTurni;
 import org.cswteams.ms3.control.utils.MappaAssegnazioneTurni;
 import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
+import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.ScheduleDao;
-import org.cswteams.ms3.dao.TurnoDao;
-import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dao.ShiftDAO;
 import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Shift;
-import org.cswteams.ms3.entity.doctor.Doctor;
+import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,10 +28,10 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     private AssegnazioneTurnoDao assegnazioneTurnoDao;
 
     @Autowired
-    private UtenteDao utenteDao;
+    private DoctorDAO doctorDAO;
 
     @Autowired
-    private  TurnoDao turnoDao;
+    private  ShiftDAO shiftDAO;
 
     @Autowired
     private ScheduleDao scheduleDao;
@@ -56,7 +56,7 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
     @Override
     public ConcreteShift creaTurnoAssegnato(@NotNull RegistraAssegnazioneTurnoDTO dto) throws AssegnazioneTurnoException {
 
-        Shift shift = turnoDao.findAllByServizioNomeAndTipologiaTurno(dto.getServizio().getNome(), dto.getTipologiaTurno()).get(0);
+        Shift shift = shiftDAO.findAllByServizioNomeAndTipologiaTurno(dto.getServizio().getNome(), dto.getTipologiaTurno()).get(0);
         if(shift == null)
             throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia shift: "+dto.getTipologiaTurno().toString());
 

@@ -1,13 +1,10 @@
 package org.cswteams.ms3.entity.constraint;
 
-import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Doctor;
-import org.cswteams.ms3.entity.Seniority;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloRuoloNumeroException;
 
 import javax.persistence.Entity;
-import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -16,7 +13,7 @@ import java.util.Set;
  * e uno strutturato in riserva.
  */
 @Entity
-public class ConstraintNumeroDiRuoloTurno extends Constraint {
+public class ConstraintNumeroDiRuoloTurno extends MS3Constraint {
 
     @Override
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {

@@ -12,7 +12,7 @@ public class MappaHolidays {
     }
 
     public static Holiday dtoToHoliday(HolidayDTO dto){
-        return new Holiday(dto.getName(), dto.getCategory(), LocalDate.of(dto.getStartYear(), dto.getStartMonth(), dto.getStartDayOfMonth()).toEpochDay(), LocalDate.of(dto.getEndYear(), dto.getEndMonth(), dto.getEndDayOfMonth()).toEpochDay(), dto.getLocation());
+        return new Holiday(dto.getName(), dto.getCategory(), dto.getStartDateEpochDay(), dto.getEndDateEpochDay(), dto.getLocation());
     }
 
     public static HolidayDTO holidayToDto(Holiday holiday){

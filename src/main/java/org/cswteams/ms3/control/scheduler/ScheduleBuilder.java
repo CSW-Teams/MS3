@@ -3,6 +3,7 @@ package org.cswteams.ms3.control.scheduler;
 import lombok.Data;
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.constraint.MS3Constraint;
 import org.cswteams.ms3.entity.doctor.Doctor;
 import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
 import org.cswteams.ms3.entity.vincoli.Vincolo;
@@ -21,7 +22,7 @@ public class ScheduleBuilder {
     
     /** Lista di vincoli da applicare a ogni coppia ConcreteShift, Utente */
     @NotNull
-    private List<Vincolo> allConstraints;
+    private List<MS3Constraint> allConstraints;
 
     /** Oggetti che rappresentano lo stato relativo alla costruzione della pianificazione
      * per ogni utente partecipante
@@ -67,7 +68,7 @@ public class ScheduleBuilder {
      * @param allConstraints Constraints passed as parameters of the schedule builder
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    private void validateConstraints(List<Vincolo> allConstraints) throws IllegalScheduleException {
+    private void validateConstraints(List<MS3Constraint> allConstraints) throws IllegalScheduleException {
         if(allConstraints == null)
             throw new IllegalScheduleException("[ERROR] Cannot have null constraints");
 
@@ -85,7 +86,7 @@ public class ScheduleBuilder {
      * @param doctors Set of doctors that is possible to add in the schedule
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Vincolo> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
+    public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<MS3Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
         // Checks on the parameters state
         validateDates(startDate,endDate);
         validateUsers(allAssignedShifts, doctors);
@@ -117,7 +118,7 @@ public class ScheduleBuilder {
      * @param schedule An existing schedule from which to start a new one
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(List<Vincolo> allConstraints, List<Doctor> doctors, Schedule schedule) throws IllegalScheduleException {
+    public ScheduleBuilder(List<MS3Constraint> allConstraints, List<Doctor> doctors, Schedule schedule) throws IllegalScheduleException {
         // Checks on the parameters state
         validateConstraints(allConstraints);
         validateSchedule(schedule);
