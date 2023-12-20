@@ -6,9 +6,9 @@ package org.cswteams.ms3.enums;
  * gruppi di festività affini.
  */
 public enum HolidayCategory {
-    RELIGIOSA, // festività religiose
-    LAICA,
-    CIVILE,
-    NAZIONALE,
+    RELIGIOUS, // festività religiose
+    SECULAR, // Laica
+    CIVIL,
+    NATIONAL,
     CORPORATE, // festività aziendali (ES: ponti, ferie, ...)
 }

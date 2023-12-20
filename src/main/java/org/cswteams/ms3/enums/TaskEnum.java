@@ -3,19 +3,19 @@ package org.cswteams.ms3.enums;
 /**
  * Questa enum descrive le possibili mansioni di cui un servizio può essere composto
  */
-public enum MansioneEnum {
+public enum TaskEnum {
 
-    AMBULATORIO,    
+    CLINIC,
     /**
      * supervisiona e risponde a esigenze del momento. Molto importante che non rimanga scoperto.
      */
-    GUARDIA,    
+    EMERGENCY, // Dottore di guardia
     /**
      * gestisce ricoverati dal pronto soccorso
      */
-    REPARTO,
+    WARD,
     /**
      * gestisce, allestisce o partecipa in sala operatoria
      */
-    SALA_OPERATORIA
+    OPERATING_ROOM
 }

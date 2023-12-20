@@ -55,14 +55,15 @@ public class ControllerAssegnazioniTurni implements IControllerAssegnazioneTurni
      */
     @Override
     public ConcreteShift creaTurnoAssegnato(@NotNull RegistraAssegnazioneTurnoDTO dto) throws AssegnazioneTurnoException {
-
+/*
         Shift shift = shiftDAO.findAllByServizioNomeAndTipologiaTurno(dto.getServizio().getNome(), dto.getTipologiaTurno()).get(0);
         if(shift == null)
             throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia shift: "+dto.getTipologiaTurno().toString());
 
         ConcreteShift concreteShift = new ConcreteShift(LocalDate.of(dto.getAnno(),dto.getMese(),dto.getGiorno()), shift, MappaUtenti.utenteDTOtoEntity(dto.getUtentiReperibili()),MappaUtenti.utenteDTOtoEntity(dto.getUtentiDiGuardia()));
 
-        return assegnazioneTurnoDao.save(concreteShift);
+        return assegnazioneTurnoDao.save(concreteShift);*/
+        return null;
     }
 
     /**
