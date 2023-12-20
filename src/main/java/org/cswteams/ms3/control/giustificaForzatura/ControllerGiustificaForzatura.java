@@ -32,9 +32,9 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
     public void saveGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoliDTO) {
         //giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
         Doctor giustificatore = doctorDAO.findById(Long.parseLong(giustificazioneForzaturaVincoliDTO.getUtenteGiustificatoreId()));
-        GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(),giustificazioneForzaturaVincoliDTO.getTipologiaTurno(), MappaServizio.servizioDTOtoEntity(giustificazioneForzaturaVincoliDTO.getServizio()), giustificazioneForzaturaVincoliDTO.getGiorno(), MappaUtenti.utenteDTOtoEntity(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()), giustificatore);
+        //GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(),giustificazioneForzaturaVincoliDTO.getTipologiaTurno(), MappaServizio.servizioDTOtoEntity(giustificazioneForzaturaVincoliDTO.getServizio()), giustificazioneForzaturaVincoliDTO.getGiorno(), MappaUtenti.utenteDTOtoEntity(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()), giustificatore);
 
-        giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
+        //giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
     }
 
 

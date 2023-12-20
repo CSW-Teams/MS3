@@ -13,7 +13,7 @@ import java.util.Set;
  * e uno strutturato in riserva.
  */
 @Entity
-public class ConstraintNumeroDiRuoloTurno extends MS3Constraint {
+public class ConstraintNumeroDiRuoloTurno extends Constraint {
 
     @Override
     public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {

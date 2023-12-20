@@ -1,14 +1,14 @@
-package org.cswteams.ms3.control.categorie;
+package org.cswteams.ms3.control.condition;
 
 import org.cswteams.ms3.dao.PermanentConditionDao;
-import org.cswteams.ms3.dao.RotationDao;
 import org.cswteams.ms3.dao.SpecializationDao;
 import org.cswteams.ms3.dao.TemporaryConditionDAO;
-import org.cswteams.ms3.dto.category.*;
-import org.cswteams.ms3.entity.category.PermanentCondition;
-import org.cswteams.ms3.entity.category.Structure;
-import org.cswteams.ms3.entity.category.Specialization;
-import org.cswteams.ms3.entity.category.TemporaryCondition;
+import org.cswteams.ms3.dto.category.PermanentConditionDTO;
+import org.cswteams.ms3.dto.category.SpecializationDTO;
+import org.cswteams.ms3.dto.category.TemporaryConditionDTO;
+import org.cswteams.ms3.entity.Specialization;
+import org.cswteams.ms3.entity.condition.PermanentCondition;
+import org.cswteams.ms3.entity.condition.TemporaryCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class ControllerCategorie implements IControllerCategorie {
+public class ConditionController implements IConditionController {
+
 
     @Autowired
     PermanentConditionDao permanentConditionDao;
@@ -25,8 +26,7 @@ public class ControllerCategorie implements IControllerCategorie {
     TemporaryConditionDAO temporaryConditionDAO;
     @Autowired
     SpecializationDao specializationDao;
-    @Autowired
-    RotationDao rotationDao;
+
 
     @Override
     public Set<PermanentConditionDTO> readPermanentConditions() {
@@ -61,15 +61,4 @@ public class ControllerCategorie implements IControllerCategorie {
         return specializationDTOSet;
     }
 
-    @Override
-    public Set<RotationDTO> readRotations() {
-        List<Structure> structureList = rotationDao.findAll();
-        Set<RotationDTO> rotationDTOSet = new HashSet<>();
-
-        for(Structure structure : structureList){
-            rotationDTOSet.add(new RotationDTO(structure.getType()));
-        }
-
-        return rotationDTOSet;
-    }
 }

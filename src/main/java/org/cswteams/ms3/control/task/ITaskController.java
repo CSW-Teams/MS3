@@ -1,19 +1,23 @@
-package org.cswteams.ms3.control.turni;
+package org.cswteams.ms3.control.task;
 
-import org.cswteams.ms3.dto.RotationDTO;
+import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.Shift;
-import org.cswteams.ms3.exception.TurnoException;
+import org.cswteams.ms3.entity.Task;
+import org.cswteams.ms3.exception.ShiftException;
 
 import java.util.Set;
 
 
-public interface IControllerTurni {
-
+public interface ITaskController {
+/*
     Set<RotationDTO> leggiTurniDiServizio(String servizio);
 
     Set<RotationDTO> leggiTurni();
 
-    Shift creaTurno(RotationDTO turno) throws TurnoException;
+    Shift creaTurno(RotationDTO turno) throws ShiftException;*/
 
+    void addDoctor(Task task, Doctor doctor);
 
+    void addService(MedicalService medicalService, Doctor doctor);
 }

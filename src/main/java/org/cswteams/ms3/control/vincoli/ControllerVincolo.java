@@ -3,15 +3,11 @@ package org.cswteams.ms3.control.vincoli;
 import org.cswteams.ms3.dao.ConfigVincoliDao;
 import org.cswteams.ms3.dao.ConfigVincoloMaxPeriodoConsecutivoDao;
 import org.cswteams.ms3.dao.VincoloDao;
-import org.cswteams.ms3.entity.vincoli.*;
-import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.entity.constraint.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
 
 @Service
 public class ControllerVincolo implements IControllerVincolo {
@@ -26,15 +22,15 @@ public class ControllerVincolo implements IControllerVincolo {
     ConfigVincoloMaxPeriodoConsecutivoDao configVincoloMaxPeriodoConsecutivoDao;
 
     @Override
-    public List<Vincolo> leggiVincoli() {
+    public List<Constraint> leggiVincoli() {
         return vincoloDao.findAll();
     }
 
     @Override
     public ConfigVincoli aggiornaVincoli(ConfigVincoli configurazione) {
-        for(ConfigVincoloMaxPeriodoConsecutivo config: configurazione.getConfigVincoloMaxPeriodoConsecutivoPerCategoria()){
-            ConfigVincoloMaxPeriodoConsecutivo configVincoloMaxPeriodoConsecutivo = configVincoloMaxPeriodoConsecutivoDao.findAllByCategoriaVincolataType(config.getCategoriaVincolata().getType()).get(0);
-            config.setId(configVincoloMaxPeriodoConsecutivo.getId());
+        for(ConfigVincMaxPerCons config: configurazione.getConfigVincMaxPerConsPerCategoria()){
+            ConfigVincMaxPerCons configVincMaxPerCons = configVincoloMaxPeriodoConsecutivoDao.findAllByCategoriaVincolataType(config.getCategoriaVincolata().getType()).get(0);
+            config.setId(configVincMaxPerCons.getId());
             configVincoloMaxPeriodoConsecutivoDao.save(config);
         }
         //Aggiorno configurazione
@@ -42,20 +38,20 @@ public class ControllerVincolo implements IControllerVincolo {
         configurazione.setId(configVincoli.getId());
         configVincoliDao.save(configurazione);
         //Aggiorno i vincoli
-        VincoloTipologieTurniContigue vincoloTipologieTurniContigue = (VincoloTipologieTurniContigue) vincoloDao.findByType("VincoloTipologieTurniContigue").get(0);
+        ConstraintTipologieTurniContigue vincoloTipologieTurniContigue = (ConstraintTipologieTurniContigue) vincoloDao.findByType("ConstraintTipologieTurniContigue").get(0);
         vincoloTipologieTurniContigue.setHorizon(configurazione.getHorizonTurnoNotturno());
 
-        VincoloMaxOrePeriodo vincoloMaxOrePeriodo = (VincoloMaxOrePeriodo) vincoloDao.findByType("VincoloMaxOrePeriodo").get(0);
+        ConstraintMaxOrePeriodo vincoloMaxOrePeriodo = (ConstraintMaxOrePeriodo) vincoloDao.findByType("ConstraintMaxOrePeriodo").get(0);
         vincoloMaxOrePeriodo.setNumGiorniPeriodo(configurazione.getNumGiorniPeriodo());
         vincoloMaxOrePeriodo.setNumMinutiMaxPeriodo(configurazione.getMaxMinutiPeriodo());
 
-        List<Vincolo> vincoliMaxPeriodoConsecutivo = vincoloDao.findByType("VincoloMaxPeriodoConsecutivo");
-        for(Vincolo vincolo: vincoliMaxPeriodoConsecutivo){
-            VincoloMaxPeriodoConsecutivo vincoloMaxPeriodoConsecutivo = (VincoloMaxPeriodoConsecutivo)vincolo;
+        List<Constraint> vincoliMaxPeriodoConsecutivo = vincoloDao.findByType("ConstraintMaxPeriodoConsecutivo");
+        for(Constraint constraint : vincoliMaxPeriodoConsecutivo){
+            ConstraintMaxPeriodoConsecutivo vincoloMaxPeriodoConsecutivo = (ConstraintMaxPeriodoConsecutivo) constraint;
             if(vincoloMaxPeriodoConsecutivo.getCategoriaVincolata() == null){
                 vincoloMaxPeriodoConsecutivo.setMaxConsecutiveMinutes(configurazione.getNumMaxMinutiConsecutiviPerTutti());
             }else{
-                for(ConfigVincoloMaxPeriodoConsecutivo config: configurazione.getConfigVincoloMaxPeriodoConsecutivoPerCategoria()){
+                for(ConfigVincMaxPerCons config: configurazione.getConfigVincMaxPerConsPerCategoria()){
                     if(vincoloMaxPeriodoConsecutivo.getCategoriaVincolata().getType().equals(config.getCategoriaVincolata().getType())){
                         vincoloMaxPeriodoConsecutivo.setMaxConsecutiveMinutes(config.getNumMaxMinutiConsecutivi());
                     }
@@ -68,7 +64,7 @@ public class ControllerVincolo implements IControllerVincolo {
         vincoloDao.saveAndFlush(vincoloMaxOrePeriodo);
 
         return configurazione;
-     }
+    }
 
     @Override
     public ConfigVincoli leggiConfigurazioneVincoli() {

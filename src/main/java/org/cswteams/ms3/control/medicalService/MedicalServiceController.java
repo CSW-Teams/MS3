@@ -1,10 +1,8 @@
-package org.cswteams.ms3.control.servizi;
+package org.cswteams.ms3.control.medicalService;
 
-import org.cswteams.ms3.control.utils.MappaServizio;
-import org.cswteams.ms3.dao.ServizioDao;
-import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.entity.Servizio;
-import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.dao.ServiceDAO;
+import org.cswteams.ms3.dto.MedicalServiceDTO;
+import org.cswteams.ms3.entity.MedicalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,23 +10,27 @@ import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 @Service
-public class ControllerServizi implements IControllerServizi{
+public class MedicalServiceController implements IMedicalServiceController {
+
 
     @Autowired
-    ServizioDao servizioDao;
+    ServiceDAO serviceDAO;
 
     @Override
-    public Set<ServizioDTO> leggiServizi() {
-        return MappaServizio.servizioEntitytoDTO(servizioDao.findAll());
+    public Set<MedicalServiceDTO> leggiServizi() {
+        //return MappaServizio.servizioEntitytoDTO(serviceDAO.findAll());
+        return null;
     }
 
     @Override
-    public ServizioDTO leggiServizioByNome(@NotNull String nome) {
-        return MappaServizio.servizioEntitytoDTO(servizioDao.findByNome(nome));
+    public MedicalServiceDTO leggiServizioByNome(@NotNull String nome) {
+        //return MappaServizio.servizioEntitytoDTO(serviceDAO.findByNome(nome));
+        return null;
     }
 
     @Override
-    public Servizio creaServizio(@NotNull ServizioDTO servizio) {
-        return servizioDao.save(MappaServizio.servizioDTOtoEntity(servizio));
+    public MedicalService creaServizio(@NotNull MedicalServiceDTO servizio) {
+        //return serviceDAO.save(MappaServizio.servizioDTOtoEntity(servizio));
+        return null;
     }
 }

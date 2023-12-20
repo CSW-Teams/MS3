@@ -8,7 +8,7 @@ export default class LoginView extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      username: "",
+      email: "",
       password: "",
     }
     this.handleSubmit= this.handleSubmit.bind(this);
@@ -78,11 +78,11 @@ export default class LoginView extends React.Component {
             <div className="form-group mt-3">
               <label>Indirizzo Email</label>
               <input
-                name = "username"
+                name = "email"
                 type="email"
                 className="form-control mt-1"
                 placeholder="Inserisci l'indirizzo email"
-                value={this.state.username}
+                value={this.state.email}
                 onChange={e => this.handleChange(e)}
               />
             </div>

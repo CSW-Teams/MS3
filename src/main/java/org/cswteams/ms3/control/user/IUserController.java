@@ -1,16 +1,16 @@
-package org.cswteams.ms3.control.utente;
+package org.cswteams.ms3.control.user;
 
 import org.cswteams.ms3.dto.DoctorDTO;
 
 import java.util.Set;
 
 
-public interface IControllerUtente {
+public interface IUserController {
 
-    Set<DoctorDTO> leggiUtenti();
+    Set<DoctorDTO> getAllUsers();
 
-    Object creaUtente(DoctorDTO c);
+    Object createUser(DoctorDTO c);
 
-    DoctorDTO leggiUtente(long idUtente);
+    DoctorDTO getSingleUser(long idUtente);
 
 }

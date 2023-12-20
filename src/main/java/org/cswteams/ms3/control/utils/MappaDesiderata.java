@@ -10,28 +10,27 @@ import java.util.List;
 
 public class MappaDesiderata {
 
-    public static Preference desiderataDtoToEntity(DesiderataDTO dto, Doctor doctor){
-        return new Preference(LocalDate.of(dto.getAnno(), dto.getMese(), dto.getGiorno()), dto.getTipologieTurni(), doctor);
-
+    public static Preference desiderataDtoToEntity(DesiderataDTO dto, List<Doctor> doctors){
+        return new Preference(LocalDate.of(dto.getAnno(), dto.getMese(), dto.getGiorno()), dto.getTipologieTurni(), doctors);
     }
 
-    public static List<Preference> desiderataDtoToEntity(List<DesiderataDTO> dtos, Doctor doctor){
+    public static List<Preference> desiderataDtoToEntity(List<DesiderataDTO> dtos, List<Doctor> doctors){
         List<Preference> desiderata = new ArrayList<>();
         for(DesiderataDTO dto: dtos){
-            desiderata.add(desiderataDtoToEntity(dto, doctor));
+            desiderata.add(desiderataDtoToEntity(dto, doctors));
         }
         return desiderata;
     }
 
     public static DesiderataDTO desiderataToDto(Preference entity){
-        return new DesiderataDTO(entity.getId(), entity.getData(), entity.getTipologieTurnoCoinvolte());
+        return new DesiderataDTO(entity.getId(), entity.getDate().getDayOfMonth(), entity.getDate().getMonthValue(),entity.getDate().getYear(), entity.getTimeSlots());
     }
 
     public static List<DesiderataDTO> desiderataToDto(List<Preference> entities){
         List<DesiderataDTO> desiderataDTO = new ArrayList<>();
 
-        for(Preference desiderata: entities){
-            desiderataDTO.add(desiderataToDto(desiderata));
+        for(Preference preference : entities){
+            desiderataDTO.add(desiderataToDto(preference));
         }
         return desiderataDTO;
     }

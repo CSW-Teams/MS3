@@ -9,7 +9,8 @@ import java.util.List;
 public class MappaSchedulo {
 
     public static ScheduloDTO scheduloToDTO(Schedule schedule) {
-        return new ScheduloDTO(ConvertitoreData.daStandardVersoTestuale(schedule.getStartDate().toString()), ConvertitoreData.daStandardVersoTestuale(schedule.getEndDate().toString()), schedule.isIllegal(),schedule.getId());
+        //return new ScheduloDTO(ConvertitoreData.daStandardVersoTestuale(schedule.getStartDate().toString()), ConvertitoreData.daStandardVersoTestuale(schedule.getEndDate().toString()), schedule.isIllegal(),schedule.getId());
+        return null;
     }
 
     public static List<ScheduloDTO> scheduloEntitytoDTO(List<Schedule> schedulazioni){

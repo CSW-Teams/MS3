@@ -1,6 +1,5 @@
 package org.cswteams.ms3.entity;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.cswteams.ms3.entity.condition.*;
@@ -26,7 +25,7 @@ public class Doctor extends User{
     private Long id;
 
     @NotNull
-    private Seniority role; // TODO: See if seniority is a class instead of an enum
+    private Seniority seniority; // TODO: See if seniority is a class instead of an enum
 
     @ManyToMany
     private final List<PermanentCondition> permanentConditions = new ArrayList<>();
@@ -53,15 +52,15 @@ public class Doctor extends User{
      * @param birthday
      * @param email
      * @param password
-     * @param role
+     * @param seniority
      * @param systemActor
      */
     public Doctor(String name, String lastname, String taxCode,
                   LocalDate birthday, String email, String password,
-                  Seniority role, SystemActor systemActor) {
+                  Seniority seniority, SystemActor systemActor) {
         super(name,lastname,taxCode,birthday,email,password,systemActor);
         this.maxWeekSchedulableHours = -1;
-        this.role = role;
+        this.seniority = seniority;
     }
 
 

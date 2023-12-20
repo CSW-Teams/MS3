@@ -1,35 +1,46 @@
-package org.cswteams.ms3.control.turni;
+package org.cswteams.ms3.control.task;
 
-import org.cswteams.ms3.control.utils.MappaTurni;
-import org.cswteams.ms3.dao.TurnoDao;
-import org.cswteams.ms3.dto.RotationDTO;
+import org.cswteams.ms3.dao.TaskDAO;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.exception.TurnoException;
+import org.cswteams.ms3.exception.ShiftException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
 @Service
-public class ControllerTurni implements IControllerTurni {
+public class TaskController implements ITaskController {
 
     @Autowired
-    TurnoDao turnoDao;
-
+    TaskDAO taskDAO;
+/*
     @Override
     public Set<RotationDTO> leggiTurniDiServizio(String servizio) {
-        return MappaTurni.turnoEntityToDTO(turnoDao.findAllByServizioNome(servizio));
+        //return MappaTurni.turnoEntityToDTO(turnoDao.findAllByServizioNome(servizio));
+        return null;
     }
 
     @Override
     public Set<RotationDTO> leggiTurni() {
-        return MappaTurni.turnoEntityToDTO(turnoDao.findAll());
+        //return MappaTurni.turnoEntityToDTO(turnoDao.findAll());
+        return null;
     }
 
     @Override
-    public Shift creaTurno(RotationDTO turno) throws TurnoException {
-        Shift shiftEntity = MappaTurni.turnoDTOToEntity(turno);
-        return turnoDao.save(shiftEntity);
+    public Shift creaTurno(RotationDTO turno) throws ShiftException {
+        //Shift shiftEntity = MappaTurni.turnoDTOToEntity(turno);
+        //return turnoDao.save(shiftEntity);
+        return null;
+    }*/
+
+    @Override
+    public void addDoctor(Task task, Doctor doctor){
+        task.addDoctor(doctor);
+    }
+
+    @Override
+    public void addService(MedicalService medicalService, Doctor doctor) {
+
     }
 
 }

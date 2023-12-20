@@ -44,7 +44,7 @@ export  class LoginAPI {
 
   /**
    * Richiede al backend la registrazione di un nuovo utente.
-   * @param {*} datiAnagrafici (nome, cognome, dataNascita, codiceFiscale, ruolo, username, password, attore)
+   * @param {*} datiAnagrafici (nome, cognome, dataNascita, codiceFiscale, systemActor, username, password, attore)
    * @returns La risposta del backend
    *
    */
@@ -62,4 +62,3 @@ export  class LoginAPI {
   }
 
 }
-

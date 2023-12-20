@@ -5,14 +5,14 @@ export  class UtenteAPI {
   }
 
   async getAllUser() {
-    const response = await fetch('/api/utenti/');
+    const response = await fetch('/api/users/');
     const body = await response.json();
 
     const utenti = [];
 
     for (let i = 0; i < body.length; i++) {
       const utente = {};
-      utente.text = body[i].nome+" "+body[i].cognome+"  - "+ body[i].ruoloEnum;
+      utente.text = body[i].nome+" "+body[i].cognome+"  - "+ body[i].systemActor;
       utente.id =body[i].id;
       utente.color = teal;
       utenti[i]=utente;
@@ -23,7 +23,7 @@ export  class UtenteAPI {
   }
 
   async getUserDetails(id){
-    const response = await fetch('/api/utenti/utente_id=' + id);
+    const response = await fetch('/api/utenti/user_id=' + id);
     const body = await response.json();
 
     const utente = {};
@@ -34,7 +34,7 @@ export  class UtenteAPI {
     utente.cognome = body.cognome;
     utente.dataNascita = body.dataNascita;
     utente.codiceFiscale = body.codiceFiscale;
-    utente.ruoloEnum = body.ruoloEnum;
+    utente.systemActor = body.systemActor;
     utente.email = body.email;
     utente.attore =body.attore;
     return utente;
@@ -55,7 +55,7 @@ export  class UtenteAPI {
       utente.cognome = body[i].cognome;
       utente.dataNascita = body[i].dataNascita;
       utente.codiceFiscale = body[i].codiceFiscale;
-      utente.ruoloEnum = body[i].ruoloEnum;
+      utente.systemActor = body[i].systemActor;
       utente.email = body[i].email;
       utente.categorie = body[i].categorie;
       utente.attore =body[i].attore;

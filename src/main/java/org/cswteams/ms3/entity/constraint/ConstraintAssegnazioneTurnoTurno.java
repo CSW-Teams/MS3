@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 import java.util.List;
 
 @Entity
-public abstract class ConstraintAssegnazioneTurnoTurno extends MS3Constraint {
+public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
 
     /**
      * Controlla se aTurno2 inizia nello stesso orario in cui finisce aTurno1

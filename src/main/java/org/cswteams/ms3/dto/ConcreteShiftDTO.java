@@ -4,12 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import lombok.Getter;
+import org.cswteams.ms3.enums.TaskEnum;
+import org.cswteams.ms3.enums.TimeSlot;
 
 import java.util.Set;
 
 @Data
 @AllArgsConstructor
-public class AssegnazioneTurnoDTO {
+public class ConcreteShiftDTO {
 
     @Getter
     private Long id;
@@ -26,44 +28,44 @@ public class AssegnazioneTurnoDTO {
     @Getter
     private MedicalServiceDTO servizio;
     @Getter
-    private TipologiaTurno tipologiaTurno;
+    private TimeSlot timeSlot;
 
-    private MansioneEnum mansione;
+    private TaskEnum mansione;
 
     private boolean reperibilitaAttiva;
 
     private Set<DoctorDTO> retiredUsers;
 
-    public AssegnazioneTurnoDTO(Long id, long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TipologiaTurno turno) {
+    public ConcreteShiftDTO(Long id, long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno) {
         this.id = id;
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
-        this.tipologiaTurno = turno;
+        this.timeSlot = turno;
         this.servizio = servizio;
     }
 
-    public AssegnazioneTurnoDTO(Long id, Long idTurno, long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TipologiaTurno turno, boolean reperibilitaAttiva) {
+    public ConcreteShiftDTO(Long id, Long idTurno, long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno, boolean reperibilitaAttiva) {
         this.id = id;
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
-        this.tipologiaTurno = turno;
+        this.timeSlot = turno;
         this.servizio = servizio;
         this.idTurno=idTurno;
         this.reperibilitaAttiva = reperibilitaAttiva;
     }
 
-    public AssegnazioneTurnoDTO(){}
+    protected ConcreteShiftDTO(){}
 
-    public AssegnazioneTurnoDTO(long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TipologiaTurno turno) {
+    public ConcreteShiftDTO(long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno) {
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
         this.utentiDiGuardia = utentiDiGuardia;
         this.utentiReperibili = utentiReperibili;
-        this.tipologiaTurno = turno;
+        this.timeSlot = turno;
         this.servizio = servizio;
     }
 

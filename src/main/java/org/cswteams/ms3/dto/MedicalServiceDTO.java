@@ -1,24 +1,24 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
-import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.entity.Task;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class ServizioDTO {
+public class MedicalServiceDTO {
 
     private String nome;
-    private List<MansioneEnum> mansioni = new ArrayList<>();
+    private List<Task> mansioni = new ArrayList<>();
 
-    public ServizioDTO(String nome, List<MansioneEnum> mansioni){
+    public MedicalServiceDTO(String nome, List<Task> mansioni){
         this.nome = nome;
         this.mansioni = mansioni;
     }
 
-    public ServizioDTO(String nome){
+    public MedicalServiceDTO(String nome){
         this.nome = nome;
     }
-    public ServizioDTO(){}
+    public MedicalServiceDTO(){}
 }

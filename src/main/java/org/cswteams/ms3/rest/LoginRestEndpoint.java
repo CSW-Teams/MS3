@@ -19,10 +19,12 @@ public class LoginRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDto) {
-        DoctorDTO u = controllerLogin.autenticaUtente(loginDto);
-            if (u != null) {
-                return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
-            }
+        System.out.println(loginDto.getEmail() + " " + loginDto.getPassword());
+        DoctorDTO u = controllerLogin.authenticateUser(loginDto);
+        System.out.println(u.getName());
+        if (u != null) {
+            return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
+        }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

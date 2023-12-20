@@ -5,6 +5,6 @@ import org.cswteams.ms3.dto.DoctorDTO;
 
 public interface IControllerLogin {
 
-    DoctorDTO autenticaUtente(LoginDTO loginDTO);
+    DoctorDTO authenticateUser(LoginDTO loginDTO);
 
 }

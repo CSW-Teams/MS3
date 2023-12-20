@@ -12,7 +12,7 @@ public interface HolidayDao extends JpaRepository<Holiday, Long>{
 
     /** Ritrova tutte le festività registrate*/
     List<Holiday> findAll();
-    
+
     /** Ritrova tutti i periodi di festività con il nome indicato */
     List<Holiday>findByName(String name);
 

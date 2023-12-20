@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table(name = "ms3_constraint")
-public abstract class MS3Constraint {
+public abstract class Constraint {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "constraint_id_seq")
     @SequenceGenerator(name = "constraint_id_seq", sequenceName = "constraint_id_seq")

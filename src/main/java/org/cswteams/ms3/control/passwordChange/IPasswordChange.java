@@ -1,8 +1,8 @@
-package org.cswteams.ms3.control.cambiaPassword;
+package org.cswteams.ms3.control.passwordChange;
 
 import org.cswteams.ms3.dto.PasswordDTO;
 
-public interface IControllerPassword {
+public interface IPasswordChange {
 
-    void cambiaPassword(PasswordDTO dto) throws Exception;
+    void changePassword(PasswordDTO dto) throws Exception;
 }
