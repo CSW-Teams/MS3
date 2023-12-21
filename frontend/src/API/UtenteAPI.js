@@ -8,22 +8,23 @@ export  class UtenteAPI {
     const response = await fetch('/api/users/');
     const body = await response.json();
 
-    const utenti = [];
+    const userList = [];
 
     for (let i = 0; i < body.length; i++) {
-      const utente = {};
-      utente.text = body[i].nome+" "+body[i].cognome+"  - "+ body[i].systemActor;
-      utente.id =body[i].id;
-      utente.color = teal;
-      utenti[i]=utente;
+      const user = {};
+      console.log("fadsfds " + body[i].name);
+      user.text = body[i].name+" "+body[i].lastname+"  - "+ body[i].systemActor;
+      user.id =body[i].id;
+      user.color = teal;
+      userList[i]=user;
     }
 
-    return utenti;
+    return userList;
 
   }
 
   async getUserDetails(id){
-    const response = await fetch('/api/utenti/user_id=' + id);
+    const response = await fetch('/api/users/user_id=' + id);
     const body = await response.json();
 
     const utente = {};
@@ -42,7 +43,7 @@ export  class UtenteAPI {
   }
 
   async getAllUsersInfo() {
-    const response = await fetch('/api/utenti/');
+    const response = await fetch('/api/users/');
     const body = await response.json();
 
     const utenti = [];

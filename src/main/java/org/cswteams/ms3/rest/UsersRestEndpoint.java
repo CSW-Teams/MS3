@@ -28,6 +28,7 @@ public class UsersRestEndpoint {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllUsers() {
         Set<DoctorDTO> utenti = controllerUtente.getAllUsers();
+        System.out.println("fadsfjadsfdw " + utenti);
         return new ResponseEntity<>(utenti, HttpStatus.FOUND);
     }
 

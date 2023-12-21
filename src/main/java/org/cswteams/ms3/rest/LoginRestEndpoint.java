@@ -19,9 +19,7 @@ public class LoginRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDto) {
-        System.out.println(loginDto.getEmail() + " " + loginDto.getPassword());
         DoctorDTO u = controllerLogin.authenticateUser(loginDto);
-        System.out.println(u.getName());
         if (u != null) {
             return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
         }

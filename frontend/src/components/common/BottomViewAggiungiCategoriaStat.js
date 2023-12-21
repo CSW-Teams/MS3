@@ -2,7 +2,7 @@ import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
-import SelectCategoria from './SelectCategoria';
+//import SelectCategoria from './SelectCategoria';
 import SelectCategoriaStato from './SelectCategoriaStato';
 
 import Button from '@mui/material/Button';
@@ -14,12 +14,9 @@ export default function TemporaryDrawer(props) {
 
   const [dataInizio,setDataInizio] = React.useState("")
   const [dataFine,setDataFine] = React.useState("")
-  const [categoria,setCategoria] = React.useState("")
+  const [permanentCondition,setPermanentCondition] = React.useState("")
+  const [temporaryCondition,setTemporaryCondition] = React.useState("")
   const [state, setState] = React.useState({bottom: false});
-
-  //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
-  async function getCategoria() {
-  }
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare la data.
   //Viene passata al componente <BasicDatePicker>
@@ -33,8 +30,14 @@ export default function TemporaryDrawer(props) {
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
   //Viene passata al componente <MultipleSelect>
-  const handleCategoria = (categoria) => {
-    setCategoria(categoria);
+  const handlePermanentCondition = (permanentCondition) => {
+    setPermanentCondition(permanentCondition);
+  }
+
+  //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
+  //Viene passata al componente <MultipleSelect>
+  const handleTemporaryCondition = (temporaryCondition) => {
+    setTemporaryCondition(temporaryCondition);
   }
 
   //Funzione che apre la schermata secondaria che permette di creare un associazione.
@@ -59,7 +62,7 @@ export default function TemporaryDrawer(props) {
     let index = url.lastIndexOf("/");
     let utente_id = url.substring(index+1);
     let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-    status = await categoriaUtenteAPI.postAggiungiStato(categoria, dataInizio, dataFine, utente_id)
+    status = await categoriaUtenteAPI.postAggiungiStato(permanentCondition,temporaryCondition, dataInizio, dataFine, utente_id)
 
     props.onPostAssegnazione()
 
@@ -112,8 +115,10 @@ export default function TemporaryDrawer(props) {
                 <BasicDatePicker  onSelectData={handleDataInizio}></BasicDatePicker>
               <label>Data fine</label>
               <BasicDatePicker  onSelectData={handleDataFine}></BasicDatePicker>
-              <label>Stato utente</label>
-              <SelectCategoriaStato onSelectCategoria = {handleCategoria} ></SelectCategoriaStato>
+              <label>Condizione permanente utente</label>
+              <SelectCategoriaStato onSelectCategoria = {handlePermanentCondition} ></SelectCategoriaStato>
+              <label>Condizione temporanea utente</label>
+              <SelectCategoriaStato onSelectCategoria = {handleTemporaryCondition} ></SelectCategoriaStato>
 
               <Button variant="contained" size="small" onClick={AggiungiCategoriaStato('bottom', false)}>
                 <i className="fa fa-plus" aria-hidden="true"> </i>

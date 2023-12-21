@@ -1,6 +1,6 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
-import {Utente} from "./Utente";
+import {User} from "./User";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -36,7 +36,7 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
           let currentUserDto = body[i].utentiDiGuardia[j];
-          let utenteAllocato = new Utente(
+          let utenteAllocato = new User(
             currentUserDto.id,
             currentUserDto.nome,
             currentUserDto.cognome,
@@ -48,7 +48,7 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].utentiReperibili.length; j++) {
           let currentUserDto = body[i].utentiReperibili[j];
-          let utenteReperibile = new Utente(
+          let utenteReperibile = new User(
             currentUserDto.id,
             currentUserDto.nome,
             currentUserDto.cognome,
@@ -60,7 +60,7 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].retiredUsers.length; j++) {
           let currentUserDto = body[i].retiredUsers[j];
-          let utenteRimosso = new Utente(
+          let utenteRimosso = new User(
             currentUserDto.id,
             currentUserDto.nome,
             currentUserDto.cognome,

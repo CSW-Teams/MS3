@@ -2,6 +2,7 @@ package org.cswteams.ms3.control.utils;
 
 import org.cswteams.ms3.dto.DoctorDTO;
 import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.User;
 
 import java.util.HashSet;
 import java.util.List;
@@ -36,10 +37,10 @@ public class MappaUtenti {
         return doctorDTOS;
     }
 
-    public static Set<DoctorDTO> utentiEntityToDTO(List<Doctor> utenti){
+    public static Set<DoctorDTO> utentiEntityToDTO(List<User> users){
         Set<DoctorDTO> doctorDTOS = new HashSet<>();
-        for (Doctor entity: utenti){
-            doctorDTOS.add(utenteEntityToDTO(entity));
+        for (User user: users){
+            doctorDTOS.add(utenteEntityToDTO(user));
         }
         return doctorDTOS;
     }
