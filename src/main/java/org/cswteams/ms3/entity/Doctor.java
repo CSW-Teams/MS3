@@ -53,12 +53,12 @@ public class Doctor extends User{
      * @param email
      * @param password
      * @param seniority
-     * @param systemActor
+     * @param roles
      */
     public Doctor(String name, String lastname, String taxCode,
                   LocalDate birthday, String email, String password,
-                  Seniority seniority, SystemActor systemActor) {
-        super(name,lastname,taxCode,birthday,email,password,systemActor);
+                  Seniority seniority, List<SystemActor> roles) {
+        super(name,lastname,taxCode,birthday,email,password,roles);
         this.maxWeekSchedulableHours = -1;
         this.seniority = seniority;
     }

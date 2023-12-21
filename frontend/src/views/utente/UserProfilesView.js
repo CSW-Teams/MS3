@@ -22,9 +22,9 @@ export default class UserProfilesView extends React.Component{
     super(props);
     this.state = {
       utenti: [],
-      orderBy: "nome",
+      orderBy: "name",
       comparator: defaultComparator,
-      attore : localStorage.getItem("attore"),
+      attore : localStorage.getItem("actor"),
     }
     this.setOrderBy = this.setOrderBy.bind(this);
   }

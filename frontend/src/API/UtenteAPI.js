@@ -12,6 +12,7 @@ export  class UtenteAPI {
 
     for (let i = 0; i < body.length; i++) {
       const user = {};
+      //TODO remove
       console.log("fadsfds " + body[i].name);
       user.text = body[i].name+" "+body[i].lastname+"  - "+ body[i].systemActor;
       user.id =body[i].id;

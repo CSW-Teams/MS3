@@ -40,7 +40,7 @@ public class MappaUtenti {
     public static Set<DoctorDTO> utentiEntityToDTO(List<User> users){
         Set<DoctorDTO> doctorDTOS = new HashSet<>();
         for (User user: users){
-            doctorDTOS.add(utenteEntityToDTO(user));
+            //doctorDTOS.add(utenteEntityToDTO(user));
         }
         return doctorDTOS;
     }
