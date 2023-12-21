@@ -8,8 +8,8 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
-@MappedSuperclass
 @Data
+@Entity
 @Table(name = "ms3_system_user")
 public class User {
     @Id
