@@ -1,4 +1,4 @@
-package org.cswteams.ms3.dto;
+package org.cswteams.ms3.dto.login;
 
 import lombok.Data;
 

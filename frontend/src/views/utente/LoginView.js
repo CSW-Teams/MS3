@@ -55,7 +55,9 @@ export default class LoginView extends React.Component {
 
         break;
       default:
-        toast.error('Autenticazione Fallita. Riprova inserendo le credenziali corrette.', {
+
+        const errorMessage = await httpResponse.text();
+        toast.error(`Autenticazione Fallita. ${errorMessage}.`, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
