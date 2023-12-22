@@ -9,6 +9,8 @@ import Button from '@mui/material/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
+import {SpecializationsAPI} from "../../API/SpecializationsAPI";
+
 
 export default function TemporaryDrawer(props) {
 

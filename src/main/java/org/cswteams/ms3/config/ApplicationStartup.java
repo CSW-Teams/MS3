@@ -48,7 +48,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private TemporaryConditionDAO temporaryConditionDAO;
 
     @Autowired
-    private SpecializationDao specializationDao;
+    private SpecializationDAO specializationDao;
 
     @Autowired
     private IHolidayController holidayController;

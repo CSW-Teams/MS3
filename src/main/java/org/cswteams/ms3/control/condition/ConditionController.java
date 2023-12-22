@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.condition;
 
 import org.cswteams.ms3.dao.PermanentConditionDao;
-import org.cswteams.ms3.dao.SpecializationDao;
+import org.cswteams.ms3.dao.SpecializationDAO;
 import org.cswteams.ms3.dao.TemporaryConditionDAO;
 import org.cswteams.ms3.dto.category.PermanentConditionDTO;
 import org.cswteams.ms3.dto.category.SpecializationDTO;
@@ -21,11 +21,11 @@ public class ConditionController implements IConditionController {
 
 
     @Autowired
-    PermanentConditionDao permanentConditionDao;
+    private PermanentConditionDao permanentConditionDao;
     @Autowired
-    TemporaryConditionDAO temporaryConditionDAO;
+    private TemporaryConditionDAO temporaryConditionDAO;
     @Autowired
-    SpecializationDao specializationDao;
+    private SpecializationDAO specializationDao;
 
 
     @Override

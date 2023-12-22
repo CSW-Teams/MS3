@@ -1,5 +1,5 @@
-export class SpecializationAPI{
-    async getSpecializations() {
+export class SpecializationsAPI{
+    async getAllPossibleSpecializations() {
 
         const response = await fetch('/api/specializations/');
         const body = await response.json();
@@ -13,7 +13,7 @@ export class SpecializationAPI{
         return specializations;
     }
 
-    async getDoctorSpecializations(idUtente) {
+    async getSingleDoctorSpecializations(idUtente) {
         const response = await fetch('/api/specializations/doctor_id='+idUtente);
         const body = await response.json();
         const specializationList = [];

@@ -30,7 +30,7 @@ public class UserController implements IUserController {
         List<User> userList = userDAO.findAll();
         Set<DoctorDTO> doctorDTOSet = new HashSet<>();
         for (User user: userList){
-            doctorDTOS.add(utenteEntityToDTO(user));
+            //doctorDTOS.add(utenteEntityToDTO(user));
         }
 
         return doctorDTOSet;

@@ -1,10 +1,19 @@
 package org.cswteams.ms3.rest;
 
+import org.cswteams.ms3.control.specializations.SpecializationsController;
+import org.cswteams.ms3.control.user.UserController;
+import org.cswteams.ms3.dto.DoctorDTO;
+import org.cswteams.ms3.dto.singleDoctorSpecializations.SingleDoctorSpecializationsDTO;
+import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.Specialization;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.HashSet;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/specializations/")
@@ -15,11 +24,24 @@ public class ManageSpecializationsEndPoint {
     @Autowired
     private IControllerCategorie controllerCategorie;*/
 
+    @Autowired
+    private SpecializationsController specializationsController;
+
+
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> leggiSpecializzazioni() throws ParseException {
+    public ResponseEntity<?> getAllPossibleSpecializations() throws ParseException {
         /*Set<CategoriaDTO> categorie = controllerCategorie.leggiCategorieSpecializzazioni();
         return new ResponseEntity<>(categorie, HttpStatus.FOUND);*/
         return null;
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/doctor_id={doctorID}")
+    public ResponseEntity<?> getSingleDoctorSpecializations(@PathVariable Long doctorID) throws ParseException {
+        SingleDoctorSpecializationsDTO doctorSpecializations = specializationsController.getSingleDoctorSpecializations(doctorID);
+        if(doctorSpecializations != null){
+            return new ResponseEntity<>(doctorSpecializations, HttpStatus.FOUND);
+        }
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/turnazioni/")
