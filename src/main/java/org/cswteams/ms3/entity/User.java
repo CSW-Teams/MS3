@@ -7,9 +7,10 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
 
-@Entity
 @Data
+@Entity
 @Table(name = "ms3_system_user")
 public class User {
     @Id
@@ -36,8 +37,9 @@ public class User {
     @NotNull
     private String password;
 
-    @NotNull
-    private SystemActor systemActor;
+    @Enumerated
+    @ElementCollection(targetClass = SystemActor.class)
+    private List<SystemActor> roles;
 
 
     /**
@@ -49,17 +51,17 @@ public class User {
      * @param birthday Date of birth
      * @param email E-mail of the user
      * @param password Password of the user
-     * @param systemActor Role of the user in the system (configurator/planner/doctor/user)
+     * @param roles list of roles of the user in the system (configurator/planner/doctor/user)
      */
     public User(String name, String lastname, String taxCode,
-                LocalDate birthday, String email, String password, SystemActor systemActor){
+                LocalDate birthday, String email, String password, List<SystemActor> roles){
         this.name = name;
         this.lastname = lastname;
         this.taxCode = taxCode;
         this.birthday = birthday;
         this.email = email;
         this.password = password;
-        this.systemActor = systemActor;
+        this.roles = roles;
     }
 
     /**

@@ -37,6 +37,7 @@ public class MappaUtenti {
         return doctorDTOS;
     }
 
+    /* todo: dà errore, non lo correggo perché non credo serva più
     public static Set<DoctorDTO> utentiEntityToDTO(List<User> users){
         Set<DoctorDTO> doctorDTOS = new HashSet<>();
         for (User user: users){
@@ -44,5 +45,7 @@ public class MappaUtenti {
         }
         return doctorDTOS;
     }
+
+     */
 
 }

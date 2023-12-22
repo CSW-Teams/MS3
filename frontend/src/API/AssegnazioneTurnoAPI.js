@@ -1,6 +1,6 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
-import {User} from "./User";
+import {User} from "../entities/User";
 
 export  class AssegnazioneTurnoAPI {
 
