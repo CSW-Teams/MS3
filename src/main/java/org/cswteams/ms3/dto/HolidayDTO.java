@@ -3,9 +3,9 @@ package org.cswteams.ms3.dto;
 import java.time.LocalDate;
 
 import lombok.Getter;
-import org.cswteams.ms3.enums.HolidayCategory;
 
 import lombok.Data;
+import org.cswteams.ms3.enums.HolidayCategory;
 
 @Data
 public class HolidayDTO {

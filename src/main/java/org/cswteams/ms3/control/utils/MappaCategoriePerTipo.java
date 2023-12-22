@@ -1,17 +1,13 @@
 package org.cswteams.ms3.control.utils;
 
 import lombok.Data;
-import org.cswteams.ms3.dto.CategoriaDTO;
-import org.cswteams.ms3.dto.CategoriaUtenteDTO;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.entity.CategoriaUtente;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
 public class MappaCategoriePerTipo {
-
+/*
     public static Categoria CategoriaDTOtoEntity(CategoriaDTO categoriaDTO) {
         return new Categoria(categoriaDTO.getNome(),categoriaDTO.getTipo());
     }
@@ -26,5 +22,5 @@ public class MappaCategoriePerTipo {
             categoriaDTOS.add(CategoriatoDTO(entity));
         }
         return categoriaDTOS;
-    }
+    }*/
 }

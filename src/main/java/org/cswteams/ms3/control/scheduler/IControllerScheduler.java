@@ -2,13 +2,11 @@ package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ScheduloDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
@@ -31,13 +29,13 @@ public interface IControllerScheduler {
      */
     Schedule createSchedule(@NotNull LocalDate startDate, @NotNull LocalDate endDate);
     boolean rigeneraSchedule(long id) throws UnableToBuildScheduleException;
-    Schedule aggiungiAssegnazioneTurno(@NotNull AssegnazioneTurno assegnazioneTurno, boolean forced) throws IllegalScheduleException;
+    Schedule aggiungiAssegnazioneTurno(@NotNull ConcreteShift concreteShift, boolean forced) throws IllegalScheduleException;
     Schedule modificaAssegnazioneTurno(@NotNull ModificaAssegnazioneTurnoDTO assegnazioneTurno) throws IllegalScheduleException;
     List<ScheduloDTO> leggiSchedulazioni();
     List<ScheduloDTO> leggiSchedulazioniIllegali();
 
     boolean rimuoviSchedulo(long id);
-    void rimuoviAssegnazioneTurnoSchedulo(@NotNull AssegnazioneTurno assegnazioneTurnoOld);
+    void rimuoviAssegnazioneTurnoSchedulo(@NotNull ConcreteShift concreteShiftOld);
     boolean rimuoviAssegnazioneTurno(@NotNull Long idAssegnazione);
 
     Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException;

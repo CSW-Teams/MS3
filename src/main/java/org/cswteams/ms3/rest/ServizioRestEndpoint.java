@@ -1,10 +1,7 @@
 package org.cswteams.ms3.rest;
 
-import org.cswteams.ms3.control.servizi.ControllerServizi;
-import org.cswteams.ms3.control.servizi.IControllerServizi;
-import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
+import org.cswteams.ms3.dto.MedicalServiceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,22 +15,27 @@ import java.util.Set;
 public class ServizioRestEndpoint {
 
     @Autowired
-    IControllerServizi controllerServizi;
+    IMedicalServiceController controllerServizi;
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiServizi() throws ParseException {
-        Set<ServizioDTO> servizi = controllerServizi.leggiServizi();
+        Set<MedicalServiceDTO> servizi = controllerServizi.leggiServizi();
+        if (servizi == null || servizi.isEmpty()) {
+            System.out.println("sono qui");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        System.out.println("invece sono qui");
         return new ResponseEntity<>(servizi, HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.GET,path = "nome/{nomeServizio}")
     public ResponseEntity<?> leggiServizio(@PathVariable String nomeServizio)  {
-        ServizioDTO servizio = controllerServizi.leggiServizioByNome(nomeServizio);
+        MedicalServiceDTO servizio = controllerServizi.leggiServizioByNome(nomeServizio);
         return new ResponseEntity<>(servizio, HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaServizio(@RequestBody(required = true) ServizioDTO servizio) {
+    public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceDTO servizio) {
         if (servizio != null) {
             return new ResponseEntity<>(controllerServizi.creaServizio(servizio), HttpStatus.ACCEPTED);
         }

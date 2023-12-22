@@ -1,5 +1,5 @@
 import React from 'react';
-import {UtenteAPI} from "../../API/UtenteAPI";
+import {UserAPI} from "../../API/UserAPI";
 import {
   MDBCard,
   MDBCardBody,
@@ -41,7 +41,7 @@ export default class UserProfileView extends React.Component{
   async componentDidMount() {
     let id = this.props.match.params.idUser;
     let attore = localStorage.getItem("attore");
-    let utente = await(new UtenteAPI().getUserDetails(id));
+    let utente = await(new UserAPI().getUserDetails(id));
     let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
     let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
     let turnazioni_utente = await(new CategoriaUtenteAPI().getTurnazioniUtente(id))

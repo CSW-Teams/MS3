@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
-import { UtenteAPI } from '../../API/UtenteAPI';
+import { UserAPI } from '../../API/UserAPI';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { ToastContainer, toast } from 'react-toastify';
@@ -45,7 +45,7 @@ export default function TemporaryDrawer(props) {
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
-    let userApi = new UtenteAPI();
+    let userApi = new UserAPI();
     let utenti = await userApi.getAllUsersInfo()
     setUser(utenti);
   }

@@ -1,5 +1,5 @@
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
-import { UtenteAPI } from '../../API/UtenteAPI';
+import { UserAPI } from '../../API/UserAPI';
 import ScheduleView  from "./ScheduleView.js"
 import {AppointmentSingleContent} from "../../components/common/CustomAppointmentComponents.js"
 import React from "react";
@@ -20,7 +20,7 @@ export default class SingleScheduleView extends ScheduleView {
     let turni = await apiTurno.getTurnByIdUser(localStorage.getItem("id"));
 
     // FIXME: Only colleagues should be queried here, not all users
-    let utenti = await (new UtenteAPI()).getAllUser();
+    let utenti = await (new UserAPI()).getAllUser();
 
     this.setState(
       {appointmentContentComponent:AppointmentSingleContent},

@@ -1,9 +1,9 @@
 package org.cswteams.ms3.control.richiestaRimozioneDaTurno;
 
 import org.cswteams.ms3.dto.RichiestaRimozioneDaTurnoDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.RichiestaRimozioneDaTurno;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.RequestRemovalFromConcreteShift;
+import org.cswteams.ms3.entity.User;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +23,7 @@ public interface IControllerRichiestaRimozioneDaTurno {
      * @throws DatabaseException          in caso di errori durante la ricerca di dati in base dati
      * @throws AssegnazioneTurnoException in caso di errori durante la ricerca di dati in base dati
      */
-    RichiestaRimozioneDaTurno creaRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException;
+    RequestRemovalFromConcreteShift creaRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException;
 
     /**
      * Registra una nuova richiesta di rimozione da turno, dati l'utente richiedente ed il turno per il quale si fa richiesta.
@@ -35,7 +35,7 @@ public interface IControllerRichiestaRimozioneDaTurno {
      * @throws DatabaseException          in caso di errori durante la ricerca di dati in base dati
      * @throws AssegnazioneTurnoException in caso di errori durante la ricerca di dati in base dati
      */
-    RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(AssegnazioneTurno assegnazioneTurno, Utente utente, String descrizione) throws DatabaseException, AssegnazioneTurnoException;
+    RequestRemovalFromConcreteShift _creaRichiestaRimozioneDaTurno(ConcreteShift assegnazioneTurno, User utente, String descrizione) throws DatabaseException, AssegnazioneTurnoException;
 
     /**
      * Lettura di tutte le richieste di rimozione da turno presenti in base dati.
@@ -74,7 +74,7 @@ public interface IControllerRichiestaRimozioneDaTurno {
      * @return oggetto relativo alla richiesta di rimozione da turno, opportunamente aggiornato con l'esito fornito
      * @throws DatabaseException in caso di errori durante la ricerca di dati in base dati
      */
-    RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException;
+    RequestRemovalFromConcreteShift risolviRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException;
 
     /**
      * Permette il caricamento di un allegato (facoltativo) per una data richiesta di rimozione da turno assegnato.
@@ -85,5 +85,5 @@ public interface IControllerRichiestaRimozioneDaTurno {
      * @throws IOException       in caso di errori di I/O
      * @throws DatabaseException in caso di errori durante la ricerca di dati in base dati
      */
-    RichiestaRimozioneDaTurno caricaAllegato(@NotNull Long idRichiestaRimozioneDaTurno, @NotNull MultipartFile allegato) throws IOException, DatabaseException;
+    RequestRemovalFromConcreteShift caricaAllegato(@NotNull Long idRichiestaRimozioneDaTurno, @NotNull MultipartFile allegato) throws IOException, DatabaseException;
 }

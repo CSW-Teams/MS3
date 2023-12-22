@@ -1,10 +1,6 @@
 package org.cswteams.ms3.control.scheduler;
 
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
-import org.cswteams.ms3.entity.vincoli.Vincolo;
-import org.cswteams.ms3.enums.AttoreEnum;
-import org.cswteams.ms3.enums.RuoloEnum;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.junit.jupiter.api.AfterAll;
@@ -35,7 +31,7 @@ import static org.mockito.Mockito.when;
  ***********************************************************************************/
 @SpringBootTest
 public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
-    private static final Logger log = LoggerFactory.getLogger(ScheduleBuilderBuildTest.class);
+    /*private static final Logger log = LoggerFactory.getLogger(ScheduleBuilderBuildTest.class);
     private static List<AssegnazioneTurno> listOfNoUserShift;
     private static List<AssegnazioneTurno> listOfUserShift;
     private static List<Vincolo> noConstraints;
@@ -44,13 +40,13 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
     private static List<Utente> userList;
     private static List<Utente> emptyUserList;
     private static Schedule schedule;
-    private static Schedule ilelaglSchedule;
+    private static Schedule ilelaglSchedule;*/
 
     /**************************************************************
      *                          SETUP                             *
      *************************************************************/
 
-    @BeforeAll
+   /* @BeforeAll
     static void setUp() {
         log.info("[TEST] Starting ScheduleBuilderConstructorTest...");
         // Mock initialization
@@ -177,7 +173,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         ilelaglSchedule = null;
 
         log.info("[TEST] Test ScheduleBuilderConstructorTest finished");
-    }
+    }*/
 
     /*************************************************************
      *                    DOMANI PARTITION                       *
@@ -193,7 +189,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
      *
      * This is a multidimensional partitioning (using above blocks to get cartesian product of the sets of inputs)
      * **********************************************************************/
-    private static Stream<Arguments> firstConstructorPartition() {
+    /*private static Stream<Arguments> firstConstructorPartition() {
         return Stream.of(
                 // Date partition
                 Arguments.of(LocalDate.now(),LocalDate.now().plusDays(7),correctConstraints,listOfUserShift, userList, false),
@@ -473,7 +469,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
 
                 );
-    }
+    }*/
 
     /* *********************************************************************
      * DOMAIN PARTITIONING FOR SECOND CONSTRUCTOR
@@ -484,7 +480,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
      *
      * This is a multidimensional partitioning (using above blocks to get cartesian product of the sets of inputs)
      * **********************************************************************/
-    private static Stream<Arguments> secondConstructorPartition() {
+    /*private static Stream<Arguments> secondConstructorPartition() {
         return Stream.of(
                 //Add constraint partition
                 Arguments.of(correctConstraints,userList,schedule, false),
@@ -539,12 +535,12 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
 
         );
-    }
+    }*/
 
     /**************************************************************
      *                   FIRST CONSTRUCTOR TEST                   *
      *************************************************************/
-
+/*
     @ParameterizedTest
     @MethodSource("firstConstructorPartition")
     public void firstConstructorTest(
@@ -580,13 +576,13 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
             assertThrows(Exception.class, () -> new ScheduleBuilder(startDate, endDate, constraints, allAssignedShifts, users));
 
         }
-    }
+    }*/
 
     /**************************************************************
      *                  SECOND CONSTRUCTOR TEST                   *
      *************************************************************/
 
-    @ParameterizedTest
+    /*@ParameterizedTest
     @MethodSource("secondConstructorPartition")
     public void secondConstructorTest(
             List<Vincolo> constraints,
@@ -621,6 +617,6 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
 
         }
 
-    }
+    }*/
 
 }

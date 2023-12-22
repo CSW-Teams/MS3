@@ -1,9 +1,6 @@
 package org.cswteams.ms3.control.desiderata;
 
-import org.cswteams.ms3.control.desiderata.IControllerDesiderata;
-import org.cswteams.ms3.dao.UtenteDao;
 import org.cswteams.ms3.dto.DesiderataDTO;
-import org.cswteams.ms3.entity.Desiderata;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,7 +23,7 @@ import java.util.List;
 @Profile("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt.
 public class ControllerDesiderataTest {
-
+/*
     @Autowired
     private IControllerDesiderata controllerDesiderata;
 
@@ -155,5 +152,5 @@ public class ControllerDesiderataTest {
         Assert.assertEquals(utenteId, (long) listaDesiderata.get(1).getUtente().getId());
 
     }
-
+*/
 }

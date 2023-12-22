@@ -2,8 +2,9 @@ package org.cswteams.ms3.rest;
 
 
 import org.cswteams.ms3.control.login.IControllerLogin;
-import org.cswteams.ms3.dto.LoginDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.dto.login.LoggedUserDTO;
+import org.cswteams.ms3.dto.login.LoginDTO;
+import org.cswteams.ms3.exception.login.InvalidEmailAddressException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,13 @@ public class LoginRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDto) {
-        UtenteDTO u = controllerLogin.autenticaUtente(loginDto);
-            if (u != null) {
+        LoggedUserDTO u = null;
+        try {
+            u = controllerLogin.authenticateUser(loginDto);
+        } catch (InvalidEmailAddressException e) {
+            throw new RuntimeException(e);
+        }
+        if (u != null) {
                 return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
             }
 

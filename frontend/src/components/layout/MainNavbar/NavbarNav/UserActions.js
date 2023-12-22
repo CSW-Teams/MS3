@@ -16,8 +16,8 @@ export default class UserActions extends React.Component {
 
     this.state = {
       visible: false,
-      nome : localStorage.getItem("nome"),
-      cognome: localStorage.getItem("cognome"),
+      nome : localStorage.getItem("name"),
+      cognome: localStorage.getItem("lastname"),
     };
 
     this.toggleUserActions = this.toggleUserActions.bind(this);
@@ -25,8 +25,8 @@ export default class UserActions extends React.Component {
 
   async componentDidMount() {
     this.setState({
-      nome: localStorage.getItem("nome"),
-      cognome : localStorage.getItem("cognome")
+      nome: localStorage.getItem("name"),
+      cognome : localStorage.getItem("lastname")
     })
   }
 

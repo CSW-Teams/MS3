@@ -1,51 +1,44 @@
 package org.cswteams.ms3.control.scheduler;
 
-import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
+import java.time.LocalDate;
+import java.util.*;
+
 import org.cswteams.ms3.control.utils.MappaSchedulo;
-import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
 import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ScheduloDTO;
-import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.enums.RequestENUM;
+import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
 public class ControllerScheduler implements IControllerScheduler{
 
     @Autowired
-    private UtenteDao utenteDao;
+    private DoctorDAO doctorDao;
 
     @Autowired
-    private TurnoDao turnoDao;
+    private ShiftDAO shiftDAO;
 
     @Autowired
-    private ScheduleDao scheduleDao;
+    private ScheduleDAO scheduleDao;
 
     @Autowired
     private VincoloDao vincoloDao;
 
     @Autowired
-    private AssegnazioneTurnoDao assegnazioneTurnoDao;
+    private ConcreteShiftDAO concreteShiftDAO;
 
     @Autowired
-    private ScocciaturaDao scocciaturaDao;
-
-    @Autowired
-    private RequestTurnChangeDao requestTurnChangeDao;
+    private ScocciaturaDAO scocciaturaDao;
 
 
 
@@ -60,26 +53,26 @@ public class ControllerScheduler implements IControllerScheduler{
      */
     @Override
     public Schedule createSchedule(@NotNull LocalDate startDate, @NotNull LocalDate endDate)  {
-
+/*
         //Verifico se esiste già uno schedulo per i giorni che voglio pianificare
         if(!check(startDate,endDate))
             return null;
 
         //Data che uso per scorre l'intervallo di giorni
         LocalDate currentDay = startDate;
-        List<AssegnazioneTurno> allAssegnazioni = new ArrayList<>();
+        List<ConcreteShift> allAssegnazioni = new ArrayList<>();
 
         // creo assegnazioni associando una data a ogni turno.
         //Scorro tutti i giorni dell'intervallo. Per ogni giorno scorro tutti i turni.
         while(!currentDay.isAfter(endDate)){
-            for(Turno turno : turnoDao.findAll()){
-                
-                // Possiamo assegnare questo turno a questo giorno solo se il giorno
-                // della settimana è previsto tra quelli ammissibili del turno
-                if (turno.getGiorniDiValidità().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
-                    allAssegnazioni.add(new AssegnazioneTurno(currentDay,turno));
+            for(Shift shift : shiftDAO.findAll()){
+
+                // Possiamo assegnare questo shift a questo giorno solo se il giorno
+                // della settimana è previsto tra quelli ammissibili del shift
+                if (shift.getDaysOfWeek().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
+                    allAssegnazioni.add(new ConcreteShift(currentDay, shift));
                 }
-                
+
             }
 
             //Mi sposto al giorno seguente.
@@ -93,7 +86,7 @@ public class ControllerScheduler implements IControllerScheduler{
                 endDate,    // data fine pianificazione
                 vincoloDao.findAll(),    // tutti i vincoli da rispettare quando si assegna una persona a un turno
                 allAssegnazioni,    // assegnazioni di turno con data (senza partecipanti)
-                utenteDao.findAll() // tutti i candidati da allocare ai turni
+                doctorDao.findAll() // tutti i candidati da allocare ai turni
                 );
 
             this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDao.findAll()));
@@ -102,7 +95,8 @@ public class ControllerScheduler implements IControllerScheduler{
 
         } catch (IllegalScheduleException e) {
             return null;
-        }
+        }*/
+        return null;
     }
 
     /**
@@ -112,7 +106,7 @@ public class ControllerScheduler implements IControllerScheduler{
      */
     @Override
     public boolean rigeneraSchedule(long id) {
-        Optional<Schedule> optionalSchedule = scheduleDao.findById(id);
+       /* Optional<Schedule> optionalSchedule = scheduleDao.findById(id);
         if(optionalSchedule.isEmpty())
             return false;
 
@@ -125,7 +119,7 @@ public class ControllerScheduler implements IControllerScheduler{
         if(!rimuoviSchedulo(id))
             return false;
 
-        createSchedule(startDate,endDate);
+        createSchedule(startDate,endDate);*/
         return true;
     }
 
@@ -135,95 +129,95 @@ public class ControllerScheduler implements IControllerScheduler{
      * Se forced è true l'assegnazione verrà aggiunta solo se vengono rispetatti i vincoli non violabili.
      * Se forced è false l'assegnazione verà aggiunta se vengono rispettati tutti i vincoli.
      */
-    public Schedule aggiungiAssegnazioneTurno(@NotNull AssegnazioneTurno assegnazioneTurno,boolean forced) throws IllegalScheduleException {
-
+    public Schedule aggiungiAssegnazioneTurno(@NotNull ConcreteShift concreteShift, boolean forced) throws IllegalScheduleException {
+/*
         Schedule schedule;
-        
+
         //creo un nuovo builder passandogli uno schedulo già esistente
         this.scheduleBuilder = new ScheduleBuilder(
                 vincoloDao.findAll(), // tutti i vincoli da rispettare quando si assegna una persona a un turno
-                utenteDao.findAll(),  // tutti i candidati da allocare ai turni
-                scheduleDao.findByDateBetween(assegnazioneTurno.getDataEpochDay()) //Schedulo gia esistente
+                doctorDao.findAll(),  // tutti i candidati da allocare ai turni
+                scheduleDao.findByDateBetween(concreteShift.getDate()) //Schedulo gia esistente
         );
 
-        schedule = this.scheduleBuilder.addAssegnazioneTurno(assegnazioneTurno,forced);
-        
+        schedule = this.scheduleBuilder.addAssegnazioneTurno(concreteShift,forced);
+
         // we commit changes to schedule only if they do not taint it
         if (!schedule.isIllegal()){
             scheduleDao.flush();
         }
-        
-        return schedule;
+
+        return schedule;*/
+        return null;
     }
 
     /**
      * Rimuove un assegnazione turno solo dallo schedulo ma non dal database.
-     * @param assegnazioneTurnoOld
+     * @param concreteShiftOld
      */
-    public void rimuoviAssegnazioneTurnoSchedulo(@NotNull AssegnazioneTurno assegnazioneTurnoOld) {
-        Schedule schedule = scheduleDao.findByDateBetween(assegnazioneTurnoOld.getDataEpochDay());
-        schedule.getAssegnazioniTurno().remove(assegnazioneTurnoOld);
-        scheduleDao.flush();
+    public void rimuoviAssegnazioneTurnoSchedulo(@NotNull ConcreteShift concreteShiftOld) {
+        /*Schedule schedule = scheduleDao.findByDateBetween(concreteShiftOld.getDate());
+        schedule.getAssegnazioniTurno().remove(concreteShiftOld);
+        scheduleDao.flush();*/
     }
 
     @Override
     public boolean rimuoviAssegnazioneTurno(@NotNull Long idAssegnazione) {
-        Optional<AssegnazioneTurno> assegnazioneTurno = assegnazioneTurnoDao.findById(idAssegnazione);
+       /* Optional<ConcreteShift> assegnazioneTurno = assegnazioneTurnoDao.findById(idAssegnazione);
         if(assegnazioneTurno.isEmpty())
             return false;
 
         this.rimuoviAssegnazioneTurnoSchedulo(assegnazioneTurno.get());
-        assegnazioneTurnoDao.delete(assegnazioneTurno.get());
+        assegnazioneTurnoDao.delete(assegnazioneTurno.get());*/
         return true;
     }
 
     @Override
     public Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
-        // Per convertire il dto in un entità ho bisogno di un turno che dovrebbe essere
+        /*
+        // Per convertire il dto in un entità ho bisogno di un shift che dovrebbe essere
         // presente nel database
-        List<Turno> turni = turnoDao.findAllByServizioNomeAndTipologiaTurno(assegnazione.getServizio().getNome(), assegnazione.getTipologiaTurno());
+        List<Shift> turni = shiftDAO.findAllByServizioNomeAndTimeSlot(assegnazione.getServizio().getNome(), assegnazione.getTimeSlot());
         if(turni.isEmpty())
-            throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",tipologia turno: "+assegnazione.getTipologiaTurno().toString());
-        Turno turno = null;
-        for(Turno turnodb: turni){
+            throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",tipologia shift: "+assegnazione.getTimeSlot().toString());
+        Shift shift = null;
+        for(Shift turnodb: turni){
             if(turnodb.getMansione().equals(assegnazione.getMansione())){
-                turno = turnodb;
+                shift = turnodb;
                 break;
             }
         }
-        if(turno == null){
-            throw new AssegnazioneTurnoException("Non esiste un turno con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",mansione: "+assegnazione.getMansione().toString());
+        if(shift == null){
+            throw new AssegnazioneTurnoException("Non esiste un shift con la coppia di attributi servizio: "+assegnazione.getServizio().getNome() +",mansione: "+assegnazione.getMansione().toString());
         }
-        AssegnazioneTurno assegnazioneTurno = new AssegnazioneTurno(
-                assegnazione.getGiorno(),
-                turno,
+        ConcreteShift concreteShift = new ConcreteShift(
+                LocalDate.of(assegnazione.getAnno(), assegnazione.getMese(), assegnazione.getGiorno()),
+                shift,
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiReperibili()),
                 MappaUtenti.utenteDTOtoEntity(assegnazione.getUtentiDiGuardia()));
 
 
-        if(!checkAssegnazioneTurno(assegnazioneTurno)){
+        if(!checkAssegnazioneTurno(concreteShift)){
             throw new AssegnazioneTurnoException("Collisione tra utenti reperibili e di guardia");
         }
 
         // Converto il dto in un entità
 
-        return this.aggiungiAssegnazioneTurno(assegnazioneTurno,forced);
-
+        return this.aggiungiAssegnazioneTurno(concreteShift,forced);*/
+        return null;
     }
 
-    private boolean checkAssegnazioneTurno(@NotNull AssegnazioneTurno turno) {
-
-        for(Utente utente1: turno.getUtentiDiGuardia()){
-            for(Utente utente2: turno.getUtentiReperibili()){
-                if (utente1.getId().longValue() == utente2.getId().longValue()){
+    private boolean checkAssegnazioneTurno(@NotNull ConcreteShift turno) {
+/*
+        for(Doctor doctor1 : turno.getDoctorsOnDuty()){
+            for(Doctor doctor2 : turno.getDoctorsOnCall()){
+                if (doctor1.getId().longValue() == doctor2.getId().longValue()){
                     return false;
                 }
             }
-        }
+        }*/
         return true;
     }
-
-
 
     /**
      * Questo metodo modifica un assegnazione turno già esistente. Il suo compito è quello di eliminare
@@ -236,61 +230,57 @@ public class ControllerScheduler implements IControllerScheduler{
     @Override
     @Transactional
     public Schedule modificaAssegnazioneTurno(@NotNull ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO) throws IllegalScheduleException {
-        try {
-            AssegnazioneTurno assegnazioneTurnoOld = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
-            AssegnazioneTurno assegnazioneTurnoNew = assegnazioneTurnoOld.clone();
+/*
+        ConcreteShift concreteShiftOld = assegnazioneTurnoDao.findById(modificaAssegnazioneTurnoDTO.getIdAssegnazione()).get();
+        ConcreteShift concreteShiftNew = concreteShiftOld.clone();
 
-            List<Utente> allUsersOld = assegnazioneTurnoOld.getUtentiAsList();
+        List<Doctor> allUsersOld = concreteShiftOld.getUtentiAsList();
 
-            //Apporto le modifiche sugli utenti allocati , se necessario
-            if (modificaAssegnazioneTurnoDTO.getUtenti_guardia() != null) {
-                assegnazioneTurnoNew.setUtentiDiGuardia(new HashSet<>());
-                for (long idGuardia : modificaAssegnazioneTurnoDTO.getUtenti_guardia()) {
-                    assegnazioneTurnoNew.addUtentediGuardia(utenteDao.findById(idGuardia));
-                }
+        //Apporto le modifiche sugli utenti allocati , se necessario
+        if(modificaAssegnazioneTurnoDTO.getUtenti_guardia()!= null){
+            concreteShiftNew.setDoctorsOnDuty(new HashSet<>());
+            for (long idGuardia: modificaAssegnazioneTurnoDTO.getUtenti_guardia()) {
+                concreteShiftNew.addUtentediGuardia(doctorDao.findById(idGuardia));
             }
-
-            //Apporto le modifiche sugli utenti di riserva , se necessario
-            if (modificaAssegnazioneTurnoDTO.getUtenti_reperibili() != null) {
-                assegnazioneTurnoNew.setUtentiReperibili(new HashSet<>());
-                for (long idReperibile : modificaAssegnazioneTurnoDTO.getUtenti_reperibili()) {
-                    assegnazioneTurnoNew.addUtenteReperibile(utenteDao.findById(idReperibile));
-                }
-            }
-
-            /**
-             * registriamo gli utenti allocati nella vecchia assegnazione turno che non sono
-             * presenti nella nuova asegnazione turno come utenti rimossi, oltre a quelli che
-             * gia erano segnati come rimossi nella vecchia assegnazione turno
-             */
-            assegnazioneTurnoNew.setRetiredUsers(new HashSet<>());
-            for (Utente utente : allUsersOld) {
-                if (!assegnazioneTurnoNew.isAllocated(utente) && !assegnazioneTurnoNew.isReserve(utente)) {
-                    assegnazioneTurnoNew.getRetiredUsers().add(utente);
-                }
-            }
-            assegnazioneTurnoNew.getRetiredUsers().addAll(assegnazioneTurnoOld.getRetiredUsers());
-
-            //rimuovo la vecchia assegnazione e provo ad aggiungere la nuova
-            this.rimuoviAssegnazioneTurnoSchedulo(assegnazioneTurnoOld);
-            Schedule schedule = this.aggiungiAssegnazioneTurno(assegnazioneTurnoNew, true);
-
-            // Se un vincolo è violato riaggiungo l'assegnazione che avevo in precedenza eliminato
-            if (schedule.isIllegal()) {
-                schedule.getAssegnazioniTurno().add(assegnazioneTurnoOld);
-                scheduleDao.flush();
-            } else {
-                //Rimuovo la vecchia assegnazione turno anche dal database
-                this.rimuoviAssegnazioneTurno(assegnazioneTurnoOld.getId());
-            }
-
-            return schedule;
-
-        } catch(NoSuchElementException e){
-            System.out.println("The proposed turn change is invalid: the assigned turn does not exist");
         }
 
-    return null;
+        //Apporto le modifiche sugli utenti di riserva , se necessario
+        if(modificaAssegnazioneTurnoDTO.getUtenti_reperibili()!=null){
+            concreteShiftNew.setDoctorsOnCall(new HashSet<>());
+            for (long idReperibile: modificaAssegnazioneTurnoDTO.getUtenti_reperibili()) {
+                concreteShiftNew.addUtenteReperibile(doctorDao.findById(idReperibile));
+            }
+        }*/
+
+        /**
+         * registriamo gli utenti allocati nella vecchia assegnazione turno che non sono
+         * presenti nella nuova asegnazione turno come utenti rimossi, oltre a quelli che
+         * gia erano segnati come rimossi nella vecchia assegnazione turno
+         */
+        /*concreteShiftNew.setRetiredDoctors(new HashSet<>());
+        for (Doctor doctor : allUsersOld) {
+            if (!concreteShiftNew.isAllocated(doctor) && !concreteShiftNew.isReserve(doctor)){
+                concreteShiftNew.getRetiredDoctors().add(doctor);
+            }
+        }
+        concreteShiftNew.getRetiredDoctors().addAll(concreteShiftOld.getRetiredDoctors());
+
+        //rimuovo la vecchia assegnazione e provo ad aggiungere la nuova
+        this.rimuoviAssegnazioneTurnoSchedulo(concreteShiftOld);
+        Schedule schedule = this.aggiungiAssegnazioneTurno(concreteShiftNew, true);
+
+        // Se un vincolo è violato riaggiungo l'assegnazione che avevo in precedenza eliminato
+        if (schedule.isIllegal()) {
+            schedule.getAssegnazioniTurno().add(concreteShiftOld);
+            scheduleDao.flush();
+        }
+        else{
+            //Rimuovo la vecchia assegnazione turno anche dal database
+            this.rimuoviAssegnazioneTurno(concreteShiftOld.getId());
+        }
+
+        return schedule;*/
+        return null;
     }
 
     public List<ScheduloDTO> leggiSchedulazioni(){
@@ -309,7 +299,7 @@ public class ControllerScheduler implements IControllerScheduler{
      * @return
      */
     public boolean rimuoviSchedulo(long id){
-
+/*
         Optional<Schedule> scheduleOptional = scheduleDao.findById(id);
 
         if(scheduleOptional.isEmpty())
@@ -320,7 +310,7 @@ public class ControllerScheduler implements IControllerScheduler{
             return false;
 
         scheduleDao.deleteById(id);
-
+*/
         return true;
 
     }
@@ -332,13 +322,13 @@ public class ControllerScheduler implements IControllerScheduler{
      * @return
      */
     public boolean check(@NotNull LocalDate startNewSchedule, @NotNull LocalDate endNewSchedule){
-        List<Schedule> allSchedule = scheduleDao.findAll();
+       /* List<Schedule> allSchedule = scheduleDao.findAll();
 
         for (Schedule schedule : allSchedule) {
             if (!schedule.getStartDate().isAfter(endNewSchedule) && !schedule.getEndDate().isBefore(startNewSchedule))
                 return false;
         }
-
+*/
         return true;
 
     }

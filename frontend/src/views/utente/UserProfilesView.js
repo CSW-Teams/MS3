@@ -1,5 +1,5 @@
 import React from "react";
-import {UtenteAPI} from "../../API/UtenteAPI";
+import {UserAPI} from "../../API/UserAPI";
 import {
   MDBCard,
   MDBCardBody,
@@ -22,9 +22,9 @@ export default class UserProfilesView extends React.Component{
     super(props);
     this.state = {
       utenti: [],
-      orderBy: "nome",
+      orderBy: "name",
       comparator: defaultComparator,
-      attore : localStorage.getItem("attore"),
+      attore : localStorage.getItem("actor"),
     }
     this.setOrderBy = this.setOrderBy.bind(this);
   }
@@ -53,7 +53,7 @@ export default class UserProfilesView extends React.Component{
 
 
   async componentDidMount() {
-    let utenti = await(new UtenteAPI().getAllUsersInfo());
+    let utenti = await(new UserAPI().getAllUsersInfo());
 
     this.setState({
       utenti : utenti,

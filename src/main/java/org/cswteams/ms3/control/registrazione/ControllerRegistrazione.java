@@ -1,10 +1,10 @@
 package org.cswteams.ms3.control.registrazione;
 
 import org.cswteams.ms3.control.utils.MappaUtenti;
-import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dao.DoctorDAO;
+import org.cswteams.ms3.dto.DoctorDTO;
 import org.cswteams.ms3.dto.RegistrazioneDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.Doctor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +13,9 @@ import javax.validation.constraints.NotNull;
 @Service
 public class ControllerRegistrazione implements IControllerRegistrazione {
 
+
     @Autowired
-    private UtenteDao utenteDao;
+    private DoctorDAO doctorDao;
 
 
     /*
@@ -81,33 +82,33 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
     }
 
     private boolean checkEmail(String email) {
-        Utente utente = utenteDao.findByEmail(email);
-        return utente == null;
+        Doctor doctor = doctorDao.findByEmail(email);
+        return doctor == null;
     }
 
 
 
     @Override
-    public UtenteDTO registraUtente(@NotNull RegistrazioneDTO registrazioneDTO) {
+    public DoctorDTO registraUtente(@NotNull RegistrazioneDTO registrazioneDTO) {
 
         //sanity check sull'input: il nuovo utente deve avere un nome, un cognome, un codice fiscale e una password correttamente inizializzati
         if(registrazioneDTO.getNome() == "" || registrazioneDTO.getCognome() == "" || !validaCodiceFiscale(registrazioneDTO.getCodiceFiscale()) || registrazioneDTO.getPassword() == "" || !checkEmail(registrazioneDTO.getEmail())) {
             return null;
         }
 
-        Utente u = new Utente(registrazioneDTO.getNome(),
+        Doctor u = new Doctor(registrazioneDTO.getNome(),
                 registrazioneDTO.getCognome(),
                 registrazioneDTO.getCodiceFiscale(),
                 registrazioneDTO.getDataNascita(),
                 registrazioneDTO.getEmail(),
                 registrazioneDTO.getPassword(),
                 registrazioneDTO.getRuolo(),
-                registrazioneDTO.getAttore()
-                );
+                registrazioneDTO.getAttori()
+        );
 
-        utenteDao.saveAndFlush(u);
+        doctorDao.saveAndFlush(u);
 
-        return MappaUtenti.utenteEntitytoDTO(u);
+        return MappaUtenti.utenteEntityToDTO(u);
 
     }
 

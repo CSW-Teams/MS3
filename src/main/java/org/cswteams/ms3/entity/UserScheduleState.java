@@ -9,12 +9,12 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(uniqueConstraints={
+/*@Table(uniqueConstraints={
     @UniqueConstraint(columnNames={
         "utente_id",
         "schedule_id",
     })
-})
+})*/
 
 public class UserScheduleState {
     
@@ -24,7 +24,7 @@ public class UserScheduleState {
     
     /**  Utente a cui appartiene questo stato */
     @ManyToOne
-    private Utente utente;
+    private User utente;
 
     /**  Pianificazione a cui appartiene questo stato */
     @OneToOne
@@ -35,17 +35,17 @@ public class UserScheduleState {
 
     /** tutti i turni assegnati a questo utente nella pianificazione corrente */
     @Transient
-    List<AssegnazioneTurno> assegnazioniTurnoCache;
+    List<ConcreteShift> assegnazioniTurnoCache;
 
 
 
-    public List<AssegnazioneTurno> getAssegnazioniTurnoCache(){
+    public List<ConcreteShift> getAssegnazioniTurnoCache(){
         
         if (assegnazioniTurnoCache == null){
             this.assegnazioniTurnoCache = new ArrayList<>();
-            for (AssegnazioneTurno at: schedule.getAssegnazioniTurno()){
-                for (Utente collega : at.getUtenti()){
-                    if (collega.getId() == this.utente.getId()){
+            for (ConcreteShift at: schedule.getConcreteShifts()){
+                for (DoctorAssignment collega : at.getDoctorAssignmentList()){
+                    if (collega.getDoctor().getId() == this.utente.getId()){
                         assegnazioniTurnoCache.add(at);
                         break;
                     }
@@ -56,8 +56,8 @@ public class UserScheduleState {
     }
 
     /**Aggiunge in ordine la nuova assegnazione alla lista delle assegnazioni dell'utente **/
-    public void addAssegnazioneTurno(AssegnazioneTurno nuovaAssegnazione){
-        List<AssegnazioneTurno> turniAssegnati = getAssegnazioniTurnoCache();
+    public void addAssegnazioneTurno(ConcreteShift nuovaAssegnazione){
+        /*List<ConcreteShift> turniAssegnati = getAssegnazioniTurnoCache();
         int idInsert = turniAssegnati.size();
         for(int i = 0; i < turniAssegnati.size(); i++){
             if(turniAssegnati.get(i).getData().isAfter(nuovaAssegnazione.getData()) || turniAssegnati.get(i).getData().isEqual(nuovaAssegnazione.getData())){
@@ -66,7 +66,7 @@ public class UserScheduleState {
                 }
             }
         }
-        turniAssegnati.add(idInsert,nuovaAssegnazione);
+        turniAssegnati.add(idInsert,nuovaAssegnazione);*/
     }
 
     public void saveUffaTemp(){
@@ -80,7 +80,7 @@ public class UserScheduleState {
     public UserScheduleState() {
     }
     
-    public UserScheduleState(Utente utente, Schedule schedule) {
+    public UserScheduleState(User utente, Schedule schedule) {
         this.utente = utente;
         this.schedule = schedule;
     }

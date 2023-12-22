@@ -1,20 +1,19 @@
 package org.cswteams.ms3.control.controllerscheduler;
 
 import org.cswteams.ms3.control.scheduler.ControllerScheduler;
-import org.cswteams.ms3.dao.ScheduleDao;
-import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dao.ScheduleDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 
 public abstract class ControllerSchedulerTestEnv extends AbstractTransactionalJUnit4SpringContextTests {
-
+/*
     @Autowired
     protected ControllerScheduler instance;
 
     @Autowired
-    protected ScheduleDao scheduleDao;
+    protected ScheduleDAO scheduleDao;
 
     @Autowired
-    protected UtenteDao utenteDao;
+    protected UtenteDao utenteDao;*/
 
 }

@@ -1,38 +1,36 @@
 package org.cswteams.ms3.control.scambioTurno;
 
-import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
-import org.cswteams.ms3.dao.RequestTurnChangeDao;
-import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dao.ConcreteShiftDAO;
+import org.cswteams.ms3.dao.DoctorDAO;
+import org.cswteams.ms3.dao.ShiftChangeRequestDAO;
 import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ViewUserTurnRequestsDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.Request;
-import org.cswteams.ms3.entity.Utente;
-import org.cswteams.ms3.enums.RequestENUM;
+import org.cswteams.ms3.enums.RequestStatus;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ControllerScambioTurno implements IControllerScambioTurno {
 
     @Autowired
-    private UtenteDao utenteDao;
+    private DoctorDAO utenteDao;
 
     @Autowired
-    private AssegnazioneTurnoDao assegnazioneTurnoDao;
+    private ConcreteShiftDAO assegnazioneTurnoDao;
 
     @Autowired
-    private RequestTurnChangeDao requestTurnChangeDao;
+    private ShiftChangeRequestDAO shiftChangeRequestDAO;
 
     /**
      * Questo metodo crea una richiesta di modifica turno.
@@ -42,24 +40,24 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     @Override
     @Transactional
     public void requestTurnChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException {
-        Optional<AssegnazioneTurno> assegnazioneTurno= assegnazioneTurnoDao.findById(requestTurnChangeDto.getConcreteShiftId());
+        Optional<ConcreteShift> assegnazioneTurno= assegnazioneTurnoDao.findById(requestTurnChangeDto.getConcreteShiftId());
         if(assegnazioneTurno.isEmpty()){
             throw new AssegnazioneTurnoException("Turno non presente");
         }
 
-        Optional<Utente> senderOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getSenderId()));
+        Optional<Doctor> senderOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getSenderId()));
         if(senderOptional.isEmpty()){
             throw new AssegnazioneTurnoException("Utente richiedente non presente nel database");
         }
 
 
-        Optional<Utente> receiverOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getReceiverId()));
+        Optional<Doctor> receiverOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getReceiverId()));
         if(receiverOptional.isEmpty()){
             throw new AssegnazioneTurnoException("Utente richiesto non presente nel database");
         }
 
-        AssegnazioneTurno concreteShift = assegnazioneTurno.get();
-
+        ConcreteShift concreteShift = assegnazioneTurno.get();
+/*
         List<Long> userDiGuardiaIds = concreteShift.getUtentiDiGuardia().stream()
                 .map(Utente::getId)
                 .collect(Collectors.toList());
@@ -80,17 +78,17 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
 
         Request request = new Request(senderOptional.get(), receiverOptional.get(), concreteShift);
 
-        List<Request> requests = requestTurnChangeDao.findBySenderIdAndTurnIdAndStatus(requestTurnChangeDto.getSenderId(), requestTurnChangeDto.getConcreteShiftId(), RequestENUM.PENDING);
+        List<Request> requests = shiftChangeRequestDAO.findBySenderIdAndTurnIdAndStatus(requestTurnChangeDto.getSenderId(), requestTurnChangeDto.getConcreteShiftId(), RequestStatus.PENDING);
 
         if(!requests.isEmpty()){
             throw new AssegnazioneTurnoException("esiste già una richiesta in corso per la modifica di questo turno");
         }
 
         try {
-            requestTurnChangeDao.saveAndFlush(request);
+            shiftChangeRequestDAO.saveAndFlush(request);
         } catch(ConstraintViolationException e){
             throw new AssegnazioneTurnoException("esiste già un cambio pendente");
-        }
+        }*/
     }
 
     private List<Long> dateAndTimeToEpoch(LocalDate startDate, LocalTime startTime, Duration duration){
@@ -111,10 +109,10 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     @Transactional
     public List<ViewUserTurnRequestsDTO> getRequestsBySender(@NotNull Long id){
         //TODO check if user exists
-        List<Request> requests = requestTurnChangeDao.findBySenderId(id);
+        List<Request> requests = shiftChangeRequestDAO.findBySenderId(id);
         List<ViewUserTurnRequestsDTO> dtos = new ArrayList<>();
         for(Request r : requests){
-            long requestId = r.getId();
+            /*long requestId = r.getId();
 
             List<Long> list = dateAndTimeToEpoch(r.getTurn().getData(), r.getTurn().getTurno().getOraInizio(), r.getTurn().getTurno().getDurata());
             long inizioEpoch = list.get(0);
@@ -125,7 +123,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             String status = r.getStatus().toString();
 
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
-            dtos.add(dto);
+            dtos.add(dto);*/
         }
 
         return dtos;
@@ -135,10 +133,10 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     @Transactional
     public List<ViewUserTurnRequestsDTO>getRequestsToSender(@NotNull Long id){
         //TODO check if user exists
-        List<Request> requests = requestTurnChangeDao.findByReceiverIdAndStatus(id, RequestENUM.PENDING);
+        List<Request> requests = shiftChangeRequestDAO.findByReceiverIdAndStatus(id, RequestStatus.PENDING);
         List<ViewUserTurnRequestsDTO> dtos = new ArrayList<>();
         for(Request r : requests){
-            long requestId = r.getId();
+            /*long requestId = r.getId();
 
             List<Long> list = dateAndTimeToEpoch(r.getTurn().getData(), r.getTurn().getTurno().getOraInizio(), r.getTurn().getTurno().getDurata());
             long inizioEpoch = list.get(0);
@@ -149,7 +147,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             String status = r.getStatus().toString();
 
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
-            dtos.add(dto);
+            dtos.add(dto);*/
         }
 
         return dtos;

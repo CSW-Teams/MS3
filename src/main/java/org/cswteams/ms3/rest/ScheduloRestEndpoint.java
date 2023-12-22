@@ -20,21 +20,21 @@ public class ScheduloRestEndpoint {
     private IControllerScheduler controllerScheduler;
 
     /*
-    * Questo metodo verrà invocato dal frontend per richiedere la generazione di un nuovo schedulo nel range di date
-    * passate come parametro
+     * Questo metodo verrà invocato dal frontend per richiedere la generazione di un nuovo schedulo nel range di date
+     * passate come parametro
      */
     @RequestMapping(method = RequestMethod.POST, path = "generation")
     public ResponseEntity<?> creaSchedulo(@RequestBody(required = true) GenerazioneScheduloDTO gs) {
         if (gs != null) {
 
             //Considero solo le richieste di generazione con date ammissibili
-            if(gs.getGiornoInizio().isBefore(gs.getGiornoFine())){
+            if(gs.getStartDate().isBefore(gs.getEndDate())){
 
                 //Chiedo la generazione dello schedulo al controller.
-                Schedule schedule = controllerScheduler.createSchedule(gs.getGiornoInizio(),gs.getGiornoFine());
+                Schedule schedule = controllerScheduler.createSchedule(gs.getStartDate(),gs.getEndDate());
                 if(schedule == null)
                     return new ResponseEntity<>( HttpStatus.NOT_ACCEPTABLE);
-                if(schedule.isIllegal())
+                if(!schedule.getViolatedConstraints().isEmpty())
                     return new ResponseEntity<>( HttpStatus.PARTIAL_CONTENT);
                 else
                     return new ResponseEntity<>( HttpStatus.ACCEPTED);
@@ -93,7 +93,6 @@ public class ScheduloRestEndpoint {
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-
 
 
 }

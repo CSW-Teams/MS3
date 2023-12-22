@@ -1,7 +1,7 @@
 package org.cswteams.ms3.rest;
 
 
-import org.cswteams.ms3.control.cambiaPassword.IControllerPassword;
+import org.cswteams.ms3.control.passwordChange.IPasswordChange;
 import org.cswteams.ms3.dto.PasswordDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class CambiaPasswordRestEndpoint {
 
     @Autowired
-    private IControllerPassword controllerpwd;
+    private IPasswordChange controllerpwd;
 
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> cambiaPass(@RequestBody PasswordDTO dto) {
         try {
-            controllerpwd.cambiaPassword(dto);
+            controllerpwd.changePassword(dto);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

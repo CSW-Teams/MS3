@@ -8,7 +8,7 @@ export default class LoginView extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      username: "",
+      email: "",
       password: "",
     }
     this.handleSubmit= this.handleSubmit.bind(this);
@@ -39,23 +39,24 @@ export default class LoginView extends React.Component {
     switch (responseStatusClass) {
       case 2:
         // Success - Redirect e salvataggio dati di sessione
-        const utente = await httpResponse.json();
+        const user = await httpResponse.json();
 
-        localStorage.setItem("id", utente.id)
-        localStorage.setItem("nome", utente.nome)
-        localStorage.setItem("cognome", utente.cognome)
-        localStorage.setItem("attore", utente.attore)
+        localStorage.setItem("id", user.id)
+        localStorage.setItem("name", user.name)
+        localStorage.setItem("lastname", user.lastname)
+        localStorage.setItem("actor", user.actor)
 
         this.props.history.push({
           pathname: '/pianificazione-globale',
-          state: utente,
+          state: user,
         })
 
         window.location.reload();
 
         break;
       default:
-        toast.error('Autenticazione Fallita. Riprova inserendo le credenziali corrette.', {
+        const errorMessage = await httpResponse.text();
+        toast.error(`Autenticazione Fallita. ${errorMessage}.`, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -78,7 +79,7 @@ export default class LoginView extends React.Component {
             <div className="form-group mt-3">
               <label>Indirizzo Email</label>
               <input
-                name = "username"
+                name = "email"
                 type="email"
                 className="form-control mt-1"
                 placeholder="Inserisci l'indirizzo email"
@@ -98,12 +99,27 @@ export default class LoginView extends React.Component {
               />
             </div>
             <div className="d-grid gap-2 mt-3">
-              <button onClick={this.handleSubmit} type="submit" className="btn btn-primary">
+              <button onClick={this.handleSubmit} type="submit"
+                      className="btn btn-primary">
                 Login
               </button>
             </div>
+            <div className="d-grid gap-2 mt-3">
+              <label>Accedi come:</label>
+              <select
+                name="role"
+                className="form-select mt-1"
+                value={this.state.role}
+                onChange={e => this.handleChange(e)}
+              >
+                {/* Placeholder. It should be a call on the backend */}
+                <option value="DOCTOR">Dottore</option>
+                <option value="CONFIGURATOR">Configuratore</option>
+                <option value="PLANNER">Pianificatore</option>
+              </select>
+            </div>
             <div className="form-check gap-2 mt-3">
-              <input class="form-check-input" type="checkbox" value=""></input>
+              <input className="form-check-input" type="checkbox" value=""></input>
               Ricordami
             </div>
             <p className="forgot-password text-center mt-2">

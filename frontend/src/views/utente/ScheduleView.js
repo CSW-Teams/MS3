@@ -31,7 +31,7 @@ import {
    EditingState,IntegratedEditing
 } from '@devexpress/dx-react-scheduler';
 import { ServiceFilterSelectorButton } from '../../components/common/ServiceFilterSelectorButton';
-import { UtenteAPI } from '../../API/UtenteAPI';
+import { UserAPI } from '../../API/UserAPI';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { HolidaysAPI } from '../../API/HolidaysAPI';
@@ -73,7 +73,7 @@ class ScheduleView extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-          attore : localStorage.getItem("attore"),
+          attore : localStorage.getItem("actor"),
             data: [],   // list of shifts to display in schedule (not filtered yet)
             mainResourceName: 'utenti_guardia',
             resources: [
@@ -162,7 +162,7 @@ class ScheduleView extends React.Component{
       }
 
       if (idUser !== -1) {
-        let api = new UtenteAPI();
+        let api = new UserAPI();
         const userDetails = await api.getUserDetails(idUser);
         let name = userDetails.nome;
         let surname = userDetails.cognome;
@@ -356,7 +356,7 @@ class ScheduleView extends React.Component{
       console.log("Array:", requestsArray);
 
       let allServices = await new ServizioAPI().getService();
-      let allUser = await new UtenteAPI().getAllUsersInfo();
+      let allUser = await new UserAPI().getAllUsersInfo();
       let allHolidays = await new HolidaysAPI().getHolidays();
 
       this.setState(

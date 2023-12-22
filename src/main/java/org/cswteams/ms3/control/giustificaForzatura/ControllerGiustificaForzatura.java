@@ -1,14 +1,11 @@
 package org.cswteams.ms3.control.giustificaForzatura;
 
-import org.cswteams.ms3.control.utils.MappaServizio;
-import org.cswteams.ms3.control.utils.MappaUtenti;
-import org.cswteams.ms3.dao.GiustificazioneFozaturaDao;
-import org.cswteams.ms3.dao.LiberatoriaDao;
-import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dao.GiustificazioneFozaturaDAO;
+import org.cswteams.ms3.dao.LiberatoriaDAO;
+import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
-import org.cswteams.ms3.entity.GiustificazioneForzaturaVincoli;
-import org.cswteams.ms3.entity.Liberatoria;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.Waiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -20,32 +17,33 @@ import java.io.IOException;
 public class ControllerGiustificaForzatura implements IControllerGiustificaForzatura {
 
     @Autowired
-    GiustificazioneFozaturaDao giustificazioneFozaturaDao;
+    GiustificazioneFozaturaDAO giustificazioneFozaturaDao;
 
     @Autowired
-    LiberatoriaDao liberatoriaDao;
+    LiberatoriaDAO liberatoriaDao;
 
     @Autowired
-    UtenteDao utenteDao;
+    DoctorDAO doctorDAO;
 
     @Override
     public void saveGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoliDTO) {
         //giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
-        Utente giustificatore = utenteDao.findById(Long.parseLong(giustificazioneForzaturaVincoliDTO.getUtenteGiustificatoreId()));
-        GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(),giustificazioneForzaturaVincoliDTO.getTipologiaTurno(), MappaServizio.servizioDTOtoEntity(giustificazioneForzaturaVincoliDTO.getServizio()), giustificazioneForzaturaVincoliDTO.getGiorno(), MappaUtenti.utenteDTOtoEntity(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()), giustificatore);
-        giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
+        Doctor giustificatore = doctorDAO.findById(Long.parseLong(giustificazioneForzaturaVincoliDTO.getUtenteGiustificatoreId()));
+        //GiustificazioneForzaturaVincoli giustificazioneForzaturaVincoli = new GiustificazioneForzaturaVincoli(giustificazioneForzaturaVincoliDTO.getMessage(),giustificazioneForzaturaVincoliDTO.getTipologiaTurno(), MappaServizio.servizioDTOtoEntity(giustificazioneForzaturaVincoliDTO.getServizio()), giustificazioneForzaturaVincoliDTO.getGiorno(), MappaUtenti.utenteDTOtoEntity(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()), giustificatore);
+
+        //giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
     }
 
 
     @Override
-    public Liberatoria saveDelibera(MultipartFile file) throws IOException {
+    public Waiver saveDelibera(MultipartFile file) throws IOException {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        Liberatoria liberatoria = new Liberatoria(fileName, file.getContentType(), file.getBytes());
+        Waiver liberatoria = new Waiver(fileName, file.getContentType(), file.getBytes());
         return liberatoriaDao.save(liberatoria);
     }
 
     @Override
-    public Liberatoria getDelibera(String filename) {
+    public Waiver getDelibera(String filename) {
         return liberatoriaDao.findDeliberaByName(filename);
     }
 

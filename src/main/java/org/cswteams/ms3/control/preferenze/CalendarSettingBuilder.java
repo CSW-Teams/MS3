@@ -2,8 +2,8 @@ package org.cswteams.ms3.control.preferenze;
 
 
 public class CalendarSettingBuilder{
-    private final ServiceDataENUM serviceDataENUM;
-    private final String urlDateNager = "https://date.nager.at/api/v3/PublicHolidays";
+    private ServiceDataENUM serviceDataENUM;
+    private String urlDateNager = "https://date.nager.at/api/v3/PublicHolidays";
     public CalendarSettingBuilder(ServiceDataENUM e){
         this.serviceDataENUM=e;
     }

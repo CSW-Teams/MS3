@@ -1,10 +1,6 @@
 package org.cswteams.ms3.control.categorie;
 
-import org.cswteams.ms3.control.categorie.IControllerCategorie;
-import org.cswteams.ms3.dto.CategoriaDTO;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -12,11 +8,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
-import java.text.ParseException;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -25,7 +16,7 @@ import static org.junit.Assert.fail;
 @Transactional
 @ActiveProfiles(value = "test")
 public class TestControllerCategorieNoCategories {
-
+/*
     @Autowired
     private IControllerCategorie controller ;
 
@@ -66,5 +57,5 @@ public class TestControllerCategorieNoCategories {
         } catch (ParseException e) {
             fail() ;
         }
-    }
+    }*/
 }

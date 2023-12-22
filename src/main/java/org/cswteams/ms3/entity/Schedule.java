@@ -1,90 +1,73 @@
 package org.cswteams.ms3.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import org.cswteams.ms3.entity.constraint.Constraint;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Rappresenta una pianificazione dei turni assegnati in un intervallo di date */
 @Entity
-@Data
-@Table(uniqueConstraints={
-    @UniqueConstraint(columnNames={
-        "startDateEpochDay",
-        "endDateEpochDay"
-    })
-})
+@Getter
 public class Schedule {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "schedule_id_seq")
-    @SequenceGenerator(name = "schedule_id_seq", sequenceName = "schedule_id_seq")
-    @NotNull
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "schedule_id", nullable = false)
     private Long id;
     
     /** data di inizio validità della pianificazione, memorizzata come giorni da epoch */
     @NotNull
-    private long startDateEpochDay;
+    private long startDate; // This date is in epoch format to keep track of the timezone
 
     /** data di fine validità della pianificazione, memorizzata come giorni da epoch */
     @NotNull
-    private long endDateEpochDay;
+    private long endDate; // This date is in epoch format to keep track of the timezone
 
     @OneToMany(cascade = {CascadeType.ALL})
     @NotNull
-    private List<AssegnazioneTurno> assegnazioniTurno;
+    private List<ConcreteShift> concreteShifts;
 
-    /** Log di messaggi corrispondenti a violazioni di vincoli.
-     * Questa lista dovrebbe contenere al più un messaggio per ogni vincolo violato.
+    @ManyToMany
+    @NotNull
+    private List<Constraint> violatedConstraints;
+
+    /**
+     * Class representing a valid schedule
+     * @param startDate Date of the beginning of the schedule
+     * @param endDate Date of the ending of the schedule
+     * @param concreteShifts List of shifts that compose the schedule (THis is a composition, not an aggregation)
+     * @param violatedConstraints List of constraints that have been violated by the scheduler and that should be approved by the planner
      */
-    @Transient
-    @OneToMany(fetch = FetchType.EAGER,cascade = {CascadeType.ALL})
-    List<ViolatedConstraintLogEntry> violatedConstraintLog = new ArrayList<>();
+    public Schedule(Long startDate, Long endDate, List<ConcreteShift> concreteShifts, List<Constraint> violatedConstraints) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.concreteShifts = concreteShifts;
+        this.violatedConstraints = violatedConstraints;
+    }
 
-    /** True se questa Schedule è malformata, ad esempio perché non
-     * rispetta dei vincoli stringenti.
+    /**
+     * Constructor needed when we want to create a schedule without any violated constraint
+     * @param startDate Date of the beginning of the schedule
+     * @param endDate Date of the ending of the schedule
+     * @param concreteShifts List of shifts that compose the schedule (THis is a composition, not an aggregation)
      */
-    private boolean isIllegal;
-
-    /** Se non è null, indica la causa della malformazione della pianificazione */
-    private Exception causeIllegal;
-
-    public Schedule(@NotNull LocalDate startDate, @NotNull LocalDate endDate) {
-        this.startDateEpochDay = startDate.toEpochDay();
-        this.endDateEpochDay = endDate.toEpochDay();
+    public Schedule(Long startDate, Long endDate, List<ConcreteShift> concreteShifts) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.concreteShifts = concreteShifts;
+        this.violatedConstraints = new ArrayList<>();
     }
 
-    public Schedule(){
+    /**
+     * Constructor needed for Spring @Entity annotation.
+     * Is protected so that no one can call it except from Spring
+     */
+    protected Schedule(){
 
     }
 
-    public LocalDate getStartDate() {
-        return LocalDate.ofEpochDay(startDateEpochDay);
-    }
-
-    public LocalDate getEndDate() {
-        return LocalDate.ofEpochDay(endDateEpochDay);
-    }
-
-    /** resets illegal flag and clears illegalCause and violations log */
-    public void purify() {
-        violatedConstraintLog.clear();
-        redeem();
-    }
-
-     /** resets illegal flag and clears illegalCause*/
-     public void redeem(){
-        isIllegal = false;
-        causeIllegal = null;
-     }
-
-    /** rende illegale la pianificazione specificando una causa */
-    public void taint(@NotNull Exception cause) {
-        isIllegal = true;
-        causeIllegal = cause;
-    }
 
 }

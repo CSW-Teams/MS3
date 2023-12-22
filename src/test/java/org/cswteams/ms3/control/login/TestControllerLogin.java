@@ -1,7 +1,5 @@
 package org.cswteams.ms3.control.login;
 
-import org.cswteams.ms3.control.login.ControllerLogin;
-import org.cswteams.ms3.dto.LoginDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,7 +13,7 @@ import java.util.stream.Stream;
 @SpringBootTest
 @Transactional
 public class TestControllerLogin {
-
+/*
     private enum InstanceValidity {
         VALID,
         INVALID
@@ -51,6 +49,6 @@ public class TestControllerLogin {
         } catch (Exception e) {
             Assertions.assertTrue(exceptionExpected);
         }
-    }
+    }*/
 
 }

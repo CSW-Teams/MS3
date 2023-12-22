@@ -1,14 +1,14 @@
 package org.cswteams.ms3.control.richiestaRimozioneDaTurno;
 
-import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
+import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
 import org.cswteams.ms3.control.utils.MappaRichiestaRimozioneDaTurno;
-import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
-import org.cswteams.ms3.dao.RichiestaRimozioneDaTurnoDao;
-import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dao.ConcreteShiftDAO;
+import org.cswteams.ms3.dao.RemovalFromShiftRequestDAO;
+import org.cswteams.ms3.dao.UserDAO;
 import org.cswteams.ms3.dto.RichiestaRimozioneDaTurnoDTO;
-import org.cswteams.ms3.entity.AssegnazioneTurno;
-import org.cswteams.ms3.entity.RichiestaRimozioneDaTurno;
-import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.RequestRemovalFromConcreteShift;
+import org.cswteams.ms3.entity.User;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,25 +25,25 @@ import java.util.Set;
 public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiestaRimozioneDaTurno {
 
     @Autowired
-    private RichiestaRimozioneDaTurnoDao richiestaRimozioneDaTurnoDao;
+    private RemovalFromShiftRequestDAO removalFromShiftRequestDAO;
 
     @Autowired
-    private IControllerAssegnazioneTurni controllerAssegnazioneTurni;
+    private IConcreteShiftController controllerAssegnazioneTurni;
 
     @Autowired
-    private AssegnazioneTurnoDao assegnazioneTurnoDao;
+    private ConcreteShiftDAO assegnazioneTurnoDao;
 
     @Autowired
-    private UtenteDao utenteDao;
+    private UserDAO utenteDao;
 
     @Override
-    public RichiestaRimozioneDaTurno creaRichiestaRimozioneDaTurno(@NotNull RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException {
+    public RequestRemovalFromConcreteShift creaRichiestaRimozioneDaTurno(@NotNull RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException {
         // 1. ricerca AssegnazioneTurno --------------------------------------------------------------
-        Long assegnazioneTurnoId = richiestaRimozioneDaTurnoDTO.getIdAssegnazioneTurno();
+        /*Long assegnazioneTurnoId = richiestaRimozioneDaTurnoDTO.getIdAssegnazioneTurno();
         if (assegnazioneTurnoId == null) {
             throw new DatabaseException("Id AssegnazioneTurno non valida");
         }
-        Optional<AssegnazioneTurno> assegnazioneTurno = assegnazioneTurnoDao.findById(assegnazioneTurnoId);
+        Optional<ConcreteShift> assegnazioneTurno = assegnazioneTurnoDao.findById(assegnazioneTurnoId);
         if (assegnazioneTurno.isEmpty()) {
             throw new DatabaseException("AssegnazioneTurno non trovata per id = " + assegnazioneTurnoId);
         }
@@ -53,54 +53,74 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
         if (utenteRichiedenteId == null) {
             throw new DatabaseException("Id Utente non valido");
         }
-        Optional<Utente> utenteRichiedente = utenteDao.findById(utenteRichiedenteId);
+        Optional<User> utenteRichiedente = utenteDao.findById(utenteRichiedenteId);
         if (utenteRichiedente.isEmpty()) {
             throw new DatabaseException("AssegnazioneTurno non trovata per id = " + assegnazioneTurnoId);
         }
 
         // 3. chiamata a metodo interno -----------------------------------------------------------
         return this._creaRichiestaRimozioneDaTurno(assegnazioneTurno.get(), utenteRichiedente.get(), richiestaRimozioneDaTurnoDTO.getDescrizione());
+        */
+        return null;
     }
 
+
     @Override
-    public RichiestaRimozioneDaTurno _creaRichiestaRimozioneDaTurno(@NotNull AssegnazioneTurno assegnazioneTurno, @NotNull Utente utenteRichiedente, @NotNull String descrizione) throws DatabaseException, AssegnazioneTurnoException {
-        if (!richiestaRimozioneDaTurnoDao.findAllByAssegnazioneTurnoIdAndUtenteId(assegnazioneTurno.getId(), utenteRichiedente.getId()).isEmpty()) {
+    public RequestRemovalFromConcreteShift _creaRichiestaRimozioneDaTurno(@NotNull ConcreteShift assegnazioneTurno, @NotNull User utenteRichiedente, @NotNull String descrizione) throws DatabaseException, AssegnazioneTurnoException {
+        /*if (!removalFromShiftRequestDAO.findAllByAssegnazioneTurnoIdAndUtenteId(assegnazioneTurno.getId(), utenteRichiedente.getId()).isEmpty()) {
             throw new DatabaseException("Esiste già una richiesta di rimozione da turno assegnato per l'utente " + utenteRichiedente + " per il la assegnazione " + assegnazioneTurno);
         }
         if (!assegnazioneTurno.isAllocated(utenteRichiedente) && !assegnazioneTurno.isReserve(utenteRichiedente)) {
             throw new AssegnazioneTurnoException("L'utente " + utenteRichiedente + " non risulta essere coinvolto nella assegnazione turno " + assegnazioneTurno);
         }
-        RichiestaRimozioneDaTurno richiestaRimozioneDaTurno = new RichiestaRimozioneDaTurno(assegnazioneTurno, utenteRichiedente, descrizione);
+        RequestRemovalFromConcreteShift richiestaRimozioneDaTurno = new RichiestaRimozioneDaTurno(assegnazioneTurno, utenteRichiedente, descrizione);
 
-        richiestaRimozioneDaTurnoDao.saveAndFlush(richiestaRimozioneDaTurno);
-        return richiestaRimozioneDaTurno;
+        removalFromShiftRequestDAO.saveAndFlush(richiestaRimozioneDaTurno);
+        return richiestaRimozioneDaTurno;*/
+            return null;
     }
+
+
 
     @Override
     public Set<RichiestaRimozioneDaTurnoDTO> leggiRichiesteRimozioneDaTurno() {
-        return MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoEntitytoDTO(richiestaRimozioneDaTurnoDao.findAll());
+        //return MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoEntitytoDTO(removalFromShiftRequestDAO.findAll());
+        return null;
     }
 
     @Override
     public Set<RichiestaRimozioneDaTurnoDTO> leggiRichiesteRimozioneDaTurnoPendenti() {
-        return MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoEntitytoDTO(richiestaRimozioneDaTurnoDao.findAllPending());
+        //return MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoEntitytoDTO(removalFromShiftRequestDAO.findAllPending());
+        return null;
     }
 
     @Override
     @Transactional
     public Set<RichiestaRimozioneDaTurnoDTO> leggiRichiesteRimozioneDaTurnoPerUtente(Long utenteId) {
-        return MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoEntitytoDTO(richiestaRimozioneDaTurnoDao.findAllByUser(utenteId));
+        //return MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoEntitytoDTO(removalFromShiftRequestDAO.findAllByUser(utenteId));
+        return null;
     }
 
     @Override
     public Optional<RichiestaRimozioneDaTurnoDTO> leggiRichiestaRimozioneDaTurno(Long idRichiesta) {
-        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiesta);
-        return r.map(MappaRichiestaRimozioneDaTurno::richiestaRimozioneDaTurnoToDTO);
+        /*Optional<RequestRemovalFromConcreteShift> r = removalFromShiftRequestDAO.findById(idRichiesta);
+        return r.map(MappaRichiestaRimozioneDaTurno::richiestaRimozioneDaTurnoToDTO);*/
+        return null;
     }
 
     @Override
+    public RequestRemovalFromConcreteShift risolviRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException {
+        return null;
+    }
+
+    @Override
+    public RequestRemovalFromConcreteShift caricaAllegato(Long idRichiestaRimozioneDaTurno, MultipartFile allegato) throws IOException, DatabaseException {
+        return null;
+    }
+/*
+    @Override
     public RichiestaRimozioneDaTurno risolviRichiestaRimozioneDaTurno(RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) throws DatabaseException, AssegnazioneTurnoException {
-        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(richiestaRimozioneDaTurnoDTO.getIdRichiestaRimozioneDaTurno());
+        Optional<RichiestaRimozioneDaTurno> r = removalFromShiftRequestDAO.findById(richiestaRimozioneDaTurnoDTO.getIdRichiestaRimozioneDaTurno());
         if (r.isEmpty()) {
             throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + richiestaRimozioneDaTurnoDTO.getIdRichiestaRimozioneDaTurno());
         }
@@ -128,19 +148,19 @@ public class ControllerRichiestaRimozioneDaTurno implements IControllerRichiesta
             r.get().setEsito(false);
         }
         r.get().setEsaminata(true);
-        richiestaRimozioneDaTurnoDao.saveAndFlush(r.get());
+        removalFromShiftRequestDAO.saveAndFlush(r.get());
         return r.get();
     }
 
     @Override
     @Transactional
     public RichiestaRimozioneDaTurno caricaAllegato(@NotNull Long idRichiestaRimozioneDaTurno, @NotNull MultipartFile allegato) throws IOException, DatabaseException {
-        Optional<RichiestaRimozioneDaTurno> r = richiestaRimozioneDaTurnoDao.findById(idRichiestaRimozioneDaTurno);
+        Optional<RichiestaRimozioneDaTurno> r = removalFromShiftRequestDAO.findById(idRichiestaRimozioneDaTurno);
         if (r.isEmpty()) {
             throw new DatabaseException("RichiestaRimozioneDaTurno non trovata per id = " + idRichiestaRimozioneDaTurno);
         }
         r.get().setAllegato(allegato.getBytes());
-        richiestaRimozioneDaTurnoDao.saveAndFlush(r.get());
+        removalFromShiftRequestDAO.saveAndFlush(r.get());
         return r.get();
-    }
+    }*/
 }
