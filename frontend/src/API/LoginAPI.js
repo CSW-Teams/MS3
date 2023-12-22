@@ -1,7 +1,3 @@
-import { TurnoAPI } from "./TurnoAPI";
-import {blue, red, teal} from "@material-ui/core/colors";
-import { AssignedShift, SchedulableType } from "./Schedulable";
-
 export  class LoginAPI {
 
   /**
@@ -18,9 +14,7 @@ export  class LoginAPI {
       body: JSON.stringify(credenziali)
     };
 
-    const response = await fetch('/api/login/', requestOptions);
-
-    return response;
+    return await fetch('/api/login/', requestOptions);
   }
 
   /**

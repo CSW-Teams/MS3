@@ -20,6 +20,11 @@ public class ServizioRestEndpoint {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiServizi() throws ParseException {
         Set<MedicalServiceDTO> servizi = controllerServizi.leggiServizi();
+        if (servizi == null || servizi.isEmpty()) {
+            System.out.println("sono qui");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        System.out.println("invece sono qui");
         return new ResponseEntity<>(servizi, HttpStatus.FOUND);
     }
 

@@ -103,7 +103,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
                 registrazioneDTO.getEmail(),
                 registrazioneDTO.getPassword(),
                 registrazioneDTO.getRuolo(),
-                registrazioneDTO.getAttore()
+                registrazioneDTO.getAttori()
         );
 
         doctorDao.saveAndFlush(u);
