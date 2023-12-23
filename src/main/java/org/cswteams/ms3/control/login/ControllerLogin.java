@@ -6,6 +6,7 @@ import org.cswteams.ms3.dto.login.LoggedUserDTO;
 import org.cswteams.ms3.dto.login.LoginDTO;
 import org.cswteams.ms3.entity.User;
 import org.cswteams.ms3.exception.login.InvalidEmailAddressException;
+import org.cswteams.ms3.exception.login.InvalidRoleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,7 @@ public class ControllerLogin implements IControllerLogin {
     }
 
     @Override
-    public LoggedUserDTO authenticateUser(@NotNull LoginDTO loginDTO) throws InvalidEmailAddressException {
+    public LoggedUserDTO authenticateUser(@NotNull LoginDTO loginDTO) throws InvalidEmailAddressException, InvalidRoleException {
         boolean isEmailValid = checkEmail(loginDTO.getEmail());
 
         /* check email address */
@@ -38,8 +39,10 @@ public class ControllerLogin implements IControllerLogin {
         User user = userDAO.findByEmailAndPassword(loginDTO.getEmail(), loginDTO.getPassword());
         LoggedUserDTO dto = null;
         if (user != null){
-            //TODO: Change LoginDTO logic, user may be more than one Systemactor in the same moment
-            dto = new LoggedUserDTO(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getRoles().get(0));
+            if (!user.getSystemActors().contains(loginDTO.getSystemActor())) {
+                throw new InvalidRoleException("Il ruolo non è valido");
+            }
+            dto = new LoggedUserDTO(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getSystemActors());
         }
         return dto;
     }

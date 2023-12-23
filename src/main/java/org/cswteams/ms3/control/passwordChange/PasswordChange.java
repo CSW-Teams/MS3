@@ -2,9 +2,12 @@ package org.cswteams.ms3.control.passwordChange;
 
 
 import org.cswteams.ms3.dao.DoctorDAO;
-import org.cswteams.ms3.dto.PasswordDTO;
+import org.cswteams.ms3.dao.UserDAO;
+import org.cswteams.ms3.dto.changePassword.ChangePasswordDTO;
 import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.User;
 import org.cswteams.ms3.exception.DatabaseException;
+import org.cswteams.ms3.exception.changePassword.WrongOldPasswordException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,20 +17,21 @@ import java.util.Optional;
 @Service
 public class PasswordChange implements IPasswordChange {
     @Autowired
-    private DoctorDAO doctorDao;
+    private UserDAO userDAO;
 
     @Override
-    public void changePassword(@NotNull PasswordDTO dto) throws Exception {
-        Optional<Doctor> u = doctorDao.findById(dto.getId());
-        if (u == null) {
-            throw new DatabaseException("utente non trovato");
+    public ChangePasswordDTO changePassword(@NotNull ChangePasswordDTO dto) throws DatabaseException, WrongOldPasswordException {
+        Optional<User> u = userDAO.findById(dto.getUserId());
+        if (u.isEmpty()) {
+            throw new DatabaseException("Utente non trovato");
         } else {
-            Doctor doctor = u.get();
-            if (doctor.getPassword().equals(dto.getOldPassword())) {
-                doctor.setPassword(dto.getNewPassword());
-                doctorDao.saveAndFlush(doctor);
+            User user = u.get();
+            if (user.getPassword().equals(dto.getOldPassword())) {
+                user.setPassword(dto.getNewPassword());
+                userDAO.saveAndFlush(user);
+                return new ChangePasswordDTO(user.getId(), dto.getOldPassword(), user.getPassword());
             } else {
-                throw new Exception();
+                throw new WrongOldPasswordException("La vecchia password non è corretta");
             }
         }
     }
