@@ -10,17 +10,25 @@ export default class LoginView extends React.Component {
     this.state = {
       email: "",
       password: "",
+      systemActor: "DOCTOR"
     }
     this.handleSubmit= this.handleSubmit.bind(this);
   }
 
-
   handleChange(e) {
-    // Aggiorna lo stato in base al cambiamento degli input
     const val = e.target.value;
-    this.setState({
-      [e.target.name] : val
-    });
+    const name = e.target.name;
+
+    // Verifica se l'evento è scatenato da un input di testo o da un elemento select
+    if (name === "systemActor") {
+      this.setState({
+        systemActor: val
+      });
+    } else {
+      this.setState({
+        [name]: val
+      });
+    }
   }
 
   async handleSubmit(e) {
@@ -107,9 +115,9 @@ export default class LoginView extends React.Component {
             <div className="d-grid gap-2 mt-3">
               <label>Accedi come:</label>
               <select
-                name="role"
+                name="systemActor"
                 className="form-select mt-1"
-                value={this.state.role}
+                value={this.state.systemActor}
                 onChange={e => this.handleChange(e)}
               >
                 {/* Placeholder. It should be a call on the backend */}

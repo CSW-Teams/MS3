@@ -12,9 +12,10 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "ms3_system_user")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "user_id", nullable = false)
     private Long id;
 
@@ -39,7 +40,7 @@ public class User {
 
     @Enumerated
     @ElementCollection(targetClass = SystemActor.class)
-    private List<SystemActor> roles;
+    private List<SystemActor> systemActors;
 
 
     /**
@@ -51,17 +52,17 @@ public class User {
      * @param birthday Date of birth
      * @param email E-mail of the user
      * @param password Password of the user
-     * @param roles list of roles of the user in the system (configurator/planner/doctor/user)
+     * @param systemActors list of roles of the user in the system (configurator/planner/doctor/user)
      */
     public User(String name, String lastname, String taxCode,
-                LocalDate birthday, String email, String password, List<SystemActor> roles){
+                LocalDate birthday, String email, String password, List<SystemActor> systemActors){
         this.name = name;
         this.lastname = lastname;
         this.taxCode = taxCode;
         this.birthday = birthday;
         this.email = email;
         this.password = password;
-        this.roles = roles;
+        this.systemActors = systemActors;
     }
 
     /**

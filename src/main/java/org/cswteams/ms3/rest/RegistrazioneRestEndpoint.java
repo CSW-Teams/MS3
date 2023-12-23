@@ -2,8 +2,9 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.registrazione.IControllerRegistrazione;
 import org.cswteams.ms3.dto.DoctorDTO;
-import org.cswteams.ms3.dto.RegistrazioneDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.dto.registration.RegisteredUserDTO;
+import org.cswteams.ms3.dto.registration.RegistrationDTO;
+import org.cswteams.ms3.exception.registration.RegistrationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +21,16 @@ public class RegistrazioneRestEndpoint {
     private IControllerRegistrazione controllerRegistrazione;
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> registrazione(@RequestBody RegistrazioneDTO registrazioneDTO) {
-        DoctorDTO u = controllerRegistrazione.registraUtente(registrazioneDTO);
-        if (u != null) {
-            return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
+    public ResponseEntity<?> registrazione(@RequestBody RegistrationDTO registrationDTO) {
+
+        try {
+            RegisteredUserDTO u = controllerRegistrazione.registraUtente(registrationDTO);
+            if (u != null) {
+                return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
+            }
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (RegistrationException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 }

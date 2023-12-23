@@ -1,21 +1,27 @@
 package org.cswteams.ms3.control.registrazione;
 
-import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.DoctorDAO;
-import org.cswteams.ms3.dto.DoctorDTO;
-import org.cswteams.ms3.dto.RegistrazioneDTO;
+import org.cswteams.ms3.dao.UserDAO;
+import org.cswteams.ms3.dto.registration.RegisteredUserDTO;
+import org.cswteams.ms3.dto.registration.RegistrationDTO;
 import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.User;
+import org.cswteams.ms3.enums.SystemActor;
+import org.cswteams.ms3.exception.registration.RegistrationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Service
 public class ControllerRegistrazione implements IControllerRegistrazione {
 
 
     @Autowired
-    private DoctorDAO doctorDao;
+    private UserDAO userDAO;
+    @Autowired
+    private DoctorDAO doctorDAO;
 
 
     /*
@@ -82,33 +88,76 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
     }
 
     private boolean checkEmail(String email) {
-        Doctor doctor = doctorDao.findByEmail(email);
-        return doctor == null;
+        User user = userDAO.findByEmail(email);
+        return user == null;
     }
 
 
 
     @Override
-    public DoctorDTO registraUtente(@NotNull RegistrazioneDTO registrazioneDTO) {
+    public RegisteredUserDTO registraUtente(@NotNull RegistrationDTO registrationDTO) throws RegistrationException {
 
-        //sanity check sull'input: il nuovo utente deve avere un nome, un cognome, un codice fiscale e una password correttamente inizializzati
-        if(registrazioneDTO.getNome() == "" || registrazioneDTO.getCognome() == "" || !validaCodiceFiscale(registrazioneDTO.getCodiceFiscale()) || registrazioneDTO.getPassword() == "" || !checkEmail(registrazioneDTO.getEmail())) {
-            return null;
+        if (Objects.equals(registrationDTO.getName(), ""))
+            throw new RegistrationException("Non è stato specificato il nome");
+        if (Objects.equals(registrationDTO.getLastname(), ""))
+            throw new RegistrationException("Non è stato specificato il cognome");
+        if (!validaCodiceFiscale(registrationDTO.getTaxCode()))
+            throw new RegistrationException("Il codice fiscale non è valido");
+        if (Objects.equals(registrationDTO.getPassword(), ""))
+            throw new RegistrationException("La password non può essere vuota");
+        if (!checkEmail(registrationDTO.getEmail()))
+            throw new RegistrationException("Indirizzo email già registrato");
+        if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR) && registrationDTO.getSeniority() == null) {
+            throw new RegistrationException("Non è stata specificata la seniority");
         }
 
-        Doctor u = new Doctor(registrazioneDTO.getNome(),
-                registrazioneDTO.getCognome(),
-                registrazioneDTO.getCodiceFiscale(),
-                registrazioneDTO.getDataNascita(),
-                registrazioneDTO.getEmail(),
-                registrazioneDTO.getPassword(),
-                registrazioneDTO.getRuolo(),
-                registrazioneDTO.getAttori()
+        if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR)) {
+            Doctor d = new Doctor(
+                    registrationDTO.getName(),
+                    registrationDTO.getLastname(),
+                    registrationDTO.getTaxCode(),
+                    registrationDTO.getBirthday(),
+                    registrationDTO.getEmail(),
+                    registrationDTO.getPassword(),
+                    registrationDTO.getSeniority(),
+                    registrationDTO.getSystemActors()
+                    );
+            doctorDAO.saveAndFlush(d);
+
+            return new RegisteredUserDTO(
+                    d.getId(),
+                    d.getName(),
+                    d.getLastname(),
+                    d.getBirthday(),
+                    d.getTaxCode(),
+                    d.getEmail(),
+                    d.getPassword(),
+                    d.getSystemActors(),
+                    d.getSeniority()
+            );
+        }
+
+        User u = new User(registrationDTO.getName(),
+                registrationDTO.getLastname(),
+                registrationDTO.getTaxCode(),
+                registrationDTO.getBirthday(),
+                registrationDTO.getEmail(),
+                registrationDTO.getPassword(),
+                registrationDTO.getSystemActors()
         );
 
-        doctorDao.saveAndFlush(u);
+        userDAO.saveAndFlush(u);
 
-        return MappaUtenti.utenteEntityToDTO(u);
+        return new RegisteredUserDTO(
+                u.getId(),
+                u.getName(),
+                u.getLastname(),
+                u.getBirthday(),
+                u.getTaxCode(),
+                u.getEmail(),
+                u.getPassword(),
+                u.getSystemActors()
+        );
 
     }
 
