@@ -2,7 +2,7 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
 import org.cswteams.ms3.control.scambioTurno.IControllerScambioTurno;
-import org.cswteams.ms3.control.scheduler.ISchedulerController;
+import org.cswteams.ms3.control.scheduler.IControllerScheduler;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dto.*;
 import org.cswteams.ms3.entity.Schedule;
@@ -25,14 +25,14 @@ public class AssegnazioneTurnoRestEndpoint {
     private IConcreteShiftController controllerAssegnazioneTurni;
 
     @Autowired
-    private ISchedulerController controllerScheduler;
+    private IControllerScheduler controllerScheduler;
 
     @Autowired
     private IControllerScambioTurno controllerScambioTurno;
 
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody RegisterConcreteShiftDTO assegnazione) {
+    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody RegistraAssegnazioneTurnoDTO assegnazione) {
 
         Schedule schedule;
 
@@ -135,16 +135,16 @@ public class AssegnazioneTurnoRestEndpoint {
 
     /**
      * Permette la modifica di un assegnazione turno già esistente.
-     * @param modifyConcreteShiftDTO
+     * @param modificaAssegnazioneTurnoDTO
      * @return
      */
     @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<?> modificaAssegnazioneTurno(@RequestBody ModifyConcreteShiftDTO modifyConcreteShiftDTO)  {
+    public ResponseEntity<?> modificaAssegnazioneTurno(@RequestBody ModificaAssegnazioneTurnoDTO modificaAssegnazioneTurnoDTO)  {
 
         //Chiedo al controller di modificare e salvare nel database l'assegnazione turno modificata
         Schedule schedule;
         try {
-            schedule = controllerScheduler.modifyConcreteShift(modifyConcreteShiftDTO);
+            schedule = controllerScheduler.modificaAssegnazioneTurno(modificaAssegnazioneTurnoDTO);
         } catch (IllegalScheduleException e) {
             schedule=null;
         }
@@ -171,7 +171,7 @@ public class AssegnazioneTurnoRestEndpoint {
     @RequestMapping(method = RequestMethod.DELETE, path = "/{idAssegnazione}")
     public ResponseEntity<?> rimuoviAssegnazione(@PathVariable Long idAssegnazione)  {
         if (idAssegnazione != null) {
-            if(controllerScheduler.removeConcreteShift(idAssegnazione)){
+            if(controllerScheduler.rimuoviAssegnazioneTurno(idAssegnazione)){
                 return new ResponseEntity<>(HttpStatus.ACCEPTED);
             }
         }
