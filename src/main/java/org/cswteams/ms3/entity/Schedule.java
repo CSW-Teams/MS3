@@ -1,6 +1,7 @@
 package org.cswteams.ms3.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.cswteams.ms3.entity.constraint.Constraint;
 
 import javax.persistence.*;
@@ -8,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Rappresenta una pianificazione dei turni assegnati in un intervallo di date */
+/** This class represents a shift schedule in an interval of dates */
 @Entity
 @Getter
 public class Schedule {
@@ -18,27 +19,34 @@ public class Schedule {
     @Column(name = "schedule_id", nullable = false)
     private Long id;
     
-    /** data di inizio validità della pianificazione, memorizzata come giorni da epoch */
+    /** Start date of the shift schedule; it is stored as number of days from the start of Epoch. */
     @NotNull
     private long startDate; // This date is in epoch format to keep track of the timezone
 
-    /** data di fine validità della pianificazione, memorizzata come giorni da epoch */
+    /** End date of the shift schedule; it is stored as number of days from the start of Epoch. */
     @NotNull
     private long endDate; // This date is in epoch format to keep track of the timezone
 
+    /** Concrete shifts that compose the schedule. */
     @OneToMany(cascade = {CascadeType.ALL})
     @NotNull
     private List<ConcreteShift> concreteShifts;
 
+    /** List of constraints violated by the shift schedule. */
     @ManyToMany
     @NotNull
     private List<Constraint> violatedConstraints;
+
+
+    /** Reason for which the shift schedule results illegal */
+    @Setter
+    private Exception causeIllegal;
 
     /**
      * Class representing a valid schedule
      * @param startDate Date of the beginning of the schedule
      * @param endDate Date of the ending of the schedule
-     * @param concreteShifts List of shifts that compose the schedule (THis is a composition, not an aggregation)
+     * @param concreteShifts List of shifts that compose the schedule (this is a composition, not an aggregation)
      * @param violatedConstraints List of constraints that have been violated by the scheduler and that should be approved by the planner
      */
     public Schedule(Long startDate, Long endDate, List<ConcreteShift> concreteShifts, List<Constraint> violatedConstraints) {
@@ -46,24 +54,26 @@ public class Schedule {
         this.endDate = endDate;
         this.concreteShifts = concreteShifts;
         this.violatedConstraints = violatedConstraints;
+        this.causeIllegal = null;
     }
 
     /**
      * Constructor needed when we want to create a schedule without any violated constraint
      * @param startDate Date of the beginning of the schedule
      * @param endDate Date of the ending of the schedule
-     * @param concreteShifts List of shifts that compose the schedule (THis is a composition, not an aggregation)
+     * @param concreteShifts List of shifts that compose the schedule (This is a composition, not an aggregation)
      */
     public Schedule(Long startDate, Long endDate, List<ConcreteShift> concreteShifts) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.concreteShifts = concreteShifts;
         this.violatedConstraints = new ArrayList<>();
+        this.causeIllegal = null;
     }
 
     /**
      * Constructor needed for Spring @Entity annotation.
-     * Is protected so that no one can call it except from Spring
+     * It is protected so that no one can call it (except Spring).
      */
     protected Schedule(){
 

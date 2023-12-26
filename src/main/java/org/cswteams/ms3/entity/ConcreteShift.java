@@ -6,9 +6,7 @@ import lombok.Getter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -27,7 +25,7 @@ public class ConcreteShift {
 
     @OneToMany
     @NotNull
-    private final List<DoctorAssignment> doctorAssignmentList = new ArrayList<>();
+    private List<DoctorAssignment> doctorAssignmentList; //TODO: check that the doctors involved in this list are all different
 
     
     protected ConcreteShift(Long id) {
@@ -44,10 +42,23 @@ public class ConcreteShift {
     public ConcreteShift(Long date, Shift shift) {
         this.date = date;
         this.shift = shift;
+        this.doctorAssignmentList = new ArrayList<>();
+    }
+
+    protected ConcreteShift(Long date, Shift shift, List<DoctorAssignment> doctorAssignmentList) {
+        this.date = date;
+        this.shift = shift;
+        this.doctorAssignmentList = doctorAssignmentList;
     }
 
 
     protected ConcreteShift() {
 
     }
+
+    @Override
+    public ConcreteShift clone() {
+        return new ConcreteShift(this.date, this.shift, this.doctorAssignmentList);
+    }
+
 }
