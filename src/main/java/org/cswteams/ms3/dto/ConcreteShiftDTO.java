@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import lombok.Getter;
+import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
 
@@ -22,8 +23,8 @@ public class ConcreteShiftDTO {
     @Getter
     private long fineEpoch;
 
-    private Set<DoctorDTO> utentiDiGuardia;
-    private Set<DoctorDTO> utentiReperibili;
+    private Set<UserDTO> utentiDiGuardia;
+    private Set<UserDTO> utentiReperibili;
 
     @Getter
     private MedicalServiceDTO servizio;
@@ -34,9 +35,9 @@ public class ConcreteShiftDTO {
 
     private boolean reperibilitaAttiva;
 
-    private Set<DoctorDTO> retiredUsers;
+    private Set<UserDTO> retiredUsers;
 
-    public ConcreteShiftDTO(Long id, long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno) {
+    public ConcreteShiftDTO(Long id, long inizioEpoch, long fineEpoch, Set<UserDTO> utentiDiGuardia, Set<UserDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno) {
         this.id = id;
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
@@ -46,7 +47,7 @@ public class ConcreteShiftDTO {
         this.servizio = servizio;
     }
 
-    public ConcreteShiftDTO(Long id, Long idTurno, long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno, boolean reperibilitaAttiva) {
+    public ConcreteShiftDTO(Long id, Long idTurno, long inizioEpoch, long fineEpoch, Set<UserDTO> utentiDiGuardia, Set<UserDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno, boolean reperibilitaAttiva) {
         this.id = id;
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
@@ -60,7 +61,7 @@ public class ConcreteShiftDTO {
 
     protected ConcreteShiftDTO(){}
 
-    public ConcreteShiftDTO(long inizioEpoch, long fineEpoch, Set<DoctorDTO> utentiDiGuardia, Set<DoctorDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno) {
+    public ConcreteShiftDTO(long inizioEpoch, long fineEpoch, Set<UserDTO> utentiDiGuardia, Set<UserDTO> utentiReperibili, MedicalServiceDTO servizio, TimeSlot turno) {
         this.inizioEpoch = inizioEpoch;
         this.fineEpoch = fineEpoch;
         this.utentiDiGuardia = utentiDiGuardia;

@@ -52,7 +52,7 @@ export default class LoginView extends React.Component {
         localStorage.setItem("id", user.id)
         localStorage.setItem("name", user.name)
         localStorage.setItem("lastname", user.lastname)
-        localStorage.setItem("actor", user.actor)
+        localStorage.setItem("actor", this.state.systemActor)
 
         this.props.history.push({
           pathname: '/pianificazione-globale',

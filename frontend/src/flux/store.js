@@ -6,7 +6,7 @@ import {attore, configuratore, pianificatore} from "../data/sidebar-nav-items";
 
 function getNavBar() {
   let att = localStorage.getItem("actor");
-  if (att === "USER"){
+  if (att === "DOCTOR"){
     return attore();
   } else if((att === "PLANNER")){
     return pianificatore();

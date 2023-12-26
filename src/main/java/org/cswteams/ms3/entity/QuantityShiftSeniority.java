@@ -1,6 +1,7 @@
 package org.cswteams.ms3.entity;
 
 import lombok.Data;
+import org.cswteams.ms3.enums.Seniority;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

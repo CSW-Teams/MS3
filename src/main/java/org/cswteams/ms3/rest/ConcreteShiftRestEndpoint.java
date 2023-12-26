@@ -19,7 +19,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/assegnazioneturni/")
-public class AssegnazioneTurnoRestEndpoint {
+public class ConcreteShiftRestEndpoint {
 
     @Autowired
     private IConcreteShiftController controllerAssegnazioneTurni;

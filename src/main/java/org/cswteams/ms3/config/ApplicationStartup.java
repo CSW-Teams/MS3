@@ -10,6 +10,7 @@ import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
 import org.cswteams.ms3.dao.*;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;

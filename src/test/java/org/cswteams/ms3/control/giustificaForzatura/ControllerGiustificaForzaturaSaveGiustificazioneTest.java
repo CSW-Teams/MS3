@@ -2,7 +2,7 @@ package org.cswteams.ms3.control.giustificaForzatura;
 
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.dto.user.UserDetailsDTO;
 import org.cswteams.ms3.entity.Schedule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,15 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /***********************************************************************************
  * This class has the responsibility of testing the saveGiustificazione method of  *
@@ -65,7 +61,7 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
 
 
     private static GiustificazioneForzaturaVincoliDTO constructorGiustificazioneForzaturaVincoliDTOPartition(
-            Set<UtenteDTO> setUtenti,
+            Set<UserDetailsDTO> setUtenti,
             LocalDate day,
             ServizioDTO service,
             String justificationID
