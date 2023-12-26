@@ -1,8 +1,8 @@
 package org.cswteams.ms3.entity;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.cswteams.ms3.entity.condition.*;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 
 import javax.persistence.*;

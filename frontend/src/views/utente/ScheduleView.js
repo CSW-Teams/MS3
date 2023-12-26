@@ -164,8 +164,8 @@ class ScheduleView extends React.Component{
       if (idUser !== -1) {
         let api = new UserAPI();
         const userDetails = await api.getUserDetails(idUser);
-        let name = userDetails.nome;
-        let surname = userDetails.cognome;
+        let name = userDetails.name;
+        let surname = userDetails.lastname;
         return `${name} ${surname}`
       }
 
@@ -428,7 +428,7 @@ class ScheduleView extends React.Component{
 
         return (
           <React.Fragment>
-            {(view !== "global" || this.state.attore === "PIANIFICATORE") &&
+            {(view !== "global" || this.state.attore === "PLANNER") &&
             <Button
               style={{
               display: 'flex',
@@ -537,7 +537,7 @@ class ScheduleView extends React.Component{
                 <ViewSwitcher />
 
 
-                {view==="global" && this.state.attore==="PIANIFICATORE" &&
+                {view==="global" && this.state.attore==="PLANNER" &&
                   //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
                  //SOLO IL PIANIFICATORE PUO' MODIFICARE I TURNI
                   <AppointmentTooltip
@@ -551,7 +551,7 @@ class ScheduleView extends React.Component{
                   />
                 }
 
-                {view === "global" && this.state.attore !== "PIANIFICATORE" &&
+                {view === "global" && this.state.attore !== "PLANNER" &&
                 < AppointmentTooltip
                   contentComponent={(props) => (
                     <Content {...props} view={view} actor={this.state.attore} />
@@ -576,7 +576,7 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
-                {view=="global" && this.state.attore!=="UTENTE" ?
+                {view=="global" && this.state.attore!=="DOCTOR" ?
                   <AppointmentForm
                     overlayComponent = {Overlay}
                     textEditorComponent={Nullcomponent}

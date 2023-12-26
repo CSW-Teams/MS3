@@ -27,18 +27,12 @@ export  class UserAPI {
     const body = await response.json();
 
     const user = {};
-
-    user.label = body.name+" "+body.lastname;
-    user.id = body.id;
     user.name = body.name;
     user.lastname = body.lastname;
-    user.dataNascita = body.dataNascita;
-    user.codiceFiscale = body.codiceFiscale;
-    user.systemActor = body.systemActor;
     user.email = body.email;
-    user.attore =body.attore;
+    user.birthday = body.birthday;
+    user.role = body.role;
     return user;
-
   }
 
   async getAllUsersInfo() {
@@ -49,16 +43,11 @@ export  class UserAPI {
 
     for (let i = 0; i < body.length; i++) {
       const utente = {};
-      utente.label = body[i].name+" "+body[i].lastname+" "+body[i].systemActor.substring(0, 3);
       utente.id = body[i].id;
       utente.name = body[i].name;
       utente.lastname = body[i].lastname;
-      utente.dataNascita = body[i].dataNascita;
-      utente.codiceFiscale = body[i].codiceFiscale;
-      utente.systemActor = body[i].systemActor;
-      utente.email = body[i].email;
-      utente.categorie = body[i].categorie;
-      utente.attore =body[i].attore;
+      utente.birthday = body[i].birthday;
+      utente.systemActors =body[i].systemActors;
 
       utenti[i]=utente;
     }

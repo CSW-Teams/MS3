@@ -41,21 +41,20 @@ export default class UserProfileView extends React.Component{
 
   async componentDidMount() {
     let id = localStorage.getItem("id");
-    let attore = localStorage.getItem("actor");
     let utente = await(new UserAPI().getUserDetails(id));
     let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
     let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
     let turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(id));
     this.setState({
       idUser : id,
-      nome: utente.nome,
-      cognome: utente.cognome,
-      ruolo: utente.ruoloEnum,
+      nome: utente.name,
+      cognome: utente.lastname,
+      ruolo: utente.role,
       email: utente.email,
-      dataNascita: utente.dataNascita,
+      dataNascita: utente.birthday,
       categorie_utente : categorie_utente,
       specializzazioni_utente : specializzazioni_utente,
-      turnazioni_utente:turnazioni_utente,
+      turnazioni_utente: turnazioni_utente,
     })
   }
 
@@ -198,7 +197,7 @@ export default class UserProfileView extends React.Component{
     function getSpecializzazioneStrutturato() {
         return <MDBRow>
           <MDBCol sm="3">
-            <MDBCardText>Indirizzo</MDBCardText>
+            <MDBCardText>Specializzazioni</MDBCardText>
           </MDBCol>
           <MDBCol sm="9">
             <MDBCardText className="text-muted">  <MDBTableBody>
@@ -283,13 +282,13 @@ export default class UserProfileView extends React.Component{
                           className="text-muted">{this.state.ruolo}</MDBCardText>
                       </MDBCol>
                     </MDBRow>
-                    {(this.state.ruolo==="STRUTTURATO") && getSpecializzazioneStrutturato.call(this)}
+                    {(this.state.ruolo==="STRUCTURED") && getSpecializzazioneStrutturato.call(this)}
                   </MDBCardBody>
                 </MDBCard>
               </MDBCol>
             </MDBRow>
             <MDBRow>
-              { (this.state.ruolo!=="STRUTTURATO") && getTurnazioniSpecializzando.call(this)}
+              { (this.state.ruolo!=="STRUCTURED") && getTurnazioniSpecializzando.call(this)}
               <MDBCol>
                 {getCategoriaStatoUtente.call(this)}
               </MDBCol>

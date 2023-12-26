@@ -1,10 +1,10 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
+import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 @Data
@@ -18,8 +18,8 @@ public class RegistraAssegnazioneTurnoDTO {
     private TimeSlot timeSlot;
 
     private TaskEnum mansione;
-    private Set<DoctorDTO> utentiDiGuardia;
-    private Set<DoctorDTO> utentiReperibili;
+    private Set<UserDTO> utentiDiGuardia;
+    private Set<UserDTO> utentiReperibili;
     private MedicalServiceDTO servizio;
     private boolean forced;
 

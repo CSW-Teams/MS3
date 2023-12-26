@@ -139,7 +139,7 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
                     onChange={() => handleCheckboxChange(utente.id)}
                   />
                 }
-                label={`${utente.nome} ${utente.cognome}`}
+                label={`${utente.name} ${utente.lastname}`}
               />
             ))}
           </Box>
