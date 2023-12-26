@@ -1,6 +1,8 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
+import org.cswteams.ms3.dto.user.UserDTO;
+import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
 
 import java.util.Set;
@@ -15,10 +17,14 @@ public class RegisterConcreteShiftDTO {
 
     private TimeSlot timeSlot;
 
-    private Set<DoctorDTO> onDutyDoctors;
-    private Set<DoctorDTO> onCallDoctors;
+    private Set<UserDTO> onDutyDoctors;
+    private Set<UserDTO> onCallDoctors;
     private Set<MedicalServiceDTO> services;
     private boolean forced;
+
+    //TODO: to be removed?
+    private TaskEnum mansione;
+    private MedicalServiceDTO servizio;
 
     public RegisterConcreteShiftDTO(){}
 
