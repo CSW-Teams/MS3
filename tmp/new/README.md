@@ -48,15 +48,15 @@ private void registerScocciature() {  //propongo di rinominare il metodo in regi
   int uffaPriorityHoliday = 5;
   int uffaPriorityHolidayNight = 6;
 
-  //istanziazione e salvataggio nel DB degli oggetti di tipo Scocciatura (propongo di ridenominare Scocciatura in Annoyance e così via)
+  //istanziazione e salvataggio nel DB degli oggetti di tipo Scocciatura (propongo di ridenominare Scocciatura in Scocciatura e così via)
   for(Holiday holiday: holidays) {
-    Annoyance annoyanceHolidayMorning = new HolidayAnnoyance(uffaPriorityHoliday, holiday, TimeSlot.MORNING);
-    Annoyance annoyanceHolidayAfternoon = new HolidayAnnoyance(uffaPriorityHoliday, holiday, TimeSlot.AFTERNOON);
-    Annoyance annoyanceHolidayNight = new HolidayAnnoyance(uffaPriorityHolidayNight, holiday, TimeSlot.NIGHT);
+    Scocciatura scocciaturaHolidayMorning = new HolidayScocciatura(uffaPriorityHoliday, holiday, TimeSlot.MORNING);
+    Scocciatura scocciaturaHolidayAfternoon = new HolidayScocciatura(uffaPriorityHoliday, holiday, TimeSlot.AFTERNOON);
+    Scocciatura scocciaturaHolidayNight = new HolidayScocciatura(uffaPriorityHolidayNight, holiday, TimeSlot.NIGHT);
 
-    annoyanceDAO.save(annoyanceHolidayMorning);
-    annoyanceDAO.save(annoyanceHolidayAfternoon);
-    annoyanceDAO.save(annoyanceHolidayNight);
+    scocciaturaDAO.save(scocciaturaHolidayMorning);
+    scocciaturaDAO.save(scocciaturaHolidayAfternoon);
+    scocciaturaDAO.save(scocciaturaHolidayNight);
 
   }
 
@@ -258,49 +258,46 @@ private void registerConstraints() {
 ```
 
 ## ScheduleBuilder.aggiungiUtenti():
-* Migliorare l'algoritmo di schedulazione (e in particolare la gestione degli Uffa point) in modo tale che si tenga conto degli Uffa point accumulati nei vari mesi (dove i mesi più vicini hanno un peso maggiore e viceversa) e, nello specifico, delle scocciature dovute ai turni di notte e delle scocciature dovute alle festività:
+* Migliorare l'algoritmo di schedulazione in modo tale che si tenga conto dei livelli di priorità e, nello specifico, delle scocciature dovute ai turni lunghi e ai turni di notte e delle scocciature dovute alle festività:
 ```
-private void aggiungiUtenti(ConcreteShift assegnazione, int numUtenti, Set<Doctor> utentiDaPopolare, List<DoctorUffaPriority> allDoctorUffaPriority) throws NotEnoughFeasibledoctorsException {
+private void addDoctors(ConcreteShift concreteShift, QuantityShiftSeniority qss, List<Doctor> newDoctors, List<DoctorUffaPriority> allDoctorUffaPriority) throws NotEnoughFeasibledoctorsException {
 
-  int selecteddoctors = 0;
-  List<doctorScheduleState> alldoctorScheduleState = new ArrayList<>(alldoctorScheduleStates.values());
+  int selectedUsers = 0;
 
   if(controllerScocciatura != null) {
-    controllerScocciatura.updatePrioritydoctors(alldoctorScheduleState, assegnazione, allDoctorUffaPriority, false);
-    controllerScocciatura.orderByPriority(allDoctorUffaPriority, false);  //TipologiaTurno.NOTTURNO: false
+    controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueue.GENERAL);
+    controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueue.GENERAL);
 
-    if(assegnazione.getTurno().getTipologiaTurno() == TipologiaTurno.NOTTURNO) {
-      controllerScocciatura.updatePrioritydoctors(alldoctorScheduleState, assegnazione, allDoctorUffaPriority, true);
-      controllerScocciatura.orderByPriority(allDoctorUffaPriority, true);  //TipologiaTurno.NOTTURNO: true
+    if(concreteShift.getShift().getDuration().toMinutes() > 360) {  //360 minuti == 6 ore
+      controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueue.LONG_SHIFT);
+      controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueue.LONG_SHIFT);
+
+    }
+
+    if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT) {
+      controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueue.NIGHT);
+      controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueue.NIGHT);
 
     }
 
   }
 
   for(DoctorUffaPriority dup: allDoctorUffaPriority) {
-    doctorScheduleState doctorScheduleState;  //ricerca del prossimo doctorScheduleState che rispetta l'ordine dato dalle priorità
-    for(doctorScheduleState potentialdoctorScheduleState: alldoctorScheduleState) {
-      if(potentialdoctorScheduleState.getDoctor().getId() == dup.getdoctorId())
-        doctorScheduleState = potentialdoctorScheduleState;
-
-    }
-
     [...]
 
-    if(context.getConcreteShift().getTurno().isReperibilitaAttiva() || context.getConcreteShift().getUtentiDiGuardia().size() < context.getConcreteShift().getTurno().getNumRequireddoctors()) {
+    if(contextDoctorsOnDuty.size() < qss.getQuantity()) {  //bisogna modificare solo la coda di priorità adeguata.
 
-      doctorScheduleState.saveUffaTemp();
+      if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
+        doctorScheduleState.updatePriority(PriorityQueue.NIGHT);
+      elif(concreteShift.getShift().getDuration().toMinutes() > 360)
+        doctorScheduleState.updatePriority(PriorityQueue.LONG_SHIFT);
+      else
+        doctorScheduleState.updatePriority(PriorityQueue.GENERAL);
 
-      for(DoctorUffaPriority dup: allDoctorUffaPriority) {  //bisogna modificare solo la lista di uffa point dell'Doctor corretto.
-        if(dup.getdoctorId() == doctorScheduleState.getDoctor().getId())
-          dup.updateUffa(doctorScheduleState.getUffaCumulativo(), assegnazione.getTurno().getTipologiaTurno()==TipologiaTurno.NOTTURNO, LocalDate.ofEpochDay(assegnazione.getDataEpochDay()).getMonth());
+    }
+    selectedUsers++;
 
-      }
-      selecteddoctors++;
-
-    } 
-
-  }
+  } 
 
   [...]
 
@@ -313,6 +310,7 @@ public Schedule build() {
   schedule.purify();
 
   List<DoctorUffaPriority> allDoctorUffaPriority = daoDoctorUffaPriority.findAll();
+  //TODO: normalizzazione dei livelli di priorità
 
   for(ConcreteShift at: this.schedule.getAssegnazioniTurno()) {
     Month currentMonth = LocalDate.ofEpochDay(at.getDataEpochDay()).getMonth()
@@ -353,23 +351,17 @@ public Schedule build() {
 }
 ```
 
-* ... e il metodo controllerScocciatura.updatePrioritydoctors() (che dovrebbe sostituire controllerScocciatura.addUffaTempUtenti())...
+* ... e il metodo controllerScocciatura.updatePriorityDoctors() (che dovrebbe sostituire controllerScocciatura.addUffaTempUtenti())...
 ```
-public void updatePrioritydoctors(List<doctorScheduleState> alldoctorState, ConcreteShift assegnazione, List<DoctorUffaPriority> allDoctorUffaPriority, boolean isNight) {
+public void updatePriorityDoctors(List<DoctorUffaPriority> allDoctorUffaPriority, ConcreteShift concreteShift, PriorityQueue pq) {
 
-  int uffa;
-  contextScocciatura contextScocciatura;
+  int priorityDelta;
+  ContestoScocciatura contestoScocciatura;
 
-  for(doctorScheduleState doctorScheduleState: alldoctorState){
-    contextScocciatura = new contextScocciatura(doctorScheduleState, assegnazione);
-    uffa = this.calcolaUffaComplessivoDoctorAssegnazione(contextScocciatura);
-    doctorScheduleState.addUffaTemp(uffa);
-
-    for(DoctorUffaPriority dup: allDoctorUffaPriority) {  //bisogna modificare solo la priorità dell'Doctor corretto.
-      if(dup.getdoctorId() == doctorScheduleState.getDoctor().getId())
-        dup.updatePriority(uffa, isNight, LocalDate.ofEpochDay(assegnazione.getDataEpochDay()).getMonth());  //TipologiaTurno.NOTTURNO: isNight
-
-    }
+  for(DoctorUffaPriority dup: allDoctorUffaPriority) {
+    contestoScocciatura = new ContestoScocciatura(dup, concreteShift);
+    priorityDelta = this.calcolaUffaComplessivoUtenteAssegnazione(contestoScocciatura);
+    dup.updatePartialPriority(priorityDelta, pq);
 
   }
 
@@ -378,15 +370,20 @@ public void updatePrioritydoctors(List<doctorScheduleState> alldoctorState, Conc
 
 * ... e il metodo controllerScocciatura.orderByPriority() (che dovrebbe sostituire controllerScocciatura.ordinaByUffa()):
 ```
-public void orderByPriority(List<DoctorUffaPriority> dup, boolean isNight) {
+public void orderByPriority(List<DoctorUffaPriority> dup, PriorityQueue pq) {
   Collections.shuffle(dup);
-  if(isNight)
-    dup.sort((u1, u2) -> u1.getNightPriority() - u2.getNightPriority());
-  else
-    dup.sort((u1, u2) -> u1.getGeneralPriority() - u2.getGeneralPriority());
+
+  switch(pq) {
+    case GENERAL:
+      dup.sort((u1, u2) -> u1.getPartialGeneralPriority() - u2.getPartialGeneralPriority());
+
+    case LONG_SHIFT:
+      dup.sort((u1, u2) -> u1.getPartialLongShiftPriority() - u2.getPartialLongShiftPriority());
+
+    case NIGHT:
+      dup.sort((u1, u2) -> u1.getPartialNightPriority() - u2.getPartialNightPriority());
+
+  }
 
 }
 ```
-
-## Possibili miglioramenti rispetto alle modifiche proposte
-* Accorpare la classe doctorScheduleState con la classe DoctorUffaPriority (poi dipende anche dalle modifiche apportate da Staccone).
