@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity;
 
 
 import lombok.Getter;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -51,7 +52,6 @@ public class ConcreteShift {
         this.doctorAssignmentList = doctorAssignmentList;
     }
 
-
     protected ConcreteShift() {
 
     }
@@ -60,5 +60,36 @@ public class ConcreteShift {
     public ConcreteShift clone() {
         return new ConcreteShift(this.date, this.shift, this.doctorAssignmentList);
     }
+  
+    /**
+     * Given a <code>Doctor</code>, return the <code>ConcreteShiftDoctorStatus</code> for which he/she
+     * is assigned for this <code>ConcreteShift</code>.
+     * If the <code>Doctor</code> provided is not assigned to this <code>ConcreteShift</code>, <code>null</code> is returned.
+     *
+     * @param doctor doctor for which the lookup is to be done
+     * @return the <code>ConcreteShiftDoctorStatus</code> for the doctor, or <code>null</code> if not found for this <code>ConcreteShift</code>.
+     */
+    public ConcreteShiftDoctorStatus getDoctorAssignmentStatus(Doctor doctor) {
+        for (DoctorAssignment doctorAssignment : this.doctorAssignmentList) {
+            if (doctorAssignment.getDoctor() == doctor) {
+                return doctorAssignment.getConcreteShiftDoctorStatus();
+            }
+        }
+        return null;
+    }
 
+    /**
+     * Given a <code>Doctor</code>, check if he/she is actively assigned to this <code>ConcreteShift</code>,
+     * i.e. is either <i>on duty</i> or <i>on call</i> for it.
+     * <p>
+     * If the <code>Doctor</code> is removed, it is not actively assigned.
+     *
+     * @param doctor doctor for which the lookup is to be done
+     * @return <code>true</code> if <code>doctor</code> is <i>on duty</i> or <i>on call</i> for this <code>ConcreteShift</code>,
+     * <code>false</code> elsewhere.
+     */
+    public boolean isDoctorAssigned(Doctor doctor) {
+        return (getDoctorAssignmentStatus(doctor) == ConcreteShiftDoctorStatus.ON_DUTY
+                || getDoctorAssignmentStatus(doctor) == ConcreteShiftDoctorStatus.ON_CALL);
+    }
 }

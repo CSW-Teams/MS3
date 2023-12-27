@@ -6,7 +6,10 @@ import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -16,18 +19,15 @@ public class GiustificazioneForzaturaEndpoint {
     @Autowired
     private IControllerGiustificaForzatura iControllerGiustificaForzatura;
 
-
     @RequestMapping(method = RequestMethod.POST, path = "/caricaGiustificazione")
-    public ResponseEntity<String> caricaGiustificazione( GiustificazioneForzaturaVincoliDTO giustificazione) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Giustificazione caricata correttamente");
-        /*try {
+    public ResponseEntity<String> caricaGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazione) {
+        try {
             iControllerGiustificaForzatura.saveGiustificazione(giustificazione);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Giustificazione caricata correttamente");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body("Giustificazione non caricata. Errore.");
-        }*/
+        }
     }
-
 
     @RequestMapping(method = RequestMethod.POST, path = "/caricaFile")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
@@ -41,5 +41,4 @@ public class GiustificazioneForzaturaEndpoint {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);
         }
     }
-
 }

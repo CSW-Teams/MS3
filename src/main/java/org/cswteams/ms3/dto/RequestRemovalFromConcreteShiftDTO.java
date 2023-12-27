@@ -6,7 +6,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class RichiestaRimozioneDaTurnoDTO {
+public class RequestRemovalFromConcreteShiftDTO {
     /**
      * <code>null</code> all'atto della creazione della richiesta
      */
@@ -35,10 +35,10 @@ public class RichiestaRimozioneDaTurnoDTO {
 
     private byte[] allegato;
 
-    public RichiestaRimozioneDaTurnoDTO() {
+    public RequestRemovalFromConcreteShiftDTO() {
     }
 
-    public RichiestaRimozioneDaTurnoDTO(Long richiestaRimozioneDaTurnoId, Long IdAssegnazioneTurno, Long idUtenteRichiedente, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
+    public RequestRemovalFromConcreteShiftDTO(Long richiestaRimozioneDaTurnoId, Long IdAssegnazioneTurno, Long idUtenteRichiedente, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
         this.idRichiestaRimozioneDaTurno = richiestaRimozioneDaTurnoId;
         this.idAssegnazioneTurno = IdAssegnazioneTurno;
         this.idUtenteRichiedente = idUtenteRichiedente;
@@ -48,7 +48,7 @@ public class RichiestaRimozioneDaTurnoDTO {
         this.esaminata = esaminata;
     }
 
-    public RichiestaRimozioneDaTurnoDTO(Long richiestaRimozioneDaTurnoId, Long IdAssegnazioneTurno, Long idUtenteRichiedente, Long idUtenteSostituto, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
+    public RequestRemovalFromConcreteShiftDTO(Long richiestaRimozioneDaTurnoId, Long IdAssegnazioneTurno, Long idUtenteRichiedente, Long idUtenteSostituto, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
         this.idRichiestaRimozioneDaTurno = richiestaRimozioneDaTurnoId;
         this.idAssegnazioneTurno = IdAssegnazioneTurno;
         this.idUtenteRichiedente = idUtenteRichiedente;

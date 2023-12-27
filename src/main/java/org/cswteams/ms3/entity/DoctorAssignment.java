@@ -1,6 +1,7 @@
 package org.cswteams.ms3.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ public class DoctorAssignment {
 
     @Enumerated
     @NotNull
+    @Setter
     private ConcreteShiftDoctorStatus concreteShiftDoctorStatus;
 
     @ManyToOne
