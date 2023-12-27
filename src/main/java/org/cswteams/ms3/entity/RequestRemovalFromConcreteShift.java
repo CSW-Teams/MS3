@@ -36,7 +36,6 @@ public class RequestRemovalFromConcreteShift {
      * Doctor that the <i>Planner</i> will put as substitute for <code>requestingDoctor</code>, if the request will be accepted.
      */
     @OneToOne
-    @NotNull
     private Doctor substituteDoctor;
 
     /**
