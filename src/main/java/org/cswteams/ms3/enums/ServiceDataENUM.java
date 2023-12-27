@@ -1,4 +1,4 @@
-package org.cswteams.ms3.control.preferenze;
+package org.cswteams.ms3.enums;
 
 public enum ServiceDataENUM {
     DATANEAGER,
