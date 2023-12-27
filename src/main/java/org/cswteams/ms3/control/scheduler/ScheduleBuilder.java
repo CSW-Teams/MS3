@@ -197,7 +197,7 @@ public class ScheduleBuilder {
         }
 
         return this.schedule;
-        return null;
+
     }
 
     /**
