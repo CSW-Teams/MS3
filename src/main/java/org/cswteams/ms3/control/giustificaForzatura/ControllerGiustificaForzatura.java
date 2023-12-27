@@ -3,9 +3,9 @@ package org.cswteams.ms3.control.giustificaForzatura;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.GiustificazioneFozaturaDAO;
 import org.cswteams.ms3.dao.LiberatoriaDAO;
-import org.cswteams.ms3.dto.DoctorDTO;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.cswteams.ms3.dto.MedicalServiceDTO;
+import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.GiustificazioneForzaturaVincoli;
 import org.cswteams.ms3.entity.MedicalService;
@@ -74,9 +74,9 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
         return doctor.get();
     }
 
-    public Set<Doctor> convertDTOSetToEntitySet(Set<DoctorDTO> dtoSet) throws DatabaseException {
+    public Set<Doctor> convertDTOSetToEntitySet(Set<UserDTO> dtoSet) throws DatabaseException {
         Set<Doctor> entitySet = new HashSet<>();
-        for (DoctorDTO dto : dtoSet) {
+        for (UserDTO dto : dtoSet) {
 
             /*
              Get the Doctor entities directly from the db, instead of by using the
