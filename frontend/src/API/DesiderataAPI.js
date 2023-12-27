@@ -9,9 +9,9 @@ export  class DesiderateAPI {
     for (let i = 0; i < date.length; i++) {
       let desiderata = {}
 
-      desiderata.anno= date[i].year
-      desiderata.mese= date[i].month.number
-      desiderata.giorno= date[i].day
+      desiderata.year= date[i].year
+      desiderata.month= date[i].month.number
+      desiderata.day= date[i].day
       desiderate.push(desiderata)
     }
 
@@ -21,21 +21,21 @@ export  class DesiderateAPI {
       body: JSON.stringify(desiderate)
     };
 
-    const response = await fetch('/api/desiderate/utente_id='+id, requestOptions);
+    const response = await fetch('/api/preferences/doctor_id='+id, requestOptions);
 
     return response;
   }
 
   async getDesiderate(id) {
-    const response = await fetch('/api/desiderate/utente_id='+id);
+    const response = await fetch('/api/preferences/doctor_id='+id);
     const body = await response.json();
 
     const desiderate = [];
 
     for (let i = 0; i < body.length; i++) {
       let des = {}
-      des.idDesiderata = body[i].idDesiderata
-      des.data= new Date(body[i].anno, body[i].mese-1, body[i].giorno).toLocaleDateString()
+      des.idDesiderata = body[i].preferenceId
+      des.data= new Date(body[i].year, body[i].month-1, body[i].day).toLocaleDateString()
       desiderate[i]=des;
     }
     return desiderate;
@@ -52,7 +52,7 @@ export  class DesiderateAPI {
 
 
   async deleteDesiderate(idDesiderata, idUtente){
-    const response = await fetch('/api/desiderate/desiderata_id='+idDesiderata+'/utente_id='+idUtente,
+    const response = await fetch('/api/preferences/preference_id='+idDesiderata+'/doctor_id='+idUtente,
       { method: 'DELETE' });
     return response.status;
   }

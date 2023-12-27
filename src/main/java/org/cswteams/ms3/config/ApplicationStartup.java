@@ -64,7 +64,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private ScocciaturaDAO scocciaturaDao;
     @Autowired
-    private DesiderataDAO desiderataDao;
+    private PreferenceDAO preferenceDao;
 
     @Autowired
     private ConfigVincoliDAO configVincoliDao;

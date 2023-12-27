@@ -1,5 +1,6 @@
 package org.cswteams.ms3.entity;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.cswteams.ms3.enums.TimeSlot;
 
@@ -9,10 +10,12 @@ import java.util.List;
 
 @Entity
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Preference {
 
     @Id
     @GeneratedValue
+    @EqualsAndHashCode.Include
     private Long id;
 
     private LocalDate date;
@@ -30,7 +33,7 @@ public class Preference {
         this.doctors = doctors;
     }
 
-    public Preference(){
+    protected Preference(){
 
     }
 }
