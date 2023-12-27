@@ -55,7 +55,7 @@ public class HolidayRestEndpoint {
              * DEBUG TO DELETE
              */
             for(HolidayDTO holiday:holidays){
-                log.info("[DEBUG] " + holiday.getName() + " " + holiday.getCategory()  + " " + holiday.getStartDate() + " " + holiday.getEndDate());
+                log.info("[DEBUG] " + holiday.getName() + " " + holiday.getCategory()  + " " + holiday.getStartDateEpochDay() + " " + holiday.getEndDateEpochDay());
             }
             holidayController.registerSundays(LocalDate.of(Integer.parseInt(currentYear)-1, 1, 1), 3);
             holidays = holidayController.readHolidays();
