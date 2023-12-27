@@ -1,6 +1,6 @@
 package org.cswteams.ms3.rest;
 
-import org.cswteams.ms3.control.requestRemovalFromConcreteShift.IControllerRequestRemovalFromConcreteShift;
+import org.cswteams.ms3.control.requestRemovalFromConcreteShift.IRequestRemovalFromConcreteShiftController;
 import org.cswteams.ms3.dto.RequestRemovalFromConcreteShiftDTO;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
@@ -18,7 +18,7 @@ import java.util.Set;
 public class RichiestaRimozioneDaTurnoRestEndpoint {
 
     @Autowired
-    private IControllerRequestRemovalFromConcreteShift controller;
+    private IRequestRemovalFromConcreteShiftController controller;
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> creaRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {

@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Set;
 
-public interface IControllerRequestRemovalFromConcreteShift {
+public interface IRequestRemovalFromConcreteShiftController {
 
     /**
      * Create a new request of removal from concrete shift, given a DTO.

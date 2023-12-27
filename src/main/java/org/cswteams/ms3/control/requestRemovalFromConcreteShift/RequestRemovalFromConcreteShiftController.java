@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-public class ControllerRequestRemovalFromConcreteShift implements IControllerRequestRemovalFromConcreteShift {
+public class RequestRemovalFromConcreteShiftController implements IRequestRemovalFromConcreteShiftController {
 
     @Autowired
     private RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO;
