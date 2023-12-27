@@ -1,7 +1,6 @@
-package org.cswteams.ms3.control.richiestaRimozioneDaTurno;
+package org.cswteams.ms3.control.requestRemovalFromConcreteShift;
 
 import org.cswteams.ms3.dto.RequestRemovalFromConcreteShiftDTO;
-import org.cswteams.ms3.entity.RequestRemovalFromConcreteShift;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.web.multipart.MultipartFile;

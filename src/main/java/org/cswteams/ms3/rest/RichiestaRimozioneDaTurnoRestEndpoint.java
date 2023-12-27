@@ -1,6 +1,6 @@
 package org.cswteams.ms3.rest;
 
-import org.cswteams.ms3.control.richiestaRimozioneDaTurno.IControllerRequestRemovalFromConcreteShift;
+import org.cswteams.ms3.control.requestRemovalFromConcreteShift.IControllerRequestRemovalFromConcreteShift;
 import org.cswteams.ms3.dto.RequestRemovalFromConcreteShiftDTO;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;

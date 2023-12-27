@@ -1,4 +1,4 @@
-package org.cswteams.ms3.control.richiestaRimozioneDaTurno;
+package org.cswteams.ms3.control.requestRemovalFromConcreteShift;
 
 import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
 import org.cswteams.ms3.dao.ConcreteShiftDAO;
@@ -46,7 +46,6 @@ public class ControllerRequestRemovalFromConcreteShift implements IControllerReq
             throw new DatabaseException("Invalid ConcreteShift ID.");
         }
 
-        //TODO idem per _getDoctor
         Optional<ConcreteShift> concreteShift = concreteShiftDAO.findById(concreteShiftId);
         if (concreteShift.isEmpty()) {
             throw new DatabaseException("ConcreteShift not found for id = " + concreteShiftId);
@@ -57,10 +56,6 @@ public class ControllerRequestRemovalFromConcreteShift implements IControllerReq
         if (requestingDoctorId == null) {
             throw new DatabaseException("Invalid Doctor ID.");
         }
-        /*Optional<Doctor> requestingDoctor = doctorDAO.findById(requestingDoctorId);
-        if (requestingDoctor.isEmpty()) {
-            throw new DatabaseException("Doctor not found for id = " + requestingDoctorId);
-        }*/
         Doctor requestingDoctor = _getDoctor(requestingDoctorId);
 
         // ... now call the internal method
@@ -141,11 +136,10 @@ public class ControllerRequestRemovalFromConcreteShift implements IControllerReq
         return buildDTOList(requestRemovalFromConcreteShiftDAO.findAllByUser(requestingDoctorId));
     }
 
-    //TODO dove?
     private Doctor _getDoctor(Long doctorId) throws DatabaseException {
         Optional<Doctor> doctor = doctorDAO.findById(doctorId);
         if (doctor.isEmpty()) {
-            throw new DatabaseException("Utente doctor non trovato per id = " + doctorId);
+            throw new DatabaseException("Doctor not found for id = " + doctorId);
         }
         return doctor.get();
     }
@@ -194,6 +188,7 @@ public class ControllerRequestRemovalFromConcreteShift implements IControllerReq
                 request.getFile(),
                 request.isReviewed());
     }
+
     private Set<RequestRemovalFromConcreteShiftDTO> buildDTOList(List<RequestRemovalFromConcreteShift> richiestaRimozioneDaTurnoList) {
         Set<RequestRemovalFromConcreteShiftDTO> richiestaRimozioneDaTurnoDTOS = new HashSet<>();
         for (RequestRemovalFromConcreteShift entity : richiestaRimozioneDaTurnoList) {
