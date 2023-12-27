@@ -68,6 +68,7 @@ private void registerScocciature() {  //propongo di rinominare il metodo in regi
 ```
 @Entity
 @Getter
+@Setter
 public class DoctorUffaPriority {  //propongo di rimuovere gli attributi schedule e assegnazioniTurnoCache.
 
   @Id
@@ -183,8 +184,8 @@ private void populateDB() throws TurnoException {
     DoctorUffaPriority dup = new DoctorUffaPriority(doctor);
     DoctorHolidays dh = new DoctorHolidays(doctor);
 
-    doctorUffaPriorityDao.save(dup);
-    doctorHolidaysDao.save(dh);
+    doctorUffaPriorityDAO.save(dup);
+    doctorHolidaysDAO.save(dh);
 
   }
 
@@ -307,35 +308,32 @@ private void addDoctors(ConcreteShift concreteShift, QuantityShiftSeniority qss,
 * Per far ciò, è necessario ritoccare anche il metodo ScheduleBuilder.build()...
 ```
 public Schedule build() {
-  schedule.purify();
+  schedule.getViolatedConstraints().clear();
+  schedule.setCauseIllegal = null;
 
-  List<DoctorUffaPriority> allDoctorUffaPriority = daoDoctorUffaPriority.findAll();
-  //TODO: normalizzazione dei livelli di priorità
+  List<DoctorUffaPriority> allDoctorUffaPriority = doctorUffaPriorityDAO.findAll();
+  allDoctorUffaPriority = normalizeUffaPriority(allDoctorUffaPriority);
 
-  for(ConcreteShift at: this.schedule.getAssegnazioniTurno()) {
-    Month currentMonth = LocalDate.ofEpochDay(at.getDataEpochDay()).getMonth()
-
-    for(DoctorUffaPriority dup: allDoctorUffaPriority) {  //clean-up delle informazioni sugli 8 mesi più 'vecchi'
-      for(Month month: Month.values()) {
-        if(ChronoUnit.MONTHS.between(month, currentMonth) > 3)
-          dup.getTotalUffas().put(month, 0);
-
-      }
-
-    }
+  for(ConcreteShift concreteShift: this.schedule.getConcreteShifts()) {
 
     try {  //prima pensiamo a riempire le allocazioni, che sono le più importanti
-      for(RuoloNumero rn: at.getTurno().getRuoliNumero()) {
-        this.aggiungiUtenti(at, rn.getNumero(), at.getUtentiDiGuardia(), allDoctorUffaPriority);
+      List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, [...]);
+
+      for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
+        this.addDoctors(concreteShift, qss, doctorsOnDuty, allDoctorUffaPriority);
       }
-    } catch(NotEnoughFeasibledoctorsException e) {
+
+    } catch(NotEnoughFeasibleUsersException e) {
       [...]
     }
 
     try {  //passo poi a riempire le riserve
-      for(RuoloNumero rn: at.getTurno().getRuoliNumero()) {
-        this.aggiungiUtenti(at, rn.getNumero(), at.getUtentiReperibili(), allDoctorUffaPriority);
+      List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, [...]);
+
+      for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
+        this.addDoctors(concreteShift, qss, doctorsOnCall, allDoctorUffaPriority);
       }
+
     } catch(NotEnoughFeasibledoctorsException e) {
       [...]
     }
@@ -343,7 +341,7 @@ public Schedule build() {
   }
 
   for(DoctorUffaPriority dup: allDoctorUffaPriority) {
-    daoDoctorUffaPriority.save(dup);
+    doctorUffaPriorityDAO.save(dup);
   }
 
   return this.schedule;
@@ -368,7 +366,7 @@ public void updatePriorityDoctors(List<DoctorUffaPriority> allDoctorUffaPriority
 }
 ```
 
-* ... e il metodo controllerScocciatura.orderByPriority() (che dovrebbe sostituire controllerScocciatura.ordinaByUffa()):
+* ... e il metodo controllerScocciatura.orderByPriority() (che dovrebbe sostituire controllerScocciatura.ordinaByUffa())...
 ```
 public void orderByPriority(List<DoctorUffaPriority> dup, PriorityQueue pq) {
   Collections.shuffle(dup);
@@ -384,6 +382,35 @@ public void orderByPriority(List<DoctorUffaPriority> dup, PriorityQueue pq) {
       dup.sort((u1, u2) -> u1.getPartialNightPriority() - u2.getPartialNightPriority());
 
   }
+
+}
+```
+
+* ... per poi definire il metodo controllerScocciatura.normalizeUffaPriority():
+```
+public List<DoctorUffaPriority> normalizeUffaPriority(List<DoctorUffaPriority> allDoctorUffaPriority) {
+  int minGeneralPriority = 39;  //39=MAX_PRIORITY
+  int minLongShiftPriority = 39;
+  int minNightPriority = 39;
+
+  for(DoctorUffaPriority dup : allDoctorUffaPriority) {  //calcolo dei valori minimi di priorità per le tre code
+    if(dup.getGeneralPriority() < minGeneralPriority)
+      minGeneralPriority = dup.getGeneralPriority();
+    if(dup.getLongShiftPriority() < minLongShiftPriority)
+      minLongShiftPriority = dup.getLongShiftPriority();
+    if(dup.getNightPriority() < minNightPriority)
+      minNightPriority = dup.getNightPriority();
+
+  }
+
+  for(DoctorUffaPriority dup : allDoctorUffaPriority) {  //normalizzazione vera e propria delle priorità per le tre code
+    dup.setGeneralPriority(dup.getGeneralPriority()-minGeneralPriority);
+    dup.setLongShiftPriority(dup.getLongShiftPriority()-minLongShiftPriority);
+    dup.setLongShiftPriority(dup.getLongShiftPriority()-minLongShiftPriority);
+
+  }
+
+  return allDoctorUffaPriority;
 
 }
 ```
