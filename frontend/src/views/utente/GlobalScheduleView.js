@@ -16,8 +16,6 @@ class GlobalScheduleView extends ScheduleView {
 
     utenti = await utenteAPI.getAllUser();
     turni = await turnoAPI.getGlobalTurn();
-    console.log(localStorage.getItem("actor"))
-
     super.componentDidMount(turni, utenti);
   }
 
@@ -25,7 +23,7 @@ class GlobalScheduleView extends ScheduleView {
   render(){
     return (
       <Stack spacing={3}>
-        {localStorage.getItem("actor")!=="USER" && localStorage.getItem("actor")!=="CONFIGURATOR" && <TemporaryDrawer onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></TemporaryDrawer>}
+        {localStorage.getItem("actor")!=="DOCTOR" && localStorage.getItem("actor")!=="CONFIGURATOR" && <TemporaryDrawer onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></TemporaryDrawer>}
         {super.render("global")}
       </Stack>
       );

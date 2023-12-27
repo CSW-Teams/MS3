@@ -14,7 +14,6 @@ import {
    MDBCardTitle
 } from "mdb-react-ui-kit";
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
-import {Button} from "@material-ui/core";
 import AggiungiCategoria from "../../components/common/BottomViewAggiungiTurnazione"
 import AggiungiCategoriaStato from "../../components/common/BottomViewAggiungiCategoriaStat"
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -48,14 +47,14 @@ export default class UserProfileView extends React.Component{
 
     this.setState({
       attore : attore,
-      nome: utente.nome,
-      cognome: utente.cognome,
-      ruolo: utente.ruoloEnum,
+      nome: utente.name,
+      cognome: utente.lastname,
+      ruolo: utente.role,
       email: utente.email,
-      dataNascita: utente.dataNascita,
+      dataNascita: utente.birthday,
       categorie_utente : categorie_utente,
       specializzazioni_utente:specializzazioni_utente,
-      turnazioni_utente:turnazioni_utente,
+      turnazioni_utente: turnazioni_utente,
     })
   }
 
@@ -232,7 +231,6 @@ export default class UserProfileView extends React.Component{
                     fluid/>
                   <p
                     className="text-muted mb-1">{this.state.nome + " " + this.state.cognome}</p>
-                  <p className="text-muted mb-4">{this.state.ruolo}</p>
                 </MDBCardBody>
               </MDBCard>
             </MDBCol>

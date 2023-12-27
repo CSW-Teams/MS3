@@ -1,7 +1,7 @@
 package org.cswteams.ms3.dto.registration;
 
 import lombok.Data;
-import org.cswteams.ms3.entity.Seniority;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 
 import java.time.LocalDate;

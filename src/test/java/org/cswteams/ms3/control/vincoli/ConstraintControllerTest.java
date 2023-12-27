@@ -12,10 +12,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @AutoConfigureMockMvc
 @Profile("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt.
-public class ControllerVincoloTest {
+public class ConstraintControllerTest {
 /*
     @Autowired
-    private IControllerVincolo controllerVincolo;
+    private IConstraintController controllerVincolo;
 
     @Autowired
     private CategorieDao categorieDao;
@@ -24,7 +24,7 @@ public class ControllerVincoloTest {
     private ConfigVincoloMaxPeriodoConsecutivoDAO configVincoloMaxPeriodoConsecutivoDao;
 
     @Autowired
-    private VincoloDao vincoloDao;
+    private ConstraintDAO constraintDAO;
 
 
 
@@ -54,9 +54,9 @@ public class ControllerVincoloTest {
         List<Vincolo> vincoliMaxPeriodoConsecutivo = new LinkedList<>(Arrays.asList(vincoloPeriodoConsecutivoOver62, vincoloPeriodoConsecutivoIncinta));
 
         //FLUSH NEL DB DELLE ENTITA' VINCOLI APPENA CREATE
-        vincoloDao.saveAndFlush(vincoloTurniContigui);
-        vincoloDao.saveAll(vincoliMaxPeriodoConsecutivo);
-        vincoloDao.saveAndFlush(vincoloMaxOrePeriodo);
+        constraintDAO.saveAndFlush(vincoloTurniContigui);
+        constraintDAO.saveAll(vincoliMaxPeriodoConsecutivo);
+        constraintDAO.saveAndFlush(vincoloMaxOrePeriodo);
 
     }
 

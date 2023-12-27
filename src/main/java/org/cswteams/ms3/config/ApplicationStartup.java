@@ -10,6 +10,7 @@ import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
 import org.cswteams.ms3.dao.*;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
@@ -56,7 +57,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private IHolidayController holidayController;
 
     @Autowired
-    private VincoloDao vincoloDao;
+    private ConstraintDAO constraintDAO;
 
     @Autowired
     private TaskDAO taskDAO;
@@ -195,7 +196,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         for(ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()){
             Constraint vincolo = new ConstraintMaxPeriodoConsecutivo(config.getNumMaxMinutiConsecutivi(), config.getCategoriaVincolata());
             vincolo.setDescrizione("Constraint massimo periodo consecutivo per categoria "+config.getCategoriaVincolata().getNome());
-            vincoloDao.saveAndFlush(vincolo);
+            constraintDAO.saveAndFlush(vincolo);
         }
         vincolo1.setDescrizione("Constraint Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
         vincolo2.setDescrizione("Constraint massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
@@ -204,14 +205,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         vincoloTurniContigui.setDescrizione("Constraint turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
         vincolo6.setDescrizione("Constraint numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
 
-        vincoloDao.saveAndFlush(vincoloTurniContigui);
-        vincoloDao.saveAndFlush(vincolo1);
-        vincoloDao.saveAndFlush(vincolo2);
-        vincoloDao.saveAndFlush(vincolo4);
-        vincoloDao.saveAndFlush(vincolo5);
-        vincoloDao.saveAndFlush(vincolo6);
+        constraintDAO.saveAndFlush(vincoloTurniContigui);
+        constraintDAO.saveAndFlush(vincolo1);
+        constraintDAO.saveAndFlush(vincolo2);
+        constraintDAO.saveAndFlush(vincolo4);
+        constraintDAO.saveAndFlush(vincolo5);
+        constraintDAO.saveAndFlush(vincolo6);
 
-        List<Constraint> vincoli = vincoloDao.findByType("ConstraintMaxPeriodoConsecutivo");
+        List<Constraint> vincoli = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
     }
 */
 

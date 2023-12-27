@@ -1,16 +1,5 @@
 package org.cswteams.ms3.control.controllerscheduler;
 
-import org.cswteams.ms3.control.controllerscheduler.utils.ScheduleTestUtils;
-import org.cswteams.ms3.dto.ScheduloDTO;
-import org.cswteams.ms3.entity.Schedule;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,12 +7,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static org.cswteams.ms3.control.controllerscheduler.utils.TestDatesEnum.*;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -31,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @AutoConfigureMockMvc
 @Profile("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class ScheduleTests extends ControllerSchedulerTestEnv {
+public class ScheduleTests extends SchedulerControllerTestEnv {
 /*
     static Stream<Arguments> createScheduleValidTestParams() {
         return Stream.of(
@@ -127,11 +110,11 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
         this.instance.createSchedule(TODAY.getDate(), TODAY.getDate().plusDays(5));
         this.instance.createSchedule(TODAY.getDate().plusDays(6), TODAY.getDate().plusDays(11));
 
-        List<ScheduloDTO> scheduleDTOList = this.instance.leggiSchedulazioni();
+        List<ScheduleDTO> scheduleDTOList = this.instance.leggiSchedulazioni();
         Assert.assertNotNull(scheduleDTOList);
         Assert.assertFalse(scheduleDTOList.isEmpty());
         Assert.assertEquals(2, scheduleDTOList.size());
-        for (ScheduloDTO schedule : scheduleDTOList) {
+        for (ScheduleDTO schedule : scheduleDTOList) {
             Assert.assertTrue(schedule.getId() > 0);
         }
     }*/
@@ -143,11 +126,11 @@ public class ScheduleTests extends ControllerSchedulerTestEnv {
         Schedule schedule2 = this.instance.createSchedule(FUTURE_START.getDate().plusYears(3).plusDays(11), FUTURE_END.getDate().plusYears(3).plusDays(16));
         schedule.setIllegal(true);
         schedule2.setIllegal(true);
-        List<ScheduloDTO> scheduleDTOList = this.instance.leggiSchedulazioniIllegali();
+        List<ScheduleDTO> scheduleDTOList = this.instance.leggiSchedulazioniIllegali();
         Assert.assertNotNull(scheduleDTOList);
         Assert.assertFalse(scheduleDTOList.isEmpty());
         Assert.assertEquals(2, scheduleDTOList.size());
-        for (ScheduloDTO s : scheduleDTOList) {
+        for (ScheduleDTO s : scheduleDTOList) {
             Assert.assertTrue(s.getId() > 0);
             Assert.assertTrue(s.isIllegalita());
         }

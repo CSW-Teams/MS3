@@ -5,7 +5,7 @@ import org.cswteams.ms3.dao.ConcreteShiftDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dto.ConcreteShiftDTO;
-import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorAssignment;
@@ -52,7 +52,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
      * @throws AssegnazioneTurnoException
      */
     @Override
-    public ConcreteShift creaTurnoAssegnato(@NotNull RegistraAssegnazioneTurnoDTO dto) throws AssegnazioneTurnoException {
+    public ConcreteShift creaTurnoAssegnato(@NotNull RegisterConcreteShiftDTO dto) throws AssegnazioneTurnoException {
 
         //Shift shift = shiftDAO.findAllByMedicalServicesLabelAndTimeSlot(dto.getServizio().getNome(), dto.getTimeSlot()).get(0);
         //if(shift == null)
