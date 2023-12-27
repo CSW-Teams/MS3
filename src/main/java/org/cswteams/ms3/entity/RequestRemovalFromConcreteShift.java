@@ -9,8 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
- * Questa classe modella richieste di rimozione da un turno da parte di utenti a essi assegnati.
- * Gli utenti richiedenti possono fornire una motivazione/descrizione tramite l'apposito attributo.
+ * This class models requests of removal from concrete shift, issued by doctors assigned to them.
  */
 @Entity
 @Getter
@@ -27,44 +26,44 @@ public class RequestRemovalFromConcreteShift {
     private ConcreteShift concreteShift;
 
     /**
-     * Utente richiedente la sostituzione.
+     * Doctor issuing the request.
      */
     @NotNull
     @OneToOne
     private Doctor requestingDoctor;
 
     /**
-     * Utente che, in caso di accettazione della richiesta, andrà a sostituire il richiedente.
+     * Doctor that the <i>Planner</i> will put as substitute for <code>requestingDoctor</code>, if the request will be accepted.
      */
     @OneToOne
     @NotNull
     private Doctor substituteDoctor;
 
     /**
-     * Eventuale descrizione della motivazione della richiesta.
+     * Description of the reason for the request.
      */
     @NotNull
     @NotEmpty
     private String reason;
 
     /**
-     * Inizializzata a <code>false</code> (i.e. <i>"pending"</i>), viene settata a <code>true</code> quando il <i>Pianificatore</i>
-     * prende una decisione in merito alla richiesta (approvazione o rigetto).
+     * Initially set to <code>false</code> (i.e. <i>"pending"</i>), will be set to <code>true</code> when the <i>Planner</i>
+     * will review the request.
      */
     @NotNull
     private boolean isReviewed;
 
     /**
-     * Inizializzate a <code>false</code>, viene settata a <code>true</code> se il <i>Pianificatore</i>
-     * accetta la richiesta, rimane a <code>false</code> in caso di rigetto.
-     * Tale valore viene preso in considerazione solo se <code>esaminata</code> è settato a <code>true</code>.
+     * Initially set to <code>false</code> (i.e. <i>"pending"</i>), will be set to <code>true</code> if the <i>Planner</i>
+     * will accept the request, otherwise it will remain set to <code>false</code>.
+     * This value is only to be considered if <code>isReviewed</code> is set to <code>true</code>.
      */
     @NotNull
     private boolean isAccepted;
 
     /**
-     * File che l'utente richiedente la rimozione può (facoltativamente) allegare,
-     * e.g. certificato attestante condizione di malattia.
+     * File that the doctor issuing the request could (not mandatory) upload,
+     * e.g. certificate certifying illness condition.
      */
     @Lob
     private byte[] file;
@@ -80,6 +79,4 @@ public class RequestRemovalFromConcreteShift {
         this.isAccepted = false;
         this.file = null;
     }
-
-
 }
