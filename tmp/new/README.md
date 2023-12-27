@@ -16,31 +16,47 @@ private List<Holiday> registerHolidays() {
     } catch (CalendarServiceException e) {
       e.printStackTrace();
     }
-
     holidayController.registerHoliday(holidays);
-    return holidays;
+
+  }
+  return holidays;
 
 }
 ```
 
-* Inserire gli Uffa point per le festività:
+* Inserire le scocciature per le festività e convertire tutte le scocciature da Uffa point a variazioni di livelli di priorità:
 ```
-private void registerScocciature() {
+private void registerScocciature() {  //propongo di rinominare il metodo in registerAnnoyances().
   List<Holiday> holidays = registerHolidays();
 
-  //definizione di tante variabili intere che assegnano un numero di Uffa point a ciascuna scocciatura
-  int pesoVacanzaSemplice = 25;
-  int pesoVacanzaNotturno = 30;
+  int uffaPriorityPreference = 20;    //propongo 40 livelli di priorità totali: da 0 a 39 dove la base è 0. Il livello 0 è il più prioritario e viceversa.
 
-  //istanziazione e salvataggio nel DB degli oggetti di tipo Scocciatura
+  int uffaPrioritySundayAfternoon = 4;
+  int uffaPrioritySundayMorning = 4;
+  int uffaPrioritySaturdayNight = 4;
+
+  int uffaPrioritySaturdayAfternoon = 3;
+  int uffaPrioritySaturdayMorning = 3;
+  int uffaPriorityFridayNight = 3;
+  int uffaPrioritySundayNight = 3;
+
+  int uffaPriorityFridayAfternoon = 2;
+
+  int uffaPrioritySimple = 1;
+  int uffaPriorityNight = 2;
+
+  int uffaPriorityHoliday = 5;
+  int uffaPriorityHolidayNight = 6;
+
+  //istanziazione e salvataggio nel DB degli oggetti di tipo Scocciatura (propongo di ridenominare Scocciatura in Annoyance e così via)
   for(Holiday holiday: holidays) {
-    Scocciatura scocciaturaVacanzaMattina = new ScocciaturaVacanza(pesoVacanzaSemplice, holiday, TipologiaTurno.MATTUTINO);
-    Scocciatura scocciaturaVacanzaPomeriggio = new ScocciaturaVacanza(pesoVacanzaSemplice, holiday, TipologiaTurno.POMERIDIANO);
-    Scocciatura scocciaturaVacanzaNotte = new ScocciaturaVacanza(pesoVacanzaNotturno, holiday, TipologiaTurno.NOTTURNO);
+    Annoyance annoyanceHolidayMorning = new HolidayAnnoyance(uffaPriorityHoliday, holiday, TimeSlot.MORNING);
+    Annoyance annoyanceHolidayAfternoon = new HolidayAnnoyance(uffaPriorityHoliday, holiday, TimeSlot.AFTERNOON);
+    Annoyance annoyanceHolidayNight = new HolidayAnnoyance(uffaPriorityHolidayNight, holiday, TimeSlot.NIGHT);
 
-    scocciaturaDao.save(scocciaturaVacanzaMattina);
-    scocciaturaDao.save(scocciaturaVacanzaPomeriggio);
-    scocciaturaDao.save(scocciaturaVacanzaNotte);
+    annoyanceDao.save(annoyanceHolidayMorning);
+    annoyanceDao.save(annoyanceHolidayAfternoon);
+    annoyanceDao.save(annoyanceHolidayNight);
 
   }
 
@@ -48,13 +64,12 @@ private void registerScocciature() {
 ```
 
 ## ApplicationStartup.populateDB()
-* Definire una classe entity che lega ciascun utente con gli Uffa point totali accumulati nelle precedenti schedulazioni (suddivisi in tre mesi fa, due mesi fa, il mese scorso e il mese corrente), con gli Uffa point notturni accumulati nelle precedenti schedulazioni (suddivisi in tre mesi fa, due mesi fa, il mese scorso e il mese corrente), con il livello di priorità generale e con il livello di priorità notturno (in questo modo stiamo definendo due code di priorità separate: quella generale va sfruttata per le assegnazioni dei turni mattutini e pomeridiani, mentre quella notturna va sfruttata per le assegnazioni dei turni notturni):
+* Ridefinire la classe UserScheduleState (che rinominerei DoctorUffaPriority) che lega ciascun utente a tre code di priorità separate: la prima è quella generale, la seconda è quella legata ai soli turni lunghi (con durata > 6h), mentre la terza è quella legata ai soli turni notturni. In particolare, la prima coda va sfruttata per le assegnazioni dei turni brevi mattutini e pomeridiani, la seconda coda va sfruttata per le assegnazioni dei turni lunghi mattutini e pomeridiani, mentre la terza coda va sfruttata per le assegnazioni dei turni notturni:
 ```
+@Entity
 @Getter
 @Setter
-@EqualsAndHashCode
-@JsonIgnorePoperties({"hibernateLazyInitializer", "handler"})
-public class UserUffaPriority {
+public class DoctorUffaPriority {
 
   @Id
   @NotNull
@@ -72,9 +87,9 @@ public class UserUffaPriority {
   @NotNull
   private int nightPriority;
 
-  protected UserUffaPriority() {}
+  protected DoctorUffaPriority() {}
 
-  public UserUffaPriority(long id) {
+  public DoctorUffaPriority(long id) {
     this.userId = id;
     this.totalUffas = new HashMap<>();
     this.nightUffas = new HashMap<>();
