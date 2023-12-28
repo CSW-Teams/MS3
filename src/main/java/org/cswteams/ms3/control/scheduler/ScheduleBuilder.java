@@ -157,7 +157,7 @@ public class ScheduleBuilder {
 
         // We need to clear violations and illegal state, if any
         schedule.getViolatedConstraints().clear();
-        schedule.setCauseIllegal = null;
+        schedule.setCauseIllegal(null);
 
         for( ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
 
@@ -176,8 +176,8 @@ public class ScheduleBuilder {
                 schedule.setCauseIllegal(e);
 
                 logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
-                for (ViolatedConstraintLogEntry vclEntry : schedule.getViolatedConstraints()){
-                    logger.log(Level.SEVERE, vclEntry.toString());
+                for (Constraint constraint : schedule.getViolatedConstraints()){
+                    logger.log(Level.SEVERE, constraint.toString());
                 }
 
             }
@@ -271,7 +271,7 @@ public class ScheduleBuilder {
                 //schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
 
                 // If the violated constraint is hard, then the shift schedule is illegal.
-                if (!constraint.isViolabile() || (constraint.isViolabile() && !isForced)){
+                if (!constraint.isViolable() || (constraint.isViolable() && !isForced)){
                     isOk = false;
                 }
 
@@ -291,7 +291,7 @@ public class ScheduleBuilder {
     public Schedule addConcreteShift(ConcreteShift concreteShift, boolean isForced){
 
         schedule.getViolatedConstraints().clear();
-        schedule.setCauseIllegal = null;
+        schedule.setCauseIllegal(null);
 
         for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
             Doctor doctor = da.getDoctor();

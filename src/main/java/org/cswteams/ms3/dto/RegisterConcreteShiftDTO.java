@@ -1,7 +1,7 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
-import org.cswteams.ms3.dto.user.UserDTO;
+import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
 
@@ -17,8 +17,8 @@ public class RegisterConcreteShiftDTO {
 
     private TimeSlot timeSlot;
 
-    private Set<UserDTO> onDutyDoctors;
-    private Set<UserDTO> onCallDoctors;
+    private Set<UserCreationDTO> onDutyDoctors;
+    private Set<UserCreationDTO> onCallDoctors;
     private Set<MedicalServiceDTO> services;
     private boolean forced;
 

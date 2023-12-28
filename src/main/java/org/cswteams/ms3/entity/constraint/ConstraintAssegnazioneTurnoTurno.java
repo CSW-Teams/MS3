@@ -49,7 +49,6 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
         else {
             return Math.abs(cShift2End.until(cShift1Start, tu)) <= delta;
         }
-        return false;
 
     }
 

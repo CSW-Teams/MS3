@@ -23,7 +23,7 @@ public class DoctorAssignmentUtil {
 
         for(ConcreteShiftDoctorStatus s : status) {
             for (DoctorAssignment da : allDoctorAssignments) {
-                if (da.getConcreteShiftDoctorStatus == s)
+                if (da.getConcreteShiftDoctorStatus() == s)
                     doctorsList.add(da.getDoctor());
 
             }

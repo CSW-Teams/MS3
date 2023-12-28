@@ -1,18 +1,22 @@
 package org.cswteams.ms3.control.scheduler;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.ConvertitoreData;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
-import org.cswteams.ms3.control.utils.MappaUtenti;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
+import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
+import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +77,7 @@ public class SchedulerController implements ISchedulerController {
             for(Shift shift : shiftDAO.findAll()){
 
                 //We can assign this shift to a certain date only if the corresponding day of week is admissible for the shift.
-                if (shift.getDaysOfWeek().isDayOfWeekIncluded(currentDay.getDayOfWeek())){
+                if (shift.getDaysOfWeek().contains(currentDay.getDayOfWeek())){
                     allConcreteShifts.add(new ConcreteShift(currentDay.toEpochDay(), shift));
                 }
 
@@ -100,7 +104,7 @@ public class SchedulerController implements ISchedulerController {
         } catch (IllegalScheduleException e) {
             return null;
         }
-        return null;
+
     }
 
     /**
@@ -115,8 +119,8 @@ public class SchedulerController implements ISchedulerController {
             return false;
 
         Schedule schedule = optionalSchedule.get();
-        LocalDate startDate = schedule.getStartDate();
-        LocalDate endDate = schedule.getEndDate();
+        LocalDate startDate = Instant.ofEpochMilli(schedule.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = Instant.ofEpochMilli(schedule.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate();
 
         //It is not allowed to remove a shift schedule in the past.
         if(!removeSchedule(id))
@@ -146,7 +150,7 @@ public class SchedulerController implements ISchedulerController {
                 scheduleDAO.findByDateBetween(concreteShift.getDate())  //Existing shift schedule
         );
 
-        schedule = this.scheduleBuilder.addAssegnazioneTurno(concreteShift,forced);
+        schedule = this.scheduleBuilder.addConcreteShift(concreteShift,forced);
 
         //We commit changes to schedule only if they do not taint it
         if (schedule.getCauseIllegal() == null){
@@ -195,13 +199,13 @@ public class SchedulerController implements ISchedulerController {
     public Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
 
         //We need a shift which is present in the database in order to convert the DTO into an entity.
-        List<Shift> shiftsList = shiftDAO.findAllByServizioNomeAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
+        List<Shift> shiftsList = shiftDAO.findAllByMedicalServicesLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
         if(shiftsList.isEmpty())
             throw new AssegnazioneTurnoException("Non esiste uno shift coi servizi specificati.");
         Shift shift = null;
         for(Shift shiftDB: shiftsList){
             //if(shiftDB.getMansione().equals(registerConcreteShiftDTO.getMansione())){
-            if(shiftDB.getMedicalServices().equals(registerConcreteShiftDTO.getMedicalServices())) {
+            if(shiftDB.getMedicalServices().equals(registerConcreteShiftDTO.getServices())) {
                 shift = shiftDB;
                 break;
             }
@@ -209,13 +213,18 @@ public class SchedulerController implements ISchedulerController {
         if(shift == null){
             throw new AssegnazioneTurnoException("Non esiste uno shift coi servizi specificati.");
         }
-        ConcreteShift concreteShift = new ConcreteShift(
-                LocalDate.of(registerConcreteShiftDTO.getAnno(), registerConcreteShiftDTO.getMese(), registerConcreteShiftDTO.getGiorno()),
-                shift,
-                MappaUtenti.utenteDTOtoEntity(registerConcreteShiftDTO.getUtentiReperibili()),  //FIXME: MappaUtenti has to be deleted.
-                MappaUtenti.utenteDTOtoEntity(registerConcreteShiftDTO.getUtentiDiGuardia())
-        );
 
+        ConcreteShift concreteShift = new ConcreteShift(
+                LocalDate.of(registerConcreteShiftDTO.getYear(), registerConcreteShiftDTO.getMonth(), registerConcreteShiftDTO.getDay()).atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000,
+                shift
+        );
+        //definition of doctorAssignmentList to set into concreteShift
+        for(Doctor onCallDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnCallDoctors())) {
+            concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onCallDoctor, ConcreteShiftDoctorStatus.ON_CALL, concreteShift, null));   //TODO: define the TASK.
+        }
+        for(Doctor onDutyDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnDutyDoctors())) {
+            concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onDutyDoctor, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, null));   //TODO: define the TASK.
+        }
 
         if(!checkDoctorsOnConcreteShift(concreteShift)){
             throw new AssegnazioneTurnoException("Collisione tra utenti reperibili e di guardia");
@@ -273,7 +282,7 @@ public class SchedulerController implements ISchedulerController {
             if (modifyConcreteShiftDTO.getOnDutyDoctors() != null) {
                 //The squash
                 for (DoctorAssignment da : concreteShiftNew.getDoctorAssignmentList()) {
-                    if(da.getConcreteShiftDoctorStatus == ConcreteShiftDoctorStatus.ON_DUTY)
+                    if(da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY)
                         concreteShiftNew.getDoctorAssignmentList().remove(da);
 
                 }
@@ -290,7 +299,7 @@ public class SchedulerController implements ISchedulerController {
             if (modifyConcreteShiftDTO.getOnCallDoctors() != null) {
                 //The squash
                 for (DoctorAssignment da : concreteShiftNew.getDoctorAssignmentList()) {
-                    if(da.getConcreteShiftDoctorStatus == ConcreteShiftDoctorStatus.ON_CALL)
+                    if(da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL)
                         concreteShiftNew.getDoctorAssignmentList().remove(da);
 
                 }
@@ -371,7 +380,7 @@ public class SchedulerController implements ISchedulerController {
             return false;
 
         //Verifico se lo schedulo che voglio eliminare è uno schedulo futuro e non passato
-        if(scheduleOptional.get().getEndDate().isBefore(LocalDate.now()))
+        if((Instant.ofEpochMilli(scheduleOptional.get().getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate()).isBefore(LocalDate.now()))
             return false;
 
         scheduleDAO.deleteById(id);
@@ -391,10 +400,10 @@ public class SchedulerController implements ISchedulerController {
         List<Schedule> allSchedule = scheduleDAO.findAll();
 
         for (Schedule schedule : allSchedule) {
-            if (!schedule.getStartDate().isAfter(endNewSchedule) && !schedule.getEndDate().isBefore(startNewSchedule))
+            if (!(Instant.ofEpochMilli(schedule.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate()).isBefore(endNewSchedule) && !(Instant.ofEpochMilli(schedule.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate()).isBefore(startNewSchedule))
                 return false;
-        }
 
+        }
         return true;
 
     }
@@ -405,7 +414,7 @@ public class SchedulerController implements ISchedulerController {
      * @return ScheduleDTO instance
      */
     private static ScheduleDTO scheduleToDTO(Schedule schedule) {
-        return new ScheduleDTO(ConvertitoreData.daStandardVersoTestuale(schedule.getStartDate().toString()), ConvertitoreData.daStandardVersoTestuale(schedule.getEndDate().toString()), schedule.getCauseIllegal()==null, schedule.getId());
+        return new ScheduleDTO(ConvertitoreData.daStandardVersoTestuale(Instant.ofEpochMilli(schedule.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate().toString()), ConvertitoreData.daStandardVersoTestuale(Instant.ofEpochMilli(schedule.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate().toString()), schedule.getCauseIllegal()==null, schedule.getId());
 
     }
 
@@ -420,6 +429,44 @@ public class SchedulerController implements ISchedulerController {
             schedulesDTO.add(scheduleToDTO(entity));
         }
         return schedulesDTO;
+    }
+
+    /**
+     * This private method converts a DTO user into a doctor instance. It supports the work of userDTOtoEntity() method.
+     * @param userDTO DTO user to be converted into doctor
+     * @return Doctor instance
+     */
+    private static Doctor userDTOtoEntity(UserCreationDTO userDTO) {
+        Seniority seniority = null;
+        if(userDTO.getSeniority().equals("STRUCTURED"))
+            seniority = Seniority.STRUCTURED;
+        else if(userDTO.getSeniority().equals("SPECIALIST"))
+            seniority = Seniority.SPECIALIST;
+
+        List<SystemActor> systemActors = new ArrayList<>();
+        for(String sa : userDTO.getSystemActors()) {
+            if(sa.equals("CONFIGURATOR"))
+                systemActors.add(SystemActor.CONFIGURATOR);
+            else if(sa.equals("PLANNER"))
+                systemActors.add(SystemActor.PLANNER);
+            else if(sa.equals("DOCTOR"))
+                systemActors.add(SystemActor.DOCTOR);
+        }
+
+        return new Doctor(userDTO.getName(),userDTO.getLastname(),userDTO.getTaxCode(),userDTO.getBirthday(),userDTO.getEmail(), userDTO.getPassword(), seniority, systemActors);
+    }
+
+    /**
+     * This private method converts a list of DTO users a list of doctors.
+     * @param usersDTO List of DTO users instances to be converted into doctors.
+     * @return Doctor list
+     */
+    private static Set<Doctor> usersDTOtoEntity(Set<UserCreationDTO> usersDTO) {
+        Set<Doctor> doctors = new HashSet<>();
+        for (UserCreationDTO dto: usersDTO){
+            doctors.add(userDTOtoEntity(dto));
+        }
+        return doctors;
     }
 
 }

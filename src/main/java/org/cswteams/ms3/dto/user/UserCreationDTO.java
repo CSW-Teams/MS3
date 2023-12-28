@@ -16,4 +16,6 @@ public class UserCreationDTO {
     private String email;
     private String password;
     private List<String> systemActors;
+    //added by Fanfa
+    private String seniority;
 }
