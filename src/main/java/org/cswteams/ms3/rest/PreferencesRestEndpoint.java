@@ -27,7 +27,7 @@ public class PreferencesRestEndpoint {
      * @return the doctor's preferences as {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} in the response body
      */
     @RequestMapping(method = RequestMethod.GET, path = "/doctor_id={doctorId}")
-    public ResponseEntity<?> readUserPreferences(@PathVariable Long doctorId){
+    public ResponseEntity<?> readDoctorPreferences(@PathVariable Long doctorId){
         if (doctorId != null) {
             List<PreferenceDTOOut> c = preferenceController.getUsersPreferenceDTOs(new DoctorIdDTO(doctorId));
             if (c == null) {
@@ -46,7 +46,7 @@ public class PreferencesRestEndpoint {
      * @return A positive response in case of success, a negative one otherwise
      */
     @RequestMapping(method = RequestMethod.DELETE, path = "/preference_id={preferenceId}/doctor_id={doctorId}")
-    public ResponseEntity<?> deleteUserPreference(@PathVariable Long preferenceId, @PathVariable Long doctorId){
+    public ResponseEntity<?> deleteDoctorPreference(@PathVariable Long preferenceId, @PathVariable Long doctorId){
         if (preferenceId != null && doctorId != null) {
             try {
                 preferenceController.deletePreference(new PreferenceDoctorIDDTO(doctorId, preferenceId));
