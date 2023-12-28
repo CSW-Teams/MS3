@@ -22,7 +22,7 @@ public class PreferencesRestEndpoint {
 
     /**
      * Retrieves a doctor's preferences <br/>
-     * Reached from <b>api/preferences/doctor_id={doctorId}</b>
+     * Reached from <b>GET api/preferences/doctor_id={doctorId}</b>
      * @param doctorId The id of the interested doctor
      * @return the doctor's preferences as {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} in the response body
      */
@@ -40,7 +40,7 @@ public class PreferencesRestEndpoint {
 
     /**
      * Deletes a doctor's preference <br/>
-     * Reached from <b>api/preferences/preference_id={preferenceId}/doctor_id={doctorId}</b>
+     * Reached from <b>DELETE api/preferences/preference_id={preferenceId}/doctor_id={doctorId}</b>
      * @param preferenceId the id of the preference to delete
      * @param doctorId the id of the doctor to delete
      * @return A positive response in case of success, a negative one otherwise
@@ -60,7 +60,7 @@ public class PreferencesRestEndpoint {
 
     /**
      * Adds preferences to a doctor <br/>
-     * Reached from <b>api/preferences/doctor_id={doctorId}</b>
+     * Reached from <b>POST api/preferences/doctor_id={doctorId}</b>
      * @param preferenceDTOInList A List of DTOs containing the preferences
      * @param doctorId the id representing the doctor to whom the preferences shall be added
      * @return A List of {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} of the newly added preferences, with their own id, in the body of the response
