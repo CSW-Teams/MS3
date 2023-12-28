@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST endpoint for api/preferences
+ */
 @RestController
 @RequestMapping("/preferences/")
 public class PreferencesRestEndpoint {
@@ -17,6 +20,12 @@ public class PreferencesRestEndpoint {
     @Autowired
     IPreferenceController preferenceController;
 
+    /**
+     * Retrieves a doctor's preferences <br/>
+     * Reached from <b>api/preferences/doctor_id={doctorId}</b>
+     * @param doctorId The id of the interested doctor
+     * @return the doctor's preferences as {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} in the response body
+     */
     @RequestMapping(method = RequestMethod.GET, path = "/doctor_id={doctorId}")
     public ResponseEntity<?> readUserPreferences(@PathVariable Long doctorId){
         if (doctorId != null) {
@@ -29,6 +38,13 @@ public class PreferencesRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Deletes a doctor's preference <br/>
+     * Reached from <b>api/preferences/preference_id={preferenceId}/doctor_id={doctorId}</b>
+     * @param preferenceId the id of the preference to delete
+     * @param doctorId the id of the doctor to delete
+     * @return A positive response in case of success, a negative one otherwise
+     */
     @RequestMapping(method = RequestMethod.DELETE, path = "/preference_id={preferenceId}/doctor_id={doctorId}")
     public ResponseEntity<?> deleteUserPreference(@PathVariable Long preferenceId, @PathVariable Long doctorId){
         if (preferenceId != null && doctorId != null) {
@@ -42,6 +58,14 @@ public class PreferencesRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Adds preferences to a doctor <br/>
+     * Reached from <b>api/preferences/doctor_id={doctorId}</b>
+     * @param preferenceDTOInList A List of DTOs containing the preferences
+     * @param doctorId the id representing the doctor to whom the preferences shall be added
+     * @return A List of {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} of the newly added preferences, with their own id, in the body of the response
+     * @throws Exception upon failure
+     */
     @RequestMapping(method = RequestMethod.POST, path = "/doctor_id={doctorId}")
     public ResponseEntity<?> addPreferences(@RequestBody() List<PreferenceDTOIn> preferenceDTOInList, @PathVariable Long doctorId) throws Exception {
         if (preferenceDTOInList != null) {

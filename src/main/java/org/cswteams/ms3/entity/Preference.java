@@ -8,6 +8,9 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Represents a doctor's scheduling preference
+ */
 @Entity
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -27,6 +30,12 @@ public class Preference {
     @ManyToMany
     private List<Doctor> doctors;
 
+    /**
+     *
+     * @param date The day of the preference
+     * @param timeSlots The shift time slots relative to the preference day
+     * @param doctors A list of doctors that have such preference
+     */
     public Preference(LocalDate date, List<TimeSlot> timeSlots, List<Doctor> doctors){
         this.date = date;
         this.timeSlots = timeSlots;
