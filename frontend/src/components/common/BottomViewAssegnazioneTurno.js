@@ -120,7 +120,10 @@ export default function TemporaryDrawer(props) {
      */
     const mansione = turno.toString().substring(turno.toString().lastIndexOf(" ")+1, turno.toString().length)
     const tipologiaTurno = turno.toString().substring(0,turno.toString().indexOf(" "))
-    response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
+    //TODO
+    const utentiGuardiaId = utentiSelezionatiGuardia.map(item => item.id);
+    const utentiReperibiliId = utentiSelezionatiReperibilità.map(item => item.id);
+    response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiGuardiaId,utentiReperibiliId, servizio.nome,mansione,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
     props.onPostAssegnazione()

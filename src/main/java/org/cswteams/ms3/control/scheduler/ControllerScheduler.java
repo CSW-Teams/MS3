@@ -6,7 +6,7 @@ import java.util.*;
 import org.cswteams.ms3.control.utils.MappaSchedulo;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.AddConcreteShiftDTO;
 import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Schedule;
@@ -173,7 +173,7 @@ public class ControllerScheduler implements IControllerScheduler{
     }
 
     @Override
-    public Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
+    public Schedule aggiungiAssegnazioneTurno(@NotNull AddConcreteShiftDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
         /*
         // Per convertire il dto in un entità ho bisogno di un shift che dovrebbe essere
         // presente nel database

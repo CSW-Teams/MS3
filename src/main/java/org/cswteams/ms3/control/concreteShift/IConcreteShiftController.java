@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.concreteShift;
 
 import org.cswteams.ms3.dto.ConcreteShiftDTO;
-import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.AddConcreteShiftDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 
@@ -11,7 +11,7 @@ import java.util.Set;
 public interface IConcreteShiftController {
     Set<ConcreteShiftDTO> leggiTurniAssegnati() throws ParseException;
 
-    ConcreteShift creaTurnoAssegnato(RegistraAssegnazioneTurnoDTO c) throws AssegnazioneTurnoException;
+    ConcreteShift creaTurnoAssegnato(AddConcreteShiftDTO c) throws AssegnazioneTurnoException;
 
     Set<ConcreteShiftDTO> leggiTurniUtente(Long idUtente) throws ParseException;
 

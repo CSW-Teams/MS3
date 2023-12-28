@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.cswteams.ms3.dto.ModificaAssegnazioneTurnoDTO;
-import org.cswteams.ms3.dto.RegistraAssegnazioneTurnoDTO;
+import org.cswteams.ms3.dto.AddConcreteShiftDTO;
 import org.cswteams.ms3.dto.ScheduloDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Schedule;
@@ -38,5 +38,5 @@ public interface IControllerScheduler {
     void rimuoviAssegnazioneTurnoSchedulo(@NotNull ConcreteShift concreteShiftOld);
     boolean rimuoviAssegnazioneTurno(@NotNull Long idAssegnazione);
 
-    Schedule aggiungiAssegnazioneTurno(@NotNull RegistraAssegnazioneTurnoDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException;
+    Schedule aggiungiAssegnazioneTurno(@NotNull AddConcreteShiftDTO assegnazione, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException;
 }

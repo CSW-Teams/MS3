@@ -118,9 +118,9 @@ export  class AssegnazioneTurnoAPI {
   /**
    * Richiede al backend di registrare un'assegnazione turno.
    * @param {*} data
-   * @param {*} turnoTipologia
-   * @param {*} utentiSelezionatiGuardia
-   * @param {*} utentiReperibilita
+   * @param {*} tipologiaTurno
+   * @param {*} utentiGuardia
+   * @param {*} utentiReperibili
    * @param {*} servizioNome
    * @param mansione
    * @param {*} forced
@@ -129,7 +129,7 @@ export  class AssegnazioneTurnoAPI {
    * 400 se i parametri della richiesta sono malformati e il backend non è riuscito a interpretarli;
    * 406 se la richiesta di assegnazone è stata rigettata, ad esempio perché violerebbe dei vincoli per la sua pianificazione.
    */
-  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,mansione,forced) {
+  async postAssegnazioneTurno(data,tipologiaTurno,utentiGuardia,utentiReperibili,servizioNome,mansione,forced) {
 
       let assegnazioneTurno = {};
 
@@ -138,15 +138,14 @@ export  class AssegnazioneTurnoAPI {
       const anno = data.$d.getFullYear();
 
       // Creating an ISO 8601 formatted date string
-      assegnazioneTurno.giorno = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
+      assegnazioneTurno.date = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
 
       assegnazioneTurno.forced = forced;
-
       assegnazioneTurno.servizio = servizioNome;
       assegnazioneTurno.mansione = mansione;
-      assegnazioneTurno.tipologiaTurno = turnoTipologia
-      assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
-      assegnazioneTurno.utentiReperibili = utentiReperibilita;
+      assegnazioneTurno.tipologiaTurno = tipologiaTurno;
+      assegnazioneTurno.utentiDiGuardia = utentiGuardia;
+      assegnazioneTurno.utentiReperibili = utentiReperibili;
 
       const requestOptions = {
         method: 'POST',
@@ -154,9 +153,7 @@ export  class AssegnazioneTurnoAPI {
         body: JSON.stringify(assegnazioneTurno)
       };
 
-      const response = await fetch('/api/assegnazioneturni/',requestOptions);
-
-      return response;
+    return await fetch('/api/assegnazioneturni/', requestOptions);
 
   }
 
@@ -206,8 +203,7 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
   };
 
   console.log(idDaEliminare)
-  const response = await fetch('/api/assegnazioneturni/'+idDaEliminare,requestOptions);
-  return response;
+  return await fetch('/api/assegnazioneturni/' + idDaEliminare, requestOptions);
 
 }
 

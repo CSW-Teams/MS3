@@ -1,7 +1,6 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
-import org.cswteams.ms3.control.scambioTurno.IControllerScambioTurno;
 import org.cswteams.ms3.control.scheduler.IControllerScheduler;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dto.*;
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
-import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -27,12 +25,8 @@ public class ConcreteShiftRestEndpoint {
     @Autowired
     private IControllerScheduler controllerScheduler;
 
-    @Autowired
-    private IControllerScambioTurno controllerScambioTurno;
-
-
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody RegistraAssegnazioneTurnoDTO assegnazione) {
+    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody AddConcreteShiftDTO assegnazione) {
 
         Schedule schedule;
 
@@ -85,53 +79,6 @@ public class ConcreteShiftRestEndpoint {
         Set<ConcreteShiftDTO> tuttiITurni = controllerAssegnazioneTurni.leggiTurniAssegnati();
         return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
     }
-
-    /**
-     * Permette la modifica di un assegnazione turno già esistente.
-     * @param requestTurnChangeDto
-     */
-    @RequestMapping(method = RequestMethod.PUT, path = "/scambio")
-    public ResponseEntity<?> requestShiftChange(@RequestBody RequestTurnChangeDto requestTurnChangeDto)  {
-
-        try {
-            controllerScambioTurno.requestTurnChange(requestTurnChangeDto);
-        } catch (AssegnazioneTurnoException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity<>("SUCCESS", HttpStatus.ACCEPTED);
-    }
-
-    /**
-     * Ritorna le richieste iniziate dall'id indicato
-     * @param idUtente
-     */
-    @RequestMapping(method = RequestMethod.GET, path = "/scambio/by/utente_id={idUtente}")
-    public ResponseEntity<?> getRequestsBySender(@PathVariable Long idUtente)  {
-
-        if (idUtente != null) {
-            List<ViewUserTurnRequestsDTO> requests = controllerScambioTurno.getRequestsBySender(idUtente);
-            if (requests == null) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>( requests, HttpStatus.FOUND);
-        }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, path = "/scambio/to/utente_id={idUtente}")
-    public ResponseEntity<?> getRequestsToSender(@PathVariable Long idUtente)  {
-
-        if (idUtente != null) {
-            List<ViewUserTurnRequestsDTO> requests = controllerScambioTurno.getRequestsToSender(idUtente);
-            if (requests == null) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>( requests, HttpStatus.FOUND);
-        }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-
 
     /**
      * Permette la modifica di un assegnazione turno già esistente.
