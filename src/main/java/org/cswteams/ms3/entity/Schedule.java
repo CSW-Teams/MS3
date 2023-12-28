@@ -12,6 +12,7 @@ import java.util.List;
 /** This class represents a shift schedule in an interval of dates */
 @Entity
 @Getter
+@Setter
 public class Schedule {
 
     @Id
@@ -39,7 +40,6 @@ public class Schedule {
 
 
     /** Reason for which the shift schedule results illegal */
-    @Setter
     private Exception causeIllegal;
 
     /**
