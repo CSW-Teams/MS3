@@ -41,7 +41,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private ShiftDAO shiftDAO;
 
     @Autowired
-    private ServiceDAO serviceDAO;
+    private MedicalServiceDAO medicalServiceDAO;
 
     @Autowired
     private PermanentConditionDAO permanentConditionDao;
@@ -262,11 +262,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
 
         // Save in persistence all possible rotations
-        serviceDAO.save(repartoCardiologia);
-        serviceDAO.save(ambulatorioCardiologia);
-        serviceDAO.save(guardiaCardiologia);
-        serviceDAO.save(salaOperatoriaCardiologia);
-        serviceDAO.save(ambulatorioOncologia);
+        medicalServiceDAO.save(repartoCardiologia);
+        medicalServiceDAO.save(ambulatorioCardiologia);
+        medicalServiceDAO.save(guardiaCardiologia);
+        medicalServiceDAO.save(salaOperatoriaCardiologia);
+        medicalServiceDAO.save(ambulatorioOncologia);
 
 
         //Creo utenti

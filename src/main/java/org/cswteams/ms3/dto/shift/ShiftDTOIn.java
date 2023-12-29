@@ -10,14 +10,14 @@ import java.util.Set;
 public class ShiftDTOIn {
 
     private Long id ;
-    private final String timeSlot;
-    private final int startHour ;
-    private final int startMinute ;
-    private final int durationMinutes ;
-    private final Set<String> daysOfWeek ;
-    private final List<MedicalServiceShiftDTO> medicalServices ;
-    private final HashMap<String, Integer> quantityshiftSeniority ;
-    private final List<AdditionalConstraintShiftDTO> additionalConstraints ;
+    private String timeSlot;
+    private int startHour ;
+    private int startMinute ;
+    private int durationMinutes ;
+    private Set<String> daysOfWeek ;
+    private List<MedicalServiceShiftDTO> medicalServices ;
+    private HashMap<String, Integer> quantityShiftSeniority;
+    private List<AdditionalConstraintShiftDTO> additionalConstraints = List.of() ;
 
     /**
      *
@@ -42,7 +42,7 @@ public class ShiftDTOIn {
         this.durationMinutes = durationMinutes;
         this.daysOfWeek = daysOfWeek;
         this.medicalServices = medicalServices;
-        this.quantityshiftSeniority = quantityshiftseniority;
+        this.quantityShiftSeniority = quantityshiftseniority;
         this.additionalConstraints = additionalConstraints;
     }
 
@@ -71,7 +71,9 @@ public class ShiftDTOIn {
         this.durationMinutes = durationMinutes;
         this.daysOfWeek = daysOfWeek;
         this.medicalServices = medicalServices;
-        this.quantityshiftSeniority = quantityshiftseniority;
+        this.quantityShiftSeniority = quantityshiftseniority;
         this.additionalConstraints = additionalConstraintShiftDTO ;
     }
+
+    public ShiftDTOIn() {}
 }

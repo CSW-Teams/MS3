@@ -11,8 +11,8 @@ export  class TurnoAPI {
 
     for (let i = 0; i < body.length; i++) {
       let turno = {}
-      turno.tipologia = body[i].tipologiaTurno
-      turno.mansione = body[i].mansione
+      turno.tipologia = body[i].timeslot
+      turno.mansione = body[i].medicalServices
       turni[i] = turno
     }
 
@@ -25,7 +25,7 @@ export  class TurnoAPI {
     const body = await response.json();
 
     for (let i = 0; i < body.length; i++) {
-        if( body[i].tipologiaTurno === tipologia)
+        if( body[i].timeslot === tipologia)
           return body[i];
     }
 

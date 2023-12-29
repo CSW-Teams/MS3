@@ -4,15 +4,11 @@ import org.cswteams.ms3.control.shift.IShiftController;
 import org.cswteams.ms3.dto.shift.ShiftDTOIn;
 import org.cswteams.ms3.dto.shift.ShiftDTOOut;
 import org.cswteams.ms3.dto.shift.ShiftServiceNameDTOIn;
-import org.cswteams.ms3.entity.Shift;
-import org.cswteams.ms3.exception.ShiftException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
-import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -59,7 +55,7 @@ public class ShiftRestEndpoint {
      * @return A response containing a {@link org.cswteams.ms3.dto.shift.ShiftDTOOut}
      */
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaTurno(@RequestBody() ShiftDTOIn shift) {
+    public ResponseEntity<?> createShift(@RequestBody() ShiftDTOIn shift) {
 
         if (shift != null) {
             try {

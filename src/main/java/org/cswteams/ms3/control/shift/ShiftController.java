@@ -1,5 +1,6 @@
 package org.cswteams.ms3.control.shift;
 
+import org.cswteams.ms3.dao.MedicalServiceDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
 import org.cswteams.ms3.dto.shift.*;
 import org.cswteams.ms3.entity.MedicalService;
@@ -19,7 +20,10 @@ import java.util.*;
 public class ShiftController implements IShiftController {
 
     @Autowired
-    ShiftDAO shiftDAO;
+    private ShiftDAO shiftDAO;
+
+    @Autowired
+    private MedicalServiceDAO medicalServiceDAO ;
 
     private ShiftDTOOut convertShiftToDTO(Shift shift) {
         Set<String> daysOfWeek = new HashSet<>() ;
@@ -61,7 +65,7 @@ public class ShiftController implements IShiftController {
 
         }
         HashMap<Seniority, Integer> quantityShiftSeniorities = new HashMap<>() ;
-        for (Map.Entry<String, Integer> entry : shiftDTOIn.getQuantityshiftSeniority().entrySet()) {
+        for (Map.Entry<String, Integer> entry : shiftDTOIn.getQuantityShiftSeniority().entrySet()) {
             quantityShiftSeniorities.put(Seniority.valueOf(entry.getKey()), entry.getValue()) ;
         }
 
@@ -117,6 +121,12 @@ public class ShiftController implements IShiftController {
 
     @Override
     public ShiftDTOOut createShift(ShiftDTOIn shift) {
-        return convertShiftToDTO(shiftDAO.save(convertDTOToShift(shift))) ;
+        Shift shiftEntity = convertDTOToShift(shift) ;
+
+        for (MedicalService serv : shiftEntity.getMedicalServices()) {
+            if(serv.getId() == null) medicalServiceDAO.save(serv) ;
+        }
+
+        return convertShiftToDTO(shiftDAO.save(shiftEntity)) ;
     }
 }

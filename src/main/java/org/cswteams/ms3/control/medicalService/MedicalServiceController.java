@@ -1,6 +1,6 @@
 package org.cswteams.ms3.control.medicalService;
 
-import org.cswteams.ms3.dao.ServiceDAO;
+import org.cswteams.ms3.dao.MedicalServiceDAO;
 import org.cswteams.ms3.dto.MedicalServiceDTO;
 import org.cswteams.ms3.entity.MedicalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ public class MedicalServiceController implements IMedicalServiceController {
 
 
     @Autowired
-    ServiceDAO serviceDAO;
+    MedicalServiceDAO medicalServiceDAO;
 
     @Override
     public Set<MedicalServiceDTO> leggiServizi() {
