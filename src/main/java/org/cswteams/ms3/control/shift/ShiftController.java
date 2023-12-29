@@ -8,9 +8,11 @@ import org.cswteams.ms3.entity.Seniority;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
 import org.cswteams.ms3.enums.TimeSlot;
+import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -107,7 +109,8 @@ public class ShiftController implements IShiftController {
     }
 
     @Override
-    public List<ShiftDTOOut> getShiftsOfService(ShiftServiceNameDTOIn serviceName) {
+    @Validant
+    public List<ShiftDTOOut> getShiftsOfService(@Valid ShiftServiceNameDTOIn serviceName) {
 
         List<Shift> shifts = shiftDAO.findAllByMedicalServicesLabel(serviceName.getServiceLabel()) ;
         ArrayList<ShiftDTOOut> retVal = new ArrayList<>() ;
@@ -120,7 +123,8 @@ public class ShiftController implements IShiftController {
     }
 
     @Override
-    public ShiftDTOOut createShift(ShiftDTOIn shift) {
+    @Validant
+    public ShiftDTOOut createShift(@Valid ShiftDTOIn shift) {
         Shift shiftEntity = convertDTOToShift(shift) ;
 
         for (MedicalService serv : shiftEntity.getMedicalServices()) {

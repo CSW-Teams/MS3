@@ -2,10 +2,17 @@ package org.cswteams.ms3.dto.preferences;
 
 import lombok.Getter;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 @Getter
 public class PreferenceInWithUIDDTO {
 
+    @NotNull
     private final Long doctorId;
+
+    @NotNull
+    @Valid
     private final PreferenceDTOIn dto ;
 
     /**

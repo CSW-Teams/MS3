@@ -2,9 +2,14 @@ package org.cswteams.ms3.dto.preferences;
 
 import lombok.Getter;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+
 @Getter
 public class DoctorIdDTO {
 
+    @NotNull
+    @PositiveOrZero
     private final Long doctorId ;
 
     /**

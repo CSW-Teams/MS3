@@ -5,15 +5,15 @@ import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dto.preferences.*;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.Preference;
+import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.exception.DatabaseException;
+import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PreferenceController implements IPreferenceController {
@@ -24,8 +24,18 @@ public class PreferenceController implements IPreferenceController {
     @Autowired
     DoctorDAO doctorDao;
 
+    private PreferenceDTOOut convertPreferenceToDTO(Preference pref) {
+        Set<String> timeSlotStrings = new HashSet<>() ;
+        for (TimeSlot t : pref.getTimeSlots()) {
+            timeSlotStrings.add(t.name()) ;
+        }
+
+        return new PreferenceDTOOut(pref.getId(), pref.getDate().getDayOfMonth(), pref.getDate().getMonthValue(), pref.getDate().getYear(), timeSlotStrings) ;
+    }
+
     @Override
-    public Preference addPreference(PreferenceInWithUIDDTO dto) throws DatabaseException {
+    @Validant
+    public Preference addPreference(@Valid PreferenceInWithUIDDTO dto) throws DatabaseException {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         if (doctor.isEmpty()){
             throw new DatabaseException("User not found");
@@ -33,7 +43,13 @@ public class PreferenceController implements IPreferenceController {
 
         LocalDate preferenceDay = LocalDate.of(dto.getDto().getYear(), dto.getDto().getMonth(), dto.getDto().getDay()) ;
 
-        Preference newPreference = new Preference(preferenceDay, dto.getDto().getTurnKinds(), Collections.singletonList(doctor.get())) ;
+        Set<TimeSlot> slots = new HashSet<>() ;
+
+        for (String s : dto.getDto().getTurnKinds()) {
+            slots.add(TimeSlot.valueOf(s)) ;
+        }
+
+        Preference newPreference = new Preference(preferenceDay, slots, Collections.singletonList(doctor.get())) ;
 
         doctor.get().getPreferenceList().add(newPreference);
         doctorDao.save(doctor.get());
@@ -41,7 +57,8 @@ public class PreferenceController implements IPreferenceController {
     }
 
     @Override
-    public List<PreferenceDTOOut> addPreferences(PreferenceListWithUIDDTO dto) throws DatabaseException {
+    @Validant
+    public List<PreferenceDTOOut> addPreferences(@Valid PreferenceListWithUIDDTO dto) throws DatabaseException {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         if (doctor.isEmpty()){
             throw new DatabaseException("User not found");
@@ -51,7 +68,14 @@ public class PreferenceController implements IPreferenceController {
 
         for (PreferenceDTOIn subDto : dto.getDto()) {
             LocalDate day = LocalDate.of(subDto.getYear(), subDto.getMonth(), subDto.getDay()) ;
-            preferencesToSave.add(new Preference(day, subDto.getTurnKinds(), Collections.singletonList(doctor.get()))) ;
+
+            Set<TimeSlot> slots = new HashSet<>() ;
+
+            for (String s : subDto.getTurnKinds()) {
+                slots.add(TimeSlot.valueOf(s)) ;
+            }
+
+            preferencesToSave.add(new Preference(day, slots, Collections.singletonList(doctor.get()))) ;
         }
 
         List<Preference> newPreferences = preferenceDao.saveAll(preferencesToSave) ;
@@ -61,14 +85,16 @@ public class PreferenceController implements IPreferenceController {
         ArrayList<PreferenceDTOOut> retVal = new ArrayList<>() ;
 
         for (Preference pref : newPreferences) {
-            retVal.add(new PreferenceDTOOut(pref.getId(), pref.getDate().getDayOfMonth(), pref.getDate().getMonthValue(), pref.getDate().getYear(), pref.getTimeSlots())) ;
+
+            retVal.add(convertPreferenceToDTO(pref)) ;
         }
 
         return retVal;
     }
 
     @Override
-    public void deletePreference(PreferenceDoctorIDDTO dto) throws DatabaseException {
+    @Validant
+    public void deletePreference(@Valid PreferenceDoctorIDDTO dto) throws DatabaseException {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         Optional<Preference> preference = preferenceDao.findById(dto.getPreferenceId()) ;
         if(doctor.isEmpty()){
@@ -85,18 +111,21 @@ public class PreferenceController implements IPreferenceController {
     }
 
     @Override
-    public List<PreferenceDTOOut> getUsersPreferenceDTOs(DoctorIdDTO dto) {
+    @Validant
+    public List<PreferenceDTOOut> getUsersPreferenceDTOs(@Valid DoctorIdDTO dto) {
 
         ArrayList<PreferenceDTOOut> retVal = new ArrayList<>();
 
         for (Preference pref : getUserPreferences(dto)) {
-            retVal.add(new PreferenceDTOOut(pref.getId(), pref.getDate().getDayOfMonth(), pref.getDate().getMonthValue(), pref.getDate().getYear(), pref.getTimeSlots())) ;
+
+            retVal.add(convertPreferenceToDTO(pref)) ;
         }
         return retVal;
     }
 
     @Override
-    public List<Preference> getUserPreferences(DoctorIdDTO dto) {
+    @Validant
+    public List<Preference> getUserPreferences(@Valid DoctorIdDTO dto) {
         return preferenceDao.findAllByDoctorsId(dto.getDoctorId());
     }
 }

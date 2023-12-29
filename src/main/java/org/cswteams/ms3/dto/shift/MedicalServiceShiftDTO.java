@@ -2,11 +2,17 @@ package org.cswteams.ms3.dto.shift;
 
 import lombok.Getter;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 @Getter
 public class MedicalServiceShiftDTO {
 
     private Long id ;
-    private String label ;
+
+    @NotNull
+    @NotEmpty
+    private final String label ;
     //TODO : Evaluate if this DTO needs to show the Tasks too
 
     /**

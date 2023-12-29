@@ -15,7 +15,7 @@ public class PreferenceDTOOut {
     private int day;
     private int month;
     private int year;
-    private Set<TimeSlot> turnKinds;
+    private Set<String> turnKinds;
 
     /**
      *
@@ -24,7 +24,7 @@ public class PreferenceDTOOut {
      * @param year The year relative to the preference
      * @param turnKinds A list of shift time slots relative to the preference
      */
-    public PreferenceDTOOut(int day, int month, int year, Set<TimeSlot> turnKinds) {
+    public PreferenceDTOOut(int day, int month, int year, Set<String> turnKinds) {
         this.day = day;
         this.month = month;
         this.year = year;
@@ -52,7 +52,7 @@ public class PreferenceDTOOut {
      * @param year The year relative to the preference
      * @param turnKinds A list of shift time slots relative to the preference
      */
-    public PreferenceDTOOut(Long preferenceId, int day, int month, int year, Set<TimeSlot> turnKinds) {
+    public PreferenceDTOOut(Long preferenceId, int day, int month, int year, Set<String> turnKinds) {
         this(day, month, year, turnKinds);
         this.preferenceId = preferenceId;
     }
