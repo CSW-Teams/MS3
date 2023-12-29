@@ -2,13 +2,18 @@ package org.cswteams.ms3.control.preferenze;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.Holiday;
+import org.cswteams.ms3.enums.HolidayCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 
 @Service
 public class HolidayController implements IHolidayController {
@@ -66,8 +71,14 @@ public class HolidayController implements IHolidayController {
     }
 
     @Override
-    public List<Holiday> readHolidays() {
-        return holidayDao.findAll();
+    public List<HolidayDTO> readHolidays() {
+        List<Holiday> list= holidayDao.findAll();
+        List<HolidayDTO> listDTOHoliday = new ArrayList<>();
+        for(Holiday elem: list){
+            HolidayDTO newHolidayDTO=new HolidayDTO(elem.getName(), elem.getCategory(), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
+            listDTOHoliday.add(newHolidayDTO);
+        }
+        return listDTOHoliday;
     }
 
     @Override
@@ -98,8 +109,14 @@ public class HolidayController implements IHolidayController {
         holidayArgs.setEndDateEpochDay(endDateOld);
 
     }
-
-    public void registerHoliday(List<Holiday> holidays){
-        holidayDao.saveAll(holidays);
+    @Override
+    @Transactional
+    public void registerHoliday(@NotNull List<HolidayDTO> holidays){
+        List<Holiday> listHolliday = new ArrayList<>();
+        for(HolidayDTO elem: holidays){
+            Holiday newHoliday=new Holiday(elem.getName(), HolidayCategory.valueOf(elem.getCategory()), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
+            listHolliday.add(newHoliday);
+        }
+        holidayDao.saveAll(listHolliday);
     }
 }
