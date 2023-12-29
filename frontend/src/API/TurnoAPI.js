@@ -4,7 +4,7 @@ export  class TurnoAPI {
   }
 
   async getTurniByServizio(servizio) {
-    const response = await fetch('/api/turni/servizio='+servizio);
+    const response = await fetch('/api/shifts/service='+servizio);
     const body = await response.json();
 
     const turni = [];
@@ -21,7 +21,7 @@ export  class TurnoAPI {
   }
 
   async getTurnoByServizioTipologia(servizio,tipologia) {
-    const response = await fetch('/api/turni/servizio='+servizio);
+    const response = await fetch('/api/shifts/service='+servizio);
     const body = await response.json();
 
     for (let i = 0; i < body.length; i++) {
