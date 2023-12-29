@@ -4,7 +4,9 @@ import lombok.Getter;
 import org.cswteams.ms3.enums.TimeSlot;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 public class PreferenceDTOOut {
@@ -13,7 +15,7 @@ public class PreferenceDTOOut {
     private int day;
     private int month;
     private int year;
-    private List<TimeSlot> turnKinds;
+    private Set<TimeSlot> turnKinds;
 
     /**
      *
@@ -22,7 +24,7 @@ public class PreferenceDTOOut {
      * @param year The year relative to the preference
      * @param turnKinds A list of shift time slots relative to the preference
      */
-    public PreferenceDTOOut(int day, int month, int year, List<TimeSlot> turnKinds) {
+    public PreferenceDTOOut(int day, int month, int year, Set<TimeSlot> turnKinds) {
         this.day = day;
         this.month = month;
         this.year = year;
@@ -39,7 +41,7 @@ public class PreferenceDTOOut {
         this.day = day;
         this.month = month;
         this.year = year;
-        this.turnKinds = new ArrayList<>();
+        this.turnKinds = new HashSet<>();
     }
 
     /**
@@ -50,7 +52,7 @@ public class PreferenceDTOOut {
      * @param year The year relative to the preference
      * @param turnKinds A list of shift time slots relative to the preference
      */
-    public PreferenceDTOOut(Long preferenceId, int day, int month, int year, List<TimeSlot> turnKinds) {
+    public PreferenceDTOOut(Long preferenceId, int day, int month, int year, Set<TimeSlot> turnKinds) {
         this(day, month, year, turnKinds);
         this.preferenceId = preferenceId;
     }

@@ -4,15 +4,16 @@ import lombok.Getter;
 import org.cswteams.ms3.enums.TimeSlot;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 public class PreferenceDTOIn {
 
     private Long id ;
-    private final int day;
-    private final int month;
-    private final int year;
-    private final List<TimeSlot> turnKinds;
+    private int day;
+    private int month;
+    private int year;
+    private Set<TimeSlot> turnKinds;
 
     /**
      *
@@ -21,7 +22,7 @@ public class PreferenceDTOIn {
      * @param year The year of the preference
      * @param turnKinds A list of shift time slots relative to the preference
      */
-    public PreferenceDTOIn(int day, int month, int year, List<TimeSlot> turnKinds) {
+    public PreferenceDTOIn(int day, int month, int year, Set<TimeSlot> turnKinds) {
         this.day = day;
         this.month = month;
         this.year = year;
@@ -36,8 +37,11 @@ public class PreferenceDTOIn {
      * @param year The year of the preference
      * @param turnKinds A list of shift time slots relative to the preference
      */
-    public PreferenceDTOIn(Long id, int day, int month, int year, List<TimeSlot> turnKinds) {
+    public PreferenceDTOIn(Long id, int day, int month, int year, Set<TimeSlot> turnKinds) {
         this(day, month, year, turnKinds);
         this.id = id ;
+    }
+
+    public PreferenceDTOIn() {
     }
 }

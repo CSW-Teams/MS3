@@ -7,6 +7,7 @@ import org.cswteams.ms3.enums.TimeSlot;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a doctor's scheduling preference
@@ -25,7 +26,7 @@ public class Preference {
     @Column
     @Enumerated
     @ElementCollection(targetClass = TimeSlot.class)
-    private List<TimeSlot> timeSlots;
+    private Set<TimeSlot> timeSlots;
 
     @ManyToMany
     private List<Doctor> doctors;
@@ -36,7 +37,7 @@ public class Preference {
      * @param timeSlots The shift time slots relative to the preference day
      * @param doctors A list of doctors that have such preference
      */
-    public Preference(LocalDate date, List<TimeSlot> timeSlots, List<Doctor> doctors){
+    public Preference(LocalDate date, Set<TimeSlot> timeSlots, List<Doctor> doctors){
         this.date = date;
         this.timeSlots = timeSlots;
         this.doctors = doctors;
