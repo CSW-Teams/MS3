@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface RemovalFromShiftRequestDAO extends JpaRepository<RequestRemovalFromConcreteShift, Long> {
+public interface RequestRemovalFromConcreteShiftDAO extends JpaRepository<RequestRemovalFromConcreteShift, Long> {
 
     /**
      * Ritorna una lista di tutte le richieste di rimozione da turno assegnato <i>pending</i>,

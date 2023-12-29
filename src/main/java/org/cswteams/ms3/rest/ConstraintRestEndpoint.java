@@ -1,6 +1,6 @@
 package org.cswteams.ms3.rest;
 
-import org.cswteams.ms3.control.vincoli.IControllerVincolo;
+import org.cswteams.ms3.control.vincoli.IConstraintController;
 import org.cswteams.ms3.entity.constraint.ConfigVincoli;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,25 +13,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/vincoli/")
-public class VincoloRestEndpoint {
+public class ConstraintRestEndpoint {
     @Autowired
-    IControllerVincolo controllerVincolo;
+    IConstraintController constraintController;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> leggiVincoli()  {
-        return new ResponseEntity<>(controllerVincolo.leggiVincoli(), HttpStatus.FOUND);
+    public ResponseEntity<?> readConstraints()  {
+        return new ResponseEntity<>(constraintController.readConstraints(), HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "configurazione")
-    public ResponseEntity<?> leggiConfigurazioneVincoli()  {
-        return new ResponseEntity<>(controllerVincolo.leggiConfigurazioneVincoli(), HttpStatus.FOUND);
+    public ResponseEntity<?> readConstraintsConfiguration()  {
+        return new ResponseEntity<>(constraintController.readConfigConstraints(), HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "configurazione")
-    public ResponseEntity<?> aggiornaConfigurazioneVincoli(@RequestBody(required = true) ConfigVincoli configurazione) {
-        System.out.println("POST");
+    public ResponseEntity<?> updateConstraintsConfiguration(@RequestBody() ConfigVincoli configurazione) {
         if (configurazione != null) {
-            return new ResponseEntity<>(controllerVincolo.aggiornaVincoli(configurazione), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(constraintController.updateConstraints(configurazione), HttpStatus.ACCEPTED);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
