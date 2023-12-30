@@ -29,24 +29,26 @@ private List<Holiday> registerHolidays() {
 private void registerScocciature() {  //propongo di rinominare il metodo in registerAnnoyances().
   List<Holiday> holidays = registerHolidays();
 
-  int uffaPriorityPreference = 20;    //propongo 40 livelli di priorità totali: da 0 a 39 dove la base è 0. Il livello 0 è il più prioritario e viceversa.
+  //propongo 40 livelli di priorità totali: da 0 a 39 dove la base è 0. Il livello 0 è il più prioritario e viceversa.
+  int uffaPriorityPreference = 10;  //forse da eliminare
+  int uffaPriorityRespectedPreference = -1;
 
-  int uffaPrioritySundayAfternoon = 4;
-  int uffaPrioritySundayMorning = 4;
-  int uffaPrioritySaturdayNight = 4;
+  int uffaPrioritySundayAfternoon = 1;
+  int uffaPrioritySundayMorning = 1;
+  int uffaPrioritySaturdayNight = 2;
 
-  int uffaPrioritySaturdayAfternoon = 3;
-  int uffaPrioritySaturdayMorning = 3;
-  int uffaPriorityFridayNight = 3;
-  int uffaPrioritySundayNight = 3;
+  int uffaPrioritySaturdayAfternoon = 0;
+  int uffaPrioritySaturdayMorning = 0;
+  int uffaPriorityFridayNight = 1;
+  int uffaPrioritySundayNight = 2;
 
-  int uffaPriorityFridayAfternoon = 2;
+  int uffaPriorityFridayAfternoon = 0;
 
-  int uffaPrioritySimple = 1;
-  int uffaPriorityNight = 2;
+  int uffaPrioritySimple = 0;
+  int uffaPriorityNight = 1;
 
-  int uffaPriorityHoliday = 5;
-  int uffaPriorityHolidayNight = 6;
+  int uffaPriorityHoliday = 4;  //è una buona idea personalizzare le priorità per le singole vacanze
+  int uffaPriorityHolidayNight = 5;
 
   //istanziazione e salvataggio nel DB degli oggetti di tipo Scocciatura (propongo di ridenominare Scocciatura in Scocciatura e così via)
   for(Holiday holiday: holidays) {
