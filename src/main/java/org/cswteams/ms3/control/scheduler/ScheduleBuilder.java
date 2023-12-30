@@ -9,6 +9,7 @@ import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.constraint.ContestoVincolo;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.NotEnoughFeasibleUsersException;
@@ -165,7 +166,7 @@ public class ScheduleBuilder {
             try {
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
 
-                for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
+                for (Map.Entry<Seniority, Integer>  qss : concreteShift.getShift().getQuantityShiftSeniority().entrySet()){
                     this.addDoctors(concreteShift, qss, doctorsOnDuty);
                 }
 
@@ -186,7 +187,7 @@ public class ScheduleBuilder {
             try {
                 List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
 
-                for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
+                for (Map.Entry<Seniority, Integer>  qss : concreteShift.getShift().getQuantityShiftSeniority().entrySet()){
                     this.addDoctors(concreteShift, qss, doctorsOnCall);
                 }
 
@@ -207,7 +208,7 @@ public class ScheduleBuilder {
      * @throws NotEnoughFeasibleUsersException Exception thrown if the number of doctors having the possibility to be
      * added to the concrete shift is less than numDoctors
      */
-    private void addDoctors(ConcreteShift concreteShift, QuantityShiftSeniority qss, List<Doctor> newDoctors) throws NotEnoughFeasibleUsersException{
+    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> newDoctors) throws NotEnoughFeasibleUsersException{
 
         int selectedUsers = 0;
 
@@ -221,7 +222,7 @@ public class ScheduleBuilder {
         }
 
         for (DoctorScheduleState doctorScheduleState : allDoctorScheduleState){
-            if (selectedUsers == qss.getQuantity()){
+            if (selectedUsers == qss.getValue()){
                 break;
             }
 
@@ -236,7 +237,7 @@ public class ScheduleBuilder {
                  * If I actually registered the doctor to the concrete shift, his uffa value has to be actually updated.
                  */
                 List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
-                if(contextDoctorsOnDuty.size() < qss.getQuantity())
+                if(contextDoctorsOnDuty.size() < qss.getValue())
                     doctorScheduleState.saveUffaTemp();
 
                 selectedUsers++;
@@ -244,8 +245,8 @@ public class ScheduleBuilder {
         }
 
         // Case in which the algorithm ends without having found enough doctors to place into the concrete shift
-        if (selectedUsers != qss.getQuantity()){
-            throw new NotEnoughFeasibleUsersException(qss.getQuantity(), selectedUsers);
+        if (selectedUsers != qss.getValue()){
+            throw new NotEnoughFeasibleUsersException(qss.getValue(), selectedUsers);
         }
 
     }

@@ -3,8 +3,9 @@ package org.cswteams.ms3.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.TimeSlot;
-import org.hibernate.mapping.KeyValue;
+
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

@@ -10,9 +10,11 @@ import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloRuoloNumeroException;
 
 import javax.persistence.Entity;
+import java.security.KeyStore;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class implements the check of the number of doctors of each seniority in a concrete shift.
@@ -73,11 +75,11 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
         }
 
         //Loop on the seniorities
-        for (QuantityShiftSeniority quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority()) {
+        for (Map.Entry<Seniority, Integer> quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority().entrySet()) {
             //If the required number of doctors with that seniority was already reached, then we raise an exception.
             //Otherwise, we can add the doctor to the concrete shift.
-            if (quantityShiftSeniority.getSeniority().equals(context.getDoctorScheduleState().getDoctor().getSeniority())) {
-                if (numAssignedDoctorsForSeniority >= quantityShiftSeniority.getQuantity())
+            if (quantityShiftSeniority.getKey().equals(context.getDoctorScheduleState().getDoctor().getSeniority())) {
+                if (numAssignedDoctorsForSeniority >= quantityShiftSeniority.getValue())
                     throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), context.getDoctorScheduleState().getDoctor());
             }
         }
@@ -112,10 +114,10 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
         }
 
         //We check if in the concrete shift we have the correct number of doctors foreach seniority.
-        for (QuantityShiftSeniority quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority()) {
-            if (counter.get(quantityShiftSeniority.getSeniority()) != null && counter.get(quantityShiftSeniority.getSeniority()) < quantityShiftSeniority.getQuantity())
-                throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), quantityShiftSeniority, counter.get(quantityShiftSeniority.getSeniority()));
-            if (counter.get(quantityShiftSeniority.getSeniority()) == null)
+        for (Map.Entry<Seniority, Integer>  quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority().entrySet()) {
+            if (counter.get(quantityShiftSeniority.getKey()) != null && counter.get(quantityShiftSeniority.getKey()) < quantityShiftSeniority.getValue())
+                throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), quantityShiftSeniority, counter.get(quantityShiftSeniority.getKey()));
+            if (counter.get(quantityShiftSeniority.getKey()) == null)
                 throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), quantityShiftSeniority, 0);
         }
 

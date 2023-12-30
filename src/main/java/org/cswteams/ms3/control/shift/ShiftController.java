@@ -4,9 +4,9 @@ import org.cswteams.ms3.dao.MedicalServiceDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
 import org.cswteams.ms3.dto.shift.*;
 import org.cswteams.ms3.entity.MedicalService;
-import org.cswteams.ms3.entity.Seniority;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +75,8 @@ public class ShiftController implements IShiftController {
         for (AdditionalConstraintShiftDTO dto : shiftDTOIn.getAdditionalConstraints()) {
             AdditionalConstraint constraint = new AdditionalConstraint() ;
             if(dto.getId() != null) constraint.setId(dto.getId());
-            constraint.setDescrizione(dto.getDescription());
-            constraint.setViolabile(dto.isViolable());
+            constraint.setDescription(dto.getDescription());
+            constraint.setViolable(dto.isViolable());
         }
 
         if(shiftDTOIn.getId() != null)
