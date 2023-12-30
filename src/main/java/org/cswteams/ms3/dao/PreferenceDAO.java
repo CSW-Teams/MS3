@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface DesiderataDAO extends JpaRepository<Preference, Long> {
+public interface PreferenceDAO extends JpaRepository<Preference, Long> {
 
     List<Preference> findAllByDoctorsId(Long doctorId);
 

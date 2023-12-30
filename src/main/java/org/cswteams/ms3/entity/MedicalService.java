@@ -37,6 +37,20 @@ public class MedicalService {
         this.label = label;
     }
 
+    /**
+     * Class that represent a service offered by the hospital.
+     * (E.g. In the hospital, we have that in the morning in the cardiology ward, we offer treatment)
+     * This constructor is useful for editing the instance in the persistence layer
+     * @param id The id of the service
+     * @param tasks The list of the taskEnums offered in this service
+     * @param label The medical service offered to the patient (oncology, cardiology, ecc...)
+     */
+    public MedicalService(Long id, List<Task> tasks, String label) {
+        this.id = id ;
+        this.tasks = tasks;
+        this.label = label;
+    }
+
     protected MedicalService() {
     }
 }
