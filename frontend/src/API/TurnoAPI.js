@@ -3,6 +3,11 @@ export  class TurnoAPI {
   constructor() {
   }
 
+  /**
+   * API to retrieve shift data : queries <b>/api/shift/service={servizio}</b>
+   * @param servizio The name of the service
+   * @returns {Promise<*[]>} A Promise containing the shift's details
+   */
   async getTurniByServizio(servizio) {
     const response = await fetch('/api/shifts/service='+servizio);
     const body = await response.json();
@@ -20,6 +25,12 @@ export  class TurnoAPI {
 
   }
 
+  /**
+   * API to retrieve shift data only of a determined timeslot : queries <b>/api/shift/service={servizio}</b>
+   * @param servizio The name of the service
+   * @param tipologia The timeslot to select
+   * @returns {Promise<*[]>} A Promise containing the shift's details
+   */
   async getTurnoByServizioTipologia(servizio,tipologia) {
     const response = await fetch('/api/shifts/service='+servizio);
     const body = await response.json();

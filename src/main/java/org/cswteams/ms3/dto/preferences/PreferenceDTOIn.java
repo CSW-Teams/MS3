@@ -54,7 +54,7 @@ public class PreferenceDTOIn {
      */
     public PreferenceDTOIn(@JsonProperty("id") Long id, @JsonProperty("day") int day,
                            @JsonProperty("month") int month, @JsonProperty("year") int year,
-                           @JsonProperty Set<String> turnKinds) {
+                           @JsonProperty("turniKinds") Set<String> turnKinds) {
         this(day, month, year, turnKinds);
         this.id = id ;
     }
