@@ -38,7 +38,7 @@ public class ShiftDTOIn {
     private final Set<@AdmissibleValues(values = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"}) String> daysOfWeek ;
 
     @NotEmpty
-    private final List<@Valid MedicalServiceShiftDTO> medicalServices ;
+    private final @Valid MedicalServiceShiftDTO medicalService ;
 
     @NotEmpty
     private final HashMap<@AdmissibleValues(values = {"SPECIALIST", "STRUCTURED"}) String, @Positive Integer> quantityShiftSeniority;
@@ -53,7 +53,7 @@ public class ShiftDTOIn {
      * @param startMinute The starting minute of the shift
      * @param durationMinutes The duration of the shift, in minutes
      * @param daysOfWeek A set of Strings that represents names of {@link java.time.DayOfWeek}
-     * @param medicalServices A list of DTOs representing the medical services associated with the shift
+     * @param medicalService the DTO representing the medical service associated with the shift
      * @param quantityShiftSeniority A map of strings representing names of {@link org.cswteams.ms3.entity.Seniority} into quantities ;
      *                               <br/>it represents how many doctors of every seniority are needed to cover the shift
      * @param additionalConstraints A list of DTOs representing the additional constraints related to the shift
@@ -62,7 +62,7 @@ public class ShiftDTOIn {
                       @JsonProperty("startHour") Integer startHour,
                       @JsonProperty("startMinute") Integer startMinute,
                       @JsonProperty("durationMinutes") Integer durationMinutes,@JsonProperty("daysOfWeek") Set<String> daysOfWeek,
-                      @JsonProperty("medicalServices") List<MedicalServiceShiftDTO> medicalServices,
+                      @JsonProperty("medicalServices") MedicalServiceShiftDTO medicalService,
                       @JsonProperty("quantityShiftSeniority") HashMap<String, Integer> quantityShiftSeniority,
                       @JsonProperty("additionalConstraints") List<AdditionalConstraintShiftDTO> additionalConstraints) {
         this.timeSlot = timeSlot;
@@ -70,7 +70,7 @@ public class ShiftDTOIn {
         this.startMinute = startMinute;
         this.durationMinutes = durationMinutes;
         this.daysOfWeek = daysOfWeek;
-        this.medicalServices = medicalServices;
+        this.medicalService = medicalService;
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraints;
     }
@@ -83,7 +83,7 @@ public class ShiftDTOIn {
      * @param startMinute The starting minute of the shift
      * @param durationMinutes The duration of the shift, in minutes
      * @param daysOfWeek A set of Strings that represents names of {@link java.time.DayOfWeek}
-     * @param medicalServices A list of DTOs representing the medical services associated with the shift
+     * @param medicalService the DTO representing the medical service associated with the shift
      * @param quantityShiftSeniority A map of strings representing names of {@link org.cswteams.ms3.entity.Seniority} into quantities ;
      *                               <br/>it represents how many doctors of every seniority are needed to cover the shift
      * @param additionalConstraintShiftDTO A list of DTOs representing the additional constraints related to the shift
@@ -92,7 +92,7 @@ public class ShiftDTOIn {
                       @JsonProperty("startHour") Integer startHour,
                       @JsonProperty("startMinute") Integer startMinute,
                       @JsonProperty("durationMinutes") Integer durationMinutes, @JsonProperty("daysOfWeek") Set<String> daysOfWeek,
-                      @JsonProperty("medicalServices") List<MedicalServiceShiftDTO> medicalServices,
+                      @JsonProperty("medicalServices") MedicalServiceShiftDTO medicalService,
                       @JsonProperty("quantityShiftSeniority") HashMap<String, Integer> quantityShiftSeniority,
                       @JsonProperty("additionalConstraints") List<AdditionalConstraintShiftDTO> additionalConstraintShiftDTO) {
         this.id = id;
@@ -101,7 +101,7 @@ public class ShiftDTOIn {
         this.startMinute = startMinute;
         this.durationMinutes = durationMinutes;
         this.daysOfWeek = daysOfWeek;
-        this.medicalServices = medicalServices;
+        this.medicalService = medicalService;
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraintShiftDTO ;
     }

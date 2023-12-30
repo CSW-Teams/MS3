@@ -15,7 +15,7 @@ public class ShiftDTOOut {
     private final int startMinute ;
     private final int durationMinutes ;
     private final Set<String> daysOfWeek ;
-    private final List<MedicalServiceShiftDTO> medicalServices ;
+    private final MedicalServiceShiftDTO medicalService;
     private final HashMap<String, Integer> quantityshiftseniority ;
     //additionalConstraints
 
@@ -28,13 +28,13 @@ public class ShiftDTOOut {
      * @param startMinute The starting minute of the shift
      * @param durationMinutes The duration of the shift, in minutes
      * @param daysOfWeek A set of Strings that represents names of {@link java.time.DayOfWeek}
-     * @param medicalServices A list of DTOs representing the medical services associated with the shift
+     * @param medicalService The DTO representing the medical service associated with the shift
      * @param quantityshiftseniority A map of strings representing names of {@link org.cswteams.ms3.entity.Seniority} into quantities ;
      *                               <br/>it represents how many doctors of every seniority are needed to cover the shift
      */
     public ShiftDTOOut(Long id, String timeslot, int startHour, int startMinute,
                        int durationMinutes, Set<String> daysOfWeek,
-                       List<MedicalServiceShiftDTO> medicalServices,
+                       MedicalServiceShiftDTO medicalService,
                        HashMap<String, Integer> quantityshiftseniority) {
         this.id = id;
         this.timeslot = timeslot;
@@ -42,7 +42,7 @@ public class ShiftDTOOut {
         this.startMinute = startMinute;
         this.durationMinutes = durationMinutes;
         this.daysOfWeek = daysOfWeek;
-        this.medicalServices = medicalServices;
+        this.medicalService = medicalService;
         this.quantityshiftseniority = quantityshiftseniority;
     }
 }

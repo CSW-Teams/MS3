@@ -27,6 +27,7 @@ public class ConcreteShift {
     @OneToMany
     @NotNull
     private List<DoctorAssignment> doctorAssignmentList; //TODO: check that the doctors involved in this list are all different
+    // maybe make it a Set<>?
 
     
     protected ConcreteShift(Long id) {
