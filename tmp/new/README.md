@@ -391,6 +391,8 @@ public void orderByPriority(List<DoctorUffaPriority> dup, PriorityQueue pq) {
 * ... per poi definire il metodo controllerScocciatura.normalizeUffaPriority():
 ```
 public List<DoctorUffaPriority> normalizeUffaPriority(List<DoctorUffaPriority> allDoctorUffaPriority) {
+  //TODO: pensare a un'alternativa in cui la normalizzazione delle Uffa priority avviene in base alla durata dello scheduling precedente.
+
   int minGeneralPriority = 39;  //39=MAX_PRIORITY
   int minLongShiftPriority = 39;
   int minNightPriority = 39;
