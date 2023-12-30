@@ -32,12 +32,10 @@ public class ShiftController implements IShiftController {
         for (DayOfWeek dayOfWeek : shift.getDaysOfWeek()) {
             daysOfWeek.add(dayOfWeek.name()) ;
         }
-        ArrayList<MedicalServiceShiftDTO> serviceShiftDTOS = new ArrayList<>() ;
-        for (MedicalService service : shift.getMedicalServices()) {
-            serviceShiftDTOS.add(new MedicalServiceShiftDTO(
-                    service.getId(), service.getLabel()
-            )) ;
-        }
+        MedicalServiceShiftDTO serviceShiftDTO = new MedicalServiceShiftDTO(
+                shift.getMedicalService().getId(), shift.getMedicalService().getLabel()
+        );
+
         HashMap<String, Integer> quantityShiftSeniorities = new HashMap<>() ;
         for (Map.Entry<Seniority, Integer> entry : shift.getQuantityShiftSeniority().entrySet()) {
             quantityShiftSeniorities.put(entry.getKey().name(), entry.getValue()) ;
@@ -45,7 +43,7 @@ public class ShiftController implements IShiftController {
         return new ShiftDTOOut(
                 shift.getId(), shift.getTimeSlot().name(), shift.getStartTime().getHour(),
                 shift.getStartTime().getMinute(), shift.getDuration().toMinutesPart(),
-                daysOfWeek, serviceShiftDTOS, quantityShiftSeniorities
+                daysOfWeek, serviceShiftDTO, quantityShiftSeniorities
         ) ;
     }
 
@@ -54,18 +52,18 @@ public class ShiftController implements IShiftController {
         for (String dayOfWeek : shiftDTOIn.getDaysOfWeek()) {
             daysOfWeek.add(DayOfWeek.valueOf(dayOfWeek)) ;
         }
-        ArrayList<MedicalService> services = new ArrayList<>() ;
-        for (MedicalServiceShiftDTO serviceDTO : shiftDTOIn.getMedicalServices()) {
-            if(serviceDTO.getId() != null)
-                services.add(new MedicalService(
-                        shiftDTOIn.getId(), List.of(), serviceDTO.getLabel()
-                )) ;
-            else
-                services.add(new MedicalService(
-                        List.of(), serviceDTO.getLabel()
-                )) ;
+        MedicalService service;
 
-        }
+            if(shiftDTOIn.getMedicalService().getId() != null)
+                service =new MedicalService(
+                        shiftDTOIn.getId(), List.of(), shiftDTOIn.getMedicalService().getLabel()
+                );
+            else
+                service =new MedicalService(
+                        List.of(), shiftDTOIn.getMedicalService().getLabel()
+                );
+
+
         HashMap<Seniority, Integer> quantityShiftSeniorities = new HashMap<>() ;
         for (Map.Entry<String, Integer> entry : shiftDTOIn.getQuantityShiftSeniority().entrySet()) {
             quantityShiftSeniorities.put(Seniority.valueOf(entry.getKey()), entry.getValue()) ;
@@ -83,14 +81,14 @@ public class ShiftController implements IShiftController {
             return new Shift(shiftDTOIn.getId(), TimeSlot.valueOf(shiftDTOIn.getTimeSlot()),
                     LocalTime.of(shiftDTOIn.getStartHour(), shiftDTOIn.getStartMinute()),
                     Duration.ofMinutes(shiftDTOIn.getDurationMinutes()),
-                    daysOfWeek, services,
+                    daysOfWeek, service,
                     quantityShiftSeniorities, constraints
             ) ;
         else
             return new Shift(
                     LocalTime.of(shiftDTOIn.getStartHour(), shiftDTOIn.getStartMinute()),
                     Duration.ofMinutes(shiftDTOIn.getDurationMinutes()),
-                    services, TimeSlot.valueOf(shiftDTOIn.getTimeSlot()),
+                    service, TimeSlot.valueOf(shiftDTOIn.getTimeSlot()),
                     quantityShiftSeniorities, daysOfWeek, constraints
             ) ;
     }
@@ -127,9 +125,7 @@ public class ShiftController implements IShiftController {
     public ShiftDTOOut createShift(@Valid ShiftDTOIn shift) {
         Shift shiftEntity = convertDTOToShift(shift) ;
 
-        for (MedicalService serv : shiftEntity.getMedicalServices()) {
-            if(serv.getId() == null) medicalServiceDAO.save(serv) ;
-        }
+        if(shiftEntity.getMedicalService().getId() == null) medicalServiceDAO.save(shiftEntity.getMedicalService());
 
         return convertShiftToDTO(shiftDAO.save(shiftEntity)) ;
     }

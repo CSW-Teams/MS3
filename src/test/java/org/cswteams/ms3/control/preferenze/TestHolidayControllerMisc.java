@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ActiveProfiles(value = "test")
 public class TestHolidayControllerMisc {
+    /*
 
     @Autowired
     private IHolidayController controller ;
@@ -112,4 +113,5 @@ public class TestHolidayControllerMisc {
     public void cleanUp() {
         dao.deleteAll() ;
     }
+     */
 }

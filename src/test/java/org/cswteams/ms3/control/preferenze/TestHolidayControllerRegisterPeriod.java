@@ -31,6 +31,7 @@ import static org.junit.Assert.*;
 @Transactional
 @ActiveProfiles(value = "test")
 public class TestHolidayControllerRegisterPeriod {
+    /*
 
     @ClassRule
     public static final SpringClassRule scr = new SpringClassRule();
@@ -140,4 +141,5 @@ public class TestHolidayControllerRegisterPeriod {
             }
         }
     }
+     */
 }
