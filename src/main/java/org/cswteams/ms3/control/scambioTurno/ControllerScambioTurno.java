@@ -7,9 +7,12 @@ import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ViewUserTurnRequestsDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.Request;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.RequestStatus;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -40,7 +44,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     @Override
     @Transactional
     public void requestTurnChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException {
-        Optional<ConcreteShift> assegnazioneTurno= assegnazioneTurnoDao.findById(requestTurnChangeDto.getConcreteShiftId());
+        Optional<ConcreteShift> assegnazioneTurno = assegnazioneTurnoDao.findById(requestTurnChangeDto.getConcreteShiftId());
         if(assegnazioneTurno.isEmpty()){
             throw new AssegnazioneTurnoException("Turno non presente");
         }
@@ -57,20 +61,23 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         }
 
         ConcreteShift concreteShift = assegnazioneTurno.get();
-/*
-        List<Long> userDiGuardiaIds = concreteShift.getUtentiDiGuardia().stream()
-                .map(Utente::getId)
-                .collect(Collectors.toList());
 
-        List<Long> userReperibiliIds = concreteShift.getUtentiReperibili().stream()
-                .map(Utente::getId)
-                .collect(Collectors.toList());
+        List<Long> onDutyDoctorIds = new ArrayList<>();
+        List<Long> onCallDoctorIds = new ArrayList<>();
 
-        if(!userDiGuardiaIds.contains(requestTurnChangeDto.getSenderId()) && !userReperibiliIds.contains(requestTurnChangeDto.getSenderId())){
+        for(DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()){
+            if(assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY){
+                onDutyDoctorIds.add(assignment.getDoctor().getId());
+            } else if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL){
+                onCallDoctorIds.add(assignment.getDoctor().getId());
+            }
+        }
+
+        if(!onCallDoctorIds.contains(requestTurnChangeDto.getSenderId()) && !onCallDoctorIds.contains(requestTurnChangeDto.getSenderId())){
             throw new AssegnazioneTurnoException("Utente richiedente non assegnato al turno");
         }
 
-        if(userDiGuardiaIds.contains(requestTurnChangeDto.getReceiverId()) || userReperibiliIds.contains(requestTurnChangeDto.getReceiverId())){
+        if(onDutyDoctorIds.contains(requestTurnChangeDto.getReceiverId()) || onCallDoctorIds.contains(requestTurnChangeDto.getReceiverId())){
             throw new AssegnazioneTurnoException("Utente richiesto già assegnato al turno");
         }
 
@@ -88,19 +95,18 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             shiftChangeRequestDAO.saveAndFlush(request);
         } catch(ConstraintViolationException e){
             throw new AssegnazioneTurnoException("esiste già un cambio pendente");
-        }*/
+        }
     }
 
-    private List<Long> dateAndTimeToEpoch(LocalDate startDate, LocalTime startTime, Duration duration){
-        ZoneId gmtZone = ZoneId.of("GMT");
+    private List<Long> dateAndTimeToEpoch(long startDate, LocalTime startTime, Duration duration){
 
-        LocalDateTime localDateTimeInizio = LocalDateTime.of(startDate, startTime);
-        Instant inizioInstant = localDateTimeInizio.atZone(gmtZone).toInstant();
-        Instant fineInstant = inizioInstant.plus(duration);
+        long startLocalTime = startTime.toSecondOfDay();
+        long newStartTime = startDate + startLocalTime;
+        long endTime = newStartTime + duration.getSeconds();
 
         List<Long> l = new ArrayList<>();
-        l.add(inizioInstant.getEpochSecond());
-        l.add(fineInstant.getEpochSecond());
+        l.add(newStartTime);
+        l.add(endTime);
 
         return l;
     }
@@ -112,18 +118,30 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         List<Request> requests = shiftChangeRequestDAO.findBySenderId(id);
         List<ViewUserTurnRequestsDTO> dtos = new ArrayList<>();
         for(Request r : requests){
-            /*long requestId = r.getId();
+            long requestId = r.getId();
 
-            List<Long> list = dateAndTimeToEpoch(r.getTurn().getData(), r.getTurn().getTurno().getOraInizio(), r.getTurn().getTurno().getDurata());
+            List<Long> list = dateAndTimeToEpoch(r.getTurn().getDate(), r.getTurn().getShift().getStartTime(), r.getTurn().getShift().getDuration());
             long inizioEpoch = list.get(0);
             long fineEpoch = list.get(1);
 
-            String turnDescription = r.getTurn().getTurno().getMansione()+" in "+r.getTurn().getTurno().getServizio().getNome();
-            String userDetails = r.getReceiver().getNome() + " " + r.getReceiver().getCognome();
+            DoctorAssignment doctorAssignment = null;
+            for(DoctorAssignment da : r.getTurn().getDoctorAssignmentList()){
+                if(Objects.equals(da.getDoctor().getId(), r.getSender().getId())){
+                    doctorAssignment = da;
+                    break;
+                }
+            }
+
+            if(doctorAssignment == null){
+                return new ArrayList<>();
+            }
+
+            String turnDescription = doctorAssignment.getTask().getTaskType() +" come "+doctorAssignment.getConcreteShiftDoctorStatus();
+            String userDetails = r.getReceiver().getName() + " " + r.getReceiver().getLastname();
             String status = r.getStatus().toString();
 
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
-            dtos.add(dto);*/
+            dtos.add(dto);
         }
 
         return dtos;
@@ -136,18 +154,31 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         List<Request> requests = shiftChangeRequestDAO.findByReceiverIdAndStatus(id, RequestStatus.PENDING);
         List<ViewUserTurnRequestsDTO> dtos = new ArrayList<>();
         for(Request r : requests){
-            /*long requestId = r.getId();
+            long requestId = r.getId();
 
-            List<Long> list = dateAndTimeToEpoch(r.getTurn().getData(), r.getTurn().getTurno().getOraInizio(), r.getTurn().getTurno().getDurata());
+            List<Long> list = dateAndTimeToEpoch(r.getTurn().getDate(), r.getTurn().getShift().getStartTime(), r.getTurn().getShift().getDuration());
             long inizioEpoch = list.get(0);
             long fineEpoch = list.get(1);
 
-            String turnDescription = r.getTurn().getTurno().getMansione()+" in "+r.getTurn().getTurno().getServizio().getNome();
-            String userDetails = r.getSender().getNome() + " " + r.getSender().getCognome();
+            DoctorAssignment doctorAssignment = null;
+            for(DoctorAssignment da : r.getTurn().getDoctorAssignmentList()){
+                if(Objects.equals(da.getDoctor().getId(), r.getSender().getId())){
+                    doctorAssignment = da;
+                    break;
+                }
+            }
+
+            if(doctorAssignment == null){
+                return new ArrayList<>();
+            }
+
+            String turnDescription = doctorAssignment.getTask().getTaskType() +" come "+doctorAssignment.getConcreteShiftDoctorStatus();
+
+            String userDetails = r.getSender().getName() + " " + r.getSender().getLastname();
             String status = r.getStatus().toString();
 
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
-            dtos.add(dto);*/
+            dtos.add(dto);
         }
 
         return dtos;

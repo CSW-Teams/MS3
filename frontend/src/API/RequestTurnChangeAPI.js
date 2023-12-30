@@ -25,14 +25,14 @@ export class RequestTurnChangeAPI{
   }
 
   async getTurnChangeRequestsByIdUser(id) {
-    const response = await fetch('/api/assegnazioneturni/scambio/by/utente_id=' + id);
+    const response = await fetch('/api/richiesta-cambio-turno/by/utente_id=' + id);
     const body = await response.json();
 
     return this.parseRequests(body);
   }
 
   async getTurnChangeRequestsToIdUser(id) {
-    const response = await fetch('/api/assegnazioneturni/scambio/to/utente_id=' + id);
+    const response = await fetch('/api/richiesta-cambio-turno/to/utente_id=' + id);
     const body = await response.json();
 
     return this.parseRequests(body);

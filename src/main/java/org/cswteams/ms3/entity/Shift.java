@@ -41,8 +41,8 @@ public class Shift {
     private Set<DayOfWeek> daysOfWeek;
 
 
-    @ManyToMany
-    private List<MedicalService> medicalServices;
+    @ManyToOne
+    private MedicalService medicalService;
 
     @Lob
     private HashMap<Seniority, Integer> quantityShiftSeniority;
@@ -54,18 +54,18 @@ public class Shift {
      * Abstract concept of shift, created by the configurator
      * @param StartTime hh:mm:ss when the shift will start
      * @param duration Duration of the shift in hh:mm:ss
-     * @param medicalServices List of medicalServices to be provided in a shift
+     * @param medicalService The medicalService to be provided in a shift
      * @param timeSlot Moment of the day in which the shift will take place (morning, afternoon, night)
      * @param quantityShiftSeniority Quantity of doctors needed in the shift for each type of seniority
      * @param daysOfWeek List of days in which this shift will take place
      * @param additionalConstraints List of additional constraints which are specific of a shift (E.g. No over 62, for a risky operation)
      */
-    public Shift(LocalTime StartTime, Duration duration, List<MedicalService> medicalServices, TimeSlot timeSlot,
+    public Shift(LocalTime StartTime, Duration duration, MedicalService medicalService, TimeSlot timeSlot,
                  HashMap<Seniority, Integer> quantityShiftSeniority, Set<DayOfWeek> daysOfWeek,
                  List<AdditionalConstraint> additionalConstraints) {
         this.startTime = StartTime;
         this.duration = duration;
-        this.medicalServices = medicalServices;
+        this.medicalService = medicalService;
         this.timeSlot = timeSlot;
         this.daysOfWeek = daysOfWeek;
         this.quantityShiftSeniority = quantityShiftSeniority;
@@ -78,14 +78,14 @@ public class Shift {
      * @param id The id of the shift
      * @param startTime hh:mm:ss when the shift will start
      * @param duration Duration of the shift in hh:mm:ss
-     * @param medicalServices List of medicalServices to be provided in a shift
+     * @param medicalService The medicalService to be provided in a shift
      * @param timeSlot Moment of the day in which the shift will take place (morning, afternoon, night)
      * @param quantityShiftSeniority Quantity of doctors needed in the shift for each type of seniority
      * @param daysOfWeek List of days in which this shift will take place
      * @param additionalConstraints List of additional constraints which are specific of a shift (E.g. No over 62, for a risky operation)
      */
     public Shift(Long id, TimeSlot timeSlot, LocalTime startTime, Duration duration,
-                 Set<DayOfWeek> daysOfWeek, List<MedicalService> medicalServices,
+                 Set<DayOfWeek> daysOfWeek, MedicalService medicalService,
                  HashMap<Seniority, Integer> quantityShiftSeniority,
                  List<AdditionalConstraint> additionalConstraints) {
         this.id = id;
@@ -93,7 +93,7 @@ public class Shift {
         this.startTime = startTime;
         this.duration = duration;
         this.daysOfWeek = daysOfWeek;
-        this.medicalServices = medicalServices;
+        this.medicalService = medicalService;
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraints;
     }
