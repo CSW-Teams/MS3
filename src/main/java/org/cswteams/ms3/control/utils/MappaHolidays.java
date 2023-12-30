@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.Holiday;
+import org.cswteams.ms3.enums.HolidayCategory;
 
 public class MappaHolidays {
     
@@ -12,7 +13,7 @@ public class MappaHolidays {
     }
 
     public static Holiday dtoToHoliday(HolidayDTO dto){
-        return new Holiday(dto.getName(), dto.getCategory(), dto.getStartDateEpochDay(), dto.getEndDateEpochDay(), dto.getLocation());
+        return new Holiday(dto.getName(), HolidayCategory.valueOf(dto.getCategory()), dto.getStartDateEpochDay(), dto.getEndDateEpochDay(), dto.getLocation());
     }
 
     public static HolidayDTO holidayToDto(Holiday holiday){

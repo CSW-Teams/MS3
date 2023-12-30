@@ -5,7 +5,7 @@ import lombok.Getter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-@MappedSuperclass
+@Entity
 @Getter
 public abstract class Condition{
     @Id

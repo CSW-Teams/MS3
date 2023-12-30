@@ -1,13 +1,16 @@
 package org.cswteams.ms3.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.*;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 /*
 TODO: Check why there is this constraint
 @Table(uniqueConstraints={
@@ -41,34 +44,34 @@ public class DoctorScheduleState {
 
 
     public List<ConcreteShift> getAssegnazioniTurnoCache(){
-        /*
+
         if (assegnazioniTurnoCache == null){
             this.assegnazioniTurnoCache = new ArrayList<>();
-            for (ConcreteShift at: schedule.getConcreteShifts()){
-                for (Doctor collega : at.getDoctorsOnDuty().keySet()){
-                    if (collega.getId() == this.doctor.getId()){
-                        assegnazioniTurnoCache.add(at);
+            for (ConcreteShift concreteShift: schedule.getConcreteShifts()){
+                for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()) {
+                    if (da.getDoctor().getId() == this.doctor.getId()){
+                        assegnazioniTurnoCache.add(concreteShift);
                         break;
                     }
                 }
             }
         }
-        return assegnazioniTurnoCache;*/
-        return null;
+        return assegnazioniTurnoCache;
+
     }
 
     /**Aggiunge in ordine la nuova assegnazione alla lista delle assegnazioni dell'utente **/
-    public void addAssegnazioneTurno(ConcreteShift nuovaAssegnazione){
-        List<ConcreteShift> turniAssegnati = getAssegnazioniTurnoCache();
-        int idInsert = turniAssegnati.size();
-        for(int i = 0; i < turniAssegnati.size(); i++){
-            if(turniAssegnati.get(i).getDate() > nuovaAssegnazione.getDate() || turniAssegnati.get(i).getDate() == (nuovaAssegnazione.getDate())){
-                if(turniAssegnati.get(i).getShift().getStartTime().isAfter(nuovaAssegnazione.getShift().getStartTime())) {
+    public void addAssegnazioneTurno(ConcreteShift newConcreteShift){
+        List<ConcreteShift> concreteShiftList = getAssegnazioniTurnoCache();
+        int idInsert = concreteShiftList.size();
+        for(int i = 0; i < concreteShiftList.size(); i++){
+            if(concreteShiftList.get(i).getDate() > newConcreteShift.getDate() || concreteShiftList.get(i).getDate() == newConcreteShift.getDate()){
+                if(concreteShiftList.get(i).getShift().getStartTime().isAfter(newConcreteShift.getShift().getStartTime())) {
                     idInsert = i;
                 }
             }
         }
-        turniAssegnati.add(idInsert,nuovaAssegnazione);
+        concreteShiftList.add(idInsert,newConcreteShift);
     }
 
     public void saveUffaTemp(){
@@ -83,6 +86,7 @@ public class DoctorScheduleState {
     }
     
     public DoctorScheduleState(Doctor doctor, Schedule schedule) {
+
         this.doctor = doctor;
         this.schedule = schedule;
     }

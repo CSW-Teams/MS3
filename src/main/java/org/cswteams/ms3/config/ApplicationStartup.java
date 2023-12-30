@@ -6,10 +6,12 @@ import org.cswteams.ms3.control.task.TaskController;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.condition.*;
+import org.cswteams.ms3.entity.constraint.*;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
 import org.cswteams.ms3.dao.*;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component()
@@ -35,7 +38,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
      */
 
     @Autowired
-    private DoctorDAO doctorDao;
+    private DoctorDAO doctorDAO;
 
     @Autowired
     private ShiftDAO shiftDAO;
@@ -44,33 +47,34 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private MedicalServiceDAO medicalServiceDAO;
 
     @Autowired
-    private PermanentConditionDAO permanentConditionDao;
+    private PermanentConditionDAO permanentConditionDAO;
 
     @Autowired
     private TemporaryConditionDAO temporaryConditionDAO;
 
     @Autowired
-    private SpecializationDAO specializationDao;
+    private SpecializationDAO specializationDAO;
 
     @Autowired
     private IHolidayController holidayController;
 
     @Autowired
-    private VincoloDao vincoloDao;
+    private ConstraintDAO constraintDAO;
 
     @Autowired
     private TaskDAO taskDAO;
 
     @Autowired
-    private ScocciaturaDAO scocciaturaDao;
+    private ScocciaturaDAO scocciaturaDAO;
+  
     @Autowired
     private PreferenceDAO preferenceDao;
 
     @Autowired
-    private ConfigVincoliDAO configVincoliDao;
+    private ConfigVincoliDAO configVincoliDAO;
 
     @Autowired
-    private ConfigVincoloMaxPeriodoConsecutivoDAO configVincoloMaxPeriodoConsecutivoDao;
+    private ConfigVincoloMaxPeriodoConsecutivoDAO configVincoloMaxPeriodoConsecutivoDAO;
 
 
     @SneakyThrows
@@ -80,7 +84,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         /**
          * FIXME: sostiutire count con controllo su entità Config
          */
-        if (doctorDao.count() == 0) {
+        if (doctorDAO.count() == 0) {
             try {
                 populateDB();
             } catch (ShiftException e) {
@@ -123,32 +127,32 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         Scocciatura scocciaturaDesiderata = new ScocciaturaDesiderata(pesoDesiderata);
 
-        scocciaturaDao.save(scocciaturaDomenicaPomeriggio);
-        scocciaturaDao.save(scocciaturaDomenicaMattina);
-        scocciaturaDao.save(scocciaturaDomenicaNotte);
+        scocciaturaDAO.save(scocciaturaDomenicaPomeriggio);
+        scocciaturaDAO.save(scocciaturaDomenicaMattina);
+        scocciaturaDAO.save(scocciaturaDomenicaNotte);
 
-        scocciaturaDao.save(scocciaturaSabatoMattina);
-        scocciaturaDao.save(scocciaturaSabatoPomeriggio);
-        scocciaturaDao.save(scocciaturaSabatoNotte);
+        scocciaturaDAO.save(scocciaturaSabatoMattina);
+        scocciaturaDAO.save(scocciaturaSabatoPomeriggio);
+        scocciaturaDAO.save(scocciaturaSabatoNotte);
 
-        scocciaturaDao.save(scocciaturaVenerdiPomeriggio);
-        scocciaturaDao.save(scocciaturaVenerdiNotte);
+        scocciaturaDAO.save(scocciaturaVenerdiPomeriggio);
+        scocciaturaDAO.save(scocciaturaVenerdiNotte);
 
-        scocciaturaDao.save(scocciaturaDesiderata);
+        scocciaturaDAO.save(scocciaturaDesiderata);
 
         List<DayOfWeek> giorniFeriali = Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
         for (DayOfWeek giornoFeriale : giorniFeriali) {
             ScocciaturaAssegnazioneUtente scocciaturaFerialeMattina = new ScocciaturaAssegnazioneUtente(pesoFerialeSemplice, giornoFeriale, TimeSlot.MORNING);
-            scocciaturaDao.save(scocciaturaFerialeMattina);
+            scocciaturaDAO.save(scocciaturaFerialeMattina);
             if (giornoFeriale != DayOfWeek.FRIDAY) {
                 ScocciaturaAssegnazioneUtente scocciaturaFerialePomeriggio = new ScocciaturaAssegnazioneUtente(pesoFerialeSemplice, giornoFeriale, TimeSlot.AFTERNOON);
-                scocciaturaDao.save(scocciaturaFerialePomeriggio);
+                scocciaturaDAO.save(scocciaturaFerialePomeriggio);
                 ScocciaturaAssegnazioneUtente scocciaturaFerialeNotturno = new ScocciaturaAssegnazioneUtente(pesoFerialeNotturno, giornoFeriale, TimeSlot.NIGHT);
-                scocciaturaDao.save(scocciaturaFerialeNotturno);
+                scocciaturaDAO.save(scocciaturaFerialeNotturno);
             }
         }
     }
-/*
+
     private void registerConstraints(){
 
         ConfigVincoli configVincoli;
@@ -158,10 +162,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             Properties prop = new Properties();
             prop.load(propsInput);
 
-            ConfigVincMaxPerCons confOver62 = new ConfigVincMaxPerCons(categoriaDao.findAllByNome("OVER_62"),Integer.parseInt(prop.getProperty("numMaxOreConsecutiveOver62"))*60);
-            ConfigVincMaxPerCons confIncinta = new ConfigVincMaxPerCons(categoriaDao.findAllByNome("INCINTA"),Integer.parseInt(prop.getProperty("numMaxOreConsecutiveDonneIncinta"))*60);
-            configVincoloMaxPeriodoConsecutivoDao.saveAndFlush(confOver62);
-            configVincoloMaxPeriodoConsecutivoDao.saveAndFlush(confIncinta);
+            ConfigVincMaxPerCons confOver62 = new ConfigVincMaxPerCons(permanentConditionDAO.findByType("OVER_62"),Integer.parseInt(prop.getProperty("numMaxOreConsecutiveOver62"))*60);
+            ConfigVincMaxPerCons confIncinta = new ConfigVincMaxPerCons(temporaryConditionDAO.findByType("INCINTA"),Integer.parseInt(prop.getProperty("numMaxOreConsecutiveDonneIncinta"))*60);
+            configVincoloMaxPeriodoConsecutivoDAO.saveAndFlush(confOver62);
+            configVincoloMaxPeriodoConsecutivoDAO.saveAndFlush(confIncinta);
             configVincoli = new ConfigVincoli(
                     Integer.parseInt(prop.getProperty("numGiorniPeriodo")),
                     Integer.parseInt(prop.getProperty("maxOrePeriodo")) * 60,
@@ -169,7 +173,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                     Integer.parseInt(prop.getProperty("numMaxOreConsecutivePerTutti")) * 60,
                     Arrays.asList(confOver62,confIncinta)
             );
-            configVincoliDao.save(configVincoli);
+            configVincoliDAO.save(configVincoli);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -178,42 +182,41 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         ConstraintTipologieTurniContigue vincoloTurniContigui = new ConstraintTipologieTurniContigue(
             configVincoli.getHorizonTurnoNotturno(),
             ChronoUnit.HOURS,
-            TimeSlot.NOTTURNO,
+            TimeSlot.NIGHT,
             new HashSet<>(Arrays.asList(TimeSlot.values()))
-            );
+        );
+        vincoloTurniContigui.setViolable(true);
 
-
-        Constraint vincolo1 = new ConstraintCategorieUtenteTurno();
+        //Constraint vincolo1 = new ConstraintCategorieUtenteTurno();
         Constraint vincolo2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getNumMaxMinutiConsecutiviPerTutti());
         Constraint vincolo4 = new ConstraintMaxOrePeriodo(configVincoli.getNumGiorniPeriodo(), configVincoli.getMaxMinutiPeriodo());
         Constraint vincolo5 = new ConstraintUbiquità();
         Constraint vincolo6 = new ConstraintNumeroDiRuoloTurno();
 
-        vincoloTurniContigui.setViolabile(true);
-        vincolo1.setViolabile(true);
+        //vincolo1.setViolable(true);
 
         for(ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()){
             Constraint vincolo = new ConstraintMaxPeriodoConsecutivo(config.getNumMaxMinutiConsecutivi(), config.getCategoriaVincolata());
-            vincolo.setDescrizione("Constraint massimo periodo consecutivo per categoria "+config.getCategoriaVincolata().getNome());
-            vincoloDao.saveAndFlush(vincolo);
+            vincolo.setDescription("Constraint massimo periodo consecutivo per categoria "+config.getCategoriaVincolata().getType());
+            constraintDAO.saveAndFlush(vincolo);
         }
-        vincolo1.setDescrizione("Constraint Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
-        vincolo2.setDescrizione("Constraint massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
-        vincolo4.setDescrizione("Constraint massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
-        vincolo5.setDescrizione("Constraint ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
-        vincoloTurniContigui.setDescrizione("Constraint turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
-        vincolo6.setDescrizione("Constraint numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
+        //vincolo1.setDescription("Constraint Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
+        vincolo2.setDescription("Constraint massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
+        vincolo4.setDescription("Constraint massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
+        vincolo5.setDescription("Constraint ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
+        vincoloTurniContigui.setDescription("Constraint turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
+        vincolo6.setDescription("Constraint numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
 
-        vincoloDao.saveAndFlush(vincoloTurniContigui);
-        vincoloDao.saveAndFlush(vincolo1);
-        vincoloDao.saveAndFlush(vincolo2);
-        vincoloDao.saveAndFlush(vincolo4);
-        vincoloDao.saveAndFlush(vincolo5);
-        vincoloDao.saveAndFlush(vincolo6);
+        constraintDAO.saveAndFlush(vincoloTurniContigui);
+        //constraintDAO.saveAndFlush(vincolo1);
+        constraintDAO.saveAndFlush(vincolo2);
+        constraintDAO.saveAndFlush(vincolo4);
+        constraintDAO.saveAndFlush(vincolo5);
+        constraintDAO.saveAndFlush(vincolo6);
 
-        List<Constraint> vincoli = vincoloDao.findByType("ConstraintMaxPeriodoConsecutivo");
+        List<Constraint> vincoli = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
     }
-*/
+
 
     private void populateDB() throws ShiftException {
 
@@ -249,11 +252,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         temporaryConditionDAO.save(sick);
         temporaryConditionDAO.save(maternity);
 
-        permanentConditionDao.save(over62);
+        permanentConditionDAO.save(over62);
 
         // Save in persistence all possible specialization
-        specializationDao.save(cardiologia);
-        specializationDao.save(oncologia);
+        specializationDAO.save(cardiologia);
+        specializationDAO.save(oncologia);
 
         taskDAO.save(clinic);
         taskDAO.save(emergency);
@@ -404,40 +407,40 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u34 = new Doctor("Valerio", "Palmerini", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "valerio.palmerini@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
         taskController.addService(guardiaCardiologia, u34);
 
-        u6 = doctorDao.saveAndFlush(u6);
-        u7 = doctorDao.saveAndFlush(u7);
-        u1 = doctorDao.saveAndFlush(u1);
-        u2 = doctorDao.saveAndFlush(u2);
-        u3 = doctorDao.saveAndFlush(u3);
-        u4 = doctorDao.saveAndFlush(u4);
-        u5 = doctorDao.saveAndFlush(u5);
-        u8 = doctorDao.saveAndFlush(u8);
-        u9 = doctorDao.saveAndFlush(u9);
-        u10 = doctorDao.saveAndFlush(u10);
-        u11 = doctorDao.saveAndFlush(u11);
-        u12 = doctorDao.saveAndFlush(u12);
-        u13 = doctorDao.saveAndFlush(u13);
-        u14 = doctorDao.saveAndFlush(u14);
-        u15 = doctorDao.saveAndFlush(u15);
-        u16 = doctorDao.saveAndFlush(u16);
-        u17 = doctorDao.saveAndFlush(u17);
-        u18 = doctorDao.saveAndFlush(u18);
-        u19 = doctorDao.saveAndFlush(u19);
-        u20 = doctorDao.saveAndFlush(u20);
-        u21 = doctorDao.saveAndFlush(u21);
-        u22 = doctorDao.saveAndFlush(u22);
-        u23 = doctorDao.saveAndFlush(u23);
-        u24 = doctorDao.saveAndFlush(u24);
-        u25 = doctorDao.saveAndFlush(u25);
-        u26 = doctorDao.saveAndFlush(u26);
-        u27 = doctorDao.saveAndFlush(u27);
-        u28 = doctorDao.saveAndFlush(u28);
-        u29 = doctorDao.saveAndFlush(u29);
-        u30 = doctorDao.saveAndFlush(u30);
-        u31 = doctorDao.saveAndFlush(u31);
-        u32 = doctorDao.saveAndFlush(u32);
-        u33 = doctorDao.saveAndFlush(u33);
-        u34 = doctorDao.saveAndFlush(u34);
+        u6 = doctorDAO.saveAndFlush(u6);
+        u7 = doctorDAO.saveAndFlush(u7);
+        u1 = doctorDAO.saveAndFlush(u1);
+        u2 = doctorDAO.saveAndFlush(u2);
+        u3 = doctorDAO.saveAndFlush(u3);
+        u4 = doctorDAO.saveAndFlush(u4);
+        u5 = doctorDAO.saveAndFlush(u5);
+        u8 = doctorDAO.saveAndFlush(u8);
+        u9 = doctorDAO.saveAndFlush(u9);
+        u10 = doctorDAO.saveAndFlush(u10);
+        u11 = doctorDAO.saveAndFlush(u11);
+        u12 = doctorDAO.saveAndFlush(u12);
+        u13 = doctorDAO.saveAndFlush(u13);
+        u14 = doctorDAO.saveAndFlush(u14);
+        u15 = doctorDAO.saveAndFlush(u15);
+        u16 = doctorDAO.saveAndFlush(u16);
+        u17 = doctorDAO.saveAndFlush(u17);
+        u18 = doctorDAO.saveAndFlush(u18);
+        u19 = doctorDAO.saveAndFlush(u19);
+        u20 = doctorDAO.saveAndFlush(u20);
+        u21 = doctorDAO.saveAndFlush(u21);
+        u22 = doctorDAO.saveAndFlush(u22);
+        u23 = doctorDAO.saveAndFlush(u23);
+        u24 = doctorDAO.saveAndFlush(u24);
+        u25 = doctorDAO.saveAndFlush(u25);
+        u26 = doctorDAO.saveAndFlush(u26);
+        u27 = doctorDAO.saveAndFlush(u27);
+        u28 = doctorDAO.saveAndFlush(u28);
+        u29 = doctorDAO.saveAndFlush(u29);
+        u30 = doctorDAO.saveAndFlush(u30);
+        u31 = doctorDAO.saveAndFlush(u31);
+        u32 = doctorDAO.saveAndFlush(u32);
+        u33 = doctorDAO.saveAndFlush(u33);
+        u34 = doctorDAO.saveAndFlush(u34);
 
 /*
         QuantityShiftSeniority qssStructured = new QuantityShiftSeniority(Seniority.STRUCTURED, 1);

@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @AutoConfigureMockMvc
 @Profile("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
+public class AssegnazioneTurnoTests extends SchedulerControllerTestEnv {
 /*
     @Autowired
     AssegnazioneTurnoDao assegnazioneTurnoDao;
@@ -32,9 +32,9 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
     private ControllerTurni ct;
 
     @Autowired
-    private VincoloDao vincoloDao;
+    private ConstraintDAO vincoloDao;
 
-    private RegistraAssegnazioneTurnoDTO registraAssegnazioneTurnoDTO;
+    private RegisterConcreteShiftDTO registraAssegnazioneTurnoDTO;
 
     private Schedule testSchedule;
 
@@ -102,7 +102,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
         this.instance.createSchedule(TODAY.getDate().plusDays(20), TODAY.getDate().plusDays(30));
         this.instance.createSchedule(TODAY.getDate().plusYears(30).plusMonths(1), TODAY.getDate().plusYears(30).plusMonths(1).plusDays(5));
 
-        this.registraAssegnazioneTurnoDTO = new RegistraAssegnazioneTurnoDTO();
+        this.registraAssegnazioneTurnoDTO = new RegisterConcreteShiftDTO();
         this.registraAssegnazioneTurnoDTO.setServizio(this.cs.leggiServizioByNome("ServizioTest"));
         this.registraAssegnazioneTurnoDTO.setUtentiDiGuardia(MappaUtenti.utentiEntitytoDTO(uGuardiaList));
         this.registraAssegnazioneTurnoDTO.setUtentiReperibili(MappaUtenti.utentiEntitytoDTO(uReperibiliList));
@@ -113,13 +113,13 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
 
     public Stream<Arguments> assegnazioneTurnoInvalidParams() {
         return Stream.of(
-                Arguments.of(new RegistraAssegnazioneTurnoDTO())//empty
+                Arguments.of(new RegisterConcreteShiftDTO())//empty
         );
     }
 
     static Stream<Arguments> modificaAssegnazioneTurnoInvalidExceptionsParams() {
         return Stream.of(
-                Arguments.of(new ModificaAssegnazioneTurnoDTO())
+                Arguments.of(new ModifyConcreteShiftDTO())
 
         );
     }
@@ -186,7 +186,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
     @ParameterizedTest
     @MethodSource(value = "assegnazioneTurnoInvalidParams")
     @NullSource
-    public void addAssegnazioneTurnoExternalInvalidExceptionsTest(RegistraAssegnazioneTurnoDTO registraAssegnazioneTurnoDTO) {
+    public void addAssegnazioneTurnoExternalInvalidExceptionsTest(RegisterConcreteShiftDTO registraAssegnazioneTurnoDTO) {
         Assertions.assertThrows(Exception.class, () ->
                 this.instance.aggiungiAssegnazioneTurno(registraAssegnazioneTurnoDTO, true)
         );
@@ -196,7 +196,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
     public void updateAssegnazioneTurnoValidTest() {
         Long atId = this.testSchedule.getAssegnazioniTurno().get(0).getId();
 
-        ModificaAssegnazioneTurnoDTO mat = new ModificaAssegnazioneTurnoDTO(
+        ModifyConcreteShiftDTO mat = new ModifyConcreteShiftDTO(
                 atId,
                 (uGuardiaList).stream().mapToLong(Utente::getId).toArray(),
                 (uReperibiliList).stream().mapToLong(Utente::getId).toArray(),
@@ -224,7 +224,7 @@ public class AssegnazioneTurnoTests extends ControllerSchedulerTestEnv {
     @ParameterizedTest
     @MethodSource(value = "modificaAssegnazioneTurnoInvalidExceptionsParams")
     @NullSource
-    public void updateAssegnazioneTurnoInvalidExceptionTest(ModificaAssegnazioneTurnoDTO mat) {
+    public void updateAssegnazioneTurnoInvalidExceptionTest(ModifyConcreteShiftDTO mat) {
         Assertions.assertThrows(Exception.class, () -> this.instance.modificaAssegnazioneTurno(mat));
     }
 

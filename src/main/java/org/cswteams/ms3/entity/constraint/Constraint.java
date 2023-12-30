@@ -1,12 +1,14 @@
 package org.cswteams.ms3.entity.constraint;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table(name = "ms3_constraint")
 public abstract class Constraint {
@@ -19,11 +21,11 @@ public abstract class Constraint {
 
     /** True se il vincolo è non-stringente */
     @NotNull
-    private boolean violabile = false;
+    private boolean violable = false;
 
     /** TODO: descrizione di che cosa in particolare del vincolo? */
     @NotNull
-    private String descrizione;
+    private String description;
 
     /**
      * @throws ViolatedConstraintException : se il vincolo è violato

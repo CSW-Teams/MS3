@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @Profile("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class ControllerServiziTests /*extends ControllerSchedulerTestEnv*/ {
+public class ControllerServiziTests /*extends SchedulerControllerTestEnv*/ {
    /* @Autowired
     private ControllerServizi instance;
 

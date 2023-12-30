@@ -10,4 +10,6 @@ import java.util.List;
 public interface TemporaryConditionDAO extends JpaRepository<TemporaryCondition, String> {
     List<TemporaryCondition> findAll();
 
+    TemporaryCondition findByType(String type);
+
 }
