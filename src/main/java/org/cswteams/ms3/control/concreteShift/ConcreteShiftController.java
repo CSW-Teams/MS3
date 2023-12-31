@@ -53,7 +53,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
     @Override
     public ConcreteShift creaTurnoAssegnato(@NotNull RegisterConcreteShiftDTO dto) throws AssegnazioneTurnoException {
 
-        Shift shift = shiftDAO.findAllByMedicalServicesLabelAndTimeSlot(dto.getServizio().getNome(), dto.getTimeSlot()).get(0);
+        Shift shift = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(dto.getServizio().getNome(), dto.getTimeSlot()).get(0);
         if(shift == null)
             throw new AssegnazioneTurnoException("Non esiste uno shift con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia shift: "+dto.getTimeSlot().toString());
 

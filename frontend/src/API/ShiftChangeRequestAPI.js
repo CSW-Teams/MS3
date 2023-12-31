@@ -1,6 +1,6 @@
-import {RequestTurnChange} from "./RequestTurnChange";
+import {ShiftChangeRequest} from "./ShiftChangeRequest";
 
-export class RequestTurnChangeAPI{
+export class ShiftChangeRequestAPI{
 
   parseRequests(body){
     let requests = [];
@@ -17,7 +17,7 @@ export class RequestTurnChangeAPI{
       const userDetails = body[i].userDetails;
       const status = body[i].status;
 
-      requests[i] = new RequestTurnChange(
+      requests[i] = new ShiftChangeRequest(
         requestId, turnDescription, inizioDate, fineDate, userDetails, status);
     }
 
@@ -25,14 +25,14 @@ export class RequestTurnChangeAPI{
   }
 
   async getTurnChangeRequestsByIdUser(id) {
-    const response = await fetch('/api/richiesta-cambio-turno/by/utente_id=' + id);
+    const response = await fetch('/api/change-shift-request/by/user_id=' + id);
     const body = await response.json();
 
     return this.parseRequests(body);
   }
 
   async getTurnChangeRequestsToIdUser(id) {
-    const response = await fetch('/api/richiesta-cambio-turno/to/utente_id=' + id);
+    const response = await fetch('/api/change-shift-request/to/user_id=' + id);
     const body = await response.json();
 
     return this.parseRequests(body);

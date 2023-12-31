@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface ShiftDAO extends JpaRepository<Shift,Long> {
 
-    List<Shift> findAllByMedicalServicesLabel(String nomeServizio);
-    List<Shift> findAllByMedicalServicesLabelAndTimeSlot(String nomeServizio, TimeSlot timeSlot);
+    List<Shift> findAllByMedicalServiceLabel(String nomeServizio);
+    List<Shift> findAllByMedicalServiceLabelAndTimeSlot(String nomeServizio, TimeSlot timeSlot);
 
 }

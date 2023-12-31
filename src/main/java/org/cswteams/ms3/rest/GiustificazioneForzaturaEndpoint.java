@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/giustifica")
+@RequestMapping("/justify")
 public class GiustificazioneForzaturaEndpoint {
 
     @Autowired
     private IControllerGiustificaForzatura iControllerGiustificaForzatura;
 
-    @RequestMapping(method = RequestMethod.POST, path = "/caricaGiustificazione")
+    @RequestMapping(method = RequestMethod.POST, path = "/uploadJustification")
     public ResponseEntity<String> caricaGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazione) {
         try {
             iControllerGiustificaForzatura.saveGiustificazione(giustificazione);
@@ -29,7 +29,7 @@ public class GiustificazioneForzaturaEndpoint {
         }
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/caricaFile")
+    @RequestMapping(method = RequestMethod.POST, path = "/uploadFile")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         String message = "";
         try {

@@ -284,7 +284,7 @@ class ScheduleView extends React.Component{
             theme: "colored",
           });
 
-          let turni = await assegnazioneTurnoApi.getGlobalTurn();
+          let turni = await assegnazioneTurnoApi.getGlobalShift();
 
           this.setState({data:turni});
           this.forceUpdate();
@@ -322,7 +322,7 @@ class ScheduleView extends React.Component{
             autoClose: false,
           });
 
-          let turni = await assegnazioneTurnoApi.getGlobalTurn();
+          let turni = await assegnazioneTurnoApi.getGlobalShift();
 
           this.setState({data:turni});
           this.forceUpdate();
@@ -352,8 +352,6 @@ class ScheduleView extends React.Component{
 
       let api = new RichiestaRimozioneDaTurnoAPI();
       let requestsArray = await api.getAllPendingRequests();
-
-      console.log("Array:", requestsArray);
 
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UserAPI().getAllUsersInfo();

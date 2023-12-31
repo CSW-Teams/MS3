@@ -110,7 +110,7 @@ public class ShiftController implements IShiftController {
     @Validant
     public List<ShiftDTOOut> getShiftsOfService(@Valid ShiftServiceNameDTOIn serviceName) {
 
-        List<Shift> shifts = shiftDAO.findAllByMedicalServicesLabel(serviceName.getServiceLabel()) ;
+        List<Shift> shifts = shiftDAO.findAllByMedicalServiceLabel(serviceName.getServiceLabel()) ;
         ArrayList<ShiftDTOOut> retVal = new ArrayList<>() ;
 
         for (Shift shift : shifts) {

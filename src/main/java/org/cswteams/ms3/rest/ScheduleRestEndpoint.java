@@ -80,7 +80,7 @@ public class ScheduleRestEndpoint {
     /*
      * This method is invoked to retrieve the illegal shift schedules.
      */
-    @RequestMapping(method = RequestMethod.GET,path = "illegali")
+    @RequestMapping(method = RequestMethod.GET,path = "illegals")
     public ResponseEntity<?> readIllegalSchedules()  {
 
         List<ScheduleDTO> set = schedulerController.readIllegalSchedules();

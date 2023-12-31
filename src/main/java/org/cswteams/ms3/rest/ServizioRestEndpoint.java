@@ -7,37 +7,34 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/servizi/")
+@RequestMapping("/medical-services/")
 public class ServizioRestEndpoint {
 
     @Autowired
-    IMedicalServiceController controllerServizi;
+    IMedicalServiceController medicalServiceController;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> leggiServizi() throws ParseException {
-        Set<MedicalServiceDTO> servizi = controllerServizi.leggiServizi();
-        if (servizi == null || servizi.isEmpty()) {
-            System.out.println("sono qui");
+    public ResponseEntity<?> getAllMedicalServices() {
+        Set<MedicalServiceDTO> medicalServices = medicalServiceController.getAllMedicalServices();
+        if (medicalServices == null || medicalServices.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        System.out.println("invece sono qui");
-        return new ResponseEntity<>(servizi, HttpStatus.FOUND);
+        return new ResponseEntity<>(medicalServices, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET,path = "nome/{nomeServizio}")
+    @RequestMapping(method = RequestMethod.GET,path = "name/{nomeServizio}")
     public ResponseEntity<?> leggiServizio(@PathVariable String nomeServizio)  {
-        MedicalServiceDTO servizio = controllerServizi.leggiServizioByNome(nomeServizio);
+        MedicalServiceDTO servizio = medicalServiceController.leggiServizioByNome(nomeServizio);
         return new ResponseEntity<>(servizio, HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceDTO servizio) {
         if (servizio != null) {
-            return new ResponseEntity<>(controllerServizi.creaServizio(servizio), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(medicalServiceController.creaServizio(servizio), HttpStatus.ACCEPTED);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

@@ -25,8 +25,6 @@ export function ShiftPrinterCSV(props){
         }
     });
 
-    console.log(props)
-
     return(
         <CSVLink data={printableShifts} onClick={() => {return props.enable}}>
             {props.textLink}

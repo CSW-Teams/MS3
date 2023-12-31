@@ -19,7 +19,7 @@ import java.text.ParseException;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/assegnazioneturni/")
+@RequestMapping("/concrete-shifts/")
 public class ConcreteShiftRestEndpoint {
 
     @Autowired
@@ -65,10 +65,10 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/utente_id={idUtente}")
-    public ResponseEntity<?> leggiTurniUtente(@PathVariable Long idUtente) throws ParseException {
-        if (idUtente != null) {
-            Set <ConcreteShiftDTO> c = controllerAssegnazioneTurni.leggiTurniUtente(idUtente);
+    @RequestMapping(method = RequestMethod.GET, path = " /user_id={userID}")
+    public ResponseEntity<?> leggiTurniUtente(@PathVariable Long userID) throws ParseException {
+        if (userID != null) {
+            Set <ConcreteShiftDTO> c = controllerAssegnazioneTurni.leggiTurniUtente(userID);
             if (c == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -106,7 +106,7 @@ public class ConcreteShiftRestEndpoint {
 
             RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
 
-            risposta.getMessagges().add(schedule.getViolatedConstraints().getLast().getDescription());
+            risposta.getMessagges().add(schedule.getViolatedConstraints().get(schedule.getViolatedConstraints().size() - 1).getDescription());
             for (Constraint vclEntry : schedule.getViolatedConstraints()) {
                 risposta.getMessagges().add(vclEntry.getDescription());
             }

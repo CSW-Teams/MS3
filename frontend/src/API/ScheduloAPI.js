@@ -1,6 +1,6 @@
 export  class ScheduloAPI {
 
-  
+
   async getSchedulazini() {
     const response = await fetch('/api/schedule/');
     const body = await response.json();
@@ -8,7 +8,7 @@ export  class ScheduloAPI {
   }
 
   async getSchedulaziniIllegali() {
-    const response = await fetch('/api/schedule/illegali');
+    const response = await fetch('/api/schedule/illegals');
     const body = await response.json();
     return body;
   }

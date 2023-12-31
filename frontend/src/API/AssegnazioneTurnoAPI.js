@@ -93,7 +93,7 @@ export  class AssegnazioneTurnoAPI {
 }
 
   async getTurnByIdUser(id) {
-    const response = await fetch('/api/assegnazioneturni/utente_id=' + id);
+    const response = await fetch('/api/concrete-shifts/user_id=' + id);
     const body = await response.json();
 
 
@@ -154,7 +154,7 @@ export  class AssegnazioneTurnoAPI {
         body: JSON.stringify(assegnazioneTurno)
       };
 
-      const response = await fetch('/api/assegnazioneturni/',requestOptions);
+      const response = await fetch('/api/concrete-shifts/',requestOptions);
 
       return response;
 
@@ -177,7 +177,7 @@ export  class AssegnazioneTurnoAPI {
 
     console.log(assegnazioneModificata)
 
-    return await fetch('/api/assegnazioneturni/', requestOptions);
+    return await fetch('/api/concrete-shifts/', requestOptions);
 
 }
 
@@ -193,7 +193,7 @@ async requestTurnChange(utenteCambio, assegnazione, idLoggato) {
     body: JSON.stringify(turnChangeRequest)
   };
 
-  return await fetch('/api/assegnazioneturni/scambio', requestOptions);
+  return await fetch('/api/concrete-shifts/retirement-request/', requestOptions);
 }
 
 
@@ -206,15 +206,15 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
   };
 
   console.log(idDaEliminare)
-  const response = await fetch('/api/assegnazioneturni/'+idDaEliminare,requestOptions);
+  const response = await fetch('/api/concrete_shifts/'+idDaEliminare,requestOptions);
   return response;
 
 }
 
 
 
-    async getGlobalTurn() {
-        const response = await fetch('/api/assegnazioneturni/');
+    async getGlobalShift() {
+        const response = await fetch('/api/concrete-shifts/');
         const body = await response.json();
 
         return this.parseAllocatedShifts(body);

@@ -11,8 +11,6 @@ export class HolidaysAPI {
         let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         let county = await this.searchCountry(timeZone);
 
-        console.log(county);
-
         let response = await fetch('/api/holidays/year='+date.getFullYear()+'/country='+county, {method: 'GET'});
 
         let serializedHolidays = await response.json();
@@ -54,13 +52,13 @@ export class HolidaysAPI {
             return "SP"
 
         // Altri timeZone..
-        
+
         return "IT"
     }
 
 
 
-    
+
 }
 
 

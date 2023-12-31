@@ -199,7 +199,7 @@ public class SchedulerController implements ISchedulerController {
     public Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
 
         //We need a shift which is present in the database in order to convert the DTO into an entity.
-        List<Shift> shiftsList = shiftDAO.findAllByMedicalServicesLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
+        List<Shift> shiftsList = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
         if(shiftsList.isEmpty())
             throw new AssegnazioneTurnoException("Non esiste uno shift coi servizi specificati.");
         Shift shift = null;

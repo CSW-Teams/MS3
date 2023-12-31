@@ -37,9 +37,6 @@ public class HolidayRestEndpoint {
     @RequestMapping(method = RequestMethod.GET, path = "/year={currentYear}/country={currentCountry}")
     public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable String currentYear, @PathVariable String currentCountry){
         List<HolidayDTO> holidays = holidayController.readHolidays();
-        for(HolidayDTO holiday : holidays){
-            log.info("[DEBUG] " + holiday.getName());
-        }
 
         // Se il database non contiene nessuna festività e nessuna domenica, questa informaizoni vengono pescatae dall'api esterna
         if(holidays.size() == 0) {
@@ -48,15 +45,9 @@ public class HolidayRestEndpoint {
             try {
                 holidays = calendarServiceManager.getHolidays();
             } catch (CalendarServiceException e) {
-                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(holidays);
             }
 
-            /**
-             * DEBUG TO DELETE
-             */
-            for(HolidayDTO holiday:holidays){
-                log.info("[DEBUG] " + holiday.getName() + " " + holiday.getCategory()  + " " + holiday.getStartDateEpochDay() + " " + holiday.getEndDateEpochDay());
-            }
             holidayController.registerSundays(LocalDate.of(Integer.parseInt(currentYear)-1, 1, 1), 3);
             holidays = holidayController.readHolidays();
         }
