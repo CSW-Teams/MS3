@@ -1,4 +1,4 @@
-package org.cswteams.ms3.dto;
+package org.cswteams.ms3.dto.concreteshift;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,13 +8,14 @@ import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
 @AllArgsConstructor
+@Getter
 public class ConcreteShiftDTO {
 
-    @Getter
     private Long id;
     @Getter
     private Long idTurno;
@@ -57,6 +58,8 @@ public class ConcreteShiftDTO {
         this.servizio = servizio;
         this.idTurno=idTurno;
         this.reperibilitaAttiva = reperibilitaAttiva;
+
+        this.retiredUsers = new HashSet<>();
     }
 
     protected ConcreteShiftDTO(){}

@@ -21,10 +21,12 @@ export class HolidaysAPI {
             let h = new Holiday(
                 sh.name,
                 // frontend months are 0-11, backend months are 1-12
-                new Date(sh.startYear, sh.startMonth - 1, sh.startDayOfMonth),
-                new Date(sh.endYear, sh.endMonth - 1, sh.endDayOfMonth + 1), // +1 because the scheduler doesn't include the end date
+                new Date(sh.startDateEpochDay * 24 * 60 * 60 * 1000),
+                new Date(sh.endDateEpochDay * 24 * 60 * 60 * 1000), // +1 because the scheduler doesn't include the end date
                 red,
             );
+
+
             h.allDay = true;
             h.schedulableType=SchedulableType.Holiday;
             h.category = sh.category;

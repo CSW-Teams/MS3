@@ -3,7 +3,7 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
-import org.cswteams.ms3.dto.ConcreteShiftDTO;
+import org.cswteams.ms3.dto.concreteshift.ConcreteShiftDTO;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.entity.Schedule;

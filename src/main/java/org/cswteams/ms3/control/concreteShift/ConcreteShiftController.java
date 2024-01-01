@@ -2,10 +2,8 @@ package org.cswteams.ms3.control.concreteShift;
 
 import org.cswteams.ms3.control.utils.MappaAssegnazioneTurni;
 import org.cswteams.ms3.dao.ConcreteShiftDAO;
-import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
-import org.cswteams.ms3.dao.DoctorDAO;
-import org.cswteams.ms3.dto.ConcreteShiftDTO;
+import org.cswteams.ms3.dto.concreteshift.ConcreteShiftDTO;
 import org.cswteams.ms3.dto.MedicalServiceDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
@@ -14,14 +12,12 @@ import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
-import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,10 +35,37 @@ public class ConcreteShiftController implements IConcreteShiftController {
      * @return
      */
     @Override
-    public Set<ConcreteShiftDTO> leggiTurniAssegnati() {
-        Set<ConcreteShift> turniSet = new HashSet<>(concreteShiftDAO.findAll());
-        Set<ConcreteShiftDTO> turniDTOSet = MappaAssegnazioneTurni.assegnazioneTurnoToDTO(turniSet);
-        return turniDTOSet;
+    public Set<ConcreteShiftDTO> getAllConcreteShifts() {
+        List<ConcreteShift> concreteShifts = concreteShiftDAO.findAll();
+        Set<ConcreteShift> turniSet = new HashSet<>();
+        turniSet.addAll(concreteShifts);
+        
+        Set<ConcreteShiftDTO> concreteShiftDTOSet = new HashSet<>();
+        
+        for (ConcreteShift concreteShift : turniSet) {
+
+            List<String> systemActors = new ArrayList<>();
+            systemActors.add("PLANNER");
+            UserDTO userDTO = new UserDTO(0L, "Simone", "Bauco", LocalDate.now(), systemActors);
+            Set<UserDTO> hashSet = new HashSet<>();
+            hashSet.add(userDTO);
+
+            ConcreteShiftDTO concreteShiftDTO = new ConcreteShiftDTO(
+                    concreteShift.getId(),
+                    concreteShift.getShift().getId(),
+                    concreteShift.getDate(),
+                    concreteShift.getDate() + concreteShift.getShift().getDuration().toSeconds(),
+                    hashSet,
+                    hashSet,
+                    concreteShift.getShift().getMedicalService().getLabel(),
+                    "AMBULATORIO",  // todo sistema
+                    concreteShift.getShift().getTimeSlot().toString(),
+                    true
+            );
+            concreteShiftDTOSet.add(concreteShiftDTO);
+        }
+
+        return concreteShiftDTOSet;
     }
 
     /**

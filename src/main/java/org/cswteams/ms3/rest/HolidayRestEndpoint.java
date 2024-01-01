@@ -38,7 +38,7 @@ public class HolidayRestEndpoint {
     public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable String currentYear, @PathVariable String currentCountry){
         List<HolidayDTO> holidays = holidayController.readHolidays();
 
-        // Se il database non contiene nessuna festività e nessuna domenica, questa informaizoni vengono pescatae dall'api esterna
+        // Se il database non contiene nessuna festività e nessuna domenica, questa informazioni vengono pescate dall'api esterna
         if(holidays.size() == 0) {
             CalendarSettingBuilder calendarSettingBuilder = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
             calendarServiceManager.init(calendarSettingBuilder.create(currentYear, currentCountry));

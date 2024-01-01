@@ -187,8 +187,6 @@ class ScheduleView extends React.Component{
       let richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
       let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(subState);
 
-      console.log(httpResponse);  // todo remove
-
       if (httpResponse.status === 202) {
         toast.success('Richiesta inoltrata con successo', {
           position: "top-center",

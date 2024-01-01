@@ -1,6 +1,6 @@
 package org.cswteams.ms3.control.utils;
 
-import org.cswteams.ms3.dto.ConcreteShiftDTO;
+import org.cswteams.ms3.dto.concreteshift.ConcreteShiftDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 
 import java.util.HashSet;

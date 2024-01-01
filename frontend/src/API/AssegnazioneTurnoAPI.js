@@ -12,18 +12,18 @@ export  class AssegnazioneTurnoAPI {
 
     for (let i = 0; i < body.length; i++) {
 
-        const inizioEpochMilliseconds = body[i].inizioEpoch*1000
+        const inizioEpochMilliseconds = body[i].startDateTime*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 
-        const fineEpochMilliseconds = body[i].fineEpoch*1000
+        const fineEpochMilliseconds = body[i].endDateTime*1000
         const fineDate = new Date(fineEpochMilliseconds);
 
         let turno = new AssignedShift(
-          body[i].mansione + " in " + body[i].servizio.nome,
+          body[i].medicalServiceTask + " in " + body[i].medicalServiceLabel,
           inizioDate,
           fineDate,
           teal);
-        turno.id = body[i].id;
+        turno.id = body[i].shiftID;
         turno.type ="Assigned"
 
         let utenti_guardia = [];
@@ -34,25 +34,25 @@ export  class AssegnazioneTurnoAPI {
         let utenti_rimossi_id = [];
 
 
-        for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
-          let currentUserDto = body[i].utentiDiGuardia[j];
+        for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
+          let currentUserDto = body[i].doctorsOnDuty[j];
           let utenteAllocato = new User(
             currentUserDto.id,
-            currentUserDto.nome,
-            currentUserDto.cognome,
-            currentUserDto.ruoloEnum,
+            currentUserDto.name,
+            currentUserDto.lastname,
+            currentUserDto.systemActor,
           )
           utenti_guardia[j] = utenteAllocato;
           utenti_guardia_id[j] = utenteAllocato.id;
         }
 
-        for (let j = 0; j < body[i].utentiReperibili.length; j++) {
-          let currentUserDto = body[i].utentiReperibili[j];
+        for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
+          let currentUserDto = body[i].doctorsOnCall[j];
           let utenteReperibile = new User(
             currentUserDto.id,
-            currentUserDto.nome,
-            currentUserDto.cognome,
-            currentUserDto.ruoloEnum,
+            currentUserDto.name,
+            currentUserDto.lastname,
+            currentUserDto.systemActor,
           )
           utenti_reperibili[j] = utenteReperibile;
           utenti_reperibili_id[j] = utenteReperibile.id;
@@ -62,9 +62,9 @@ export  class AssegnazioneTurnoAPI {
           let currentUserDto = body[i].retiredUsers[j];
           let utenteRimosso = new User(
             currentUserDto.id,
-            currentUserDto.nome,
-            currentUserDto.cognome,
-            currentUserDto.ruoloEnum,
+            currentUserDto.name,
+            currentUserDto.lastname,
+            currentUserDto.systemActor,
           )
           utenti_rimossi[j] = utenteRimosso;
           utenti_rimossi_id[j] = utenteRimosso.id;
@@ -78,10 +78,9 @@ export  class AssegnazioneTurnoAPI {
         turno.utenti_rimossi = utenti_rimossi;
         turno.utenti_rimossi_id = utenti_rimossi_id;
 
-      turno.tipologia = body[i].tipologiaTurno;
-      turno.servizio = body[i].servizio.nome;
-      turno.mansione = body[i].mansione;
-      console.log(turno.mansione)
+      turno.tipologia = body[i].timeSlot;
+      turno.servizio = body[i].medicalServiceLabel;
+      turno.mansione = body[i].medicalServiceTask;
       turno.reperibilitaAttiva = body[i].reperibilitaAttiva;
 
       turni[i] = turno;
@@ -205,7 +204,6 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  console.log(idDaEliminare)
   const response = await fetch('/api/concrete_shifts/'+idDaEliminare,requestOptions);
   return response;
 
@@ -222,21 +220,21 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
 
     async postGenerationSchedule(dataStart,dataEnd) {
 
-      let requestGeneration = {};
+      const initialDay = dataStart.$d.getDate();
+      const initialMonth = dataStart.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
+      const initialYear = dataStart.$d.getFullYear();
+      const finalDay = dataEnd.$d.getDate();
+      const finalMonth = dataEnd.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
+      const finalYear = dataEnd.$d.getFullYear();
 
-      const giornoInizio = dataStart.$d.getDate();
-      const meseInizio = dataStart.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
-      const annoInizio = dataStart.$d.getFullYear();
-
-      // Creating an ISO 8601 formatted date string
-      requestGeneration.giornoInizio = `${annoInizio}-${meseInizio.toString().padStart(2, '0')}-${giornoInizio.toString().padStart(2, '0')}`;
-
-      const giornoFine = dataEnd.$d.getDate();
-      const meseFine = dataEnd.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
-      const annoFine = dataEnd.$d.getFullYear();
-
-      // Creating an ISO 8601 formatted date string
-      requestGeneration.giornoFine = `${annoFine}-${meseFine.toString().padStart(2, '0')}-${giornoFine.toString().padStart(2, '0')}`;
+      let requestGeneration = {
+        initialDay: initialDay,
+        initialMonth: initialMonth,
+        initialYear: initialYear,
+        finalDay: finalDay,
+        finalMonth: finalMonth,
+        finalYear: finalYear
+      };
 
       const requestOptions = {
         method: 'POST',
