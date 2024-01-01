@@ -14,9 +14,9 @@ class GlobalScheduleView extends ScheduleView {
     let turnoAPI = new AssegnazioneTurnoAPI();
     let utenteAPI = new UserAPI();
 
-    utenti = await utenteAPI.getAllUser();
+    //utenti = await utenteAPI.getAllUser();
     turni = await turnoAPI.getGlobalShift();
-    super.componentDidMount(turni, utenti);
+    super.componentDidMount(turni);
   }
 
 

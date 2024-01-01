@@ -346,7 +346,7 @@ class ScheduleView extends React.Component{
     }
 
 
-    async componentDidMount(turni, utenti) {
+    async componentDidMount(turni) {
 
       let api = new RichiestaRimozioneDaTurnoAPI();
       let requestsArray = await api.getAllPendingRequests();
@@ -366,13 +366,13 @@ class ScheduleView extends React.Component{
                 fieldName: 'utenti_guardia_id',
                 title: 'Guardia',
                 allowMultiple: true,
-                instances: utenti,
+                instances: allUser,
               }
               , {
               fieldName: 'utenti_reperibili_id',
               title: 'Reperibilità',
               allowMultiple: true,
-              instances: utenti,
+              instances: allUser,
             },
             ],
           allServices: new Set(allServices),
@@ -390,12 +390,12 @@ class ScheduleView extends React.Component{
         let { data, resources} = this.state;
 
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
-        data = data.filter((shift) => {
+        /*data = data.filter((shift) => {
           return this.filters.reduce(
             (isFeasible, currentFilter) => isFeasible && currentFilter(shift, this.state.filterCriteria),
             true
           );
-        });
+        });*/
 
         /**
          * Prepariamo un messaggio diverso per il link al download del csv con i turni

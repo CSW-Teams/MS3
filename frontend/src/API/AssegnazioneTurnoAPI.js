@@ -58,8 +58,8 @@ export  class AssegnazioneTurnoAPI {
           utenti_reperibili_id[j] = utenteReperibile.id;
         }
 
-        for (let j = 0; j < body[i].retiredUsers.length; j++) {
-          let currentUserDto = body[i].retiredUsers[j];
+        for (let j = 0; j < body[i].deletedDoctors.length; j++) {
+          let currentUserDto = body[i].deletedDoctors[j];
           let utenteRimosso = new User(
             currentUserDto.id,
             currentUserDto.name,
@@ -180,16 +180,16 @@ export  class AssegnazioneTurnoAPI {
 
 }
 
-async requestTurnChange(utenteCambio, assegnazione, idLoggato) {
-  let turnChangeRequest = {}
-  turnChangeRequest.concreteShiftId = assegnazione.id;
-  turnChangeRequest.senderId = idLoggato;
-  turnChangeRequest.receiverId = utenteCambio.id;
+async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
+  let shiftChangeRequest = {}
+  shiftChangeRequest.concreteShiftId = assegnazione.id;
+  shiftChangeRequest.senderId = idLoggato;
+  shiftChangeRequest.receiverId = utenteCambio.id;
 
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(turnChangeRequest)
+    body: JSON.stringify(shiftChangeRequest)
   };
 
   return await fetch('/api/concrete-shifts/retirement-request/', requestOptions);

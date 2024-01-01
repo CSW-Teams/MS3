@@ -442,14 +442,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u33 = doctorDAO.saveAndFlush(u33);
         u34 = doctorDAO.saveAndFlush(u34);
 
-/*
-        QuantityShiftSeniority qssStructured = new QuantityShiftSeniority(Seniority.STRUCTURED, 1);
-        QuantityShiftSeniority qssSpecialist = new QuantityShiftSeniority(Seniority.SPECIALIST, 1);
-        List<QuantityShiftSeniority> qssList = new ArrayList<>();
-        qssList.add(qssStructured);
-        qssList.add(qssSpecialist);
+        HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
+        doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
+        doctorsNumberBySeniority.put(Seniority.SPECIALIST, 2);
 
-        List<DayOfWeek> allDaysOfWeek = new ArrayList<>();
+        Set<DayOfWeek> allDaysOfWeek = new HashSet<>();
         allDaysOfWeek.add(DayOfWeek.MONDAY);
         allDaysOfWeek.add(DayOfWeek.TUESDAY);
         allDaysOfWeek.add(DayOfWeek.WEDNESDAY);
@@ -458,13 +455,17 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         allDaysOfWeek.add(DayOfWeek.SATURDAY);
         allDaysOfWeek.add(DayOfWeek.SUNDAY);
 
-        Shift t1 = new Shift(LocalTime.of(14, 0), Duration.ofHours(8), Collections.singletonList(guardiaCardiologia), TimeSlot.AFTERNOON, qssList, allDaysOfWeek, Collections.emptyList());
+        Shift shift1 = new Shift(LocalTime.of(14, 0),
+                Duration.ofHours(8),
+                ambulatorioCardiologia,
+                TimeSlot.AFTERNOON,
+                doctorsNumberBySeniority,
+                allDaysOfWeek,
+                Collections.emptyList());
 
-        t1.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(null,sick, t1, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,vacation, t1,  UserCategoryPolicyValue.EXCLUDE)
-        ));
 
+        shiftDAO.saveAndFlush(shift1);
+/*
 
 
         Shift t2 = new Shift(LocalTime.of(14, 0), Duration.ofHours(6), Collections.singletonList(repartoCardiologia1), TimeSlot.AFTERNOON, qssList, allDaysOfWeek, Collections.emptyList());

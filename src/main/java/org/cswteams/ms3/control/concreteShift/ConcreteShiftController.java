@@ -1,11 +1,10 @@
 package org.cswteams.ms3.control.concreteShift;
 
-import org.cswteams.ms3.control.utils.MappaAssegnazioneTurni;
 import org.cswteams.ms3.dao.ConcreteShiftDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
-import org.cswteams.ms3.dto.concreteshift.ConcreteShiftDTO;
 import org.cswteams.ms3.dto.MedicalServiceDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
+import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,12 +33,12 @@ public class ConcreteShiftController implements IConcreteShiftController {
      * @return
      */
     @Override
-    public Set<ConcreteShiftDTO> getAllConcreteShifts() {
+    public Set<GetAllConcreteShiftDTO> getAllConcreteShifts() {
         List<ConcreteShift> concreteShifts = concreteShiftDAO.findAll();
         Set<ConcreteShift> turniSet = new HashSet<>();
         turniSet.addAll(concreteShifts);
         
-        Set<ConcreteShiftDTO> concreteShiftDTOSet = new HashSet<>();
+        Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
         
         for (ConcreteShift concreteShift : turniSet) {
 
@@ -50,22 +48,20 @@ public class ConcreteShiftController implements IConcreteShiftController {
             Set<UserDTO> hashSet = new HashSet<>();
             hashSet.add(userDTO);
 
-            ConcreteShiftDTO concreteShiftDTO = new ConcreteShiftDTO(
+            GetAllConcreteShiftDTO getAllConcreteShiftDTO = new GetAllConcreteShiftDTO(
                     concreteShift.getId(),
                     concreteShift.getShift().getId(),
                     concreteShift.getDate(),
                     concreteShift.getDate() + concreteShift.getShift().getDuration().toSeconds(),
-                    hashSet,
-                    hashSet,
                     concreteShift.getShift().getMedicalService().getLabel(),
-                    "AMBULATORIO",  // todo sistema
+                    "AMBULATORIO",  // TODO: Chenga medical service List of taks
                     concreteShift.getShift().getTimeSlot().toString(),
                     true
             );
-            concreteShiftDTOSet.add(concreteShiftDTO);
+            getAllConcreteShiftDTOSet.add(getAllConcreteShiftDTO);
         }
 
-        return concreteShiftDTOSet;
+        return getAllConcreteShiftDTOSet;
     }
 
     /**
@@ -74,7 +70,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
      * @throws AssegnazioneTurnoException
      */
     @Override
-    public ConcreteShift creaTurnoAssegnato(@NotNull RegisterConcreteShiftDTO dto) throws AssegnazioneTurnoException {
+    public ConcreteShift createNewConcreteShift(RegisterConcreteShiftDTO dto) throws AssegnazioneTurnoException {
 
         Shift shift = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(dto.getServizio().getNome(), dto.getTimeSlot()).get(0);
         if(shift == null)
@@ -91,9 +87,9 @@ public class ConcreteShiftController implements IConcreteShiftController {
      * @return
      */
     @Override
-    public Set<ConcreteShiftDTO> leggiTurniUtente(@NotNull Long idPersona) {
+    public Set<GetAllConcreteShiftDTO> getSingleDoctorConcreteShifts(Long idPersona) {
         Set<ConcreteShift> turniAllocatiERiserve = concreteShiftDAO.findTurniUtente(idPersona);
-        Set<ConcreteShiftDTO> turniAllocati = new HashSet<>();
+        Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
         for (ConcreteShift concreteShift : turniAllocatiERiserve) {
             if(!utenteInReperibilita(concreteShift, idPersona)){
                 //TODO converti entity in dto ed aggiungila a turniAllocati
@@ -125,12 +121,20 @@ public class ConcreteShiftController implements IConcreteShiftController {
                 boolean onCall = !onCallDoctors.isEmpty();
                 MedicalServiceDTO medicalServiceDTO = new MedicalServiceDTO(concreteShift.getShift().getMedicalService().getLabel(), concreteShift.getShift().getMedicalService().getTasks());
 
-                ConcreteShiftDTO concreteShiftDTO = new ConcreteShiftDTO(concreteShift.getId(),
-                        concreteShift.getShift().getId(), startTime, endTime, onDutyDoctors, onCallDoctors, medicalServiceDTO, concreteShift.getShift().getTimeSlot(), onCall);
-
+                GetAllConcreteShiftDTO getAllConcreteShiftDTO = new GetAllConcreteShiftDTO(
+                        concreteShift.getId(),
+                        concreteShift.getShift().getId(),
+                        concreteShift.getDate(),
+                        concreteShift.getDate() + concreteShift.getShift().getDuration().toSeconds(),
+                        concreteShift.getShift().getMedicalService().getLabel(),
+                        "AMBULATORIO",  // TODO: Chenga medical service List of taks
+                        concreteShift.getShift().getTimeSlot().toString(),
+                        true
+                );
+                getAllConcreteShiftDTOSet.add(getAllConcreteShiftDTO);
             }
         }
-        return turniAllocati;
+        return getAllConcreteShiftDTOSet;
     }
 
     private boolean utenteInReperibilita(ConcreteShift concreteShift, Long idPersona) { // ON CALL
@@ -144,13 +148,13 @@ public class ConcreteShiftController implements IConcreteShiftController {
 
 
     @Override
-    public ConcreteShift leggiTurnoByID(long idAssegnazione) {
+    public ConcreteShift getConcreteShiftById(long idAssegnazione) {
         return concreteShiftDAO.findById(idAssegnazione).get();
     }
 
     @Override
     @Transactional
-    public ConcreteShift substituteAssignedDoctor(@NotNull ConcreteShift concreteShift, @NotNull Doctor requestingDoctor, @NotNull Doctor substituteDoctor) throws AssegnazioneTurnoException {
+    public ConcreteShift substituteAssignedDoctor(ConcreteShift concreteShift, Doctor requestingDoctor, Doctor substituteDoctor) throws AssegnazioneTurnoException {
         if (!concreteShift.isDoctorAssigned(requestingDoctor)) {
             throw new AssegnazioneTurnoException("Doctor " + requestingDoctor + " is not on duty, nor on call for the concrete shift " + concreteShift);
         }

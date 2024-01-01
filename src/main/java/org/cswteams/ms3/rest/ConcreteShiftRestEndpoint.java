@@ -3,7 +3,7 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
-import org.cswteams.ms3.dto.concreteshift.ConcreteShiftDTO;
+import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.entity.Schedule;
@@ -23,19 +23,17 @@ import java.util.Set;
 public class ConcreteShiftRestEndpoint {
 
     @Autowired
-    private IConcreteShiftController controllerAssegnazioneTurni;
+    private IConcreteShiftController concreteShiftController;
 
     @Autowired
     private ISchedulerController controllerScheduler;
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> creaTurnoAssegnato(@RequestBody RegisterConcreteShiftDTO assegnazione) {
+    public ResponseEntity<?> createNewConcreteShift(@RequestBody RegisterConcreteShiftDTO assegnazione) {
 
         Schedule schedule;
 
         if (assegnazione != null) {
-            System.out.println(assegnazione.getMansione());
-
             // Se l'utente chiede l'aggiunta forzata di un assegnazione viene fatto
             // controllo solo sui vincoli non violabili
             try {
@@ -66,9 +64,9 @@ public class ConcreteShiftRestEndpoint {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = " /user_id={userID}")
-    public ResponseEntity<?> leggiTurniUtente(@PathVariable Long userID) throws ParseException {
+    public ResponseEntity<?> getSingleDoctorConcreteShift(@PathVariable Long userID) throws ParseException {
         if (userID != null) {
-            Set <ConcreteShiftDTO> c = controllerAssegnazioneTurni.leggiTurniUtente(userID);
+            Set <GetAllConcreteShiftDTO> c = concreteShiftController.getSingleDoctorConcreteShifts(userID);
             if (c == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -78,9 +76,9 @@ public class ConcreteShiftRestEndpoint {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> leggiTurniAssegnati() throws ParseException {
-        Set<ConcreteShiftDTO> tuttiITurni = controllerAssegnazioneTurni.leggiTurniAssegnati();
-        return new ResponseEntity<>(tuttiITurni, HttpStatus.FOUND);
+    public ResponseEntity<?> getAllConcreteShifts() throws ParseException {
+        Set<GetAllConcreteShiftDTO> allConcreteShifts = concreteShiftController.getAllConcreteShifts();
+        return new ResponseEntity<>(allConcreteShifts, HttpStatus.FOUND);
     }
 
 
@@ -90,7 +88,7 @@ public class ConcreteShiftRestEndpoint {
      * @return
      */
     @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<?> modificaAssegnazioneTurno(@RequestBody ModifyConcreteShiftDTO modifyConcreteShiftDTO)  {
+    public ResponseEntity<?> modifyConcreteShift(@RequestBody ModifyConcreteShiftDTO modifyConcreteShiftDTO)  {
 
         //Chiedo al controller di modificare e salvare nel database l'assegnazione turno modificata
         Schedule schedule;
@@ -120,7 +118,7 @@ public class ConcreteShiftRestEndpoint {
 
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/{idAssegnazione}")
-    public ResponseEntity<?> rimuoviAssegnazione(@PathVariable Long idAssegnazione)  {
+    public ResponseEntity<?> deleteConcreteShift(@PathVariable Long idAssegnazione)  {
         if (idAssegnazione != null) {
             if(controllerScheduler.removeConcreteShift(idAssegnazione)){
                 return new ResponseEntity<>(HttpStatus.ACCEPTED);
