@@ -1,9 +1,8 @@
 package org.cswteams.ms3.control.preferenze;
 
-import org.cswteams.ms3.entity.Holiday;
+import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.exception.CalendarServiceException;
 
-import java.time.LocalDate;
 import java.util.List;
 
 
@@ -47,10 +46,10 @@ import java.util.List;
  *
  */
 public interface ICalendarServiceManager {
-	
+
 	void init(CalendarSetting setting);
-	
-	List<Holiday> getHolidays() throws CalendarServiceException;
+
+	List<HolidayDTO> getHolidays() throws CalendarServiceException;
 
 
 

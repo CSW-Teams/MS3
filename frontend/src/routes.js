@@ -18,7 +18,7 @@ import EmptyLayout from "./layouts/LoginLayout/Empty";
 import ConfigurazioneVincoli from "./views/configuratore/ConfigurazioneVincoli";
 import RegistraUtenteView from "./views/configuratore/RegistraUtenteView";
 import RichiesteRitiroView from "./views/utente/RichiesteRitiroView";
-import TurnChangeView from "./views/utente/TurnChangeView";
+import ShiftChangeView from "./views/utente/ShiftChangeView";
 
 
 export default [
@@ -91,7 +91,7 @@ export default [
   {
     path: "/scambio-turni",
     layout: DefaultLayout,
-    component:  TurnChangeView
+    component:  ShiftChangeView
   },
 
 ];

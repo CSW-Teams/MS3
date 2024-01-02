@@ -1,11 +1,19 @@
 package org.cswteams.ms3.control.scheduler;
 
-import lombok.Data;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
+import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
-import org.cswteams.ms3.entity.vincoli.Vincolo;
-import org.cswteams.ms3.exception.*;
+import org.cswteams.ms3.entity.constraint.Constraint;
+import org.cswteams.ms3.entity.constraint.ContestoVincolo;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
+import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
+import org.cswteams.ms3.exception.IllegalScheduleException;
+import org.cswteams.ms3.exception.NotEnoughFeasibleUsersException;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -13,27 +21,28 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Data
+@Getter
+@Setter
 public class ScheduleBuilder {
-    
-    private Logger logger = Logger.getLogger(ScheduleBuilder.class.getName());
-    
-    /** Lista di vincoli da applicare a ogni coppia AssegnazioneTurno, Utente */
+
+
+    private final Logger logger = Logger.getLogger(ScheduleBuilder.class.getName());
+
+    /** List of constraints to be applied to each couple (ConcreteShift, User) */
     @NotNull
-    private List<Vincolo> allConstraints;
+    private List<Constraint> allConstraints;
 
-    /** Oggetti che rappresentano lo stato relativo alla costruzione della pianificazione
-     * per ogni utente partecipante
-     */
-    private Map<Long, UserScheduleState> allUserScheduleStates;
+    /** Objects representing the state of schedule building for each participant doctor */
+    private Map<Long, DoctorScheduleState> allUserScheduleStates;
 
-    /** Pianificazione in costruzione */
+    /** Shift schedule to be built */
     private Schedule schedule;
 
+    /** Instance of controllerScocciatura */
     private ControllerScocciatura controllerScocciatura;
 
     /**
-     * Method to validate dates parameters passed to the schedule builder
+     * This method validates date parameters passed to the schedule builder.
      * @param startDate Date of the start of the schedule
      * @param endDate Date of the end of the schedule
      * @throws IllegalScheduleException An exception highlighting the incoherent state of the passed parameters
@@ -46,77 +55,78 @@ public class ScheduleBuilder {
     }
 
     /**
-     * This class has the responsibility of checking if the shifts have assigned users which
-     * are listed in the available user list
+     * This method has the responsibility of checking if the shifts have assigned the doctors which
+     * are listed in the available user list.
      * @param allAssignedShifts List of shifts containing the assigned user
-     * @param users List of users which are available for a certain shift
+     * @param doctors List of doctors which are available for a certain shift
      * @throws IllegalScheduleException An exception highlighting the incoherent state of the passed parameters
      */
-    private void validateUsers(List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) throws IllegalScheduleException {
-        for (AssegnazioneTurno shift: allAssignedShifts){
-            for(Utente shiftUser: shift.getUtenti()){
-                if(!users.contains(shiftUser))
-                    throw new IllegalScheduleException("[ERROR] Inchoerent state between users assigned in the shift and users listed in the available ones");
+    private void validateUsers(List<ConcreteShift> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
+        for (ConcreteShift concreteShift: allAssignedShifts){
+            for(DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
+                Doctor shiftDoctor = da.getDoctor();
+                if(!doctors.contains(shiftDoctor))
+                    throw new IllegalScheduleException("[ERROR] Incoherent state between doctors assigned in the concreteShift and doctors listed in the available ones");
             }
         }
     }
 
     /**
-     * This class has the responsibility of checking if the constraints aren't a null object
+     * This method has the responsibility of checking if the constraints aren't a null object.
      * @param allConstraints Constraints passed as parameters of the schedule builder
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    private void validateConstraints(List<Vincolo> allConstraints) throws IllegalScheduleException {
+    private void validateConstraints(List<Constraint> allConstraints) throws IllegalScheduleException {
         if(allConstraints == null)
             throw new IllegalScheduleException("[ERROR] Cannot have null constraints");
 
-        for(Vincolo constraint: allConstraints)
+        for(Constraint constraint: allConstraints)
             if (constraint == null)
                 throw new IllegalScheduleException("[ERROR] Cannot have null constraints");
     }
 
     /**
-     * Class that has the responsibility to create a new instance of schedule and save it in persistence
+     * This method has the responsibility to create a new instance of schedule and save it in persistence.
      * @param startDate Date of the start of the new schedule
      * @param endDate Date of the end of the new schedule
      * @param allConstraints Set of constraints to not be violated
      * @param allAssignedShifts Set of all shifts that are already assigned to a set of people
-     * @param users Set of users that is possible to add in the schedule
+     * @param doctors Set of doctors that can be added in the schedule
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(LocalDate startDate,LocalDate endDate, List<Vincolo> allConstraints, List<AssegnazioneTurno> allAssignedShifts, List<Utente> users) throws IllegalScheduleException {
+    public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
         // Checks on the parameters state
         validateDates(startDate,endDate);
-        validateUsers(allAssignedShifts,users);
+        validateUsers(allAssignedShifts, doctors);
         validateConstraints(allConstraints);
 
         // Actual initialization
-        this.schedule = new Schedule(startDate, endDate);
-        this.schedule.setAssegnazioniTurno(allAssignedShifts);
+        this.schedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), Collections.emptyList());
+        this.schedule.setConcreteShifts(allAssignedShifts);
         this.allConstraints = allConstraints;
         this.allUserScheduleStates = new HashMap<>();
-        initializeUserScheduleStates(users);
+        initializeUserScheduleStates(doctors);
     }
 
     /**
-     * This class has the responsibility of checking if the schedule isn't a null object
+     * This method has the responsibility of checking if the schedule isn't a null object
      * @param schedule Schedule from which we want to generate a new one
      */
     private void validateSchedule(Schedule schedule) throws IllegalScheduleException {
         if(schedule == null)
             throw new IllegalScheduleException("[ERROR] Cannot create new schedule from a null one");
-        else if (schedule.isIllegal())
+        else if (schedule.getCauseIllegal() == null)
             throw new IllegalScheduleException("[ERROR] Cannot create new schedule from an illegal one");
     }
 
     /**
-     * This class has the responsibility of creating a new valid schedule from an existing one
+     * This method has the responsibility of creating a new valid schedule from an existing one
      * @param allConstraints Set of constraints to not be violated
-     * @param users Set of users that is possible to add in the schedule
+     * @param doctors Set of doctors that can be added in the schedule
      * @param schedule An existing schedule from which to start a new one
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(List<Vincolo> allConstraints, List<Utente> users,Schedule schedule) throws IllegalScheduleException {
+    public ScheduleBuilder(List<Constraint> allConstraints, List<Doctor> doctors, Schedule schedule) throws IllegalScheduleException {
         // Checks on the parameters state
         validateConstraints(allConstraints);
         validateSchedule(schedule);
@@ -124,168 +134,186 @@ public class ScheduleBuilder {
         this.allConstraints = allConstraints;
         this.schedule=schedule;
         this.allUserScheduleStates = new HashMap<>();
-        initializeUserScheduleStates(users);
+        initializeUserScheduleStates(doctors);
     }
 
 
 
     /**
-     * Inner calls that has the responsibility of initializing the state of the schedule for all user
-     * @param users Set of users that is possible to add in the schedule
+     * Private method that has the responsibility of initializing the state of the schedule for all the users.
+     * @param doctors Set of doctors that can be added in the schedule
      */
-    private void initializeUserScheduleStates(List<Utente> users){
-        
-        for (Utente u : users){
-            UserScheduleState usstate = new UserScheduleState(u, schedule);
+    private void initializeUserScheduleStates(List<Doctor> doctors){
+
+        for (Doctor u : doctors){
+            DoctorScheduleState usstate = new DoctorScheduleState(u, schedule);
             allUserScheduleStates.put(u.getId(), usstate);
-        }        
+        }
     }
 
-    /** invoca la creazione automatica della pianificazione 
-     * @throws UnableToBuildScheduleException
-     * */
-    public Schedule build(){
+    /**
+     * This method invokes automatic creation of the new shift schedule.
+     */
+    public Schedule build() {
 
-        // we need to clear violations and illegal state, if any
-        schedule.purify();
+        // We need to clear violations and illegal state, if any
+        schedule.getViolatedConstraints().clear();
+        schedule.setCauseIllegal(null);
 
-        for( AssegnazioneTurno at : this.schedule.getAssegnazioniTurno()){
-            
+        for( ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
+
+            // First step: define doctors on duty in the concrete shift.
             try {
-                
-                // Prima pensiamo a riempire le allocazioni, che sono le più importante
-                
-                for (RuoloNumero rn : at.getTurno().getRuoliNumero()){
-                    this.aggiungiUtenti(at, rn.getNumero(), at.getUtentiDiGuardia());
+                List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
+
+                for (Map.Entry<Seniority, Integer>  qss : concreteShift.getShift().getQuantityShiftSeniority().entrySet()){
+                    this.addDoctors(concreteShift, qss, doctorsOnDuty);
                 }
+
             } catch (NotEnoughFeasibleUsersException e) {
-                
-                // non ci sono abbastanza allocati o riserve per questa assegnazione turno, loggiamo l'evento
-                // e rendiamo la pianificazione illegale, infine ritorniamo al chiamante
+
+                // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
                 logger.log(Level.SEVERE, e.getMessage(), e);
-                schedule.taint(e);
+                schedule.setCauseIllegal(e);
 
                 logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
-                for (ViolatedConstraintLogEntry vclEntry : schedule.getViolatedConstraintLog()){
-                    logger.log(Level.SEVERE, vclEntry.toString());
+                for (Constraint constraint : schedule.getViolatedConstraints()){
+                    logger.log(Level.SEVERE, constraint.toString());
                 }
 
             }
-                
-            // Passo poi a riempire le riserve
+
+            // Second step: define doctors on call in the concrete shift.
             try {
-                for (RuoloNumero rn : at.getTurno().getRuoliNumero()){
-                    this.aggiungiUtenti(at, rn.getNumero(), at.getUtentiReperibili());
+                List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
+
+                for (Map.Entry<Seniority, Integer>  qss : concreteShift.getShift().getQuantityShiftSeniority().entrySet()){
+                    this.addDoctors(concreteShift, qss, doctorsOnCall);
                 }
+
             } catch (NotEnoughFeasibleUsersException e){
-                // loggiamo l'evento, tuttavia non interrompiamo la pianificazione
+                // Here we define the violation of constraints but do not stop the schedule generation.
                 logger.log(Level.SEVERE, e.getMessage(), e);
             }
         }
 
         return this.schedule;
+
     }
 
-    /** aggiunge gli utenti per una lista di utenti assegnati per una assegnazione di turno 
-     * @throws NotEnoughFeasibleUsersException
-     * */
-    private void aggiungiUtenti(AssegnazioneTurno assegnazione, int numUtenti,  Set<Utente> utentiDaPopolare) throws NotEnoughFeasibleUsersException{
-        
+    /**
+     * This method adds some doctors to a list of assigned doctors for a concrete shift.
+     * @param concreteShift Concrete shift in which the new doctors have to be assigned
+     * @param qss Number of doctors that have to be added to the concrete shift
+     * @throws NotEnoughFeasibleUsersException Exception thrown if the number of doctors having the possibility to be
+     * added to the concrete shift is less than numDoctors
+     */
+    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> newDoctors) throws NotEnoughFeasibleUsersException{
+
         int selectedUsers = 0;
 
 
-        List<UserScheduleState> allUserScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
+        List<DoctorScheduleState> allDoctorScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
 
-        //Se il controller della scocciatura è settato ordino gli utenti in base al valore di uffa
+        //If controllerScocciatura is initialized, we will order the doctors by uffa values.
         if(controllerScocciatura != null){
-            controllerScocciatura.addUffaTempUtenti(allUserScheduleState,assegnazione);
-            controllerScocciatura.ordinaByUffa(allUserScheduleState);
+            controllerScocciatura.addUffaTempUtenti(allDoctorScheduleState,concreteShift);
+            controllerScocciatura.ordinaByUffa(allDoctorScheduleState);
         }
 
-        for (UserScheduleState userScheduleState : allUserScheduleState){
-            if (selectedUsers == numUtenti){
+        for (DoctorScheduleState doctorScheduleState : allDoctorScheduleState){
+            if (selectedUsers == qss.getValue()){
                 break;
             }
 
-            ContestoVincolo contesto = new ContestoVincolo(userScheduleState,assegnazione);
-            // Se l'utente rispetta tutti i vincoli possiamo includerlo nella lista desiderata
+            ContestoVincolo context = new ContestoVincolo(doctorScheduleState,concreteShift);
+            // If the doctor respects all the constraints, we can add him to the concrete shift.
             // TODO: parametrizzare la costruzione della schedulazione su forzare vincoli stringenti o meno
-            if (verificaTuttiVincoli(contesto, false)){
-                utentiDaPopolare.add(userScheduleState.getUtente());
-                userScheduleState.addAssegnazioneTurno(contesto.getAssegnazioneTurno());
+            if (verifyAllConstraints(context, false)){
+                newDoctors.add(doctorScheduleState.getDoctor());
+                doctorScheduleState.addAssegnazioneTurno(context.getConcreteShift());
 
                 /*
-                 * Se il turno a cui ho associato l'utente ha la reperibilità attiva, oppure ho aggiunto l'utente in servizio
-                 * allora devo aggiornare il suo uffa cumulato.
+                 * If I actually registered the doctor to the concrete shift, his uffa value has to be actually updated.
                  */
-                if(contesto.getAssegnazioneTurno().getTurno().isReperibilitaAttiva() || contesto.getAssegnazioneTurno().getUtentiDiGuardia().size() < contesto.getAssegnazioneTurno().getTurno().getNumRequiredUsers())
-                    userScheduleState.saveUffaTemp();
+                List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
+                if(contextDoctorsOnDuty.size() < qss.getValue())
+                    doctorScheduleState.saveUffaTemp();
 
-                selectedUsers++;    
+                selectedUsers++;
             }
         }
-        
-        // potrei aver finito senza aver trovato abbastanza utenti
-        if (selectedUsers != numUtenti){
-            throw new NotEnoughFeasibleUsersException(numUtenti, selectedUsers);
+
+        // Case in which the algorithm ends without having found enough doctors to place into the concrete shift
+        if (selectedUsers != qss.getValue()){
+            throw new NotEnoughFeasibleUsersException(qss.getValue(), selectedUsers);
         }
-        
+
     }
 
-    /** Applica tutti i vincoli al contesto specificato.
-     * Se un vincolo viene violato, viene aggiunto al log delle violazioni della pianificazione.
-     * Se il vincolo violato è stringente, lo stato della pianificazione è impostato a illegale
-     * e la causa è impostata con la suddetta violazione.
-     * @param contesto
-     * @param isForced se dobbiamo forzare i vincoli non stringenti
-     * @return True se non sono accadute violazioni oppure le uniche violazione accadute riguardano
-     * vincoli non stringenti e si vuole forzarli, false altrimenti
+    /**
+     * This method applies all the constraints to the specified context. If a constraint is violated, then it is added
+     * to the log. Moreover, if the violated constraint is hard, then the shift schedule is marked as illegal and the
+     * cause of the violation is initialized.
+     * @param context Context in which all the constraints are applied and verified
+     * @param isForced Boolean that represents if it is possible to violate the soft constraints
+     * @return True if there are no violations or the only verified violations are soft with isForced==true; false otherwise
      */
-    private boolean verificaTuttiVincoli(ContestoVincolo contesto, boolean isForced){
+    private boolean verifyAllConstraints(ContestoVincolo context, boolean isForced){
 
-        /** Questa flag ci comunica se è stata riscontrata una violazione dei vincoli */
+        //This flag indicates if there has been a violation in the constraints.
         boolean isOk = true;
-        
-        for(Vincolo vincolo : this.allConstraints){
+
+        for(Constraint constraint : this.allConstraints){
             try {
-                vincolo.verificaVincolo(contesto);
+                constraint.verificaVincolo(context);
             } catch (ViolatedConstraintException e) {
 
-                schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
-                
-                // se il vincolo violato è stringente, la schedulazione è illegale.
-                // Inoltre, segnaliamo che almeno un vincolo è stato violato
-                if (!vincolo.isViolabile() || (vincolo.isViolabile() && !isForced)){
+                //schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
+
+                // If the violated constraint is hard, then the shift schedule is illegal.
+                if (!constraint.isViolable() || (constraint.isViolable() && !isForced)){
                     isOk = false;
                 }
 
             }
         }
         return isOk;
+
     }
 
-    /** Aggiunge un'assegnazione turno manualmente alla pianificazione.
-     * L'assegnazione deve già essere compilata con la data e gli utenti.
+    /**
+     * This method add a concrete shift to the schedule manually. The concrete shift shall be already defined with
+     * date and doctors.
+     * @param concreteShift The concrete shift to be added to the schedule
+     * @param isForced Boolean that represents if it is possible to violate the soft constraints with the new concrete shift
+     * @return An instance of the updated shift schedule
      */
-    public Schedule addAssegnazioneTurno(AssegnazioneTurno at, boolean forced){
-        
-        schedule.purify();
-        for (Utente u : at.getUtenti()){
+    public Schedule addConcreteShift(ConcreteShift concreteShift, boolean isForced){
 
-            if (!verificaTuttiVincoli(new ContestoVincolo(this.allUserScheduleStates.get(u.getId()), at), forced)){
-                schedule.taint(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
+        schedule.getViolatedConstraints().clear();
+        schedule.setCauseIllegal(null);
+
+        for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
+            Doctor doctor = da.getDoctor();
+            if (!verifyAllConstraints(new ContestoVincolo(this.allUserScheduleStates.get(doctor.getId()), concreteShift), isForced)){
+                schedule.setCauseIllegal(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
             }
         }
-        if(!schedule.isIllegal()){
-            for (Utente u : at.getUtenti()){
-                this.allUserScheduleStates.get(u.getId()).addAssegnazioneTurno(at);
 
-                if(at.getTurno().isReperibilitaAttiva() || at.getUtentiDiGuardia().contains(u))
-                    this.allUserScheduleStates.get(u.getId()).saveUffaTemp();
+        if(schedule.getCauseIllegal() == null){
+            for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
+                Doctor doctor = da.getDoctor();
+                this.allUserScheduleStates.get(doctor.getId()).addAssegnazioneTurno(concreteShift);
+
+                List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
+                if(doctorsOnDuty.contains(doctor))
+                    this.allUserScheduleStates.get(doctor.getId()).saveUffaTemp();
             }
-            this.schedule.getAssegnazioniTurno().add(at);
+            this.schedule.getConcreteShifts().add(concreteShift);
         }
 
         return this.schedule;
+
     }
 }

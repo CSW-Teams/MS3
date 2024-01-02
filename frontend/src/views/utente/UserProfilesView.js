@@ -1,5 +1,5 @@
 import React from "react";
-import {UtenteAPI} from "../../API/UtenteAPI";
+import {UserAPI} from "../../API/UserAPI";
 import {
   MDBCard,
   MDBCardBody,
@@ -22,9 +22,9 @@ export default class UserProfilesView extends React.Component{
     super(props);
     this.state = {
       utenti: [],
-      orderBy: "nome",
+      orderBy: "name",
       comparator: defaultComparator,
-      attore : localStorage.getItem("attore"),
+      attore : localStorage.getItem("actor"),
     }
     this.setOrderBy = this.setOrderBy.bind(this);
   }
@@ -53,7 +53,7 @@ export default class UserProfilesView extends React.Component{
 
 
   async componentDidMount() {
-    let utenti = await(new UtenteAPI().getAllUsersInfo());
+    let utenti = await(new UserAPI().getAllUsersInfo());
 
     this.setState({
       utenti : utenti,
@@ -93,12 +93,12 @@ export default class UserProfilesView extends React.Component{
                     hover >
             <MDBTableHead color='tempting-azure-gradient' textWhite>
               <tr>
-                <th scope='col' onClick={() => this.setOrderBy("nome")} > Nome </th>
-                <th scope='col' onClick={() => this.setOrderBy("cognome")} >Cognome</th>
-                <th scope='col' onClick={() => this.setOrderBy("dataNascita")} >Data Nascita</th>
-                <th scope='col' onClick={() => this.setOrderBy("ruoloEnum")} >Ruolo</th>
-                {this.state.attore==="UTENTE" && <th scope='col'>Info</th>}
-                {this.state.attore!=="UTENTE" && <th scope='col'>Modifica</th>}
+                <th scope='col' onClick={() => this.setOrderBy("name")} > Nome </th>
+                <th scope='col' onClick={() => this.setOrderBy("lastname")} >Cognome</th>
+                <th scope='col' onClick={() => this.setOrderBy("birthday")} >Data Nascita</th>
+                <th scope='col' onClick={() => this.setOrderBy("systemActors")} >Attore</th>
+                {this.state.attore!=="PLANNER" && <th scope='col'>Info</th>}
+                {this.state.attore==="PLANNER" && <th scope='col'>Modifica</th>}
 
               </tr>
             </MDBTableHead>
@@ -106,10 +106,10 @@ export default class UserProfilesView extends React.Component{
               {this.state.utenti.map((data, key) => {
                 return (
                   <tr key={key}>
-                    <td>{data.nome}</td>
-                    <td>{data.cognome}</td>
-                    <td>{data.dataNascita}</td>
-                    <td>{data.ruoloEnum}</td>
+                    <td>{data.name}</td>
+                    <td>{data.lastname}</td>
+                    <td>{data.birthday}</td>
+                    <td>{data.systemActors}</td>
                     {this.state.attore==="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
                     {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
                   </tr>

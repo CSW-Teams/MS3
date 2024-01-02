@@ -9,7 +9,7 @@ import classNames from "clsx";
 import PropTypes from "prop-types";
 import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
-import { UtenteAPI } from "../../API/UtenteAPI";
+import { UserAPI } from "../../API/UserAPI";
 import Button from "@mui/material/Button";
 
 import ScheduleView, { handleRetirement } from '../../views/utente/ScheduleView';

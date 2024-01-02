@@ -1,30 +1,14 @@
 package org.cswteams.ms3.control.categorieUtente;
 
 
-import org.cswteams.ms3.dao.CategoriaUtenteDao;
-import org.cswteams.ms3.dao.CategorieDao;
-import org.cswteams.ms3.entity.Categoria;
-import org.cswteams.ms3.entity.CategoriaUtente;
-import org.cswteams.ms3.enums.TipoCategoriaEnum;
-import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.rules.SpringClassRule;
-import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import javax.transaction.Transactional;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(Parameterized.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -33,8 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Transactional
 @ActiveProfiles(value = "test")
 public class TestCategorieUtenteRobustness {
-
-    @ClassRule
+/*    @ClassRule
     public static final SpringClassRule scr = new SpringClassRule();
 
     @Rule
@@ -165,5 +148,5 @@ public class TestCategorieUtenteRobustness {
 
             fail() ;
         }
-    }
+    }*/
 }

@@ -18,7 +18,7 @@ export class GiustificaForzaturaAPI {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(giustificazione)
     };
-    const url = "/api/giustifica/caricaGiustificazione";
+    const url = "/api/justify/uploadJustification";
     const response = await fetch(url, requestOptions);
     return response.status;
   }

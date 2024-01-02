@@ -1,16 +1,14 @@
 package org.cswteams.ms3.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.enums.TimeSlot;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Set;
 
 @Data
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 public class GiustificazioneForzaturaVincoli {
 
@@ -20,36 +18,36 @@ public class GiustificazioneForzaturaVincoli {
     private Long id;
 
   /*  @OneToMany(cascade = CascadeType.ALL)
-    private Set<Liberatoria> liberatorie;*/
+    private Set<Waiver> liberatorie;*/
 
-    private TipologiaTurno turnoViolante;
+    private TimeSlot turnoViolante;
 
     private LocalDate data;
 
     @ManyToMany
-    private Set<Utente> utentiAllocati;
+    private Set<Doctor> utentiAllocati;
 
     @ManyToOne
-    private Servizio servizio;
+    private MedicalService servizio;
 
     /*@ManyToMany
-    private List<Vincolo> vincoliViolati;*/
+    private List<Constraint> vincoliViolati;*/
     private String motivazione;
 
     @ManyToOne
-    private Utente utenteGiustificatore;
+    private Doctor doctorGiustificatore;
 
     public GiustificazioneForzaturaVincoli() {
 
     }
 
 
-    public GiustificazioneForzaturaVincoli(String message, TipologiaTurno turnoViolante, Servizio servizio, LocalDate data, Set<Utente> utentiAllocati, Utente utenteGiustificatore) {
+    public GiustificazioneForzaturaVincoli(String message, TimeSlot turnoViolante, MedicalService servizio, LocalDate data, Set<Doctor> utentiAllocati, Doctor doctorGiustificatore) {
         this.turnoViolante = turnoViolante;
         this.data = data;
         this.utentiAllocati = utentiAllocati;
         this.servizio = servizio;
         this.motivazione = message;
-        this.utenteGiustificatore = utenteGiustificatore;
+        this.doctorGiustificatore = doctorGiustificatore;
     }
 }

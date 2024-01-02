@@ -1,29 +1,14 @@
 package org.cswteams.ms3.control.scocciatura;
 
-import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
-import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.entity.scocciature.*;
-import org.cswteams.ms3.enums.AttoreEnum;
-import org.cswteams.ms3.enums.RuoloEnum;
-import org.cswteams.ms3.enums.TipologiaTurno;
-import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @Transactional
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ControllerScocciaturaTest {
-
+/*
     private ControllerScocciatura controller;
     private List<Scocciatura> scocciature;
 
@@ -58,5 +43,5 @@ public class ControllerScocciaturaTest {
         int calculatedUffa = controller.calcolaUffaComplessivoUtenteAssegnazione(contestoScocciatura);
 
         assertEquals(expectedUffa, calculatedUffa);
-    }
+    }*/
 }

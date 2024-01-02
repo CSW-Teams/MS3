@@ -17,7 +17,7 @@ import {
 
 import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
-import { UtenteAPI } from '../../API/UtenteAPI';
+import { UserAPI } from '../../API/UserAPI';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { Button, Stack } from '@mui/material';
@@ -93,7 +93,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
     let assegnazioneTurnoApi = new AssegnazioneTurnoAPI();
 
     async function getUser() {
-      let userApi = new UtenteAPI();
+      let userApi = new UserAPI();
       let utenti = await userApi.getAllUsersInfo()
       setUser(utenti);
     }
@@ -109,7 +109,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      */
     async function buildAssegnazioneModificata(contesto){
 
-      let response = await assegnazioneTurnoApi.requestTurnChange(utentiSelezionati,appointmentData,localStorage.getItem("id"))
+      let response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati,appointmentData,localStorage.getItem("id"))
       let responseStatusClass = Math.floor(response.status / 100)
 
         if(responseStatusClass===5){

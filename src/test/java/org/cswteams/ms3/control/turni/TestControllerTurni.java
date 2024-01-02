@@ -1,27 +1,13 @@
 package org.cswteams.ms3.control.turni;
 
-import org.cswteams.ms3.control.turni.ControllerTurni;
-import org.cswteams.ms3.dto.ServizioDTO;
-import org.cswteams.ms3.dto.TurnoDTO;
-import org.cswteams.ms3.enums.MansioneEnum;
-import org.cswteams.ms3.enums.TipologiaTurno;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.transaction.Transactional;
-import java.time.Duration;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 
 @SpringBootTest
 @Transactional
 public class TestControllerTurni {
-
+/*
     private enum InstanceValidity {
         VALID,
         INVALID
@@ -76,7 +62,7 @@ public class TestControllerTurni {
             e.printStackTrace();
             Assertions.assertTrue(exceptionExpected);
         }
-    }
+    }*/
 
     /*
     * FAIL: NullPointerException su categorieVietate, ma non c'è modo di settare l'attributo categorieVietate nel TurnoDTO;

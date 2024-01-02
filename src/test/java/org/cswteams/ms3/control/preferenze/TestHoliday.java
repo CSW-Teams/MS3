@@ -1,6 +1,6 @@
 package org.cswteams.ms3.control.preferenze;
 
-import org.cswteams.ms3.dao.HolidayDao;
+import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.junit.ClassRule;
@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
@@ -38,7 +37,7 @@ public class TestHoliday {
     public final SpringMethodRule smr = new SpringMethodRule();
 
     @Autowired
-    private HolidayDao dao ;
+    private HolidayDAO dao ;
 
     private final Holiday holiday;
     private final boolean result ;
