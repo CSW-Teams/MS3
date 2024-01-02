@@ -29,6 +29,8 @@ public class ScheduleRestEndpoint {
 
             //Only the requests with admissible dates will be considered.
             if(gs.getStartDate().isBefore(gs.getEndDate())){
+                System.out.println(gs.getStartDate());
+                System.out.println(gs.getEndDate());
 
                 //The request is passed to the controller.
                 Schedule schedule = schedulerController.createSchedule(gs.getStartDate(),gs.getEndDate());

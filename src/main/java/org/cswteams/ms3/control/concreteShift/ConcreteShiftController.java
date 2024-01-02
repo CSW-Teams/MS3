@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,11 +49,14 @@ public class ConcreteShiftController implements IConcreteShiftController {
             Set<UserDTO> hashSet = new HashSet<>();
             hashSet.add(userDTO);
 
+            long startDateTime = concreteShift.getShift().getStartTime().toEpochSecond(LocalDate.ofEpochDay(concreteShift.getDate()), ZoneOffset.UTC);
+            long endDateTime = startDateTime + concreteShift.getShift().getDuration().toSeconds();
+
             GetAllConcreteShiftDTO getAllConcreteShiftDTO = new GetAllConcreteShiftDTO(
                     concreteShift.getId(),
                     concreteShift.getShift().getId(),
-                    concreteShift.getDate(),
-                    concreteShift.getDate() + concreteShift.getShift().getDuration().toSeconds(),
+                    startDateTime,
+                    endDateTime,
                     concreteShift.getShift().getMedicalService().getLabel(),
                     "AMBULATORIO",  // TODO: Chenga medical service List of taks
                     concreteShift.getShift().getTimeSlot().toString(),

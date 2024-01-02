@@ -1,6 +1,7 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
 import {User} from "./User";
+import {forEach} from "react-bootstrap/ElementChildren";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -11,7 +12,9 @@ export  class AssegnazioneTurnoAPI {
     let turni = [];
 
     for (let i = 0; i < body.length; i++) {
-
+        console.log(`Element ${i}: ${body[i].id}`);
+        console.log(`Element ${i}: ${body[i].startDateTime}`);
+        console.log(`Element ${i}: ${body[i].endDateTime}`);
         const inizioEpochMilliseconds = body[i].startDateTime*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 
@@ -215,7 +218,9 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
         const response = await fetch('/api/concrete-shifts/');
         const body = await response.json();
 
-        return this.parseAllocatedShifts(body);
+        const risultati = this.parseAllocatedShifts(body);
+
+        return risultati;
     }
 
     async postGenerationSchedule(dataStart,dataEnd) {

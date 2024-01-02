@@ -3,6 +3,7 @@ package org.cswteams.ms3.control.scheduler;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
@@ -414,8 +415,8 @@ public class SchedulerController implements ISchedulerController {
      * @return ScheduleDTO instance
      */
     private static ScheduleDTO scheduleToDTO(Schedule schedule) {
-        return new ScheduleDTO(ConvertitoreData.daStandardVersoTestuale(Instant.ofEpochMilli(schedule.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate().toString()), ConvertitoreData.daStandardVersoTestuale(Instant.ofEpochMilli(schedule.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate().toString()), schedule.getCauseIllegal()==null, schedule.getId());
-
+        boolean isIllegal = schedule.getCauseIllegal()!=null;
+        return new ScheduleDTO(schedule.getStartDate(), schedule.getEndDate(), isIllegal, schedule.getId());
     }
 
     /**

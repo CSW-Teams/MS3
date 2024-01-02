@@ -129,72 +129,82 @@ export class SchedulerGeneratorView extends React.Component{
     }
 
 
-    render(){
-        return (
-
-
-          <section>
-          <TemporaryDrawerSchedulo onPostGeneration= {this.componentDidMount}></TemporaryDrawerSchedulo>
-
-          <MDBContainer className="py-5">
-            <MDBCard alignment='center'>
-              <MDBCardBody style={{height: '64vh'}}>
-                <MDBCardTitle>Gestione schedulazioni</MDBCardTitle>
-                <MDBRow>
-                <MDBCol>
-                </MDBCol>
-            </MDBRow>
-                <MDBRow>
-                  <MDBTable align="middle"
-                            bordered
-                            small
-                            hover
-                            >
-                    <MDBTableHead color='tempting-azure-gradient' textWhite>
+  render() {
+    return (
+      <section>
+        <TemporaryDrawerSchedulo onPostGeneration={this.componentDidMount}></TemporaryDrawerSchedulo>
+        <MDBContainer className="py-5">
+          <MDBCard alignment='center'>
+            <MDBCardBody style={{ height: '64vh' }}>
+              <MDBCardTitle>Gestione schedulazioni</MDBCardTitle>
+              <MDBRow>
+                <MDBCol></MDBCol>
+              </MDBRow>
+              <MDBRow>
+                <MDBTable align="middle" bordered small hover>
+                  <MDBTableHead color='tempting-azure-gradient' textWhite>
                     <tr>
-                        <th scope='col' >Data inizio</th>
-                        <th scope='col' >Data fine</th>
-                        <th scope='col' >Stato </th>
-                        <th scope='col' > </th>
-                        <th scope='col' > </th>
-                      </tr>
-                    </MDBTableHead>
-                    <MDBTableBody>
+                      <th scope='col'>Data inizio</th>
+                      <th scope='col'>Data fine</th>
+                      <th scope='col'>Stato </th>
+                      <th scope='col'> </th>
+                      <th scope='col'> </th>
+                    </tr>
+                  </MDBTableHead>
+                  <MDBTableBody>
                     {this.state.schedulazioni.map((schedulo, key) => {
-                    return (
-                      <tr key={key}>
-                        <td className="align-middle">{schedulo.dataInizio}</td>
-                        <td className="align-middle">{schedulo.dataFine}</td>
-                        <td className="align-middle">{schedulo.illegalita?"Incompleta":"Completa"}</td>
-                        <td className="align-middle" ><IconButton aria-label="delete" onClick={() => this.handleDelete(schedulo.id)}><DeleteIcon /></IconButton></td>
-                        <td className="align-middle"><Button onClick={() => this.handleRegeneration(schedulo.id)}>Rigenera</Button></td>
-                      </tr>
-                    )
-                  })}
-                    </MDBTableBody>
-                  </MDBTable>
-                </MDBRow>
+                      const millisecondsInDay = 86400000; // 24 * 60 * 60 * 1000
+                      const initialDayMillis = schedulo.initialDate * millisecondsInDay;
+                      const finalDayMillis = schedulo.finalDate * millisecondsInDay;
+
+                      const options = {
+                        timeZone: 'Europe/Berlin',
+                        weekday: 'long',
+                        day: "numeric",
+                        month: 'long',
+                        year: 'numeric',
+                      };
+
+                      const startDate = new Date(initialDayMillis);
+                      const endDate = new Date(finalDayMillis);
+
+                      return (
+                        <tr key={key}>
+                          <td className="align-middle">{startDate.toLocaleString('it-IT', options)}</td>
+                          <td className="align-middle">{endDate.toLocaleString('it-IT', options)}</td>
+                          <td className="align-middle">{schedulo.isIllegal ? "Incompleta" : "Completa"}</td>
+                          <td className="align-middle">
+                            <IconButton aria-label="delete" onClick={() => this.handleDelete(schedulo.id)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </td>
+                          <td className="align-middle">
+                            <Button onClick={() => this.handleRegeneration(schedulo.id)}>Rigenera</Button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </MDBTableBody>
+                </MDBTable>
+              </MDBRow>
             </MDBCardBody>
-            </MDBCard>
-          </MDBContainer>
-            <ToastContainer
-              position="top-center"
-              autoClose={5000}
-              hideProgressBar={true}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
+          </MDBCard>
+        </MDBContainer>
+        <ToastContainer
+          position="top-center"
+          autoClose={5000}
+          hideProgressBar={true}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+      </section>
+    )
+  }
 
-          </section>
-
-
-
-        )
-    }
 
 }
