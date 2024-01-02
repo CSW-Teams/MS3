@@ -2,6 +2,7 @@ package org.cswteams.ms3.control.utils;
 
 import java.util.HashMap;
 
+@Deprecated
 /**
  * Questa classe prevede metodi per convertire date in un formato più semplice da leggere per un utente
  */

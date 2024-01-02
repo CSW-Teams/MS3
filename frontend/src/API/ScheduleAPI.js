@@ -3,8 +3,7 @@ export  class ScheduleAPI {
 
   async getSchedulazini() {
     const response = await fetch('/api/schedule/');
-    const body = await response.json();
-    return body;
+    return await response.json();
   }
 
   async getSchedulesOnlyWithStartAndEndDate() {
