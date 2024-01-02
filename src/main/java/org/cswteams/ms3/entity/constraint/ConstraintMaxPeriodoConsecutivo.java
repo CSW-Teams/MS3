@@ -1,10 +1,10 @@
 package org.cswteams.ms3.entity.constraint;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.condition.Condition;
-import org.cswteams.ms3.entity.condition.TemporaryCondition;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
@@ -15,23 +15,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementa il vincolo del numero massimo di ore consecutive che un utente può fare
+ * This class implements the maximum number of consecutive minutes that a doctor can work.
  */
 @Entity
-@Data
+@Getter
+@Setter
 @EqualsAndHashCode(callSuper = true)
 public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurnoTurno {
     @NotNull
     private long maxConsecutiveMinutes;
     @ManyToOne
     @NotNull
-    private TemporaryCondition categoriaVincolata;
+    private Condition categoriaVincolata;
 
 
     public ConstraintMaxPeriodoConsecutivo() {
     }
 
-    public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes, TemporaryCondition categoriaVincolate){
+    public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes, Condition categoriaVincolate){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;
         this.categoriaVincolata = categoriaVincolate;
     }
@@ -41,70 +42,79 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
         this.categoriaVincolata = null;
     }
 
-
+    /**
+     * This method checks if maxPeriodoConsescutivo constraint is respected while inserting a new concrete shift into a schedule.
+     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
+     * @throws ViolatedConstraintException Exception thrown if the constraint is violated
+     */
     @Override
-    public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
-        if(contesto.getDoctorScheduleState().getAssegnazioniTurnoCache().size() != 0 && verificaAppartenenzaCategoria(contesto)) {
-            List<ConcreteShift> turniAssegnati = contesto.getDoctorScheduleState().getAssegnazioniTurnoCache();
-            List<ConcreteShift> turniConsecutivi = new ArrayList<>();
+    public void verificaVincolo(ContestoVincolo context) throws ViolatedConstraintException {
+        if(context.getDoctorScheduleState().getAssegnazioniTurnoCache().size() != 0 && verificaAppartenenzaCategoria(context)) {
+            List<ConcreteShift> assignedConcreteShifts = context.getDoctorScheduleState().getAssegnazioniTurnoCache();
+            List<ConcreteShift> consecConcreteShifts = new ArrayList<>();
 
             //Prendo l'indice del turno precedente all'assegnazione che sto per fare
-            int prevAssegnazioneIdx = getAssegnazioneTurnoPrecedenteIdx(turniAssegnati,contesto.getConcreteShift());
+            int prevAssegnazioneIdx = getAssegnazioneTurnoPrecedenteIdx(assignedConcreteShifts,context.getConcreteShift());
 
             //Verifico se il turno assegnato precedente è consecutivo con quello che sto per assegnare
-            if (prevAssegnazioneIdx > -1 && verificaContiguitàAssegnazioneTurni(turniAssegnati.get(prevAssegnazioneIdx), contesto.getConcreteShift())) {
-                turniConsecutivi.add(turniAssegnati.get(prevAssegnazioneIdx));
-                turniConsecutivi.add(contesto.getConcreteShift());
+            if (prevAssegnazioneIdx > -1 && verificaContiguitàAssegnazioneTurni(assignedConcreteShifts.get(prevAssegnazioneIdx), context.getConcreteShift())) {
+                consecConcreteShifts.add(assignedConcreteShifts.get(prevAssegnazioneIdx));
+                consecConcreteShifts.add(context.getConcreteShift());
 
                 // Controllo se nei turni già assegnati c'è una catena di turni contigui
                 for (int i = prevAssegnazioneIdx; i > 0; i--) {
                     // Controlla che siano consecutivi
-                    if (verificaContiguitàAssegnazioneTurni(turniAssegnati.get(i - 1), turniAssegnati.get(i))) {
-                        turniConsecutivi.add(turniAssegnati.get(i - 1));
+                    if (verificaContiguitàAssegnazioneTurni(assignedConcreteShifts.get(i - 1), assignedConcreteShifts.get(i))) {
+                        consecConcreteShifts.add(assignedConcreteShifts.get(i - 1));
                     } else break;
 
                 }
             }
             //Verifico se il turno successivo a quello che sto per assegnare è contiguo
-            int succAssegnazioneIdx = prevAssegnazioneIdx +1;
+            int succAssegnazioneIdx = prevAssegnazioneIdx + 1;
 
-            if (succAssegnazioneIdx < turniAssegnati.size() && verificaContiguitàAssegnazioneTurni(contesto.getConcreteShift(),turniAssegnati.get(succAssegnazioneIdx))) {
-                if(turniConsecutivi.size() == 0) {
-                    turniConsecutivi.add(contesto.getConcreteShift());
+            if (succAssegnazioneIdx < assignedConcreteShifts.size() && verificaContiguitàAssegnazioneTurni(context.getConcreteShift(),assignedConcreteShifts.get(succAssegnazioneIdx))) {
+                if(consecConcreteShifts.isEmpty()) {
+                    consecConcreteShifts.add(context.getConcreteShift());
                 }
-                turniConsecutivi.add(turniAssegnati.get(succAssegnazioneIdx));
+                consecConcreteShifts.add(assignedConcreteShifts.get(succAssegnazioneIdx));
 
                 // Controllo se nei turni già assegnati c'è una catena di turni contigui
-                for (int i = succAssegnazioneIdx; i < turniAssegnati.size()-1; i++) {
+                for (int i = succAssegnazioneIdx; i < assignedConcreteShifts.size()-1; i++) {
                     // Controlla che siano consecutivi
-                    if (verificaContiguitàAssegnazioneTurni(turniAssegnati.get(i), turniAssegnati.get(i+1))) {
-                        turniConsecutivi.add(turniAssegnati.get(i+1));
+                    if (verificaContiguitàAssegnazioneTurni(assignedConcreteShifts.get(i), assignedConcreteShifts.get(i+1))) {
+                        consecConcreteShifts.add(assignedConcreteShifts.get(i+1));
                     } else break;
 
                 }
             }
 
-            long minutiConsecutivi = 0;
+            long consecMinutes = 0;
             // Controllo che la somma delle ore non sia superata con la nuova assegnazione
-            for (ConcreteShift turno : turniConsecutivi) {
-                minutiConsecutivi += turno.getShift().getDuration().toMinutes();
+            for (ConcreteShift turno : consecConcreteShifts) {
+                consecMinutes += turno.getShift().getDuration().toMinutes();
             }
-            if (minutiConsecutivi > maxConsecutiveMinutes) {
-                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(contesto.getConcreteShift(), contesto.getDoctorScheduleState().getDoctor(), maxConsecutiveMinutes);
+            if (consecMinutes > maxConsecutiveMinutes) {
+                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorScheduleState().getDoctor(), maxConsecutiveMinutes);
             }
         }
 
 
     }
 
-    private boolean verificaAppartenenzaCategoria(ContestoVincolo contesto){
+    /**
+     * Private method which verifies if the doctor belongs to a specific category (condition): remember that max number of consecutive minutes depends on the doctor condition.
+     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
+     * @return Boolean that represents if the doctor belongs (right now) to the category
+     */
+    private boolean verificaAppartenenzaCategoria(ContestoVincolo context){
 
         if(categoriaVincolata == null){
             return true;
         }
-         for (Condition categoriaUtente : contesto.getDoctorScheduleState().getDoctor().getPermanentConditions()) {
-             if (categoriaUtente.getType().compareTo(categoriaVincolata.getType()) == 0) {
-                 //if ((categoriaUtente.getFineValidità().isBefore(contesto.getConcreteShift().getData()) || categoriaUtente.getInizioValidità().isEqual(contesto.getConcreteShift().getData())) && (categoriaUtente.getFineValidità().isAfter(contesto.getConcreteShift().getData()) || categoriaUtente.getFineValidità().isEqual(contesto.getConcreteShift().getData()))) {
+         for (Condition condition : context.getDoctorScheduleState().getDoctor().getPermanentConditions()) {
+             if (condition.getType().compareTo(categoriaVincolata.getType()) == 0) {
+                 //if ((condition.getStartDate() < context.getConcreteShift().getDate() || condition.getStartDate() == context.getConcreteShift().getDate()) && (condition.getEndDate() > context.getConcreteShift().getDate()) || condition.getEndDate() == context.getConcreteShift().getDate()) {
                      return true;
                  //}
              }

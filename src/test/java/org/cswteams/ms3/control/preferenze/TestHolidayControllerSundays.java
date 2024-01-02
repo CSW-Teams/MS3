@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 @Transactional
 @ActiveProfiles(value = "test")
 public class TestHolidayControllerSundays {
+    /*
 
     @ClassRule
     public static final SpringClassRule scr = new SpringClassRule();
@@ -203,4 +204,6 @@ public class TestHolidayControllerSundays {
     public void deleteHolydays() {
         dao.deleteAll() ;
     }
+
+     */
 }

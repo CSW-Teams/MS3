@@ -1,12 +1,15 @@
 package org.cswteams.ms3.control.medicalService;
 
-import org.cswteams.ms3.dao.ServiceDAO;
+import org.cswteams.ms3.dao.MedicalServiceDAO;
 import org.cswteams.ms3.dto.MedicalServiceDTO;
 import org.cswteams.ms3.entity.MedicalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -14,12 +17,13 @@ public class MedicalServiceController implements IMedicalServiceController {
 
 
     @Autowired
-    ServiceDAO serviceDAO;
+    MedicalServiceDAO medicalServiceDAO;
 
     @Override
-    public Set<MedicalServiceDTO> leggiServizi() {
-        //return MappaServizio.servizioEntitytoDTO(serviceDAO.findAll());
-        return null;
+    public Set<MedicalServiceDTO> getAllMedicalServices() {
+        //List<MedicalService> medicalServiceList = medicalServiceDAO.findAll();
+        Set<MedicalServiceDTO> medicalServiceDTOList = new HashSet<>();
+        return medicalServiceDTOList;
     }
 
     @Override

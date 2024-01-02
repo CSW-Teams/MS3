@@ -1,6 +1,7 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
 import {User} from "./User";
+import {forEach} from "react-bootstrap/ElementChildren";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -11,19 +12,21 @@ export  class AssegnazioneTurnoAPI {
     let turni = [];
 
     for (let i = 0; i < body.length; i++) {
-
-        const inizioEpochMilliseconds = body[i].inizioEpoch*1000
+        console.log(`Element ${i}: ${body[i].id}`);
+        console.log(`Element ${i}: ${body[i].startDateTime}`);
+        console.log(`Element ${i}: ${body[i].endDateTime}`);
+        const inizioEpochMilliseconds = body[i].startDateTime*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 
-        const fineEpochMilliseconds = body[i].fineEpoch*1000
+        const fineEpochMilliseconds = body[i].endDateTime*1000
         const fineDate = new Date(fineEpochMilliseconds);
 
         let turno = new AssignedShift(
-          body[i].mansione + " in " + body[i].servizio.nome,
+          body[i].medicalServiceTask + " in " + body[i].medicalServiceLabel,
           inizioDate,
           fineDate,
           teal);
-        turno.id = body[i].id;
+        turno.id = body[i].shiftID;
         turno.type ="Assigned"
 
         let utenti_guardia = [];
@@ -34,37 +37,37 @@ export  class AssegnazioneTurnoAPI {
         let utenti_rimossi_id = [];
 
 
-        for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
-          let currentUserDto = body[i].utentiDiGuardia[j];
+        for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
+          let currentUserDto = body[i].doctorsOnDuty[j];
           let utenteAllocato = new User(
             currentUserDto.id,
-            currentUserDto.nome,
-            currentUserDto.cognome,
-            currentUserDto.ruoloEnum,
+            currentUserDto.name,
+            currentUserDto.lastname,
+            currentUserDto.systemActor,
           )
           utenti_guardia[j] = utenteAllocato;
           utenti_guardia_id[j] = utenteAllocato.id;
         }
 
-        for (let j = 0; j < body[i].utentiReperibili.length; j++) {
-          let currentUserDto = body[i].utentiReperibili[j];
+        for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
+          let currentUserDto = body[i].doctorsOnCall[j];
           let utenteReperibile = new User(
             currentUserDto.id,
-            currentUserDto.nome,
-            currentUserDto.cognome,
-            currentUserDto.ruoloEnum,
+            currentUserDto.name,
+            currentUserDto.lastname,
+            currentUserDto.systemActor,
           )
           utenti_reperibili[j] = utenteReperibile;
           utenti_reperibili_id[j] = utenteReperibile.id;
         }
 
-        for (let j = 0; j < body[i].retiredUsers.length; j++) {
-          let currentUserDto = body[i].retiredUsers[j];
+        for (let j = 0; j < body[i].deletedDoctors.length; j++) {
+          let currentUserDto = body[i].deletedDoctors[j];
           let utenteRimosso = new User(
             currentUserDto.id,
-            currentUserDto.nome,
-            currentUserDto.cognome,
-            currentUserDto.ruoloEnum,
+            currentUserDto.name,
+            currentUserDto.lastname,
+            currentUserDto.systemActor,
           )
           utenti_rimossi[j] = utenteRimosso;
           utenti_rimossi_id[j] = utenteRimosso.id;
@@ -78,10 +81,9 @@ export  class AssegnazioneTurnoAPI {
         turno.utenti_rimossi = utenti_rimossi;
         turno.utenti_rimossi_id = utenti_rimossi_id;
 
-      turno.tipologia = body[i].tipologiaTurno;
-      turno.servizio = body[i].servizio.nome;
-      turno.mansione = body[i].mansione;
-      console.log(turno.mansione)
+      turno.tipologia = body[i].timeSlot;
+      turno.servizio = body[i].medicalServiceLabel;
+      turno.mansione = body[i].medicalServiceTask;
       turno.reperibilitaAttiva = body[i].reperibilitaAttiva;
 
       turni[i] = turno;
@@ -93,7 +95,7 @@ export  class AssegnazioneTurnoAPI {
 }
 
   async getTurnByIdUser(id) {
-    const response = await fetch('/api/assegnazioneturni/utente_id=' + id);
+    const response = await fetch('/api/concrete-shifts/user_id=' + id);
     const body = await response.json();
 
 
@@ -118,9 +120,9 @@ export  class AssegnazioneTurnoAPI {
   /**
    * Richiede al backend di registrare un'assegnazione turno.
    * @param {*} data
-   * @param {*} tipologiaTurno
-   * @param {*} utentiGuardia
-   * @param {*} utentiReperibili
+   * @param {*} turnoTipologia
+   * @param {*} utentiSelezionatiGuardia
+   * @param {*} utentiReperibilita
    * @param {*} servizioNome
    * @param mansione
    * @param {*} forced
@@ -129,7 +131,7 @@ export  class AssegnazioneTurnoAPI {
    * 400 se i parametri della richiesta sono malformati e il backend non è riuscito a interpretarli;
    * 406 se la richiesta di assegnazone è stata rigettata, ad esempio perché violerebbe dei vincoli per la sua pianificazione.
    */
-  async postAssegnazioneTurno(data,tipologiaTurno,utentiGuardia,utentiReperibili,servizioNome,mansione,forced) {
+  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,mansione,forced) {
 
       let assegnazioneTurno = {};
 
@@ -138,14 +140,15 @@ export  class AssegnazioneTurnoAPI {
       const anno = data.$d.getFullYear();
 
       // Creating an ISO 8601 formatted date string
-      assegnazioneTurno.date = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
+      assegnazioneTurno.giorno = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
 
       assegnazioneTurno.forced = forced;
+
       assegnazioneTurno.servizio = servizioNome;
       assegnazioneTurno.mansione = mansione;
-      assegnazioneTurno.tipologiaTurno = tipologiaTurno;
-      assegnazioneTurno.utentiDiGuardia = utentiGuardia;
-      assegnazioneTurno.utentiReperibili = utentiReperibili;
+      assegnazioneTurno.tipologiaTurno = turnoTipologia
+      assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
+      assegnazioneTurno.utentiReperibili = utentiReperibilita;
 
       const requestOptions = {
         method: 'POST',
@@ -153,7 +156,9 @@ export  class AssegnazioneTurnoAPI {
         body: JSON.stringify(assegnazioneTurno)
       };
 
-    return await fetch('/api/assegnazioneturni/', requestOptions);
+      const response = await fetch('/api/concrete-shifts/',requestOptions);
+
+      return response;
 
   }
 
@@ -174,23 +179,23 @@ export  class AssegnazioneTurnoAPI {
 
     console.log(assegnazioneModificata)
 
-    return await fetch('/api/assegnazioneturni/', requestOptions);
+    return await fetch('/api/concrete-shifts/', requestOptions);
 
 }
 
-async requestTurnChange(utenteCambio, assegnazione, idLoggato) {
-  let turnChangeRequest = {}
-  turnChangeRequest.concreteShiftId = assegnazione.id;
-  turnChangeRequest.senderId = idLoggato;
-  turnChangeRequest.receiverId = utenteCambio.id;
+async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
+  let shiftChangeRequest = {}
+  shiftChangeRequest.concreteShiftId = assegnazione.id;
+  shiftChangeRequest.senderId = idLoggato;
+  shiftChangeRequest.receiverId = utenteCambio.id;
 
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(turnChangeRequest)
+    body: JSON.stringify(shiftChangeRequest)
   };
 
-  return await fetch('/api/assegnazioneturni/scambio', requestOptions);
+  return await fetch('/api/concrete-shifts/retirement-request/', requestOptions);
 }
 
 
@@ -202,37 +207,39 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  console.log(idDaEliminare)
-  return await fetch('/api/assegnazioneturni/' + idDaEliminare, requestOptions);
+  const response = await fetch('/api/concrete_shifts/'+idDaEliminare,requestOptions);
+  return response;
 
 }
 
 
 
-    async getGlobalTurn() {
-        const response = await fetch('/api/assegnazioneturni/');
+    async getGlobalShift() {
+        const response = await fetch('/api/concrete-shifts/');
         const body = await response.json();
 
-        return this.parseAllocatedShifts(body);
+        const risultati = this.parseAllocatedShifts(body);
+
+        return risultati;
     }
 
     async postGenerationSchedule(dataStart,dataEnd) {
 
-      let requestGeneration = {};
+      const initialDay = dataStart.$d.getDate();
+      const initialMonth = dataStart.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
+      const initialYear = dataStart.$d.getFullYear();
+      const finalDay = dataEnd.$d.getDate();
+      const finalMonth = dataEnd.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
+      const finalYear = dataEnd.$d.getFullYear();
 
-      const giornoInizio = dataStart.$d.getDate();
-      const meseInizio = dataStart.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
-      const annoInizio = dataStart.$d.getFullYear();
-
-      // Creating an ISO 8601 formatted date string
-      requestGeneration.giornoInizio = `${annoInizio}-${meseInizio.toString().padStart(2, '0')}-${giornoInizio.toString().padStart(2, '0')}`;
-
-      const giornoFine = dataEnd.$d.getDate();
-      const meseFine = dataEnd.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
-      const annoFine = dataEnd.$d.getFullYear();
-
-      // Creating an ISO 8601 formatted date string
-      requestGeneration.giornoFine = `${annoFine}-${meseFine.toString().padStart(2, '0')}-${giornoFine.toString().padStart(2, '0')}`;
+      let requestGeneration = {
+        initialDay: initialDay,
+        initialMonth: initialMonth,
+        initialYear: initialYear,
+        finalDay: finalDay,
+        finalMonth: finalMonth,
+        finalYear: finalYear
+      };
 
       const requestOptions = {
         method: 'POST',
