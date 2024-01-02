@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/assegnazioneturni/richiesterimozione")
+@RequestMapping("/concrete-shifts/retirement-request/")
 public class RichiestaRimozioneDaTurnoRestEndpoint {
 
     @Autowired
@@ -40,19 +40,19 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         return new ResponseEntity<>(requests, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/pendenti")
+    @RequestMapping(method = RequestMethod.GET, path = "/pending")
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPendenti() {
         Set<RequestRemovalFromConcreteShiftDTO> richiesteRimozioneDaTurnoPendenti = controller.getPendingRequests();
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/utente/{idUtente}")
+    @RequestMapping(method = RequestMethod.GET, path = "/user/{idUtente}")
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPerUtente(@PathVariable Long idUtente) {
         Set<RequestRemovalFromConcreteShiftDTO> richiesteRimozioneDaTurnoPendenti = controller.getRequestsByRequestingDoctorId(idUtente);
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/risolvi")
+    @RequestMapping(method = RequestMethod.POST, path = "/resolve")
     public ResponseEntity<?> risolviRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {
         RequestRemovalFromConcreteShiftDTO ret = null;
         if (requestDTO == null) {
@@ -68,7 +68,7 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/{idRichiestaRimozioneDaTurno}/caricaAllegato")
+    @RequestMapping(method = RequestMethod.POST, path = "/{idRichiestaRimozioneDaTurno}/uploadFile")
     public ResponseEntity<?> caricaAllegato(@PathVariable Long request, @RequestParam("attachment") MultipartFile attachment) {
         RequestRemovalFromConcreteShiftDTO ret;
         try {

@@ -1,6 +1,6 @@
 package org.cswteams.ms3.control.concreteShift;
 
-import org.cswteams.ms3.dto.ConcreteShiftDTO;
+import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
@@ -11,13 +11,13 @@ import java.text.ParseException;
 import java.util.Set;
 
 public interface IConcreteShiftController {
-    Set<ConcreteShiftDTO> leggiTurniAssegnati() throws ParseException;
+    Set<GetAllConcreteShiftDTO> getAllConcreteShifts() throws ParseException;
 
-    ConcreteShift creaTurnoAssegnato(RegisterConcreteShiftDTO c) throws AssegnazioneTurnoException;
+    ConcreteShift createNewConcreteShift(RegisterConcreteShiftDTO c) throws AssegnazioneTurnoException;
 
-    Set<ConcreteShiftDTO> leggiTurniUtente(Long idUtente) throws ParseException;
+    Set<GetAllConcreteShiftDTO> getSingleDoctorConcreteShifts(Long idUtente) throws ParseException;
 
-    ConcreteShift leggiTurnoByID(long idAssegnazione);
+    ConcreteShift getConcreteShiftById(long idAssegnazione);
 
     /**
      * Substitute a doctor assigned to a concrete shift (i.e. is either <i>on duty</i> or <i>on call</i> for it)

@@ -3,6 +3,7 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.dto.ScheduleGenerationDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
+import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/schedule/")
@@ -29,6 +31,8 @@ public class ScheduleRestEndpoint {
 
             //Only the requests with admissible dates will be considered.
             if(gs.getStartDate().isBefore(gs.getEndDate())){
+                System.out.println(gs.getStartDate());
+                System.out.println(gs.getEndDate());
 
                 //The request is passed to the controller.
                 Schedule schedule = schedulerController.createSchedule(gs.getStartDate(),gs.getEndDate());
@@ -77,10 +81,34 @@ public class ScheduleRestEndpoint {
 
     }
 
+
+    /**
+     * Request send by the client when we want to show only the schedules to the planner
+     * @return FOUND if the query had success, NOT FOUND if the query returned 0, ERROR if something went wrong
+     */
+    @RequestMapping(method = RequestMethod.GET,path = "/dates/")
+    public ResponseEntity<?> getAllSchedulesWithDates()  {
+        Set<ShowScheduleToPlannerDTO> showScheduleToPlannerDTOSet;
+        try {
+            showScheduleToPlannerDTOSet= schedulerController.getAllSchedulesWithDates();
+        }catch (Exception e){
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if(schedulerController == null){
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }else if(showScheduleToPlannerDTOSet.isEmpty()){
+            return new ResponseEntity<>(showScheduleToPlannerDTOSet, HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(showScheduleToPlannerDTOSet, HttpStatus.FOUND);
+
+    }
+
     /*
      * This method is invoked to retrieve the illegal shift schedules.
      */
-    @RequestMapping(method = RequestMethod.GET,path = "illegali")
+    @RequestMapping(method = RequestMethod.GET,path = "illegals")
     public ResponseEntity<?> readIllegalSchedules()  {
 
         List<ScheduleDTO> set = schedulerController.readIllegalSchedules();

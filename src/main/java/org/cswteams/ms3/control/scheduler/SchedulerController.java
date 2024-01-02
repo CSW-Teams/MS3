@@ -3,6 +3,7 @@ package org.cswteams.ms3.control.scheduler;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
@@ -12,6 +13,7 @@ import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
+import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
@@ -19,12 +21,13 @@ import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
+import org.cswteams.ms3.utils.DateConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-
+// TODO: Generate concrete shift controller from this class
 @Service
 public class SchedulerController implements ISchedulerController {
 
@@ -52,6 +55,23 @@ public class SchedulerController implements ISchedulerController {
 
     private ScheduleBuilder scheduleBuilder;
 
+    @Override
+    public Set<ShowScheduleToPlannerDTO> getAllSchedulesWithDates(){
+        Set<ShowScheduleToPlannerDTO> showScheduleToPlannerDTOSet = new HashSet<>();
+        List<Schedule> allGeneratedSchedules = scheduleDAO.findAll();
+        for(Schedule singleSchedule : allGeneratedSchedules){
+            ShowScheduleToPlannerDTO showScheduleToPlannerDTO = new ShowScheduleToPlannerDTO(
+                    singleSchedule.getId(),
+                    DateConverter.convertEpochToDateString(singleSchedule.getStartDate()),
+                    DateConverter.convertEpochToDateString(singleSchedule.getEndDate()),
+                    !singleSchedule.getViolatedConstraints().isEmpty()
+            );
+            showScheduleToPlannerDTOSet.add(showScheduleToPlannerDTO);
+        }
+
+        return showScheduleToPlannerDTOSet;
+
+    }
 
 
     /**
@@ -199,7 +219,7 @@ public class SchedulerController implements ISchedulerController {
     public Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
 
         //We need a shift which is present in the database in order to convert the DTO into an entity.
-        List<Shift> shiftsList = shiftDAO.findAllByMedicalServicesLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
+        List<Shift> shiftsList = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
         if(shiftsList.isEmpty())
             throw new AssegnazioneTurnoException("Non esiste uno shift coi servizi specificati.");
         Shift shift = null;
@@ -414,8 +434,8 @@ public class SchedulerController implements ISchedulerController {
      * @return ScheduleDTO instance
      */
     private static ScheduleDTO scheduleToDTO(Schedule schedule) {
-        return new ScheduleDTO(ConvertitoreData.daStandardVersoTestuale(Instant.ofEpochMilli(schedule.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate().toString()), ConvertitoreData.daStandardVersoTestuale(Instant.ofEpochMilli(schedule.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate().toString()), schedule.getCauseIllegal()==null, schedule.getId());
-
+        boolean isIllegal = schedule.getCauseIllegal()!=null;
+        return new ScheduleDTO(schedule.getStartDate(), schedule.getEndDate(), isIllegal, schedule.getId());
     }
 
     /**

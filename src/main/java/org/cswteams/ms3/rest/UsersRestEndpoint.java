@@ -16,12 +16,12 @@ import java.util.Set;
 public class UsersRestEndpoint {
 
     @Autowired
-    private IUserController controllerUtente;
+    private IUserController userController;
 
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> createUser(@RequestBody() UserCreationDTO doctor) {
         if (doctor != null) {
-            controllerUtente.createUser(doctor);
+            userController.createUser(doctor);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -30,14 +30,14 @@ public class UsersRestEndpoint {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllUsers() {
-        Set<UserDTO> utenti = controllerUtente.getAllUsers();
+        Set<UserDTO> utenti = userController.getAllUsers();
         return new ResponseEntity<>(utenti, HttpStatus.FOUND);
     }
 
 
     @RequestMapping(method = RequestMethod.GET, path = "/user_id={userId}")
     public ResponseEntity<?> getSingleUser(@PathVariable Long userId) {
-        UserDetailsDTO u = controllerUtente.getSingleUser(userId);
+        UserDetailsDTO u = userController.getSingleUser(userId);
         return new ResponseEntity<>(u, HttpStatus.FOUND);
     }
 }

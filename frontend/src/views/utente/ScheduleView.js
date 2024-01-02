@@ -174,8 +174,8 @@ class ScheduleView extends React.Component{
     }
 
     handleRetirement = async (justification, idShift) => {
-      this.state.justification = justification;
-      this.state.idShift = idShift;
+      this.state.justification.setState(justification);
+      this.state.idShift.setState(idShift);
 
       const subState = {
         idAssegnazioneTurno: this.state.idShift,
@@ -186,8 +186,6 @@ class ScheduleView extends React.Component{
 
       let richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
       let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(subState);
-
-      console.log(httpResponse);  // todo remove
 
       if (httpResponse.status === 202) {
         toast.success('Richiesta inoltrata con successo', {
@@ -242,7 +240,7 @@ class ScheduleView extends React.Component{
         let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],localStorage.getItem("id"));
         let responseStatusClass = Math.floor(response.status / 100)
 
-        if(responseStatusClass==5){
+        if(responseStatusClass === 5){
 
           toast.error('Errore nel server!', {
             position: "top-center",
@@ -256,7 +254,7 @@ class ScheduleView extends React.Component{
           });
         }
 
-        else if(responseStatusClass!= 2){
+        else if(responseStatusClass !== 2){
 
           let responseBody = await response.json();
 
@@ -284,7 +282,7 @@ class ScheduleView extends React.Component{
             theme: "colored",
           });
 
-          let turni = await assegnazioneTurnoApi.getGlobalTurn();
+          let turni = await assegnazioneTurnoApi.getGlobalShift();
 
           this.setState({data:turni});
           this.forceUpdate();
@@ -295,7 +293,7 @@ class ScheduleView extends React.Component{
         let response = await assegnazioneTurnoApi.eliminaAssegnazioneTurno(deleted);
         let responseStatusClass = Math.floor(response.status / 100);
 
-        if(responseStatusClass!=2){
+        if(responseStatusClass !== 2){
 
           toast.error('Non è stato possibile eliminare l\'assegnazione selezionata!!', {
             position: "top-center",
@@ -322,7 +320,7 @@ class ScheduleView extends React.Component{
             autoClose: false,
           });
 
-          let turni = await assegnazioneTurnoApi.getGlobalTurn();
+          let turni = await assegnazioneTurnoApi.getGlobalShift();
 
           this.setState({data:turni});
           this.forceUpdate();
@@ -348,12 +346,10 @@ class ScheduleView extends React.Component{
     }
 
 
-    async componentDidMount(turni, utenti) {
+    async componentDidMount(turni) {
 
       let api = new RichiestaRimozioneDaTurnoAPI();
       let requestsArray = await api.getAllPendingRequests();
-
-      console.log("Array:", requestsArray);
 
       let allServices = await new ServizioAPI().getService();
       let allUser = await new UserAPI().getAllUsersInfo();
@@ -370,13 +366,13 @@ class ScheduleView extends React.Component{
                 fieldName: 'utenti_guardia_id',
                 title: 'Guardia',
                 allowMultiple: true,
-                instances: utenti,
+                instances: allUser,
               }
               , {
               fieldName: 'utenti_reperibili_id',
               title: 'Reperibilità',
               allowMultiple: true,
-              instances: utenti,
+              instances: allUser,
             },
             ],
           allServices: new Set(allServices),
@@ -392,6 +388,8 @@ class ScheduleView extends React.Component{
 
       // add shifts to the schedulables to display
         let { data, resources} = this.state;
+
+        console.log(data.length);
 
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
         data = data.filter((shift) => {
@@ -456,7 +454,7 @@ class ScheduleView extends React.Component{
 
                   <Autocomplete
                     onChange={(event, value) => {
-                      this.updateFilterCriteria(()=>this.state.filterCriteria.users= value)
+                      this.updateFilterCriteria(()=>this.state.filterCriteria.users.setState(value))
                       }}
                     multiple
                     options={this.state.allUser}
@@ -551,7 +549,7 @@ class ScheduleView extends React.Component{
                   />
                 }
 
-                {view === "global" && this.state.attore !== "PLANNER" &&
+                {view === "global" && (this.state.attore === "DOCTOR" || this.state.attore === "CONFIGURATOR") &&
                 < AppointmentTooltip
                   contentComponent={(props) => (
                     <Content {...props} view={view} actor={this.state.attore} />
@@ -576,7 +574,7 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
-                {view=="global" && this.state.attore!=="DOCTOR" ?
+                {view === "global" && (this.state.attore === "PLANNER" || this.state.attore  ===  "CONFIGURATOR") ?
                   <AppointmentForm
                     overlayComponent = {Overlay}
                     textEditorComponent={Nullcomponent}

@@ -114,7 +114,7 @@ public class HolidayController implements IHolidayController {
     public void registerHoliday(@NotNull List<HolidayDTO> holidays){
         List<Holiday> listHolliday = new ArrayList<>();
         for(HolidayDTO elem: holidays){
-            Holiday newHoliday=new Holiday(elem.getName(), HolidayCategory.valueOf(elem.getCategory()), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
+            Holiday newHoliday=new Holiday(elem.getName(), HolidayCategory.valueOf(elem.getCategory().toUpperCase()), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
             listHolliday.add(newHoliday);
         }
         holidayDao.saveAll(listHolliday);

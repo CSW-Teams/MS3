@@ -4,7 +4,7 @@ export class ServizioAPI {
 
   async getService() {
     try {
-      const response = await fetch('/servizi/');
+      const response = await fetch('/medical-services/');
 
       if (!response.ok) {
         throw new Error('Failed to fetch data');

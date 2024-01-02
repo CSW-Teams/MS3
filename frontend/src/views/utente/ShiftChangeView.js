@@ -1,10 +1,10 @@
 import React from "react"
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import {RequestTurnChangeAPI} from "../../API/RequestTurnChangeAPI";
+import {ShiftChangeRequestAPI} from "../../API/ShiftChangeRequestAPI";
 
 
-export default class TurnChangeView extends React.Component {
+export default class ShiftChangeView extends React.Component {
   constructor(props) {
     super(props);
 
@@ -13,7 +13,7 @@ export default class TurnChangeView extends React.Component {
       turnChangeRequestsToSender: []
     };
 
-    let requestAPI = new RequestTurnChangeAPI();
+    let requestAPI = new ShiftChangeRequestAPI();
     let turnChangeRequestsBySender = requestAPI.getTurnChangeRequestsByIdUser(localStorage.getItem("id"));
     let turnChangeRequestsToSender = requestAPI.getTurnChangeRequestsToIdUser(localStorage.getItem("id"));
 

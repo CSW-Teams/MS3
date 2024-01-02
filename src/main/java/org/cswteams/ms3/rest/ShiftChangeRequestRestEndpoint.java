@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/richiesta-cambio-turno/")
+@RequestMapping("/change-shift-request/")
 public class ShiftChangeRequestRestEndpoint {
 
     @Autowired
@@ -38,7 +38,7 @@ public class ShiftChangeRequestRestEndpoint {
      * Ritorna le richieste iniziate dall'id indicato
      * @param idUtente
      */
-    @RequestMapping(method = RequestMethod.GET, path = "/by/utente_id={idUtente}")
+    @RequestMapping(method = RequestMethod.GET, path = "/by/user_id={idUtente}")
     public ResponseEntity<?> getRequestsBySender(@PathVariable Long idUtente)  {
 
         if (idUtente != null) {
@@ -51,7 +51,7 @@ public class ShiftChangeRequestRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/to/utente_id={idUtente}")
+    @RequestMapping(method = RequestMethod.GET, path = "/to/user_id={idUtente}")
     public ResponseEntity<?> getRequestsToSender(@PathVariable Long idUtente)  {
 
         if (idUtente != null) {

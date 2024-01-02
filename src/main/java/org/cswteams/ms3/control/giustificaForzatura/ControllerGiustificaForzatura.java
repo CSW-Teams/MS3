@@ -4,7 +4,7 @@ import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.GiustificazioneFozaturaDAO;
 import org.cswteams.ms3.dao.LiberatoriaDAO;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
-import org.cswteams.ms3.dto.MedicalServiceDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.GiustificazioneForzaturaVincoli;

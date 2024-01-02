@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/registrazione/")
-public class RegistrazioneRestEndpoint {
+@RequestMapping("/sign-in/")
+public class SignInRestEndpoint {
 
     @Autowired
     private IControllerRegistrazione controllerRegistrazione;

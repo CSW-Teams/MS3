@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/password/")
-public class CambiaPasswordRestEndpoint {
+@RequestMapping("/change_password/")
+public class    ChangePasswordRestEndpoint {
 
     @Autowired
     private IPasswordChange controllerPassword;

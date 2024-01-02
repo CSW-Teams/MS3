@@ -7,12 +7,12 @@ import lombok.Setter;
 @Setter
 public class ScheduleDTO {
 
-    private String initialDate;
-    private String finalDate;
+    private long initialDate;
+    private long finalDate;
     private long id;
     private boolean isIllegal;
 
-    public ScheduleDTO(String initialDate, String finalDate, boolean isIllegal, long id) {
+    public ScheduleDTO(long initialDate, long finalDate, boolean isIllegal, long id) {
         this.initialDate = initialDate;
         this.finalDate = finalDate;
         this.isIllegal = isIllegal;

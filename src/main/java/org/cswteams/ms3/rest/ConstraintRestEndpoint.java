@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/vincoli/")
+@RequestMapping("/constraints/")
 public class ConstraintRestEndpoint {
     @Autowired
     IConstraintController constraintController;
@@ -22,12 +22,12 @@ public class ConstraintRestEndpoint {
         return new ResponseEntity<>(constraintController.readConstraints(), HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "configurazione")
+    @RequestMapping(method = RequestMethod.GET, path = "configuration")
     public ResponseEntity<?> readConstraintsConfiguration()  {
         return new ResponseEntity<>(constraintController.readConfigConstraints(), HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "configurazione")
+    @RequestMapping(method = RequestMethod.POST, path = "configuration")
     public ResponseEntity<?> updateConstraintsConfiguration(@RequestBody() ConfigVincoli configurazione) {
         if (configurazione != null) {
             return new ResponseEntity<>(constraintController.updateConstraints(configurazione), HttpStatus.ACCEPTED);

@@ -33,7 +33,7 @@ export  class LoginAPI {
       body: JSON.stringify(credenziali)
     };
 
-    const response = await fetch('/api/password/', requestOptions);
+    const response = await fetch('/api/change_password/', requestOptions);
 
     return response;
   }
@@ -52,7 +52,7 @@ export  class LoginAPI {
       body: JSON.stringify(datiAnagrafici)
     };
 
-    const response = await fetch('/api/registrazione/', requestOptions);
+    const response = await fetch('/api/sign-in/', requestOptions);
 
     return response;
   }

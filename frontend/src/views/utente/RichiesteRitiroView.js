@@ -83,7 +83,7 @@ export default class RichiesteRitiroView extends React.Component {
 
     const users = await apiUser.getAllUser();
     this.setState({users: users});
-    const shifts = await apiShifts.getGlobalTurn();
+    const shifts = await apiShifts.getGlobalShift();
     this.setState({shifts: shifts})
     const searchParams = new URLSearchParams(this.props.location.search);
     const local = searchParams.get('locale');

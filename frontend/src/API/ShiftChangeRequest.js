@@ -1,4 +1,4 @@
-export class RequestTurnChange{
+export class ShiftChangeRequest {
   constructor(requestId, turnDescription, inizioDate, fineDate, userDetails, status){
     this.requestId = requestId;
     this.turnDescription = turnDescription;
