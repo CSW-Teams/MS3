@@ -107,7 +107,11 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
             throw new RegistrationException("La password non può essere vuota");
         if (!checkEmail(registrationDTO.getEmail()))
             throw new RegistrationException("Indirizzo email già registrato");
-        if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR) && registrationDTO.getSeniority() == null) {
+        if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR) &&
+                (!registrationDTO.getSeniority().toString().equals("STRUCTURED") &&
+                 !registrationDTO.getSeniority().toString().equals("SPECIALIZED")
+                )
+        ) {
             throw new RegistrationException("Non è stata specificata la seniority");
         }
 
