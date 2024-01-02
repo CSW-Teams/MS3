@@ -15,7 +15,7 @@ export default class CambiaPasswordView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      id: localStorage.getItem("id"),
+      userId: localStorage.getItem("id"),
       oldPassword: "",
       newPassword: "",
     }
