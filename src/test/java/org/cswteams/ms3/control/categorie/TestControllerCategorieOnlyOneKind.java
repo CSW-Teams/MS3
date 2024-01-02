@@ -1,13 +1,33 @@
 package org.cswteams.ms3.control.categorie;
 
+import lombok.RequiredArgsConstructor;
+import org.cswteams.ms3.control.categorie.IControllerCategorie;
+import org.cswteams.ms3.dao.CategorieDao;
+import org.cswteams.ms3.dto.CategoriaDTO;
+import org.cswteams.ms3.entity.Categoria;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import javax.transaction.Transactional;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -16,7 +36,7 @@ import javax.transaction.Transactional;
 @Transactional
 @ActiveProfiles(value = "test")
 public class TestControllerCategorieOnlyOneKind {
-/*
+
     @ClassRule
     public static final SpringClassRule scr = new SpringClassRule();
 
@@ -101,5 +121,5 @@ public class TestControllerCategorieOnlyOneKind {
         } catch (ParseException e) {
             fail() ;
         }
-    }*/
+    }
 }

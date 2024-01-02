@@ -5,26 +5,28 @@ import java.time.LocalDate;
 import lombok.Getter;
 import org.cswteams.ms3.enums.HolidayCategory;
 
+import lombok.Data;
+
+@Data
 public class HolidayDTO {
     
     public HolidayDTO() {
     }
     public HolidayDTO(String name, HolidayCategory category, long startDateEpochDay, long endDateEpochDay, String location) {
         this.name = name;
-        this.category = category.toString();
+        this.category = category;
         this.setStartDateEpochDay(startDateEpochDay);
         this.setEndDateEpochDay(endDateEpochDay);
-        this.location=location;
+        this.setLocation(location);
     }
 
     @Getter
     private String name;
     @Getter
-    private String category;
-    @Getter
-    private String location;
+    private HolidayCategory category;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String Location;
 
 
     public long getStartDateEpochDay(){
@@ -38,6 +40,7 @@ public class HolidayDTO {
     public void setStartDateEpochDay(long startDateEpochDay){
         this.startDate = LocalDate.ofEpochDay(startDateEpochDay);
     }
+
     public void setEndDateEpochDay(long endDateEpochDay){
         this.endDate = LocalDate.ofEpochDay(endDateEpochDay);
     }

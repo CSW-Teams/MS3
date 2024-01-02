@@ -1,5 +1,16 @@
 package org.cswteams.ms3;
 
+import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
+import org.cswteams.ms3.entity.vincoli.VincoloUbiquità;
+import org.cswteams.ms3.enums.AttoreEnum;
+import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.enums.RuoloEnum;
+import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.exception.TurnoException;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -7,6 +18,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -15,9 +30,9 @@ import javax.transaction.Transactional;
 @Transactional
 public class VincoloUbiquitàTest {
 
-    //@Test(expected= ViolatedConstraintException.class)
+    @Test(expected= ViolatedConstraintException.class)
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
-    /*public void turniAccavallatiTest() throws ViolatedConstraintException, TurnoException{
+    public void turniAccavallatiTest() throws ViolatedConstraintException, TurnoException{
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         //Servizio servizio2 = new Servizio("ambulatorio");
@@ -39,9 +54,9 @@ public class VincoloUbiquitàTest {
         vincoloUbiquità.verificaVincolo(new ContestoVincolo(pregUserState,turnoDaAssegnare));
     }
 
-    @Test(expected= ViolatedConstraintException.class)*/
+    @Test(expected= ViolatedConstraintException.class)
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
-    /*public void turniCoincidentiTest() throws ViolatedConstraintException, TurnoException{
+    public void turniCoincidentiTest() throws ViolatedConstraintException, TurnoException{
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().addAll(Arrays.asList(MansioneEnum.REPARTO, MansioneEnum.AMBULATORIO));
         Servizio servizio2 = new Servizio("cardiologia");
@@ -62,5 +77,5 @@ public class VincoloUbiquitàTest {
         Vincolo vincoloUbiquità = new VincoloUbiquità();
 
         vincoloUbiquità.verificaVincolo(new ContestoVincolo(pregUserState,turnoDaAssegnare));
-    }*/
+    }
 }

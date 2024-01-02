@@ -3,7 +3,7 @@ export  class VincoloAPI {
     }
 
     async getVincoli() {
-        const response = await fetch('/api/constraints/');
+        const response = await fetch('/api/vincoli/');
         const body = await response.json();
 
         const vincoli = [];
@@ -38,13 +38,13 @@ export  class VincoloAPI {
         body: JSON.stringify(configurazione)
       };
 
-      const response = await fetch('/api/constraints/configuration',requestOptions);
+      const response = await fetch('/api/vincoli/configurazione',requestOptions);
 
       return response;
     }
 
     async getConfigurazioneVincoli(){
-      const response = await fetch('/api/constraints/configuration');
+      const response = await fetch('/api/vincoli/configurazione');
       const body = await response.json();
       console.log(body)
       const conf = {}

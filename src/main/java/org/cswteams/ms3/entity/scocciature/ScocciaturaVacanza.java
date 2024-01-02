@@ -1,46 +1,45 @@
 package org.cswteams.ms3.entity.scocciature;
 
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import org.cswteams.ms3.entity.Holiday;
-import org.cswteams.ms3.enums.TimeSlot;
+import org.cswteams.ms3.enums.TipologiaTurno;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 /**
  * Calcola quanto pesa ad un utente essere messo di turno in una vacanza
  */
+@Data
 @Entity
-@Getter
-@EqualsAndHashCode(callSuper = true)
 public class ScocciaturaVacanza extends Scocciatura {
 
     private int peso;
     @ManyToOne
     @JoinColumn(name = "vacanza_id")
     private Holiday vacanza;
-    private TimeSlot timeSlot;
+    private TipologiaTurno tipologiaTurno;
 
     public ScocciaturaVacanza() {
     }
 
-    public ScocciaturaVacanza(int peso, Holiday vacanza, TimeSlot timeSlot) {
+    public ScocciaturaVacanza(int peso, Holiday vacanza, TipologiaTurno tipologiaTurno) {
         this.peso = peso;
         this.vacanza = vacanza;
-        this.timeSlot = timeSlot;
+        this.tipologiaTurno = tipologiaTurno;
     }
 
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        TimeSlot timeSlot = contesto.getConcreteShift().getShift().getTimeSlot();
-        //LocalDate data = contesto.getConcreteShift().getDate();
+        TipologiaTurno tipologiaTurno = contesto.getAssegnazioneTurno().getTurno().getTipologiaTurno();
+        LocalDate data = contesto.getAssegnazioneTurno().getData();
 
-        // if(data.equals(this.vacanza.getStartDate()) && timeSlot.equals(this.timeSlot))
-        //     return this.peso;
+        if(data.equals(this.vacanza.getStartDate()) && tipologiaTurno.equals(this.tipologiaTurno))
+            return this.peso;
 
         return 0;
     }

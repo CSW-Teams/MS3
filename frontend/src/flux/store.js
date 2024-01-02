@@ -5,10 +5,10 @@ import Constants from "./constants";
 import {attore, configuratore, pianificatore} from "../data/sidebar-nav-items";
 
 function getNavBar() {
-  let att = localStorage.getItem("actor");
-  if (att === "DOCTOR"){
+  let att = localStorage.getItem("attore");
+  if (att === "UTENTE"){
     return attore();
-  } else if((att === "PLANNER")){
+  } else if((att === "PIANIFICATORE")){
     return pianificatore();
   }else{
     return configuratore();

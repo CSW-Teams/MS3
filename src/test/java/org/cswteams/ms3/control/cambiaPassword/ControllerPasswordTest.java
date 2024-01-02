@@ -1,10 +1,23 @@
 package org.cswteams.ms3.control.cambiaPassword;
 
+import org.cswteams.ms3.control.cambiaPassword.ControllerPassword;
+import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dto.PasswordDTO;
+import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.enums.AttoreEnum;
+import org.cswteams.ms3.enums.RuoloEnum;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
+import java.util.stream.Stream;
 
 
 //@RunWith(SpringJUnit4ClassRunner.class)
@@ -13,7 +26,7 @@ import javax.transaction.Transactional;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt. It means that
 @Transactional
 public class ControllerPasswordTest {
-/*
+
     @Autowired
     private UtenteDao utenteDao;
 
@@ -84,6 +97,6 @@ public class ControllerPasswordTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }*/
+    }
 
 }

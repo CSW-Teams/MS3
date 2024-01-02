@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
-import { UserAPI } from '../../API/UserAPI';
+import { UtenteAPI } from '../../API/UtenteAPI';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { ToastContainer, toast } from 'react-toastify';
@@ -45,7 +45,7 @@ export default function TemporaryDrawer(props) {
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
-    let userApi = new UserAPI();
+    let userApi = new UtenteAPI();
     let utenti = await userApi.getAllUsersInfo()
     setUser(utenti);
   }
@@ -120,10 +120,7 @@ export default function TemporaryDrawer(props) {
      */
     const mansione = turno.toString().substring(turno.toString().lastIndexOf(" ")+1, turno.toString().length)
     const tipologiaTurno = turno.toString().substring(0,turno.toString().indexOf(" "))
-    //TODO
-    const utentiGuardiaId = utentiSelezionatiGuardia.map(item => item.id);
-    const utentiReperibiliId = utentiSelezionatiReperibilità.map(item => item.id);
-    response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiGuardiaId,utentiReperibiliId, servizio.nome,mansione,forced)
+    response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
     props.onPostAssegnazione()

@@ -1,12 +1,30 @@
 package org.cswteams.ms3;
 
+import org.cswteams.ms3.dao.*;
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
+import org.cswteams.ms3.entity.vincoli.VincoloTipologieTurniContigue;
+import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.enums.*;
+import org.cswteams.ms3.exception.TurnoException;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -14,7 +32,7 @@ import javax.transaction.Transactional;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Transactional
 public class VincoloTurniContiguiTest {
-/*
+
     @Autowired
     private UtenteDao utenteDao;
 
@@ -93,5 +111,5 @@ public class VincoloTurniContiguiTest {
             TipologiaTurno.NOTTURNO,
             new HashSet<>(Arrays.asList(TipologiaTurno.values()))); // nessun turno può essere allocato a questa persona durante il suo smonto notte
         vincoloTurniContigui.verificaVincolo(new ContestoVincolo(usstate,turnoMattina));
-    }*/
+    }
 }

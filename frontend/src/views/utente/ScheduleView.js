@@ -31,7 +31,7 @@ import {
    EditingState,IntegratedEditing
 } from '@devexpress/dx-react-scheduler';
 import { ServiceFilterSelectorButton } from '../../components/common/ServiceFilterSelectorButton';
-import { UserAPI } from '../../API/UserAPI';
+import { UtenteAPI } from '../../API/UtenteAPI';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { HolidaysAPI } from '../../API/HolidaysAPI';
@@ -73,7 +73,7 @@ class ScheduleView extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-          attore : localStorage.getItem("actor"),
+          attore : localStorage.getItem("attore"),
             data: [],   // list of shifts to display in schedule (not filtered yet)
             mainResourceName: 'utenti_guardia',
             resources: [
@@ -162,10 +162,10 @@ class ScheduleView extends React.Component{
       }
 
       if (idUser !== -1) {
-        let api = new UserAPI();
+        let api = new UtenteAPI();
         const userDetails = await api.getUserDetails(idUser);
-        let name = userDetails.name;
-        let surname = userDetails.lastname;
+        let name = userDetails.nome;
+        let surname = userDetails.cognome;
         return `${name} ${surname}`
       }
 
@@ -186,6 +186,8 @@ class ScheduleView extends React.Component{
 
       let richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
       let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(subState);
+
+      console.log(httpResponse);  // todo remove
 
       if (httpResponse.status === 202) {
         toast.success('Richiesta inoltrata con successo', {
@@ -282,7 +284,7 @@ class ScheduleView extends React.Component{
             theme: "colored",
           });
 
-          let turni = await assegnazioneTurnoApi.getGlobalShift();
+          let turni = await assegnazioneTurnoApi.getGlobalTurn();
 
           this.setState({data:turni});
           this.forceUpdate();
@@ -320,7 +322,7 @@ class ScheduleView extends React.Component{
             autoClose: false,
           });
 
-          let turni = await assegnazioneTurnoApi.getGlobalShift();
+          let turni = await assegnazioneTurnoApi.getGlobalTurn();
 
           this.setState({data:turni});
           this.forceUpdate();
@@ -346,13 +348,15 @@ class ScheduleView extends React.Component{
     }
 
 
-    async componentDidMount(turni) {
+    async componentDidMount(turni, utenti) {
 
       let api = new RichiestaRimozioneDaTurnoAPI();
       let requestsArray = await api.getAllPendingRequests();
 
+      console.log("Array:", requestsArray);
+
       let allServices = await new ServizioAPI().getService();
-      let allUser = await new UserAPI().getAllUsersInfo();
+      let allUser = await new UtenteAPI().getAllUsersInfo();
       let allHolidays = await new HolidaysAPI().getHolidays();
 
       this.setState(
@@ -366,13 +370,13 @@ class ScheduleView extends React.Component{
                 fieldName: 'utenti_guardia_id',
                 title: 'Guardia',
                 allowMultiple: true,
-                instances: allUser,
+                instances: utenti,
               }
               , {
               fieldName: 'utenti_reperibili_id',
               title: 'Reperibilità',
               allowMultiple: true,
-              instances: allUser,
+              instances: utenti,
             },
             ],
           allServices: new Set(allServices),
@@ -390,12 +394,12 @@ class ScheduleView extends React.Component{
         let { data, resources} = this.state;
 
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
-        /*data = data.filter((shift) => {
+        data = data.filter((shift) => {
           return this.filters.reduce(
             (isFeasible, currentFilter) => isFeasible && currentFilter(shift, this.state.filterCriteria),
             true
           );
-        });*/
+        });
 
         /**
          * Prepariamo un messaggio diverso per il link al download del csv con i turni
@@ -424,7 +428,7 @@ class ScheduleView extends React.Component{
 
         return (
           <React.Fragment>
-            {(view !== "global" || this.state.attore === "PLANNER") &&
+            {(view !== "global" || this.state.attore === "PIANIFICATORE") &&
             <Button
               style={{
               display: 'flex',
@@ -533,7 +537,7 @@ class ScheduleView extends React.Component{
                 <ViewSwitcher />
 
 
-                {view==="global" && this.state.attore==="PLANNER" &&
+                {view==="global" && this.state.attore==="PIANIFICATORE" &&
                   //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
                  //SOLO IL PIANIFICATORE PUO' MODIFICARE I TURNI
                   <AppointmentTooltip
@@ -547,7 +551,7 @@ class ScheduleView extends React.Component{
                   />
                 }
 
-                {view === "global" && this.state.attore !== "PLANNER" &&
+                {view === "global" && this.state.attore !== "PIANIFICATORE" &&
                 < AppointmentTooltip
                   contentComponent={(props) => (
                     <Content {...props} view={view} actor={this.state.attore} />
@@ -572,7 +576,7 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
-                {view=="global" && this.state.attore!=="DOCTOR" ?
+                {view=="global" && this.state.attore!=="UTENTE" ?
                   <AppointmentForm
                     overlayComponent = {Overlay}
                     textEditorComponent={Nullcomponent}

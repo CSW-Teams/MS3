@@ -1,7 +1,26 @@
 package org.cswteams.ms3.control.assegnazioneTurni;
 
 
+import org.cswteams.ms3.control.assegnazioneTurni.IControllerAssegnazioneTurni;
+import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
+import org.cswteams.ms3.dao.ServizioDao;
+import org.cswteams.ms3.dao.TurnoDao;
+import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dto.AssegnazioneTurnoDTO;
+import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.Servizio;
+import org.cswteams.ms3.entity.Turno;
+import org.cswteams.ms3.entity.Utente;
+import org.cswteams.ms3.enums.AttoreEnum;
+import org.cswteams.ms3.enums.MansioneEnum;
+import org.cswteams.ms3.enums.RuoloEnum;
+import org.cswteams.ms3.enums.TipologiaTurno;
+import org.cswteams.ms3.exception.TurnoException;
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
@@ -9,7 +28,15 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
+import java.text.ParseException;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
@@ -17,7 +44,7 @@ import javax.transaction.Transactional;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt. It means that
 @Transactional
 public class ControllerAssegnazioniTurniTest {
-    /*@Autowired
+    @Autowired
     private ServizioDao servizioDao;
     @Autowired
     private TurnoDao turnoDao;
@@ -27,11 +54,11 @@ public class ControllerAssegnazioniTurniTest {
     private AssegnazioneTurnoDao assegnazioneTurnoDao;
     @Autowired
     private IControllerAssegnazioneTurni controllerAssegnazioneTurni;
-    @Test*/
+    @Test
     /**
      * Test che verifica che dai turni assegnati non vengono messi letti anche i turni non assegnati
      */
-    /*public void leggiTurniAssegnati() throws TurnoException, ParseException{
+    public void leggiTurniAssegnati() throws TurnoException, ParseException{
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.save(servizio1);
@@ -53,13 +80,13 @@ public class ControllerAssegnazioniTurniTest {
         for (AssegnazioneTurnoDTO e:set){
             Assert.assertNotEquals(e.getIdTurno(),t1.getId());
         }
-    }*/
+    }
 
-    //@Test
+    @Test
     /**
      * Test verifica che il turno venga assegnato al giusto utente
      */
-    /*public void leggiTurniUtente() throws TurnoException, ParseException {
+    public void leggiTurniUtente() throws TurnoException, ParseException {
         Utente utente = new Utente("Martina", "Salvati", "SLVMTN******", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", RuoloEnum.SPECIALIZZANDO, AttoreEnum.UTENTE);
         utente=this.utenteDao.saveAndFlush(utente);
         Servizio servizio1 = new Servizio("cardiologia");
@@ -73,5 +100,5 @@ public class ControllerAssegnazioniTurniTest {
         for (AssegnazioneTurnoDTO app:setTurni){
            Assert.assertEquals(app.getIdTurno(),t1.getId());
         }
-    }*/
+    }
 }

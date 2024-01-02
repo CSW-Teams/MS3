@@ -1,4 +1,6 @@
-
+import { TurnoAPI } from "./TurnoAPI";
+import {blue, red, teal} from "@material-ui/core/colors";
+import { AssignedShift, SchedulableType } from "./Schedulable";
 
 export  class LoginAPI {
 
@@ -16,7 +18,9 @@ export  class LoginAPI {
       body: JSON.stringify(credenziali)
     };
 
-    return await fetch('/api/login/', requestOptions);
+    const response = await fetch('/api/login/', requestOptions);
+
+    return response;
   }
 
   /**
@@ -33,14 +37,14 @@ export  class LoginAPI {
       body: JSON.stringify(credenziali)
     };
 
-    const response = await fetch('/api/change_password/', requestOptions);
+    const response = await fetch('/api/password/', requestOptions);
 
     return response;
   }
 
   /**
    * Richiede al backend la registrazione di un nuovo utente.
-   * @param {*} datiAnagrafici (nome, cognome, dataNascita, codiceFiscale, systemActor, username, password, attore)
+   * @param {*} datiAnagrafici (nome, cognome, dataNascita, codiceFiscale, ruolo, username, password, attore)
    * @returns La risposta del backend
    *
    */
@@ -52,9 +56,10 @@ export  class LoginAPI {
       body: JSON.stringify(datiAnagrafici)
     };
 
-    const response = await fetch('/api/sign-in/', requestOptions);
+    const response = await fetch('/api/registrazione/', requestOptions);
 
     return response;
   }
 
 }
+

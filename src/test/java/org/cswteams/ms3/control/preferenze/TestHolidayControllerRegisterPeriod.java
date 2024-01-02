@@ -1,6 +1,7 @@
 package org.cswteams.ms3.control.preferenze;
 
-import org.cswteams.ms3.dao.HolidayDAO;
+import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.dao.HolidayDao;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.HolidayCategory;
@@ -17,10 +18,12 @@ import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -31,7 +34,6 @@ import static org.junit.Assert.*;
 @Transactional
 @ActiveProfiles(value = "test")
 public class TestHolidayControllerRegisterPeriod {
-    /*
 
     @ClassRule
     public static final SpringClassRule scr = new SpringClassRule();
@@ -43,7 +45,7 @@ public class TestHolidayControllerRegisterPeriod {
     private IHolidayController controller ;
 
     @Autowired
-    private HolidayDAO dao ;
+    private HolidayDao dao ;
 
     private final HolidayDTO date ;
     private int year ;
@@ -55,19 +57,19 @@ public class TestHolidayControllerRegisterPeriod {
 
         Collection<Object[]> retVal = new ArrayList<>() ;
 
-        HolidayDTO dtoNullName = new HolidayDTO(null, HolidayCategory.RELIGIOUS,
+        HolidayDTO dtoNullName = new HolidayDTO(null, HolidayCategory.RELIGIOSA,
                 LocalDate.of(2022, 9, 9).toEpochDay(), LocalDate.of(2022, 9, 30).toEpochDay(), null);
 
         HolidayDTO dtoNegativeStart = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CORPORATE,
                 -5, LocalDate.of(2022, 9, 30).toEpochDay(), null);
 
-        HolidayDTO dtoNegativeEnd = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CIVIL,
+        HolidayDTO dtoNegativeEnd = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CIVILE,
                 LocalDate.of(2022, 9, 30).toEpochDay(), -47, null);
 
-        HolidayDTO dtoLastBeforeFirst = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CIVIL,
+        HolidayDTO dtoLastBeforeFirst = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CIVILE,
                 LocalDate.of(2022, 10, 15).toEpochDay(), LocalDate.of(2022, 9, 30).toEpochDay(), null);
 
-        HolidayDTO dtoNormalButLongPeriod = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CIVIL,
+        HolidayDTO dtoNormalButLongPeriod = new HolidayDTO("Sagra dei carciofi", HolidayCategory.CIVILE,
                 0, LocalDate.of(2022, 10, 15).toEpochDay(), null);
 
         retVal.add(new Object[] {dtoNullName, -5, false}) ;
@@ -141,5 +143,4 @@ public class TestHolidayControllerRegisterPeriod {
             }
         }
     }
-     */
 }
