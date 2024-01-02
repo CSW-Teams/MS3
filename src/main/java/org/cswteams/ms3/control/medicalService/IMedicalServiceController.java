@@ -8,7 +8,7 @@ import java.util.Set;
 
 public interface IMedicalServiceController {
 
+    MedicalService createService(@NotNull MedicalServiceDTO medicalServiceDTO);
     Set<MedicalServiceDTO> getAllMedicalServices();
-    MedicalServiceDTO leggiServizioByNome(@NotNull String nome);
-    MedicalService creaServizio(@NotNull MedicalServiceDTO servizio);
+    MedicalServiceDTO getServiceByName(@NotNull String serviceName);
 }

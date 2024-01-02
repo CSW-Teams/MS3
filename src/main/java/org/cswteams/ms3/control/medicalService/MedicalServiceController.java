@@ -20,20 +20,20 @@ public class MedicalServiceController implements IMedicalServiceController {
     MedicalServiceDAO medicalServiceDAO;
 
     @Override
+    public MedicalService createService(@NotNull MedicalServiceDTO medicalServiceDTO) {
+        return medicalServiceDAO.save(new MedicalService(medicalServiceDTO.getMansioni(),medicalServiceDTO.getNome()));
+    }
+
+    @Override
     public Set<MedicalServiceDTO> getAllMedicalServices() {
         List<MedicalService> medicalServiceList = medicalServiceDAO.findAll();
         return buildDTOList(medicalServiceList);
     }
 
     @Override
-    public MedicalServiceDTO leggiServizioByNome(@NotNull String nome) {
-        MedicalService medicalService=medicalServiceDAO.findByLabel(nome);
+    public MedicalServiceDTO getServiceByName(@NotNull String serviceName) {
+        MedicalService medicalService=medicalServiceDAO.findByLabel(serviceName);
         return buildDTO(medicalService);
-    }
-
-    @Override
-    public MedicalService creaServizio(@NotNull MedicalServiceDTO medicalServiceDTO) {
-        return medicalServiceDAO.save(new MedicalService(medicalServiceDTO.getMansioni(),medicalServiceDTO.getNome()));
     }
 
     private MedicalServiceDTO buildDTO(MedicalService medicalService) {

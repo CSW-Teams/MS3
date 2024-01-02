@@ -25,16 +25,16 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(medicalServices, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET,path = "name/{nomeServizio}")
-    public ResponseEntity<?> leggiServizio(@PathVariable String nomeServizio)  {
-        MedicalServiceDTO servizio = medicalServiceController.leggiServizioByNome(nomeServizio);
-        return new ResponseEntity<>(servizio, HttpStatus.FOUND);
+    @RequestMapping(method = RequestMethod.GET,path = "name/{serviceName}")
+    public ResponseEntity<?> leggiServizio(@PathVariable String serviceName)  {
+        MedicalServiceDTO service = medicalServiceController.getServiceByName(serviceName);
+        return new ResponseEntity<>(service, HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceDTO servizio) {
-        if (servizio != null) {
-            return new ResponseEntity<>(medicalServiceController.creaServizio(servizio), HttpStatus.ACCEPTED);
+    public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceDTO service) {
+        if (service != null) {
+            return new ResponseEntity<>(medicalServiceController.createService(service), HttpStatus.ACCEPTED);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
