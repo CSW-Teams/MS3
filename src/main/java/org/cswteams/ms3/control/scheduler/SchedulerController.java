@@ -12,6 +12,7 @@ import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
+import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
@@ -19,12 +20,13 @@ import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
+import org.cswteams.ms3.utils.DateConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-
+// TODO: Generate concrete shift controller from this class
 @Service
 public class SchedulerController implements ISchedulerController {
 
@@ -52,6 +54,23 @@ public class SchedulerController implements ISchedulerController {
 
     private ScheduleBuilder scheduleBuilder;
 
+    @Override
+    public Set<ShowScheduleToPlannerDTO> getAllSchedulesWithDates(){
+        Set<ShowScheduleToPlannerDTO> showScheduleToPlannerDTOSet = new HashSet<>();
+        List<Schedule> allGeneratedSchedules = scheduleDAO.findAll();
+        for(Schedule singleSchedule : allGeneratedSchedules){
+            ShowScheduleToPlannerDTO showScheduleToPlannerDTO = new ShowScheduleToPlannerDTO(
+                    singleSchedule.getId(),
+                    DateConverter.convertEpochToDateString(singleSchedule.getStartDate()),
+                    DateConverter.convertEpochToDateString(singleSchedule.getEndDate()),
+                    !singleSchedule.getViolatedConstraints().isEmpty()
+            );
+            showScheduleToPlannerDTOSet.add(showScheduleToPlannerDTO);
+        }
+
+        return showScheduleToPlannerDTOSet;
+
+    }
 
 
     /**

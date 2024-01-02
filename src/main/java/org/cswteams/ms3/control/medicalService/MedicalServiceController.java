@@ -1,15 +1,13 @@
 package org.cswteams.ms3.control.medicalService;
 
 import org.cswteams.ms3.dao.MedicalServiceDAO;
-import org.cswteams.ms3.dto.MedicalServiceDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.entity.MedicalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Service

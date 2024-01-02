@@ -2,7 +2,7 @@ package org.cswteams.ms3.control.concreteShift;
 
 import org.cswteams.ms3.dao.ConcreteShiftDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
-import org.cswteams.ms3.dto.MedicalServiceDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.user.UserDTO;

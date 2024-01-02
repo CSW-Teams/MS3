@@ -13,7 +13,7 @@ import {
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TemporaryDrawerSchedulo from "../../components/common/BottomViewAggiungiSchedulazione";
-import {ScheduloAPI} from "../../API/ScheduloAPI";
+import {ScheduleAPI} from "../../API/ScheduleAPI";
 
 /*
 * Schermata che permette di generare un nuovo schedulo
@@ -22,27 +22,40 @@ export class SchedulerGeneratorView extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            dataStart: "",
-            dataEnd: "",
-            schedulazioni: [{}]
-
+          schedules:[{
+            scheduleID: 0,
+            startDate: "",
+            endDate: "",
+            hasViolatedConstraints: false
+          }]
         }
 
         this.componentDidMount = this.componentDidMount.bind(this);
     }
 
     async componentDidMount() {
-      let schedulazioni = await(new ScheduloAPI().getSchedulazini());
-      console.log(schedulazioni[0]);
+      let schedulesList = await(new ScheduleAPI().getSchedulesOnlyWithStartAndEndDate());
+      /*let scheduleID = [];
+      let startDates = [];
+      let endDates = [];
+      let hasViolatedConstraints = [];
+
+      // Parsing of the dates of the single schedule
+      for(var i = 0;i<schedulesList.length;i++){
+        scheduleID.push(schedulesList.get(i).scheduleID);
+        startDates.push(schedulesList.get(i).startDate);
+        endDates.push(schedulesList.get(i).endDate);
+        hasViolatedConstraints.push(schedulesList.get(i).hasViolatedConstraints);
+      }*/
 
       this.setState({
-        schedulazioni: schedulazioni,
+        schedules: schedulesList
       })
 
     }
 
     async handleDelete(idSchedulo) {
-      let scheduloAPI = new ScheduloAPI();
+      let scheduloAPI = new ScheduleAPI();
       let responseStatus;
       responseStatus = await scheduloAPI.deleteSchedulo(idSchedulo);
 
@@ -85,7 +98,7 @@ export class SchedulerGeneratorView extends React.Component{
 
 
     async handleRegeneration(idSchedulo) {
-      let scheduloAPI = new ScheduloAPI();
+      let scheduloAPI = new ScheduleAPI();
       let responseStatus;
       responseStatus = await scheduloAPI.rigeneraSchedulo(idSchedulo);
 
@@ -151,23 +164,25 @@ export class SchedulerGeneratorView extends React.Component{
                             hover
                             >
                     <MDBTableHead color='tempting-azure-gradient' textWhite>
-                    <tr>
+                      <tr>
+                        <th scope='col' >ID Pianificazione</th>
                         <th scope='col' >Data inizio</th>
                         <th scope='col' >Data fine</th>
-                        <th scope='col' >Stato </th>
-                        <th scope='col' > </th>
-                        <th scope='col' > </th>
+                        <th scope='col' >Stato</th>
+                        <th scope='col' >Rimuovi</th>
+                        <th scope='col' >Rigenera</th>
                       </tr>
                     </MDBTableHead>
                     <MDBTableBody>
-                    {this.state.schedulazioni.map((schedulo, key) => {
+                    {this.state.schedules.map((schedule, key) => {
                     return (
                       <tr key={key}>
-                        <td className="align-middle">{schedulo.dataInizio}</td>
-                        <td className="align-middle">{schedulo.dataFine}</td>
-                        <td className="align-middle">{schedulo.illegalita?"Incompleta":"Completa"}</td>
-                        <td className="align-middle" ><IconButton aria-label="delete" onClick={() => this.handleDelete(schedulo.id)}><DeleteIcon /></IconButton></td>
-                        <td className="align-middle"><Button onClick={() => this.handleRegeneration(schedulo.id)}>Rigenera</Button></td>
+                        <td className="align-middle">{schedule.scheduleID}</td>
+                        <td className="align-middle">{schedule.startDate}</td>
+                        <td className="align-middle">{schedule.endDate}</td>
+                        <td className="align-middle">{schedule.hasViolatedConstraints?"Incompleta":"Completa"}</td>
+                        <td className="align-middle" ><IconButton aria-label="delete" onClick={() => this.handleDelete(schedule.scheduleID)}><DeleteIcon /></IconButton></td>
+                        <td className="align-middle"><Button onClick={() => this.handleRegeneration(schedule.scheduleID)}>Rigenera</Button></td>
                       </tr>
                     )
                   })}

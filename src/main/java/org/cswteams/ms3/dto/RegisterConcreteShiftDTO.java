@@ -1,6 +1,7 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Data;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
