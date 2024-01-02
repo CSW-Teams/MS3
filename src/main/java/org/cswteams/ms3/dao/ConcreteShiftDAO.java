@@ -11,7 +11,12 @@ import java.util.Set;
 @Repository
 public interface ConcreteShiftDAO extends JpaRepository<ConcreteShift,Long> {
 
-    //@Query(nativeQuery = true,="SELECT * FROM ConcreteShift WHERE =:idName")
+    @Query(nativeQuery = true,
+            value = "SELECT * FROM concrete_shift as CS, " +
+            "doctor_assignment as DA, ms3_system_user as doc " +
+            "WHERE CS.concrete_shift_id=DA.concrete_shift_id and " +
+            "DA.doctor_user_id=doc.user_id and " +
+            "doc.user_id=:idName")
     Set<ConcreteShift> findByDoctorAssignmentList_Doctor_Id(@Param("idName") Long doctorId);
 
 }

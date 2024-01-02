@@ -12,8 +12,6 @@ export  class AssegnazioneTurnoAPI {
     let turni = [];
 
     for (let i = 0; i < body.length; i++) {
-        console.log(`Start Time ${i}: ${body[i].startDateTime}`);
-        console.log(`End Time ${i}: ${body[i].endDateTime}`);
         const inizioEpochMilliseconds = body[i].startDateTime*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 
@@ -171,8 +169,6 @@ export  class AssegnazioneTurnoAPI {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(assegnazioneModificata)
     };
-
-    console.log(assegnazioneModificata)
 
     return await fetch('/api/concrete-shifts/', requestOptions);
 

@@ -69,10 +69,8 @@ public class ConcreteShiftRestEndpoint {
 
     @RequestMapping(method = RequestMethod.GET, path = "/user_id={userID}")
     public ResponseEntity<?> getSingleDoctorConcreteShift(@PathVariable Long userID) throws ParseException {
-        System.out.println("UTENTE CHE FA LA RICHIESTA: " + userID);
         if (userID != null) {
             Set <GetAllConcreteShiftDTO> c = concreteShiftController.getSingleDoctorConcreteShifts(userID);
-            System.out.println(c.isEmpty());
             System.out.println(c.size());
             for(int i=0;i<c.size();i++){
                 GetAllConcreteShiftDTO app=(GetAllConcreteShiftDTO) c.toArray()[i];
@@ -82,15 +80,9 @@ public class ConcreteShiftRestEndpoint {
                     System.out.println(oo.getName());
                 }
             }
-            if (c == null) {
-                System.out.println("VUOTO");
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            System.out.println("PIENO");
             System.out.println(Arrays.stream(c.toArray()));
             return new ResponseEntity<>(c, HttpStatus.OK);
         }
-        System.out.println("ERRORE");
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 

@@ -92,7 +92,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         /**
          * FIXME: sostiutire count con controllo su entità Config
          */
-        if (doctorDAO.count() == 0) {
+        //if (doctorDAO.count() == 0) {
             try {
                 populateDB();
             } catch (ShiftException e) {
@@ -101,7 +101,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
             //registerConstraints();
             registerScocciature();
-        }
+        //}
 
     }
 
@@ -415,13 +415,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u34 = new Doctor("Valerio", "Palmerini", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "valerio.palmerini@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
         taskController.addService(guardiaCardiologia, u34);
 
-        u6 = doctorDAO.saveAndFlush(u6);
-        u7 = doctorDAO.saveAndFlush(u7);
         u1 = doctorDAO.saveAndFlush(u1);
         u2 = doctorDAO.saveAndFlush(u2);
         u3 = doctorDAO.saveAndFlush(u3);
         u4 = doctorDAO.saveAndFlush(u4);
         u5 = doctorDAO.saveAndFlush(u5);
+        u6 = doctorDAO.saveAndFlush(u6);
+        u7 = doctorDAO.saveAndFlush(u7);
         u8 = doctorDAO.saveAndFlush(u8); // manuel mastrofini
         u9 = doctorDAO.saveAndFlush(u9);
         u10 = doctorDAO.saveAndFlush(u10);
@@ -514,10 +514,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                     ld
                     ).build();
         } catch (IllegalScheduleException e) {
-            System.out.println("CIAOOOOOOOOOOOOOOOOOOO");
             throw new RuntimeException(e);
         }
-        System.out.println("CIAOOOOOOOOOOOOOOOOOOO");
         //scheduleDAO.save(s);
         /*
 

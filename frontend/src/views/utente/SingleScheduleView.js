@@ -17,10 +17,6 @@ export default class SingleScheduleView extends ScheduleView {
     let apiTurno = new AssegnazioneTurnoAPI();
     let turni = await apiTurno.getTurnByIdUser(localStorage.getItem("id"));
 
-    console.log(`PAGINA I MIEI TURNI`);
-    for(let i = 0; i < turni.length; i++){
-      console.log(`Shift ${i}: ${turni[i].id}`);
-    }
     // FIXME: Only colleagues should be queried here, not all users
     let utenti = await (new UserAPI()).getAllUser();
 
