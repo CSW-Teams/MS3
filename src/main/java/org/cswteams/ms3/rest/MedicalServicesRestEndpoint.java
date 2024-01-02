@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
+import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,10 +26,16 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(medicalServices, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET,path = "name/{serviceName}")
-    public ResponseEntity<?> leggiServizio(@PathVariable String serviceName)  {
+    @RequestMapping(method = RequestMethod.GET, path = "name/{serviceName}")
+    public ResponseEntity<?> leggiServizio(@PathVariable String serviceName) {
         MedicalServiceDTO service = medicalServiceController.getServiceByName(serviceName);
         return new ResponseEntity<>(service, HttpStatus.FOUND);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "get-available-task-types")
+    public ResponseEntity<?> getAvailableTaskTypes() {
+        AvailableTasksTypesDTO taskTypes = medicalServiceController.getAvailableTaskTypes();
+        return new ResponseEntity<>(taskTypes, HttpStatus.FOUND);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "")
