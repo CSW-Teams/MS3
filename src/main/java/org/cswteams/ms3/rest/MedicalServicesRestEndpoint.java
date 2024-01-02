@@ -1,7 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
-import org.cswteams.ms3.dto.MedicalServiceDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +11,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/medical-services/")
-public class ServizioRestEndpoint {
+public class MedicalServicesRestEndpoint {
 
     @Autowired
     IMedicalServiceController medicalServiceController;

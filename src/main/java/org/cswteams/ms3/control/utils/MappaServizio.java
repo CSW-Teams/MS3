@@ -1,6 +1,6 @@
 package org.cswteams.ms3.control.utils;
 
-import org.cswteams.ms3.dto.MedicalServiceDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.entity.MedicalService;
 
 import java.util.HashSet;

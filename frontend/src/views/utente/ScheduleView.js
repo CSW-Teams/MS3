@@ -174,8 +174,8 @@ class ScheduleView extends React.Component{
     }
 
     handleRetirement = async (justification, idShift) => {
-      this.state.justification = justification;
-      this.state.idShift = idShift;
+      this.state.justification.setState(justification);
+      this.state.idShift.setState(idShift);
 
       const subState = {
         idAssegnazioneTurno: this.state.idShift,
@@ -240,7 +240,7 @@ class ScheduleView extends React.Component{
         let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],localStorage.getItem("id"));
         let responseStatusClass = Math.floor(response.status / 100)
 
-        if(responseStatusClass==5){
+        if(responseStatusClass === 5){
 
           toast.error('Errore nel server!', {
             position: "top-center",
@@ -254,7 +254,7 @@ class ScheduleView extends React.Component{
           });
         }
 
-        else if(responseStatusClass!= 2){
+        else if(responseStatusClass !== 2){
 
           let responseBody = await response.json();
 
@@ -293,7 +293,7 @@ class ScheduleView extends React.Component{
         let response = await assegnazioneTurnoApi.eliminaAssegnazioneTurno(deleted);
         let responseStatusClass = Math.floor(response.status / 100);
 
-        if(responseStatusClass!=2){
+        if(responseStatusClass !== 2){
 
           toast.error('Non è stato possibile eliminare l\'assegnazione selezionata!!', {
             position: "top-center",
@@ -389,13 +389,15 @@ class ScheduleView extends React.Component{
       // add shifts to the schedulables to display
         let { data, resources} = this.state;
 
+        console.log(data.length);
+
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
-        /*data = data.filter((shift) => {
+        data = data.filter((shift) => {
           return this.filters.reduce(
             (isFeasible, currentFilter) => isFeasible && currentFilter(shift, this.state.filterCriteria),
             true
           );
-        });*/
+        });
 
         /**
          * Prepariamo un messaggio diverso per il link al download del csv con i turni
@@ -452,7 +454,7 @@ class ScheduleView extends React.Component{
 
                   <Autocomplete
                     onChange={(event, value) => {
-                      this.updateFilterCriteria(()=>this.state.filterCriteria.users= value)
+                      this.updateFilterCriteria(()=>this.state.filterCriteria.users.setState(value))
                       }}
                     multiple
                     options={this.state.allUser}
@@ -547,7 +549,7 @@ class ScheduleView extends React.Component{
                   />
                 }
 
-                {view === "global" && this.state.attore !== "PLANNER" &&
+                {view === "global" && (this.state.attore === "DOCTOR" || this.state.attore === "CONFIGURATOR") &&
                 < AppointmentTooltip
                   contentComponent={(props) => (
                     <Content {...props} view={view} actor={this.state.attore} />
@@ -572,7 +574,7 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
-                {view=="global" && this.state.attore!=="DOCTOR" ?
+                {view === "global" && (this.state.attore === "PLANNER" || this.state.attore  ===  "CONFIGURATOR") ?
                   <AppointmentForm
                     overlayComponent = {Overlay}
                     textEditorComponent={Nullcomponent}

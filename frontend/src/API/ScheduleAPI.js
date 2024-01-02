@@ -1,9 +1,15 @@
-export  class ScheduloAPI {
+export  class ScheduleAPI {
 
 
   async getSchedulazini() {
     const response = await fetch('/api/schedule/');
     return await response.json();
+  }
+
+  async getSchedulesOnlyWithStartAndEndDate() {
+    const response = await fetch('/api/schedule/dates/');
+    const body = await response.json();
+    return body;
   }
 
   async getSchedulaziniIllegali() {

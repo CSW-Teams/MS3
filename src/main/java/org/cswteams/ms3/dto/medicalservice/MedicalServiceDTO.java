@@ -1,12 +1,12 @@
-package org.cswteams.ms3.dto;
+package org.cswteams.ms3.dto.medicalservice;
 
-import lombok.Data;
+import lombok.Getter;
 import org.cswteams.ms3.entity.Task;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
 public class MedicalServiceDTO {
 
     private String nome;
