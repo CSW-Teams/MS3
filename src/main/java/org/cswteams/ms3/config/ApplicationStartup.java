@@ -1,7 +1,9 @@
 package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
+import org.aspectj.weaver.loadtime.definition.Definition;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.control.scheduler.ScheduleBuilder;
 import org.cswteams.ms3.control.task.TaskController;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.entity.*;
@@ -11,10 +13,8 @@ import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
 import org.cswteams.ms3.dao.*;
-import org.cswteams.ms3.enums.Seniority;
-import org.cswteams.ms3.enums.SystemActor;
-import org.cswteams.ms3.enums.TaskEnum;
-import org.cswteams.ms3.enums.TimeSlot;
+import org.cswteams.ms3.enums.*;
+import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -42,6 +42,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private ShiftDAO shiftDAO;
+
+    @Autowired
+    private ConcreteShiftDAO concreteShiftDAO;
+
+    @Autowired
+    private DoctorAssignmentDAO doctorAssignmentDAO;
 
     @Autowired
     private MedicalServiceDAO medicalServiceDAO;
@@ -76,6 +82,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private ConfigVincoloMaxPeriodoConsecutivoDAO configVincoloMaxPeriodoConsecutivoDAO;
 
+    @Autowired
+    private ScheduleDAO scheduleDAO;
 
     @SneakyThrows
     @Override
@@ -414,7 +422,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u3 = doctorDAO.saveAndFlush(u3);
         u4 = doctorDAO.saveAndFlush(u4);
         u5 = doctorDAO.saveAndFlush(u5);
-        u8 = doctorDAO.saveAndFlush(u8);
+        u8 = doctorDAO.saveAndFlush(u8); // manuel mastrofini
         u9 = doctorDAO.saveAndFlush(u9);
         u10 = doctorDAO.saveAndFlush(u10);
         u11 = doctorDAO.saveAndFlush(u11);
@@ -462,10 +470,57 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 doctorsNumberBySeniority,
                 allDaysOfWeek,
                 Collections.emptyList());
-
-
         shiftDAO.saveAndFlush(shift1);
-/*
+
+        //TO-DO: Eliminare in seguito
+        List<ConcreteShift> lc= new ArrayList<>();
+        ConcreteShift concreteShift1 = new ConcreteShift(LocalDate.of(2024, 1, 5).toEpochDay(),shift1);
+        concreteShift1=concreteShiftDAO.saveAndFlush(concreteShift1);
+        lc.add(concreteShift1);
+        ConcreteShift concreteShift2 = new ConcreteShift(LocalDate.of(2024, 1, 6).toEpochDay(),shift1);
+        concreteShift2=concreteShiftDAO.saveAndFlush(concreteShift2);
+        lc.add(concreteShift2);
+        ConcreteShift concreteShift3 = new ConcreteShift(LocalDate.of(2024, 1, 7).toEpochDay(),shift1);
+        concreteShift3=concreteShiftDAO.saveAndFlush(concreteShift3);
+        lc.add(concreteShift3);
+
+        DoctorAssignment da1 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift1,ward);
+        doctorAssignmentDAO.saveAndFlush(da1);
+        concreteShift1.getDoctorAssignmentList().add(da1);
+        concreteShiftDAO.saveAndFlush(concreteShift1);
+
+        DoctorAssignment da2 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift2,ward);
+        doctorAssignmentDAO.saveAndFlush(da2);
+        concreteShift2.getDoctorAssignmentList().add(da2);
+        concreteShiftDAO.saveAndFlush(concreteShift2);
+
+        DoctorAssignment da3 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift3,ward);
+        doctorAssignmentDAO.saveAndFlush(da3);
+        concreteShift3.getDoctorAssignmentList().add(da3);
+        concreteShiftDAO.saveAndFlush(concreteShift3);
+
+        List<Doctor> ld = new ArrayList<Doctor>();
+        ld.add(u8);
+        ld.add(u7);
+        List<Constraint> vincoli = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
+        Schedule s= null;
+        List<Constraint> v= new ArrayList<>();
+        try {
+            s = new ScheduleBuilder(
+                    LocalDate.of(2024, 1, 5),
+                    LocalDate.of(2024, 1, 7),
+                    v,
+                    lc,
+                    ld
+                    ).build();
+        } catch (IllegalScheduleException e) {
+            System.out.println("CIAOOOOOOOOOOOOOOOOOOO");
+            throw new RuntimeException(e);
+        }
+        System.out.println("CIAOOOOOOOOOOOOOOOOOOO");
+        //scheduleDAO.save(s);
+        /*
+
 
 
         Shift t2 = new Shift(LocalTime.of(14, 0), Duration.ofHours(6), Collections.singletonList(repartoCardiologia1), TimeSlot.AFTERNOON, qssList, allDaysOfWeek, Collections.emptyList());

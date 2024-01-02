@@ -24,9 +24,9 @@ public class ConcreteShift {
     @NotNull
     private Shift shift;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @NotNull
-    private List<DoctorAssignment> doctorAssignmentList; //TODO: check that the doctors involved in this list are all different
+    private List<DoctorAssignment> doctorAssignmentList = new ArrayList<>(); //TODO: check that the doctors involved in this list are all different
     // maybe make it a Set<>?
 
     

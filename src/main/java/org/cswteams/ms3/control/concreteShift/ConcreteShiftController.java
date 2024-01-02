@@ -92,13 +92,16 @@ public class ConcreteShiftController implements IConcreteShiftController {
      */
     @Override
     public Set<GetAllConcreteShiftDTO> getSingleDoctorConcreteShifts(Long idPersona) {
-        Set<ConcreteShift> turniAllocatiERiserve = concreteShiftDAO.findTurniUtente(idPersona);
+        Set<ConcreteShift> turniAllocatiERiserve = concreteShiftDAO.findByDoctorAssignmentList_Doctor_Id(idPersona);
         Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
+
+
         for (ConcreteShift concreteShift : turniAllocatiERiserve) {
             if(!utenteInReperibilita(concreteShift, idPersona)){
                 //TODO converti entity in dto ed aggiungila a turniAllocati
 
-                long startTime = concreteShift.getDate() + concreteShift.getShift().getStartTime().toSecondOfDay();
+                // the Epoch Day gets converted to Epoch Second
+                long startTime = concreteShift.getDate()*24*60*60 + concreteShift.getShift().getStartTime().toSecondOfDay();
                 long endTime =  startTime + concreteShift.getShift().getDuration().getSeconds();
 
                 Set<UserDTO> onDutyDoctors = new HashSet<>();
@@ -128,8 +131,8 @@ public class ConcreteShiftController implements IConcreteShiftController {
                 GetAllConcreteShiftDTO getAllConcreteShiftDTO = new GetAllConcreteShiftDTO(
                         concreteShift.getId(),
                         concreteShift.getShift().getId(),
-                        concreteShift.getDate(),
-                        concreteShift.getDate() + concreteShift.getShift().getDuration().toSeconds(),
+                        startTime,
+                        endTime,
                         concreteShift.getShift().getMedicalService().getLabel(),
                         "AMBULATORIO",  // TODO: Chenga medical service List of taks
                         concreteShift.getShift().getTimeSlot().toString(),

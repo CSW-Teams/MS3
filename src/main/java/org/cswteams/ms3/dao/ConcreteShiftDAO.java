@@ -11,8 +11,8 @@ import java.util.Set;
 @Repository
 public interface ConcreteShiftDAO extends JpaRepository<ConcreteShift,Long> {
 
-    @Query(nativeQuery = true, value = "SELECT * FROM ASSEGNAZIONE_TURNO_UTENTI_DI_GUARDIA AS GUARDIA, ASSEGNAZIONE_TURNO_UTENTI_REPERIBILI AS REPERIBILI, ASSEGNAZIONE_TURNO AS T WHERE (GUARDIA.ASSEGNAZIONE_TURNO_ID=T.ID AND  GUARDIA.UTENTI_DI_GUARDIA_ID=:idPersona) OR (REPERIBILI.ASSEGNAZIONE_TURNO_ID=T.ID AND REPERIBILI.UTENTI_REPERIBILI_ID=:idPersona)")
-    Set<ConcreteShift> findTurniUtente(@Param("idPersona") Long id);
+    //@Query(nativeQuery = true,="SELECT * FROM ConcreteShift WHERE =:idName")
+    Set<ConcreteShift> findByDoctorAssignmentList_Doctor_Id(@Param("idName") Long doctorId);
 
 }
 
