@@ -1,16 +1,20 @@
 package org.cswteams.ms3.control.scocciatura;
 
-import org.cswteams.ms3.entity.ConcreteShift;
-import org.cswteams.ms3.entity.DoctorScheduleState;
+import lombok.Data;
+import org.cswteams.ms3.entity.AssegnazioneTurno;
+import org.cswteams.ms3.entity.UserScheduleState;
 import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Classe che gestisce tutti gli aspetti collegata alla metrica UFFA
  */
+@Data
 public class ControllerScocciatura {
 
     public List<Scocciatura> scocciature;
@@ -24,16 +28,16 @@ public class ControllerScocciatura {
      * Calcola quanto pesa ad un utente essere assegnato ad una assegnazione specifica.
      * Calcolato il peso aggiorna lo stato temporaneo dell'utente incrementando il valore di uffa temporaneo.
      * @param utentiState : Stato dell'utente
-     * @param concreteShift : Assegnazione a cui vogliamo assegnarla
+     * @param assegnazioneTurno : Assegnazione a cui vogliamo assegnarla
      */
-    public void addUffaTempUtenti(List<DoctorScheduleState> utentiState, ConcreteShift concreteShift){
+    public void addUffaTempUtenti(List<UserScheduleState> utentiState, AssegnazioneTurno assegnazioneTurno){
         int uffa;
         ContestoScocciatura contestoScocciatura;
 
-        for(DoctorScheduleState doctorScheduleState :utentiState ){
-            /*contestoScocciatura = new ContestoScocciatura(doctorScheduleState, concreteShift);
+        for(UserScheduleState userScheduleState:utentiState ){
+            contestoScocciatura = new ContestoScocciatura(userScheduleState,assegnazioneTurno);
             uffa = this.calcolaUffaComplessivoUtenteAssegnazione(contestoScocciatura);
-            doctorScheduleState.addUffaTemp(uffa);*/
+            userScheduleState.addUffaTemp(uffa);
         }
     }
 
@@ -42,7 +46,7 @@ public class ControllerScocciatura {
      * @param utenti
      * @return
      */
-    public void ordinaByUffa(List<DoctorScheduleState> utenti){
+    public void ordinaByUffa(List<UserScheduleState> utenti){
 
         /*
          * Mescoliamo prima la lista degli utenti e poi ordiniamo in base al valore di UFFA.
@@ -70,4 +74,5 @@ public class ControllerScocciatura {
 
         return uffa;
     }
+
 }

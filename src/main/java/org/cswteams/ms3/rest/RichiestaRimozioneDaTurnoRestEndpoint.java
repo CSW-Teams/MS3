@@ -1,7 +1,9 @@
 package org.cswteams.ms3.rest;
 
-import org.cswteams.ms3.control.requestRemovalFromConcreteShift.IRequestRemovalFromConcreteShiftController;
-import org.cswteams.ms3.dto.RequestRemovalFromConcreteShiftDTO;
+import org.cswteams.ms3.control.richiestaRimozioneDaTurno.IControllerRichiestaRimozioneDaTurno;
+import org.cswteams.ms3.control.utils.MappaRichiestaRimozioneDaTurno;
+import org.cswteams.ms3.dto.RichiestaRimozioneDaTurnoDTO;
+import org.cswteams.ms3.entity.RichiestaRimozioneDaTurno;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,68 +16,68 @@ import java.io.IOException;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/concrete-shifts/retirement-request/")
+@RequestMapping("/assegnazioneturni/richiesterimozione")
 public class RichiestaRimozioneDaTurnoRestEndpoint {
 
     @Autowired
-    private IRequestRemovalFromConcreteShiftController controller;
+    private IControllerRichiestaRimozioneDaTurno controller;
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> creaRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {
-        RequestRemovalFromConcreteShiftDTO ret = null;
-        if (requestDTO == null) {
+    public ResponseEntity<?> creaRichiestaRimozioneDaTurno(@RequestBody RichiestaRimozioneDaTurnoDTO richiestaDTO) {
+        RichiestaRimozioneDaTurno r = null;
+        if (richiestaDTO == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
-            ret = controller.createRequest(requestDTO);
+            r = controller.creaRichiestaRimozioneDaTurno(richiestaDTO);
         } catch (DatabaseException | AssegnazioneTurnoException e) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
-        return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoToDTO(r), HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurno() {
-        Set<RequestRemovalFromConcreteShiftDTO> requests = controller.getAllRequests();
-        return new ResponseEntity<>(requests, HttpStatus.FOUND);
+        Set<RichiestaRimozioneDaTurnoDTO> richiesteRimozioneDaTurno = controller.leggiRichiesteRimozioneDaTurno();
+        return new ResponseEntity<>(richiesteRimozioneDaTurno, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/pending")
+    @RequestMapping(method = RequestMethod.GET, path = "/pendenti")
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPendenti() {
-        Set<RequestRemovalFromConcreteShiftDTO> richiesteRimozioneDaTurnoPendenti = controller.getPendingRequests();
+        Set<RichiestaRimozioneDaTurnoDTO> richiesteRimozioneDaTurnoPendenti = controller.leggiRichiesteRimozioneDaTurnoPendenti();
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/user/{idUtente}")
+    @RequestMapping(method = RequestMethod.GET, path = "/utente/{idUtente}")
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPerUtente(@PathVariable Long idUtente) {
-        Set<RequestRemovalFromConcreteShiftDTO> richiesteRimozioneDaTurnoPendenti = controller.getRequestsByRequestingDoctorId(idUtente);
+        Set<RichiestaRimozioneDaTurnoDTO> richiesteRimozioneDaTurnoPendenti = controller.leggiRichiesteRimozioneDaTurnoPerUtente(idUtente);
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/resolve")
-    public ResponseEntity<?> risolviRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {
-        RequestRemovalFromConcreteShiftDTO ret = null;
-        if (requestDTO == null) {
+    @RequestMapping(method = RequestMethod.POST, path = "/risolvi")
+    public ResponseEntity<?> risolviRichiestaRimozioneDaTurno(@RequestBody RichiestaRimozioneDaTurnoDTO richiestaRimozioneDaTurnoDTO) {
+        RichiestaRimozioneDaTurno r = null;
+        if (richiestaRimozioneDaTurnoDTO == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
-            ret = controller.reviewRequest(requestDTO);
+            r = controller.risolviRichiestaRimozioneDaTurno(richiestaRimozioneDaTurnoDTO);
         } catch (DatabaseException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (AssegnazioneTurnoException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoToDTO(r), HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/{idRichiestaRimozioneDaTurno}/uploadFile")
-    public ResponseEntity<?> caricaAllegato(@PathVariable Long request, @RequestParam("attachment") MultipartFile attachment) {
-        RequestRemovalFromConcreteShiftDTO ret;
+    @RequestMapping(method = RequestMethod.POST, path = "/{idRichiestaRimozioneDaTurno}/caricaAllegato")
+    public ResponseEntity<?> caricaAllegato(@PathVariable Long idRichiestaRimozioneDaTurno, @RequestParam("allegato") MultipartFile allegato) {
+        RichiestaRimozioneDaTurno r;
         try {
-            ret = controller.uploadFile(request, attachment);
+            r = controller.caricaAllegato(idRichiestaRimozioneDaTurno, allegato);
         } catch (IOException | DatabaseException e) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
-        return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(MappaRichiestaRimozioneDaTurno.richiestaRimozioneDaTurnoToDTO(r), HttpStatus.ACCEPTED);
     }
 }

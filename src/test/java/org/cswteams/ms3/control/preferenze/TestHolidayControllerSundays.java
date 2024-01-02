@@ -1,8 +1,10 @@
 package org.cswteams.ms3.control.preferenze;
 
-import org.cswteams.ms3.dao.HolidayDAO;
+import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.dao.HolidayDao;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.HolidayCategory;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -32,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 @Transactional
 @ActiveProfiles(value = "test")
 public class TestHolidayControllerSundays {
-    /*
 
     @ClassRule
     public static final SpringClassRule scr = new SpringClassRule();
@@ -44,7 +45,7 @@ public class TestHolidayControllerSundays {
     private IHolidayController controller ;
 
     @Autowired
-    private HolidayDAO dao ;
+    private HolidayDao dao ;
 
     private final LocalDate date ;
     private int year ;
@@ -149,7 +150,7 @@ public class TestHolidayControllerSundays {
                 if(now.getDayOfWeek() == DayOfWeek.SUNDAY) {
 
                     boolean contained = false ;
-                    Holiday comparated = new Holiday("Domenica", HolidayCategory.RELIGIOUS, now.toEpochDay(), now.toEpochDay(), null) ;
+                    Holiday comparated = new Holiday("Domenica", HolidayCategory.RELIGIOSA, now.toEpochDay(), now.toEpochDay(), null) ;
 
                     for (Holiday holiday : holidays)
                     {
@@ -176,7 +177,7 @@ public class TestHolidayControllerSundays {
                 if(now.getDayOfWeek() == DayOfWeek.SUNDAY) {
 
                     boolean contained = false ;
-                    Holiday comparated = new Holiday("Domenica", HolidayCategory.RELIGIOUS, now.toEpochDay(), now.toEpochDay(), null) ;
+                    Holiday comparated = new Holiday("Domenica", HolidayCategory.RELIGIOSA, now.toEpochDay(), now.toEpochDay(), null) ;
 
                     for (Holiday holiday : holidays)
                     {
@@ -204,6 +205,4 @@ public class TestHolidayControllerSundays {
     public void deleteHolydays() {
         dao.deleteAll() ;
     }
-
-     */
 }

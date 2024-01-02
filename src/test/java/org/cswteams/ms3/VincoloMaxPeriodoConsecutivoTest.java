@@ -1,12 +1,33 @@
 package org.cswteams.ms3;
 
+import org.cswteams.ms3.entity.vincoli.ContestoVincolo;
+import org.cswteams.ms3.entity.vincoli.Vincolo;
+import org.cswteams.ms3.entity.vincoli.VincoloMaxPeriodoConsecutivo;
+import org.cswteams.ms3.dao.AssegnazioneTurnoDao;
+import org.cswteams.ms3.dao.ServizioDao;
+import org.cswteams.ms3.dao.TurnoDao;
+import org.cswteams.ms3.dao.UserCategoryPolicyDao;
+import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.enums.*;
+import org.cswteams.ms3.exception.TurnoException;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -14,7 +35,8 @@ import javax.transaction.Transactional;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt. It means that
 @Transactional
 public class VincoloMaxPeriodoConsecutivoTest {
-/*    @Autowired
+
+    @Autowired
     private UtenteDao utenteDao;
 
     @Autowired
@@ -31,7 +53,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
 
     @Test(expected= ViolatedConstraintException.class)
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
-    /*public void oreConsecutiveTEST() throws ViolatedConstraintException, TurnoException {
+    public void oreConsecutiveTEST() throws ViolatedConstraintException, TurnoException {
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
         Categoria categoriaOVER62 = new Categoria("OVER_62", TipoCategoriaEnum.STATO);
         Categoria categoriaIncinta = new Categoria("INCINTA", TipoCategoriaEnum.STATO);
@@ -77,11 +99,12 @@ public class VincoloMaxPeriodoConsecutivoTest {
         Vincolo vincoloMaxOreConsecutive = new VincoloMaxPeriodoConsecutivo(12*60);
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
         vincoloMaxOreConsecutive.verificaVincolo(new ContestoVincolo(pregUserState,turnoNotturno));
-    }*/
+    }
 
-    //@Test(expected= ViolatedConstraintException.class)
+
+    @Test(expected= ViolatedConstraintException.class)
     /**Test che verifica che un utente non può effettuare più di un tot ore consecutive */
-    /*public void oreConsecutiveConCategoriaTEST() throws ViolatedConstraintException, TurnoException{
+    public void oreConsecutiveConCategoriaTEST() throws ViolatedConstraintException, TurnoException{
         Servizio servizio1 = new Servizio("cardiologia");
         servizio1.getMansioni().add(MansioneEnum.REPARTO);
         servizioDao.save(servizio1);
@@ -113,7 +136,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
 
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
        // vincoloMaxOreConsecutive.verificaVincolo(new ContestoVincolo(pregUserState,turnoPomeriggio));
-    }*/
+    }
 
 
 

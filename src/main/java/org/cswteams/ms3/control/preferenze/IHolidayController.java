@@ -6,16 +6,13 @@ import java.util.List;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.Holiday;
 
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-
 public interface IHolidayController {
 
     /** Registra un intervallo di date come un periodo festivo */
     void registerHolidayPeriod(HolidayDTO holidayArgs);
 
     /** Legge tutti i periodi festivi */
-    List<HolidayDTO> readHolidays();
+    List<Holiday> readHolidays();
 
     /** Registra un intervallo di date come un periodo festivo, e ripete la procedura
      * per il numero ulteriore di anni specificato .
@@ -30,7 +27,6 @@ public interface IHolidayController {
      */
     void registerSundays(LocalDate start, int years);
 
-    @Transactional
-    void registerHoliday(@NotNull List<HolidayDTO> holidays);
+    void registerHoliday(List<Holiday> holidays);
 
 }

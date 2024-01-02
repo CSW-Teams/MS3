@@ -3,7 +3,7 @@ import {RichiestaRimozioneDaTurnoAPI} from "../../API/RichiestaRimozioneDaTurnoA
 //import RequestsTable from "../../components/common/TabellaRichiesteRitiro"
 import {TurnoAPI} from "../../API/TurnoAPI";
 import {AssegnazioneTurnoAPI} from "../../API/AssegnazioneTurnoAPI";
-import {UserAPI} from "../../API/UserAPI";
+import {UtenteAPI} from "../../API/UtenteAPI";
 import {
   Button,
   Dialog,
@@ -77,13 +77,13 @@ export default class RichiesteRitiroView extends React.Component {
 
     console.log("mounting component")
 
-    let apiUser = new UserAPI();
+    let apiUser = new UtenteAPI();
     let apiRetirement = new RichiestaRimozioneDaTurnoAPI();
     let apiShifts = new AssegnazioneTurnoAPI();
 
     const users = await apiUser.getAllUser();
     this.setState({users: users});
-    const shifts = await apiShifts.getGlobalShift();
+    const shifts = await apiShifts.getGlobalTurn();
     this.setState({shifts: shifts})
     const searchParams = new URLSearchParams(this.props.location.search);
     const local = searchParams.get('locale');

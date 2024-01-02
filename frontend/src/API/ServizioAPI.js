@@ -1,21 +1,21 @@
-export class ServizioAPI {
-  constructor() {
-  }
-
-  async getService() {
-    try {
-      const response = await fetch('/medical-services/');
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-
-      const body = await response.json();
-      const servizi = body.map(item => item.name);
-      return servizi;
-    } catch (error) {
-      console.error('Error fetching data:', error.message);
-      return [];
+export  class ServizioAPI {
+    constructor() {
     }
+
+    async getService() {
+        const response = await fetch('/api/servizi/');
+        const body = await response.json();
+
+        const servizi = [];
+
+        for (let i = 0; i < body.length; i++) {
+            servizi[i] = body[i].nome;
+        }
+
+        return servizi;
+
+    }
+
+
+
   }
-}

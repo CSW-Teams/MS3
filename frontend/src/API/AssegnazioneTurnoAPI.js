@@ -1,7 +1,6 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
-import {User} from "./User";
-import {forEach} from "react-bootstrap/ElementChildren";
+import {Utente} from "./Utente";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -12,21 +11,19 @@ export  class AssegnazioneTurnoAPI {
     let turni = [];
 
     for (let i = 0; i < body.length; i++) {
-        console.log(`Element ${i}: ${body[i].id}`);
-        console.log(`Element ${i}: ${body[i].startDateTime}`);
-        console.log(`Element ${i}: ${body[i].endDateTime}`);
-        const inizioEpochMilliseconds = body[i].startDateTime*1000
+
+        const inizioEpochMilliseconds = body[i].inizioEpoch*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 
-        const fineEpochMilliseconds = body[i].endDateTime*1000
+        const fineEpochMilliseconds = body[i].fineEpoch*1000
         const fineDate = new Date(fineEpochMilliseconds);
 
         let turno = new AssignedShift(
-          body[i].medicalServiceTask + " in " + body[i].medicalServiceLabel,
+          body[i].mansione + " in " + body[i].servizio.nome,
           inizioDate,
           fineDate,
           teal);
-        turno.id = body[i].shiftID;
+        turno.id = body[i].id;
         turno.type ="Assigned"
 
         let utenti_guardia = [];
@@ -37,37 +34,37 @@ export  class AssegnazioneTurnoAPI {
         let utenti_rimossi_id = [];
 
 
-        for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
-          let currentUserDto = body[i].doctorsOnDuty[j];
-          let utenteAllocato = new User(
+        for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
+          let currentUserDto = body[i].utentiDiGuardia[j];
+          let utenteAllocato = new Utente(
             currentUserDto.id,
-            currentUserDto.name,
-            currentUserDto.lastname,
-            currentUserDto.systemActor,
+            currentUserDto.nome,
+            currentUserDto.cognome,
+            currentUserDto.ruoloEnum,
           )
           utenti_guardia[j] = utenteAllocato;
           utenti_guardia_id[j] = utenteAllocato.id;
         }
 
-        for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
-          let currentUserDto = body[i].doctorsOnCall[j];
-          let utenteReperibile = new User(
+        for (let j = 0; j < body[i].utentiReperibili.length; j++) {
+          let currentUserDto = body[i].utentiReperibili[j];
+          let utenteReperibile = new Utente(
             currentUserDto.id,
-            currentUserDto.name,
-            currentUserDto.lastname,
-            currentUserDto.systemActor,
+            currentUserDto.nome,
+            currentUserDto.cognome,
+            currentUserDto.ruoloEnum,
           )
           utenti_reperibili[j] = utenteReperibile;
           utenti_reperibili_id[j] = utenteReperibile.id;
         }
 
-        for (let j = 0; j < body[i].deletedDoctors.length; j++) {
-          let currentUserDto = body[i].deletedDoctors[j];
-          let utenteRimosso = new User(
+        for (let j = 0; j < body[i].retiredUsers.length; j++) {
+          let currentUserDto = body[i].retiredUsers[j];
+          let utenteRimosso = new Utente(
             currentUserDto.id,
-            currentUserDto.name,
-            currentUserDto.lastname,
-            currentUserDto.systemActor,
+            currentUserDto.nome,
+            currentUserDto.cognome,
+            currentUserDto.ruoloEnum,
           )
           utenti_rimossi[j] = utenteRimosso;
           utenti_rimossi_id[j] = utenteRimosso.id;
@@ -81,9 +78,10 @@ export  class AssegnazioneTurnoAPI {
         turno.utenti_rimossi = utenti_rimossi;
         turno.utenti_rimossi_id = utenti_rimossi_id;
 
-      turno.tipologia = body[i].timeSlot;
-      turno.servizio = body[i].medicalServiceLabel;
-      turno.mansione = body[i].medicalServiceTask;
+      turno.tipologia = body[i].tipologiaTurno;
+      turno.servizio = body[i].servizio.nome;
+      turno.mansione = body[i].mansione;
+      console.log(turno.mansione)
       turno.reperibilitaAttiva = body[i].reperibilitaAttiva;
 
       turni[i] = turno;
@@ -95,7 +93,7 @@ export  class AssegnazioneTurnoAPI {
 }
 
   async getTurnByIdUser(id) {
-    const response = await fetch('/api/concrete-shifts/user_id=' + id);
+    const response = await fetch('/api/assegnazioneturni/utente_id=' + id);
     const body = await response.json();
 
 
@@ -156,7 +154,7 @@ export  class AssegnazioneTurnoAPI {
         body: JSON.stringify(assegnazioneTurno)
       };
 
-      const response = await fetch('/api/concrete-shifts/',requestOptions);
+      const response = await fetch('/api/assegnazioneturni/',requestOptions);
 
       return response;
 
@@ -179,23 +177,23 @@ export  class AssegnazioneTurnoAPI {
 
     console.log(assegnazioneModificata)
 
-    return await fetch('/api/concrete-shifts/', requestOptions);
+    return await fetch('/api/assegnazioneturni/', requestOptions);
 
 }
 
-async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
-  let shiftChangeRequest = {}
-  shiftChangeRequest.concreteShiftId = assegnazione.id;
-  shiftChangeRequest.senderId = idLoggato;
-  shiftChangeRequest.receiverId = utenteCambio.id;
+async requestTurnChange(utenteCambio, assegnazione, idLoggato) {
+  let turnChangeRequest = {}
+  turnChangeRequest.concreteShiftId = assegnazione.id;
+  turnChangeRequest.senderId = idLoggato;
+  turnChangeRequest.receiverId = utenteCambio.id;
 
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(shiftChangeRequest)
+    body: JSON.stringify(turnChangeRequest)
   };
 
-  return await fetch('/api/concrete-shifts/retirement-request/', requestOptions);
+  return await fetch('/api/assegnazioneturni/scambio', requestOptions);
 }
 
 
@@ -207,39 +205,38 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  const response = await fetch('/api/concrete_shifts/'+idDaEliminare,requestOptions);
+  console.log(idDaEliminare)
+  const response = await fetch('/api/assegnazioneturni/'+idDaEliminare,requestOptions);
   return response;
 
 }
 
 
 
-    async getGlobalShift() {
-        const response = await fetch('/api/concrete-shifts/');
+    async getGlobalTurn() {
+        const response = await fetch('/api/assegnazioneturni/');
         const body = await response.json();
 
-        const risultati = this.parseAllocatedShifts(body);
-
-        return risultati;
+        return this.parseAllocatedShifts(body);
     }
 
     async postGenerationSchedule(dataStart,dataEnd) {
 
-      const initialDay = dataStart.$d.getDate();
-      const initialMonth = dataStart.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
-      const initialYear = dataStart.$d.getFullYear();
-      const finalDay = dataEnd.$d.getDate();
-      const finalMonth = dataEnd.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
-      const finalYear = dataEnd.$d.getFullYear();
+      let requestGeneration = {};
 
-      let requestGeneration = {
-        initialDay: initialDay,
-        initialMonth: initialMonth,
-        initialYear: initialYear,
-        finalDay: finalDay,
-        finalMonth: finalMonth,
-        finalYear: finalYear
-      };
+      const giornoInizio = dataStart.$d.getDate();
+      const meseInizio = dataStart.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
+      const annoInizio = dataStart.$d.getFullYear();
+
+      // Creating an ISO 8601 formatted date string
+      requestGeneration.giornoInizio = `${annoInizio}-${meseInizio.toString().padStart(2, '0')}-${giornoInizio.toString().padStart(2, '0')}`;
+
+      const giornoFine = dataEnd.$d.getDate();
+      const meseFine = dataEnd.$d.getMonth()+1; // January is 0, so we add 1 to get 1-12 range
+      const annoFine = dataEnd.$d.getFullYear();
+
+      // Creating an ISO 8601 formatted date string
+      requestGeneration.giornoFine = `${annoFine}-${meseFine.toString().padStart(2, '0')}-${giornoFine.toString().padStart(2, '0')}`;
 
       const requestOptions = {
         method: 'POST',

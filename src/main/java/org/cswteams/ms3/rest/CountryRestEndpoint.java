@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/country")
 public class CountryRestEndpoint {
+    
 	@RequestMapping(method = RequestMethod.GET, path = "/country={countryName}")
     public ResponseEntity<String> getCountryCode(@PathVariable String country){
 		String code = Country.nameToCode(country);

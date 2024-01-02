@@ -1,6 +1,16 @@
 package org.cswteams.ms3.control.utente;
 
+import org.cswteams.ms3.control.utente.ControllerUtente;
+import org.cswteams.ms3.dao.UtenteDao;
+import org.cswteams.ms3.dto.UtenteDTO;
+import org.cswteams.ms3.entity.Categoria;
+import org.cswteams.ms3.entity.CategoriaUtente;
+import org.cswteams.ms3.enums.AttoreEnum;
+import org.cswteams.ms3.enums.TipoCategoriaEnum;
+import org.junit.After;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -9,6 +19,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
@@ -16,7 +33,7 @@ import javax.transaction.Transactional;
 @Transactional
 @ActiveProfiles(value = "test")
 public class TestUtenteController {
-/*
+
     @Autowired
     private ControllerUtente controller ;
 
@@ -156,5 +173,5 @@ public class TestUtenteController {
     @After
     public void clean() {
         dao.deleteAll() ;
-    }*/
+    }
 }

@@ -15,7 +15,7 @@
 	<description>MS3 - Medical Staff Shift Scheduler is designed to schedule medical shifts of hospital employees. </description>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>1.8</java.version>
 		<spring.datasource.url>jdbc:postgresql://localhost:5432/ms3</spring.datasource.url>
 		<spring.datasource.driverClassName>org.postgresql.Driver</spring.datasource.driverClassName>
 		<spring.jpa.database-platform>org.hibernate.dialect.PostgreSQLDialect</spring.jpa.database-platform>
@@ -108,12 +108,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
-        </dependency>
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>

@@ -10,7 +10,7 @@ import { CSVLink } from 'react-csv';
  * e a correggerlo, sarebbe molto apprezzato.
  */
 export function ShiftPrinterCSV(props){
-
+    
     /**
      * Dobbiamo trasformare i turni grezzi in oggetti che possiamo stampare come CSV
      */
@@ -25,6 +25,8 @@ export function ShiftPrinterCSV(props){
         }
     });
 
+    console.log(props)
+    
     return(
         <CSVLink data={printableShifts} onClick={() => {return props.enable}}>
             {props.textLink}
@@ -33,5 +35,5 @@ export function ShiftPrinterCSV(props){
 }
 
 function buildNameFromUser(user){
-    return user.name + " " + user.lastname;
+    return user.nome + " " + user.cognome;
 }

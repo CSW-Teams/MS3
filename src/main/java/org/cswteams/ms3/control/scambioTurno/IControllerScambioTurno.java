@@ -2,8 +2,10 @@ package org.cswteams.ms3.control.scambioTurno;
 
 import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ViewUserTurnRequestsDTO;
+import org.cswteams.ms3.entity.Request;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 

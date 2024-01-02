@@ -1,5 +1,5 @@
 import React from 'react';
-import {UserAPI} from "../../API/UserAPI";
+import {UtenteAPI} from "../../API/UtenteAPI";
 import {
   MDBCard,
   MDBCardBody,
@@ -14,6 +14,7 @@ import {
    MDBCardTitle
 } from "mdb-react-ui-kit";
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
+import {Button} from "@material-ui/core";
 import AggiungiCategoria from "../../components/common/BottomViewAggiungiTurnazione"
 import AggiungiCategoriaStato from "../../components/common/BottomViewAggiungiCategoriaStat"
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,21 +41,21 @@ export default class UserProfileView extends React.Component{
   async componentDidMount() {
     let id = this.props.match.params.idUser;
     let attore = localStorage.getItem("attore");
-    let utente = await(new UserAPI().getUserDetails(id));
+    let utente = await(new UtenteAPI().getUserDetails(id));
     let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
     let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
     let turnazioni_utente = await(new CategoriaUtenteAPI().getTurnazioniUtente(id))
 
     this.setState({
       attore : attore,
-      nome: utente.name,
-      cognome: utente.lastname,
-      ruolo: utente.role,
+      nome: utente.nome,
+      cognome: utente.cognome,
+      ruolo: utente.ruoloEnum,
       email: utente.email,
-      dataNascita: utente.birthday,
+      dataNascita: utente.dataNascita,
       categorie_utente : categorie_utente,
       specializzazioni_utente:specializzazioni_utente,
-      turnazioni_utente: turnazioni_utente,
+      turnazioni_utente:turnazioni_utente,
     })
   }
 
@@ -231,6 +232,7 @@ export default class UserProfileView extends React.Component{
                     fluid/>
                   <p
                     className="text-muted mb-1">{this.state.nome + " " + this.state.cognome}</p>
+                  <p className="text-muted mb-4">{this.state.ruolo}</p>
                 </MDBCardBody>
               </MDBCard>
             </MDBCol>

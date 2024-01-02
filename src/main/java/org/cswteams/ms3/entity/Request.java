@@ -2,7 +2,8 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.cswteams.ms3.enums.RequestStatus;
+import org.cswteams.ms3.enums.RequestENUM;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,7 +11,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-//@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "sender_id", "shift_id", "receiver_id" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "sender_id", "turn_id", "receiver_id" }) })
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -20,25 +21,25 @@ public class Request {
     /** Id utente richiedente */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
-    private User sender;
+    private Utente sender;
 
     /** Id utente ricevente */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
-    private User receiver;
+    private Utente receiver;
 
     /** Id turno da modificare */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
-    private ConcreteShift turn;
+    private AssegnazioneTurno turn;
 
-    private RequestStatus status = RequestStatus.PENDING;
+    private RequestENUM status = RequestENUM.PENDING;
 
     public Request() {
 
     }
 
-    public Request(User sender, User receiver, ConcreteShift turn) {
+    public Request(Utente sender, Utente receiver, AssegnazioneTurno turn) {
         this.sender = sender;
         this.receiver = receiver;
         this.turn = turn;

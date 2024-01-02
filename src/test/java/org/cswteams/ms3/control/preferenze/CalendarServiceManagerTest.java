@@ -1,8 +1,6 @@
 package org.cswteams.ms3.control.preferenze;
 
-import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.Holiday;
-import org.cswteams.ms3.enums.ServiceDataENUM;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,6 +13,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.transaction.Transactional;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.ArrayList;
 import java.util.List;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -35,9 +38,9 @@ class CalendarServiceManagerTest {
         //questo non solleva un eccezzione
         CalendarSettingBuilder b = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
         calendarServiceManager.init(b.create("2024","IT"));
-        List<HolidayDTO> holidayList1 = calendarServiceManager.getHolidays();
+        List<Holiday> holidayList1 = calendarServiceManager.getHolidays();
         calendarServiceManager.init(b.create("2023","IT"));
-        List<HolidayDTO> holidayList2 = calendarServiceManager.getHolidays();
+        List<Holiday> holidayList2 = calendarServiceManager.getHolidays();
         Assert.assertEquals(holidayList2.size(),holidayList1.size());
         for(int i=0;i<holidayList1.size();i++){
             Assert.assertEquals(holidayList2.get(i).getName(),holidayList1.get(i).getName());

@@ -1,12 +1,30 @@
 package org.cswteams.ms3;
 
+import org.cswteams.ms3.config.ApplicationStartup;
+import org.cswteams.ms3.control.scheduler.IControllerScheduler;
+import org.cswteams.ms3.enums.*;
+import org.cswteams.ms3.exception.TurnoException;
+import org.cswteams.ms3.exception.UnableToBuildScheduleException;
+import org.cswteams.ms3.dao.*;
+import org.cswteams.ms3.entity.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import javax.transaction.Transactional;
+import java.util.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -15,11 +33,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @Profile("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // The spring application context will be considered "dirty" before each test method, and will be rebuilt.
 public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests {
-/*    @Autowired
-    private ISchedulerController controllerScheduler;
 
     @Autowired
-    private ScheduleDAO scheduleDao;
+    private IControllerScheduler controllerScheduler;
+
+    @Autowired
+    private ScheduleDao scheduleDao;
 
     @Autowired
     private UtenteDao utenteDao;
@@ -88,10 +107,10 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
     }
 
     @Test
-    @Transactional*/
+    @Transactional
     /** needed to avoid "org.hibernate.LazyInitializationException: could not initialize proxy - no Session".
      *  Remember to flush daos after each change to entities */
-    /*public void TestScheduler() throws UnableToBuildScheduleException {
+    public void TestScheduler() throws UnableToBuildScheduleException {
 
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = startDate.plusDays(5);
@@ -104,7 +123,7 @@ public class TestSchedule extends AbstractTransactionalJUnit4SpringContextTests 
         //Verifico che la donna incinta non è stata inserita nel turno notturno
         Assert.assertNotEquals(schedule.getAssegnazioniTurno().get(0).getUtentiAsList().get(0).getNome(), "Giulia");
         Assert.assertEquals(schedule.getAssegnazioniTurno().get(0).getUtentiAsList().get(0).getNome(), "Manuel");
-    }*/
+    }
 }
 
 

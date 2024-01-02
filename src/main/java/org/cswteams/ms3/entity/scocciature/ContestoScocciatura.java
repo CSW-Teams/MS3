@@ -1,20 +1,19 @@
 package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
-import org.cswteams.ms3.entity.ConcreteShift;
-import org.cswteams.ms3.entity.DoctorScheduleState;
+import org.cswteams.ms3.entity.AssegnazioneTurno;
 import org.cswteams.ms3.entity.UserScheduleState;
 
 @Data
 public class ContestoScocciatura {
 
-    private DoctorScheduleState doctorScheduleState;
+    private UserScheduleState userScheduleState;
 
-    private ConcreteShift concreteShift;
+    private AssegnazioneTurno assegnazioneTurno;
 
-    public ContestoScocciatura(DoctorScheduleState utente, ConcreteShift turno){
-        this.concreteShift = turno;
-        this.doctorScheduleState = utente;
+    public ContestoScocciatura(UserScheduleState utente, AssegnazioneTurno turno){
+        this.assegnazioneTurno = turno;
+        this.userScheduleState = utente;
     }
 
 }

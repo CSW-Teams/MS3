@@ -2,9 +2,9 @@ package org.cswteams.ms3.dto;
 
 
 import lombok.Data;
-import org.cswteams.ms3.dto.user.UserDTO;
-import org.cswteams.ms3.enums.TimeSlot;
+import org.cswteams.ms3.enums.TipologiaTurno;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Data
@@ -14,16 +14,14 @@ public class GiustificazioneForzaturaVincoliDTO {
 
     private String utenteGiustificatoreId;
 
-    private int giorno;
-    private int mese;
-    private int anno;
+    private LocalDate giorno;
 
-    private TimeSlot timeSlot;
-    private Set<UserDTO> utentiAllocati;
-    private MedicalServiceDTO servizio;
+    private TipologiaTurno tipologiaTurno;
+    private Set<UtenteDTO> utentiAllocati;
+    private ServizioDTO servizio;
 
 
-    //private Set<Waiver> liberatorie;
+    //private Set<Liberatoria> liberatorie;
 
     public GiustificazioneForzaturaVincoliDTO() {
 

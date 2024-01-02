@@ -8,27 +8,19 @@ export default class LoginView extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      email: "",
+      username: "",
       password: "",
-      systemActor: "DOCTOR"
     }
     this.handleSubmit= this.handleSubmit.bind(this);
   }
 
-  handleChange(e) {
-    const val = e.target.value;
-    const name = e.target.name;
 
-    // Verifica se l'evento è scatenato da un input di testo o da un elemento select
-    if (name === "systemActor") {
-      this.setState({
-        systemActor: val
-      });
-    } else {
-      this.setState({
-        [name]: val
-      });
-    }
+  handleChange(e) {
+    // Aggiorna lo stato in base al cambiamento degli input
+    const val = e.target.value;
+    this.setState({
+      [e.target.name] : val
+    });
   }
 
   async handleSubmit(e) {
@@ -47,24 +39,23 @@ export default class LoginView extends React.Component {
     switch (responseStatusClass) {
       case 2:
         // Success - Redirect e salvataggio dati di sessione
-        const user = await httpResponse.json();
+        const utente = await httpResponse.json();
 
-        localStorage.setItem("id", user.id)
-        localStorage.setItem("name", user.name)
-        localStorage.setItem("lastname", user.lastname)
-        localStorage.setItem("actor", this.state.systemActor)
+        localStorage.setItem("id", utente.id)
+        localStorage.setItem("nome", utente.nome)
+        localStorage.setItem("cognome", utente.cognome)
+        localStorage.setItem("attore", utente.attore)
 
         this.props.history.push({
           pathname: '/pianificazione-globale',
-          state: user,
+          state: utente,
         })
 
         window.location.reload();
 
         break;
       default:
-        const errorMessage = await httpResponse.text();
-        toast.error(`Autenticazione Fallita. ${errorMessage}.`, {
+        toast.error('Autenticazione Fallita. Riprova inserendo le credenziali corrette.', {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -87,7 +78,7 @@ export default class LoginView extends React.Component {
             <div className="form-group mt-3">
               <label>Indirizzo Email</label>
               <input
-                name = "email"
+                name = "username"
                 type="email"
                 className="form-control mt-1"
                 placeholder="Inserisci l'indirizzo email"
@@ -107,27 +98,12 @@ export default class LoginView extends React.Component {
               />
             </div>
             <div className="d-grid gap-2 mt-3">
-              <button onClick={this.handleSubmit} type="submit"
-                      className="btn btn-primary">
+              <button onClick={this.handleSubmit} type="submit" className="btn btn-primary">
                 Login
               </button>
             </div>
-            <div className="d-grid gap-2 mt-3">
-              <label>Accedi come:</label>
-              <select
-                name="systemActor"
-                className="form-select mt-1"
-                value={this.state.systemActor}
-                onChange={e => this.handleChange(e)}
-              >
-                {/* Placeholder. It should be a call on the backend */}
-                <option value="DOCTOR">Dottore</option>
-                <option value="CONFIGURATOR">Configuratore</option>
-                <option value="PLANNER">Pianificatore</option>
-              </select>
-            </div>
             <div className="form-check gap-2 mt-3">
-              <input className="form-check-input" type="checkbox" value=""></input>
+              <input class="form-check-input" type="checkbox" value=""></input>
               Ricordami
             </div>
             <p className="forgot-password text-center mt-2">
