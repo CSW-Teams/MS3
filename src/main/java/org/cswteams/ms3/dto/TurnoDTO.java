@@ -2,6 +2,7 @@ package org.cswteams.ms3.dto;
 
 import lombok.Data;
 import lombok.Getter;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.enums.TimeSlot;
 
@@ -20,7 +21,7 @@ public class TurnoDTO {
     private Duration durata;
 
     @Getter
-    private ServizioDTO servizio;
+    private MedicalServiceDTO servizio;
 
     private Task task;
 
@@ -35,7 +36,7 @@ public class TurnoDTO {
 
     public TurnoDTO(){}
 
-    public TurnoDTO(long id, TimeSlot timeSlot, LocalTime inizio, Duration durata, ServizioDTO servizio, Task task, boolean reperibilitaAttiva){
+    public TurnoDTO(long id, TimeSlot timeSlot, LocalTime inizio, Duration durata, MedicalServiceDTO servizio, Task task, boolean reperibilitaAttiva){
         this.durata = durata;
         this.oraInizio = inizio;
         this.servizio = servizio;

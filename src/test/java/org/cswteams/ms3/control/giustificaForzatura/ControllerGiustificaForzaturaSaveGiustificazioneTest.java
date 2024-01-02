@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.giustificaForzatura;
 
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
-import org.cswteams.ms3.dto.ServizioDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.user.UserDetailsDTO;
 import org.cswteams.ms3.entity.Schedule;
 import org.junit.jupiter.api.AfterAll;
@@ -63,7 +63,7 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
     private static GiustificazioneForzaturaVincoliDTO constructorGiustificazioneForzaturaVincoliDTOPartition(
             Set<UserDetailsDTO> setUtenti,
             LocalDate day,
-            ServizioDTO service,
+            MedicalServiceDTO service,
             String justificationID
             //TipologiaTurno turnType
     ){
