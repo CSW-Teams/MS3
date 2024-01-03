@@ -7,7 +7,7 @@ import {
   MDBContainer,
   MDBRow, MDBTable, MDBTableBody, MDBTableHead,
 } from "mdb-react-ui-kit";
-import DatePick from "../../components/common/DatePick";
+import PreferencesDatePick from "../../components/common/PreferencesDatePick";
 import IconButton from "@mui/material/IconButton";
 import {DesiderateAPI} from "../../API/DesiderataAPI";
 import {toast, ToastContainer} from "react-toastify";
@@ -27,17 +27,25 @@ export default class Preference extends React.Component {
     super(props);
     this.state = {
       desiderate:[],
+      toDeletePreferences: [],
       orderBy: "data",
       comparator: defaultComparator
     }
     this.setOrderBy = this.setOrderBy.bind(this);
-
+    this.updatePreferences = this.updatePreferences.bind(this) ;
   }
 
   setOrderBy(userProp){
     this.setState({
       orderBy: userProp,
       comparator: defaultComparator
+    })
+  }
+
+  updatePreferences(prefs, toDelPrefs) {
+    this.setState({
+      desiderate : prefs,
+      toDeletePreferences : toDelPrefs,
     })
   }
 
@@ -101,35 +109,12 @@ export default class Preference extends React.Component {
       <MDBContainer className="py-5" style={{height: '85vh',}}>
         <MDBCard alignment='center'>
           <MDBCardBody>
-            <MDBCardTitle>Inserisci le tue desiderata   <DatePick onSelectdate={() => this.componentDidMount()} desiderate={this.state.desiderate}/></MDBCardTitle>
+            <MDBCardTitle>Inserisci le tue desiderata</MDBCardTitle>
             <MDBRow>
             <MDBCol>
+              <PreferencesDatePick onSelectdate={() => this.componentDidMount()} desiderate={this.state.desiderate} toDelPrefs = {this.state.toDeletePreferences} setDesiderate={this.updatePreferences}/>
             </MDBCol>
-        </MDBRow>
-            <MDBRow>
-              <MDBTable align="middle"
-                        bordered
-                        small
-                        hover
-                        >
-                <MDBTableHead color='tempting-azure-gradient' textWhite>
-                <tr>
-                    <th scope='col' onClick={() => this.setOrderBy("data")} >Data</th>
-                    <th scope='col'  >  </th>
-                  </tr>
-                </MDBTableHead>
-                <MDBTableBody>
-                  {this.state.desiderate.map((data, key) => {
-                    return (
-                      <tr key={key}>
-                        <td className="align-middle">{data.data}</td>
-                        <td className="align-middle" ><IconButton aria-label="delete"onClick={() => this.handleDeleteDesiderata(data.idDesiderata)}><DeleteIcon /></IconButton></td>
-                      </tr>
-                    )
-                  })}
-                </MDBTableBody>
-              </MDBTable>
-            </MDBRow>
+              </MDBRow>
         </MDBCardBody>
         </MDBCard>
       </MDBContainer>

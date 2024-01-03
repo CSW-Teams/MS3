@@ -46,7 +46,7 @@ export  class DesiderateAPI {
     for (let i = 0; i < body.length; i++) {
       let des = {}
       des.idDesiderata = body[i].preferenceId
-      des.data= new Date(body[i].year, body[i].month-1, body[i].day).toLocaleDateString()
+      des.data= new Date(body[i].year, body[i].month-1, body[i].day)
       desiderate[i]=des;
     }
     return desiderate;
