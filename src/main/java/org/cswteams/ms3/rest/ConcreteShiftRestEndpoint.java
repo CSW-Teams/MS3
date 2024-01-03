@@ -6,6 +6,7 @@ import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
+import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
@@ -16,6 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -63,14 +67,21 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = " /user_id={userID}")
+    @RequestMapping(method = RequestMethod.GET, path = "/user_id={userID}")
     public ResponseEntity<?> getSingleDoctorConcreteShift(@PathVariable Long userID) throws ParseException {
         if (userID != null) {
             Set <GetAllConcreteShiftDTO> c = concreteShiftController.getSingleDoctorConcreteShifts(userID);
-            if (c == null) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            System.out.println(c.size());
+            for(int i=0;i<c.size();i++){
+                GetAllConcreteShiftDTO app=(GetAllConcreteShiftDTO) c.toArray()[i];
+                System.out.println(app.getShiftID()+" " +app.getId());
+                for(Object o: app.getDoctorsOnDuty()){
+                    UserDTO oo = (UserDTO) o;
+                    System.out.println(oo.getName());
+                }
             }
-            return new ResponseEntity<>( c, HttpStatus.FOUND);
+            System.out.println(Arrays.stream(c.toArray()));
+            return new ResponseEntity<>(c, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

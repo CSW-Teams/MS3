@@ -25,6 +25,7 @@ public class DoctorAssignment {
     private ConcreteShiftDoctorStatus concreteShiftDoctorStatus;
 
     @ManyToOne
+    @JoinColumn(name="concrete_shift_id")
     @NotNull
     private ConcreteShift concreteShift;
 

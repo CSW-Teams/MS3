@@ -112,7 +112,7 @@ export default class Preference extends React.Component {
                         small
                         hover
                         >
-                <MDBTableHead color='tempting-azure-gradient' textWhite>
+                <MDBTableHead color='tempting-azure-gradient' textwhite>
                 <tr>
                     <th scope='col' onClick={() => this.setOrderBy("data")} >Data</th>
                     <th scope='col'  >  </th>
