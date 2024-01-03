@@ -66,6 +66,7 @@ export default class UserProfilesView extends React.Component{
 
     // Ordina gli utenti in base alla proprietà specificata.
     // È possibile specificare la proprietà cliccando sulla colonna corrispondente.
+    console.log(this.state)
     this.state.utenti.sort((u1, u2) => {
 
       let p1 = u1[this.state.orderBy];
@@ -80,7 +81,7 @@ export default class UserProfilesView extends React.Component{
         <MDBCardBody className="text-center">
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                       <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>Informazioni Utenti</MDBCardTitle>
-                      {this.state.attore === "CONFIGURATOR" && (
+                      {this.state.attore === "CONFIGURATORE" && (
                         <Button variant="contained" color="primary" href="/nuovo-utente" style={{ marginLeft: 450, marginBottom: 10 }}>
                           Registra nuovo utente
                         </Button>
@@ -90,7 +91,7 @@ export default class UserProfilesView extends React.Component{
                     bordered
                     small
                     hover >
-            <MDBTableHead color='tempting-azure-gradient' textwhite>
+            <MDBTableHead color='tempting-azure-gradient' textWhite>
               <tr>
                 <th scope='col' onClick={() => this.setOrderBy("name")} > Nome </th>
                 <th scope='col' onClick={() => this.setOrderBy("lastname")} >Cognome</th>
@@ -108,7 +109,7 @@ export default class UserProfilesView extends React.Component{
                     <td>{data.name}</td>
                     <td>{data.lastname}</td>
                     <td>{data.birthday}</td>
-                    <td>{data.systemActors.join(", ")}</td>
+                    <td>{data.systemActors}</td>
                     {this.state.attore==="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
                     {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
                   </tr>
