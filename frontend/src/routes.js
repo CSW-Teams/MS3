@@ -19,6 +19,7 @@ import ConfigurazioneVincoli from "./views/configuratore/ConfigurazioneVincoli";
 import RegistraUtenteView from "./views/configuratore/RegistraUtenteView";
 import RichiesteRitiroView from "./views/utente/RichiesteRitiroView";
 import ShiftChangeView from "./views/utente/ShiftChangeView";
+import MedicalServicesView from "./views/configuratore/MedicalServicesView";
 
 
 export default [
@@ -92,6 +93,11 @@ export default [
     path: "/scambio-turni",
     layout: DefaultLayout,
     component:  ShiftChangeView
+  },
+  {
+    path: "/servizi",
+    layout: DefaultLayout,
+    component:  MedicalServicesView
   },
 
 ];
