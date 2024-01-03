@@ -15,9 +15,9 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "user_id", nullable = false)
-    protected Long id;
+    private Long id;
 
     @NotNull
     private String name;
