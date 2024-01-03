@@ -90,7 +90,7 @@ export default class UserProfilesView extends React.Component{
                     bordered
                     small
                     hover >
-            <MDBTableHead color='tempting-azure-gradient' textWhite>
+            <MDBTableHead color='tempting-azure-gradient' textwhite>
               <tr>
                 <th scope='col' onClick={() => this.setOrderBy("name")} > Nome </th>
                 <th scope='col' onClick={() => this.setOrderBy("lastname")} >Cognome</th>

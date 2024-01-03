@@ -484,7 +484,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         concreteShift3=concreteShiftDAO.saveAndFlush(concreteShift3);
         lc.add(concreteShift3);
 
-        DoctorAssignment da1 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift1,ward);
+        DoctorAssignment da1 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_CALL,concreteShift1,ward);
         doctorAssignmentDAO.saveAndFlush(da1);
         concreteShift1.getDoctorAssignmentList().add(da1);
         concreteShiftDAO.saveAndFlush(concreteShift1);
