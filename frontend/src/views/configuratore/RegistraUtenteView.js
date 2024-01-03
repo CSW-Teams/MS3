@@ -6,7 +6,7 @@ import { withRouter } from 'react-router-dom';
 
 export default class LoginView extends React.Component {
 
-  goBack = () => {
+  passaAllAltraVista = () => {
     const { history } = this.props;
     history.push('/info-utenti');
   };
@@ -15,14 +15,14 @@ export default class LoginView extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      name: "",
-      lastname: "",
-      birthday: "",
-      taxCode: "",
-      seniority: "",
+      nome: "",
+      cognome: "",
+      dataNascita: "",
+      codiceFiscale: "",
+      ruolo: "",
       email: "",
       password: "",
-      systemActors: [],
+      attore: "",
     }
     this.handleSubmit= this.handleSubmit.bind(this);
   }
@@ -36,41 +36,18 @@ export default class LoginView extends React.Component {
     });
   }
 
-  handleCheckboxChange(e) {
-    const selectedActor = e.target.value;
-
-    if (this.state.systemActors.includes(selectedActor)) {
-      const newActors = this.state.systemActors.filter(actor => actor !== selectedActor);
-      this.setState({systemActors: newActors});
-    } else {
-      const newActors = [...this.state.systemActors, selectedActor];
-      this.setState({ systemActors: newActors });
-    }
-  }
-
 
   async handleSubmit(e) {
-
     e.preventDefault();
 
     // Manda una HTTP Post al backend
     let loginAPI = new LoginAPI();
-
-    const data = {
-      name: this.state.name,
-    }
-
-    if (!this.state.systemActors.includes("DOCTOR")) {
-      delete this.state.seniority;
-    }
-
     let httpResponse = await loginAPI.postRegistration(this.state);
 
     /* Se la registrazione del nuovo utente ha esito positivo, viene
            mostrato un toast... altrimenti viene mostrato
            un altro toast :)
          */
-
     let responseStatusClass = Math.floor(httpResponse.status / 100) // Grazie Fede
 
     switch (responseStatusClass) {
@@ -86,7 +63,7 @@ export default class LoginView extends React.Component {
           progress: undefined,
           theme: "colored",
         });
-        this.goBack();
+        this.passaAllAltraVista();
 
         break;
       default:
@@ -113,44 +90,44 @@ export default class LoginView extends React.Component {
             <div className="form-group mt-3">
               <label>Nome</label>
               <input
-                name="name"
+                name="nome"
                 type="text"
                 className="form-control mt-1"
                 placeholder="Inserisci il nome"
-                value={this.state.name}
+                value={this.state.nome}
                 onChange={e => this.handleChange(e)}
               />
             </div>
             <div className="form-group mt-3">
               <label>Cognome</label>
               <input
-                name="lastname"
+                name="cognome"
                 type="text"
                 className="form-control mt-1"
                 placeholder="Inserisci il cognome"
-                value={this.state.lastname}
+                value={this.state.cognome}
                 onChange={e => this.handleChange(e)}
               />
             </div>
             <div className="form-group mt-3">
               <label>Codice fiscale</label>
               <input
-                name="taxCode"
+                name="codiceFiscale"
                 type="text"
                 className="form-control mt-1"
                 placeholder="Inserisci il codice fiscale"
-                value={this.state.taxCode}
+                value={this.state.codiceFiscale}
                 onChange={e => this.handleChange(e)}
               />
             </div>
             <div className="form-group mt-3">
               <label>Data di Nascita</label>
               <input
-                name="birthday"
+                name="dataNascita"
                 type="date"
                 className="form-control mt-1"
                 placeholder="Inserisci la data di nascita"
-                value={this.state.birthday}
+                value={this.state.dataNascita}
                 onChange={e => this.handleChange(e)}
               />
             </div>
@@ -181,10 +158,10 @@ export default class LoginView extends React.Component {
               <div>
                 <input
                   type="radio"
-                  id="structured"
-                  name="seniority"
-                  value="STRUCTURED"
-                  checked={this.state.seniority === "STRUCTURED"}
+                  id="strutturato"
+                  name="ruolo"
+                  value="STRUTTURATO"
+                  checked={this.state.ruolo === "STRUTTURATO"}
                   onChange={e => this.handleChange(e)}
                 />
                 <label htmlFor="strutturato">Strutturato</label>
@@ -192,10 +169,10 @@ export default class LoginView extends React.Component {
               <div>
                 <input
                   type="radio"
-                  id="specialist"
-                  name="seniority"
-                  value="SPECIALIST"
-                  checked={this.state.seniority === "SPECIALIST"}
+                  id="specializzando"
+                  name="ruolo"
+                  value="SPECIALIZZANDO"
+                  checked={this.state.ruolo === "SPECIALIZZANDO"}
                   onChange={e => this.handleChange(e)}
                 />
                 <label htmlFor="specializzando">Specializzando</label>
@@ -205,34 +182,34 @@ export default class LoginView extends React.Component {
               <label>Attore</label>
               <div>
                 <input
-                  type="checkbox"
-                  id="configurator"
+                  type="radio"
+                  id="configuratore"
                   name="attore"
-                  value="CONFIGURATOR"
-                  checked={this.state.systemActors.includes("CONFIGURATOR")}
-                  onChange={e => this.handleCheckboxChange(e)}
+                  value="CONFIGURATORE"
+                  checked={this.state.attore === "CONFIGURATORE"}
+                  onChange={e => this.handleChange(e)}
                 />
                 <label htmlFor="configuratore">Configuratore</label>
               </div>
               <div>
                 <input
-                  type="checkbox"
-                  id="doctor"
+                  type="radio"
+                  id="utente"
                   name="attore"
-                  value="DOCTOR"
-                  checked={this.state.systemActors.includes("DOCTOR")}
-                  onChange={e => this.handleCheckboxChange(e)}
+                  value="UTENTE"
+                  checked={this.state.attore === "UTENTE"}
+                  onChange={e => this.handleChange(e)}
                 />
-                <label htmlFor="doctor">Dottore</label>
+                <label htmlFor="utente">Utente</label>
               </div>
               <div>
                 <input
-                  type="checkbox"
-                  id="planner"
+                  type="radio"
+                  id="pianificatore"
                   name="attore"
-                  value="PLANNER"
-                  checked={this.state.systemActors.includes("PLANNER")}
-                  onChange={e => this.handleCheckboxChange(e)}
+                  value="PIANIFICATORE"
+                  checked={this.state.attore === "PIANIFICATORE"}
+                  onChange={e => this.handleChange(e)}
                 />
                 <label htmlFor="pianificatore">Pianificatore</label>
               </div>

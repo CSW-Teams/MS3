@@ -449,7 +449,7 @@ class ScheduleView extends React.Component{
                       display: 'flex',
                       'padding-top': '10px',
                       justifyContent: 'center',
-                      'alignItems': 'center'
+                      'align-items': 'center'
                     }}>
 
                   <Autocomplete

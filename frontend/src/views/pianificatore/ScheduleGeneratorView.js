@@ -142,7 +142,7 @@ export class SchedulerGeneratorView extends React.Component{
               </MDBRow>
               <MDBRow>
                 <MDBTable align="middle" bordered small hover>
-                  <MDBTableHead color='tempting-azure-gradient' textwhite>
+                  <MDBTableHead color='tempting-azure-gradient' textWhite>
                     <tr>
                       <th scope='col'>Data inizio</th>
                       <th scope='col'>Data fine</th>

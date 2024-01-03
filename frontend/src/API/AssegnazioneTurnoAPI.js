@@ -12,6 +12,9 @@ export  class AssegnazioneTurnoAPI {
     let turni = [];
 
     for (let i = 0; i < body.length; i++) {
+        console.log(`Element ${i}: ${body[i].id}`);
+        console.log(`Element ${i}: ${body[i].startDateTime}`);
+        console.log(`Element ${i}: ${body[i].endDateTime}`);
         const inizioEpochMilliseconds = body[i].startDateTime*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 
@@ -23,7 +26,7 @@ export  class AssegnazioneTurnoAPI {
           inizioDate,
           fineDate,
           teal);
-        turno.id = body[i].id;
+        turno.id = body[i].shiftID;
         turno.type ="Assigned"
 
         let utenti_guardia = [];
@@ -84,23 +87,27 @@ export  class AssegnazioneTurnoAPI {
       turno.reperibilitaAttiva = body[i].reperibilitaAttiva;
 
       turni[i] = turno;
+
+
     }
+
     return turni;
 }
 
   async getTurnByIdUser(id) {
     const response = await fetch('/api/concrete-shifts/user_id=' + id);
     const body = await response.json();
+
+
     let turni = this.parseAllocatedShifts(body);
 
     for (let i = 0; i < turni.length; i++) {
-
-      for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
+      for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
         if (id === turni[i].utenti_guardia[j]) {
           turni[i].turno ="GUARDIA" ;
         }
       }
-      for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
+      for (let j = 0; j < body[i].utentiReperibili.length; j++) {
         if (id === turni[i].utenti_reperibili[j]) {
           turni[i].turno = "REPERIBILITA'";
         }
@@ -169,6 +176,8 @@ export  class AssegnazioneTurnoAPI {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(assegnazioneModificata)
     };
+
+    console.log(assegnazioneModificata)
 
     return await fetch('/api/concrete-shifts/', requestOptions);
 
