@@ -11,6 +11,7 @@ import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
+import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,27 +39,67 @@ public class ConcreteShiftController implements IConcreteShiftController {
         List<ConcreteShift> concreteShifts = concreteShiftDAO.findAll();
         Set<ConcreteShift> turniSet = new HashSet<>();
         turniSet.addAll(concreteShifts);
-        
-        Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
-        
-        for (ConcreteShift concreteShift : turniSet) {
 
-            List<String> systemActors = new ArrayList<>();
-            systemActors.add("PLANNER");
-            UserDTO userDTO = new UserDTO(0L, "Simone", "Bauco", LocalDate.now(), systemActors);
-            Set<UserDTO> hashSet = new HashSet<>();
-            hashSet.add(userDTO);
+        Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
+
+        for (ConcreteShift concreteShift : turniSet) {
 
             long startDateTime = concreteShift.getShift().getStartTime().toEpochSecond(LocalDate.ofEpochDay(concreteShift.getDate()), ZoneOffset.UTC);
             long endDateTime = startDateTime + concreteShift.getShift().getDuration().toSeconds();
+
+            Set<UserDTO> doctorsOnDuty = new HashSet<>();
+            Set<UserDTO> doctorsOnCall = new HashSet<>();
+
+            for (DoctorAssignment doctorAssignment : concreteShift.getDoctorAssignmentList()) {
+                if (doctorAssignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY) {
+                    Doctor doctorOnDuty = doctorAssignment.getDoctor();
+                    /* todo can't we just pass a doctor's list to GetAllConcreteShiftDTO? */
+
+                    /* this is because UserDTO wants a list of strings for systemActors */
+                    List<String> systemActors = new ArrayList<>();
+                    for (SystemActor actor : doctorOnDuty.getSystemActors()) {
+                        systemActors.add(actor.toString());
+                    }
+
+                    UserDTO userDTO = new UserDTO(
+                            doctorOnDuty.getId(),
+                            doctorOnDuty.getName(),
+                            doctorOnDuty.getLastname(),
+                            doctorOnDuty.getBirthday(),
+                            systemActors
+                    );
+
+                    doctorsOnDuty.add(userDTO);
+                } else if (doctorAssignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL) {
+                    Doctor doctorOnCall = doctorAssignment.getDoctor();
+
+                    /* this is because UserDTO wants a list of strings for systemActors */
+                    List<String> systemActors = new ArrayList<>();
+                    for (SystemActor actor : doctorOnCall.getSystemActors()) {
+                        systemActors.add(actor.toString());
+                    }
+
+                    UserDTO userDTO = new UserDTO(
+                            doctorOnCall.getId(),
+                            doctorOnCall.getName(),
+                            doctorOnCall.getLastname(),
+                            doctorOnCall.getBirthday(),
+                            systemActors
+                    );
+
+                    doctorsOnCall.add(userDTO);
+                }
+            }
 
             GetAllConcreteShiftDTO getAllConcreteShiftDTO = new GetAllConcreteShiftDTO(
                     concreteShift.getId(),
                     concreteShift.getShift().getId(),
                     startDateTime,
                     endDateTime,
+                    doctorsOnDuty,
+                    doctorsOnCall,
                     concreteShift.getShift().getMedicalService().getLabel(),
-                    "AMBULATORIO",  // TODO: Chenga medical service List of taks
+                    "AMBULATORIO",  // TODO: Change medical service List of tasks
                     concreteShift.getShift().getTimeSlot().toString(),
                     true
             );
