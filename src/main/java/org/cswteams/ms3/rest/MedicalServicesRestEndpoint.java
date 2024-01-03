@@ -32,7 +32,7 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(service, HttpStatus.FOUND);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "get-available-task-types")
+    @RequestMapping(method = RequestMethod.GET, path = "available-task-types")
     public ResponseEntity<?> getAvailableTaskTypes() {
         AvailableTasksTypesDTO taskTypes = medicalServiceController.getAvailableTaskTypes();
         return new ResponseEntity<>(taskTypes, HttpStatus.FOUND);
