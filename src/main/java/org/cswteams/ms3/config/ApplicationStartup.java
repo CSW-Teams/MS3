@@ -81,7 +81,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private IMedicalServiceController medicalServiceController;
 
-
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
