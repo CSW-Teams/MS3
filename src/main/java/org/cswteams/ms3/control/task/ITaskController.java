@@ -13,7 +13,7 @@ public interface ITaskController {
 
     Shift creaTurno(RotationDTO turno) throws ShiftException;*/
 
-    void addDoctor(Task task, Doctor doctor);
+    void assignDoctorToTask(Task task, Doctor doctor);
 
-    void addService(MedicalService medicalService, Doctor doctor);
+    void assignDoctorToMedicalService(MedicalService medicalService, Doctor doctor);
 }
