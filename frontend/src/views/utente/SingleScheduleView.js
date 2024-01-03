@@ -13,8 +13,6 @@ import {Button} from "@mui/material";
 
 export default class SingleScheduleView extends ScheduleView {
 
-
-
   async componentDidMount() {
     let apiTurno = new AssegnazioneTurnoAPI();
     let turni = await apiTurno.getTurnByIdUser(localStorage.getItem("id"));
