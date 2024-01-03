@@ -33,12 +33,12 @@ public class TaskController implements ITaskController {
     }*/
 
     @Override
-    public void addDoctor(Task task, Doctor doctor){
+    public void assignDoctorToTask(Task task, Doctor doctor){
         task.addDoctor(doctor);
     }
 
     @Override
-    public void addService(MedicalService medicalService, Doctor doctor) {
+    public void assignDoctorToMedicalService(MedicalService medicalService, Doctor doctor) {
 
     }
 

@@ -6,6 +6,7 @@ import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.RequestRemovalFromConcreteShift;
+import org.cswteams.ms3.entity.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,22 @@ public class MedicalServiceController implements IMedicalServiceController {
 
     @Override
     public MedicalService createService(@NotNull MedicalServiceDTO medicalServiceDTO) {
-        return medicalServiceDAO.save(new MedicalService(medicalServiceDTO.getMansioni(),medicalServiceDTO.getNome()));
+        //TODO chiamare metodo interno
+        return medicalServiceDAO.save(new MedicalService(medicalServiceDTO.getMansioni(), medicalServiceDTO.getNome()));
+    }
+
+    @Override
+    public MedicalService createService(List<Task> taskList, String label) {
+        // check if not already existent
+        MedicalService retrieved = medicalServiceDAO.findByLabel(label);
+        if (retrieved == null) {
+            MedicalService newService = new MedicalService(taskList, label);
+            return medicalServiceDAO.saveAndFlush(newService);
+        } else {
+            retrieved.addTasks(taskList);
+            medicalServiceDAO.saveAndFlush(retrieved);
+            return retrieved;
+        }
     }
 
     @Override
@@ -33,7 +49,7 @@ public class MedicalServiceController implements IMedicalServiceController {
 
     @Override
     public MedicalServiceDTO getServiceByName(@NotNull String serviceName) {
-        MedicalService medicalService=medicalServiceDAO.findByLabel(serviceName);
+        MedicalService medicalService = medicalServiceDAO.findByLabel(serviceName);
         return buildDTO(medicalService);
     }
 

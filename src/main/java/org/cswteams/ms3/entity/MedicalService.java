@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -20,19 +21,20 @@ public class MedicalService {
     private String label;
 
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @NotNull
     @Getter
-    private List<Task> tasks;
+    private List<Task> tasks=new ArrayList<>();
     // TODO: Load this information from a configuration file
 
     /**
      * Class that represent a service offered by the hospital.
      * (E.g. In the hospital, we have that in the morning in the cardiology ward, we offer treatment)
+     *
      * @param tasks The list of the taskEnums offered in this service
      * @param label The medical service offered to the patient (oncology, cardiology, ecc...)
      */
-    public MedicalService(List<Task> tasks, String label){
+    public MedicalService(List<Task> tasks, String label) {
         this.tasks = tasks;
         this.label = label;
     }
@@ -41,16 +43,25 @@ public class MedicalService {
      * Class that represent a service offered by the hospital.
      * (E.g. In the hospital, we have that in the morning in the cardiology ward, we offer treatment)
      * This constructor is useful for editing the instance in the persistence layer
-     * @param id The id of the service
+     *
+     * @param id    The id of the service
      * @param tasks The list of the taskEnums offered in this service
      * @param label The medical service offered to the patient (oncology, cardiology, ecc...)
      */
     public MedicalService(Long id, List<Task> tasks, String label) {
-        this.id = id ;
+        this.id = id;
         this.tasks = tasks;
         this.label = label;
     }
 
     protected MedicalService() {
+    }
+
+    public void addTasks(List<Task> tasks) {
+        for (Task t : tasks) {
+            if (this.tasks.stream().noneMatch(o -> o.getTaskType().equals(t.getTaskType()))) {
+                this.tasks.add(t);
+            }
+        }
     }
 }

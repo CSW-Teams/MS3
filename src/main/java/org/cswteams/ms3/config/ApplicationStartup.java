@@ -1,6 +1,8 @@
 package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
+import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
+import org.cswteams.ms3.control.medicalService.MedicalServiceController;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.control.task.TaskController;
 import org.cswteams.ms3.control.user.UserController;
@@ -66,7 +68,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private ScocciaturaDAO scocciaturaDAO;
-  
+
     @Autowired
     private PreferenceDAO preferenceDao;
 
@@ -75,6 +77,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private ConfigVincoloMaxPeriodoConsecutivoDAO configVincoloMaxPeriodoConsecutivoDAO;
+
+    @Autowired
+    private IMedicalServiceController medicalServiceController;
 
 
     @SneakyThrows
@@ -153,7 +158,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         }
     }
 
-    private void registerConstraints(){
+    private void registerConstraints() {
 
         ConfigVincoli configVincoli;
         try {
@@ -162,8 +167,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             Properties prop = new Properties();
             prop.load(propsInput);
 
-            ConfigVincMaxPerCons confOver62 = new ConfigVincMaxPerCons(permanentConditionDAO.findByType("OVER_62"),Integer.parseInt(prop.getProperty("numMaxOreConsecutiveOver62"))*60);
-            ConfigVincMaxPerCons confIncinta = new ConfigVincMaxPerCons(temporaryConditionDAO.findByType("INCINTA"),Integer.parseInt(prop.getProperty("numMaxOreConsecutiveDonneIncinta"))*60);
+            ConfigVincMaxPerCons confOver62 = new ConfigVincMaxPerCons(permanentConditionDAO.findByType("OVER_62"), Integer.parseInt(prop.getProperty("numMaxOreConsecutiveOver62")) * 60);
+            ConfigVincMaxPerCons confIncinta = new ConfigVincMaxPerCons(temporaryConditionDAO.findByType("INCINTA"), Integer.parseInt(prop.getProperty("numMaxOreConsecutiveDonneIncinta")) * 60);
             configVincoloMaxPeriodoConsecutivoDAO.saveAndFlush(confOver62);
             configVincoloMaxPeriodoConsecutivoDAO.saveAndFlush(confIncinta);
             configVincoli = new ConfigVincoli(
@@ -171,7 +176,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                     Integer.parseInt(prop.getProperty("maxOrePeriodo")) * 60,
                     Integer.parseInt(prop.getProperty("HorizonTurnoNotturno")),
                     Integer.parseInt(prop.getProperty("numMaxOreConsecutivePerTutti")) * 60,
-                    Arrays.asList(confOver62,confIncinta)
+                    Arrays.asList(confOver62, confIncinta)
             );
             configVincoliDAO.save(configVincoli);
         } catch (IOException e) {
@@ -180,10 +185,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         // nessun turno può essere allocato a questa persona durante il suo smonto notte
         ConstraintTipologieTurniContigue vincoloTurniContigui = new ConstraintTipologieTurniContigue(
-            configVincoli.getHorizonTurnoNotturno(),
-            ChronoUnit.HOURS,
-            TimeSlot.NIGHT,
-            new HashSet<>(Arrays.asList(TimeSlot.values()))
+                configVincoli.getHorizonTurnoNotturno(),
+                ChronoUnit.HOURS,
+                TimeSlot.NIGHT,
+                new HashSet<>(Arrays.asList(TimeSlot.values()))
         );
         vincoloTurniContigui.setViolable(true);
 
@@ -195,9 +200,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //vincolo1.setViolable(true);
 
-        for(ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()){
+        for (ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()) {
             Constraint vincolo = new ConstraintMaxPeriodoConsecutivo(config.getNumMaxMinutiConsecutivi(), config.getCategoriaVincolata());
-            vincolo.setDescription("Constraint massimo periodo consecutivo per categoria "+config.getCategoriaVincolata().getType());
+            vincolo.setDescription("Constraint massimo periodo consecutivo per categoria " + config.getCategoriaVincolata().getType());
             constraintDAO.saveAndFlush(vincolo);
         }
         //vincolo1.setDescription("Constraint Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
@@ -239,13 +244,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Task operatingRoom = new Task(TaskEnum.OPERATING_ROOM);
 
 
-        // Load services offered by the wards
-        MedicalService repartoCardiologia = new MedicalService(Collections.singletonList(ward), "CARDIOLOGIA");
-        MedicalService ambulatorioCardiologia = new MedicalService(Collections.singletonList(clinic), "CARDIOLOGIA");
-        MedicalService guardiaCardiologia = new MedicalService(Collections.singletonList(emergency), "CARDIOLOGIA");
-        MedicalService salaOperatoriaCardiologia = new MedicalService(Collections.singletonList(operatingRoom), "CARDIOLOGIA");
-        MedicalService ambulatorioOncologia = new MedicalService(Collections.singletonList(clinic), "ONCOLOGIA");
-
         // Save in persistence all possible conditions
         temporaryConditionDAO.save(vacation);
         temporaryConditionDAO.save(pregnant);
@@ -263,14 +261,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         taskDAO.save(operatingRoom);
         taskDAO.save(ward);
 
-
+        // Load services offered by the wards
         // Save in persistence all possible rotations
-        medicalServiceDAO.save(repartoCardiologia);
-        medicalServiceDAO.save(ambulatorioCardiologia);
-        medicalServiceDAO.save(guardiaCardiologia);
-        medicalServiceDAO.save(salaOperatoriaCardiologia);
-        medicalServiceDAO.save(ambulatorioOncologia);
-
+        MedicalService repartoCardiologia = medicalServiceController.createService(Collections.singletonList(ward), "CARDIOLOGIA");
+        MedicalService ambulatorioCardiologia = medicalServiceController.createService(Collections.singletonList(clinic), "CARDIOLOGIA");
+        MedicalService guardiaCardiologia = medicalServiceController.createService(Collections.singletonList(emergency), "CARDIOLOGIA");
+        MedicalService salaOperatoriaCardiologia = medicalServiceController.createService(Collections.singletonList(operatingRoom), "CARDIOLOGIA");
+        MedicalService ambulatorioOncologia = medicalServiceController.createService(Collections.singletonList(clinic), "ONCOLOGIA");
 
         //Creo utenti
         UserController userController = new UserController();
@@ -288,16 +285,16 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.CONFIGURATOR));
         try {
             userController.addCondition(u6, over62);
-            taskController.addService(repartoCardiologia, u6);
+            taskController.assignDoctorToMedicalService(repartoCardiologia, u6);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
 
         Doctor u2 = new Doctor("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(repartoCardiologia, u2);
+        taskController.assignDoctorToMedicalService(repartoCardiologia, u2);
         Doctor u3 = new Doctor("Federica", "Villani", "VLNFDR98P43H501D", LocalDate.of(1998, 9, 3), "federicavillani@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(repartoCardiologia, u3);
+        taskController.assignDoctorToMedicalService(repartoCardiologia, u3);
         Doctor u4 = new Doctor("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi@gmail.com", "passw", Seniority.STRUCTURED, List.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u4, cardiologia);
@@ -323,15 +320,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             throw new RuntimeException(e);
         }
         Doctor u9 = new Doctor("Giulia", "Cantone", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(repartoCardiologia, u9);
+        taskController.assignDoctorToMedicalService(repartoCardiologia, u9);
         Doctor u10 = new Doctor("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(repartoCardiologia, u10);
+        taskController.assignDoctorToMedicalService(repartoCardiologia, u10);
         Doctor u11 = new Doctor("Giada", "Rossi", "RSSGDI92H68H501O", LocalDate.of(1997, 3, 14), "giada.rossi@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(ambulatorioOncologia, u11);
+        taskController.assignDoctorToMedicalService(ambulatorioOncologia, u11);
         Doctor u12 = new Doctor("Camilla", "Verdi", "VRDCML95B41H501L", LocalDate.of(1997, 5, 23), "camilla.verdi@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(ambulatorioCardiologia, u12);
+        taskController.assignDoctorToMedicalService(ambulatorioCardiologia, u12);
         Doctor u13 = new Doctor("Federica", "Pollini", "PLLFDR94S70H501I", LocalDate.of(1998, 2, 12), "federica.pollini@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(ambulatorioCardiologia, u13);
+        taskController.assignDoctorToMedicalService(ambulatorioCardiologia, u13);
         Doctor u14 = new Doctor("Claudia", "Rossi", "RSSCLD91C52H501A", LocalDate.of(1982, 7, 6), "claudia.rossi@gmail.com", "passw", Seniority.STRUCTURED, List.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u14, oncologia);
@@ -351,7 +348,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             throw new RuntimeException(e);
         }
         Doctor u17 = new Doctor("Filippo", "Neri", "NREFLP92R24H501C", LocalDate.of(1998, 2, 12), "filippo.neru@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(ambulatorioCardiologia, u17);
+        taskController.assignDoctorToMedicalService(ambulatorioCardiologia, u17);
         Doctor u18 = new Doctor("Vincenzo", "Grassi", "GRSVNC60A19H501P", LocalDate.of(1998, 8, 12), "vincenzo.grassi@gmail.com", "passw", Seniority.STRUCTURED, List.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u18, oncologia);
@@ -359,15 +356,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             throw new RuntimeException(e);
         }
         Doctor u19 = new Doctor("Diana", "Pasquali", "PSQDNI97D22H501Q", LocalDate.of(1997, 4, 22), "diana.pasquali@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(ambulatorioCardiologia, u19);
+        taskController.assignDoctorToMedicalService(ambulatorioCardiologia, u19);
         Doctor u20 = new Doctor("Francesco", "Lo Presti", "LPSFRC66T05G071E", LocalDate.of(1998, 8, 12), "francesco.lopresti@gmail.com", "passw", Seniority.STRUCTURED, List.of(SystemActor.DOCTOR));
-        taskController.addService(ambulatorioOncologia, u20);
+        taskController.assignDoctorToMedicalService(ambulatorioOncologia, u20);
         Doctor u21 = new Doctor("Andrea", "Pepe", "PPENDR99M05I150J", LocalDate.of(1999, 8, 5), "andrea.pepe@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(ambulatorioOncologia, u21);
+        taskController.assignDoctorToMedicalService(ambulatorioOncologia, u21);
         Doctor u22 = new Doctor("Matteo", "Fanfarillo", "FNFMTT99E10A123E", LocalDate.of(1999, 5, 10), "matteo.fanfarillo99@gmail.com", "passw", Seniority.STRUCTURED, List.of(SystemActor.PLANNER));
-        taskController.addService(ambulatorioOncologia, u22);
+        taskController.assignDoctorToMedicalService(ambulatorioOncologia, u22);
         Doctor u23 = new Doctor("Matteo", "Ciccaglione", "CCCMTT99H15C439X", LocalDate.of(1998, 6, 15), "matteo.ciccaglione@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(ambulatorioOncologia, u23);
+        taskController.assignDoctorToMedicalService(ambulatorioOncologia, u23);
         Doctor u24 = new Doctor("Vittoria", "De Nitto", "DNTVTT60C59E612D", LocalDate.of(1998, 8, 12), "vittoria.denitto@gmail.com", "passw", Seniority.STRUCTURED, List.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u24, oncologia);
@@ -393,19 +390,19 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             throw new RuntimeException(e);
         }
         Doctor u28 = new Doctor("Livia", "Simoncini", "SMNLVI98L17H501O", LocalDate.of(1998, 7, 19), "livia.simoncini@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(salaOperatoriaCardiologia, u28);
+        taskController.assignDoctorToMedicalService(salaOperatoriaCardiologia, u28);
         Doctor u29 = new Doctor("Ludovico", "Zarrelli", "ZRRLDV99E03I370A", LocalDate.of(1998, 5, 3), "ludovico.zerrelli@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(salaOperatoriaCardiologia, u29);
+        taskController.assignDoctorToMedicalService(salaOperatoriaCardiologia, u29);
         Doctor u30 = new Doctor("Alessandro", "Montenegro", "MNTLSS96P20H501J", LocalDate.of(1998, 8, 12), "alessandro.montenegro@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(salaOperatoriaCardiologia, u30);
+        taskController.assignDoctorToMedicalService(salaOperatoriaCardiologia, u30);
         Doctor u31 = new Doctor("Daniel", "Lungu", "LNGDNL98T04H501I", LocalDate.of(1998, 12, 4), "daniel.lungu@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(salaOperatoriaCardiologia, u31);
+        taskController.assignDoctorToMedicalService(salaOperatoriaCardiologia, u31);
         Doctor u32 = new Doctor("Andrea", "Tosti", "TSTNDR97A10H501E", LocalDate.of(1998, 8, 12), "andrea.tosti@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(guardiaCardiologia, u32);
+        taskController.assignDoctorToMedicalService(guardiaCardiologia, u32);
         Doctor u33 = new Doctor("Giorgio", "Pesce", "PSCGRG98E08H501T", LocalDate.of(1998, 8, 12), "giorgia.pesce@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(guardiaCardiologia, u33);
+        taskController.assignDoctorToMedicalService(guardiaCardiologia, u33);
         Doctor u34 = new Doctor("Valerio", "Palmerini", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "valerio.palmerini@gmail.com", "passw", Seniority.SPECIALIST, List.of(SystemActor.DOCTOR));
-        taskController.addService(guardiaCardiologia, u34);
+        taskController.assignDoctorToMedicalService(guardiaCardiologia, u34);
 
         u6 = doctorDAO.saveAndFlush(u6);
         u7 = doctorDAO.saveAndFlush(u7);
