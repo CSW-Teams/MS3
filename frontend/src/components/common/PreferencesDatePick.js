@@ -1,6 +1,4 @@
 import {Calendar, DateObject} from "react-multi-date-picker";
-import Icon from "react-multi-date-picker/components/icon";
-import DatePanel from "react-multi-date-picker/plugins/date_panel";
 import ToolBar from "react-multi-date-picker/plugins/toolbar";
 import Button from "@mui/material/Button";
 import React, {useRef, useState} from "react";
@@ -36,12 +34,12 @@ function DateSelectSlots({props}) {
     }
   }
   async function saveDesiderate() {
-    let response = await(desiderataApi.salvaDesiderate(preferences,id))
+    let response = await(desiderataApi.editDesiderate(preferences, toDelPreferences,id))
     let responseStatus  = response.status
-    props.onSelectdate();
     console.log(responseStatus)
 
     if (responseStatus === 202) {
+      setPreferences(response, []) ;
       toast.success('Desiderate caricate con successo', {
         position: "top-center",
         autoClose: 5000,
@@ -151,16 +149,16 @@ export default function PreferencesDatePick(props) {
     for (let i = 0 ; i < date.length ; i ++) {
 
       const toRestorePref = toDelPreferences.find((value) => {
-        return value.data.getTime() === date[i].toDate().getTime() ;
+        return value.data.toDateString() === date[i].toDate().toDateString()  ;
       }) ;
 
       const condition = preferences.reduce((total, value) => {
-        return total && !(value.data.getTime() === date[i].toDate().getTime()) }, true) ;
+        return total && !(value.data.toDateString()  === date[i].toDate().toDateString() ) }, true) ;
 
       if(toRestorePref !== undefined) {
 
         toDelPreferences = toDelPreferences.filter((value) => {
-          return value.data.getTime() !== date[i].toDate().getTime() ;
+          return value.data.toDateString()  !== date[i].toDate().toDateString()  ;
         }) ;
 
         preferences = preferences.concat([toRestorePref]) ;
@@ -176,7 +174,7 @@ export default function PreferencesDatePick(props) {
 
     preferences.forEach((value) => {
       const condition = date.reduce((total, value1) => {
-        return total || (value.data.getTime() === value1.toDate().getTime()) }, false) ;
+        return total || (value.data.toDateString() === value1.toDate().toDateString()) }, false) ;
 
       if(!condition) {
         toDelPreferences = toDelPreferences.concat([value]) ;
