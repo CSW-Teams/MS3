@@ -114,7 +114,31 @@ export default class Preference extends React.Component {
             <MDBCol>
               <PreferencesDatePick onSelectdate={() => this.componentDidMount()} desiderate={this.state.desiderate} toDelPrefs = {this.state.toDeletePreferences} setDesiderate={this.updatePreferences}/>
             </MDBCol>
-              </MDBRow>
+        </MDBRow>
+            <MDBRow>
+              <MDBTable align="middle"
+                        bordered
+                        small
+                        hover
+                        >
+                <MDBTableHead color='tempting-azure-gradient' textwhite>
+                <tr>
+                    <th scope='col' onClick={() => this.setOrderBy("data")} >Data</th>
+                    <th scope='col'  >  </th>
+                  </tr>
+                </MDBTableHead>
+                <MDBTableBody>
+                  {this.state.desiderate.map((data, key) => {
+                    return (
+                      <tr key={key}>
+                        <td className="align-middle">{data.data}</td>
+                        <td className="align-middle" ><IconButton aria-label="delete"onClick={() => this.handleDeleteDesiderata(data.idDesiderata)}><DeleteIcon /></IconButton></td>
+                      </tr>
+                    )
+                  })}
+                </MDBTableBody>
+              </MDBTable>
+            </MDBRow>
         </MDBCardBody>
         </MDBCard>
       </MDBContainer>
