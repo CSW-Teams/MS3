@@ -1,18 +1,6 @@
+
+
 export  class DesiderateAPI {
-
-  extractDesiderate(body) {
-
-    const desiderate = [];
-
-    for (let i = 0; i < body.length; i++) {
-      let des = {}
-      des.idDesiderata = body[i].preferenceId
-      des.data= new Date(body[i].year, body[i].month-1, body[i].day)
-      des.turnKinds = body[i].turnKinds ;
-      desiderate[i]=des;
-    }
-    return desiderate;
-  }
 
   /**
    * Saves the selected preferences
@@ -30,7 +18,6 @@ export  class DesiderateAPI {
       desiderata.year= date[i].year
       desiderata.month= date[i].month.number
       desiderata.day= date[i].day
-      desiderata.turnKinds = date[i].turnKinds
       desiderate.push(desiderata)
     }
 
@@ -40,7 +27,9 @@ export  class DesiderateAPI {
       body: JSON.stringify(desiderate)
     };
 
-    return await fetch('/api/preferences/doctor_id=' + id, requestOptions);
+    const response = await fetch('/api/preferences/doctor_id='+id, requestOptions);
+
+    return response;
   }
 
   /**
@@ -52,7 +41,15 @@ export  class DesiderateAPI {
     const response = await fetch('/api/preferences/doctor_id='+id);
     const body = await response.json();
 
-    return this.extractDesiderate(body) ;
+    const desiderate = [];
+
+    for (let i = 0; i < body.length; i++) {
+      let des = {}
+      des.idDesiderata = body[i].preferenceId
+      des.data= new Date(body[i].year, body[i].month-1, body[i].day).toLocaleDateString()
+      desiderate[i]=des;
+    }
+    return desiderate;
   }
 
   /**
@@ -82,56 +79,6 @@ export  class DesiderateAPI {
     return response.status;
   }
 
-  /**
-   * Edits the preferences of a doctor, eventually adding new ones and deleting unwanted ones <br/>
-   * Calls <b>POST api/preferences/edit</b>
-   * @param prefsToEdit a list of the preferences that have been sent to be saved/edited
-   * @param prefsToDelete the preferences that need to be deleted
-   * @param doctorId the id of the doctor whose preferences need to be edited
-   * @returns {Promise<*[]>} a Promise containing the saved preferences with eventually new ids
-   */
-  async editDesiderate(prefsToEdit, prefsToDelete, doctorId) {
-    const reqBody = {} ;
-    reqBody.doctorId = doctorId ;
-    reqBody.remainingPreferences = [] ;
-    reqBody.preferencesToDelete = [] ;
 
-    prefsToEdit.forEach((value) => {
-      const adaptedPreference = {} ;
-
-      if(value.idDesiderata !== undefined) {
-        adaptedPreference.id = value.idDesiderata ;
-      }
-
-      adaptedPreference.year= value.data.getFullYear() ;
-      adaptedPreference.month= value.data.getMonth() +1 ;
-      adaptedPreference.day= value.data.getDate() ;
-      adaptedPreference.turnKinds = value.turnKinds ;
-      console.log("Value " + value.data + " : " + value.turnKinds) ;
-
-      reqBody.remainingPreferences.push(adaptedPreference) ;
-    }) ;
-
-    prefsToDelete.forEach((value) => {
-      if(value.hasOwnProperty('idDesiderata')) {
-        const adaptedPreference = {} ;
-
-        adaptedPreference.doctorId = doctorId ;
-        adaptedPreference.preferenceId = value.idDesiderata ;
-
-        reqBody.preferencesToDelete.push(adaptedPreference) ;
-      }
-    }) ;
-
-    const response = await fetch('/api/preferences/edit',
-      {method : "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(reqBody)});
-
-    const body = await response.json();
-
-    const retVal = this.extractDesiderate(body) ;
-    retVal.status = response.status ;
-
-    return  retVal;
-  }
 
 }
