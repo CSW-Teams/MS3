@@ -14,4 +14,5 @@ public interface ShiftChangeRequestDAO extends JpaRepository<Request,Long> {
 
     // Return all requests made to the server having a specific status (pending)
     List<Request> findByReceiverIdAndStatus(Long senderId, RequestStatus status);
+
 }

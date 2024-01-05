@@ -36,6 +36,7 @@ export  class UserAPI {
   }
 
   async getAllUsersInfo() {
+    console.log("Mi rompo qui?")
     const response = await fetch('/api/users/');
     const body = await response.json();
 

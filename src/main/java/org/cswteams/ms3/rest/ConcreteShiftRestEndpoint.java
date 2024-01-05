@@ -7,6 +7,7 @@ import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
+import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
@@ -72,15 +73,26 @@ public class ConcreteShiftRestEndpoint {
         if (userID != null) {
             Set <GetAllConcreteShiftDTO> c = concreteShiftController.getSingleDoctorConcreteShifts(userID);
             System.out.println(c.size());
+            System.out.println("SINGLE DOCTOR CONCRETE SHIFT");
             for(int i=0;i<c.size();i++){
                 GetAllConcreteShiftDTO app=(GetAllConcreteShiftDTO) c.toArray()[i];
-                System.out.println(app.getShiftID()+" " +app.getId());
-                for(Object o: app.getDoctorsOnDuty()){
-                    UserDTO oo = (UserDTO) o;
-                    System.out.println(oo.getName());
+                System.out.println("ids: " + app.getShiftID()+" " +app.getId());
+                Set<UserDTO> set = app.getDoctorsOnCall();
+                List<UserDTO> list = new ArrayList<>(set);
+                System.out.println("nome dottori reperibili");
+                System.out.println(list.size());
+                for(UserDTO o: list){
+                    System.out.println(o.getName());
+                }
+
+                Set<UserDTO> set2 = app.getDoctorsOnDuty();
+                List<UserDTO> list2 = new ArrayList<>(set2);
+                System.out.println("nome dottori duty");
+                System.out.println(list2.size());
+                for(UserDTO o: list2){
+                    System.out.println(o.getName());
                 }
             }
-            System.out.println(Arrays.stream(c.toArray()));
             return new ResponseEntity<>(c, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
