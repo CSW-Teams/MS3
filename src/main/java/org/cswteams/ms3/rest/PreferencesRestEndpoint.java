@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ValidationException;
 import java.util.List;
 
 /**
@@ -64,13 +65,39 @@ public class PreferencesRestEndpoint {
      * @param preferenceDTOInList A List of DTOs containing the preferences
      * @param doctorId the id representing the doctor to whom the preferences shall be added
      * @return A List of {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} of the newly added preferences, with their own id, in the body of the response
-     * @throws Exception upon failure
      */
     @RequestMapping(method = RequestMethod.POST, path = "/doctor_id={doctorId}")
-    public ResponseEntity<?> addPreferences(@RequestBody() List<PreferenceDTOIn> preferenceDTOInList, @PathVariable Long doctorId) throws Exception {
+    public ResponseEntity<?> addPreferences(@RequestBody() List<PreferenceDTOIn> preferenceDTOInList, @PathVariable Long doctorId) {
         if (preferenceDTOInList != null) {
-            PreferenceListWithUIDDTO dto = new PreferenceListWithUIDDTO(doctorId, preferenceDTOInList) ;
-            return new ResponseEntity<>(preferenceController.addPreferences(dto), HttpStatus.ACCEPTED);
+            try {
+                PreferenceListWithUIDDTO dto = new PreferenceListWithUIDDTO(doctorId, preferenceDTOInList) ;
+                return new ResponseEntity<>(preferenceController.addPreferences(dto), HttpStatus.ACCEPTED);
+            } catch (ValidationException e) {
+                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE) ;
+            } catch (Exception e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST) ;
+            }
+
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Edits the preferences of a doctor, eventually adding new ones and deleting unwanted ones <br/>
+     * Reached from <b>POST api/preferences/edit</b>
+     * @return A response containing the list of {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} representing the edited (and remaining) preferences,
+     *             giving the newly added ones their own id, too
+     */
+    @RequestMapping(method = RequestMethod.POST, path = "/edit")
+    public ResponseEntity<?> editPreferences(@RequestBody() EditedPreferencesDTOIn dto) {
+        if(dto != null) {
+            try {
+                return new ResponseEntity<>(preferenceController.editPreferences(dto), HttpStatus.ACCEPTED);
+            } catch (ValidationException e) {
+                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE) ;
+            } catch (Exception e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST) ;
+            }
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
