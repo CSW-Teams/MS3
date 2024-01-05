@@ -11,7 +11,6 @@ import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.*;
@@ -36,7 +35,6 @@ public class PreferenceController implements IPreferenceController {
 
     @Override
     @Validant
-    @Transactional
     public Preference addPreference(@Valid PreferenceInWithUIDDTO dto) throws DatabaseException {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         if (doctor.isEmpty()){
@@ -51,22 +49,15 @@ public class PreferenceController implements IPreferenceController {
             slots.add(TimeSlot.valueOf(s)) ;
         }
 
-        Preference newPreference ;
-        if(dto.getDto().getId() == null) {
-            newPreference = new Preference(preferenceDay, slots, Collections.singletonList(doctor.get())) ;
-        } else {
-            newPreference = new Preference(dto.getDto().getId(), preferenceDay, slots, Collections.singletonList(doctor.get())) ;
-        }
+        Preference newPreference = new Preference(preferenceDay, slots, Collections.singletonList(doctor.get())) ;
 
-        if(!doctor.get().getPreferenceList().contains(newPreference))
-            doctor.get().getPreferenceList().add(newPreference);
+        doctor.get().getPreferenceList().add(newPreference);
         doctorDao.save(doctor.get());
         return newPreference;
     }
 
     @Override
     @Validant
-    @Transactional
     public List<PreferenceDTOOut> addPreferences(@Valid PreferenceListWithUIDDTO dto) throws DatabaseException {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         if (doctor.isEmpty()){
@@ -84,22 +75,11 @@ public class PreferenceController implements IPreferenceController {
                 slots.add(TimeSlot.valueOf(s)) ;
             }
 
-            Preference preferenceToSave ;
-            if(subDto.getId() != null) {
-                preferenceToSave = new Preference(subDto.getId(), day, slots, Collections.singletonList(doctor.get())) ;
-            } else {
-                preferenceToSave = new Preference(day, slots, Collections.singletonList(doctor.get())) ;
-            }
-            preferencesToSave.add(preferenceToSave) ;
+            preferencesToSave.add(new Preference(day, slots, Collections.singletonList(doctor.get()))) ;
         }
 
         List<Preference> newPreferences = preferenceDao.saveAll(preferencesToSave) ;
-
-        for (Preference pref : newPreferences) {
-            if(!doctor.get().getPreferenceList().contains(pref))
-                doctor.get().getPreferenceList().add(pref);
-        }
-
+        doctor.get().getPreferenceList().addAll(newPreferences);
         doctorDao.save(doctor.get());
 
         ArrayList<PreferenceDTOOut> retVal = new ArrayList<>() ;
@@ -114,7 +94,6 @@ public class PreferenceController implements IPreferenceController {
 
     @Override
     @Validant
-    @Transactional
     public void deletePreference(@Valid PreferenceDoctorIDDTO dto) throws DatabaseException {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         Optional<Preference> preference = preferenceDao.findById(dto.getPreferenceId()) ;
@@ -142,16 +121,6 @@ public class PreferenceController implements IPreferenceController {
             retVal.add(convertPreferenceToDTO(pref)) ;
         }
         return retVal;
-    }
-
-    @Override
-    @Validant
-    @Transactional
-    public List<PreferenceDTOOut> editPreferences(@Valid EditedPreferencesDTOIn dto) throws DatabaseException {
-        for (PreferenceDoctorIDDTO doctorIdDTO : dto.getPreferencesToDelete()) {
-            deletePreference(doctorIdDTO) ;
-        }
-        return addPreferences(new PreferenceListWithUIDDTO(dto.getDoctorId(), dto.getRemainingPreferences())) ;
     }
 
     @Override
