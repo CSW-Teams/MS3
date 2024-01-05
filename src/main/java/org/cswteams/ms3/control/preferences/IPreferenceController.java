@@ -35,11 +35,19 @@ public interface IPreferenceController {
     void deletePreference(PreferenceDoctorIDDTO dto) throws DatabaseException;
 
     /**
-     * Retrieves a user's scheduling preferences in DTO form
+     * Retrieves a doctor's scheduling preferences in DTO form
      * @param dto A DTO containing the doctor's id for the search
      * @return A list of PreferenceDTOOut representing the doctor's scheduling preferences
      */
     List<PreferenceDTOOut> getUsersPreferenceDTOs(DoctorIdDTO dto);
+
+    /**
+     * Edits the scheduling preferences of a doctor, eventually creating new ones and removing the not anymore needed ones
+     * @param dto a DTO containing all the edited preferences and the references to the preferences to delete. The newly added preferences are marked by their lack of an id
+     * @return A list of {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} representing the newly updated preferences (gives to the receiver the ids of the newly defined ones, too
+     * @throws DatabaseException upon deletion errors
+     */
+    List<PreferenceDTOOut> editPreferences(EditedPreferencesDTOIn dto) throws DatabaseException ;
 
     /**
      * Retrieves a user's scheduling preferences
