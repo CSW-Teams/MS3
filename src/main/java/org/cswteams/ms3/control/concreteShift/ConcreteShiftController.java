@@ -91,6 +91,8 @@ public class ConcreteShiftController implements IConcreteShiftController {
                 }
             }
 
+            boolean isCall = !doctorsOnCall.isEmpty();
+
             GetAllConcreteShiftDTO getAllConcreteShiftDTO = new GetAllConcreteShiftDTO(
                     concreteShift.getId(),
                     concreteShift.getShift().getId(),
@@ -98,10 +100,11 @@ public class ConcreteShiftController implements IConcreteShiftController {
                     endDateTime,
                     doctorsOnDuty,
                     doctorsOnCall,
+                    new HashSet<>(),//TODO:inserire dottori eliminati e non un hash vuoto
                     concreteShift.getShift().getMedicalService().getLabel(),
-                    "AMBULATORIO",  // TODO: Change medical service List of tasks
+                    "AMBULATORIO", //TODO fare
                     concreteShift.getShift().getTimeSlot().toString(),
-                    true
+                    isCall
             );
             getAllConcreteShiftDTOSet.add(getAllConcreteShiftDTO);
         }
@@ -133,11 +136,13 @@ public class ConcreteShiftController implements IConcreteShiftController {
      */
     @Override
     public Set<GetAllConcreteShiftDTO> getSingleDoctorConcreteShifts(Long idPersona) {
-        Set<ConcreteShift> turniAllocatiERiserve = concreteShiftDAO.findByDoctorAssignmentList_Doctor_Id(idPersona);
+        List<ConcreteShift> turniAllocatiERiserve = concreteShiftDAO.findByDoctorAssignmentList_Doctor_Id(idPersona);
         Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
-
-
         for (ConcreteShift concreteShift : turniAllocatiERiserve) {
+            System.out.println(concreteShift.getDoctorAssignmentList().size());
+            for(DoctorAssignment s:concreteShift.getDoctorAssignmentList()){
+                System.out.println(s.getDoctor().getName());
+            }
             if(!utenteInReperibilita(concreteShift, idPersona)){
                 //TODO converti entity in dto ed aggiungila a turniAllocati
 
@@ -147,37 +152,49 @@ public class ConcreteShiftController implements IConcreteShiftController {
 
                 Set<UserDTO> onDutyDoctors = new HashSet<>();
                 Set<UserDTO> onCallDoctors = new HashSet<>();
-
-                for(DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()){
-                    if(assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY){
+                Set<UserDTO> onRemovedDoctors = new HashSet<>();
+                for(DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
+                    if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY) {
+                        System.out.println("ciao1 ");
                         Doctor doctor = assignment.getDoctor();
                         List<String> stringList = doctor.getSystemActors().stream()
                                 .map(Enum::name)
                                 .collect(Collectors.toList());
-
                         onDutyDoctors.add(new UserDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthday(), stringList));
-                    } else if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL){
+                    } else if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL) {
+                        System.out.println("ciao2 ");
                         Doctor doctor = assignment.getDoctor();
                         List<String> stringList = doctor.getSystemActors().stream()
                                 .map(Enum::name)
                                 .collect(Collectors.toList());
 
                         onCallDoctors.add(new UserDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthday(), stringList));
+                    } else{
+                        System.out.println("ciao3 ");
+                        Doctor doctor = assignment.getDoctor();
+                        List<String> stringList = doctor.getSystemActors().stream()
+                                .map(Enum::name)
+                                .collect(Collectors.toList());
+
+                        onRemovedDoctors.add(new UserDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthday(), stringList));
                     }
                 }
-
-                boolean onCall = !onCallDoctors.isEmpty();
                 MedicalServiceDTO medicalServiceDTO = new MedicalServiceDTO(concreteShift.getShift().getMedicalService().getLabel(), concreteShift.getShift().getMedicalService().getTasks());
+
+                boolean isCall = !onCallDoctors.isEmpty();
 
                 GetAllConcreteShiftDTO getAllConcreteShiftDTO = new GetAllConcreteShiftDTO(
                         concreteShift.getId(),
                         concreteShift.getShift().getId(),
                         startTime,
                         endTime,
+                        onDutyDoctors,
+                        onCallDoctors,
+                        onRemovedDoctors,
                         concreteShift.getShift().getMedicalService().getLabel(),
-                        "AMBULATORIO",  // TODO: Chenga medical service List of taks
+                        "ABULATORIO",//TODO: va RIVISTA ASSOLUTAMENTE
                         concreteShift.getShift().getTimeSlot().toString(),
-                        true
+                        isCall
                 );
                 getAllConcreteShiftDTOSet.add(getAllConcreteShiftDTO);
             }

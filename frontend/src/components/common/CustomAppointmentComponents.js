@@ -9,10 +9,7 @@ import classNames from "clsx";
 import PropTypes from "prop-types";
 import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
-import { UserAPI } from "../../API/UserAPI";
 import Button from "@mui/material/Button";
-
-import ScheduleView, { handleRetirement } from '../../views/utente/ScheduleView';
 
 import {
   Dialog,
@@ -383,7 +380,7 @@ export class AppointmentContent extends React.Component{
             <div style={{display: "inline-block"}}>
               Allocati:
             <ul>
-              {this.state.utenti_allocati.map((user) => <li> {user.cognome} </li>) }
+              {this.state.utenti_allocati.map((user) => <li> {user.lastname} </li>) }
             </ul>
             </div>
 
@@ -391,7 +388,7 @@ export class AppointmentContent extends React.Component{
               <div style={{ display: "inline-block" }}>
                 Reperibili:
                 <ul>
-                  {this.state.utenti_riserve.map((user) => <li> {user.cognome} </li>)}
+                  {this.state.utenti_riserve.map((user) => <li> {user.lastname} </li>)}
                 </ul>
               </div>
           ) : (
@@ -400,7 +397,7 @@ export class AppointmentContent extends React.Component{
             <div>
               {this.state.utenti_rimossi.length !== 0? (<div>Rimossi:</div>) : <div></div> }
             <ul>
-              {this.state.utenti_rimossi.map((user) => <li> <s>{user.cognome}</s></li>) }
+              {this.state.utenti_rimossi.map((user) => <li> <s>{user.lastname}</s></li>) }
             </ul>
             </div>
           </div>

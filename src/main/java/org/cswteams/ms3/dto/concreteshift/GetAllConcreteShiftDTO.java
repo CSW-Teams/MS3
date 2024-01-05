@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.cswteams.ms3.dto.user.UserDTO;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -43,6 +44,7 @@ public class GetAllConcreteShiftDTO {
                                   long endDateTime,
                                   Set<UserDTO> doctorsOnDuty,
                                   Set<UserDTO> doctorsOnCall,
+                                  Set<UserDTO> doctorsOnRemove,
                                   String medicalServiceLabel,
                                   String medicalServiceTask,
                                   String timeSlot,
@@ -58,7 +60,7 @@ public class GetAllConcreteShiftDTO {
         this.timeSlot = timeSlot;
         this.reperibilitaAttiva = reperibilitaAttiva;
 
-        this.deletedDoctors = new HashSet<>();
+        this.deletedDoctors = doctorsOnRemove;
     }
 
     /**

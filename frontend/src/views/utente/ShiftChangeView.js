@@ -2,6 +2,7 @@ import React from "react"
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {ShiftChangeRequestAPI} from "../../API/ShiftChangeRequestAPI";
+import {Button} from "@mui/material";
 
 
 export default class ShiftChangeView extends React.Component {
@@ -29,6 +30,16 @@ export default class ShiftChangeView extends React.Component {
       console.error("Error fetching turn change requests to sender:", error);
     });
   }
+
+  handleAccept = (requestId) => {
+    ShiftChangeRequestAPI.answerRequest(requestId, true);
+    console.log(`Request ${requestId} accepted`);
+  };
+
+  handleReject = (requestId) => {
+    let answerAPI = ShiftChangeRequestAPI.answerRequest(requestId, false);
+    console.log(`Request ${requestId} rejected`);
+  };
 
   render() {
     const { turnChangeRequestsBySender } = this.state;
@@ -76,20 +87,28 @@ export default class ShiftChangeView extends React.Component {
           </tr>
           </thead>
           <tbody>
-          {sortedRequestsToSender.map((request, index) => (
+          {sortedRequestsToSender.map((request, index) => {
+            const startDate = new Date(request.inizioDate);
+            const endDate = new Date(request.fineDate);
+            return (
             <tr key={request.requestId}>
               <td>{request.turnDescription}</td>
-              <td>{request.inizioDate.toLocaleString('it-IT', options)}</td>
-              <td>{request.fineDate.toLocaleString('it-IT', options)}</td>
+              <td>{startDate.toLocaleString('it-IT', options)}</td>
+              <td>{endDate.toLocaleString('it-IT', options)}</td>
               <td>{request.userDetails}</td>
               <td>
                 <button className="btn btn-primary"
-                        style={{marginRight: '8px'}}>Accetta
+                        style={{marginRight: '8px'}}
+                        onClick={() => this.handleAccept(request.requestId)}>
+                  Accetta
                 </button>
-                <button className="btn btn-secondary">Rifiuta</button>
+                <button className="btn btn-secondary"
+                        onClick={() => this.handleReject(request.requestId)}>
+                  Rifiuta
+                </button>
               </td>
             </tr>
-          ))}
+          )})}
           </tbody>
         </table>
         <h2 className="h2-padding">Richieste Inviate</h2>
@@ -104,15 +123,19 @@ export default class ShiftChangeView extends React.Component {
           </tr>
           </thead>
           <tbody>
-          {sortedRequestsBySender.map((request, index) => (
-            <tr key={request.requestId}>
-              <td>{request.turnDescription}</td>
-              <td>{request.inizioDate.toLocaleString('it-IT', options)}</td>
-              <td>{request.fineDate.toLocaleString('it-IT', options)}</td>
-              <td>{request.userDetails}</td>
-              <td>{request.status}</td>
-            </tr>
-          ))}
+          {sortedRequestsBySender.map((request, index) => {
+            const startDate = new Date(request.inizioDate);
+            const endDate = new Date(request.fineDate);
+            return (
+              <tr key={request.requestId}>
+                <td>{request.turnDescription}</td>
+                <td>{startDate.toLocaleString('it-IT', options)}</td>
+                <td>{endDate.toLocaleString('it-IT', options)}</td>
+                <td>{request.userDetails}</td>
+                <td>{request.status}</td>
+              </tr>
+            );
+          })}
           </tbody>
         </table>
         <ToastContainer

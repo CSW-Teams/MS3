@@ -17,6 +17,7 @@ public class DoctorAssignment {
 
     @ManyToOne
     @NotNull
+    @Setter
     private Doctor doctor;
 
     @Enumerated

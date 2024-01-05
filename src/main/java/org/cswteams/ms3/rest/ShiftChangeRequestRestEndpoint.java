@@ -4,6 +4,7 @@ import org.cswteams.ms3.control.scambioTurno.IControllerScambioTurno;
 import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ViewUserTurnRequestsDTO;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.dto.AnswerTurnChangeRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +26,14 @@ public class ShiftChangeRequestRestEndpoint {
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<?> requestShiftChange(@RequestBody RequestTurnChangeDto requestTurnChangeDto)  {
 
+        System.out.println(requestTurnChangeDto.getReceiverId());
+        System.out.println(requestTurnChangeDto.getSenderId());
+        System.out.println(requestTurnChangeDto.getConcreteShiftId());
+
         try {
             controllerScambioTurno.requestTurnChange(requestTurnChangeDto);
         } catch (AssegnazioneTurnoException e) {
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
@@ -62,5 +68,17 @@ public class ShiftChangeRequestRestEndpoint {
             return new ResponseEntity<>( requests, HttpStatus.FOUND);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    @RequestMapping(method = RequestMethod.PUT, path = "/answer")
+    public ResponseEntity<?> answerRequest(@RequestBody AnswerTurnChangeRequestDTO answerTurnChangeRequestDTO)  {
+
+        try{
+            controllerScambioTurno.answerTurnChangeRequest(answerTurnChangeRequestDTO);
+            return new ResponseEntity<>(HttpStatus.OK);
+
+        } catch(Exception e){
+            e.getMessage();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }

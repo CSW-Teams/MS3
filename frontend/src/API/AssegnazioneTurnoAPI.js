@@ -1,7 +1,6 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
 import {User} from "./User";
-import {forEach} from "react-bootstrap/ElementChildren";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -149,9 +148,7 @@ export  class AssegnazioneTurnoAPI {
         body: JSON.stringify(assegnazioneTurno)
       };
 
-      const response = await fetch('/api/concrete-shifts/',requestOptions);
-
-      return response;
+    return await fetch('/api/concrete-shifts/', requestOptions);
 
   }
 
@@ -175,10 +172,15 @@ export  class AssegnazioneTurnoAPI {
 }
 
 async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
+    console.log("Ci arrivo qui?")
   let shiftChangeRequest = {}
   shiftChangeRequest.concreteShiftId = assegnazione.id;
   shiftChangeRequest.senderId = idLoggato;
-  shiftChangeRequest.receiverId = utenteCambio.id;
+  shiftChangeRequest.receiverId = utenteCambio.value;
+
+  console.log("concrete shift id : " + shiftChangeRequest.concreteShiftId);
+  console.log("sender: " + shiftChangeRequest.senderId);
+  console.log("receiver: " + shiftChangeRequest.receiverId);
 
   const requestOptions = {
     method: 'PUT',
@@ -186,7 +188,7 @@ async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
     body: JSON.stringify(shiftChangeRequest)
   };
 
-  return await fetch('/api/concrete-shifts/retirement-request/', requestOptions);
+  return await fetch('/api/change-shift-request/', requestOptions);
 }
 
 

@@ -37,4 +37,20 @@ export class ShiftChangeRequestAPI{
 
     return this.parseRequests(body);
   }
+
+   static answerRequest(requestId, answer) {
+
+    let dto = {};
+    dto.hasAccepted = answer;
+    dto.requestID = requestId;
+
+    const requestOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dto)
+    };
+
+    return fetch('/api/change-shift-request/answer', requestOptions);
+  }
+
 }
