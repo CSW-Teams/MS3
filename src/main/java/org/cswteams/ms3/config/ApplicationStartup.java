@@ -474,13 +474,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //TO-DO: Eliminare in seguito
         List<ConcreteShift> lc= new ArrayList<>();
-        ConcreteShift concreteShift1 = new ConcreteShift(LocalDate.of(2024, 1, 5).toEpochDay(),shift1);
+        ConcreteShift concreteShift1 = new ConcreteShift(LocalDate.now().toEpochDay(),shift1);
         concreteShift1=concreteShiftDAO.saveAndFlush(concreteShift1);
         lc.add(concreteShift1);
-        ConcreteShift concreteShift2 = new ConcreteShift(LocalDate.of(2024, 1, 6).toEpochDay(),shift1);
+        ConcreteShift concreteShift2 = new ConcreteShift(LocalDate.now().plusDays(1).toEpochDay(),shift1);
         concreteShift2=concreteShiftDAO.saveAndFlush(concreteShift2);
         lc.add(concreteShift2);
-        ConcreteShift concreteShift3 = new ConcreteShift(LocalDate.of(2024, 1, 7).toEpochDay(),shift1);
+        ConcreteShift concreteShift3 = new ConcreteShift(LocalDate.now().plusDays(2).toEpochDay(),shift1);
         concreteShift3=concreteShiftDAO.saveAndFlush(concreteShift3);
         lc.add(concreteShift3);
 
