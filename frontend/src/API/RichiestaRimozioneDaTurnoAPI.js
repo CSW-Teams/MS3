@@ -1,6 +1,27 @@
 
 
 export class RichiestaRimozioneDaTurnoAPI {
+
+  parse(body) {
+    const requests = [];
+
+    for (let i = 0; i < body.length; i++) {
+      const request = new Object();
+      request.idRequest = body[i].idRequest;
+      request.idShift = body[i].idShift;
+      request.idRequestingUser = body[i].idRequestingUser;
+      request.idSubstitute = body[i].idSubstitute;
+      request.justification = body[i].justification;
+      request.examined = body[i].examined;
+      request.outcome = body[i].outcome;
+      request.file = body[i].file;
+
+      requests[i] = request;
+    }
+
+    return requests;
+  }
+
   /**
    * Richiede al backend il salvataggio di una nuova richiesta di rimozione da un turno
    */
@@ -30,71 +51,19 @@ export class RichiestaRimozioneDaTurnoAPI {
   async getAllRequests() {
     const response = await fetch('/api/concrete-shifts/retirement-request/')
     const body = await response.json();
-
-    const requests = [];
-
-    for (let i = 0; i < body.length; i++) {
-      const request = new Object();
-      request.idRichiestaRimozioneDaTurno = body[i].idRichiestaRimozioneDaTurno;
-      request.idAssegnazioneTurno = body[i].idAssegnazioneTurno;
-      request.idUtenteRichiedente = body[i].idUtenteRichiedente;
-      request.idUtenteSostituto = body[i].idUtenteSostituto;
-      request.descrizione = body[i].descrizione;
-      request.esaminata = body[i].esaminata;
-      request.esito = body[i].esito;
-      request.allegato = body[i].allegato;
-
-      requests[i] = request;
-    }
-
-    return requests;
+    return this.parse(body);
   }
 
   async getAllPendingRequests() {
     const response = await fetch('/api/concrete-shifts/retirement-request/pending')
     const body = await response.json();
-
-    const requests = [];
-
-    for (let i = 0; i < body.length; i++) {
-      const request = new Object();
-      request.idRichiestaRimozioneDaTurno = body[i].idRichiestaRimozioneDaTurno;
-      request.idAssegnazioneTurno = body[i].idAssegnazioneTurno;
-      request.idUtenteRichiedente = body[i].idUtenteRichiedente;
-      request.idUtenteSostituto = body[i].idUtenteSostituto;
-      request.descrizione = body[i].descrizione;
-      request.esaminata = body[i].esaminata;
-      request.esito = body[i].esito;
-      request.allegato = body[i].allegato;
-
-      requests[i] = request;
-    }
-
-
-    return requests;
+    return this.parse(body);
   }
 
   async getAllRequestsForUser(idUser) {
     const response = await fetch(`/api/concrete-shifts/retirement-request/user/${idUser}`)
     const body = await response.json();
-    const requests = [];
-
-    for (let i = 0; i < body.length; i++) {
-      const request = new Object();
-      request.idRichiestaRimozioneDaTurno = body[i].idRichiestaRimozioneDaTurno;
-      request.idAssegnazioneTurno = body[i].idAssegnazioneTurno;
-      request.idUtenteRichiedente = body[i].idUtenteRichiedente;
-      request.idUtenteSostituto = body[i].idUtenteSostituto;
-      request.descrizione = body[i].descrizione;
-      request.esaminata = body[i].esaminata;
-      request.esito = body[i].esito;
-      request.allegato = body[i].allegato;
-
-      requests[i] = request;
-    }
-
-
-    return requests;
+    return this.parse(body);
   }
 
 }

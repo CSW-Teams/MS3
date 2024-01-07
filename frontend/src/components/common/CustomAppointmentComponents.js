@@ -83,7 +83,6 @@ export const Content = ({
   useEffect(() => {
     const checkPendingRequest = async () => {
       try {
-        console.log("[PROVA] Id del turno:", appointmentData.id);
         const result = await checkRequests(appointmentData.id);
 
         if (result === -1) {
@@ -102,7 +101,7 @@ export const Content = ({
 
 
   const handleConfirmRetirement = () => {
-    setConfirmationDialogOpen(false);
+    closeConfirmationDialog();
     onRetirement(justification, appointmentData.id);
   }
 

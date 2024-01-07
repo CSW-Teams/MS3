@@ -108,9 +108,6 @@ class ScheduleView extends React.Component{
              */
             shiftQueriedResponse: "ABOUT_TO_ASK",
             idUser: localStorage.getItem("id"),
-            justification: "",
-            outcome: false,
-            idShift: 0,
             requests: []
           };
           /**
@@ -155,8 +152,8 @@ class ScheduleView extends React.Component{
       let idUser = -1;
 
       for (let i = 0; i < this.state.requests.length; i++) {
-        if (this.state.requests[i].idAssegnazioneTurno === idShift) {
-          idUser = this.state.requests[i].idUtenteRichiedente;
+        if (this.state.requests[i].idShift === idShift) {
+          idUser = this.state.requests[i].idRequestingUser;
           break;
         }
       }
@@ -174,18 +171,16 @@ class ScheduleView extends React.Component{
     }
 
     handleRetirement = async (justification, idShift) => {
-      this.state.justification.setState(justification);
-      this.state.idShift.setState(idShift);
 
-      const subState = {
-        idAssegnazioneTurno: this.state.idShift,
-        idUtenteRichiedente: this.state.idUser,
-        descrizione: this.state.justification,
-        esito: this.state.outcome
+      const params = {
+        idShift: idShift,
+        idRequestingUser: this.state.idUser,
+        justification: justification,
+        outcome: false
       }
 
       let richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
-      let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(subState);
+      let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(params);
 
       if (httpResponse.status === 202) {
         toast.success('Richiesta inoltrata con successo', {
@@ -198,6 +193,7 @@ class ScheduleView extends React.Component{
           progress: undefined,
           theme: "colored",
         });
+
       } else {
         toast.error('Non è stato possibile inoltrare la richiesta', {
           position: "top-center",
