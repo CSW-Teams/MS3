@@ -507,8 +507,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         List<Constraint> v= new ArrayList<>();
         try {
             s = new ScheduleBuilder(
-                    LocalDate.of(2024, 1, 5),
-                    LocalDate.of(2024, 1, 7),
+                    LocalDate.now(),
+                    LocalDate.now().plusDays(7),
                     v,
                     lc,
                     ld
