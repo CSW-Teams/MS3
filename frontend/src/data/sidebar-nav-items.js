@@ -89,7 +89,11 @@ export function configuratore() {
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/scambio-turni",
     },
-
+    {
+      title: "Inserisci nuova festività",
+      htmlBefore: '<i class="material-icons">view_module</i>',
+      to: "/nuova-festivita"
+    },
   ];
 }
 

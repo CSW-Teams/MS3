@@ -1,5 +1,6 @@
 import { Holiday, SchedulableType } from "./Schedulable";
 import {red} from "@mui/material/colors";
+import {toast} from "react-toastify";
 
 export class HolidaysAPI {
 
@@ -58,9 +59,16 @@ export class HolidaysAPI {
         return "IT"
     }
 
+    async saveCustomHoliday(holiday) {
 
-
-
+      return (await fetch('/api/holidays/custom', {
+        method : 'POST',
+        headers : {
+          "Content-Type": "application/json"
+        },
+        body : JSON.stringify(holiday)
+      })).status ;
+    }
 }
 
 

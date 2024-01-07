@@ -19,6 +19,7 @@ import ConfigurazioneVincoli from "./views/configuratore/ConfigurazioneVincoli";
 import RegistraUtenteView from "./views/configuratore/RegistraUtenteView";
 import RichiesteRitiroView from "./views/utente/RichiesteRitiroView";
 import ShiftChangeView from "./views/utente/ShiftChangeView";
+import InserisciFestivita from "./views/configuratore/InserisciFestivita";
 
 
 export default [
@@ -93,6 +94,10 @@ export default [
     layout: DefaultLayout,
     component:  ShiftChangeView
   },
-
+  {
+    path: "/nuova-festivita",
+    layout: DefaultLayout,
+    component: InserisciFestivita
+  },
 ];
 
