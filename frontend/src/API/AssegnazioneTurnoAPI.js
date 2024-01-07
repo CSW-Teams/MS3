@@ -1,6 +1,6 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
-import {User} from "./User";
+import {Doctor} from "../entity/Doctor";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -35,11 +35,12 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
           let currentUserDto = body[i].doctorsOnDuty[j];
-          let utenteAllocato = new User(
+          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+          let utenteAllocato = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            currentUserDto.systemActors,
+            seniority,
           )
           utenti_guardia[j] = utenteAllocato;
           utenti_guardia_id[j] = utenteAllocato.id;
@@ -47,11 +48,12 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
           let currentUserDto = body[i].doctorsOnCall[j];
-          let utenteReperibile = new User(
+          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+          let utenteReperibile = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            currentUserDto.systemActors,
+            seniority,
           )
           utenti_reperibili[j] = utenteReperibile;
           utenti_reperibili_id[j] = utenteReperibile.id;
@@ -59,11 +61,12 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].deletedDoctors.length; j++) {
           let currentUserDto = body[i].deletedDoctors[j];
-          let utenteRimosso = new User(
+          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+          let utenteRimosso = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            currentUserDto.systemActors,
+            seniority,
           )
           utenti_rimossi[j] = utenteRimosso;
           utenti_rimossi_id[j] = utenteRimosso.id;
@@ -84,6 +87,7 @@ export  class AssegnazioneTurnoAPI {
 
       turni[i] = turno;
     }
+
     return turni;
 }
 

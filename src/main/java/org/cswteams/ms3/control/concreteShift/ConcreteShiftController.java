@@ -2,6 +2,7 @@ package org.cswteams.ms3.control.concreteShift;
 
 import org.cswteams.ms3.dao.ConcreteShiftDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
+import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
@@ -47,47 +48,32 @@ public class ConcreteShiftController implements IConcreteShiftController {
             long startDateTime = concreteShift.getShift().getStartTime().toEpochSecond(LocalDate.ofEpochDay(concreteShift.getDate()), ZoneOffset.UTC);
             long endDateTime = startDateTime + concreteShift.getShift().getDuration().toSeconds();
 
-            Set<UserDTO> doctorsOnDuty = new HashSet<>();
-            Set<UserDTO> doctorsOnCall = new HashSet<>();
+            Set<MedicalDoctorInfoDTO> doctorsOnDuty = new HashSet<>();
+            Set<MedicalDoctorInfoDTO> doctorsOnCall = new HashSet<>();
 
             for (DoctorAssignment doctorAssignment : concreteShift.getDoctorAssignmentList()) {
                 if (doctorAssignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY) {
                     Doctor doctorOnDuty = doctorAssignment.getDoctor();
-                    /* todo can't we just pass a doctor's list to GetAllConcreteShiftDTO? */
 
-                    /* this is because UserDTO wants a list of strings for systemActors */
-                    List<String> systemActors = new ArrayList<>();
-                    for (SystemActor actor : doctorOnDuty.getSystemActors()) {
-                        systemActors.add(actor.toString());
-                    }
-
-                    UserDTO userDTO = new UserDTO(
+                    MedicalDoctorInfoDTO medicalDoctorInfoDTO = new MedicalDoctorInfoDTO(
                             doctorOnDuty.getId(),
                             doctorOnDuty.getName(),
                             doctorOnDuty.getLastname(),
-                            doctorOnDuty.getBirthday(),
-                            systemActors
+                            doctorOnDuty.getSeniority()
                     );
 
-                    doctorsOnDuty.add(userDTO);
+                    doctorsOnDuty.add(medicalDoctorInfoDTO);
                 } else if (doctorAssignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL) {
                     Doctor doctorOnCall = doctorAssignment.getDoctor();
 
-                    /* this is because UserDTO wants a list of strings for systemActors */
-                    List<String> systemActors = new ArrayList<>();
-                    for (SystemActor actor : doctorOnCall.getSystemActors()) {
-                        systemActors.add(actor.toString());
-                    }
-
-                    UserDTO userDTO = new UserDTO(
+                    MedicalDoctorInfoDTO medicalDoctorInfoDTO = new MedicalDoctorInfoDTO(
                             doctorOnCall.getId(),
                             doctorOnCall.getName(),
                             doctorOnCall.getLastname(),
-                            doctorOnCall.getBirthday(),
-                            systemActors
+                            doctorOnCall.getSeniority()
                     );
 
-                    doctorsOnCall.add(userDTO);
+                    doctorsOnCall.add(medicalDoctorInfoDTO);
                 }
             }
 
@@ -150,33 +136,19 @@ public class ConcreteShiftController implements IConcreteShiftController {
                 long startTime = concreteShift.getDate()*24*60*60 + concreteShift.getShift().getStartTime().toSecondOfDay();
                 long endTime =  startTime + concreteShift.getShift().getDuration().getSeconds();
 
-                Set<UserDTO> onDutyDoctors = new HashSet<>();
-                Set<UserDTO> onCallDoctors = new HashSet<>();
-                Set<UserDTO> onRemovedDoctors = new HashSet<>();
+                Set<MedicalDoctorInfoDTO> onDutyDoctors = new HashSet<>();
+                Set<MedicalDoctorInfoDTO> onCallDoctors = new HashSet<>();
+                Set<MedicalDoctorInfoDTO> onRemovedDoctors = new HashSet<>();
                 for(DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
                     if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY) {
-                        System.out.println("ciao1 ");
                         Doctor doctor = assignment.getDoctor();
-                        List<String> stringList = doctor.getSystemActors().stream()
-                                .map(Enum::name)
-                                .collect(Collectors.toList());
-                        onDutyDoctors.add(new UserDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthday(), stringList));
+                        onDutyDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority()));
                     } else if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL) {
-                        System.out.println("ciao2 ");
                         Doctor doctor = assignment.getDoctor();
-                        List<String> stringList = doctor.getSystemActors().stream()
-                                .map(Enum::name)
-                                .collect(Collectors.toList());
-
-                        onCallDoctors.add(new UserDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthday(), stringList));
+                        onCallDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority()));
                     } else{
-                        System.out.println("ciao3 ");
                         Doctor doctor = assignment.getDoctor();
-                        List<String> stringList = doctor.getSystemActors().stream()
-                                .map(Enum::name)
-                                .collect(Collectors.toList());
-
-                        onRemovedDoctors.add(new UserDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getBirthday(), stringList));
+                        onRemovedDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority()));
                     }
                 }
                 MedicalServiceDTO medicalServiceDTO = new MedicalServiceDTO(concreteShift.getShift().getMedicalService().getLabel(), concreteShift.getShift().getMedicalService().getTasks());

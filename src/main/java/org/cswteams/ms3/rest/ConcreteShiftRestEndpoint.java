@@ -6,6 +6,7 @@ import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
+import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.Schedule;
@@ -76,22 +77,11 @@ public class ConcreteShiftRestEndpoint {
             System.out.println("SINGLE DOCTOR CONCRETE SHIFT");
             for(int i=0;i<c.size();i++){
                 GetAllConcreteShiftDTO app=(GetAllConcreteShiftDTO) c.toArray()[i];
-                System.out.println("ids: " + app.getShiftID()+" " +app.getId());
-                Set<UserDTO> set = app.getDoctorsOnCall();
-                List<UserDTO> list = new ArrayList<>(set);
-                System.out.println("nome dottori reperibili");
-                System.out.println(list.size());
-                for(UserDTO o: list){
-                    System.out.println(o.getName());
-                }
+                Set<MedicalDoctorInfoDTO> set = app.getDoctorsOnCall();
+                List<MedicalDoctorInfoDTO> list = new ArrayList<>(set);
 
-                Set<UserDTO> set2 = app.getDoctorsOnDuty();
-                List<UserDTO> list2 = new ArrayList<>(set2);
-                System.out.println("nome dottori duty");
-                System.out.println(list2.size());
-                for(UserDTO o: list2){
-                    System.out.println(o.getName());
-                }
+                Set<MedicalDoctorInfoDTO> set2 = app.getDoctorsOnDuty();
+                List<MedicalDoctorInfoDTO> list2 = new ArrayList<>(set2);
             }
             return new ResponseEntity<>(c, HttpStatus.OK);
         }
