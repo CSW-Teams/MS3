@@ -3,9 +3,9 @@
  * Il templete grafico utilizzato mette già a disposizione componenti grafici per poter effettuare la modifica di un turno.
  * Le componenti presenti in questo file servono per personalizzare le componenti grafiche già esistenti.
  * Le componenti grafiche da personalizzare sono sostanzialmente 3:
- *    - Overlay : componente che permette di far sollevare dal basso il drawer nel momento in cui si decide di
+ *    - Overlay: componente che permette di far sollevare dal basso il drawer nel momento in cui si decide di
  *      modificare un assegnazione.
- *    - CommandLayout : definisce quali elementi devono essere visualizzati sulla cima del drawer. Di default è visualizzato
+ *    - CommandLayout: definisce quali elementi devono essere visualizzati sulla cima del drawer. Di default è visualizzato
  *      il bottone "save" e il bottone per eliminare un assegnazione turno.
  *    - BasicLayout: Definisce gli elementi che devono essere visualizzati all'interno del drawer.
  * Di seguito sono presenti i componenti utilizzati sia in singleScheduleView che in GlobalScheduleView
@@ -23,6 +23,7 @@ import TextField from '@mui/material/TextField';
 import { Button, Stack } from '@mui/material';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { ToastContainer, toast } from 'react-toastify';
+  import {DoctorAPI} from "../../API/DoctorAPI";
 
 
 /**
@@ -89,18 +90,28 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
    */
   export function SingleLayout ({ onFieldChange, appointmentData, ...restProps }) {
     const [user,setUser] = React.useState([{}])
+
     const [utentiSelezionati,setUtentiSelezionati] = React.useState([])
     let assegnazioneTurnoApi = new AssegnazioneTurnoAPI();
 
     async function getUser() {
-      let userApi = new UserAPI();
-      let utenti = await userApi.getAllUsersInfo()
-      setUser(utenti);
+      let doctorAPI = new DoctorAPI();
+      let doctors = await doctorAPI.getAllDoctorsInfo();
+
+      const autocompleteList = [];
+      for (let i = 0; i < doctors.length; i++) {
+        let seniority = doctors[i].seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+        const label = doctors[i].name + " " + doctors[i].lastname + " - " + seniority;
+        const value = doctors[i].id;
+        autocompleteList.push({ label: label, value: value })
+      }
+
+      setUser(autocompleteList);
     }
 
     React.useEffect(() => {
       getUser();
-    }, []);
+      }, []);
 
     /**
      * Riceve in ingresso il "contesto" dello schedule view. In questo modo può invocare la funzione che
@@ -165,7 +176,6 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
     }
 
 
-
     return (
 
       <AppointmentForm.BasicLayout
@@ -183,7 +193,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
       <Autocomplete
         options={user}
         onChange={(event, value) =>  setUtentiSelezionati(value)}
-        renderInput={(params) => <TextField {...params} label="Seleziona sostituto" />}
+        renderInput={(params) => <TextField {...params} label="Seleziona sostituto"/>}
       />
 
       <Button onClick={()=>{buildAssegnazioneModificata(this)}}>Salva</Button>

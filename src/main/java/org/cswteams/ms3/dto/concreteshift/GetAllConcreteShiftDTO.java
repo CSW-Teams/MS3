@@ -1,9 +1,11 @@
 package org.cswteams.ms3.dto.concreteshift;
 
 import lombok.Getter;
+import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -16,13 +18,13 @@ public class GetAllConcreteShiftDTO {
     private final Long shiftID;
     private final long startDateTime;
     private final long endDateTime;
-    private final Set<UserDTO> doctorsOnDuty;
-    private final Set<UserDTO> doctorsOnCall;
+    private final Set<MedicalDoctorInfoDTO> doctorsOnDuty;
+    private final Set<MedicalDoctorInfoDTO> doctorsOnCall;
     private final String medicalServiceLabel;
     private final String medicalServiceTask;
     private final String timeSlot;
     private final boolean reperibilitaAttiva;
-    private final Set<UserDTO> deletedDoctors;
+    private final Set<MedicalDoctorInfoDTO> deletedDoctors;
 
     /**
      * Constructor of the DTO that should be sent to te client so that
@@ -41,8 +43,9 @@ public class GetAllConcreteShiftDTO {
                                   Long shiftID,
                                   long startDateTime,
                                   long endDateTime,
-                                  Set<UserDTO> doctorsOnDuty,
-                                  Set<UserDTO> doctorsOnCall,
+                                  Set<MedicalDoctorInfoDTO> doctorsOnDuty,
+                                  Set<MedicalDoctorInfoDTO> doctorsOnCall,
+                                  Set<MedicalDoctorInfoDTO> doctorsOnRemove,
                                   String medicalServiceLabel,
                                   String medicalServiceTask,
                                   String timeSlot,
@@ -58,7 +61,7 @@ public class GetAllConcreteShiftDTO {
         this.timeSlot = timeSlot;
         this.reperibilitaAttiva = reperibilitaAttiva;
 
-        this.deletedDoctors = new HashSet<>();
+        this.deletedDoctors = doctorsOnRemove;
     }
 
     /**

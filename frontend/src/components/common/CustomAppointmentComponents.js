@@ -9,10 +9,7 @@ import classNames from "clsx";
 import PropTypes from "prop-types";
 import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
-import { UserAPI } from "../../API/UserAPI";
 import Button from "@mui/material/Button";
-
-import ScheduleView, { handleRetirement } from '../../views/utente/ScheduleView';
 
 import {
   Dialog,
@@ -195,7 +192,7 @@ export const Content = ({
           </Grid>
           <Grid>
             <Grid container alignItems="center" >
-              <div className={tooltip_classes.text}> Allocati : </div>
+              <div className={tooltip_classes.text}> Allocati: </div>
             </Grid>
             {/*{ appointmentResources.slice(0, appointmentData.utenti_guardia.length).map(resourceItem => (*/}
             { appointmentData.utenti_guardia.map(resourceItem => (
@@ -209,7 +206,7 @@ export const Content = ({
                 </Grid>
                 <Grid item xs={10}>
                   <div className={tooltip_classes.text}>
-                    {resourceItem.label}
+                    {resourceItem.name} {resourceItem.lastname} - {resourceItem.seniority}
                   </div>
                 </Grid>
               </Grid>
@@ -217,7 +214,7 @@ export const Content = ({
             { appointmentData.reperibilitaAttiva === true ? (
               <div>
                 <Grid item xs={2}>
-                  <div className={tooltip_classes.text}> Reperibili </div>
+                  <div className={tooltip_classes.text}> Reperibili: </div>
                 </Grid>
                 { appointmentData.utenti_reperibili.map(resourceItem => (
                   <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.id}`}>
@@ -230,7 +227,7 @@ export const Content = ({
                     </Grid>
                     <Grid item xs={10}>
                       <div className={tooltip_classes.text}>
-                        {resourceItem.label}
+                        {resourceItem.name} {resourceItem.lastname} - {resourceItem.seniority}
                       </div>
                     </Grid>
                   </Grid>
@@ -383,7 +380,7 @@ export class AppointmentContent extends React.Component{
             <div style={{display: "inline-block"}}>
               Allocati:
             <ul>
-              {this.state.utenti_allocati.map((user) => <li> {user.cognome} </li>) }
+              {this.state.utenti_allocati.map((user) => <li> {user.lastname} </li>) }
             </ul>
             </div>
 
@@ -391,7 +388,7 @@ export class AppointmentContent extends React.Component{
               <div style={{ display: "inline-block" }}>
                 Reperibili:
                 <ul>
-                  {this.state.utenti_riserve.map((user) => <li> {user.cognome} </li>)}
+                  {this.state.utenti_riserve.map((user) => <li> {user.lastname} </li>)}
                 </ul>
               </div>
           ) : (
@@ -400,7 +397,7 @@ export class AppointmentContent extends React.Component{
             <div>
               {this.state.utenti_rimossi.length !== 0? (<div>Rimossi:</div>) : <div></div> }
             <ul>
-              {this.state.utenti_rimossi.map((user) => <li> <s>{user.cognome}</s></li>) }
+              {this.state.utenti_rimossi.map((user) => <li> <s>{user.lastname}</s></li>) }
             </ul>
             </div>
           </div>

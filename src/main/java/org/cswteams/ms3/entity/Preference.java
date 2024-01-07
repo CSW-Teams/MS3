@@ -46,4 +46,18 @@ public class Preference {
     protected Preference(){
 
     }
+
+    /**
+     *
+     * @param id The id of the preference
+     * @param date The day of the preference
+     * @param timeSlots The shift time slots relative to the preference day
+     * @param doctors A list of doctors that have such preference
+     */
+    public Preference(Long id, LocalDate date, Set<TimeSlot> timeSlots, List<Doctor> doctors) {
+        this.id = id ;
+        this.date = date;
+        this.timeSlots = timeSlots;
+        this.doctors = doctors;
+    }
 }

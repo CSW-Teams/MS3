@@ -371,6 +371,7 @@ public void updatePriorityDoctors(List<DoctorUffaPriority> allDoctorUffaPriority
 * ... e il metodo controllerScocciatura.orderByPriority() (che dovrebbe sostituire controllerScocciatura.ordinaByUffa())...
 ```
 public void orderByPriority(List<DoctorUffaPriority> dup, PriorityQueue pq) {
+  //TODO: pensare a un'alternativa in cui i casi LONG_SHIFT e NIGHT considerano in primo luogo la propria coda di priorità e, in caso di parità di priorità in questa coda, anche la coda GENERAL.
   Collections.shuffle(dup);
 
   switch(pq) {
