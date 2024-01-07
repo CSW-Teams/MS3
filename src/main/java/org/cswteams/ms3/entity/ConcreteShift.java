@@ -24,12 +24,12 @@ public class ConcreteShift {
     @NotNull
     private Shift shift;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @NotNull
-    private List<DoctorAssignment> doctorAssignmentList; //TODO: check that the doctors involved in this list are all different
+    private List<DoctorAssignment> doctorAssignmentList = new ArrayList<>(); //TODO: check that the doctors involved in this list are all different
     // maybe make it a Set<>?
 
-    
+
     protected ConcreteShift(Long id) {
 
         this.id = id;
@@ -61,7 +61,7 @@ public class ConcreteShift {
     public ConcreteShift clone() {
         return new ConcreteShift(this.date, this.shift, this.doctorAssignmentList);
     }
-  
+
     /**
      * Given a <code>Doctor</code>, return the <code>ConcreteShiftDoctorStatus</code> for which he/she
      * is assigned for this <code>ConcreteShift</code>.

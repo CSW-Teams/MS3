@@ -1,7 +1,6 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
-import {User} from "./User";
-import {forEach} from "react-bootstrap/ElementChildren";
+import {Doctor} from "../entity/Doctor";
 
 export  class AssegnazioneTurnoAPI {
 
@@ -12,9 +11,6 @@ export  class AssegnazioneTurnoAPI {
     let turni = [];
 
     for (let i = 0; i < body.length; i++) {
-        console.log(`Element ${i}: ${body[i].id}`);
-        console.log(`Element ${i}: ${body[i].startDateTime}`);
-        console.log(`Element ${i}: ${body[i].endDateTime}`);
         const inizioEpochMilliseconds = body[i].startDateTime*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 
@@ -26,7 +22,7 @@ export  class AssegnazioneTurnoAPI {
           inizioDate,
           fineDate,
           teal);
-        turno.id = body[i].shiftID;
+        turno.id = body[i].id;
         turno.type ="Assigned"
 
         let utenti_guardia = [];
@@ -39,11 +35,12 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
           let currentUserDto = body[i].doctorsOnDuty[j];
-          let utenteAllocato = new User(
+          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+          let utenteAllocato = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            currentUserDto.systemActor,
+            seniority,
           )
           utenti_guardia[j] = utenteAllocato;
           utenti_guardia_id[j] = utenteAllocato.id;
@@ -51,11 +48,12 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
           let currentUserDto = body[i].doctorsOnCall[j];
-          let utenteReperibile = new User(
+          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+          let utenteReperibile = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            currentUserDto.systemActor,
+            seniority,
           )
           utenti_reperibili[j] = utenteReperibile;
           utenti_reperibili_id[j] = utenteReperibile.id;
@@ -63,11 +61,12 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].deletedDoctors.length; j++) {
           let currentUserDto = body[i].deletedDoctors[j];
-          let utenteRimosso = new User(
+          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+          let utenteRimosso = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            currentUserDto.systemActor,
+            seniority,
           )
           utenti_rimossi[j] = utenteRimosso;
           utenti_rimossi_id[j] = utenteRimosso.id;
@@ -87,8 +86,6 @@ export  class AssegnazioneTurnoAPI {
       turno.reperibilitaAttiva = body[i].reperibilitaAttiva;
 
       turni[i] = turno;
-
-
     }
 
     return turni;
@@ -97,17 +94,16 @@ export  class AssegnazioneTurnoAPI {
   async getTurnByIdUser(id) {
     const response = await fetch('/api/concrete-shifts/user_id=' + id);
     const body = await response.json();
-
-
     let turni = this.parseAllocatedShifts(body);
 
     for (let i = 0; i < turni.length; i++) {
-      for (let j = 0; j < body[i].utentiDiGuardia.length; j++) {
+
+      for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
         if (id === turni[i].utenti_guardia[j]) {
           turni[i].turno ="GUARDIA" ;
         }
       }
-      for (let j = 0; j < body[i].utentiReperibili.length; j++) {
+      for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
         if (id === turni[i].utenti_reperibili[j]) {
           turni[i].turno = "REPERIBILITA'";
         }
@@ -156,9 +152,7 @@ export  class AssegnazioneTurnoAPI {
         body: JSON.stringify(assegnazioneTurno)
       };
 
-      const response = await fetch('/api/concrete-shifts/',requestOptions);
-
-      return response;
+    return await fetch('/api/concrete-shifts/', requestOptions);
 
   }
 
@@ -177,17 +171,20 @@ export  class AssegnazioneTurnoAPI {
       body: JSON.stringify(assegnazioneModificata)
     };
 
-    console.log(assegnazioneModificata)
-
     return await fetch('/api/concrete-shifts/', requestOptions);
 
 }
 
 async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
+    console.log("Ci arrivo qui?")
   let shiftChangeRequest = {}
   shiftChangeRequest.concreteShiftId = assegnazione.id;
   shiftChangeRequest.senderId = idLoggato;
-  shiftChangeRequest.receiverId = utenteCambio.id;
+  shiftChangeRequest.receiverId = utenteCambio.value;
+
+  console.log("concrete shift id : " + shiftChangeRequest.concreteShiftId);
+  console.log("sender: " + shiftChangeRequest.senderId);
+  console.log("receiver: " + shiftChangeRequest.receiverId);
 
   const requestOptions = {
     method: 'PUT',
@@ -195,7 +192,7 @@ async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
     body: JSON.stringify(shiftChangeRequest)
   };
 
-  return await fetch('/api/concrete-shifts/retirement-request/', requestOptions);
+  return await fetch('/api/change-shift-request/', requestOptions);
 }
 
 

@@ -35,7 +35,6 @@ export default class ConfigurazioneVincoli extends React.Component{
   }
 
   async componentDidMount() {
-    console.log("COMPONENT DID MOUNT")
     let conf = await(new VincoloAPI().getConfigurazioneVincoli())
     this.setState({
       numGiorniPeriodo: conf.numGiorniPeriodo,
