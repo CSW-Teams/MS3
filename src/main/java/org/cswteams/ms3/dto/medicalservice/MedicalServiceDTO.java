@@ -6,6 +6,9 @@ import org.cswteams.ms3.entity.Task;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * See <code>MedicalServiceCreationDTO</code> if you want to manage only name and task types.
+ */
 @Getter
 public class MedicalServiceDTO {
 

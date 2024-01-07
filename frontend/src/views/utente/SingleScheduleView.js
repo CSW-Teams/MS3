@@ -52,4 +52,3 @@ export default class SingleScheduleView extends ScheduleView {
   }
 }
 
-

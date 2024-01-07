@@ -89,6 +89,11 @@ export function configuratore() {
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/scambio-turni",
     },
+    {
+      title: "Servizi",
+      htmlBefore: '<i class="material-icons">view_module</i>',
+      to: "/servizi",
+    },
 
   ];
 }

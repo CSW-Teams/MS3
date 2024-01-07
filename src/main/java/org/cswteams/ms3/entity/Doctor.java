@@ -17,8 +17,8 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Doctor extends User{
     /*TODO : Check if it is necessary Setter for password on password change
-    *  Should be added a Factory to set protected access to doctor (So that no one can change his credentials
-    * as he pleases) */
+     *  Should be added a Factory to set protected access to doctor (So that no one can change his credentials
+     * as he pleases) */
     //@Id
     //@GeneratedValue(strategy = GenerationType.AUTO)
     //@Column(name = "doctor_id", nullable = false)

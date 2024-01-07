@@ -13,4 +13,3 @@ public interface ConcreteShiftDAO extends JpaRepository<ConcreteShift,Long> {
 
 }
 
-

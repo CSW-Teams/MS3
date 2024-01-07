@@ -109,7 +109,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
             throw new RegistrationException("Indirizzo email già registrato");
         if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR) &&
                 (!registrationDTO.getSeniority().toString().equals("STRUCTURED") &&
-                 !registrationDTO.getSeniority().toString().equals("SPECIALIZED")
+                        !registrationDTO.getSeniority().toString().equals("SPECIALIZED")
                 )
         ) {
             throw new RegistrationException("Non è stata specificata la seniority");
@@ -125,7 +125,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
                     registrationDTO.getPassword(),
                     registrationDTO.getSeniority(),
                     registrationDTO.getSystemActors()
-                    );
+            );
             doctorDAO.saveAndFlush(d);
 
             return new RegisteredUserDTO(
