@@ -2,6 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import {useState} from "react";
 import Typography from "@mui/material/Typography";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -15,6 +16,7 @@ const MedicalServiceCreationDrawer = ({tasks}) => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [selectedTasks, setSelectedTasks] = useState([]);
+    const [newMedicalServiceName, setNewMedicalServiceName] = useState("");
 
     const servizioAPI = new ServizioAPI();
     const names = Object.values(tasks);
@@ -29,7 +31,15 @@ const MedicalServiceCreationDrawer = ({tasks}) => {
 
     const postNewRequest = () => {
         handleClose();
-        return servizioAPI.createMedicalService(selectedTasks);
+        var tasks=selectedTasks.map((item)=>taskType: item)
+
+        var params = {
+            nome:     newMedicalServiceName,
+            mansioni: [ tasks]
+        }
+        setNewMedicalServiceName("");
+        setSelectedTasks([]);
+        return servizioAPI.createMedicalService(params);
     };
 
     return (
@@ -63,8 +73,13 @@ const MedicalServiceCreationDrawer = ({tasks}) => {
                     <Typography variant="h6">
                         hhhhhh
                     </Typography>
+          <TextField id="outlined-basic" label="Nome del servizio" variant="outlined"
+          onChange={(event) => {
+              setNewMedicalServiceName(event.target.value);
+            }}
+          />
                     <p>
-                        yo
+                        Seleziona le mansioni assegnabili:
                     </p>
                     {
                     (names && names[0]) ?
@@ -81,6 +96,7 @@ const MedicalServiceCreationDrawer = ({tasks}) => {
                             ))
                         :
                             (
+                            // Without this, names[0] would be undefined!
                             {names}
                             )
                     }
@@ -98,7 +114,7 @@ const MedicalServiceCreationDrawer = ({tasks}) => {
                     <Button
                         variant="contained"
                         color="success"
-                        //disabled={TODO}
+                        disabled={newMedicalServiceName==="" || selectedTasks.length===0}
                         onClick={postNewRequest}
                         >
                         Crea servizio
