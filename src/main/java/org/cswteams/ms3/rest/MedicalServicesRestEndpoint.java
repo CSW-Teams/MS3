@@ -3,6 +3,7 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
 import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,7 @@ public class MedicalServicesRestEndpoint {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceDTO service) {
+    public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceCreationDTO service) {
         if (service != null) {
             return new ResponseEntity<>(medicalServiceController.createService(service), HttpStatus.ACCEPTED);
         }

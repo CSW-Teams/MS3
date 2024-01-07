@@ -31,12 +31,12 @@ const MedicalServiceCreationDrawer = ({tasks}) => {
 
     const postNewRequest = () => {
         handleClose();
-        var tasks=selectedTasks.map((item)=>taskType: item)
 
         var params = {
-            nome:     newMedicalServiceName,
-            mansioni: [ tasks]
+            name:       newMedicalServiceName,
+            taskTypes:  selectedTasks
         }
+
         setNewMedicalServiceName("");
         setSelectedTasks([]);
         return servizioAPI.createMedicalService(params);
