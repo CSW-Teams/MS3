@@ -22,16 +22,15 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> creaRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {
-        RequestRemovalFromConcreteShiftDTO ret = null;
         if (requestDTO == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
-            ret = controller.createRequest(requestDTO);
+            RequestRemovalFromConcreteShiftDTO ret = controller.createRequest(requestDTO);
+            return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
         } catch (DatabaseException | AssegnazioneTurnoException e) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
-        return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -68,11 +67,11 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/{idRichiestaRimozioneDaTurno}/uploadFile")
-    public ResponseEntity<?> caricaAllegato(@PathVariable Long request, @RequestParam("attachment") MultipartFile attachment) {
+    @RequestMapping(method = RequestMethod.POST, path = "/{idRequest}/uploadFile")
+    public ResponseEntity<?> uploadFile(@PathVariable Long idRequest, @RequestParam("attachment") MultipartFile attachment) {
         RequestRemovalFromConcreteShiftDTO ret;
         try {
-            ret = controller.uploadFile(request, attachment);
+            ret = controller.uploadFile(idRequest, attachment);
         } catch (IOException | DatabaseException e) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }

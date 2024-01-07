@@ -32,7 +32,7 @@ const FilesUpload = ({type, request, updateRequest}) => {
           (100 * event.loaded) / event.total
         );
         setProgressInfos({ val: _progressInfos });
-      }, request.idRichiestaRimozioneDaTurno)
+      }, request.idRequest)
     } else {
       response = await uploadAPI.uploadGiustifica(file, (event) => {
         _progressInfos[idx].percentage = Math.round(
@@ -56,7 +56,7 @@ const FilesUpload = ({type, request, updateRequest}) => {
     /* todo questo è stato messo solo per fare in modo che la tabella si aggiorni dicendo che l'allegato è presente, va gestito meglio quando verrà implementato il download dell'allegato
     *   probabilmente conviene mettere un booleano (tipo allegatoPresente), e recuperare il vero allegato nella fase di download
     * */
-    request.allegato = true;
+    request.file = true;
     updateRequest(request);
   };
 

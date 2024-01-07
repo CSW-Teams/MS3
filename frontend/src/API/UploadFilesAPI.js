@@ -20,9 +20,8 @@ export class UploadFilesAPI {
   async uploadFileRetirement(file, onUploadProgress, idRequest) {
     let formData = new FormData();
 
-    formData.append("allegato",file)
-    return await fetch(`/api/assegnazioneturni/richiesterimozione/${idRequest}/caricaAllegato`, {
-      // content-type header should not be specified!
+    formData.append("attachment", file)
+    return await fetch(`/api/concrete-shifts/retirement-request/${idRequest}/uploadFile`, {
     method: 'POST',
     body: formData,
     onUploadProgress,

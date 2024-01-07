@@ -487,16 +487,22 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         DoctorAssignment da2 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift2,ward);
         doctorAssignmentDAO.saveAndFlush(da2);
         concreteShift2.getDoctorAssignmentList().add(da2);
-        concreteShiftDAO.saveAndFlush(concreteShift2);
+        //concreteShiftDAO.saveAndFlush(concreteShift2);
 
         DoctorAssignment da3 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift3,ward);
         doctorAssignmentDAO.saveAndFlush(da3);
         concreteShift3.getDoctorAssignmentList().add(da3);
         concreteShiftDAO.saveAndFlush(concreteShift3);
 
+        DoctorAssignment da4 = new DoctorAssignment(u4, ConcreteShiftDoctorStatus.ON_CALL, concreteShift2, ward);
+        doctorAssignmentDAO.saveAndFlush(da4);
+        concreteShift2.getDoctorAssignmentList().add(da4);
+        concreteShiftDAO.saveAndFlush(concreteShift2);
+
         List<Doctor> ld = new ArrayList<Doctor>();
         ld.add(u8);
         ld.add(u7);
+        ld.add(u4);
         List<Constraint> vincoli = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
         Schedule s= null;
         List<Constraint> v= new ArrayList<>();
