@@ -44,4 +44,15 @@ export class ServizioAPI {
         const body = await response.json();
         return body;
     }
+
+  async createMedicalService(params) {
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(params)
+    };
+
+    const response = await fetch('/api/medical-services/', requestOptions);
+    return response;
+  }
 }
