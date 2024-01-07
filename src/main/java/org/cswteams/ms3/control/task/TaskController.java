@@ -36,11 +36,12 @@ public class TaskController implements ITaskController {
     @Override
     public void assignDoctorToTask(Task task, Doctor doctor) {
         task.addDoctor(doctor);
+        taskDAO.saveAndFlush(task);
     }
 
     @Override
     public void assignDoctorToMedicalService(MedicalService medicalService, Doctor doctor) {
-
+        //FIXME serve sapere anche a quale task del servizio il doctor deve essere assegnato
     }
 
     @Override
@@ -49,5 +50,4 @@ public class TaskController implements ITaskController {
         taskDAO.saveAndFlush(t);
         return t;
     }
-
 }
