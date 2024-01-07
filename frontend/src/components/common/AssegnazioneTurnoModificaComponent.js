@@ -23,6 +23,7 @@ import TextField from '@mui/material/TextField';
 import { Button, Stack } from '@mui/material';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { ToastContainer, toast } from 'react-toastify';
+  import {DoctorAPI} from "../../API/DoctorAPI";
 
 
 /**
@@ -94,12 +95,19 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
     let assegnazioneTurnoApi = new AssegnazioneTurnoAPI();
 
     async function getUser() {
-      let userApi = new UserAPI();
-      let utenti = await userApi.getAllUsersInfo()
+      let doctorAPI = new DoctorAPI();
+      let doctors = await doctorAPI.getAllDoctorsInfo();
+
       const autocompleteList = [];
-      for (let i = 0; i < utenti.length; i++) {
-        const label = utenti[i].name+" "+utenti[i].lastname;
-        const value = utenti[i].id;
+      for (let i = 0; i < doctors.length; i++) {
+        let seniority = "";
+        if (doctors[i].seniority === "STRUCTURED") {
+          seniority = "Strutturato";
+        } else {
+          seniority = "Specializzando";
+        }
+        const label = doctors[i].name + " " + doctors[i].lastname + " - " + seniority;
+        const value = doctors[i].id;
         autocompleteList.push({ label: label, value: value })
       }
 

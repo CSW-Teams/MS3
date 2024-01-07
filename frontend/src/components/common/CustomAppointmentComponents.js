@@ -206,7 +206,7 @@ export const Content = ({
                 </Grid>
                 <Grid item xs={10}>
                   <div className={tooltip_classes.text}>
-                    {resourceItem.label}
+                    {resourceItem.name} {resourceItem.lastname} - {resourceItem.systemActor}
                   </div>
                 </Grid>
               </Grid>
