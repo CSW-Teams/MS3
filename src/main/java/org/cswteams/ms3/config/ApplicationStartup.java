@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
 import org.cswteams.ms3.control.medicalService.MedicalServiceController;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.control.scheduler.ScheduleBuilder;
 import org.cswteams.ms3.control.task.TaskController;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.entity.*;
@@ -13,10 +14,8 @@ import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
 import org.cswteams.ms3.dao.*;
-import org.cswteams.ms3.enums.Seniority;
-import org.cswteams.ms3.enums.SystemActor;
-import org.cswteams.ms3.enums.TaskEnum;
-import org.cswteams.ms3.enums.TimeSlot;
+import org.cswteams.ms3.enums.*;
+import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -81,6 +80,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private IMedicalServiceController medicalServiceController;
 
+    @Autowired
+    private ConcreteShiftDAO concreteShiftDAO;
+
+    @Autowired
+    private DoctorAssignmentDAO doctorAssignmentDAO;
+
+
+
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
@@ -88,7 +95,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         /**
          * FIXME: sostiutire count con controllo su entità Config
          */
-        if (doctorDAO.count() == 0) {
+      //  if (doctorDAO.count() == 0) {
             try {
                 populateDB();
             } catch (ShiftException e) {
@@ -97,7 +104,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
             //registerConstraints();
             registerScocciature();
-        }
+     //   }
 
     }
 
