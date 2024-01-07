@@ -100,12 +100,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
 
       const autocompleteList = [];
       for (let i = 0; i < doctors.length; i++) {
-        let seniority = "";
-        if (doctors[i].seniority === "STRUCTURED") {
-          seniority = "Strutturato";
-        } else {
-          seniority = "Specializzando";
-        }
+        let seniority = doctors[i].seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
         const label = doctors[i].name + " " + doctors[i].lastname + " - " + seniority;
         const value = doctors[i].id;
         autocompleteList.push({ label: label, value: value })
@@ -124,7 +119,6 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      * @param {*} contesto
      */
     async function buildAssegnazioneModificata(contesto){
-      console.log("PRIMA DELL'APOCALISSE");
 
       let response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati,appointmentData,localStorage.getItem("id"))
       let responseStatusClass = Math.floor(response.status / 100)
