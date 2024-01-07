@@ -1,16 +1,18 @@
 package org.cswteams.ms3.control.medicalService;
 
+import org.cswteams.ms3.control.task.ITaskController;
 import org.cswteams.ms3.dao.MedicalServiceDAO;
-import org.cswteams.ms3.dto.RequestRemovalFromConcreteShiftDTO;
 import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
 import org.cswteams.ms3.entity.MedicalService;
-import org.cswteams.ms3.entity.RequestRemovalFromConcreteShift;
 import org.cswteams.ms3.entity.Task;
+import org.cswteams.ms3.enums.TaskEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,10 +23,17 @@ public class MedicalServiceController implements IMedicalServiceController {
     @Autowired
     MedicalServiceDAO medicalServiceDAO;
 
+    @Autowired
+    ITaskController taskController;
+
     @Override
-    public MedicalService createService(@NotNull MedicalServiceDTO medicalServiceDTO) {
-        //TODO chiamare metodo interno
-        return medicalServiceDAO.save(new MedicalService(medicalServiceDTO.getMansioni(), medicalServiceDTO.getNome()));
+    public MedicalService createService(@NotNull MedicalServiceCreationDTO medicalServiceCreationDTO) {
+        List<Task> taskList = new ArrayList<>();
+        for (String taskTypeString : medicalServiceCreationDTO.getTaskTypes()) {
+            Task t = taskController.createTaskWithType(TaskEnum.valueOf(taskTypeString));
+            taskList.add(t);
+        }
+        return this.createService(taskList, medicalServiceCreationDTO.getName());
     }
 
     @Override
