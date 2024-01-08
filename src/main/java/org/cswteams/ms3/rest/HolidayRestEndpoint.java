@@ -1,20 +1,21 @@
 package org.cswteams.ms3.rest;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cswteams.ms3.control.preferenze.*;
 import org.cswteams.ms3.dto.HolidayDTO;
+import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
 import org.cswteams.ms3.enums.ServiceDataENUM;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.ValidationException;
 
 @RestController
 @RequestMapping("/holidays")
@@ -51,7 +52,27 @@ public class HolidayRestEndpoint {
             holidayController.registerSundays(LocalDate.of(Integer.parseInt(currentYear)-1, 1, 1), 3);
             holidays = holidayController.readHolidays();
         }
-        return ResponseEntity.status(HttpStatus.FOUND).body(holidays);
+
+        ArrayList<HolidayDTO> recurrentIntegration = new ArrayList<>(holidays) ;
+        recurrentIntegration.addAll(holidayController.retrieveRecurrentHolidays(Integer.parseInt(currentYear))) ;
+        return ResponseEntity.status(HttpStatus.FOUND).body(recurrentIntegration);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/new-holiday")
+    public ResponseEntity<?> insertCustomHoliday(@RequestBody CustomHolidayDTOIn dto) {
+
+        if(dto != null) {
+            try {
+                holidayController.insertCustomHoliday(dto); ;
+            } catch (ValidationException e) {
+                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE) ;
+            } catch (Exception e) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR) ;
+            }
+
+            return new ResponseEntity<>(HttpStatus.OK) ;
+        } else
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST) ;
     }
 
 }

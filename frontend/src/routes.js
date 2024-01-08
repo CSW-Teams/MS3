@@ -20,6 +20,7 @@ import RegistraUtenteView from "./views/configuratore/RegistraUtenteView";
 import RichiesteRitiroView from "./views/utente/RichiesteRitiroView";
 import ShiftChangeView from "./views/utente/ShiftChangeView";
 import MedicalServicesView from "./views/configuratore/MedicalServicesView";
+import InserisciFestivita from "./views/configuratore/InserisciFestivita";
 
 
 export default [
@@ -100,5 +101,10 @@ export default [
     component:  MedicalServicesView
   },
 
+  {
+    path: "/nuova-festivita",
+    layout: DefaultLayout,
+    component: InserisciFestivita
+  },
 ];
 
