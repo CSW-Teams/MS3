@@ -7,14 +7,19 @@ import {useState} from "react";
 import Typography from "@mui/material/Typography";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import {AppBar, Checkbox, Toolbar} from "@mui/material";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
 
-const MedicalServiceCreationDrawer = ({tasks}) => {
+toast.configure();
+
+const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const [updatedResults, setUR] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
     const [newMedicalServiceName, setNewMedicalServiceName] = useState("");
 
@@ -29,22 +34,58 @@ const MedicalServiceCreationDrawer = ({tasks}) => {
         }
     };
 
+    function alphaSort(array) {
+        return array.sort((a, b) => a.localeCompare(b));
+    }
+
     const postNewRequest = () => {
-        handleClose();
+        //check if exists
+        const servicesNames = services.map(services => services.name)
+        const matches = servicesNames.filter(service => service.toUpperCase() === (newMedicalServiceName.toUpperCase()))
+        if(matches.length==0) {
+            handleClose();
+            alphaSort(selectedTasks);
+            var params = {
+                name:       newMedicalServiceName,
+                taskTypes:  selectedTasks
+            }
+            var service = {
+                name:           newMedicalServiceName,
+                taskTypesList:  selectedTasks
+            }
+            const serviceNew={}
+            var str="";
+            for (let j = 0; j < selectedTasks.length; j++) {
+                str =str.concat(
+                  selectedTasks[j],
+                  (j!=selectedTasks.length-1) ? ", " : ""
+                  );
+            }
+            serviceNew.name=newMedicalServiceName.toUpperCase();
+            serviceNew.taskTypesList=str;
+            setNewMedicalServiceName("");
+            setSelectedTasks([]);
+            servizioAPI.createMedicalService(params);
 
-        var params = {
-            name:       newMedicalServiceName,
-            taskTypes:  selectedTasks
+            updateServicesList(serviceNew);
+            toast.success("Servizio creato con successo.");
+            } else {
+            toast.error("Il servizio è già esistente. Riprovare.");
         }
-
-        setNewMedicalServiceName("");
-        setSelectedTasks([]);
-        return servizioAPI.createMedicalService(params);
     };
 
     return (
         <>
-        <Button onClick={handleOpen}>
+        <Button
+            onClick = {handleOpen}
+            style   = {{
+                'display'       : 'block',
+                'margin-left'   : 'auto',
+                'margin-right'  : 'auto',
+                'margin-top'    : '1%',
+                'margin-bottom' : '1%'
+            }}
+            >
             Crea nuovo servizio
         </Button>
         <Drawer anchor="bottom" open={open} onClose={handleClose}>
@@ -63,24 +104,29 @@ const MedicalServiceCreationDrawer = ({tasks}) => {
 
             <div style={{textAlign: 'center', padding: '20px'}}>
                 <Box
-                    marginBottom={2}
-                    marginTop={2}
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="center"
-                    alignItems="center"
+                    marginBottom    = {2}
+                    marginTop       = {2}
+                    display         = "flex"
+                    flexDirection   = "column"
+                    justifyContent  = "center"
+                    alignItems      = "center"
                     >
-                    <Typography variant="h6">
-                        hhhhhh
-                    </Typography>
-          <TextField id="outlined-basic" label="Nome del servizio" variant="outlined"
-          onChange={(event) => {
-              setNewMedicalServiceName(event.target.value);
-            }}
-          />
+                    <TextField
+                        id        = "outlined-basic"
+                        label     = "Nome del servizio"
+                        variant   = "outlined"
+                        onChange  = {
+                            (event) => {
+                                setNewMedicalServiceName(event.target.value);
+                                event.target.value = (event.target.value).toUpperCase();
+                            }
+                        }
+                    />
                     <p>
-                        Seleziona le mansioni assegnabili:
                     </p>
+                    <Typography variant="h6">
+                        Seleziona le mansioni da assegnare:
+                    </Typography>
                     {
                     (names && names[0]) ?
                         Object.values(names[0]).map((item) => (
