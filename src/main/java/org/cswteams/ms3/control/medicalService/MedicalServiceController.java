@@ -38,10 +38,11 @@ public class MedicalServiceController implements IMedicalServiceController {
 
     @Override
     public MedicalService createService(List<Task> taskList, String label) {
+        String labelUpper = label.toUpperCase();
         // check if not already existent
-        MedicalService retrieved = medicalServiceDAO.findByLabel(label);
+        MedicalService retrieved = medicalServiceDAO.findByLabel(labelUpper);
         if (retrieved == null) {
-            MedicalService newService = new MedicalService(taskList, label);
+            MedicalService newService = new MedicalService(taskList, labelUpper);
             return medicalServiceDAO.saveAndFlush(newService);
         } else {
             retrieved.addTasks(taskList);
