@@ -10,20 +10,32 @@ import ClearIcon from '@mui/icons-material/Clear';
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import {RichiestaRimozioneDaTurnoAPI} from "../../API/RichiestaRimozioneDaTurnoAPI";
+import {Modal} from "react-bootstrap";
 
 
 const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
   const [open, setOpen] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
   const [selectedReperibile, setSelectedReperibile] = useState(null);
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const shift = shifts.find(shift => shift.id === request.idShift);
 
-  const shift = shifts.find(shift => shift.id === request.idAssegnazioneTurno);
-  console.log("Shift:", shift);
+  const retiringUser = users.find(user => user.id === request.idRequestingUser);
 
-  const retiringUser = users.find(user => user.id === request.idUtenteRichiedente);
-  console.log(retiringUser);
+  let seniority = retiringUser.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+  const doctorInfo = retiringUser.name + " " + retiringUser.lastname + " - " + seniority;
+
+  const handleOpen = () => {
+    if (shift.utenti_reperibili.length === 0) {
+      setOpenAlert(true);
+    } else {
+      setOpen(true);
+    }
+  }
+  const handleClose = () => {
+    setOpen(false);
+    setOpenAlert(false);
+  }
 
   const handleCheckboxChange = (userId) => {
     setSelectedReperibile(userId);
@@ -36,17 +48,16 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
     handleClose();
 
     request = {
-      idRichiestaRimozioneDaTurno: request.idRichiestaRimozioneDaTurno,
-      idAssegnazioneTurno: request.idAssegnazioneTurno,
-      idUtenteRichiedente: request.idUtenteRichiedente,
-      idUtenteSostituto: selectedReperibile,
-      esito: true,
-      descrizione: request.descrizione,
-      esaminata: true,
-      allegato: request.allegato
+      idRequest: request.idRequest,
+      idShift: request.idShift,
+      idRequestingUser: request.idRequestingUser,
+      idSubstitute: selectedReperibile,
+      outcome: true,
+      justification: request.descrizione,
+      examined: true,
+      file: request.file
     }
 
-    console.log("Params:", request)
 
     updateRequest(request);
     return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
@@ -54,33 +65,46 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
   };
 
   const handleReject = () => {
-    console.log("REJECT")
     handleClose();
 
-    console.log("[PROVA]",request);
-
     request = {
-      idRichiestaRimozioneDaTurno: request.idRichiestaRimozioneDaTurno,
-      idAssegnazioneTurno: request.idAssegnazioneTurno,
-      idUtenteRichiedente: request.idUtenteRichiedente,
-      idUtenteSostituto: null,
-      esito: false,
-      descrizione: request.descrizione,
-      esaminata: true,
-      allegato: request.allegato
+      idRequest: request.idRequest,
+      idShift: request.idShift,
+      idRequestingUser: request.idRequestingUser,
+      idSubstitute: null,
+      outcome: false,
+      justification: request.justification,
+      examined: true,
+      file: request.file
     }
 
-    console.log("Params:", request)
 
     updateRequest(request);
     return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
   };
+
 
   return (
     <>
       <Button onClick={handleOpen}>
         Gestisci richiesta
       </Button>
+
+      <Modal show={openAlert} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Errore</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div style={{textAlign:'center'}}>
+            <p>Non sono disponibili utenti reperibili per questo turno</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleClose}>
+            Ok
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
 
       <Drawer anchor="bottom" open={open} onClose={handleClose}>
@@ -109,7 +133,7 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
             alignItems="center"
           >
             <Typography variant="h6">
-              {retiringUser.text} ha richiesto di ritirarsi dal turno.
+              {doctorInfo} ha richiesto di ritirarsi dal turno.
             </Typography>
           </Box>
 
@@ -123,7 +147,6 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
           >
             <Typography variant="h6">Seleziona un utente reperibile per la sostituzione:</Typography>
           </Box>
-
           <Box
             display="flex"
             flexDirection="column"
@@ -143,7 +166,6 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
               />
             ))}
           </Box>
-
           <Box
             mt={4}
           >
@@ -165,6 +187,7 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
               Rifiuta
             </Button>
           </Box>
+
 
         </div>
       </Drawer>

@@ -10,52 +10,59 @@ public class RequestRemovalFromConcreteShiftDTO {
     /**
      * <code>null</code> all'atto della creazione della richiesta
      */
-    private Long idRichiestaRimozioneDaTurno;
+    private Long idRequest;
 
     @NotNull
-    private Long idAssegnazioneTurno;
+    private Long idShift;
 
     @NotNull
-    private Long idUtenteRichiedente;
+    private Long idRequestingUser;
 
-    private Long idUtenteSostituto;
+    private Long idSubstitute;
 
     /**
      * Considerato solo all'atto della risoluzione della richiesta da parte del <i>Pianificatore</i>
      */
     @NotNull
-    private boolean esito;
+    private boolean outcome;
 
     @NotNull
     @NotEmpty
-    private String descrizione;
+    private String justification;
 
     @NotNull
-    private boolean esaminata;
+    private boolean examined;
 
-    private byte[] allegato;
+    private byte[] file;
 
     public RequestRemovalFromConcreteShiftDTO() {
     }
 
-    public RequestRemovalFromConcreteShiftDTO(Long richiestaRimozioneDaTurnoId, Long IdAssegnazioneTurno, Long idUtenteRichiedente, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
-        this.idRichiestaRimozioneDaTurno = richiestaRimozioneDaTurnoId;
-        this.idAssegnazioneTurno = IdAssegnazioneTurno;
-        this.idUtenteRichiedente = idUtenteRichiedente;
-        this.esito = esito;
-        this.descrizione = descrizione;
-        this.allegato = allegato;
-        this.esaminata = esaminata;
+    public RequestRemovalFromConcreteShiftDTO(Long richiestaRimozioneDaTurnoId, Long idShift, Long idRequestingUser, boolean outcome, String justification, byte[] file, boolean examined) {
+        this.idRequest = richiestaRimozioneDaTurnoId;
+        this.idShift = idShift;
+        this.idRequestingUser = idRequestingUser;
+        this.outcome = outcome;
+        this.justification = justification;
+        this.file = file;
+        this.examined = examined;
     }
 
-    public RequestRemovalFromConcreteShiftDTO(Long richiestaRimozioneDaTurnoId, Long IdAssegnazioneTurno, Long idUtenteRichiedente, Long idUtenteSostituto, boolean esito, String descrizione, byte[] allegato, boolean esaminata) {
-        this.idRichiestaRimozioneDaTurno = richiestaRimozioneDaTurnoId;
-        this.idAssegnazioneTurno = IdAssegnazioneTurno;
-        this.idUtenteRichiedente = idUtenteRichiedente;
-        this.idUtenteSostituto = idUtenteSostituto;
-        this.esito = esito;
-        this.descrizione = descrizione;
-        this.allegato = allegato;
-        this.esaminata = esaminata;
+    public RequestRemovalFromConcreteShiftDTO(Long richiestaRimozioneDaTurnoId, Long idShift, Long idRequestingUser, Long idSubstitute, boolean outcome, String justification, byte[] file, boolean examined) {
+        this.idRequest = richiestaRimozioneDaTurnoId;
+        this.idShift = idShift;
+        this.idRequestingUser = idRequestingUser;
+        this.idSubstitute = idSubstitute;
+        this.outcome = outcome;
+        this.justification = justification;
+        this.file = file;
+        this.examined = examined;
+    }
+
+    public RequestRemovalFromConcreteShiftDTO(Long idShift, Long idRequestingUser, boolean outcome, String justification) {
+        this.idShift = idShift;
+        this.idRequestingUser = idRequestingUser;
+        this.outcome = outcome;
+        this.justification = justification;
     }
 }

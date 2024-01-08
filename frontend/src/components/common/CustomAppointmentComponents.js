@@ -81,7 +81,7 @@ export const Content = ({
   const [retiredUser, setRetiredUser] = useState('');
 
   useEffect(() => {
-    const checkPendingRequest = async () => {
+    const checkPendingRequest = async () =
       if(actor === "PLANNER"){
         try {
           const result = await checkRequests(appointmentData.id);
@@ -93,9 +93,6 @@ export const Content = ({
           }
         } catch (error) {
           console.error('Error checking requests:', error);
-        }
-      }
-
     };
 
     checkPendingRequest();
@@ -103,7 +100,7 @@ export const Content = ({
 
 
   const handleConfirmRetirement = () => {
-    setConfirmationDialogOpen(false);
+    closeConfirmationDialog();
     onRetirement(justification, appointmentData.id);
   }
 

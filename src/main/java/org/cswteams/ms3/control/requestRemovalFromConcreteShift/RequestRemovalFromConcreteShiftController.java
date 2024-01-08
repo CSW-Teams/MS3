@@ -41,7 +41,7 @@ public class RequestRemovalFromConcreteShiftController implements IRequestRemova
     public RequestRemovalFromConcreteShiftDTO createRequest(@NotNull RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, AssegnazioneTurnoException {
         // Some sanity check before calling the actual creation method:
         // 1. check if the provided ConcreteShift is existing
-        Long concreteShiftId = requestRemovalFromConcreteShiftDTO.getIdAssegnazioneTurno();
+        Long concreteShiftId = requestRemovalFromConcreteShiftDTO.getIdShift();
         if (concreteShiftId == null) {
             throw new DatabaseException("Invalid ConcreteShift ID.");
         }
@@ -52,14 +52,14 @@ public class RequestRemovalFromConcreteShiftController implements IRequestRemova
         }
 
         // 2. check if the provided Doctor is existing
-        Long requestingDoctorId = requestRemovalFromConcreteShiftDTO.getIdUtenteRichiedente();
+        Long requestingDoctorId = requestRemovalFromConcreteShiftDTO.getIdRequestingUser();
         if (requestingDoctorId == null) {
             throw new DatabaseException("Invalid Doctor ID.");
         }
         Doctor requestingDoctor = _getDoctor(requestingDoctorId);
 
         // ... now call the internal method
-        return buildDTO(_createRequestRemovalFromConcreteShift(requestingDoctor, concreteShift.get(), requestRemovalFromConcreteShiftDTO.getDescrizione()));
+        return buildDTO(_createRequestRemovalFromConcreteShift(requestingDoctor, concreteShift.get(), requestRemovalFromConcreteShiftDTO.getJustification()));
     }
 
     /**
@@ -147,14 +147,14 @@ public class RequestRemovalFromConcreteShiftController implements IRequestRemova
     @Override
     @Transactional
     public RequestRemovalFromConcreteShiftDTO reviewRequest(RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, AssegnazioneTurnoException {
-        RequestRemovalFromConcreteShift request = _getRequest(requestRemovalFromConcreteShiftDTO.getIdRichiestaRimozioneDaTurno());
+        RequestRemovalFromConcreteShift request = _getRequest(requestRemovalFromConcreteShiftDTO.getIdRequest());
         if (request.isReviewed()) {
             throw new RuntimeException("RequestRemovalFromConcreteShift with id = " + request.getId() + " is already reviewed.");
         }
-        if (requestRemovalFromConcreteShiftDTO.isEsito()) {
+        if (requestRemovalFromConcreteShiftDTO.isOutcome()) {
             ConcreteShift concreteShift = request.getConcreteShift();
-            Doctor requestingDoctor = _getDoctor(requestRemovalFromConcreteShiftDTO.getIdUtenteRichiedente());
-            Doctor substituteDoctor = _getDoctor(requestRemovalFromConcreteShiftDTO.getIdUtenteSostituto());
+            Doctor requestingDoctor = _getDoctor(requestRemovalFromConcreteShiftDTO.getIdRequestingUser());
+            Doctor substituteDoctor = _getDoctor(requestRemovalFromConcreteShiftDTO.getIdSubstitute());
 
             concreteShiftController.substituteAssignedDoctor(concreteShift, requestingDoctor, substituteDoctor);
 

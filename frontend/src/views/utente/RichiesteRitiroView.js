@@ -22,6 +22,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import TemporaryDrawerRetirement
   from "../../components/common/BottomViewGestisciRitiro";
+import {DoctorAPI} from "../../API/DoctorAPI";
 
 
 const ModalLinkFile = ({request, updateRequest}) => {
@@ -39,7 +40,7 @@ const ModalLinkFile = ({request, updateRequest}) => {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Allega file</DialogTitle>
         <DialogContent>
-          <FilesUpload type={"retirement"} idRequest={request.idRichiestaRimozioneDaTurno} request={request} updateRequest={updateRequest} />
+          <FilesUpload type={"retirement"} idRequest={request.idRequest} request={request} updateRequest={updateRequest} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
@@ -52,11 +53,9 @@ const ModalLinkFile = ({request, updateRequest}) => {
 };
 
 const getSostituto = (users, request) => {
-  if (request.idUtenteSostituto === null)
+  if (request.idSubstitute === null)
     return null;
-  let u = users.find(user => user.id === request.idUtenteSostituto);
-  console.log("Tutti gli utenti:", users);
-  console.log("Sostituto:", u);
+  let u = users.find(user => user.id === request.idSubstitute);
   return u.text;
 }
 
@@ -65,7 +64,7 @@ export default class RichiesteRitiroView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      users: [],
+      doctors: [],
       shifts: [],
       requests: [],         // list of all retirement requests
       userRequests: [],     // list of all user's retirement requests
@@ -74,15 +73,12 @@ export default class RichiesteRitiroView extends React.Component {
   }
 
   async componentDidMount() {
-
-    console.log("mounting component")
-
-    let apiUser = new UserAPI();
+    let apiDoctors = new DoctorAPI();
     let apiRetirement = new RichiestaRimozioneDaTurnoAPI();
     let apiShifts = new AssegnazioneTurnoAPI();
 
-    const users = await apiUser.getAllUser();
-    this.setState({users: users});
+    const doctors = await apiDoctors.getAllDoctorsInfo();
+    this.setState({doctors: doctors});
     const shifts = await apiShifts.getGlobalShift();
     this.setState({shifts: shifts})
     const searchParams = new URLSearchParams(this.props.location.search);
@@ -106,9 +102,14 @@ export default class RichiesteRitiroView extends React.Component {
     this.setState({requests: newRequests});
   };
 
+  getDoctor = (request) => {
+    const doctor = this.state.doctors.find(user => user.id === request.idRequestingUser);
+    const seniority = doctor.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+    return doctor.name + " " + doctor.lastname + " - " + seniority;
+  }
+
   render(view) {
     if (this.state.isLocal) {
-      console.log("Richieste di ritiro:", this.state.userRequests);
       return (
         <React.Fragment>
           <Box mt={2} ml={2} mr={2} mb={2}>
@@ -128,19 +129,19 @@ export default class RichiesteRitiroView extends React.Component {
                 </TableHead>
                 <TableBody>
                   {this.state.userRequests.map((request) => (
-                    <TableRow key={request.idRichiestaRimozioneDaTurno}>
-                      <TableCell>{request.idRichiestaRimozioneDaTurno}</TableCell>
-                      <TableCell>{this.state.users.find(user => user.id === request.idUtenteRichiedente).text}</TableCell>
-                      <TableCell>{request.descrizione}</TableCell>
-                      <TableCell>{request.esaminata ? 'Esaminata' : 'In attesa'}</TableCell>
+                    <TableRow key={request.idRequest}>
+                      <TableCell>{request.idRequest}</TableCell>
+                      <TableCell>{this.getDoctor(request)}</TableCell>
+                      <TableCell>{request.justification}</TableCell>
+                      <TableCell>{request.examined ? 'Esaminata' : 'In attesa'}</TableCell>
                       <TableCell>
                         <div
                           style={{
                             width: '20px',
                             height: '20px',
                             borderRadius: '50%',
-                            backgroundColor: request.esaminata ?
-                              request.esito ?
+                            backgroundColor: request.examined ?
+                              request.outcome ?
                                 'green'
                                 : 'red'
                               : 'lightgray',
@@ -148,11 +149,11 @@ export default class RichiesteRitiroView extends React.Component {
                         />
                       </TableCell>
                       <TableCell>
-                        {request.allegato === null ?
+                        {request.file === null ?
                           <ModalLinkFile request={request} updateRequest={this.updateRequest}/>
                           : "Allegato presente"}
                       </TableCell>
-                      <TableCell>{getSostituto(this.state.users, request)}</TableCell>
+                      <TableCell>{getSostituto(this.state.doctors, request)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -181,19 +182,19 @@ export default class RichiesteRitiroView extends React.Component {
                 </TableHead>
                 <TableBody>
                   {this.state.requests.map((request) => (
-                    <TableRow key={request.idRichiestaRimozioneDaTurno}>
-                      <TableCell>{request.idRichiestaRimozioneDaTurno}</TableCell>
-                      <TableCell>{this.state.users.find(user => user.id === request.idUtenteRichiedente).text}</TableCell>
-                      <TableCell>{request.descrizione}</TableCell>
-                      <TableCell>{request.esaminata ? 'Esaminata' : 'In attesa'}</TableCell>
+                    <TableRow key={request.idRequest}>
+                      <TableCell>{request.idRequest}</TableCell>
+                      <TableCell>{this.getDoctor(request)}</TableCell>
+                      <TableCell>{request.justification}</TableCell>
+                      <TableCell>{request.examined ? 'Esaminata' : 'In attesa'}</TableCell>
                       <TableCell>
                         <div
                           style={{
                             width: '20px',
                             height: '20px',
                             borderRadius: '50%',
-                            backgroundColor: request.esaminata ?
-                              request.esito ?
+                            backgroundColor: request.examined ?
+                              request.outcome ?
                                 'green'
                                 : 'red'
                               : 'lightgray',
@@ -201,13 +202,13 @@ export default class RichiesteRitiroView extends React.Component {
                         />
                       </TableCell>
                       <TableCell>
-                        {request.esaminata ?
+                        {request.examined ?
                           "Richiesta processata"
-                          : <TemporaryDrawerRetirement request={request} shifts={this.state.shifts} users={this.state.users} updateRequest={this.updateRequest}/>
+                          : <TemporaryDrawerRetirement request={request} shifts={this.state.shifts} users={this.state.doctors} updateRequest={this.updateRequest}/>
                         }
                       </TableCell>
                       <TableCell>{
-                        getSostituto(this.state.users, request)
+                        getSostituto(this.state.doctors, request)
                       }</TableCell>
                     </TableRow>
                   ))}
