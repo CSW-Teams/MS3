@@ -63,7 +63,6 @@ export default class Preference extends React.Component {
     let desiderata = new DesiderateAPI();
     let responseStatus;
     responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
-    console.log(responseStatus)
 
     if (responseStatus === 200) {
       //window.location.reload()

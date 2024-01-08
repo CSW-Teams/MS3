@@ -1,7 +1,6 @@
 export class GiustificaForzaturaAPI {
 
   async caricaGiustifica(message, utenteId, turno, utenti, data, servizio) {
-    console.log(message+utenteId+turno+data+utenti)
     let giustificazione = {};
     giustificazione.message = message;
     giustificazione.utenteGiustificatoreId = utenteId;

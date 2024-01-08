@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface IControllerScambioTurno {
 
-    void requestTurnChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException;
+    void requestShiftChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException;
 
     List<ViewUserTurnRequestsDTO> getRequestsBySender(@NotNull Long id);
 

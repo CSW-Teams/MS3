@@ -47,7 +47,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
      */
     @Override
     @Transactional
-    public void requestTurnChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException {
+    public void requestShiftChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException {
         Optional<ConcreteShift> assegnazioneTurno = concreteShiftDAO.findById(requestTurnChangeDto.getConcreteShiftId());
         if(assegnazioneTurno.isEmpty()){
             throw new AssegnazioneTurnoException("Turno non presente");

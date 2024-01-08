@@ -25,7 +25,6 @@ export default function MultipleSelect(props) {
   const handleChangeTurno =(event) => {
     let turno = event.target.value
     //const turno = turnoEMansione.toString().substring(0,turnoEMansione.toString().indexOf(" "))
-    console.log(turno)
     setTurno(event.target.value);
     props.onSelectTurno(turno)
   };

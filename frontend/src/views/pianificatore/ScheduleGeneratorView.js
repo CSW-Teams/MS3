@@ -33,7 +33,6 @@ export class SchedulerGeneratorView extends React.Component{
 
     async componentDidMount() {
       let schedulazioni = await(new ScheduleAPI().getSchedulazini());
-      console.log(schedulazioni[0]);
 
       this.setState({
         schedulazioni: schedulazioni,

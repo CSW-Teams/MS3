@@ -107,7 +107,6 @@ export  class DesiderateAPI {
       adaptedPreference.month= value.data.getMonth() +1 ;
       adaptedPreference.day= value.data.getDate() ;
       adaptedPreference.turnKinds = value.turnKinds ;
-      console.log("Value " + value.data + " : " + value.turnKinds) ;
 
       reqBody.remainingPreferences.push(adaptedPreference) ;
     }) ;

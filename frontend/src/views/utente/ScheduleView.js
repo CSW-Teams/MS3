@@ -348,8 +348,9 @@ class ScheduleView extends React.Component{
       let requestsArray = await api.getAllPendingRequests();
 
       let allServices = await new ServizioAPI().getService();
-      let allUser = await new UserAPI().getAllUsersInfo();
+      let allDoctors = await new UserAPI().getAllDoctorsInfo();
       let allHolidays = await new HolidaysAPI().getHolidays();
+
 
       this.setState(
         {
@@ -362,17 +363,17 @@ class ScheduleView extends React.Component{
                 fieldName: 'utenti_guardia_id',
                 title: 'Guardia',
                 allowMultiple: true,
-                instances: [{}],
+                instances: allDoctors,
               }
               , {
               fieldName: 'utenti_reperibili_id',
               title: 'Reperibilità',
               allowMultiple: true,
-              instances: [{}],
+              instances: allDoctors,
             },
             ],
           allServices: new Set(allServices),
-          allUser: allUser,
+          allUser: allDoctors,
           holidays: allHolidays,
           shiftQueriedResponse: "GOOD",
         })
@@ -569,7 +570,6 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
-                  {/* Removing the following statement it seems that nothing changes, is it necessary? */}
                 {view === "global" && (this.state.attore === "PLANNER" || this.state.attore  ===  "CONFIGURATOR") ?
                   <AppointmentForm
                     overlayComponent = {Overlay}

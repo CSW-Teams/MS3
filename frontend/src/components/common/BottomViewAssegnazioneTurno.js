@@ -145,9 +145,7 @@ export default function TemporaryDrawer(props) {
         if(forced === true){
           let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
           let bodyResponse = response.json()
-          console.log(bodyResponse)
           let assegnazioneTurnoId = bodyResponse.turno
-          console.log(assegnazioneTurnoId)
           let utente_id = 7
           let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
           status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
@@ -238,7 +236,6 @@ export default function TemporaryDrawer(props) {
   const handleChange = (e) => {
     e.persist()
     giustificazione = e.target.value;
-    console.log(giustificazione);
   };
 
   function Giustifica() {

@@ -1,12 +1,12 @@
 package org.cswteams.ms3.dto.user;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Data
+@Getter
 @AllArgsConstructor
 public class UserCreationDTO {
     private String name;

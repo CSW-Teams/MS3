@@ -36,7 +36,6 @@ function DateSelectSlots({props}) {
   async function saveDesiderate() {
     let response = await(desiderataApi.editDesiderate(preferences, toDelPreferences,id))
     let responseStatus  = response.status
-    console.log(responseStatus)
 
     if (responseStatus === 202) {
       setPreferences(response, []) ;
