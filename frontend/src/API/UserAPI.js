@@ -71,7 +71,7 @@ export  class UserAPI {
       doctor.color = teal;
       doctor.systemActors = body[i].systemActors;
       doctor.seniority = body[i].seniority;
-      doctor.text = body[i].lastname+" "+body[i].lastname+"  - "+ ((body[i].seniority === "STRUCTURED") ? "Strutturato" : ((body[i].seniority === "SPECIALIST_JUNIOR") ? "Specializzando I/II anno" : "Specializzando III/IV/V anno" ) ); // Needed to show in change shift view in SignleScheduleView
+      doctor.text = body[i].name+" "+body[i].lastname+"  - "+ ((body[i].seniority === "STRUCTURED") ? "Strutturato" : ((body[i].seniority === "SPECIALIST_JUNIOR") ? "Specializzando I/II anno" : "Specializzando III/IV/V anno" ) ); // Needed to show in change shift view in SignleScheduleView
 
       dctorList[i]=doctor;
     }
