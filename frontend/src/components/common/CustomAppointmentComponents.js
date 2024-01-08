@@ -368,13 +368,13 @@ export class AppointmentContent extends React.Component{
     return (
       <StyledAppointmentsAppointmentContent {...this.state.restProps} formatDate={this.state.formatDate} data={this.state.data} style={appointmentStyle}>
         <div className={classes.container}>
-          <div style={{ textAlign: "center", color: "white", "fontFamily": "sans-serif", "font-weight": "bold" }}>
+          <div style={{ textAlign: "center", color: "black", "fontFamily": "sans-serif", "font-weight": "bold" }}>
             {this.state.data.title}
           </div>
           <div>
 
             {this.state.utenti_allocati.length > 0 &&
-            <div>
+            <div style = {{color: 'black'}}>
               Allocati:
             <ul>
               {this.state.utenti_allocati.map((user) => <li> {user.lastname} </li>) }
@@ -382,7 +382,7 @@ export class AppointmentContent extends React.Component{
             </div>}
 
             {((this.state.data.reperibilitaAttiva === true) && (this.state.utenti_reperibili.length > 0)) &&
-              <div>
+              <div style = {{color: 'black'}}>
                 Reperibili:
                 <ul>
                   {this.state.utenti_reperibili.map((user) => <li> {user.lastname} </li>)}
