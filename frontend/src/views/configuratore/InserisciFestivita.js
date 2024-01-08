@@ -15,25 +15,10 @@ import {Button} from "@mui/material";
 import {toast, ToastContainer} from "react-toastify";
 import {HolidaysAPI} from "../../API/HolidaysAPI";
 
-const monthsToNum = {
-  "January" : 0,
-  "February" : 1,
-  "March" : 2,
-  "April" : 3,
-  "May" : 4,
-  "June" : 5,
-  "July" : 6,
-  "August" : 7,
-  "September" : 8,
-  "October" : 9,
-  "November" : 10,
-  "December" : 11,
-} ;
-
 function checkDataIsCorrect(holiday) {
 
   if(holiday.recurrent) {
-    if(monthsToNum[holiday.endMonth] < monthsToNum[holiday.startMonth]) {
+    if(holiday.endMonth < holiday.startMonth) {
       toast("La festività deve cominciare prim della sua fine!", {
         position : "top-center",
         autoClose: 1500,
@@ -41,7 +26,7 @@ function checkDataIsCorrect(holiday) {
       }) ;
       return false ;
     }
-    if(monthsToNum[holiday.endMonth] === monthsToNum[holiday.startMonth]) {
+    if(holiday.endMonth === holiday.startMonth) {
       if(holiday.startDay > holiday.endDay) {
         toast("La festività deve cominciare prima della sua fine!", {
           position : "top-center",
@@ -99,30 +84,30 @@ function DayMonthPicker({labelText, pickerState}) {
   function prepareDaysArray(monthName) {
     let newDays = [] ;
     switch (monthName) {
-      case "January" :
-      case "March" :
-      case "May" :
-      case "July" :
-      case "August" :
-      case "October" :
-      case "December" :
+      case 1 :
+      case 3 :
+      case 5 :
+      case 7 :
+      case 8 :
+      case 10 :
+      case 12 :
         newDays = [] ;
         for (let i = 1; i <= 31 ; i++) {
           newDays.push(i) ;
         }
         setDays(newDays) ;
         break ;
-      case "April" :
-      case "June" :
-      case "September" :
-      case "November" :
+      case 4 :
+      case 6 :
+      case 9 :
+      case 11 :
         newDays = [] ;
         for (let i = 1; i <= 30 ; i++) {
           newDays.push(i) ;
         }
         setDays(newDays) ;
         break ;
-      case "February" :
+      case 2 :
         newDays = [] ;
         for (let i = 1; i <= 29 ; i++) {
           newDays.push(i) ;
@@ -154,18 +139,18 @@ function DayMonthPicker({labelText, pickerState}) {
           onChange={changeMonth}
           fullWidth
         >
-          <MenuItem value={"January"}>Gennaio</MenuItem>
-          <MenuItem value={"February"}>Febbraio</MenuItem>
-          <MenuItem value={"March"}>Marzo</MenuItem>
-          <MenuItem value={"April"}>Aprile</MenuItem>
-          <MenuItem value={"May"}>Maggio</MenuItem>
-          <MenuItem value={"June"}>Giugno</MenuItem>
-          <MenuItem value={"July"}>Luglio</MenuItem>
-          <MenuItem value={"August"}>Agosto</MenuItem>
-          <MenuItem value={"September"}>Settembre</MenuItem>
-          <MenuItem value={"October"}>Ottobre</MenuItem>
-          <MenuItem value={"November"}>Novembre</MenuItem>
-          <MenuItem value={"December"}>Dicembre</MenuItem>
+          <MenuItem value={1}>Gennaio</MenuItem>
+          <MenuItem value={2}>Febbraio</MenuItem>
+          <MenuItem value={3}>Marzo</MenuItem>
+          <MenuItem value={4}>Aprile</MenuItem>
+          <MenuItem value={5}>Maggio</MenuItem>
+          <MenuItem value={6}>Giugno</MenuItem>
+          <MenuItem value={7}>Luglio</MenuItem>
+          <MenuItem value={8}>Agosto</MenuItem>
+          <MenuItem value={9}>Settembre</MenuItem>
+          <MenuItem value={10}>Ottobre</MenuItem>
+          <MenuItem value={11}>Novembre</MenuItem>
+          <MenuItem value={12}>Dicembre</MenuItem>
         </Select>
       </div>
     </div>
@@ -236,9 +221,9 @@ export default function InserisciFestivita() {
   const [recurrent, setRecurrent] = useState(false) ;
 
   //Recurrent state
-  const [startMonth, setStartMonth] = useState('January') ;
+  const [startMonth, setStartMonth] = useState(1) ;
   const [startDay, setStartDay] = useState(1) ;
-  const [endMonth, setEndMonth] = useState('January') ;
+  const [endMonth, setEndMonth] = useState(1) ;
   const [endDay, setEndDay] = useState(1) ;
 
   //Non-recurrent state
@@ -264,8 +249,8 @@ export default function InserisciFestivita() {
 
     holiday.name = name ;
     holiday.location = location ;
-    holiday.recurrent = recurrent ;
     holiday.kind = kind ;
+    holiday.recurrent = recurrent ;
 
     if(recurrent) {
       holiday.startMonth = startMonth ;
@@ -274,7 +259,7 @@ export default function InserisciFestivita() {
       holiday.endDay = endDay ;
     }
     else {
-      if(dates.length < 2) {
+      if(dates.length > 2 || dates.length <= 0) {
         toast("Inserisci le date nel calendario!", {
           position : "top-center",
           autoClose: 1500,
@@ -282,18 +267,30 @@ export default function InserisciFestivita() {
         }) ;
         return ;
       }
-      holiday.startMoment = dates[0]
-      holiday.endMoment = dates[dates.length -1] ;
+      holiday.startEpochDay = dates[0].getTime() / 86400000 ;
+      if(dates.length === 1) {
+        holiday.endEpochDay = dates[0].getTime() / 86400000 ;
+      } else {
+        holiday.endEpochDay = dates[dates.length -1] / 86400000 ;
+      }
+
     }
 
     if(checkDataIsCorrect(holiday)) {
       const code = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
 
-      if(code !== 202) {
+      if(code !== 200) {
         toast("Errore nel salvataggio della festività", {
           position : "top-center",
           autoClose: 1500,
           style : {background : "red", color : "white"}
+        })
+      }
+      else {
+        toast("Festività salvata con successo!", {
+          position : "top-center",
+          autoClose: 1500,
+          style : {background : "green", color : "white"}
         })
       }
     }

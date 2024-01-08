@@ -61,7 +61,7 @@ export class HolidaysAPI {
 
     async saveCustomHoliday(holiday) {
 
-      return (await fetch('/api/holidays/custom', {
+      return (await fetch('/api/holidays/new-holiday', {
         method : 'POST',
         headers : {
           "Content-Type": "application/json"

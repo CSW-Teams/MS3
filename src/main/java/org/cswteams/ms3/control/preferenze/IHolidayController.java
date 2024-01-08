@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.cswteams.ms3.dto.HolidayDTO;
+import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
 import org.cswteams.ms3.entity.Holiday;
 
 import javax.transaction.Transactional;
@@ -33,4 +34,5 @@ public interface IHolidayController {
     @Transactional
     void registerHoliday(@NotNull List<HolidayDTO> holidays);
 
+    void insertCustomHoliday(CustomHolidayDTOIn holiday) ;
 }
