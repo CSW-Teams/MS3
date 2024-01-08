@@ -79,6 +79,24 @@ public class HolidayController implements IHolidayController {
     }
 
     @Override
+    public List<HolidayDTO> retrieveRecurrentHolidays(int year) {
+        List<RecurrentHoliday> holidays = recurrentHolidayDAO.findAll() ;
+        ArrayList<Holiday> list = new ArrayList<>() ;
+        ArrayList<HolidayDTO> dtos = new ArrayList<>() ;
+
+        for (RecurrentHoliday hd : holidays) {
+            list.add(hd.toHolidayOfYear(year)) ;
+        }
+
+        for(Holiday elem: list){
+            HolidayDTO newHolidayDTO=new HolidayDTO(elem.getName(), elem.getCategory(), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
+            dtos.add(newHolidayDTO);
+        }
+
+        return dtos ;
+    }
+
+    @Override
     public List<HolidayDTO> readHolidays() {
         List<Holiday> list= holidayDao.findAll();
         List<HolidayDTO> listDTOHoliday = new ArrayList<>();

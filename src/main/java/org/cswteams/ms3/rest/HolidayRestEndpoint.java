@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cswteams.ms3.control.preferenze.*;
@@ -51,7 +52,10 @@ public class HolidayRestEndpoint {
             holidayController.registerSundays(LocalDate.of(Integer.parseInt(currentYear)-1, 1, 1), 3);
             holidays = holidayController.readHolidays();
         }
-        return ResponseEntity.status(HttpStatus.FOUND).body(holidays);
+
+        ArrayList<HolidayDTO> recurrentIntegration = new ArrayList<>(holidays) ;
+        recurrentIntegration.addAll(holidayController.retrieveRecurrentHolidays(Integer.parseInt(currentYear))) ;
+        return ResponseEntity.status(HttpStatus.FOUND).body(recurrentIntegration);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/new-holiday")
