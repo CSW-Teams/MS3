@@ -6,13 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cswteams.ms3.dao.HolidayDAO;
+import org.cswteams.ms3.dao.RecurrentHolidayDAO;
 import org.cswteams.ms3.dto.HolidayDTO;
+import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
 import org.cswteams.ms3.entity.Holiday;
+import org.cswteams.ms3.entity.RecurrentHoliday;
 import org.cswteams.ms3.enums.HolidayCategory;
+import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Service
@@ -20,6 +25,9 @@ public class HolidayController implements IHolidayController {
 
     @Autowired
     private HolidayDAO holidayDao;
+
+    @Autowired
+    private RecurrentHolidayDAO recurrentHolidayDAO ;
 
     /**
      * Registra le domeniche come festività per il numero di anni specificato
@@ -71,6 +79,24 @@ public class HolidayController implements IHolidayController {
     }
 
     @Override
+    public List<HolidayDTO> retrieveRecurrentHolidays(int year) {
+        List<RecurrentHoliday> holidays = recurrentHolidayDAO.findAll() ;
+        ArrayList<Holiday> list = new ArrayList<>() ;
+        ArrayList<HolidayDTO> dtos = new ArrayList<>() ;
+
+        for (RecurrentHoliday hd : holidays) {
+            list.add(hd.toHolidayOfYear(year)) ;
+        }
+
+        for(Holiday elem: list){
+            HolidayDTO newHolidayDTO=new HolidayDTO(elem.getName(), elem.getCategory(), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
+            dtos.add(newHolidayDTO);
+        }
+
+        return dtos ;
+    }
+
+    @Override
     public List<HolidayDTO> readHolidays() {
         List<Holiday> list= holidayDao.findAll();
         List<HolidayDTO> listDTOHoliday = new ArrayList<>();
@@ -118,5 +144,23 @@ public class HolidayController implements IHolidayController {
             listHolliday.add(newHoliday);
         }
         holidayDao.saveAll(listHolliday);
+    }
+
+    @Override
+    @Validant
+    public void insertCustomHoliday(@Valid CustomHolidayDTOIn holiday) {
+
+        if(holiday.isRecurrent()) {
+            RecurrentHoliday holidayEnt = new RecurrentHoliday(holiday.getName(), HolidayCategory.valueOf(holiday.getKind().toUpperCase()),
+                    holiday.getStartDay(), holiday.getStartMonth(), holiday.getEndDay(), holiday.getEndMonth(),
+                    holiday.getLocation()) ;
+
+            recurrentHolidayDAO.save(holidayEnt) ;
+        } else {
+            Holiday holidayEnt = new Holiday(holiday.getName(), HolidayCategory.valueOf(holiday.getKind().toUpperCase()),
+                    holiday.getStartEpochDay(), holiday.getEndEpochDay(), holiday.getLocation()) ;
+
+            holidayDao.save(holidayEnt) ;
+        }
     }
 }
