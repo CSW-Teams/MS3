@@ -81,23 +81,22 @@ export const Content = ({
   const [retiredUser, setRetiredUser] = useState('');
 
   useEffect(() => {
-    const checkPendingRequest = async () => {
-      try {
-        const result = await checkRequests(appointmentData.id);
-
-        if (result === -1) {
-          setHasPendingRequest(false);
-        } else {
-          setHasPendingRequest(true);
-          setRetiredUser(result);
-        }
-      } catch (error) {
-        console.error('Error checking requests:', error);
-      }
+    const checkPendingRequest = async () =
+      if(actor === "PLANNER"){
+        try {
+          const result = await checkRequests(appointmentData.id);
+          if (result === -1) {
+            setHasPendingRequest(false);
+          } else {
+            setHasPendingRequest(true);
+            setRetiredUser(result);
+          }
+        } catch (error) {
+          console.error('Error checking requests:', error);
     };
 
     checkPendingRequest();
-  }, [appointmentData.id, checkRequests]);
+  }, [appointmentData.id, checkRequests,actor]);
 
 
   const handleConfirmRetirement = () => {
@@ -193,7 +192,6 @@ export const Content = ({
             <Grid container alignItems="center" >
               <div className={tooltip_classes.text}> Allocati: </div>
             </Grid>
-            {/*{ appointmentResources.slice(0, appointmentData.utenti_guardia.length).map(resourceItem => (*/}
             { appointmentData.utenti_guardia.map(resourceItem => (
               <Grid container alignItems="center" className={tooltip_classes.resourceContainer} key={`${resourceItem.id}`}>
                 <Grid item xs={2} className={tooltip_classes.textCenter}>
@@ -280,6 +278,7 @@ export const Content = ({
     default:
       return (
         // empty tooltip
+
         null
         )
 
@@ -312,7 +311,7 @@ export class AppointmentContent extends React.Component{
     super(data, formatDate, ...restProps);
     this.state = {
       utenti_allocati: [],
-      utenti_riserve: [], // corrispondono ai reperibili nelle mansioni di guardia
+      utenti_reperibili: [], // corrispondono ai reperibili nelle mansioni di guardia
       utenti_rimossi: [],
       formatDate: formatDate,
       ...data,
@@ -350,17 +349,13 @@ export class AppointmentContent extends React.Component{
     /* Se esistono richieste di ritiro pendenti per il turno, il rettangolo è di colore rosso, altrimenti è blu
     *  Questa differenza è visibile solo ai pianificatori.
     * */
-    let appointmentStyle = {};
+    let appointmentStyle = {backgroundColor: '#4db6ac'};
 
-    if (this.state.attore !== "PIANIFICATORE") {
-      appointmentStyle = {backgroundColor: '#4db6ac'}
-    } else {
+    if (this.state.attore === "PIANIFICATORE") {
       let pendingRequestExists = this.state.requests.some(request => request.idAssegnazioneTurno === this.state.data.id);
 
       if (pendingRequestExists) {
         appointmentStyle = {backgroundColor: 'red'}
-      } else {
-        appointmentStyle = {backgroundColor: '#4db6ac'}
       }
     }
 
@@ -376,29 +371,41 @@ export class AppointmentContent extends React.Component{
             {this.state.data.title}
           </div>
           <div>
+
+            {this.state.utenti_allocati.length > 0 ? (
             <div style={{display: "inline-block"}}>
               Allocati:
             <ul>
               {this.state.utenti_allocati.map((user) => <li> {user.lastname} </li>) }
             </ul>
             </div>
+            ) : (
+              <div></div>
+            )
+            }
 
-            {this.state.data.reperibilitaAttiva === true ? (
+            {this.state.data.reperibilitaAttiva === true && this.state.utenti_reperibili.length > 0 ? (
               <div style={{ display: "inline-block" }}>
                 Reperibili:
                 <ul>
-                  {this.state.utenti_riserve.map((user) => <li> {user.lastname} </li>)}
+                  {this.state.utenti_reperibili.map((user) => <li> {user.lastname} </li>)}
                 </ul>
               </div>
           ) : (
               <div></div>
             )}
+
+            {this.state.utenti_rimossi.length > 0 ? (
             <div>
-              {this.state.utenti_rimossi.length !== 0? (<div>Rimossi:</div>) : <div></div> }
+              <div>Rimossi:</div>) : <div></div>
             <ul>
               {this.state.utenti_rimossi.map((user) => <li> <s>{user.lastname}</s></li>) }
             </ul>
             </div>
+            ): (
+              <div></div>
+            )}
+
           </div>
         </div>
       </StyledAppointmentsAppointmentContent>
