@@ -359,20 +359,20 @@ class ScheduleView extends React.Component{
         {
           requests: requestsArray,
           data: turni,
-          mainResourceName: 'utenti_guardia_id',
+          mainResourceName: 'main_resource_dummy',
           resources:
             [
               {
                 fieldName: 'utenti_guardia_id',
                 title: 'Guardia',
                 allowMultiple: true,
-                instances: allUser,
+                instances: [{}],
               }
               , {
               fieldName: 'utenti_reperibili_id',
               title: 'Reperibilità',
               allowMultiple: true,
-              instances: allUser,
+              instances: [{}],
             },
             ],
           allServices: new Set(allServices),
@@ -389,8 +389,6 @@ class ScheduleView extends React.Component{
 
       // add shifts to the schedulables to display
         let { data, resources} = this.state;
-
-        console.log(data.length);
 
         /** Filtering of shifts is performed by ANDing results of all filter functions applied on each shift */
         data = data.filter((shift) => {
@@ -553,7 +551,7 @@ class ScheduleView extends React.Component{
                 {view === "global" && (this.state.attore === "DOCTOR" || this.state.attore === "CONFIGURATOR") &&
                 < AppointmentTooltip
                   contentComponent={(props) => (
-                    <Content {...props} view={view} actor={this.state.attore} />
+                    <Content {...props} view={view} actor={this.state.attore}/>
                   )}
                 />
                 }
@@ -575,6 +573,7 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
+                  {/* Removing the following statement it seems that nothing changes, is it necessary? */}
                 {view === "global" && (this.state.attore === "PLANNER" || this.state.attore  ===  "CONFIGURATOR") ?
                   <AppointmentForm
                     overlayComponent = {Overlay}
