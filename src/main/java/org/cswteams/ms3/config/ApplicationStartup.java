@@ -480,29 +480,82 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         lc.add(concreteShift3);
 
         DoctorAssignment da1 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_CALL,concreteShift1,ward);
+        DoctorAssignment da7 = new DoctorAssignment(u13, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift1, ward);
+        DoctorAssignment da8 = new DoctorAssignment(u30, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift1, ward);
+        DoctorAssignment da9 = new DoctorAssignment(u33, ConcreteShiftDoctorStatus.ON_CALL, concreteShift1, ward);
         doctorAssignmentDAO.saveAndFlush(da1);
+        doctorAssignmentDAO.saveAndFlush(da7);
+        doctorAssignmentDAO.saveAndFlush(da8);
+        doctorAssignmentDAO.saveAndFlush(da9);
         concreteShift1.getDoctorAssignmentList().add(da1);
+        concreteShift1.getDoctorAssignmentList().add(da7);
+        concreteShift1.getDoctorAssignmentList().add(da8);
+        concreteShift1.getDoctorAssignmentList().add(da9);
         concreteShiftDAO.saveAndFlush(concreteShift1);
 
         DoctorAssignment da2 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift2,ward);
         doctorAssignmentDAO.saveAndFlush(da2);
         concreteShift2.getDoctorAssignmentList().add(da2);
-        //concreteShiftDAO.saveAndFlush(concreteShift2);
-
-        DoctorAssignment da3 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift3,ward);
-        doctorAssignmentDAO.saveAndFlush(da3);
-        concreteShift3.getDoctorAssignmentList().add(da3);
-        concreteShiftDAO.saveAndFlush(concreteShift3);
-
         DoctorAssignment da4 = new DoctorAssignment(u4, ConcreteShiftDoctorStatus.ON_CALL, concreteShift2, ward);
         doctorAssignmentDAO.saveAndFlush(da4);
         concreteShift2.getDoctorAssignmentList().add(da4);
+        DoctorAssignment da5 = new DoctorAssignment(u9, ConcreteShiftDoctorStatus.ON_CALL, concreteShift2, ward);
+        doctorAssignmentDAO.saveAndFlush(da5);
+        concreteShift2.getDoctorAssignmentList().add(da5);
+        DoctorAssignment da6 = new DoctorAssignment(u23, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift2, ward);
+        doctorAssignmentDAO.saveAndFlush(da6);
+        concreteShift2.getDoctorAssignmentList().add(da6);
+
         concreteShiftDAO.saveAndFlush(concreteShift2);
 
+        DoctorAssignment da3 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift3,ward);
+        DoctorAssignment da10 = new DoctorAssignment(u2, ConcreteShiftDoctorStatus.ON_DUTY,concreteShift3,ward);
+        DoctorAssignment da11 = new DoctorAssignment(u20, ConcreteShiftDoctorStatus.ON_CALL,concreteShift3,ward);
+        DoctorAssignment da12 = new DoctorAssignment(u29, ConcreteShiftDoctorStatus.ON_CALL,concreteShift3,ward);
+        doctorAssignmentDAO.saveAndFlush(da3);
+        doctorAssignmentDAO.saveAndFlush(da10);
+        doctorAssignmentDAO.saveAndFlush(da11);
+        doctorAssignmentDAO.saveAndFlush(da12);
+        concreteShift3.getDoctorAssignmentList().add(da3);
+        concreteShift3.getDoctorAssignmentList().add(da10);
+        concreteShift3.getDoctorAssignmentList().add(da11);
+        concreteShift3.getDoctorAssignmentList().add(da12);
+        concreteShiftDAO.saveAndFlush(concreteShift3);
+
+
+
         List<Doctor> ld = new ArrayList<Doctor>();
-        ld.add(u8);
-        ld.add(u7);
+        ld.add(u2);
+        ld.add(u3);
         ld.add(u4);
+        ld.add(u5);
+        ld.add(u7);
+        ld.add(u8);
+        ld.add(u9);
+        ld.add(u10);
+        ld.add(u11);
+        ld.add(u12);
+        ld.add(u13);
+        ld.add(u14);
+        ld.add(u15);
+        ld.add(u16);
+        ld.add(u17);
+        ld.add(u18);
+        ld.add(u19);
+        ld.add(u20);
+        ld.add(u21);
+        ld.add(u23);
+        ld.add(u24);
+        ld.add(u25);
+        ld.add(u26);
+        ld.add(u27);
+        ld.add(u28);
+        ld.add(u29);
+        ld.add(u30);
+        ld.add(u31);
+        ld.add(u32);
+        ld.add(u33);
+        ld.add(u34);
         List<Constraint> vincoli = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
         Schedule s= null;
         List<Constraint> v= new ArrayList<>();

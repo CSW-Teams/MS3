@@ -56,7 +56,8 @@ const getSostituto = (users, request) => {
   if (request.idSubstitute === null)
     return null;
   let u = users.find(user => user.id === request.idSubstitute);
-  return u.text;
+  let seniority = u.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+  return u.name + " " + u.lastname + " - " + seniority;
 }
 
 export default class RichiesteRitiroView extends React.Component {

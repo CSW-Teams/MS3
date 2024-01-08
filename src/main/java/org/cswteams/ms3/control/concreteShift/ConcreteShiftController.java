@@ -164,7 +164,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
                         onCallDoctors,
                         onRemovedDoctors,
                         concreteShift.getShift().getMedicalService().getLabel(),
-                        "ABULATORIO",//TODO: va RIVISTA ASSOLUTAMENTE
+                        "AMBULATORIO",//TODO: va RIVISTA ASSOLUTAMENTE
                         concreteShift.getShift().getTimeSlot().toString(),
                         isCall
                 );
