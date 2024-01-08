@@ -15,15 +15,12 @@ export default class SingleScheduleView extends ScheduleView {
 
   async componentDidMount() {
     let apiTurno = new AssegnazioneTurnoAPI();
-    let turni = await apiTurno.getTurnByIdUser(localStorage.getItem("id"));
-
-    // FIXME: Only colleagues should be queried here, not all users
-    let utenti = await (new UserAPI()).getAllUser();
+    let turni = await apiTurno.getShiftByIdUser(localStorage.getItem("id"));
 
     this.setState(
       {appointmentContentComponent:AppointmentSingleContent},
     )
-    super.componentDidMount(turni, utenti);
+    super.componentDidMount(turni);
 
   }
 

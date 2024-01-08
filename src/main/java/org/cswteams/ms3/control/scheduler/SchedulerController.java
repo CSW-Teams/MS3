@@ -460,8 +460,10 @@ public class SchedulerController implements ISchedulerController {
         Seniority seniority = null;
         if(userDTO.getSeniority().equals("STRUCTURED"))
             seniority = Seniority.STRUCTURED;
-        else if(userDTO.getSeniority().equals("SPECIALIST"))
-            seniority = Seniority.SPECIALIST;
+        else if(userDTO.getSeniority().equals("SPECIALIST_JUNIOR"))
+            seniority = Seniority.SPECIALIST_JUNIOR;
+        else if (userDTO.getSeniority().equals("SPECIALIST_SENIOR"))
+            seniority = Seniority.SPECIALIST_SENIOR;
 
         List<SystemActor> systemActors = new ArrayList<>();
         for(String sa : userDTO.getSystemActors()) {

@@ -52,8 +52,7 @@ export default class ConfigurazioneVincoli extends React.Component{
     let vincoliApi = new VincoloAPI()
     let conf = {}
     conf = this.state
-    console.log("SALVATAGGIO")
-    console.log(conf)
+
     let response = await vincoliApi.setConfigurazioneVincoli(conf)
     if (response.status === 202) {
       toast.success('Configurazione salvata con successo', {

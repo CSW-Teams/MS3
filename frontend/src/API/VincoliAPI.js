@@ -30,7 +30,6 @@ export  class VincoloAPI {
       configurazione.configVincoloMaxPeriodoConsecutivoPerCategoria[1].categoriaVincolata = conf.categoriaDonneIncinta
       configurazione.configVincoloMaxPeriodoConsecutivoPerCategoria[1].numMaxMinutiConsecutivi = conf.numMaxOreConsecutiveDonneIncinta*60
 
-      console.log(configurazione)
 
       const requestOptions = {
         method: 'POST',
@@ -46,7 +45,6 @@ export  class VincoloAPI {
     async getConfigurazioneVincoli(){
       const response = await fetch('/api/constraints/configuration');
       const body = await response.json();
-      console.log(body)
       const conf = {}
       conf.numGiorniPeriodo = body.numGiorniPeriodo
       conf.maxOrePeriodo = body.maxMinutiPeriodo/60

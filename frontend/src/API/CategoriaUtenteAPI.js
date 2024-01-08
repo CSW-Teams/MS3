@@ -75,8 +75,7 @@ export class CategoriaUtenteAPI {
     turnazione.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
     turnazione.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
 
-    console.log("turnazioni:")
-    console.log(turnazione)
+
 
     const requestOptions = {
       method: 'POST',
@@ -101,8 +100,6 @@ export class CategoriaUtenteAPI {
     stato.inizioValidita= new Date(dataInizio.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
     stato.fineValidita = new Date(dataFine.$d.getTime() - (dataInizio.$d.getTimezoneOffset() * 60000 )).toISOString();
 
-    console.log("stato:")
-    console.log(stato)
 
     const requestOptions = {
       method: 'POST',

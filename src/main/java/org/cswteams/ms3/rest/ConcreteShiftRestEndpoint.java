@@ -73,8 +73,6 @@ public class ConcreteShiftRestEndpoint {
     public ResponseEntity<?> getSingleDoctorConcreteShift(@PathVariable Long userID) throws ParseException {
         if (userID != null) {
             Set <GetAllConcreteShiftDTO> c = concreteShiftController.getSingleDoctorConcreteShifts(userID);
-            System.out.println(c.size());
-            System.out.println("SINGLE DOCTOR CONCRETE SHIFT");
             for(int i=0;i<c.size();i++){
                 GetAllConcreteShiftDTO app=(GetAllConcreteShiftDTO) c.toArray()[i];
                 Set<MedicalDoctorInfoDTO> set = app.getDoctorsOnCall();

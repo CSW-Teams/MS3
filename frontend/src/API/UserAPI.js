@@ -39,20 +39,44 @@ export  class UserAPI {
     const response = await fetch('/api/users/');
     const body = await response.json();
 
-    const utenti = [];
+    const userList = [];
 
     for (let i = 0; i < body.length; i++) {
-      const utente = {};
-      utente.id = body[i].id;
-      utente.name = body[i].name;
-      utente.lastname = body[i].lastname;
-      utente.birthday = body[i].birthday;
-      utente.systemActors =body[i].systemActors;
+      const user = {};
+      user.id = body[i].id;
+      user.name = body[i].name;
+      user.lastname = body[i].lastname;
+      user.birthday = body[i].birthday;
+      user.color = teal;
+      user.systemActors = body[i].systemActors;
 
-      utenti[i]=utente;
+      userList[i]=user;
+    }
+    return userList;
+  }
+
+
+  async getAllDoctorsInfo() {
+    const response = await fetch('/api/doctors/');
+    const body = await response.json();
+
+    const dctorList = [];
+
+    for (let i = 0; i < body.length; i++) {
+      const doctor = {};
+      doctor.id = body[i].id;
+      doctor.name = body[i].name;
+      doctor.lastname = body[i].lastname;
+      doctor.birthday = body[i].birthday;
+      doctor.color = teal;
+      doctor.systemActors = body[i].systemActors;
+      doctor.seniority = body[i].seniority;
+      doctor.text = body[i].lastname+" "+body[i].lastname+"  - "+ ((body[i].seniority === "STRUCTURED") ? "Strutturato" : ((body[i].seniority === "SPECIALIST_JUNIOR") ? "Specializzando I/II anno" : "Specializzando III/IV/V anno" ) ); // Needed to show in change shift view in SignleScheduleView
+
+      dctorList[i]=doctor;
     }
 
-    return utenti;
+    return dctorList;
 
   }
 

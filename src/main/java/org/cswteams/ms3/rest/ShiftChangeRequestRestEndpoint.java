@@ -26,14 +26,9 @@ public class ShiftChangeRequestRestEndpoint {
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<?> requestShiftChange(@RequestBody RequestTurnChangeDto requestTurnChangeDto)  {
 
-        System.out.println(requestTurnChangeDto.getReceiverId());
-        System.out.println(requestTurnChangeDto.getSenderId());
-        System.out.println(requestTurnChangeDto.getConcreteShiftId());
-
         try {
-            controllerScambioTurno.requestTurnChange(requestTurnChangeDto);
+            controllerScambioTurno.requestShiftChange(requestTurnChangeDto);
         } catch (AssegnazioneTurnoException e) {
-            System.out.println(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 

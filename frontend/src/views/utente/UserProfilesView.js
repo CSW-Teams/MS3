@@ -71,9 +71,21 @@ export default class UserProfilesView extends React.Component{
       let p1 = u1[this.state.orderBy];
       let p2 = u2[this.state.orderBy];
 
+
       return this.state.comparator(p1, p2);
 
     })
+
+    // Needed to show system actors in italian on all user view
+    for(var i = 0;i<this.state.utenti.length;i++){
+      for(var j = 0;j<this.state.utenti[i].systemActors.length;j++){
+        this.state.utenti[i].systemActors[j] = (
+          (this.state.utenti[i].systemActors[j] === "PLANNER") ? "Pianificatore" :
+            (this.state.utenti[i].systemActors[j] === "CONFIGURATOR") ? "Configuratore" :
+              "Dottore"
+        );
+      }
+    }
 
     return(
       <MDBCard>

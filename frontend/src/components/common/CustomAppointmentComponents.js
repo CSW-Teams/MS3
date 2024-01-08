@@ -352,8 +352,8 @@ export class AppointmentContent extends React.Component{
     * */
     let appointmentStyle = {backgroundColor: '#4db6ac'};
 
-    if (this.state.attore === "PIANIFICATORE") {
-      let pendingRequestExists = this.state.requests.some(request => request.idAssegnazioneTurno === this.state.data.id);
+    if (this.state.attore === "PLANNER") {
+      let pendingRequestExists = this.state.requests.some(request => request.idShift === this.state.data.id);
 
       if (pendingRequestExists) {
         appointmentStyle = {backgroundColor: 'red'}

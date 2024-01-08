@@ -92,7 +92,7 @@ export  class AssegnazioneTurnoAPI {
     return turni;
 }
 
-  async getTurnByIdUser(id) {
+  async getShiftByIdUser(id) {
     const response = await fetch('/api/concrete-shifts/user_id=' + id);
     const body = await response.json();
     let turni = this.parseAllocatedShifts(body);
@@ -177,15 +177,10 @@ export  class AssegnazioneTurnoAPI {
 }
 
 async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
-    console.log("Ci arrivo qui?")
   let shiftChangeRequest = {}
   shiftChangeRequest.concreteShiftId = assegnazione.id;
   shiftChangeRequest.senderId = idLoggato;
   shiftChangeRequest.receiverId = utenteCambio.value;
-
-  console.log("concrete shift id : " + shiftChangeRequest.concreteShiftId);
-  console.log("sender: " + shiftChangeRequest.senderId);
-  console.log("receiver: " + shiftChangeRequest.receiverId);
 
   const requestOptions = {
     method: 'PUT',

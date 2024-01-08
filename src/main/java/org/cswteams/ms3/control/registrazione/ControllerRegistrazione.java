@@ -59,8 +59,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
 
         // Calcola il resto della divisione per 26 e ottiene il carattere corrispondente
         int resto = sommaPonderata % 26;
-        System.out.println(resto);
-        System.out.println((char) ('A' + resto));
+
         return (char) ('A' + resto);
 
     }
