@@ -20,6 +20,10 @@ export class ServizioAPI {
     }
   }
 
+    alphaSort(array) {
+        return array.sort((a, b) => a.taskType.localeCompare(b.taskType));
+    }
+
     async getAllServices() {
         const response = await fetch('/api/medical-services/');
         const body = await response.json();
@@ -30,9 +34,13 @@ export class ServizioAPI {
             const service = {};
             service.name = body[i].nome;
             var taskTypesList = body[i].mansioni;
+            this.alphaSort(taskTypesList);
             service.taskTypesList = "";
             for (let j = 0; j < taskTypesList.length; j++) {
-                service.taskTypesList = service.taskTypesList.concat(taskTypesList[j].taskType, " ");
+                service.taskTypesList = service.taskTypesList.concat(
+                  taskTypesList[j].taskType,
+                  (j!=taskTypesList.length-1) ? ", " : ""
+                  );
             }
             services[i] = service;
         }
@@ -45,14 +53,14 @@ export class ServizioAPI {
         return body;
     }
 
-  async createMedicalService(params) {
-    const requestOptions = {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(params)
-    };
+    async createMedicalService(params) {
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(params)
+        };
 
-    const response = await fetch('/api/medical-services/', requestOptions);
-    return response;
-  }
+        const response = await fetch('/api/medical-services/', requestOptions);
+        return response;
+    }
 }
