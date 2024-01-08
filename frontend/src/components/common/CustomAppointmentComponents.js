@@ -81,8 +81,8 @@ export const Content = ({
   const [retiredUser, setRetiredUser] = useState('');
 
   useEffect(() => {
-    const checkPendingRequest = async () =
-      if(actor === "PLANNER"){
+    const checkPendingRequest = async () => {
+      if(actor === "PLANNER") {
         try {
           const result = await checkRequests(appointmentData.id);
           if (result === -1) {
@@ -93,8 +93,9 @@ export const Content = ({
           }
         } catch (error) {
           console.error('Error checking requests:', error);
-    };
-
+        };
+      }
+    }
     checkPendingRequest();
   }, [appointmentData.id, checkRequests,actor]);
 
@@ -372,39 +373,31 @@ export class AppointmentContent extends React.Component{
           </div>
           <div>
 
-            {this.state.utenti_allocati.length > 0 ? (
-            <div style={{display: "inline-block"}}>
+            {this.state.utenti_allocati.length > 0 &&
+            <div>
               Allocati:
             <ul>
               {this.state.utenti_allocati.map((user) => <li> {user.lastname} </li>) }
             </ul>
-            </div>
-            ) : (
-              <div></div>
-            )
-            }
+            </div>}
 
-            {this.state.data.reperibilitaAttiva === true && this.state.utenti_reperibili.length > 0 ? (
-              <div style={{ display: "inline-block" }}>
+            {((this.state.data.reperibilitaAttiva === true) && (this.state.utenti_reperibili.length > 0)) &&
+              <div>
                 Reperibili:
                 <ul>
                   {this.state.utenti_reperibili.map((user) => <li> {user.lastname} </li>)}
                 </ul>
               </div>
-          ) : (
-              <div></div>
-            )}
+            }
 
-            {this.state.utenti_rimossi.length > 0 ? (
+            {this.state.utenti_rimossi.length > 0 &&
             <div>
-              <div>Rimossi:</div>) : <div></div>
+              <div>Rimossi:</div>
             <ul>
               {this.state.utenti_rimossi.map((user) => <li> <s>{user.lastname}</s></li>) }
             </ul>
             </div>
-            ): (
-              <div></div>
-            )}
+            }
 
           </div>
         </div>
