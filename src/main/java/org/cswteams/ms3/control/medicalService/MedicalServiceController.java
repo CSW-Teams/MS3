@@ -30,7 +30,7 @@ public class MedicalServiceController implements IMedicalServiceController {
     public MedicalService createService(@NotNull MedicalServiceCreationDTO medicalServiceCreationDTO) {
         List<Task> taskList = new ArrayList<>();
         for (String taskTypeString : medicalServiceCreationDTO.getTaskTypes()) {
-            Task t = taskController.createTaskWithType(TaskEnum.valueOf(taskTypeString));
+            Task t = taskController.createTask(TaskEnum.valueOf(taskTypeString));
             taskList.add(t);
         }
         return this.createService(taskList, medicalServiceCreationDTO.getName());
