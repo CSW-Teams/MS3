@@ -5,6 +5,7 @@ import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.control.scheduler.ScheduleBuilder;
 import org.cswteams.ms3.control.user.UserController;
+import org.cswteams.ms3.dto.ScheduleGenerationDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.condition.*;
 import org.cswteams.ms3.entity.constraint.*;
@@ -15,6 +16,7 @@ import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.ShiftException;
+import org.cswteams.ms3.rest.ScheduleRestEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -439,11 +441,29 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Shift shift1 = new Shift(LocalTime.of(14, 0),
                 Duration.ofHours(8),
                 ambulatorioCardiologia,
-                TimeSlot.AFTERNOON,
+                TimeSlot.MORNING,
                 doctorsNumberBySeniority,
                 allDaysOfWeek,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift1);
+
+        Shift shift2 = new Shift(LocalTime.of(9, 0),
+                Duration.ofHours(8),
+                ambulatorioCardiologia,
+                TimeSlot.NIGHT,
+                doctorsNumberBySeniority,
+                allDaysOfWeek,
+                Collections.emptyList());
+        shiftDAO.saveAndFlush(shift2);
+
+        Shift shift3 = new Shift(LocalTime.of(0, 0),
+                Duration.ofHours(8),
+                ambulatorioCardiologia,
+                TimeSlot.AFTERNOON,
+                doctorsNumberBySeniority,
+                allDaysOfWeek,
+                Collections.emptyList());
+        shiftDAO.saveAndFlush(shift3);
 
         //TO-DO: Eliminare in seguito
         List<ConcreteShift> lc= new ArrayList<>();
@@ -549,6 +569,17 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             throw new RuntimeException(e);
         }
         //scheduleDAO.save(s);
+        /*
+        ScheduleRestEndpoint restSchedule=new ScheduleRestEndpoint();
+        ScheduleGenerationDTO gs=new ScheduleGenerationDTO();
+        gs.setInitialDay(15);
+        gs.setInitialMonth(1);
+        gs.setInitialYear(2024);
+        gs.setFinalDay(30);
+        gs.setFinalMonth(1);
+        gs.setFinalYear(2024);
+        restSchedule.createSchedule(gs);
+         */
         /*
 
 

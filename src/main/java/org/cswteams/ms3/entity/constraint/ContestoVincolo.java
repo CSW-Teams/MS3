@@ -15,9 +15,9 @@ public class ContestoVincolo {
     @NotNull
     private ConcreteShift concreteShift;
 
-    public ContestoVincolo(DoctorScheduleState utente, ConcreteShift turno){
-        this.concreteShift = turno;
-        this.doctorScheduleState = utente;
+    public ContestoVincolo(DoctorScheduleState doctorScheduleState, ConcreteShift concreteShift){
+        this.concreteShift = concreteShift;
+        this.doctorScheduleState = doctorScheduleState;
     }
 
 }
