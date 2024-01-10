@@ -42,7 +42,7 @@ public class DoctorScheduleState {
     List<ConcreteShift> assegnazioniTurnoCache;
 
 
-
+    //funzione che ritorna la lista di ConcrateShift in un assegnazione corrente
     public List<ConcreteShift> getAssegnazioniTurnoCache(){
 
         if (assegnazioniTurnoCache == null){
@@ -61,7 +61,7 @@ public class DoctorScheduleState {
     }
 
     /**Aggiunge in ordine la nuova assegnazione alla lista delle assegnazioni dell'utente **/
-    public void addAssegnazioneTurno(ConcreteShift newConcreteShift){
+    public void addConcreteShift(ConcreteShift newConcreteShift){
         List<ConcreteShift> concreteShiftList = getAssegnazioniTurnoCache();
         int idInsert = concreteShiftList.size();
         for(int i = 0; i < concreteShiftList.size(); i++){

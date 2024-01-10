@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
+import org.cswteams.ms3.dao.DoctorAssignmentDAO;
+import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.constraint.ContestoVincolo;
@@ -96,6 +98,7 @@ public class ScheduleBuilder {
      */
     public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors) throws IllegalScheduleException {
         // Checks on the parameters state
+
         validateDates(startDate,endDate);
         validateUsers(allAssignedShifts, doctors);
         validateConstraints(allConstraints);
@@ -150,28 +153,24 @@ public class ScheduleBuilder {
             allUserScheduleStates.put(u.getId(), usstate);
         }
     }
-
-    /**
-     * This method invokes automatic creation of the new shift schedule.
-     */
-    public Schedule build() {
-
-        // We need to clear violations and illegal state, if any
+    public Schedule build(){
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
-
         for( ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
-
             // First step: define doctors on duty in the concrete shift.
             try {
+                //TODO:Revisionare questo if
+                //Questa linea va rivalutata in seguito
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
-
+                int count=0;
                 for (Map.Entry<Seniority, Integer>  qss : concreteShift.getShift().getQuantityShiftSeniority().entrySet()){
-                    this.addDoctors(concreteShift, qss, doctorsOnDuty);
+                    count += qss.getValue();
+                    this.addDoctors(concreteShift, qss, doctorsOnDuty,ConcreteShiftDoctorStatus.ON_CALL,count);
                 }
-
+                if(concreteShift.getShift().getMedicalService().getTasks().size()>count){
+                    throw new NotEnoughFeasibleUsersException(concreteShift.getShift().getMedicalService().getTasks().size(),count);
+                }
             } catch (NotEnoughFeasibleUsersException e) {
-
                 // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
                 logger.log(Level.SEVERE, e.getMessage(), e);
                 schedule.setCauseIllegal(e);
@@ -186,9 +185,10 @@ public class ScheduleBuilder {
             // Second step: define doctors on call in the concrete shift.
             try {
                 List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
-
+                int count=0;
                 for (Map.Entry<Seniority, Integer>  qss : concreteShift.getShift().getQuantityShiftSeniority().entrySet()){
-                    this.addDoctors(concreteShift, qss, doctorsOnCall);
+                    count += qss.getValue();
+                    this.addDoctors(concreteShift, qss, doctorsOnCall,ConcreteShiftDoctorStatus.ON_DUTY, count);
                 }
 
             } catch (NotEnoughFeasibleUsersException e){
@@ -198,58 +198,57 @@ public class ScheduleBuilder {
         }
 
         return this.schedule;
-
     }
 
     /**
      * This method adds some doctors to a list of assigned doctors for a concrete shift.
      * @param concreteShift Concrete shift in which the new doctors have to be assigned
      * @param qss Number of doctors that have to be added to the concrete shift
+     * @param doctorList List  of doctor assigned since the last assegnation
+     * @param status type of assignation that we want on the concrateshift
+     * @param selectedTask index of task that we want to start the assegnation
      * @throws NotEnoughFeasibleUsersException Exception thrown if the number of doctors having the possibility to be
      * added to the concrete shift is less than numDoctors
      */
-    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> newDoctors) throws NotEnoughFeasibleUsersException{
-
-        int selectedUsers = 0;
-
-
-        List<DoctorScheduleState> allDoctorScheduleState = new ArrayList<>(allUserScheduleStates.values()) ;
-
-        //If controllerScocciatura is initialized, we will order the doctors by uffa values.
+    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList,ConcreteShiftDoctorStatus status,int selectedTask) throws NotEnoughFeasibleUsersException{
+       int selectedUser=0;
+        List<DoctorScheduleState> allDoctorScheduleState = new ArrayList<>(allUserScheduleStates.values());
         if(controllerScocciatura != null){
             controllerScocciatura.addUffaTempUtenti(allDoctorScheduleState,concreteShift);
             controllerScocciatura.ordinaByUffa(allDoctorScheduleState);
         }
-
-        for (DoctorScheduleState doctorScheduleState : allDoctorScheduleState){
-            if (selectedUsers == qss.getValue()){
-                break;
-            }
-
-            ContestoVincolo context = new ContestoVincolo(doctorScheduleState,concreteShift);
-            // If the doctor respects all the constraints, we can add him to the concrete shift.
-            // TODO: parametrizzare la costruzione della schedulazione su forzare vincoli stringenti o meno
-            if (verifyAllConstraints(context, false)){
-                newDoctors.add(doctorScheduleState.getDoctor());
-                doctorScheduleState.addAssegnazioneTurno(context.getConcreteShift());
-
-                /*
-                 * If I actually registered the doctor to the concrete shift, his uffa value has to be actually updated.
-                 */
-                List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
-                if(contextDoctorsOnDuty.size() < qss.getValue())
-                    doctorScheduleState.saveUffaTemp();
-
-                selectedUsers++;
-            }
-        }
-
+       for(DoctorScheduleState d:allDoctorScheduleState){
+           if (selectedUser == qss.getValue()){
+               break;
+           }
+           //TODO: aggiungere controllo specializzazione
+           if(d.getDoctor().getSeniority()!=qss.getKey())
+               continue;
+           ContestoVincolo context = new ContestoVincolo(d,concreteShift);
+           if(verifyAllConstraints(context, false)){
+               doctorList.add(d.getDoctor());
+               d.addConcreteShift(context.getConcreteShift());
+               //Creo il Doctor Assignement
+               int indexTask=selectedTask %(concreteShift.getShift().getMedicalService().getTasks().size());
+               DoctorAssignment da = new DoctorAssignment(d.getDoctor(),
+                                                            status,
+                                                            concreteShift,
+                                                        concreteShift.getShift().getMedicalService().getTasks().get(indexTask));
+               //lo inserisco nei concrateShift
+               concreteShift.getDoctorAssignmentList().add(da);
+               selectedTask++;
+           }
+           List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
+           if(contextDoctorsOnDuty.size() < qss.getValue())
+               d.saveUffaTemp();
+           selectedUser++;
+       }
         // Case in which the algorithm ends without having found enough doctors to place into the concrete shift
-        if (selectedUsers != qss.getValue()){
-            throw new NotEnoughFeasibleUsersException(qss.getValue(), selectedUsers);
+        if (selectedUser != qss.getValue()){
+            throw new NotEnoughFeasibleUsersException(qss.getValue(), selectedUser);
         }
-
     }
+
 
     /**
      * This method applies all the constraints to the specified context. If a constraint is violated, then it is added
@@ -290,7 +289,6 @@ public class ScheduleBuilder {
      * @return An instance of the updated shift schedule
      */
     public Schedule addConcreteShift(ConcreteShift concreteShift, boolean isForced){
-
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
 
@@ -300,12 +298,10 @@ public class ScheduleBuilder {
                 schedule.setCauseIllegal(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
             }
         }
-
         if(schedule.getCauseIllegal() == null){
             for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
                 Doctor doctor = da.getDoctor();
-                this.allUserScheduleStates.get(doctor.getId()).addAssegnazioneTurno(concreteShift);
-
+                this.allUserScheduleStates.get(doctor.getId()).addConcreteShift(concreteShift);
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
                 if(doctorsOnDuty.contains(doctor))
                     this.allUserScheduleStates.get(doctor.getId()).saveUffaTemp();

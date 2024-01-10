@@ -125,10 +125,6 @@ public class ConcreteShiftController implements IConcreteShiftController {
         List<ConcreteShift> turniAllocatiERiserve = concreteShiftDAO.findByDoctorAssignmentList_Doctor_Id(idPersona);
         Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
         for (ConcreteShift concreteShift : turniAllocatiERiserve) {
-            System.out.println(concreteShift.getDoctorAssignmentList().size());
-            for(DoctorAssignment s:concreteShift.getDoctorAssignmentList()){
-                System.out.println(s.getDoctor().getName());
-            }
             if(!utenteInReperibilita(concreteShift, idPersona)){
                 //TODO converti entity in dto ed aggiungila a turniAllocati
 

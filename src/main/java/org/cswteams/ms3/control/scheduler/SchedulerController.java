@@ -81,6 +81,7 @@ public class SchedulerController implements ISchedulerController {
      * @return An instance of schedule if correctly created and saved in persistence, null otherwise
      */
     @Override
+    @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate)  {
 
         //Check if there already exists a shift schedule for the dates we want to plan.
@@ -102,7 +103,6 @@ public class SchedulerController implements ISchedulerController {
                 }
 
             }
-
             //We move on the next day.
             currentDay = currentDay.plusDays(1);
         }
@@ -119,9 +119,11 @@ public class SchedulerController implements ISchedulerController {
 
             this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDAO.findAll()));
             //We set the controller that manages doctors priorities.
+
             return  scheduleDAO.save(this.scheduleBuilder.build());
 
         } catch (IllegalScheduleException e) {
+            System.out.println(e.getMessage());
             return null;
         }
 
