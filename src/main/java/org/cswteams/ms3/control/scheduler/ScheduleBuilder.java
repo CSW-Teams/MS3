@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
-import org.cswteams.ms3.dao.DoctorAssignmentDAO;
-import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.constraint.ContestoVincolo;

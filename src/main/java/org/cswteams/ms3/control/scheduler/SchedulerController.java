@@ -3,11 +3,9 @@ package org.cswteams.ms3.control.scheduler;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.*;
 
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
-import org.cswteams.ms3.control.utils.ConvertitoreData;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
