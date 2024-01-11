@@ -32,7 +32,8 @@ export class ServizioAPI {
 
         for (let i = 0; i < body.length; i++) {
             const service = {};
-            service.name = body[i].nome;
+            service.id    = body[i].id;
+            service.name  = body[i].nome;
             var taskTypesList = body[i].mansioni;
             this.alphaSort(taskTypesList);
             service.taskTypesList = "";
@@ -61,6 +62,28 @@ export class ServizioAPI {
         };
 
         const response = await fetch('/api/medical-services/', requestOptions);
+        return response;
+    }
+
+    async updateMedicalService(params) {
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(params)
+        };
+
+        const response = await fetch('/api/medical-services/update', requestOptions);
+        return response;
+    }
+
+    async deleteMedicalService(params) {
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(params)
+        };
+
+        const response = await fetch('/api/medical-services/delete', requestOptions);
         return response;
     }
 }
