@@ -113,7 +113,9 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                     >
                     <TextField
                         id        = "outlined-basic"
+                        autoFocus = "true"
                         label     = "Nome del servizio"
+                        required  = "true"
                         variant   = "outlined"
                         onChange  = {
                             (event) => {
