@@ -12,10 +12,18 @@ import java.util.List;
 @Getter
 public class MedicalServiceDTO {
 
+    private Long id;
     private String nome;
     private List<Task> mansioni = new ArrayList<>();
 
+    public MedicalServiceDTO(Long id, String nome, List<Task> mansioni) {
+        this.id = id;
+        this.nome = nome;
+        this.mansioni = mansioni;
+    }
+
     public MedicalServiceDTO(String nome, List<Task> mansioni){
+        this.id = null;
         this.nome = nome;
         this.mansioni = mansioni;
     }
