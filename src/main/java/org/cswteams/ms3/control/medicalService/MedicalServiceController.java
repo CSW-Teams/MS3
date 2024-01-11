@@ -8,14 +8,12 @@ import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
 import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.enums.TaskEnum;
+import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class MedicalServiceController implements IMedicalServiceController {
@@ -61,6 +59,30 @@ public class MedicalServiceController implements IMedicalServiceController {
     public MedicalServiceDTO getServiceByName(@NotNull String serviceName) {
         MedicalService medicalService = medicalServiceDAO.findByLabel(serviceName);
         return buildDTO(medicalService);
+    }
+
+    @Override
+    public MedicalServiceDTO updateService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException {
+        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId().toString());
+        if (medicalServiceOpt.isEmpty()) {
+            throw new DatabaseException("MedicalService not found for id = " + medicalServiceDTO.getId());
+        }
+        MedicalService medicalService = medicalServiceOpt.get();
+        medicalService.setLabel(medicalServiceDTO.getNome());
+        medicalService.setTasks(medicalServiceDTO.getMansioni());
+        medicalServiceDAO.saveAndFlush(medicalService);
+        return medicalServiceDTO;
+    }
+
+    @Override
+    public boolean deleteService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException {
+        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId().toString());
+        if (medicalServiceOpt.isEmpty()) {
+            throw new DatabaseException("MedicalService not found for id = " + medicalServiceDTO.getId());
+        }
+        MedicalService medicalService = medicalServiceOpt.get();
+        medicalServiceDAO.delete(medicalService);
+        return true;
     }
 
     @Override
