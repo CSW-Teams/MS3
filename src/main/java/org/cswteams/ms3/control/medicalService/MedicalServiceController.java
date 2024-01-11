@@ -63,7 +63,7 @@ public class MedicalServiceController implements IMedicalServiceController {
 
     @Override
     public MedicalServiceDTO updateService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException {
-        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId().toString());
+        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId());
         if (medicalServiceOpt.isEmpty()) {
             throw new DatabaseException("MedicalService not found for id = " + medicalServiceDTO.getId());
         }
@@ -76,7 +76,7 @@ public class MedicalServiceController implements IMedicalServiceController {
 
     @Override
     public boolean deleteService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException {
-        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId().toString());
+        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId());
         if (medicalServiceOpt.isEmpty()) {
             throw new DatabaseException("MedicalService not found for id = " + medicalServiceDTO.getId());
         }
@@ -92,6 +92,7 @@ public class MedicalServiceController implements IMedicalServiceController {
 
     private MedicalServiceDTO buildDTO(MedicalService medicalService) {
         return new MedicalServiceDTO(
+                medicalService.getId(),
                 medicalService.getLabel(),
                 medicalService.getTasks());
     }

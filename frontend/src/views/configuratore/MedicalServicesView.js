@@ -8,7 +8,9 @@ import {
     MDBTableHead
     } from "mdb-react-ui-kit";
 import {ServizioAPI} from "../../API/ServizioAPI";
+import Button from '@mui/material/Button';
 import MedicalServiceCreationDrawer from "../../components/common/BottomViewCreaServizio";
+import MedicalServiceUpdateDrawer from "../../components/common/BottomViewModificaServizio";
 
 function defaultComparator(prop1, prop2) {
     if (prop1 < prop2) return -1;
@@ -100,6 +102,9 @@ export default class MedicalServicesView extends React.Component {
                                     <th scope='col'>
                                         Mansioni
                                     </th>
+                                    <th scope='col'>
+                                        Operazioni
+                                    </th>
                                 </tr>
                             </MDBTableHead>
                             <MDBTableBody>
@@ -112,6 +117,9 @@ export default class MedicalServicesView extends React.Component {
                                             </td>
                                             <td>
                                                 {data.taskTypesList}
+                                            </td>
+                                            <td>
+                                                <MedicalServiceUpdateDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesList} currentServiceInfo={data}/>
                                             </td>
                                         </tr>
                                         )
