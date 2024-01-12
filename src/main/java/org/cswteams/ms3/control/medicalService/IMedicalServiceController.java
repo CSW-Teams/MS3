@@ -25,7 +25,7 @@ public interface IMedicalServiceController {
 
     MedicalServiceDTO updateService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException;
 
-    boolean deleteService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException;
+    boolean deleteService(@NotNull Long serviceId) throws DatabaseException;
 
     AvailableTasksTypesDTO getAvailableTaskTypes();
 }

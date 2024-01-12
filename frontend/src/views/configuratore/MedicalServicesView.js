@@ -9,6 +9,8 @@ import {
     } from "mdb-react-ui-kit";
 import {ServizioAPI} from "../../API/ServizioAPI";
 import Button from '@mui/material/Button';
+import Typography from "@mui/material/Typography";
+import DialogEliminaServizio from '../../components/common/DialogEliminaServizio';
 import MedicalServiceCreationDrawer from "../../components/common/BottomViewCreaServizio";
 import MedicalServiceUpdateDrawer from "../../components/common/BottomViewModificaServizio";
 
@@ -78,8 +80,17 @@ export default class MedicalServicesView extends React.Component {
         newServiceList.push(...this.state.services);
         var objIndex = newServiceList.findIndex((obj => obj.id == updatedList.id));
         console.log(objIndex);
-        newServiceList[objIndex].name = updatedList.name;
+        newServiceList[objIndex].name = updatedList.name.toUpperCase();;
         newServiceList[objIndex].taskTypesList = updatedList.taskTypesList;
+        this.setState({services: newServiceList});
+    };
+
+    updateServicesListAfterRemoval = (updatedList) => {
+        var newServiceList = []
+        newServiceList.push(...this.state.services);
+        var objIndex = newServiceList.findIndex((obj => obj.id == updatedList.id));
+        console.log(objIndex);
+        newServiceList.splice(objIndex, 1);
         this.setState({services: newServiceList});
     };
 
@@ -123,13 +134,16 @@ export default class MedicalServicesView extends React.Component {
                                     return (
                                         <tr key={key}>
                                             <td>
-                                                {data.name}
+                                                <Typography variant="p">
+                                                    {data.name.toUpperCase()}
+                                                </Typography>
                                             </td>
                                             <td>
                                                 {data.taskTypesList}
                                             </td>
                                             <td>
                                                 <MedicalServiceUpdateDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesListAfterUpdate} currentServiceInfo={data}/>
+                                                <DialogEliminaServizio updateServicesList={this.updateServicesListAfterRemoval} currentServiceInfo={data}/>
                                             </td>
                                         </tr>
                                         )

@@ -82,10 +82,10 @@ public class MedicalServiceController implements IMedicalServiceController {
     }
 
     @Override
-    public boolean deleteService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException {
-        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId());
+    public boolean deleteService(@NotNull Long serviceId) throws DatabaseException {
+        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(serviceId);
         if (medicalServiceOpt.isEmpty()) {
-            throw new DatabaseException("MedicalService not found for id = " + medicalServiceDTO.getId());
+            throw new DatabaseException("MedicalService not found for id = " + serviceId);
         }
         MedicalService medicalService = medicalServiceOpt.get();
         medicalServiceDAO.delete(medicalService);

@@ -61,10 +61,10 @@ public class MedicalServicesRestEndpoint {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "delete")
-    public ResponseEntity<?> deleteService(@RequestBody(required = true) MedicalServiceDTO service) {
-        if (service != null) {
+    public ResponseEntity<?> deleteService(@RequestBody(required = true) Long serviceId) {
+        if (serviceId != null) {
             try {
-                return new ResponseEntity<>(medicalServiceController.deleteService(service), HttpStatus.ACCEPTED);
+                return new ResponseEntity<>(medicalServiceController.deleteService(serviceId), HttpStatus.ACCEPTED);
             } catch (DatabaseException e) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
