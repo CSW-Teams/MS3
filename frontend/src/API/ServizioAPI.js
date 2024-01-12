@@ -39,9 +39,9 @@ export class ServizioAPI {
             service.taskTypesList = "";
             for (let j = 0; j < taskTypesList.length; j++) {
                 service.taskTypesList = service.taskTypesList.concat(
-                  taskTypesList[j].taskType,
-                  (j!=taskTypesList.length-1) ? ", " : ""
-                  );
+                    taskTypesList[j].taskType,
+                    (j!=taskTypesList.length-1) ? ", " : ""
+                );
             }
             services[i] = service;
         }
