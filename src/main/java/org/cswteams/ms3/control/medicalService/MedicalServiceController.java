@@ -2,6 +2,7 @@ package org.cswteams.ms3.control.medicalService;
 
 import org.cswteams.ms3.control.task.ITaskController;
 import org.cswteams.ms3.dao.MedicalServiceDAO;
+import org.cswteams.ms3.dao.TaskDAO;
 import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
@@ -20,6 +21,9 @@ public class MedicalServiceController implements IMedicalServiceController {
 
     @Autowired
     MedicalServiceDAO medicalServiceDAO;
+
+    @Autowired
+    TaskDAO taskDAO;
 
     @Autowired
     ITaskController taskController;
@@ -69,6 +73,9 @@ public class MedicalServiceController implements IMedicalServiceController {
         }
         MedicalService medicalService = medicalServiceOpt.get();
         medicalService.setLabel(medicalServiceDTO.getNome());
+        for (Task t : medicalServiceDTO.getMansioni()) {
+            taskDAO.saveAndFlush(t);
+        }
         medicalService.setTasks(medicalServiceDTO.getMansioni());
         medicalServiceDAO.saveAndFlush(medicalService);
         return medicalServiceDTO;

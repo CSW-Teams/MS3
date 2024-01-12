@@ -19,7 +19,6 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    const [updatedResults, setUR] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState(currentServiceInfo.taskTypesList.split(", "));
     const [newMedicalServiceName, setNewMedicalServiceName] = useState(currentServiceInfo.name);
 
@@ -43,40 +42,40 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
     }
 
     const postNewRequest = () => {
-        //check if exists - also here
-        //const servicesNames = services.map(services => services.name)
-        //const matches = servicesNames.filter(service => service.toUpperCase() === (newMedicalServiceName.toUpperCase()))
-        //if(matches.length==0) {
-            handleClose();
-            alphaSort(selectedTasks);
-            var params = {
-                id:         currentServiceInfo.id,
-                name:       newMedicalServiceName,
-                taskTypes:  selectedTasks
-            }
-            var service = {
-                name:           newMedicalServiceName,
-                taskTypesList:  selectedTasks
-            }
-            const serviceNew={}
-            var str="";
-            for (let j = 0; j < selectedTasks.length; j++) {
-                str =str.concat(
-                  selectedTasks[j],
-                  (j!=selectedTasks.length-1) ? ", " : ""
-                  );
-            }
-            serviceNew.name=newMedicalServiceName.toUpperCase();
-            serviceNew.taskTypesList=str;
-            setNewMedicalServiceName("");
-            setSelectedTasks([]);
-            servizioAPI.updateMedicalService(params);
+        handleClose();
+        alphaSort(selectedTasks);
+        const tasksArray = [];
+        for (let i = 0; i < selectedTasks.length; i++) {
+            var task = {};
+            task.taskType = selectedTasks[i];
+            tasksArray.push(task);
+        }
+        var params = {
+            id:       currentServiceInfo.id,
+            nome:     newMedicalServiceName,
+            mansioni: tasksArray
+        }
+        var service = {
+            name:           newMedicalServiceName,
+            taskTypesList:  selectedTasks
+        }
+        const serviceNew = {}
+        var str = "";
+        for (let j = 0; j < selectedTasks.length; j++) {
+            str = str.concat(
+              selectedTasks[j],
+              (j!=selectedTasks.length-1) ? ", " : ""
+              );
+        }
+        serviceNew.id               = params.id
+        serviceNew.name             = newMedicalServiceName.toUpperCase();
+        serviceNew.taskTypesList    = str;
+        setNewMedicalServiceName("");
+        setSelectedTasks([]);
+        servizioAPI.updateMedicalService(params);
 
-            updateServicesList(serviceNew);
-            toast.success("Servizio modificato con successo.");
-            //} else {
-            //toast.error("Il servizio è già esistente. Riprovare.");
-        //}
+        updateServicesList(serviceNew);
+        toast.success("Servizio modificato con successo.");
     };
 
     return (

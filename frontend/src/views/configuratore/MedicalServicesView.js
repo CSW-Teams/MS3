@@ -66,10 +66,20 @@ export default class MedicalServicesView extends React.Component {
             })
     }
 
-    updateServicesList = (updatedList) => {
-        var newServiceList=[]
+    updateServicesListAfterCreation = (updatedList) => {
+        var newServiceList = []
         newServiceList.push(...this.state.services);
         newServiceList.push(...[updatedList]);
+        this.setState({services: newServiceList});
+    };
+
+    updateServicesListAfterUpdate = (updatedList) => {
+        var newServiceList = []
+        newServiceList.push(...this.state.services);
+        var objIndex = newServiceList.findIndex((obj => obj.id == updatedList.id));
+        console.log(objIndex);
+        newServiceList[objIndex].name = updatedList.name;
+        newServiceList[objIndex].taskTypesList = updatedList.taskTypesList;
         this.setState({services: newServiceList});
     };
 
@@ -84,7 +94,7 @@ export default class MedicalServicesView extends React.Component {
 
         return(
             <React.Fragment>
-                <MedicalServiceCreationDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesList}/>
+                <MedicalServiceCreationDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesListAfterCreation}/>
                 <MDBCard>
                     <MDBCardBody className="text-center">
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -119,7 +129,7 @@ export default class MedicalServicesView extends React.Component {
                                                 {data.taskTypesList}
                                             </td>
                                             <td>
-                                                <MedicalServiceUpdateDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesList} currentServiceInfo={data}/>
+                                                <MedicalServiceUpdateDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesListAfterUpdate} currentServiceInfo={data}/>
                                             </td>
                                         </tr>
                                         )
