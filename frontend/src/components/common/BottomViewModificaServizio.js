@@ -17,7 +17,11 @@ toast.configure();
 
 const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, currentServiceInfo}) => {
     const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
+    const handleOpen = () => {
+        setNewMedicalServiceName(currentServiceInfo.name);
+        setSelectedTasks(currentServiceInfo.taskTypesList.split(", "));
+        setOpen(true);
+    }
     const handleClose = () => setOpen(false);
     const [selectedTasks, setSelectedTasks] = useState(currentServiceInfo.taskTypesList.split(", "));
     const [newMedicalServiceName, setNewMedicalServiceName] = useState(currentServiceInfo.name);
@@ -82,6 +86,7 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
         <>
         <Button
             onClick = {handleOpen}
+            variant = "outlined"
             style   = {{
                 'display'       : 'block',
                 'margin-left'   : 'auto',
@@ -120,7 +125,7 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
                         autoFocus     = "true"
                         label         = "Nome del servizio"
                         required      = "true"
-                        defaultValue  = {currentServiceInfo.name}
+                        defaultValue  = {currentServiceInfo.name.toUpperCase()}
                         variant       = "outlined"
                         onChange      = {
                             (event) => {
