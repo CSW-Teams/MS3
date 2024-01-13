@@ -64,18 +64,42 @@ public class MedicalServiceController implements IMedicalServiceController {
     }
 
     @Override
-    public MedicalServiceDTO updateService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException {
+    public MedicalServiceDTO updateService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException, RuntimeException {
         Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId());
         if (medicalServiceOpt.isEmpty()) {
             throw new DatabaseException("MedicalService not found for id = " + medicalServiceDTO.getId());
         }
         MedicalService medicalService = medicalServiceOpt.get();
         medicalService.setLabel(medicalServiceDTO.getNome());
-        for (Task t : medicalServiceDTO.getMansioni()) {
-            taskDAO.saveAndFlush(t);
+
+        // compare persistent tasks with the received ones:
+        // 1. assigned (i.e., via DoctorAssignment(s)) tasks must be included into received ones
+        // 2. persistent task must only be updated, whilst new task should be created
+        List<Task> persistentTasks = medicalService.getTasks();
+        List<Task> receivedTasks = medicalServiceDTO.getMansioni();
+        List<Task> updatedTasks = new ArrayList<>();
+        List<Task> toBeRemovedTasks = new ArrayList<>();
+
+        for (Task persistent : persistentTasks) {
+            if (receivedTasks.stream().anyMatch(task -> task.getTaskType() == persistent.getTaskType()))
+                updatedTasks.add(persistent);
+            else if (taskDAO.isTaskAssigned(persistent.getId()))
+                throw new RuntimeException("e");
+            else {
+                toBeRemovedTasks.add(persistent);
+            }
         }
-        medicalService.setTasks(medicalServiceDTO.getMansioni());
+        for (Task received : receivedTasks) {
+            if (updatedTasks.stream().noneMatch(task -> task.getTaskType() == received.getTaskType())) {
+                taskDAO.saveAndFlush(received);
+                updatedTasks.add(received);
+            }
+        }
+        medicalService.setTasks(updatedTasks);
         medicalServiceDAO.saveAndFlush(medicalService);
+        for (Task toBeRemoved : toBeRemovedTasks) {
+            taskDAO.delete(toBeRemoved);
+        }
         return medicalServiceDTO;
     }
 

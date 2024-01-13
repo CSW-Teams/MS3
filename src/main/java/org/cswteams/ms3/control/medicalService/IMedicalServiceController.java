@@ -16,15 +16,13 @@ public interface IMedicalServiceController {
 
     MedicalService createService(@NotNull MedicalServiceCreationDTO medicalServiceDTO);
 
-    //MedicalService createService(@NotNull MedicalServiceDTO medicalServiceDTO);
-
     MedicalService createService(List<Task> taskList, String label);
 
     Set<MedicalServiceWithTaskAssignmentsDTO> getAllMedicalServices();
 
     MedicalServiceDTO getServiceByName(@NotNull String serviceName);
 
-    MedicalServiceDTO updateService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException;
+    MedicalServiceDTO updateService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException, RuntimeException;
 
     boolean deleteService(@NotNull Long serviceId) throws DatabaseException;
 
