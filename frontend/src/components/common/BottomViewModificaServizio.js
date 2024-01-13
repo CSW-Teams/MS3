@@ -14,37 +14,39 @@ import EditIcon from '@mui/icons-material/Edit';
 import Tooltip from '@mui/material/Tooltip';
 import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
+import {MedicalService} from "../../entity/MedicalService";
+import {Task} from "../../entity/Task";
 
 toast.configure();
 
-const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, currentServiceInfo}) => {
+const MedicalServiceUpdateDrawer = ({availableTasks, services, updateServicesList, currentServiceInfo}) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => {
         setNewMedicalServiceName(currentServiceInfo.name);
-        setSelectedTasks(currentServiceInfo.taskTypesString.split(", "));
+        setCheckedTasksStringArray(currentServiceInfo.getTasksAsString().split(", "));
         setOpen(true);
     }
     const handleClose = () => setOpen(false);
-    const [selectedTasks, setSelectedTasks] = useState(currentServiceInfo.taskTypesString.split(", "));
+    const [checkedTasksStringArray, setCheckedTasksStringArray] = useState(currentServiceInfo.getTasksAsString().split(", "));
     const [newMedicalServiceName, setNewMedicalServiceName] = useState(currentServiceInfo.name);
 
-    const servizioAPI = new ServizioAPI();
-    const names = Object.values(tasks);
+    const serviceAPI = new ServizioAPI();
+    const names = Object.values(availableTasks);
 
     const handleCheckboxChange = (newTask) => {
-        if (!selectedTasks.includes(newTask)) {
-            setSelectedTasks(prev => [...prev, newTask]);
+        if (!checkedTasksStringArray.includes(newTask)) {
+            setCheckedTasksStringArray(prev => [...prev, newTask]);
         } else {
-            setSelectedTasks(selectedTasks.filter(item => item !== newTask));
+            setCheckedTasksStringArray(checkedTasksStringArray.filter(item => item !== newTask));
         }
     };
 
     const isTaskTypeSelected = (item) => {
-        return currentServiceInfo.taskTypesString.includes(item["item"]);
+        return currentServiceInfo.getTasksAsString().includes(item["item"]);
     }
 
-    const isTaskTypeAssigned = (item) => {
-        var taskBeingAnalyzed=currentServiceInfo.taskTypesList.filter(task => task.taskType===(item));
+    const isTaskTypeAssigned = (taskTypeParam) => {
+        var taskBeingAnalyzed = currentServiceInfo.tasks.filter(task => task.taskType === (taskTypeParam));
         return taskBeingAnalyzed[0] && taskBeingAnalyzed[0].assigned;
     }
 
@@ -54,38 +56,35 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
 
     const postNewRequest = () => {
         handleClose();
-        alphaSort(selectedTasks);
-        const tasksArray = [];
-        for (let i = 0; i < selectedTasks.length; i++) {
-            var task = {};
-            task.taskType = selectedTasks[i];
-            tasksArray.push(task);
-        }
-        var params = {
-            id:       currentServiceInfo.id,
-            nome:     newMedicalServiceName,
-            mansioni: tasksArray
-        }
-        var service = {
-            name:           newMedicalServiceName,
-            taskTypesString:  selectedTasks
-        }
-        const serviceNew = {}
-        var str = "";
-        for (let j = 0; j < selectedTasks.length; j++) {
-            str = str.concat(
-              selectedTasks[j],
-              (j!=selectedTasks.length-1) ? ", " : ""
-              );
-        }
-        serviceNew.id               = params.id
-        serviceNew.name             = newMedicalServiceName.toUpperCase();
-        serviceNew.taskTypesString  = str;
-        setNewMedicalServiceName("");
-        setSelectedTasks([]);
-        servizioAPI.updateMedicalService(params);
+        alphaSort(checkedTasksStringArray);
 
-        updateServicesList(serviceNew);
+        // build params for API request and view update
+        const outTaskArray = [];
+        for (let i = 0; i < checkedTasksStringArray.length; i++) {
+            outTaskArray.push(new Task(null, checkedTasksStringArray[i], isTaskTypeAssigned(checkedTasksStringArray[i])));
+        }
+
+        // API request params built differently (e.g. not as a MedicalService object)
+        // for compliance wrt other modules
+        var requestParams = {
+            id          : currentServiceInfo.id,
+            nome        : newMedicalServiceName.toUpperCase(),
+            mansioni    : outTaskArray
+        }
+        serviceAPI.updateMedicalService(requestParams);
+
+        // build service infos for view update
+        var viewUpdateServiceInfo = new MedicalService (
+            currentServiceInfo.id,
+            newMedicalServiceName.toUpperCase(),
+            outTaskArray
+            );
+        updateServicesList(viewUpdateServiceInfo);
+
+        // reset fields
+        setNewMedicalServiceName("");
+        setCheckedTasksStringArray([]);
+
         toast.success("Servizio modificato con successo.");
     };
 
@@ -180,7 +179,7 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
                     <Button
                         variant="contained"
                         color="success"
-                        disabled={newMedicalServiceName==="" || selectedTasks.length===0}
+                        disabled={newMedicalServiceName==="" || checkedTasksStringArray.length===0}
                         onClick={postNewRequest}
                         >
                         Modifica servizio

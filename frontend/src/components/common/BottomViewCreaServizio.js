@@ -12,6 +12,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
+import {MedicalService} from "../../entity/MedicalService";
+import {Task} from "../../entity/Task";
 
 toast.configure();
 
@@ -19,18 +21,17 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    const [updatedResults, setUR] = useState([]);
-    const [selectedTasks, setSelectedTasks] = useState([]);
+    const [checkedTasksStringArray, setCheckedTasksStringArray] = useState([]);
     const [newMedicalServiceName, setNewMedicalServiceName] = useState("");
 
-    const servizioAPI = new ServizioAPI();
+    const serviceAPI = new ServizioAPI();
     const names = Object.values(tasks);
 
     const handleCheckboxChange = (newTask) => {
-        if (!selectedTasks.includes(newTask)) {
-            setSelectedTasks(prev => [...prev, newTask]);
+        if (!checkedTasksStringArray.includes(newTask)) {
+            setCheckedTasksStringArray(prev => [...prev, newTask]);
         } else {
-            setSelectedTasks(selectedTasks.filter(item => item !== newTask));
+            setCheckedTasksStringArray(checkedTasksStringArray.filter(item => item !== newTask));
         }
     };
 
@@ -44,30 +45,34 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
         const matches = servicesNames.filter(service => service.toUpperCase() === (newMedicalServiceName.toUpperCase()))
         if(matches.length==0) {
             handleClose();
-            alphaSort(selectedTasks);
-            var params = {
-                name:       newMedicalServiceName,
-                taskTypes:  selectedTasks
-            }
-            var service = {
-                name:           newMedicalServiceName,
-                taskTypesList:  selectedTasks
-            }
-            const serviceNew={}
-            var str="";
-            for (let j = 0; j < selectedTasks.length; j++) {
-                str =str.concat(
-                  selectedTasks[j],
-                  (j!=selectedTasks.length-1) ? ", " : ""
-                  );
-            }
-            serviceNew.name=newMedicalServiceName.toUpperCase();
-            serviceNew.taskTypesList=str;
-            setNewMedicalServiceName("");
-            setSelectedTasks([]);
-            servizioAPI.createMedicalService(params);
+            alphaSort(checkedTasksStringArray);
 
-            updateServicesList(serviceNew);
+            // API request params built differently (e.g. not as a MedicalService object)
+            // for compliance wrt other modules
+            var requestParams = {
+                name        : newMedicalServiceName.toUpperCase(),
+                taskTypes   : checkedTasksStringArray
+            }
+            serviceAPI.createMedicalService(requestParams);
+
+            // build params for view update
+            const outTaskArray = [];
+            for (let i = 0; i < checkedTasksStringArray.length; i++) {
+                outTaskArray.push(new Task(null, checkedTasksStringArray[i], false));
+            }
+
+            // build service infos for view update
+            var viewUpdateServiceInfo = new MedicalService (
+                null,
+                newMedicalServiceName.toUpperCase(),
+                outTaskArray
+                );
+            updateServicesList(viewUpdateServiceInfo);
+
+            // reset fields
+            setNewMedicalServiceName("");
+            setCheckedTasksStringArray([]);
+
             toast.success("Servizio creato con successo.");
             } else {
             toast.error("Il servizio è già esistente. Riprovare.");
@@ -162,7 +167,7 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                     <Button
                         variant="contained"
                         color="success"
-                        disabled={newMedicalServiceName==="" || selectedTasks.length===0}
+                        disabled={newMedicalServiceName==="" || checkedTasksStringArray.length===0}
                         onClick={postNewRequest}
                         >
                         Crea servizio

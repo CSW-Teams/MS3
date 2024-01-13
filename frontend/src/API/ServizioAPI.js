@@ -1,3 +1,6 @@
+import {MedicalService} from "../entity/MedicalService";
+import {Task} from "../entity/Task";
+
 export class ServizioAPI {
     constructor() {
     }
@@ -31,25 +34,17 @@ export class ServizioAPI {
         const services = [];
 
         for (let i = 0; i < body.length; i++) {
-            const service = {};
-            service.id        = body[i].id;
-            service.name      = body[i].nome;
-            let assignedCheck = false;
-            var taskTypesString = body[i].mansioni;
-            this.alphaSort(taskTypesString);
-            service.taskTypesString = "";
-            service.taskTypesList = [];
-            for (let j = 0; j < taskTypesString.length; j++) {
-                if(taskTypesString[j].assigned == true){
-                    assignedCheck = true;
-                }
-                service.taskTypesString = service.taskTypesString.concat(
-                    taskTypesString[j].taskType,
-                    (j!=taskTypesString.length-1) ? ", " : ""
-                );
-                service.taskTypesList.push(taskTypesString[j]);
+            var receivedTaskList = body[i].mansioni;
+            this.alphaSort(receivedTaskList);
+            var taskList = [];
+            for (let j = 0; j < receivedTaskList.length; j++) {
+                taskList.push(new Task(receivedTaskList[j].id, receivedTaskList[j].taskType, receivedTaskList[j].assigned));
             }
-            service.assigned = assignedCheck;
+            var service = new MedicalService (
+                body[i].id,
+                body[i].nome,
+                taskList
+                );
             services[i] = service;
         }
         return services;

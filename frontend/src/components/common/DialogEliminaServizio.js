@@ -15,14 +15,14 @@ toast.configure();
 
 export default function DialogEliminaServizio({currentServiceInfo, updateServicesList, disabled}) {
   const [open, setOpen] = React.useState(false);
-  const servizioAPI = new ServizioAPI();
+  const serviceAPI = new ServizioAPI();
 
   const handleClickOpen = () => {
     setOpen(true);
   };
 
   const handleRemove = () => {
-    servizioAPI.deleteMedicalService(currentServiceInfo.id);
+    serviceAPI.deleteMedicalService(currentServiceInfo.id);
     updateServicesList(currentServiceInfo);
     toast.success("Servizio eliminato con successo.");
     setOpen(false);
