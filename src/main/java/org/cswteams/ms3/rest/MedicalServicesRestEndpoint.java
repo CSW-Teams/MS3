@@ -56,6 +56,8 @@ public class MedicalServicesRestEndpoint {
                 return new ResponseEntity<>(medicalServiceController.updateService(service), HttpStatus.ACCEPTED);
             } catch (DatabaseException e) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            } catch (RuntimeException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

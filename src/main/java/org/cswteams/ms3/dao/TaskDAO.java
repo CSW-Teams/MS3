@@ -4,7 +4,7 @@ import org.cswteams.ms3.entity.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface TaskDAO extends JpaRepository<Task, Boolean> {
+public interface TaskDAO extends JpaRepository<Task, Long> {
 
     /**
      * Check if the specific <code>Task</code> is assigned,
