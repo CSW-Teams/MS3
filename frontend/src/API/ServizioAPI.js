@@ -1,3 +1,6 @@
+import {MedicalService} from "../entity/MedicalService";
+import {Task} from "../entity/Task";
+
 export class ServizioAPI {
     constructor() {
     }
@@ -31,17 +34,17 @@ export class ServizioAPI {
         const services = [];
 
         for (let i = 0; i < body.length; i++) {
-            const service = {};
-            service.name = body[i].nome;
-            var taskTypesList = body[i].mansioni;
-            this.alphaSort(taskTypesList);
-            service.taskTypesList = "";
-            for (let j = 0; j < taskTypesList.length; j++) {
-                service.taskTypesList = service.taskTypesList.concat(
-                  taskTypesList[j].taskType,
-                  (j!=taskTypesList.length-1) ? ", " : ""
-                  );
+            var receivedTaskList = body[i].mansioni;
+            this.alphaSort(receivedTaskList);
+            var taskList = [];
+            for (let j = 0; j < receivedTaskList.length; j++) {
+                taskList.push(new Task(receivedTaskList[j].id, receivedTaskList[j].taskType, receivedTaskList[j].assigned));
             }
+            var service = new MedicalService (
+                body[i].id,
+                body[i].nome,
+                taskList
+                );
             services[i] = service;
         }
         return services;
@@ -61,6 +64,28 @@ export class ServizioAPI {
         };
 
         const response = await fetch('/api/medical-services/', requestOptions);
+        return response;
+    }
+
+    async updateMedicalService(params) {
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(params)
+        };
+
+        const response = await fetch('/api/medical-services/update', requestOptions);
+        return response;
+    }
+
+    async deleteMedicalService(params) {
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(params)
+        };
+
+        const response = await fetch('/api/medical-services/delete', requestOptions);
         return response;
     }
 }

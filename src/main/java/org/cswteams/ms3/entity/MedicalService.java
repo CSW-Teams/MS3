@@ -1,6 +1,7 @@
 package org.cswteams.ms3.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -18,12 +19,14 @@ public class MedicalService {
 
 
     @NotNull
+    @Setter
     private String label;
 
 
     @ManyToMany(fetch = FetchType.EAGER)
     @NotNull
     @Getter
+    @Setter
     private List<Task> tasks=new ArrayList<>();
     // TODO: Load this information from a configuration file
 

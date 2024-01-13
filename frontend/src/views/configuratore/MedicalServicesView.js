@@ -8,7 +8,11 @@ import {
     MDBTableHead
     } from "mdb-react-ui-kit";
 import {ServizioAPI} from "../../API/ServizioAPI";
+import Button from '@mui/material/Button';
+import Typography from "@mui/material/Typography";
+import DialogEliminaServizio from '../../components/common/DialogEliminaServizio';
 import MedicalServiceCreationDrawer from "../../components/common/BottomViewCreaServizio";
+import MedicalServiceUpdateDrawer from "../../components/common/BottomViewModificaServizio";
 
 function defaultComparator(prop1, prop2) {
     if (prop1 < prop2) return -1;
@@ -55,19 +59,35 @@ export default class MedicalServicesView extends React.Component {
     }
 
     async getServiceLists() {
-        let servizioAPI = new ServizioAPI();
-        const retrievedServices = await servizioAPI.getAllServices();
-        const retrievedAvailableTaskTypes = await servizioAPI.getAvailableTaskTypes();
+        let serviceAPI = new ServizioAPI();
+        const retrievedServices = await serviceAPI.getAllServices();
+        const retrievedAvailableTaskTypes = await serviceAPI.getAvailableTaskTypes();
         this.setState({
-            services : retrievedServices,
-            availableTaskTypes : retrievedAvailableTaskTypes
+            services            : retrievedServices,
+            availableTaskTypes  : retrievedAvailableTaskTypes
             })
     }
 
-    updateServicesList = (updatedList) => {
-        var newServiceList=[]
+    updateServicesListAfterCreation = (createdService) => {
+        var newServiceList = []
         newServiceList.push(...this.state.services);
-        newServiceList.push(...[updatedList]);
+        newServiceList.push(...[createdService]);
+        this.setState({services: newServiceList});
+    };
+
+    updateServicesListAfterUpdate = (updatedService) => {
+        var newServiceList = []
+        newServiceList.push(...this.state.services);
+        var objIndex = newServiceList.findIndex((obj => obj.id == updatedService.id));
+        newServiceList[objIndex] = updatedService;
+        this.setState({services: newServiceList});
+    };
+
+    updateServicesListAfterRemoval = (removedService) => {
+        var newServiceList = []
+        newServiceList.push(...this.state.services);
+        var objIndex = newServiceList.findIndex((obj => obj.id == removedService.id));
+        newServiceList.splice(objIndex, 1);
         this.setState({services: newServiceList});
     };
 
@@ -82,7 +102,7 @@ export default class MedicalServicesView extends React.Component {
 
         return(
             <React.Fragment>
-                <MedicalServiceCreationDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesList}/>
+                <MedicalServiceCreationDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesListAfterCreation}/>
                 <MDBCard>
                     <MDBCardBody className="text-center">
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -100,18 +120,29 @@ export default class MedicalServicesView extends React.Component {
                                     <th scope='col'>
                                         Mansioni
                                     </th>
+                                    <th scope='col'>
+                                        Operazioni
+                                    </th>
                                 </tr>
                             </MDBTableHead>
                             <MDBTableBody>
                                 {
-                                    this.state.services.map((data, key) => {
+                                    this.state.services.map((service, key) => {
                                     return (
                                         <tr key={key}>
                                             <td>
-                                                {data.name}
+                                                <Typography variant="p">
+                                                    {service.name.toUpperCase()}
+                                                </Typography>
                                             </td>
                                             <td>
-                                                {data.taskTypesList}
+                                                {service.getTasksAsString()}
+                                            </td>
+                                            <td>
+                                                <div style={{ display: 'inline-flex', align: 'center', flexDirection: 'row'}}>
+                                                    <MedicalServiceUpdateDrawer availableTasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesListAfterUpdate} currentServiceInfo={service}/>
+                                                    <DialogEliminaServizio updateServicesList={this.updateServicesListAfterRemoval} currentServiceInfo={service} disabled={service.assigned}/>
+                                                </div>
                                             </td>
                                         </tr>
                                         )

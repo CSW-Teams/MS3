@@ -2,26 +2,26 @@ package org.cswteams.ms3.control.medicalService;
 
 import org.cswteams.ms3.control.task.ITaskController;
 import org.cswteams.ms3.dao.MedicalServiceDAO;
-import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
-import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
-import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
+import org.cswteams.ms3.dao.TaskDAO;
+import org.cswteams.ms3.dto.medicalservice.*;
 import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.enums.TaskEnum;
+import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class MedicalServiceController implements IMedicalServiceController {
 
     @Autowired
     MedicalServiceDAO medicalServiceDAO;
+
+    @Autowired
+    TaskDAO taskDAO;
 
     @Autowired
     ITaskController taskController;
@@ -52,7 +52,7 @@ public class MedicalServiceController implements IMedicalServiceController {
     }
 
     @Override
-    public Set<MedicalServiceDTO> getAllMedicalServices() {
+    public Set<MedicalServiceWithTaskAssignmentsDTO> getAllMedicalServices() {
         List<MedicalService> medicalServiceList = medicalServiceDAO.findAll();
         return buildDTOList(medicalServiceList);
     }
@@ -64,20 +64,89 @@ public class MedicalServiceController implements IMedicalServiceController {
     }
 
     @Override
+    public MedicalServiceDTO updateService(@NotNull MedicalServiceDTO medicalServiceDTO) throws DatabaseException, RuntimeException {
+        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(medicalServiceDTO.getId());
+        if (medicalServiceOpt.isEmpty()) {
+            throw new DatabaseException("MedicalService not found for id = " + medicalServiceDTO.getId());
+        }
+        MedicalService medicalService = medicalServiceOpt.get();
+        medicalService.setLabel(medicalServiceDTO.getNome());
+
+        // compare persistent tasks with the received ones:
+        // 1. assigned (i.e., via DoctorAssignment(s)) tasks must be included into received ones
+        // 2. persistent task must only be updated, whilst new task should be created
+        List<Task> persistentTasks = medicalService.getTasks();
+        List<Task> receivedTasks = medicalServiceDTO.getMansioni();
+        List<Task> updatedTasks = new ArrayList<>();
+        List<Task> toBeRemovedTasks = new ArrayList<>();
+
+        for (Task persistent : persistentTasks) {
+            if (receivedTasks.stream().anyMatch(task -> task.getTaskType() == persistent.getTaskType()))
+                updatedTasks.add(persistent);
+            else if (taskDAO.isTaskAssigned(persistent.getId()))
+                throw new RuntimeException("e");
+            else {
+                toBeRemovedTasks.add(persistent);
+            }
+        }
+        for (Task received : receivedTasks) {
+            if (updatedTasks.stream().noneMatch(task -> task.getTaskType() == received.getTaskType())) {
+                taskDAO.saveAndFlush(received);
+                updatedTasks.add(received);
+            }
+        }
+        medicalService.setTasks(updatedTasks);
+        medicalServiceDAO.saveAndFlush(medicalService);
+        for (Task toBeRemoved : toBeRemovedTasks) {
+            taskDAO.delete(toBeRemoved);
+        }
+        return medicalServiceDTO;
+    }
+
+    @Override
+    public boolean deleteService(@NotNull Long serviceId) throws DatabaseException {
+        Optional<MedicalService> medicalServiceOpt = medicalServiceDAO.findById(serviceId);
+        if (medicalServiceOpt.isEmpty()) {
+            throw new DatabaseException("MedicalService not found for id = " + serviceId);
+        }
+        MedicalService medicalService = medicalServiceOpt.get();
+        medicalServiceDAO.delete(medicalService);
+        return true;
+    }
+
+    @Override
     public AvailableTasksTypesDTO getAvailableTaskTypes() {
         return new AvailableTasksTypesDTO();
     }
 
     private MedicalServiceDTO buildDTO(MedicalService medicalService) {
         return new MedicalServiceDTO(
+                medicalService.getId(),
                 medicalService.getLabel(),
                 medicalService.getTasks());
     }
 
-    private Set<MedicalServiceDTO> buildDTOList(List<MedicalService> medicalServiceList) {
-        Set<MedicalServiceDTO> medicalServiceDTOS = new HashSet<>();
+    private MedicalServiceWithTaskAssignmentsDTO buildWTADTO(MedicalService medicalService) {
+        List<TaskWithAssignmentDTO> twaList = new ArrayList<>();
+        for (Task t : medicalService.getTasks()) {
+            twaList.add(
+                    new TaskWithAssignmentDTO(
+                            t.getId(),
+                            t.getTaskType(),
+                            taskDAO.isTaskAssigned(t.getId())
+                    )
+            );
+        }
+        return new MedicalServiceWithTaskAssignmentsDTO(
+                medicalService.getId(),
+                medicalService.getLabel(),
+                twaList);
+    }
+
+    private Set<MedicalServiceWithTaskAssignmentsDTO> buildDTOList(List<MedicalService> medicalServiceList) {
+        Set<MedicalServiceWithTaskAssignmentsDTO> medicalServiceDTOS = new HashSet<>();
         for (MedicalService entity : medicalServiceList) {
-            medicalServiceDTOS.add(buildDTO(entity));
+            medicalServiceDTOS.add(buildWTADTO(entity));
         }
         return medicalServiceDTOS;
     }

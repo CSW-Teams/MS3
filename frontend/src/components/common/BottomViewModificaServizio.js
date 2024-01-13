@@ -10,6 +10,8 @@ import {AppBar, Checkbox, Toolbar} from "@mui/material";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from "@mui/material/IconButton";
+import EditIcon from '@mui/icons-material/Edit';
+import Tooltip from '@mui/material/Tooltip';
 import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
 import {MedicalService} from "../../entity/MedicalService";
@@ -17,15 +19,19 @@ import {Task} from "../../entity/Task";
 
 toast.configure();
 
-const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => {
+const MedicalServiceUpdateDrawer = ({availableTasks, services, updateServicesList, currentServiceInfo}) => {
     const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
+    const handleOpen = () => {
+        setNewMedicalServiceName(currentServiceInfo.name);
+        setCheckedTasksStringArray(currentServiceInfo.getTasksAsString().split(", "));
+        setOpen(true);
+    }
     const handleClose = () => setOpen(false);
-    const [checkedTasksStringArray, setCheckedTasksStringArray] = useState([]);
-    const [newMedicalServiceName, setNewMedicalServiceName] = useState("");
+    const [checkedTasksStringArray, setCheckedTasksStringArray] = useState(currentServiceInfo.getTasksAsString().split(", "));
+    const [newMedicalServiceName, setNewMedicalServiceName] = useState(currentServiceInfo.name);
 
     const serviceAPI = new ServizioAPI();
-    const names = Object.values(tasks);
+    const names = Object.values(availableTasks);
 
     const handleCheckboxChange = (newTask) => {
         if (!checkedTasksStringArray.includes(newTask)) {
@@ -35,70 +41,66 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
         }
     };
 
+    const isTaskTypeSelected = (item) => {
+        return currentServiceInfo.getTasksAsString().includes(item["item"]);
+    }
+
+    const isTaskTypeAssigned = (taskTypeParam) => {
+        var taskBeingAnalyzed = currentServiceInfo.tasks.filter(task => task.taskType === (taskTypeParam));
+        return taskBeingAnalyzed[0] && taskBeingAnalyzed[0].assigned;
+    }
+
     function alphaSort(array) {
         return array.sort((a, b) => a.localeCompare(b));
     }
 
     const postNewRequest = () => {
-        //check if exists
-        const servicesNames = services.map(services => services.name)
-        const matches = servicesNames.filter(service => service.toUpperCase() === (newMedicalServiceName.toUpperCase()))
-        if(matches.length==0) {
-            handleClose();
-            alphaSort(checkedTasksStringArray);
+        handleClose();
+        alphaSort(checkedTasksStringArray);
 
-            // API request params built differently (e.g. not as a MedicalService object)
-            // for compliance wrt other modules
-            var requestParams = {
-                name        : newMedicalServiceName.toUpperCase(),
-                taskTypes   : checkedTasksStringArray
-            }
-            serviceAPI.createMedicalService(requestParams);
-
-            // build params for view update
-            const outTaskArray = [];
-            for (let i = 0; i < checkedTasksStringArray.length; i++) {
-                outTaskArray.push(new Task(null, checkedTasksStringArray[i], false));
-            }
-
-            // build service infos for view update
-            var viewUpdateServiceInfo = new MedicalService (
-                null,
-                newMedicalServiceName.toUpperCase(),
-                outTaskArray
-                );
-            updateServicesList(viewUpdateServiceInfo);
-
-            // reset fields
-            setNewMedicalServiceName("");
-            setCheckedTasksStringArray([]);
-
-            toast.success("Servizio creato con successo.");
-            } else {
-            toast.error("Il servizio è già esistente. Riprovare.");
+        // build params for API request and view update
+        const outTaskArray = [];
+        for (let i = 0; i < checkedTasksStringArray.length; i++) {
+            outTaskArray.push(new Task(null, checkedTasksStringArray[i], isTaskTypeAssigned(checkedTasksStringArray[i])));
         }
+
+        // API request params built differently (e.g. not as a MedicalService object)
+        // for compliance wrt other modules
+        var requestParams = {
+            id          : currentServiceInfo.id,
+            nome        : newMedicalServiceName.toUpperCase(),
+            mansioni    : outTaskArray
+        }
+        serviceAPI.updateMedicalService(requestParams);
+
+        // build service infos for view update
+        var viewUpdateServiceInfo = new MedicalService (
+            currentServiceInfo.id,
+            newMedicalServiceName.toUpperCase(),
+            outTaskArray
+            );
+        updateServicesList(viewUpdateServiceInfo);
+
+        // reset fields
+        setNewMedicalServiceName("");
+        setCheckedTasksStringArray([]);
+
+        toast.success("Servizio modificato con successo.");
     };
 
     return (
         <>
-        <Button
-            onClick = {handleOpen}
-            style   = {{
-                'display'       : 'block',
-                'margin-left'   : 'auto',
-                'margin-right'  : 'auto',
-                'margin-top'    : '1%',
-                'margin-bottom' : '1%'
-            }}
-            >
-            Crea nuovo servizio
-        </Button>
+        <Tooltip title="Modifica servizio">
+            <IconButton variant="outlined" aria-label="edit" color="primary" onClick={handleOpen}>
+                <EditIcon />
+            </IconButton>
+        </Tooltip>
         <Drawer anchor="bottom" open={open} onClose={handleClose}>
             <AppBar position="static" color="transparent">
                 <Toolbar>
                     <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'center' }}>
                         <Typography variant="h5" component="div" sx={{ marginLeft: '20px' }}>
-                            Crea nuovo servizio
+                            Modifica servizio
                         </Typography>
                     </Box>
                     <IconButton color="inherit" onClick={handleClose}>
@@ -117,12 +119,13 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                     alignItems      = "center"
                     >
                     <TextField
-                        id        = "outlined-basic"
-                        autoFocus = "true"
-                        label     = "Nome del servizio"
-                        required  = "true"
-                        variant   = "outlined"
-                        onChange  = {
+                        id            = "outlined-basic"
+                        autoFocus     = "true"
+                        label         = "Nome del servizio"
+                        required      = "true"
+                        defaultValue  = {currentServiceInfo.name.toUpperCase()}
+                        variant       = "outlined"
+                        onChange      = {
                             (event) => {
                                 setNewMedicalServiceName(event.target.value);
                                 event.target.value = (event.target.value).toUpperCase();
@@ -137,15 +140,24 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                     {
                     (names && names[0]) ?
                         Object.values(names[0]).map((item) => (
-                            <FormControlLabel
-                                key={item}
-                                control={
-                                    <Checkbox
-                                        onChange={() => handleCheckboxChange(item)}
-                                    />
-                                }
-                                label={`${item}`}
-                            />
+                            <Tooltip title = {
+                            isTaskTypeAssigned(item) ?
+                                "Impossibile rimuovere la mansione. Essa ha delle associazioni."
+                                :
+                                "Assegna/rimuovi mansione"}
+                                >
+                                <FormControlLabel
+                                    key={item}
+                                    control={
+                                        <Checkbox
+                                            defaultChecked  = {isTaskTypeSelected({item})}
+                                            onChange        = {() => handleCheckboxChange(item)}
+                                            disabled        = {isTaskTypeAssigned(item)}
+                                        />
+                                    }
+                                    label={`${item}`}
+                                />
+                            </Tooltip>
                             ))
                         :
                             (
@@ -170,7 +182,7 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                         disabled={newMedicalServiceName==="" || checkedTasksStringArray.length===0}
                         onClick={postNewRequest}
                         >
-                        Crea servizio
+                        Modifica servizio
                     </Button>
                 </Box>
             </div>
@@ -178,4 +190,4 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
         </>
     );
 };
-export default MedicalServiceCreationDrawer;
+export default MedicalServiceUpdateDrawer;
