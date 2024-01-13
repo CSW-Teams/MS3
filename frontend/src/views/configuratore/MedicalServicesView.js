@@ -81,7 +81,7 @@ export default class MedicalServicesView extends React.Component {
         var objIndex = newServiceList.findIndex((obj => obj.id == updatedList.id));
         console.log(objIndex);
         newServiceList[objIndex].name = updatedList.name.toUpperCase();;
-        newServiceList[objIndex].taskTypesList = updatedList.taskTypesList;
+        newServiceList[objIndex].taskTypesString = updatedList.taskTypesString;
         this.setState({services: newServiceList});
     };
 
@@ -139,11 +139,13 @@ export default class MedicalServicesView extends React.Component {
                                                 </Typography>
                                             </td>
                                             <td>
-                                                {data.taskTypesList}
+                                                {data.taskTypesString}
                                             </td>
                                             <td>
-                                                <MedicalServiceUpdateDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesListAfterUpdate} currentServiceInfo={data}/>
-                                                <DialogEliminaServizio updateServicesList={this.updateServicesListAfterRemoval} currentServiceInfo={data}/>
+                                                <div style={{ display: 'inline-flex', align: 'center', flexDirection: 'row'}}>
+                                                    <MedicalServiceUpdateDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesListAfterUpdate} currentServiceInfo={data}/>
+                                                    <DialogEliminaServizio updateServicesList={this.updateServicesListAfterRemoval} currentServiceInfo={data} disabled={data.assigned}/>
+                                                </div>
                                             </td>
                                         </tr>
                                         )

@@ -5,12 +5,15 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { ToastContainer, toast } from 'react-toastify';
 import {ServizioAPI} from "../../API/ServizioAPI";
 
 toast.configure();
 
-export default function DialogEliminaServizio({currentServiceInfo, updateServicesList}) {
+export default function DialogEliminaServizio({currentServiceInfo, updateServicesList, disabled}) {
   const [open, setOpen] = React.useState(false);
   const servizioAPI = new ServizioAPI();
 
@@ -31,9 +34,14 @@ export default function DialogEliminaServizio({currentServiceInfo, updateService
 
   return (
     <div>
-      <Button variant="outlined" color="error" onClick={handleClickOpen}>
-        Elimina
-      </Button>
+
+      <Tooltip title={(disabled)?"Impossibile eliminare il servizio. Esso ha delle assegnazioni.":"Elimina servizio"}>
+        <span>
+          <IconButton variant="outlined" aria-label="delete" disabled={disabled} color="error" onClick={handleClickOpen}>
+            <DeleteIcon />
+          </IconButton>
+        </span>
+      </Tooltip>
       <Dialog
         open={open}
         onClose={handleNotRemove}

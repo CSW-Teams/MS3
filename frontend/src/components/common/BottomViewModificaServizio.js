@@ -10,6 +10,8 @@ import {AppBar, Checkbox, Toolbar} from "@mui/material";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from "@mui/material/IconButton";
+import EditIcon from '@mui/icons-material/Edit';
+import Tooltip from '@mui/material/Tooltip';
 import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
 
@@ -19,11 +21,11 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
     const [open, setOpen] = useState(false);
     const handleOpen = () => {
         setNewMedicalServiceName(currentServiceInfo.name);
-        setSelectedTasks(currentServiceInfo.taskTypesList.split(", "));
+        setSelectedTasks(currentServiceInfo.taskTypesString.split(", "));
         setOpen(true);
     }
     const handleClose = () => setOpen(false);
-    const [selectedTasks, setSelectedTasks] = useState(currentServiceInfo.taskTypesList.split(", "));
+    const [selectedTasks, setSelectedTasks] = useState(currentServiceInfo.taskTypesString.split(", "));
     const [newMedicalServiceName, setNewMedicalServiceName] = useState(currentServiceInfo.name);
 
     const servizioAPI = new ServizioAPI();
@@ -37,8 +39,13 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
         }
     };
 
+    const isTaskTypeSelected = (item) => {
+        return currentServiceInfo.taskTypesString.includes(item["item"]);
+    }
+
     const isTaskTypeAssigned = (item) => {
-        return currentServiceInfo.taskTypesList.includes(item["item"]);
+        var taskBeingAnalyzed=currentServiceInfo.taskTypesList.filter(task => task.taskType===(item));
+        return taskBeingAnalyzed[0] && taskBeingAnalyzed[0].assigned;
     }
 
     function alphaSort(array) {
@@ -61,7 +68,7 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
         }
         var service = {
             name:           newMedicalServiceName,
-            taskTypesList:  selectedTasks
+            taskTypesString:  selectedTasks
         }
         const serviceNew = {}
         var str = "";
@@ -73,7 +80,7 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
         }
         serviceNew.id               = params.id
         serviceNew.name             = newMedicalServiceName.toUpperCase();
-        serviceNew.taskTypesList    = str;
+        serviceNew.taskTypesString  = str;
         setNewMedicalServiceName("");
         setSelectedTasks([]);
         servizioAPI.updateMedicalService(params);
@@ -84,19 +91,11 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
 
     return (
         <>
-        <Button
-            onClick = {handleOpen}
-            variant = "outlined"
-            style   = {{
-                'display'       : 'block',
-                'margin-left'   : 'auto',
-                'margin-right'  : 'auto',
-                'margin-top'    : '1%',
-                'margin-bottom' : '1%'
-            }}
-            >
-            Modifica
-        </Button>
+        <Tooltip title="Modifica servizio">
+            <IconButton variant="outlined" aria-label="edit" color="primary" onClick={handleOpen}>
+                <EditIcon />
+            </IconButton>
+        </Tooltip>
         <Drawer anchor="bottom" open={open} onClose={handleClose}>
             <AppBar position="static" color="transparent">
                 <Toolbar>
@@ -142,16 +141,24 @@ const MedicalServiceUpdateDrawer = ({tasks, services, updateServicesList, curren
                     {
                     (names && names[0]) ?
                         Object.values(names[0]).map((item) => (
-                            <FormControlLabel
-                                key={item}
-                                control={
-                                    <Checkbox
-                                        defaultChecked  = {isTaskTypeAssigned({item})}
-                                        onChange        = {() => handleCheckboxChange(item)}
-                                    />
-                                }
-                                label={`${item}`}
-                            />
+                            <Tooltip title = {
+                            isTaskTypeAssigned(item) ?
+                                "Impossibile rimuovere la mansione. Essa ha delle associazioni."
+                                :
+                                "Assegna/rimuovi mansione"}
+                                >
+                                <FormControlLabel
+                                    key={item}
+                                    control={
+                                        <Checkbox
+                                            defaultChecked  = {isTaskTypeSelected({item})}
+                                            onChange        = {() => handleCheckboxChange(item)}
+                                            disabled        = {isTaskTypeAssigned(item)}
+                                        />
+                                    }
+                                    label={`${item}`}
+                                />
+                            </Tooltip>
                             ))
                         :
                             (

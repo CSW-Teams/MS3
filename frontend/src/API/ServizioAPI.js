@@ -32,17 +32,24 @@ export class ServizioAPI {
 
         for (let i = 0; i < body.length; i++) {
             const service = {};
-            service.id    = body[i].id;
-            service.name  = body[i].nome;
-            var taskTypesList = body[i].mansioni;
-            this.alphaSort(taskTypesList);
-            service.taskTypesList = "";
-            for (let j = 0; j < taskTypesList.length; j++) {
-                service.taskTypesList = service.taskTypesList.concat(
-                    taskTypesList[j].taskType,
-                    (j!=taskTypesList.length-1) ? ", " : ""
+            service.id        = body[i].id;
+            service.name      = body[i].nome;
+            let assignedCheck = false;
+            var taskTypesString = body[i].mansioni;
+            this.alphaSort(taskTypesString);
+            service.taskTypesString = "";
+            service.taskTypesList = [];
+            for (let j = 0; j < taskTypesString.length; j++) {
+                if(taskTypesString[j].assigned == true){
+                    assignedCheck = true;
+                }
+                service.taskTypesString = service.taskTypesString.concat(
+                    taskTypesString[j].taskType,
+                    (j!=taskTypesString.length-1) ? ", " : ""
                 );
+                service.taskTypesList.push(taskTypesString[j]);
             }
+            service.assigned = assignedCheck;
             services[i] = service;
         }
         return services;
