@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
+@Table(name="doctor_assignment") //see issue #413
 public class DoctorAssignment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

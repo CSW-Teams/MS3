@@ -4,6 +4,7 @@ import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
 import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceWithTaskAssignmentsDTO;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ public class MedicalServicesRestEndpoint {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllMedicalServices() {
-        Set<MedicalServiceDTO> medicalServices = medicalServiceController.getAllMedicalServices();
+        Set<MedicalServiceWithTaskAssignmentsDTO> medicalServices = medicalServiceController.getAllMedicalServices();
         if (medicalServices == null || medicalServices.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

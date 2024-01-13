@@ -3,6 +3,7 @@ package org.cswteams.ms3.control.medicalService;
 import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceWithTaskAssignmentsDTO;
 import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.exception.DatabaseException;
@@ -19,7 +20,7 @@ public interface IMedicalServiceController {
 
     MedicalService createService(List<Task> taskList, String label);
 
-    Set<MedicalServiceDTO> getAllMedicalServices();
+    Set<MedicalServiceWithTaskAssignmentsDTO> getAllMedicalServices();
 
     MedicalServiceDTO getServiceByName(@NotNull String serviceName);
 
