@@ -108,7 +108,8 @@ class ScheduleView extends React.Component{
              */
             shiftQueriedResponse: "ABOUT_TO_ASK",
             idUser: localStorage.getItem("id"),
-            requests: []
+            requests: [],
+            lastYear : new Date().getFullYear()
           };
           /**
            * All filtering functions.
@@ -349,7 +350,7 @@ class ScheduleView extends React.Component{
 
       let allServices = await new ServizioAPI().getService();
       let allDoctors = await new UserAPI().getAllDoctorsInfo();
-      let allHolidays = await new HolidaysAPI().getHolidays();
+      let allHolidays = await new HolidaysAPI().getHolidays(new Date().getFullYear());
 
 
       this.setState(
@@ -490,7 +491,16 @@ class ScheduleView extends React.Component{
                 firstDayOfWeek={1}
                 data={data}
               >
-                <ViewState/>
+                <ViewState
+                  onCurrentDateChange={async (currentDate) => {
+                    if(this.state.lastYear !== currentDate.getFullYear()) {
+                      this.setState({
+                        holidays : await new HolidaysAPI().getHolidays(currentDate.getFullYear()),
+                        lastYear : currentDate.getFullYear()
+                      }) ;
+                    }
+                  }}
+                />
                 <WeekView
                   displayName="Settimanale"
                   startDayHour={0}

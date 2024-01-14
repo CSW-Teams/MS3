@@ -7,6 +7,7 @@ import java.util.List;
 import org.cswteams.ms3.control.preferenze.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
+import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.enums.ServiceDataENUM;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.jboss.logging.Logger;
@@ -25,9 +26,6 @@ public class HolidayRestEndpoint {
     @Autowired
     private IHolidayController holidayController;
 
-    @Autowired
-    private ICalendarServiceManager calendarServiceManager;
-
     public HolidayRestEndpoint() {
 
      }
@@ -36,26 +34,17 @@ public class HolidayRestEndpoint {
      * @return all registered holidays
      */
     @RequestMapping(method = RequestMethod.GET, path = "/year={currentYear}/country={currentCountry}")
-    public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable String currentYear, @PathVariable String currentCountry){
-        List<HolidayDTO> holidays = holidayController.readHolidays();
+    public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable Integer currentYear, @PathVariable String currentCountry){
 
-        // Se il database non contiene nessuna festività e nessuna domenica, questa informazioni vengono pescate dall'api esterna
-        if(holidays.size() == 0) {
-            CalendarSettingBuilder calendarSettingBuilder = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
-            calendarServiceManager.init(calendarSettingBuilder.create(currentYear, currentCountry));
-            try {
-                holidays = calendarServiceManager.getHolidays();
-            } catch (CalendarServiceException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(holidays);
-            }
-
-            holidayController.registerSundays(LocalDate.of(Integer.parseInt(currentYear)-1, 1, 1), 3);
-            holidays = holidayController.readHolidays();
+        try {
+            List<HolidayDTO> holidays = holidayController.readHolidays(new RetrieveHolidaysDTOIn(currentYear, currentCountry));
+            return ResponseEntity.status(HttpStatus.FOUND).body(holidays);
+        } catch (ValidationException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE) ;
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST) ;
         }
 
-        ArrayList<HolidayDTO> recurrentIntegration = new ArrayList<>(holidays) ;
-        recurrentIntegration.addAll(holidayController.retrieveRecurrentHolidays(Integer.parseInt(currentYear))) ;
-        return ResponseEntity.status(HttpStatus.FOUND).body(recurrentIntegration);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/new-holiday")
