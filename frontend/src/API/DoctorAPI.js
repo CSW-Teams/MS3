@@ -1,3 +1,4 @@
+import {Doctor} from "../entity/Doctor";
 
 
 export class DoctorAPI {
@@ -19,6 +20,11 @@ export class DoctorAPI {
     }
 
     return doctors;
+  }
 
+  async getDoctorById(id) {
+    const response = await fetch('/api/doctors/' + id);
+    const body = await response.json();
+    return new Doctor(body.id, body.name, body.lastname, body.seniority);
   }
 }
