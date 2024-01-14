@@ -93,33 +93,49 @@ function DateSelectSlots({props}) {
             setPreferences(preferences, toDelPreferences) ;
           }}>Elimina</Button>
         </div>
-        <div style={{paddingRight : 40, paddingLeft : 40}}>
-          Turno mattutino
-          <input type={"checkbox"} name={"morning"} checked={checkBoxValue(singlePref, "MORNING")} onChange={e => {
-            checkBoxChange(singlePref, "MORNING")
-            return !(e.target.checked)
-          }}/>
+        <div style={{paddingRight : 40, paddingLeft : 40, display : "flex", alignItems : "center"}}>
+          <div style={{paddingLeft: 30, paddingRight: 10, paddingTop: 5}}>
+            <input type={"checkbox"} name={"morning"} checked={checkBoxValue(singlePref, "MORNING")} onChange={e => {
+                     checkBoxChange(singlePref, "MORNING")
+                     return !(e.target.checked)
+                   }}/>
+          </div>
+          <div style={{paddingTop: 5}}>
+            Turno mattutino
+          </div>
         </div>
-        <div style={{paddingRight : 40, paddingLeft : 40}}>
-          Turno pomeridiano
-          <input type={"checkbox"} name={"afternoon"} checked={checkBoxValue(singlePref, "AFTERNOON")} onChange={e => {
-            checkBoxChange(singlePref, "AFTERNOON")
-            return !(e.target.checked)
-          }}/>
+        <div style={{paddingRight: 40, paddingLeft: 40,  display : "flex", alignItems : "center"}}>
+          <div style={{paddingLeft: 30, paddingRight: 10, paddingTop: 5}}>
+            <input type={"checkbox"} name={"afternoon"}
+                   checked={checkBoxValue(singlePref, "AFTERNOON")}
+                   onChange={e => {
+                     checkBoxChange(singlePref, "AFTERNOON")
+                     return !(e.target.checked)
+                   }}/>
+          </div>
+          <div style={{paddingTop: 5}}>
+            Turno pomeridiano
+          </div>
         </div>
-        <div style={{paddingRight : 40, paddingLeft : 40}}>
-          Turno notturno
-          <input type={"checkbox"} name={"night"} checked={checkBoxValue(singlePref, "NIGHT")} onChange={e => {
-            checkBoxChange(singlePref, "NIGHT")
-            return !(e.target.checked)
-          }}/>
+        <div style={{paddingRight: 40, paddingLeft: 40, display : "flex", alignItems : "center"}}>
+          <div style={{paddingLeft: 30, paddingRight: 10, paddingTop: 5}}>
+            <input type={"checkbox"} name={"night"}
+                   checked={checkBoxValue(singlePref, "NIGHT")} onChange={e => {
+              checkBoxChange(singlePref, "NIGHT")
+              return !(e.target.checked)
+            }}/>
+          </div>
+          <div style={{paddingTop : 5}}>
+            Turno notturno
+          </div>
         </div>
       </div>
-    )}) ;
+    )
+  });
 
   return (
-    <div style={{float : "none"}}>
-      <div style={{minWidth : 300, height : 500, overflowY : "scroll"}}>
+    <div style={{float: "none"}}>
+      <div style={{minWidth: 300, height: 500, overflowY: "scroll"}}>
         {processedPrefs}
       </div>
       <div>
