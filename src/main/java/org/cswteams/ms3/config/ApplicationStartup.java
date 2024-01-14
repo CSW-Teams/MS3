@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 
+import javax.print.Doc;
 import java.io.*;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -321,7 +322,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u9 = new Doctor("Giulia", "Cantone", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, List.of(SystemActor.DOCTOR));
+        Doctor u9 = new Doctor("Giulia", "Cantone", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, List.of(SystemActor.DOCTOR));
         Doctor u10 = new Doctor("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, List.of(SystemActor.DOCTOR));
         Doctor u11 = new Doctor("Giada", "Rossi", "RSSGDI92H68H501O", LocalDate.of(1997, 3, 14), "giada.rossi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, List.of(SystemActor.DOCTOR));
         Doctor u12 = new Doctor("Camilla", "Verdi", "VRDCML95B41H501L", LocalDate.of(1997, 5, 23), "camilla.verdi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, List.of(SystemActor.DOCTOR));
@@ -476,6 +477,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         ConcreteShift concreteShift3 = new ConcreteShift(LocalDate.now().plusDays(2).toEpochDay(),shift1);
         concreteShift3=concreteShiftDAO.saveAndFlush(concreteShift3);
         lc.add(concreteShift3);
+        ConcreteShift concreteShift4 = new ConcreteShift(LocalDate.now().toEpochDay(), shift1);
+        concreteShift4 = concreteShiftDAO.saveAndFlush(concreteShift4);
+        lc.add(concreteShift4);
+
 
         DoctorAssignment da1 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_CALL,concreteShift1,ward);
         DoctorAssignment da7 = new DoctorAssignment(u13, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift1, ward);
@@ -519,6 +524,20 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         concreteShift3.getDoctorAssignmentList().add(da11);
         concreteShift3.getDoctorAssignmentList().add(da12);
         concreteShiftDAO.saveAndFlush(concreteShift3);
+
+        DoctorAssignment da13 = new DoctorAssignment(u8, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift4, ward);
+        DoctorAssignment da14 = new DoctorAssignment(u9, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift4, ward);
+        DoctorAssignment da15 = new DoctorAssignment(u7, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift4, ward);
+        DoctorAssignment da16 = new DoctorAssignment(u10, ConcreteShiftDoctorStatus.ON_CALL, concreteShift4, ward);
+        doctorAssignmentDAO.saveAndFlush(da13);
+        doctorAssignmentDAO.saveAndFlush(da14);
+        doctorAssignmentDAO.saveAndFlush(da15);
+        doctorAssignmentDAO.saveAndFlush(da16);
+        concreteShift4.getDoctorAssignmentList().add(da13);
+        concreteShift4.getDoctorAssignmentList().add(da14);
+        concreteShift4.getDoctorAssignmentList().add(da15);
+        concreteShift4.getDoctorAssignmentList().add(da16);
+        concreteShiftDAO.saveAndFlush(concreteShift4);
 
 
 

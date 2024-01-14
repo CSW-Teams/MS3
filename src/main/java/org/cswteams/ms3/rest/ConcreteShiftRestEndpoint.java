@@ -1,11 +1,14 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
+import org.cswteams.ms3.control.scambioTurno.ControllerScambioTurno;
+import org.cswteams.ms3.control.scambioTurno.IControllerScambioTurno;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
+import org.cswteams.ms3.dto.concreteshift.GetAvailableUsersForReplacementDTO;
 import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.entity.Doctor;
@@ -33,6 +36,9 @@ public class ConcreteShiftRestEndpoint {
 
     @Autowired
     private ISchedulerController controllerScheduler;
+
+    @Autowired
+    private IControllerScambioTurno controllerScambioTurno;
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> createNewConcreteShift(@RequestBody RegisterConcreteShiftDTO assegnazione) {
@@ -136,6 +142,12 @@ public class ConcreteShiftRestEndpoint {
             }
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/available-users-for-replacement/")
+    public ResponseEntity<?> getAvailableUsersForReplacement(@RequestBody GetAvailableUsersForReplacementDTO dto) {
+        List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUserForReplacement(dto);
+        return new ResponseEntity<>(returnList, HttpStatus.FOUND);
     }
 
 

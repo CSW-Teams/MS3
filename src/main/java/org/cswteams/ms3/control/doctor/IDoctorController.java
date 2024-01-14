@@ -7,5 +7,6 @@ import java.util.Set;
 public interface IDoctorController {
 
     Set<MedicalDoctorInfoDTO> getAllDoctors();
+    MedicalDoctorInfoDTO getDoctorById(Long id);
 
 }
