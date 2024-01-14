@@ -96,31 +96,10 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
    * @returns
    */
   export function SingleLayout ({ onFieldChange, appointmentData, ...restProps }) {
-    const [user,setUser] = React.useState([{}])
     const [open, setOpen] = React.useState(false);
     const [utentiSelezionati,setUtentiSelezionati] = React.useState([])
     const [availableUsers, setAvailableUsers] = React.useState([]);
     let assegnazioneTurnoApi = new AssegnazioneTurnoAPI();
-
-    async function getUser() {
-      let doctorAPI = new DoctorAPI();
-      let doctors = await doctorAPI.getAllDoctorsInfo();
-
-      const autocompleteList = [];
-      for (let i = 0; i < doctors.length; i++) {
-        let seniority = doctors[i].seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
-        const label = doctors[i].name + " " + doctors[i].lastname + " - " + seniority;
-        const value = doctors[i].id;
-        autocompleteList.push({ label: label, value: value })
-      }
-
-      setUser(autocompleteList);
-    }
-
-    React.useEffect(() => {
-      getUser();
-      }, []);
-
 
     /* we need the following code to show a loading message in case data has not been retrieved yet */
     const loading = open && availableUsers.length === 0;
@@ -140,8 +119,16 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
         await sleep(1000);
 
         if (active) {
-          let avUsers = await getAvailableUsersForShiftExchange();
-          setAvailableUsers([...avUsers]);
+          let avDoctors = await getAvailableUsersForShiftExchange();
+
+          const autocompleteList = [];
+          for (let i = 0; i < avDoctors.length; i++) {
+            const label = avDoctors[i].label;
+            const value = avDoctors[i].id;
+            autocompleteList.push({ label: label, value: value })
+          }
+
+          setAvailableUsers([...autocompleteList]);
         }
       })();
 
@@ -182,7 +169,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      */
     async function buildAssegnazioneModificata(contesto){
 
-      let response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati,appointmentData,localStorage.getItem("id"))
+      let response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati, appointmentData, parseInt(localStorage.getItem("id")))
       let responseStatusClass = Math.floor(response.status / 100)
 
         if(responseStatusClass===5){
