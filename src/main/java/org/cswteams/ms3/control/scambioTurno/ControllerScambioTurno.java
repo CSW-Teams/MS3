@@ -1,6 +1,7 @@
 package org.cswteams.ms3.control.scambioTurno;
 
 import lombok.SneakyThrows;
+import org.cswteams.ms3.control.notification.INotificationSystemController;
 import org.cswteams.ms3.dao.ConcreteShiftDAO;
 import org.cswteams.ms3.dao.DoctorAssignmentDAO;
 import org.cswteams.ms3.dao.DoctorDAO;
@@ -39,6 +40,8 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
 
     @Autowired
     private DoctorAssignmentDAO doctorAssignmentDAO;
+    @Autowired
+    private INotificationSystemController notificationSystemController;
 
     /**
      * Questo metodo crea una richiesta di modifica turno.
@@ -85,9 +88,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             throw new AssegnazioneTurnoException("Utente richiesto già assegnato al turno");
         }
 
-
-
-        Request request = new Request(senderOptional.get(), receiverOptional.get(), concreteShift);
+        Request request = new Request(senderOptional.get(), receiverOptional.get(), concreteShift,this.notificationSystemController);
 
         List<Request> requests = shiftChangeRequestDAO.findBySenderIdAndTurnIdAndStatus(requestTurnChangeDto.getSenderId(), requestTurnChangeDto.getConcreteShiftId(), RequestStatus.PENDING);
 
@@ -197,7 +198,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                 throw new ShiftException("Utente Richiesto non trovato");
         }
         Request request=optionalRequest.get();
-
+        request.attach(notificationSystemController);
         if(answerTurnChangeRequestDTO.isHasAccepted()){
             request.setStatus(RequestStatus.ACCEPTED);
             ConcreteShift shift = request.getTurn();
@@ -219,10 +220,13 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                     break;
                 }
             }
+
         }else{
+
                 request.setStatus(RequestStatus.REFUSED);
                 //TODO: sarebbe da notificare l'altro utente del rifiuto
                 shiftChangeRequestDAO.saveAndFlush(request);
+
         }
     }
 }
