@@ -1,9 +1,7 @@
 package org.cswteams.ms3.exception;
 
-import org.cswteams.ms3.control.utils.ConvertitoreData;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
-import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.enums.Seniority;
 
 import java.util.Map;

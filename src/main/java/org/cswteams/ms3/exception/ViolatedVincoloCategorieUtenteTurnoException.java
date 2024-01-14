@@ -1,9 +1,5 @@
 package org.cswteams.ms3.exception;
 
-import java.util.List;
-
-import org.cswteams.ms3.control.utils.ConvertitoreData;
-
 public class ViolatedVincoloCategorieUtenteTurnoException extends ViolatedConstraintException{
 
 

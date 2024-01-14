@@ -20,6 +20,7 @@ import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import javax.print.Doc;
@@ -43,6 +44,9 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     @Autowired
     private DoctorAssignmentDAO doctorAssignmentDAO;
 
+    @Autowired
+    private MessageSource messageSource;
+  
     @Autowired
     private DoctorDAO doctorDAO;
 
@@ -147,15 +151,34 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                 return new ArrayList<>();
             }
 
-            String turnDescription = doctorAssignment.getTask().getTaskType() +" come "+doctorAssignment.getConcreteShiftDoctorStatus();
-            String userDetails = r.getReceiver().getName() + " " + r.getReceiver().getLastname();
-            String status = r.getStatus().toString();
-
+            Map<Locale, String> turnDescription = createTurnDescriptionMap(doctorAssignment);
+            String  userDetails = r.getReceiver().getName() + " " + r.getReceiver().getLastname();
+            Map<Locale, String>  status = createStatusMap(r);
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
             dtos.add(dto);
         }
 
         return dtos;
+    }
+
+    private Map<Locale, String> createTurnDescriptionMap(DoctorAssignment doctorAssignment){
+        Map<Locale, String> turnDescription = new HashMap<>();
+        String taskEnum= doctorAssignment.getTask().getTaskType().getClass().getSimpleName()+".";
+        String concreteShiftDoctorStatus= doctorAssignment.getConcreteShiftDoctorStatus().getClass().getSimpleName()+".";
+        String turnDescriptionENG = messageSource.getMessage(taskEnum+doctorAssignment.getTask().getTaskType(), null, Locale.ENGLISH)+" ("+messageSource.getMessage(concreteShiftDoctorStatus+doctorAssignment.getConcreteShiftDoctorStatus(), null, Locale.ENGLISH)+")";
+        String turnDescriptionITA = messageSource.getMessage(taskEnum+doctorAssignment.getTask().getTaskType(), null, Locale.ITALIAN)+" ("+messageSource.getMessage(concreteShiftDoctorStatus+doctorAssignment.getConcreteShiftDoctorStatus(), null, Locale.ITALIAN)+")";
+        turnDescription.put(Locale.ENGLISH, turnDescriptionENG);
+        turnDescription.put(Locale.ITALIAN, turnDescriptionITA);
+
+        return turnDescription;
+    }
+
+    private Map<Locale, String> createStatusMap(Request r){
+        Map<Locale, String>  status = new HashMap<>();
+        String requestStatus=r.getStatus().getClass().getSimpleName()+".";
+        status.put(Locale.ENGLISH, messageSource.getMessage(requestStatus+r.getStatus().toString(), null, Locale.ENGLISH));
+        status.put(Locale.ITALIAN, messageSource.getMessage(requestStatus+r.getStatus().toString(), null, Locale.ITALIAN));
+        return status;
     }
 
     @Override
@@ -183,11 +206,9 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                 return new ArrayList<>();
             }
 
-            String turnDescription = doctorAssignment.getTask().getTaskType() +" come "+doctorAssignment.getConcreteShiftDoctorStatus();
-
+            Map<Locale, String> turnDescription = createTurnDescriptionMap(doctorAssignment);
             String userDetails = r.getSender().getName() + " " + r.getSender().getLastname();
-            String status = r.getStatus().toString();
-
+            Map<Locale, String>  status = createStatusMap(r);
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
             dtos.add(dto);
         }
