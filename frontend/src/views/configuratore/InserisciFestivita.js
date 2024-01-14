@@ -15,11 +15,26 @@ import {Button} from "@mui/material";
 import {toast, ToastContainer} from "react-toastify";
 import {HolidaysAPI} from "../../API/HolidaysAPI";
 
+const monthNum = {
+  1 : "Gennaio",
+  2 : "Febbraio",
+  3 : "Marzo",
+  4 : "Aprile",
+  5 : "Maggio",
+  6 : "Giugno",
+  7 : "Luglio",
+  8 : "Agosto",
+  9 : "Settembre",
+  10 : "Ottobre",
+  11 : "Novembre",
+  12 : "Dicembre"
+}
+
 function checkDataIsCorrect(holiday) {
 
   if(holiday.recurrent) {
     if(holiday.endMonth < holiday.startMonth) {
-      toast("La festività deve cominciare prim della sua fine!", {
+      toast("La festività deve cominciare prima della sua fine!", {
         position : "top-center",
         autoClose: 1500,
         style : {background : "red", color : "white"}
@@ -59,14 +74,10 @@ function checkDataIsCorrect(holiday) {
   return true ;
 }
 
-function DayMonthPicker({labelText, pickerState}) {
+function DayMonthPicker({labelText, pickerState, childrenState, parentState}) {
 
-  const janDays = [] ;
-  for (let i = 1; i <= 31 ; i++) {
-    janDays.push(i) ;
-  }
   const [day, setDay] = [pickerState.day, pickerState.setDay] ;
-  let [days, setDays] = useState(janDays) ;
+  let days = prepareDaysArray(pickerState.month) ;
   const [month, setMonth] = [pickerState.month, pickerState.setMonth] ;
 
   function extractDaysFrom(days) {
@@ -77,11 +88,37 @@ function DayMonthPicker({labelText, pickerState}) {
     )
   }
 
+  function extractMonths() {
+    let i = 1 ;
+    if(parentState !== undefined) {
+      i = parentState.month ;
+    }
+    let retVal = []
+    for (i ; i <= 12 ; i++) {
+      retVal.push(<MenuItem value={i}>{monthNum[i]}</MenuItem>) ;
+    }
+    return retVal ;
+  }
+
+  function changeChildren(newMonth, newDay) {
+    if(childrenState !== undefined) {
+      if(childrenState.month < newMonth || (childrenState.month === newMonth && childrenState.day < newDay)) {
+        childrenState.setDay(newDay) ;
+        childrenState.setMonth(newMonth) ;
+      }
+    }
+  }
+
   function changeDay(event) {
     setDay(event.target.value) ;
+    changeChildren(month, event.target.value) ;
   }
 
   function prepareDaysArray(monthName) {
+    let i = 1 ;
+    if(parentState !== undefined && parentState.month === monthName) {
+      i = parentState.day ;
+    }
     let newDays = [] ;
     switch (monthName) {
       case 1 :
@@ -92,40 +129,72 @@ function DayMonthPicker({labelText, pickerState}) {
       case 10 :
       case 12 :
         newDays = [] ;
-        for (let i = 1; i <= 31 ; i++) {
+        for (i; i <= 31 ; i++) {
           newDays.push(i) ;
         }
-        setDays(newDays) ;
-        break ;
+        return newDays ;
       case 4 :
       case 6 :
       case 9 :
       case 11 :
         newDays = [] ;
-        for (let i = 1; i <= 30 ; i++) {
+        for (i; i <= 30 ; i++) {
           newDays.push(i) ;
         }
-        setDays(newDays) ;
-        break ;
+        return newDays ;
       case 2 :
         newDays = [] ;
-        for (let i = 1; i <= 29 ; i++) {
+        for (i; i <= 29 ; i++) {
           newDays.push(i) ;
         }
-        setDays(newDays) ;
-        break ;
+        return newDays ;
     }
   }
 
   function changeMonth(event) {
-    prepareDaysArray(event.target.value) ;
     setMonth(event.target.value);
-    setDay(1) ;
+
+    if(parentState !== undefined) {
+      if(day < parentState.day && event.target.value === parentState.month) {
+        setDay(parentState.day) ;
+        return;
+      }
+    }
+
+    switch (event.target.value) {
+      case 1 :
+      case 3 :
+      case 5 :
+      case 7 :
+      case 8 :
+      case 10 :
+      case 12 :
+        break ;
+      case 4 :
+      case 6 :
+      case 9 :
+      case 11 :
+        if(day > 30) {
+          setDay(30) ;
+          changeChildren(event.target.value, 30) ;
+          return ;
+        }
+        break ;
+      case 2 :
+        if(day > 29) {
+          setDay(29) ;
+          changeChildren(event.target.value, 29) ;
+          return ;
+        }
+        break ;
+    }
+
+    changeChildren(event.target.value, day) ;
   }
 
   return (
     <div style={{display : "flex", width : 250, paddingBottom : 5, paddingTop : 5, flexDirection : "column"}}>
-      <div>{labelText}</div>
+      <div style={{fontSize : 12, color : "gray"}}>{labelText}</div>
       <div style={{display : "flex", flexDirection : "row"}}>
         <Select
           value={day}
@@ -139,18 +208,7 @@ function DayMonthPicker({labelText, pickerState}) {
           onChange={changeMonth}
           fullWidth
         >
-          <MenuItem value={1}>Gennaio</MenuItem>
-          <MenuItem value={2}>Febbraio</MenuItem>
-          <MenuItem value={3}>Marzo</MenuItem>
-          <MenuItem value={4}>Aprile</MenuItem>
-          <MenuItem value={5}>Maggio</MenuItem>
-          <MenuItem value={6}>Giugno</MenuItem>
-          <MenuItem value={7}>Luglio</MenuItem>
-          <MenuItem value={8}>Agosto</MenuItem>
-          <MenuItem value={9}>Settembre</MenuItem>
-          <MenuItem value={10}>Ottobre</MenuItem>
-          <MenuItem value={11}>Novembre</MenuItem>
-          <MenuItem value={12}>Dicembre</MenuItem>
+          {extractMonths()}
         </Select>
       </div>
     </div>
@@ -181,9 +239,9 @@ function RecurrentResult({recurrent, pickerState, datesState}) {
 
   if(recurrent) {
     return (
-      <div style={{paddingTop : 20}}>
-        <DayMonthPicker labelText={"Inizio festività"} pickerState={startPickerState}/>
-        <DayMonthPicker labelText={"Fine festività"} pickerState={endPickerState}/>
+      <div style={{paddingTop : 42}}>
+        <DayMonthPicker labelText={"Inizio festività"} pickerState={startPickerState} childrenState={endPickerState}/>
+        <DayMonthPicker labelText={"Fine festività"} pickerState={endPickerState} parentState={startPickerState}/>
       </div>
     )
   } else {
