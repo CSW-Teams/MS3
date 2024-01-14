@@ -9,10 +9,7 @@ import org.cswteams.ms3.enums.SystemActor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class DoctorController implements IDoctorController {
@@ -38,5 +35,11 @@ public class DoctorController implements IDoctorController {
         }
 
         return doctorsSet;
+    }
+
+    @Override
+    public MedicalDoctorInfoDTO getDoctorById(Long id) {
+        Optional<Doctor> doctor = doctorDAO.findById(id);
+        return doctor.map(value -> new MedicalDoctorInfoDTO(value.getId(), value.getName(), value.getLastname(), value.getSeniority())).orElse(null);
     }
 }

@@ -24,6 +24,13 @@ import { Button, Stack } from '@mui/material';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { ToastContainer, toast } from 'react-toastify';
   import {DoctorAPI} from "../../API/DoctorAPI";
+  import {Doctor} from "../../entity/Doctor";
+
+
+const prova = [
+  "Simone Bauco - Strutturato",
+  "Simone Bauco - Specializzando"
+]
 
 
 /**
@@ -83,15 +90,16 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
 
   /**
    * Questo componente è invece utilizzato da SingleScheduleView. Quando si vorrà modificare un turno da SingleScheduleView
-   * è perchè si vuole richiedere di scambiare un turno con un altro utente. Questo componente contiene
+   * è perché si vuole richiedere di scambiare un turno con un altro utente. Questo componente contiene
    * la logica per chiedere al backend di modificare un assegnazione turno.
    * @param {*} param0
    * @returns
    */
   export function SingleLayout ({ onFieldChange, appointmentData, ...restProps }) {
     const [user,setUser] = React.useState([{}])
-
+    const [open, setOpen] = React.useState(false);
     const [utentiSelezionati,setUtentiSelezionati] = React.useState([])
+    const [availableUsers, setAvailableUsers] = React.useState([]);
     let assegnazioneTurnoApi = new AssegnazioneTurnoAPI();
 
     async function getUser() {
@@ -112,6 +120,60 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
     React.useEffect(() => {
       getUser();
       }, []);
+
+
+    /* we need the following code to show a loading message in case data has not been retrieved yet */
+    const loading = open && availableUsers.length === 0;
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    React.useEffect(() => {
+      let active = true;
+
+      if (!loading) {
+        return undefined;
+      }
+
+      (async () => {
+        await sleep(1000);
+
+        if (active) {
+          let avUsers = await getAvailableUsersForShiftExchange();
+          setAvailableUsers([...avUsers]);
+        }
+      })();
+
+      return () => {
+        active = false;
+      };
+    }, [loading]);
+
+    React.useEffect(() => {
+      if (!open) {
+        setAvailableUsers([]);
+      }
+    }, [open]);
+
+
+
+    /**
+     * This function retrieves, given a concrete shift, the users who can replace the requesting user in that concrete shift, based on the requesting user's seniority
+     * @returns list of users who can replace the requesting user, in this concrete shift
+     */
+    async function getAvailableUsersForShiftExchange() {
+      let doctorAPI = new DoctorAPI();
+      const currentDoctor = await doctorAPI.getDoctorById(parseInt(localStorage.getItem("id")));
+
+      const params = {
+        seniority: currentDoctor.seniority,
+        shiftId: appointmentData.id
+      }
+
+      return await assegnazioneTurnoApi.getAvailableUsersForShiftExchange(params);
+    }
+
 
     /**
      * Riceve in ingresso il "contesto" dello schedule view. In questo modo può invocare la funzione che
@@ -168,9 +230,6 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
           //Aggiorno i turni sull'interfaccia
           let turni = await assegnazioneTurnoApi.getShiftByIdUser(localStorage.getItem("id"));
           contesto.setState({data:turni});
-
-
-
         }
 
     }
@@ -191,9 +250,17 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
         }}>
 
       <Autocomplete
-        options={user}
+        options={availableUsers}
+        open={open}
+        onOpen={() => {
+          setOpen(true);
+        }}
+        onClose={() => {
+          setOpen(false);
+        }}
         onChange={(event, value) =>  setUtentiSelezionati(value)}
         renderInput={(params) => <TextField {...params} label="Seleziona sostituto"/>}
+        loading={loading}
       />
 
       <Button onClick={()=>{buildAssegnazioneModificata(this)}}>Salva</Button>
