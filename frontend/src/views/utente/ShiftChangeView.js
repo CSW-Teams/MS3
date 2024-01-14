@@ -16,6 +16,7 @@ export default class ShiftChangeView extends React.Component {
 
     let requestAPI = new ShiftChangeRequestAPI();
     let turnChangeRequestsBySender = requestAPI.getTurnChangeRequestsByIdUser(localStorage.getItem("id"));
+    console.log(turnChangeRequestsBySender);
     let turnChangeRequestsToSender = requestAPI.getTurnChangeRequestsToIdUser(localStorage.getItem("id"));
 
     turnChangeRequestsBySender.then(data => {
@@ -43,6 +44,9 @@ export default class ShiftChangeView extends React.Component {
 
   render() {
     const { turnChangeRequestsBySender } = this.state;
+
+    const currentLocale = navigator.language;
+    console.log(currentLocale)
 
     const sortedRequestsBySender = turnChangeRequestsBySender.sort((a, b) => {
       return new Date(a.inizioDate) - new Date(b.inizioDate);
@@ -92,9 +96,9 @@ export default class ShiftChangeView extends React.Component {
             const endDate = new Date(request.fineDate);
             return (
             <tr key={request.requestId}>
-              <td>{request.turnDescription}</td>
-              <td>{startDate.toLocaleString('it-IT', options)}</td>
-              <td>{endDate.toLocaleString('it-IT', options)}</td>
+              <td>{request.turnDescription[currentLocale] || request.turnDescription["en"]}</td>
+              <td>{startDate.toLocaleString(navigator.language, options)}</td>
+              <td>{endDate.toLocaleString(navigator.language, options)}</td>
               <td>{request.userDetails}</td>
               <td>
                 <button className="btn btn-primary"
@@ -128,11 +132,11 @@ export default class ShiftChangeView extends React.Component {
             const endDate = new Date(request.fineDate);
             return (
               <tr key={request.requestId}>
-                <td>{request.turnDescription}</td>
-                <td>{startDate.toLocaleString('it-IT', options)}</td>
-                <td>{endDate.toLocaleString('it-IT', options)}</td>
+                <td>{request.turnDescription[currentLocale] || request.turnDescription["en"]}</td>
+                <td>{startDate.toLocaleString(navigator.language, options)}</td>
+                <td>{endDate.toLocaleString(navigator.language, options)}</td>
                 <td>{request.userDetails}</td>
-                <td>{request.status}</td>
+                <td>{request.status[currentLocale] || request.status["en"]}</td>
               </tr>
             );
           })}

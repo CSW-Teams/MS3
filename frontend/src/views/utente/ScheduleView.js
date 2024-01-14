@@ -486,7 +486,7 @@ class ScheduleView extends React.Component{
               <ButtonLegalSchedulation ></ButtonLegalSchedulation>
 
               <Scheduler
-                locale={"it-IT"}
+                locale={navigator.language}
                 firstDayOfWeek={1}
                 data={data}
               >
