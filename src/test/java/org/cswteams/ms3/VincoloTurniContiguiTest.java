@@ -92,6 +92,6 @@ public class VincoloTurniContiguiTest {
             ChronoUnit.HOURS,
             TipologiaTurno.NOTTURNO,
             new HashSet<>(Arrays.asList(TipologiaTurno.values()))); // nessun turno può essere allocato a questa persona durante il suo smonto notte
-        vincoloTurniContigui.verificaVincolo(new ContestoVincolo(usstate,turnoMattina));
+        vincoloTurniContigui.verificaVincolo(new ContextConstraint(usstate,turnoMattina));
     }*/
 }

@@ -8,7 +8,7 @@ import javax.persistence.Entity;
 @Entity
 public class AdditionalConstraint extends Constraint {
     @Override
-    public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraint contesto) throws ViolatedConstraintException {
 
     }
 }

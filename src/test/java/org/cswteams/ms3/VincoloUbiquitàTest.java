@@ -36,7 +36,7 @@ public class VincoloUbiquitàTest {
 
         Vincolo vincoloUbiquità = new VincoloUbiquità();
 
-        vincoloUbiquità.verificaVincolo(new ContestoVincolo(pregUserState,turnoDaAssegnare));
+        vincoloUbiquità.verificaVincolo(new ContextConstraint(pregUserState,turnoDaAssegnare));
     }
 
     @Test(expected= ViolatedConstraintException.class)*/
@@ -61,6 +61,6 @@ public class VincoloUbiquitàTest {
 
         Vincolo vincoloUbiquità = new VincoloUbiquità();
 
-        vincoloUbiquità.verificaVincolo(new ContestoVincolo(pregUserState,turnoDaAssegnare));
+        vincoloUbiquità.verificaVincolo(new ContextConstraint(pregUserState,turnoDaAssegnare));
     }*/
 }

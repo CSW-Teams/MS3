@@ -50,7 +50,7 @@ private void registerScocciature() {  //propongo di rinominare il metodo in regi
   int uffaPriorityHoliday = 4;  //è una buona idea personalizzare le priorità per le singole vacanze
   int uffaPriorityHolidayNight = 5;
 
-  //istanziazione e salvataggio nel DB degli oggetti di tipo Scocciatura (propongo di ridenominare Scocciatura in Scocciatura e così via)
+  //istanziazione e salvataggio nel DB degli oggetti di tipo Scocciatura (propongo di ridenominare Scocciatura in Annoyance e così via)
   for(Holiday holiday: holidays) {
     Scocciatura scocciaturaHolidayMorning = new HolidayScocciatura(uffaPriorityHoliday, holiday, TimeSlot.MORNING);
     Scocciatura scocciaturaHolidayAfternoon = new HolidayScocciatura(uffaPriorityHoliday, holiday, TimeSlot.AFTERNOON);
@@ -234,7 +234,7 @@ public class ViolatedConstraintHolidayException extends ViolatedConstraintExcept
     super(String.format("Il dottor %s %s non rispetta il vincolo sulle vacanze" +
       " per il turno %s. La violazione riguarda il giorno %s.",
       doctor.getNome(), doctor.getCognome(), concreteShift.getShift().getTimeSlot(),
-      ConvertitoreData.daStandardVersoTestuale(Instant.ofEpochMilli(concreteShift.getDate()).atZone(ZoneId.systemDefault()).toLocalDate())));
+      ConvertitoreData.daStandardVersoTestuale(LocalDate.ofEpochDay(concreteShift.getDate()))));
 
   }
 
@@ -291,11 +291,11 @@ private void addDoctors(ConcreteShift concreteShift, QuantityShiftSeniority qss,
     if(contextDoctorsOnDuty.size() < qss.getQuantity()) {  //bisogna modificare solo la coda di priorità adeguata.
 
       if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
-        doctorScheduleState.updatePriority(PriorityQueue.NIGHT);
+        doctorUffaPriority.updatePriority(PriorityQueue.NIGHT);
       elif(concreteShift.getShift().getDuration().toMinutes() > 360)
-        doctorScheduleState.updatePriority(PriorityQueue.LONG_SHIFT);
+        doctorUffaPriority.updatePriority(PriorityQueue.LONG_SHIFT);
       else
-        doctorScheduleState.updatePriority(PriorityQueue.GENERAL);
+        doctorUffaPriority.updatePriority(PriorityQueue.GENERAL);
 
     }
     selectedUsers++;

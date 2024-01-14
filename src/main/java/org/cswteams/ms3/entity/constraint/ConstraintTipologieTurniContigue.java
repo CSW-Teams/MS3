@@ -67,17 +67,17 @@ public class ConstraintTipologieTurniContigue extends ConstraintAssegnazioneTurn
      * @throws ViolatedConstraintException Exception thrown if the constraint is violated
      */
     @Override
-    public void verificaVincolo(ContestoVincolo context) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
                 
         // We check if the shift to be allocated is of the type that must be excluded the constraint
         if (forbiddenTimeSlots.contains(context.getConcreteShift().getShift().getTimeSlot())){
             
             // We search for another allocated shift of the same user in the horizon
-            List<ConcreteShift> concreteShiftList = context.getDoctorScheduleState().getAssegnazioniTurnoCache();
+            List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
             for (ConcreteShift concreteShift : concreteShiftList) {
                 if (concreteShift.getShift().getTimeSlot() == timeSlot
                         && verificaContiguitàAssegnazioneTurni(concreteShift, context.getConcreteShift(), tUnit, horizon)) {
-                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(concreteShift, context.getConcreteShift(), context.getDoctorScheduleState().getDoctor());
+                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(concreteShift, context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor());
                 }
             }
         }

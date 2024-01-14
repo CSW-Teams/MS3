@@ -3,14 +3,12 @@ package org.cswteams.ms3.entity.constraint;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
 import org.cswteams.ms3.control.utils.ShiftUtil;
 import org.cswteams.ms3.entity.Doctor;
-import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloRuoloNumeroException;
 
 import javax.persistence.Entity;
-import java.security.KeyStore;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +29,7 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
      * @throws ViolatedConstraintException Exception thrown if the constraint is violated
      */
     @Override
-    public void verificaVincolo(ContestoVincolo context) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
 
         //Verifico se sono stati allocati già tutti gli utenti necessari in guardia
         if (DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY)).size() != ShiftUtil.getNumRequiredDoctors(context.getConcreteShift().getShift())) {
@@ -65,12 +63,12 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
      * @param assignedDoctors On duty doctors or on call doctors that have been already assigned
      * @throws ViolatedVincoloRuoloNumeroException Exception thrown if the constraint is violated
      */
-    private void verify(ContestoVincolo context, List<Doctor> assignedDoctors) throws ViolatedVincoloRuoloNumeroException {
+    private void verify(ContextConstraint context, List<Doctor> assignedDoctors) throws ViolatedVincoloRuoloNumeroException {
 
         //We calculate the number of doctors already assigned with the same seniority of the doctor we want to add to the schedule.
         int numAssignedDoctorsForSeniority = 0;
         for (Doctor doctor : assignedDoctors) {
-            if (doctor.getSeniority().equals(context.getDoctorScheduleState().getDoctor().getSeniority()))
+            if (doctor.getSeniority().equals(context.getDoctorUffaPriority().getDoctor().getSeniority()))
                 numAssignedDoctorsForSeniority++;
         }
 
@@ -78,9 +76,9 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
         for (Map.Entry<Seniority, Integer> quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority().entrySet()) {
             //If the required number of doctors with that seniority was already reached, then we raise an exception.
             //Otherwise, we can add the doctor to the concrete shift.
-            if (quantityShiftSeniority.getKey().equals(context.getDoctorScheduleState().getDoctor().getSeniority())) {
+            if (quantityShiftSeniority.getKey().equals(context.getDoctorUffaPriority().getDoctor().getSeniority())) {
                 if (numAssignedDoctorsForSeniority >= quantityShiftSeniority.getValue())
-                    throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), context.getDoctorScheduleState().getDoctor());
+                    throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor());
             }
         }
 
@@ -92,7 +90,7 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
      * @param assignedDoctors On duty doctors or on call doctors that have been already assigned
      * @throws ViolatedVincoloRuoloNumeroException Exception thrown if the constraint is violated
      */
-    private void countSeniority(ContestoVincolo context, List<Doctor> assignedDoctors) throws ViolatedVincoloRuoloNumeroException {
+    private void countSeniority(ContextConstraint context, List<Doctor> assignedDoctors) throws ViolatedVincoloRuoloNumeroException {
         //We count how many doctors foreach seniority there are in the concrete shift.
         //The hashmap contains the information "seniority - number of doctors of that seniority in the concrete shift".
         HashMap<Seniority,Integer> counter = new HashMap<>();

@@ -28,7 +28,7 @@ public class ScocciaturaDesiderata extends Scocciatura {
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        List<Preference> desiderate = contesto.getDoctorScheduleState().getDoctor().getPreferenceList();
+        List<Preference> desiderate = contesto.getDoctorUffaPriority().getDoctor().getPreferenceList();
 
         for(Preference preference : desiderate){
             if(preference.getDate().equals(contesto.getConcreteShift().getDate()))
