@@ -169,8 +169,8 @@ export class SchedulerGeneratorView extends React.Component{
 
                       return (
                         <tr key={key}>
-                          <td className="align-middle">{startDate.toLocaleString('it-IT', options)}</td>
-                          <td className="align-middle">{endDate.toLocaleString('it-IT', options)}</td>
+                          <td className="align-middle">{startDate.toLocaleString(navigator.language, options)}</td>
+                          <td className="align-middle">{endDate.toLocaleString(navigator.language, options)}</td>
                           <td className="align-middle">{schedule.isIllegal ? "Incompleta" : "Completa"}</td>
                           <td className="align-middle">
                             <IconButton aria-label="delete" onClick={() => this.handleDelete(schedule.id)}>

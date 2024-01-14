@@ -1,6 +1,7 @@
 package org.cswteams.ms3.control.scambioTurno;
 
 import lombok.SneakyThrows;
+import org.cswteams.ms3.control.notification.INotificationSystemController;
 import org.cswteams.ms3.dao.ConcreteShiftDAO;
 import org.cswteams.ms3.dao.DoctorAssignmentDAO;
 import org.cswteams.ms3.dao.DoctorDAO;
@@ -8,22 +9,26 @@ import org.cswteams.ms3.dao.ShiftChangeRequestDAO;
 import org.cswteams.ms3.dto.AnswerTurnChangeRequestDTO;
 import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ViewUserTurnRequestsDTO;
+import org.cswteams.ms3.dto.concreteshift.GetAvailableUsersForReplacementDTO;
+import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.constraint.ConstraintUbiquità;
+import org.cswteams.ms3.entity.constraint.ContestoVincolo;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.RequestStatus;
+import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
+import javax.print.Doc;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.time.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ControllerScambioTurno implements IControllerScambioTurno {
@@ -39,6 +44,14 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
 
     @Autowired
     private DoctorAssignmentDAO doctorAssignmentDAO;
+    @Autowired
+    private INotificationSystemController notificationSystemController;
+
+    @Autowired
+    private MessageSource messageSource;
+  
+    @Autowired
+    private DoctorDAO doctorDAO;
 
     /**
      * Questo metodo crea una richiesta di modifica turno.
@@ -85,9 +98,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             throw new AssegnazioneTurnoException("Utente richiesto già assegnato al turno");
         }
 
-
-
-        Request request = new Request(senderOptional.get(), receiverOptional.get(), concreteShift);
+        Request request = new Request(senderOptional.get(), receiverOptional.get(), concreteShift,this.notificationSystemController);
 
         List<Request> requests = shiftChangeRequestDAO.findBySenderIdAndTurnIdAndStatus(requestTurnChangeDto.getSenderId(), requestTurnChangeDto.getConcreteShiftId(), RequestStatus.PENDING);
 
@@ -141,15 +152,34 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                 return new ArrayList<>();
             }
 
-            String turnDescription = doctorAssignment.getTask().getTaskType() +" come "+doctorAssignment.getConcreteShiftDoctorStatus();
-            String userDetails = r.getReceiver().getName() + " " + r.getReceiver().getLastname();
-            String status = r.getStatus().toString();
-
+            Map<Locale, String> turnDescription = createTurnDescriptionMap(doctorAssignment);
+            String  userDetails = r.getReceiver().getName() + " " + r.getReceiver().getLastname();
+            Map<Locale, String>  status = createStatusMap(r);
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
             dtos.add(dto);
         }
 
         return dtos;
+    }
+
+    private Map<Locale, String> createTurnDescriptionMap(DoctorAssignment doctorAssignment){
+        Map<Locale, String> turnDescription = new HashMap<>();
+        String taskEnum= doctorAssignment.getTask().getTaskType().getClass().getSimpleName()+".";
+        String concreteShiftDoctorStatus= doctorAssignment.getConcreteShiftDoctorStatus().getClass().getSimpleName()+".";
+        String turnDescriptionENG = messageSource.getMessage(taskEnum+doctorAssignment.getTask().getTaskType(), null, Locale.ENGLISH)+" ("+messageSource.getMessage(concreteShiftDoctorStatus+doctorAssignment.getConcreteShiftDoctorStatus(), null, Locale.ENGLISH)+")";
+        String turnDescriptionITA = messageSource.getMessage(taskEnum+doctorAssignment.getTask().getTaskType(), null, Locale.ITALIAN)+" ("+messageSource.getMessage(concreteShiftDoctorStatus+doctorAssignment.getConcreteShiftDoctorStatus(), null, Locale.ITALIAN)+")";
+        turnDescription.put(Locale.ENGLISH, turnDescriptionENG);
+        turnDescription.put(Locale.ITALIAN, turnDescriptionITA);
+
+        return turnDescription;
+    }
+
+    private Map<Locale, String> createStatusMap(Request r){
+        Map<Locale, String>  status = new HashMap<>();
+        String requestStatus=r.getStatus().getClass().getSimpleName()+".";
+        status.put(Locale.ENGLISH, messageSource.getMessage(requestStatus+r.getStatus().toString(), null, Locale.ENGLISH));
+        status.put(Locale.ITALIAN, messageSource.getMessage(requestStatus+r.getStatus().toString(), null, Locale.ITALIAN));
+        return status;
     }
 
     @Override
@@ -177,11 +207,9 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                 return new ArrayList<>();
             }
 
-            String turnDescription = doctorAssignment.getTask().getTaskType() +" come "+doctorAssignment.getConcreteShiftDoctorStatus();
-
+            Map<Locale, String> turnDescription = createTurnDescriptionMap(doctorAssignment);
             String userDetails = r.getSender().getName() + " " + r.getSender().getLastname();
-            String status = r.getStatus().toString();
-
+            Map<Locale, String>  status = createStatusMap(r);
             ViewUserTurnRequestsDTO dto = new ViewUserTurnRequestsDTO(requestId, turnDescription, inizioEpoch, fineEpoch, userDetails, status);
             dtos.add(dto);
         }
@@ -197,7 +225,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                 throw new ShiftException("Utente Richiesto non trovato");
         }
         Request request=optionalRequest.get();
-
+        request.attach(notificationSystemController);
         if(answerTurnChangeRequestDTO.isHasAccepted()){
             request.setStatus(RequestStatus.ACCEPTED);
             ConcreteShift shift = request.getTurn();
@@ -219,10 +247,70 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                     break;
                 }
             }
+
         }else{
+
                 request.setStatus(RequestStatus.REFUSED);
                 //TODO: sarebbe da notificare l'altro utente del rifiuto
                 shiftChangeRequestDAO.saveAndFlush(request);
+
         }
+    }
+
+    @Override
+    @Transactional
+    public List<MedicalDoctorInfoDTO> getAvailableUserForReplacement(@NotNull GetAvailableUsersForReplacementDTO dto) {
+        List<MedicalDoctorInfoDTO> availableDoctorsDTOs = new ArrayList<>();
+        Seniority requestingUserSeniority = dto.getSeniority();
+
+        Optional<ConcreteShift> concreteShift = concreteShiftDAO.findById(dto.getShiftId());
+        if (concreteShift.isEmpty()) {
+            return null;
+        }
+        HashMap<Seniority, Integer> quantityShiftSeniority = concreteShift.get().getShift().getQuantityShiftSeniority();
+
+        /* let's consider the requesting user's seniority (say reqUserSen) and the amount of doctors allocated by seniority (say docAllocSen):
+        *  - if docAllocSen - 1 < reqUserSen, it means that this doctor can only be replaced by a doctor with the same seniority;
+        *  - if docAllocSen - 1 >= reqUserSen, it means that this doctor can be replaced by another doctor with seniority >= to his seniority
+        *    (e.g. specialist_junior can be replaced by another doctor with any seniority, while a specialist_senior can be replaced only by
+        *    a specialist_senior or a structured doctor).
+        */
+
+        Integer requestedAmountOfDoctorsBySeniority = quantityShiftSeniority.get(requestingUserSeniority);
+        Integer allocatedDoctorsBySeniority = 0;
+        for (DoctorAssignment da : concreteShift.get().getDoctorAssignmentList()) {
+            if (da.getDoctor().getSeniority() == requestingUserSeniority && da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY)
+                allocatedDoctorsBySeniority++;
+        }
+
+        List<Seniority> requestedSeniorities = new ArrayList<>();
+        List<Doctor> availableDoctors = new ArrayList<>();
+
+        if (allocatedDoctorsBySeniority - 1 < requestedAmountOfDoctorsBySeniority) {
+            requestedSeniorities.add(requestingUserSeniority);
+            availableDoctors = doctorDAO.findBySeniorities(requestedSeniorities);
+        } else {
+            if (requestingUserSeniority == Seniority.SPECIALIST_JUNIOR) {
+                requestedSeniorities.add(Seniority.SPECIALIST_JUNIOR);
+                requestedSeniorities.add(Seniority.SPECIALIST_SENIOR);
+                requestedSeniorities.add(Seniority.STRUCTURED);
+            } else if (requestingUserSeniority == Seniority.SPECIALIST_SENIOR) {
+                requestedSeniorities.add(Seniority.SPECIALIST_SENIOR);
+                requestedSeniorities.add(Seniority.STRUCTURED);
+            } else {
+                requestedSeniorities.add(Seniority.STRUCTURED);
+            }
+
+            availableDoctors = doctorDAO.findBySeniorities(requestedSeniorities);
+        }
+
+
+        for (Doctor doctor : availableDoctors) {
+            MedicalDoctorInfoDTO doctorDTO = new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority());
+            availableDoctorsDTOs.add(doctorDTO);
+        }
+
+
+        return availableDoctorsDTOs;
     }
 }

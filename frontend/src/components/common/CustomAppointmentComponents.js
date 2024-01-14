@@ -392,9 +392,9 @@ export class AppointmentContent extends React.Component{
 
             {this.state.utenti_rimossi.length > 0 &&
             <div>
-              <div>Rimossi:</div>
+              <div style={{color:'black'}}>Rimossi:</div>
             <ul>
-              {this.state.utenti_rimossi.map((user) => <li> <s>{user.lastname}</s></li>) }
+              {this.state.utenti_rimossi.map((user) => <li style={{color: 'black'}}> <s>{user.lastname}</s></li>) }
             </ul>
             </div>
             }

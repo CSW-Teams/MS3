@@ -35,7 +35,7 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
           let currentUserDto = body[i].doctorsOnDuty[j];
-          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : (currentUserDto.seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno");
           let utenteAllocato = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
@@ -48,7 +48,7 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
           let currentUserDto = body[i].doctorsOnCall[j];
-          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : (currentUserDto.seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno");
           let utenteReperibile = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
@@ -91,6 +91,28 @@ export  class AssegnazioneTurnoAPI {
 
     return turni;
 }
+
+  async getAvailableUsersForShiftExchange(params){
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    };
+
+    const response = await fetch('/api/concrete-shifts/available-users-for-replacement/', requestOptions);
+    const body = await response.json();
+    let availableUsers = [];
+
+    for (let i = 0; i < body.length; i++) {
+      let doctor = new Doctor(body[i].id, body[i].name, body[i].lastname, body[i].seniority);
+      console.log(doctor.label);
+      availableUsers.push(doctor);
+    }
+
+    return availableUsers;
+
+  }
 
   async getShiftByIdUser(id) {
     const response = await fetch('/api/concrete-shifts/user_id=' + id);
