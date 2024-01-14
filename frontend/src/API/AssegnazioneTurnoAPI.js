@@ -104,14 +104,11 @@ export  class AssegnazioneTurnoAPI {
     const body = await response.json();
     let availableUsers = [];
 
-    console.log(body);
-
     for (let i = 0; i < body.length; i++) {
-      let user = new Doctor(body[i].id, body[i].name, body[i].lastname, body[i].seniority);
-      availableUsers.push(user.label);
+      let doctor = new Doctor(body[i].id, body[i].name, body[i].lastname, body[i].seniority);
+      console.log(doctor.label);
+      availableUsers.push(doctor);
     }
-
-    console.log("UTENTI DISPONIBILI", availableUsers);
 
     return availableUsers;
 
