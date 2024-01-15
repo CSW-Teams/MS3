@@ -6,13 +6,12 @@ export class HolidaysAPI {
 
 
     /** gets all holidays from backend  */
-    async getHolidays() {
+    async getHolidays(year) {
 
-        let date = new Date()
         let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         let county = await this.searchCountry(timeZone);
 
-        let response = await fetch('/api/holidays/year='+date.getFullYear()+'/country='+county, {method: 'GET'});
+        let response = await fetch('/api/holidays/year='+year+'/country='+county, {method: 'GET'});
 
         let serializedHolidays = await response.json();
         let holidays = [];

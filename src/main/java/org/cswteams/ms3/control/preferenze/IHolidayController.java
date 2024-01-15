@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
+import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.entity.Holiday;
+import org.cswteams.ms3.exception.CalendarServiceException;
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
@@ -16,7 +18,7 @@ public interface IHolidayController {
     void registerHolidayPeriod(HolidayDTO holidayArgs);
 
     /** Legge tutti i periodi festivi */
-    List<HolidayDTO> readHolidays();
+    List<HolidayDTO> readHolidays(RetrieveHolidaysDTOIn dto) throws CalendarServiceException;
 
     /** Registra un intervallo di date come un periodo festivo, e ripete la procedura
      * per il numero ulteriore di anni specificato .
