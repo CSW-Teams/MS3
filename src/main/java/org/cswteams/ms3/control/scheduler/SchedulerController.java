@@ -13,6 +13,7 @@ import org.cswteams.ms3.dto.ScheduleDTO;
 import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
@@ -115,6 +116,9 @@ public class SchedulerController implements ISchedulerController {
 
         //Creation of a schedule builder foreach new shift schedule
         try {
+            //NB: DO NOT move this line
+            List<Scocciatura> scocciaturaList = scocciaturaDAO.findAll();
+
             this.scheduleBuilder = new ScheduleBuilder(
                 startDate,                      //Start date of the shift schedule
                 endDate,                        //End date of the shift schedule
@@ -126,11 +130,14 @@ public class SchedulerController implements ISchedulerController {
                 doctorUffaPriorityDAO.findAll() //All the information about priority levels on all the queues of the doctors
                 );
 
-            this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDAO.findAll()));
+            ControllerScocciatura controllerScocciatura = new ControllerScocciatura(scocciaturaList);
             //We set the controller that manages doctors priorities.
+            this.scheduleBuilder.setControllerScocciatura(controllerScocciatura);
 
-            Schedule schedule = scheduleDAO.save(this.scheduleBuilder.build());
+            Schedule schedule = this.scheduleBuilder.build();
+            scheduleDAO.save(schedule);
             for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
+                dup.setSchedule(schedule);
                 doctorUffaPriorityDAO.save(dup);
             }
             return schedule;
@@ -180,8 +187,8 @@ public class SchedulerController implements ISchedulerController {
 
         //We create a new builder passing him as parameter an existing shift schedule.
         this.scheduleBuilder = new ScheduleBuilder(
-                constraintDAO.findAll(),    //All the constraints that shall be respected when a doctor is assigned to a concrete shift
-                doctorDAO.findAll(),        //All the possible doctors that can be assigned to the concrete shifts
+                constraintDAO.findAll(),            //All the constraints that shall be respected when a doctor is assigned to a concrete shift
+                doctorUffaPriorityDAO.findAll(),    //All the possible doctors that can be assigned to the concrete shifts
                 scheduleDAO.findByDateBetween(concreteShift.getDate())  //Existing shift schedule
         );
 
@@ -414,13 +421,15 @@ public class SchedulerController implements ISchedulerController {
         if(scheduleOptional.isEmpty())
             return false;
 
-        System.out.println(scheduleOptional.get().getEndDate());
-        System.out.println(LocalDate.now());
-
         //Verifico se lo schedulo che voglio eliminare è uno schedulo futuro e non passato
         if(LocalDate.ofEpochDay(scheduleOptional.get().getEndDate()).isBefore(LocalDate.now()))
             return false;
 
+        //Deletion of Schedule into DoctorUffaPriority instances in order to not violate foreign key constraints in the db
+        for(DoctorUffaPriority dup : doctorUffaPriorityDAO.findAll()) {
+            dup.setSchedule(null);
+            doctorUffaPriorityDAO.save(dup);
+        }
         scheduleDAO.deleteById(id);
 
         return true;
