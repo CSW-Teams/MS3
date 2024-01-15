@@ -13,7 +13,7 @@ import org.cswteams.ms3.dto.concreteshift.GetAvailableUsersForReplacementDTO;
 import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.ConstraintUbiquità;
-import org.cswteams.ms3.entity.constraint.ContestoVincolo;
+import org.cswteams.ms3.entity.constraint.ContextConstraint;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.RequestStatus;
 import org.cswteams.ms3.enums.Seniority;

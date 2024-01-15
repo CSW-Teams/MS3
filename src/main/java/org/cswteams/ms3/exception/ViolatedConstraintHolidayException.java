@@ -1,6 +1,5 @@
 package org.cswteams.ms3.exception;
 
-import org.cswteams.ms3.control.utils.ConvertitoreData;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 

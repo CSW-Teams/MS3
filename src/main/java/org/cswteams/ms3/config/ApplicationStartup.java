@@ -9,6 +9,7 @@ import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.control.scheduler.ScheduleBuilder;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.dto.HolidayDTO;
+import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.condition.*;
 import org.cswteams.ms3.entity.constraint.*;
@@ -131,21 +132,24 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
      * @return List of HolidayDTO describing all the default holidays registered in the system.
      */
     private List<HolidayDTO> registerHolidays() {
-        CalendarSettingBuilder settingBuilder = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
-        List<HolidayDTO> holidays = holidayController.readHolidays();
+        List<HolidayDTO> holidays = null;
 
-        if(holidays.isEmpty()) {
-            CalendarSetting setting = settingBuilder.create(String.valueOf(LocalDate.now().getYear()), "IT");
-            calendarServiceManager.init(setting);
+        try {
+            CalendarSettingBuilder settingBuilder = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
+            holidays = holidayController.readHolidays(new RetrieveHolidaysDTOIn(LocalDate.now().getYear(), "IT"));
 
-            try {
+            if(holidays.isEmpty()) {
+                CalendarSetting setting = settingBuilder.create(String.valueOf(LocalDate.now().getYear()), "IT");
+                calendarServiceManager.init(setting);
                 holidays = calendarServiceManager.getHolidays();
-            } catch (CalendarServiceException e) {
-                e.printStackTrace();
             }
+
             holidayController.registerHoliday(holidays);
 
+        } catch (CalendarServiceException e) {
+            e.printStackTrace();
         }
+
         return holidays;
 
     }
