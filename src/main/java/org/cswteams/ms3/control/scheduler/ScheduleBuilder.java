@@ -34,9 +34,6 @@ public class ScheduleBuilder {
     @NotNull
     private List<Constraint> allConstraints;
 
-    /** Objects representing the state of schedule building for each participant doctor */
-    private Map<Long, DoctorUffaPriority> allDoctorUffaPriorities;
-
     /** Shift schedule to be built */
     private Schedule schedule;
 
@@ -118,12 +115,11 @@ public class ScheduleBuilder {
         this.schedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), Collections.emptyList());
         this.schedule.setConcreteShifts(allAssignedShifts);
         this.allConstraints = allConstraints;
-        this.allDoctorUffaPriorities = new HashMap<>();
-        initializeUserScheduleStates(doctors);
 
         this.holidays = holidays;
         this.doctorHolidaysList = doctorHolidaysList;
         this.allDoctorUffaPriority = allDoctorUffaPriority;
+        initializeDoctorUffaPriorities();
 
     }
 
@@ -141,34 +137,36 @@ public class ScheduleBuilder {
     /**
      * This method has the responsibility of creating a new valid schedule from an existing one
      * @param allConstraints Set of constraints to not be violated
-     * @param doctors Set of doctors that can be added in the schedule
+     * @param allDoctorUffaPriority Set of DoctorUffaPriority related to all the doctors that can be added in the schedule
      * @param schedule An existing schedule from which to start a new one
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(List<Constraint> allConstraints, List<Doctor> doctors, Schedule schedule) throws IllegalScheduleException {
+    public ScheduleBuilder(List<Constraint> allConstraints, List<DoctorUffaPriority> allDoctorUffaPriority, Schedule schedule) throws IllegalScheduleException {
         // Checks on the parameters state
         validateConstraints(allConstraints);
         validateSchedule(schedule);
 
         this.allConstraints = allConstraints;
         this.schedule=schedule;
-        this.allDoctorUffaPriorities = new HashMap<>();
-        initializeUserScheduleStates(doctors);
+        this.allDoctorUffaPriority = allDoctorUffaPriority;
+        initializeDoctorUffaPriorities();
     }
 
 
 
     /**
-     * Private method that has the responsibility of initializing the state of the schedule for all the users.
-     * @param doctors Set of doctors that can be added in the schedule
+     * Private method that has the responsibility of initializing the state of the schedule for all the users
+     * (in particular, initializing schedule attribute) and flushing the updated doctorUffaPriorityList instances in the db.
      */
-    private void initializeUserScheduleStates(List<Doctor> doctors){
+    private void initializeDoctorUffaPriorities(){
+        for (DoctorUffaPriority dup : this.allDoctorUffaPriority){
+            dup.setSchedule(this.schedule);
 
-        for (Doctor u : doctors){
-            DoctorUffaPriority usstate = new DoctorUffaPriority(u, schedule);
-            allDoctorUffaPriorities.put(u.getId(), usstate);
         }
     }
+
+
+
     public Schedule build(){
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
@@ -236,7 +234,6 @@ public class ScheduleBuilder {
     private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList, ConcreteShiftDoctorStatus status, int selectedTask) throws NotEnoughFeasibleUsersException{
 
         int selectedUsers=0;
-        List<DoctorUffaPriority> allDoctorUffaPriority = new ArrayList<>(allDoctorUffaPriorities.values());
 
         /* If the concrete shift we are populating is in the afternoon, we get the eventual concrete shift allocated in the morning of the same day.
          * It is important to check if there is someone who can be allocated in a long shift (shift in the morning + shift in the afternoon of the same day).
@@ -379,6 +376,22 @@ public class ScheduleBuilder {
     }
 
 
+    /**
+     * This private method retrieves the DoctorUffaPriority instance associated to a specific doctor.
+     * @param doctor Doctor related to the DoctorUffaPriority instance we want to extract
+     * @return DoctorUffaPriority instance
+     */
+    private DoctorUffaPriority findDupByDoctor(Doctor doctor) {
+
+        for(DoctorUffaPriority dup : allDoctorUffaPriority) {
+            if (dup.getDoctor().equals(doctor))
+                return dup;
+
+        }
+        return null;
+
+    }
+
 
     /**
      * This method applies all the constraints to the specified context. If a constraint is violated, then it is added
@@ -425,9 +438,11 @@ public class ScheduleBuilder {
 
         for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
             Doctor doctor = da.getDoctor();
-            //find DoctorHolidays instance associated with current doctor
+            //find DoctorHolidays instance and DoctorUffaPriority instance associated with current doctor
             DoctorHolidays dh = findDhByDoctor(doctor);
-            if (!verifyAllConstraints(new ContextConstraint(this.allDoctorUffaPriorities.get(doctor.getId()), concreteShift, dh, holidays), isForced)){
+            DoctorUffaPriority dup = this.findDupByDoctor(doctor);
+
+            if (!verifyAllConstraints(new ContextConstraint(dup, concreteShift, dh, holidays), isForced)){
                 schedule.setCauseIllegal(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
             }
         }
@@ -435,7 +450,9 @@ public class ScheduleBuilder {
 
             for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
                 Doctor doctor = da.getDoctor();
-                this.allDoctorUffaPriorities.get(doctor.getId()).addConcreteShift(concreteShift);
+                DoctorUffaPriority dup = this.findDupByDoctor(doctor);
+
+                dup.addConcreteShift(concreteShift);
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
 
                 /* If the concrete shift we are populating is in the afternoon, we get the eventual concrete shift allocated in the morning of the same day.
@@ -446,18 +463,18 @@ public class ScheduleBuilder {
                 if(concreteShift.getShift().getTimeSlot() == TimeSlot.AFTERNOON) {
                     prevConcreteShift = this.getConcreteShift(concreteShift.getDate(), TimeSlot.MORNING);
                     if(prevConcreteShift != null)   //case in which there exists a concrete shift the same day in the morning
-                        prevConcreteShiftDup = this.getDupFromConcreteShift(prevConcreteShift, new ArrayList<>(this.allDoctorUffaPriorities.values()));
+                        prevConcreteShiftDup = this.getDupFromConcreteShift(prevConcreteShift, allDoctorUffaPriority);
 
                 }
 
 
                 if(doctorsOnDuty.contains(doctor)) {
                     //here we need to modify only the appropriate queues
-                    this.allDoctorUffaPriorities.get(doctor.getId()).updatePriority(PriorityQueueEnum.GENERAL);
-                    if(prevConcreteShiftDup != null && prevConcreteShiftDup.contains(this.allDoctorUffaPriorities.get(doctor.getId())))
-                        this.allDoctorUffaPriorities.get(doctor.getId()).updatePriority(PriorityQueueEnum.LONG_SHIFT);
+                    dup.updatePriority(PriorityQueueEnum.GENERAL);
+                    if(prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
+                        dup.updatePriority(PriorityQueueEnum.LONG_SHIFT);
                     else if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
-                        this.allDoctorUffaPriorities.get(doctor.getId()).updatePriority(PriorityQueueEnum.NIGHT);
+                        dup.updatePriority(PriorityQueueEnum.NIGHT);
 
                 }
 

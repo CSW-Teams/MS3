@@ -34,7 +34,7 @@ public class DoctorUffaPriority {
     @NotNull
     private Doctor doctor;
 
-    /** Current schedule - TODO: evaluate if this attribute could be deleted (maybe not...) */
+    /** Current schedule */
     @OneToOne
     private Schedule schedule;
 

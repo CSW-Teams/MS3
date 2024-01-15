@@ -156,7 +156,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
 
     private void registerScocciature() {
-        List<HolidayDTO> holidaysDTO = registerHolidays(); //TODO: HolidayDTO will be useful for uffa priority differentiation.
+        //List<HolidayDTO> holidaysDTO = registerHolidays(); //TODO: HolidayDTO will be useful for uffa priority differentiation.
 
         //We are reasoning about 40 priority levels.
         int uffaPriorityPreference = 10;
@@ -545,7 +545,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //creation of the DoctorHolidays instances
         List<Doctor> allDoctors = doctorDAO.findAll();
-        registerHolidays();
+        //registerHolidays();
         List<Holiday> holidays = holidayDAO.findAll();  //retrieve of holiday entities (and not DTOs)
 
         for(Doctor doctor: allDoctors) {
