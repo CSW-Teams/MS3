@@ -34,10 +34,9 @@ public class DoctorUffaPriority {
     @NotNull
     private Doctor doctor;
 
-    /** Current schedule */
-    //@OneToOne
-    //private Schedule schedule;
-    private long idSchedule;
+    /** Current schedule - TODO: evaluate if this attribute could be deleted (maybe not...) */
+    @OneToOne
+    private Schedule schedule;
 
     private int partialGeneralPriority = 0;
     private int generalPriority = 0;
