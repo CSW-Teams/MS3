@@ -2,10 +2,7 @@ package org.cswteams.ms3.control.scambioTurno;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.notification.INotificationSystemController;
-import org.cswteams.ms3.dao.ConcreteShiftDAO;
-import org.cswteams.ms3.dao.DoctorAssignmentDAO;
-import org.cswteams.ms3.dao.DoctorDAO;
-import org.cswteams.ms3.dao.ShiftChangeRequestDAO;
+import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.AnswerTurnChangeRequestDTO;
 import org.cswteams.ms3.dto.RequestTurnChangeDto;
 import org.cswteams.ms3.dto.ViewUserTurnRequestsDTO;
@@ -19,6 +16,7 @@ import org.cswteams.ms3.enums.RequestStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.ShiftException;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -52,6 +50,15 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
   
     @Autowired
     private DoctorDAO doctorDAO;
+
+    @Autowired
+    private DoctorUffaPriorityDAO doctorUffaPriorityDAO;
+
+    @Autowired
+    private DoctorHolidaysDAO doctorHolidaysDAO;
+
+    @Autowired
+    private HolidayDAO holidayDAO;
 
     /**
      * Questo metodo crea una richiesta di modifica turno.
@@ -259,7 +266,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
 
     @Override
     @Transactional
-    public List<MedicalDoctorInfoDTO> getAvailableUserForReplacement(@NotNull GetAvailableUsersForReplacementDTO dto) {
+    public List<MedicalDoctorInfoDTO> getAvailableUsersForReplacement(@NotNull GetAvailableUsersForReplacementDTO dto) {
         List<MedicalDoctorInfoDTO> availableDoctorsDTOs = new ArrayList<>();
         Seniority requestingUserSeniority = dto.getSeniority();
 
@@ -304,12 +311,30 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             availableDoctors = doctorDAO.findBySeniorities(requestedSeniorities);
         }
 
+        /* UBIQUITY CONSTRAINT
+
+        for (Doctor doctor : availableDoctors) {
+            ConstraintUbiquità constraintUbiquità = new ConstraintUbiquità();
+            ContextConstraint context = new ContextConstraint(
+                    doctorUffaPriorityDAO.findByDoctor_Id(doctor.getId()),
+                    concreteShift.get(),
+                    doctorHolidaysDAO.findByDoctor_Id(doctor.getId()),
+                    holidayDAO.findAll()
+
+            );
+
+            try {
+                constraintUbiquità.verifyConstraint(context);
+            } catch (ViolatedConstraintException e) {
+                availableDoctors.remove(doctor);
+            }
+        }
+         */
 
         for (Doctor doctor : availableDoctors) {
             MedicalDoctorInfoDTO doctorDTO = new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority());
             availableDoctorsDTOs.add(doctorDTO);
         }
-
 
         return availableDoctorsDTOs;
     }

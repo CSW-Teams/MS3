@@ -146,7 +146,7 @@ public class ConcreteShiftRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST, path = "/available-users-for-replacement/")
     public ResponseEntity<?> getAvailableUsersForReplacement(@RequestBody GetAvailableUsersForReplacementDTO dto) {
-        List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUserForReplacement(dto);
+        List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUsersForReplacement(dto);
         return new ResponseEntity<>(returnList, HttpStatus.FOUND);
     }
 
