@@ -76,7 +76,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
 
         Vincolo vincoloMaxOreConsecutive = new VincoloMaxPeriodoConsecutivo(12*60);
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
-        vincoloMaxOreConsecutive.verificaVincolo(new ContestoVincolo(pregUserState,turnoNotturno));
+        vincoloMaxOreConsecutive.verificaVincolo(new ContextConstraint(pregUserState,turnoNotturno));
     }*/
 
     //@Test(expected= ViolatedConstraintException.class)
@@ -112,7 +112,7 @@ public class VincoloMaxPeriodoConsecutivoTest {
       //  Vincolo vincoloMaxOreConsecutive = new VincoloMaxPeriodoConsecutivo(9*60, Collections.singletonList(categoriaOVER62));
 
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
-       // vincoloMaxOreConsecutive.verificaVincolo(new ContestoVincolo(pregUserState,turnoPomeriggio));
+       // vincoloMaxOreConsecutive.verificaVincolo(new ContextConstraint(pregUserState,turnoPomeriggio));
     }*/
 
 

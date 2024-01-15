@@ -1,6 +1,5 @@
 package org.cswteams.ms3.control.scheduler;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -49,6 +48,15 @@ public class SchedulerController implements ISchedulerController {
 
     @Autowired
     private ScocciaturaDAO scocciaturaDAO;
+
+    @Autowired
+    private HolidayDAO holidayDAO;
+
+    @Autowired
+    private DoctorHolidaysDAO doctorHolidaysDAO;
+
+    @Autowired
+    private DoctorUffaPriorityDAO doctorUffaPriorityDAO;
 
 
     private ScheduleBuilder scheduleBuilder;
@@ -108,17 +116,24 @@ public class SchedulerController implements ISchedulerController {
         //Creation of a schedule builder foreach new shift schedule
         try {
             this.scheduleBuilder = new ScheduleBuilder(
-                startDate,                  //Start date of the shift schedule
-                endDate,                    //End date of the shift schedule
-                constraintDAO.findAll(),    //All the constraints to respect when a doctor is assigned to a concrete shift
-                allConcreteShifts,          //Concrete shifts (without doctors)
-                doctorDAO.findAll()         //All the possible doctors who can be assigned to the concrete shifts
+                startDate,                      //Start date of the shift schedule
+                endDate,                        //End date of the shift schedule
+                constraintDAO.findAll(),        //All the constraints to respect when a doctor is assigned to a concrete shift
+                allConcreteShifts,              //Concrete shifts (without doctors)
+                doctorDAO.findAll(),            //All the possible doctors who can be assigned to the concrete shifts
+                holidayDAO.findAll(),           //All the holidays saved in the db
+                doctorHolidaysDAO.findAll(),    //All the associations between doctors and holidays
+                doctorUffaPriorityDAO.findAll() //All the information about priority levels on all the queues of the doctors
                 );
 
             this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDAO.findAll()));
             //We set the controller that manages doctors priorities.
 
-            return  scheduleDAO.save(this.scheduleBuilder.build());
+            Schedule schedule = scheduleDAO.save(this.scheduleBuilder.build());
+            for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
+                doctorUffaPriorityDAO.save(dup);
+            }
+            return schedule;
 
         } catch (IllegalScheduleException e) {
             System.out.println(e.getMessage());
@@ -139,8 +154,8 @@ public class SchedulerController implements ISchedulerController {
             return false;
 
         Schedule schedule = optionalSchedule.get();
-        LocalDate startDate = Instant.ofEpochMilli(schedule.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate endDate = Instant.ofEpochMilli(schedule.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate startDate = LocalDate.ofEpochDay(schedule.getStartDate());
+        LocalDate endDate = LocalDate.ofEpochDay(schedule.getEndDate());
 
         //It is not allowed to remove a shift schedule in the past.
         if(!removeSchedule(id))
@@ -399,8 +414,11 @@ public class SchedulerController implements ISchedulerController {
         if(scheduleOptional.isEmpty())
             return false;
 
+        System.out.println(scheduleOptional.get().getEndDate());
+        System.out.println(LocalDate.now());
+
         //Verifico se lo schedulo che voglio eliminare è uno schedulo futuro e non passato
-        if((Instant.ofEpochMilli(scheduleOptional.get().getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate()).isBefore(LocalDate.now()))
+        if(LocalDate.ofEpochDay(scheduleOptional.get().getEndDate()).isBefore(LocalDate.now()))
             return false;
 
         scheduleDAO.deleteById(id);
@@ -420,7 +438,7 @@ public class SchedulerController implements ISchedulerController {
         List<Schedule> allSchedule = scheduleDAO.findAll();
 
         for (Schedule schedule : allSchedule) {
-            if (!(Instant.ofEpochMilli(schedule.getStartDate()).atZone(ZoneId.systemDefault()).toLocalDate()).isBefore(endNewSchedule) && !(Instant.ofEpochMilli(schedule.getEndDate()).atZone(ZoneId.systemDefault()).toLocalDate()).isBefore(startNewSchedule))
+            if (!(LocalDate.ofEpochDay(schedule.getStartDate())).isBefore(endNewSchedule) && !(LocalDate.ofEpochDay(schedule.getEndDate())).isBefore(startNewSchedule))
                 return false;
 
         }

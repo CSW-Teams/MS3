@@ -77,7 +77,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         );
         Vincolo violatedConstraint = new Vincolo() {
             @Override
-            public void verificaVincolo(ContestoVincolo contesto) throws ViolatedConstraintException {
+            public void verificaVincolo(ContextConstraint contesto) throws ViolatedConstraintException {
                 throw new ViolatedConstraintException();
             }
         };
@@ -103,7 +103,7 @@ public class ScheduleBuilderBuildTest extends ScheduleBuilderTest {
         // Initialize constraints in the system
         correctConstraints.add(new Vincolo() {
             @Override
-            public void verificaVincolo(ContestoVincolo contesto){
+            public void verificaVincolo(ContextConstraint contesto){
             }
         });
 

@@ -48,9 +48,9 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
      * @throws ViolatedConstraintException Exception thrown if the constraint is violated
      */
     @Override
-    public void verificaVincolo(ContestoVincolo context) throws ViolatedConstraintException {
-        if(context.getDoctorScheduleState().getAssegnazioniTurnoCache().size() != 0 && verificaAppartenenzaCategoria(context)) {
-            List<ConcreteShift> assignedConcreteShifts = context.getDoctorScheduleState().getAssegnazioniTurnoCache();
+    public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
+        if(context.getDoctorUffaPriority().getAssegnazioniTurnoCache().size() != 0 && verificaAppartenenzaCategoria(context)) {
+            List<ConcreteShift> assignedConcreteShifts = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
             List<ConcreteShift> consecConcreteShifts = new ArrayList<>();
 
             //Prendo l'indice del turno precedente all'assegnazione che sto per fare
@@ -95,7 +95,7 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
                 consecMinutes += turno.getShift().getDuration().toMinutes();
             }
             if (consecMinutes > maxConsecutiveMinutes) {
-                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorScheduleState().getDoctor(), maxConsecutiveMinutes);
+                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor(), maxConsecutiveMinutes);
             }
         }
 
@@ -107,12 +107,12 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
      * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
      * @return Boolean that represents if the doctor belongs (right now) to the category
      */
-    private boolean verificaAppartenenzaCategoria(ContestoVincolo context){
+    private boolean verificaAppartenenzaCategoria(ContextConstraint context){
 
         if(categoriaVincolata == null){
             return true;
         }
-         for (Condition condition : context.getDoctorScheduleState().getDoctor().getPermanentConditions()) {
+         for (Condition condition : context.getDoctorUffaPriority().getDoctor().getPermanentConditions()) {
              if (condition.getType().compareTo(categoriaVincolata.getType()) == 0) {
                  //if ((condition.getStartDate() < context.getConcreteShift().getDate() || condition.getStartDate() == context.getConcreteShift().getDate()) && (condition.getEndDate() > context.getConcreteShift().getDate()) || condition.getEndDate() == context.getConcreteShift().getDate()) {
                      return true;

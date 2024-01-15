@@ -25,7 +25,7 @@ export  class ScheduleAPI {
     return response.status;
   }
 
-  async rigeneraSchedulo(id) {
+  async rigeneraSchedule(id) {
 
     const requestOptions = {
       method: 'POST',

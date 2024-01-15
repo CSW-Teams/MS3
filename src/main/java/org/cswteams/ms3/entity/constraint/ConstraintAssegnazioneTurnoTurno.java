@@ -35,11 +35,11 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
      */
     protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift cShift1, ConcreteShift cShift2, TemporalUnit tu, long delta){
 
-        LocalDate cShift1Date = Instant.ofEpochMilli(cShift1.getDate()).atZone(ZoneId.systemDefault()).toLocalDate();   //conversion Epoch -> LocalDate of cShift1.getDate()
+        LocalDate cShift1Date = LocalDate.ofEpochDay(cShift1.getDate());   //conversion Epoch -> LocalDate of cShift1.getDate()
         LocalDateTime cShift1Start = cShift1Date.atTime(cShift1.getShift().getStartTime());
         LocalDateTime cShift1End = cShift1Start.plus(cShift1.getShift().getDuration());
 
-        LocalDate cShift2Date = Instant.ofEpochMilli(cShift2.getDate()).atZone(ZoneId.systemDefault()).toLocalDate();   //conversion Epoch -> LocalDate of cShift2.getDate()
+        LocalDate cShift2Date = LocalDate.ofEpochDay(cShift2.getDate());   //conversion Epoch -> LocalDate of cShift2.getDate()
         LocalDateTime cShift2Start = cShift2Date.atTime(cShift2.getShift().getStartTime());
         LocalDateTime cShift2End = cShift2Start.plus(cShift2.getShift().getDuration());
 
@@ -62,8 +62,8 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
 
         for(int i = 0; i < concreteShifts.size(); i++){
             //conversion Epoch -> LocalDate of concreteShifts.get(i).getDate() and concreteShiftToBeAssigned.getDate()
-            LocalDate cShiftDate = Instant.ofEpochMilli(concreteShifts.get(i).getDate()).atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate cShiftDateToBeAssignedDate = Instant.ofEpochMilli(concreteShiftToBeAssigned.getDate()).atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate cShiftDate = LocalDate.ofEpochDay(concreteShifts.get(i).getDate());
+            LocalDate cShiftDateToBeAssignedDate = LocalDate.ofEpochDay(concreteShiftToBeAssigned.getDate());
 
             if(cShiftDate.isAfter(cShiftDateToBeAssignedDate) || cShiftDate.isEqual(cShiftDateToBeAssignedDate)){
                 if(concreteShifts.get(i).getShift().getStartTime().isAfter(concreteShiftToBeAssigned.getShift().getStartTime()) || concreteShifts.get(i).getShift().getStartTime().equals(concreteShiftToBeAssigned.getShift().getStartTime())) {

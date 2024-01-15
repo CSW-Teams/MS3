@@ -2,10 +2,13 @@ package org.cswteams.ms3.config;
 
 import lombok.SneakyThrows;
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
+import org.cswteams.ms3.control.preferenze.CalendarSetting;
+import org.cswteams.ms3.control.preferenze.CalendarSettingBuilder;
+import org.cswteams.ms3.control.preferenze.ICalendarServiceManager;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.control.scheduler.ScheduleBuilder;
 import org.cswteams.ms3.control.user.UserController;
-import org.cswteams.ms3.dto.ScheduleGenerationDTO;
+import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.condition.*;
 import org.cswteams.ms3.entity.constraint.*;
@@ -13,10 +16,11 @@ import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
 import org.cswteams.ms3.dao.*;
+import org.cswteams.ms3.entity.scocciature.ScocciaturaVacanza;
 import org.cswteams.ms3.enums.*;
+import org.cswteams.ms3.exception.CalendarServiceException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.ShiftException;
-import org.cswteams.ms3.rest.ScheduleRestEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -40,6 +44,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
      */
 
     @Autowired
+    private IHolidayController holidayController;
+
+    @Autowired
+    private ICalendarServiceManager calendarServiceManager;
+
+    @Autowired
     private DoctorDAO doctorDAO;
 
     @Autowired
@@ -58,9 +68,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private SpecializationDAO specializationDAO;
 
     @Autowired
-    private IHolidayController holidayController;
-
-    @Autowired
     private ConstraintDAO constraintDAO;
 
     @Autowired
@@ -70,7 +77,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private ScocciaturaDAO scocciaturaDAO;
 
     @Autowired
-    private PreferenceDAO preferenceDao;
+    private PreferenceDAO preferenceDAO;
 
     @Autowired
     private ConfigVincoliDAO configVincoliDAO;
@@ -86,6 +93,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private DoctorAssignmentDAO doctorAssignmentDAO;
+
+    @Autowired
+    private HolidayDAO holidayDAO;
+
+    @Autowired
+    private DoctorUffaPriorityDAO doctorUffaPriorityDAO;
+
+    @Autowired
+    private DoctorHolidaysDAO doctorHolidaysDAO;
 
 
 
@@ -109,61 +125,112 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     }
 
+
+    /**
+     * Function which has the responsibility to register the holidays into the system, if it has not been registered yet.
+     * @return List of HolidayDTO describing all the default holidays registered in the system.
+     */
+    private List<HolidayDTO> registerHolidays() {
+        CalendarSettingBuilder settingBuilder = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
+        List<HolidayDTO> holidays = holidayController.readHolidays();
+
+        if(holidays.isEmpty()) {
+            CalendarSetting setting = settingBuilder.create(String.valueOf(LocalDate.now().getYear()), "IT");
+            calendarServiceManager.init(setting);
+
+            try {
+                holidays = calendarServiceManager.getHolidays();
+            } catch (CalendarServiceException e) {
+                e.printStackTrace();
+            }
+            holidayController.registerHoliday(holidays);
+
+        }
+        return holidays;
+
+    }
+
+
     private void registerScocciature() {
-        int pesoDesiderata = 100;
+        List<HolidayDTO> holidaysDTO = registerHolidays(); //TODO: HolidayDTO will be useful for uffa priority differentiation.
 
-        int pesoDomenicaPomeriggio = 20;
-        int pesoDomenicaMattina = 20;
-        int pesoSabatoNotte = 20;
+        //We are reasoning about 40 priority levels.
+        int uffaPriorityPreference = 10;
+        int uffaPriorityRespectedPreference = -1;   //TODO: introduce somehow a mechanism for reducing priority levels not only through periodic balancing
 
-        int pesoSabatoPomeriggio = 15;
-        int pesoSabatoMattina = 15;
-        int pesoVenerdiNotte = 15;
-        int pesoDomenicaNotte = 15;
+        int uffaPrioritySundayAfternoon = 1;
+        int uffaPrioritySundayMorning = 1;
+        int uffaPrioritySaturdayNight = 2;
 
-        int pesoVenerdiPomeriggio = 10;
+        int uffaPrioritySaturdayAfternoon = 0;
+        int uffaPrioritySaturdayMorning = 0;
+        int uffaPriorityFridayNight = 1;
+        int uffaPrioritySundayNight = 2;
 
-        int pesoFerialeSemplice = 5;
-        int pesoFerialeNotturno = 10;
+        int uffaPriorityFridayAfternoon = 0;
 
-        Scocciatura scocciaturaDomenicaMattina = new ScocciaturaAssegnazioneUtente(pesoDomenicaMattina, DayOfWeek.SUNDAY, TimeSlot.MORNING);
-        Scocciatura scocciaturaDomenicaPomeriggio = new ScocciaturaAssegnazioneUtente(pesoDomenicaPomeriggio, DayOfWeek.SUNDAY, TimeSlot.AFTERNOON);
-        Scocciatura scocciaturaDomenicaNotte = new ScocciaturaAssegnazioneUtente(pesoDomenicaNotte, DayOfWeek.SUNDAY, TimeSlot.NIGHT);
+        int uffaPrioritySimple = 0;
+        int uffaPriorityNight = 1;
 
-        Scocciatura scocciaturaSabatoMattina = new ScocciaturaAssegnazioneUtente(pesoSabatoMattina, DayOfWeek.SATURDAY, TimeSlot.MORNING);
-        Scocciatura scocciaturaSabatoPomeriggio = new ScocciaturaAssegnazioneUtente(pesoSabatoPomeriggio, DayOfWeek.SATURDAY, TimeSlot.AFTERNOON);
-        Scocciatura scocciaturaSabatoNotte = new ScocciaturaAssegnazioneUtente(pesoSabatoNotte, DayOfWeek.SATURDAY, TimeSlot.NIGHT);
+        int uffaPriorityHoliday = 4;  //TODO: customize uffa priority for different holidays and different TimeSlots
+        int uffaPriorityHolidayNight = 5;
 
-        Scocciatura scocciaturaVenerdiPomeriggio = new ScocciaturaAssegnazioneUtente(pesoVenerdiPomeriggio, DayOfWeek.FRIDAY, TimeSlot.AFTERNOON);
-        Scocciatura scocciaturaVenerdiNotte = new ScocciaturaAssegnazioneUtente(pesoVenerdiNotte, DayOfWeek.FRIDAY, TimeSlot.NIGHT);
+        Scocciatura scocciaturaSundayMorning = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayMorning, DayOfWeek.SUNDAY, TimeSlot.MORNING);
+        Scocciatura scocciaturaSundayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayAfternoon, DayOfWeek.SUNDAY, TimeSlot.AFTERNOON);
+        Scocciatura scocciaturaSundayNight = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayNight, DayOfWeek.SUNDAY, TimeSlot.NIGHT);
 
-        Scocciatura scocciaturaDesiderata = new ScocciaturaDesiderata(pesoDesiderata);
+        Scocciatura scocciaturaSaturdayMorning = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayMorning, DayOfWeek.SATURDAY, TimeSlot.MORNING);
+        Scocciatura scocciaturaSaturdayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayAfternoon, DayOfWeek.SATURDAY, TimeSlot.AFTERNOON);
+        Scocciatura scocciaturaSaturdayNight = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayNight, DayOfWeek.SATURDAY, TimeSlot.NIGHT);
 
-        scocciaturaDAO.save(scocciaturaDomenicaPomeriggio);
-        scocciaturaDAO.save(scocciaturaDomenicaMattina);
-        scocciaturaDAO.save(scocciaturaDomenicaNotte);
+        Scocciatura scocciaturaFridayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPriorityFridayAfternoon, DayOfWeek.FRIDAY, TimeSlot.AFTERNOON);
+        Scocciatura scocciaturaFridayNight = new ScocciaturaAssegnazioneUtente(uffaPriorityFridayNight, DayOfWeek.FRIDAY, TimeSlot.NIGHT);
 
-        scocciaturaDAO.save(scocciaturaSabatoMattina);
-        scocciaturaDAO.save(scocciaturaSabatoPomeriggio);
-        scocciaturaDAO.save(scocciaturaSabatoNotte);
+        Scocciatura scocciaturaPreference = new ScocciaturaDesiderata(uffaPriorityPreference);
+        Scocciatura scocciaturaRespectedPreference = new ScocciaturaDesiderata(uffaPriorityRespectedPreference);
 
-        scocciaturaDAO.save(scocciaturaVenerdiPomeriggio);
-        scocciaturaDAO.save(scocciaturaVenerdiNotte);
+        scocciaturaDAO.save(scocciaturaSundayMorning);
+        scocciaturaDAO.save(scocciaturaSundayAfternoon);
+        scocciaturaDAO.save(scocciaturaSundayNight);
 
-        scocciaturaDAO.save(scocciaturaDesiderata);
+        scocciaturaDAO.save(scocciaturaSaturdayMorning);
+        scocciaturaDAO.save(scocciaturaSaturdayAfternoon);
+        scocciaturaDAO.save(scocciaturaSaturdayNight);
+
+        scocciaturaDAO.save(scocciaturaFridayAfternoon);
+        scocciaturaDAO.save(scocciaturaFridayNight);
+
+        scocciaturaDAO.save(scocciaturaPreference);
+        scocciaturaDAO.save(scocciaturaRespectedPreference);
 
         List<DayOfWeek> giorniFeriali = Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
         for (DayOfWeek giornoFeriale : giorniFeriali) {
-            ScocciaturaAssegnazioneUtente scocciaturaFerialeMattina = new ScocciaturaAssegnazioneUtente(pesoFerialeSemplice, giornoFeriale, TimeSlot.MORNING);
+            ScocciaturaAssegnazioneUtente scocciaturaFerialeMattina = new ScocciaturaAssegnazioneUtente(uffaPrioritySimple, giornoFeriale, TimeSlot.MORNING);
             scocciaturaDAO.save(scocciaturaFerialeMattina);
             if (giornoFeriale != DayOfWeek.FRIDAY) {
-                ScocciaturaAssegnazioneUtente scocciaturaFerialePomeriggio = new ScocciaturaAssegnazioneUtente(pesoFerialeSemplice, giornoFeriale, TimeSlot.AFTERNOON);
+                ScocciaturaAssegnazioneUtente scocciaturaFerialePomeriggio = new ScocciaturaAssegnazioneUtente(uffaPrioritySimple, giornoFeriale, TimeSlot.AFTERNOON);
                 scocciaturaDAO.save(scocciaturaFerialePomeriggio);
-                ScocciaturaAssegnazioneUtente scocciaturaFerialeNotturno = new ScocciaturaAssegnazioneUtente(pesoFerialeNotturno, giornoFeriale, TimeSlot.NIGHT);
+                ScocciaturaAssegnazioneUtente scocciaturaFerialeNotturno = new ScocciaturaAssegnazioneUtente(uffaPriorityNight, giornoFeriale, TimeSlot.NIGHT);
                 scocciaturaDAO.save(scocciaturaFerialeNotturno);
             }
         }
+
+        //retrieve of holiday entities (and not DTOs)
+        List<Holiday> holidays = holidayDAO.findAll();
+
+        for(Holiday holiday: holidays) {
+            Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityHoliday, holiday, TimeSlot.MORNING);
+            Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityHoliday, holiday, TimeSlot.AFTERNOON);
+            Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityHolidayNight, holiday, TimeSlot.NIGHT);
+
+            scocciaturaDAO.save(scocciaturaHolidayMorning);
+            scocciaturaDAO.save(scocciaturaHolidayAfternoon);
+            scocciaturaDAO.save(scocciaturaHolidayNight);
+
+        }
+
     }
+
 
     private void registerConstraints() {
 
@@ -191,42 +258,47 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         }
 
         // nessun turno può essere allocato a questa persona durante il suo smonto notte
-        ConstraintTipologieTurniContigue vincoloTurniContigui = new ConstraintTipologieTurniContigue(
+        ConstraintTipologieTurniContigue constraintConsecutiveShifts = new ConstraintTipologieTurniContigue(
                 configVincoli.getHorizonTurnoNotturno(),
                 ChronoUnit.HOURS,
                 TimeSlot.NIGHT,
                 new HashSet<>(Arrays.asList(TimeSlot.values()))
         );
-        vincoloTurniContigui.setViolable(true);
+        constraintConsecutiveShifts.setViolable(true);
 
-        //Constraint vincolo1 = new ConstraintCategorieUtenteTurno();
-        Constraint vincolo2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getNumMaxMinutiConsecutiviPerTutti());
-        Constraint vincolo4 = new ConstraintMaxOrePeriodo(configVincoli.getNumGiorniPeriodo(), configVincoli.getMaxMinutiPeriodo());
-        Constraint vincolo5 = new ConstraintUbiquità();
-        Constraint vincolo6 = new ConstraintNumeroDiRuoloTurno();
+        //Constraint constraint1 = new ConstraintCategorieUtenteTurno();
+        Constraint constraint2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getNumMaxMinutiConsecutiviPerTutti());
+        Constraint constraint4 = new ConstraintMaxOrePeriodo(configVincoli.getNumGiorniPeriodo(), configVincoli.getMaxMinutiPeriodo());
+        Constraint constraint5 = new ConstraintUbiquità();
+        Constraint constraint6 = new ConstraintNumeroDiRuoloTurno();
+        Constraint constraint7 = new ConstraintHoliday();
 
-        //vincolo1.setViolable(true);
+        //constraint1.setViolable(true);
+        constraint7.setViolable(true);
 
         for (ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()) {
             Constraint vincolo = new ConstraintMaxPeriodoConsecutivo(config.getNumMaxMinutiConsecutivi(), config.getCategoriaVincolata());
             vincolo.setDescription("Constraint massimo periodo consecutivo per categoria " + config.getCategoriaVincolata().getType());
             constraintDAO.saveAndFlush(vincolo);
         }
-        //vincolo1.setDescription("Constraint Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
-        vincolo2.setDescription("Constraint massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
-        vincolo4.setDescription("Constraint massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
-        vincolo5.setDescription("Constraint ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
-        vincoloTurniContigui.setDescription("Constraint turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
-        vincolo6.setDescription("Constraint numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
+        //constraint1.setDescription("Constraint Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
+        constraint2.setDescription("Constraint massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
+        constraint4.setDescription("Constraint massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
+        constraint5.setDescription("Constraint ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
+        constraintConsecutiveShifts.setDescription("Constraint turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
+        constraint6.setDescription("Constraint numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
+        constraint7.setDescription("Vincolo festività. Verifica che un medico che l'anno precedente ha lavorato durante una certa festività non venga assegnato a un turno corrispondente alla medesima festività.");
 
-        constraintDAO.saveAndFlush(vincoloTurniContigui);
-        //constraintDAO.saveAndFlush(vincolo1);
-        constraintDAO.saveAndFlush(vincolo2);
-        constraintDAO.saveAndFlush(vincolo4);
-        constraintDAO.saveAndFlush(vincolo5);
-        constraintDAO.saveAndFlush(vincolo6);
+        constraintDAO.saveAndFlush(constraintConsecutiveShifts);
+        //constraintDAO.saveAndFlush(constraint1);
+        constraintDAO.saveAndFlush(constraint2);
+        constraintDAO.saveAndFlush(constraint4);
+        constraintDAO.saveAndFlush(constraint5);
+        constraintDAO.saveAndFlush(constraint6);
+        constraintDAO.saveAndFlush(constraint7);
 
-        List<Constraint> vincoli = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
+        //List<Constraint> constraints = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
+
     }
 
 
@@ -466,7 +538,22 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift3);
 
-        //TO-DO: Eliminare in seguito
+
+        //creation of the DoctorHolidays instances
+        List<Doctor> allDoctors = doctorDAO.findAll();
+        registerHolidays();
+        List<Holiday> holidays = holidayDAO.findAll();  //retrieve of holiday entities (and not DTOs)
+
+        for(Doctor doctor: allDoctors) {
+            DoctorUffaPriority dup = new DoctorUffaPriority(doctor);
+            DoctorHolidays dh = new DoctorHolidays(doctor, holidays);
+
+            doctorUffaPriorityDAO.save(dup);
+            //doctorHolidaysDAO.save(dh);   //TODO: DEBUG PLZ
+
+        }
+
+        //TODO: Eliminare in seguito
         List<ConcreteShift> lc= new ArrayList<>();
         ConcreteShift concreteShift1 = new ConcreteShift(LocalDate.now().toEpochDay(),shift1);
         concreteShift1=concreteShiftDAO.saveAndFlush(concreteShift1);
@@ -540,7 +627,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         concreteShiftDAO.saveAndFlush(concreteShift4);
 
 
-
         List<Doctor> ld = new ArrayList<Doctor>();
         ld.add(u2);
         ld.add(u3);
@@ -582,11 +668,17 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                     LocalDate.now().plusDays(7),
                     v,
                     lc,
-                    ld
-                    ).build();
+                    ld,
+                    holidays,
+                    doctorHolidaysDAO.findAll(),
+                    doctorUffaPriorityDAO.findAll()
+            ).build();
         } catch (IllegalScheduleException e) {
             throw new RuntimeException(e);
         }
+
+
+
         //scheduleDAO.save(s);
         /*
         ScheduleRestEndpoint restSchedule=new ScheduleRestEndpoint();

@@ -85,7 +85,7 @@ public class VincoloPersonaTurnoTest {
         utenteDao.saveAndFlush(pregUser);
         UserScheduleState pregUserState = new UserScheduleState(pregUser, null);
         //La persona incinta non può essere aggiunta ai turni notturni, l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(pregUserState,turnoNotturno));
+        vincoloPersonaTurno.verificaVincolo(new ContextConstraint(pregUserState,turnoNotturno));
     }*/
 
     //@Test(expected=ViolatedConstraintException.class)
@@ -137,7 +137,7 @@ public class VincoloPersonaTurnoTest {
         UserScheduleState over62userState = new UserScheduleState(over62user, null);
         //Verifica il vincolo
         //La persona over62 non può essere aggiunta ai turni  notturni, l'eccezioen deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(over62userState,turnoNotturno));
+        vincoloPersonaTurno.verificaVincolo(new ContextConstraint(over62userState,turnoNotturno));
     }*/
 
     //@Test(expected=ViolatedConstraintException.class)
@@ -190,7 +190,7 @@ public class VincoloPersonaTurnoTest {
         UserScheduleState inmalattiauserState = new UserScheduleState(inmalattiauser, null);
         //Verifica il vincolo
         //La persona in malattia non può essere aggiunta ai turni durante la malattia, quindi l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inmalattiauserState,turnoMattutinoinmalattia));
+        vincoloPersonaTurno.verificaVincolo(new ContextConstraint(inmalattiauserState,turnoMattutinoinmalattia));
     }*/
 
     //@Test(expected=ViolatedConstraintException.class)
@@ -244,7 +244,7 @@ public class VincoloPersonaTurnoTest {
         UserScheduleState inferieuserState = new UserScheduleState(inferieuser, null);
         //Verifica il vincolo
         //La persona in malattia non può essere aggiunta ai turni durante la malattia, quindi l'eccezione deve essere sollevata
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(inferieuserState,turnoMattutinoiferie));
+        vincoloPersonaTurno.verificaVincolo(new ContextConstraint(inferieuserState,turnoMattutinoiferie));
     }*/
 
     //@Test(expected=ViolatedConstraintException.class)
@@ -290,15 +290,15 @@ public class VincoloPersonaTurnoTest {
 
         //Verifica il vincolo
         try{
-            vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(specializzato,turnoCardiologia));
-            vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(specializzando,turnoCardiologia));
+            vincoloPersonaTurno.verificaVincolo(new ContextConstraint(specializzato,turnoCardiologia));
+            vincoloPersonaTurno.verificaVincolo(new ContextConstraint(specializzando,turnoCardiologia));
         }catch(ViolatedConstraintException ex){
             Assert.fail();
         }
         Utente utenteacaso = new Utente("Giovanni","Cantone", "******", LocalDate.of(1960, 3, 14),"@gmail.com", "passw", RuoloEnum.STRUTTURATO,AttoreEnum.UTENTE  );
         utenteDao.saveAndFlush(utenteacaso);
         UserScheduleState nonCardiologo = new UserScheduleState(utenteacaso, null);
-        vincoloPersonaTurno.verificaVincolo(new ContestoVincolo(nonCardiologo, turnoCardiologia));
+        vincoloPersonaTurno.verificaVincolo(new ContextConstraint(nonCardiologo, turnoCardiologia));
 
 
     }*/

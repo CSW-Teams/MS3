@@ -38,9 +38,12 @@ public class Schedule {
     @NotNull
     private List<Constraint> violatedConstraints;
 
-
     /** Reason for which the shift schedule results illegal */
     private Exception causeIllegal;
+
+    /** List of priority levels on all the queues of the doctors after the schedule generation */
+    @Transient
+    private List<DoctorUffaPriority> doctorUffaPriorityList;
 
     /**
      * Class representing a valid schedule

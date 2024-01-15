@@ -90,7 +90,7 @@ public class VincoloMaxOrePeriodoTest {
 
         Vincolo vincoloMaxOrePeriodo = new VincoloMaxOrePeriodo(7,60*60);
 
-        vincoloMaxOrePeriodo.verificaVincolo(new ContestoVincolo(pregUserState,new AssegnazioneTurno(LocalDate.of(2023,1, 15),t3,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)))));
+        vincoloMaxOrePeriodo.verificaVincolo(new ContextConstraint(pregUserState,new AssegnazioneTurno(LocalDate.of(2023,1, 15),t3,new HashSet<>(),new HashSet<>(Collections.singletonList(utente)))));
     }*/
 
 }
