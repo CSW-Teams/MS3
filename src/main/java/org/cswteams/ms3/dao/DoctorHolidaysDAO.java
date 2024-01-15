@@ -10,5 +10,6 @@ import java.util.List;
 public interface DoctorHolidaysDAO extends JpaRepository<DoctorHolidays,Long> {
 
     List<DoctorHolidays> findAll();
+    DoctorHolidays findByDoctor_Id(Long id);
 
 }

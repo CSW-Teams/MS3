@@ -22,6 +22,6 @@ public interface IControllerScambioTurno {
 
     void answerTurnChangeRequest(@NotNull AnswerTurnChangeRequestDTO answerTurnChangeRequestDTO) throws ShiftException;
 
-    List<MedicalDoctorInfoDTO> getAvailableUserForReplacement(@NotNull GetAvailableUsersForReplacementDTO dto);
+    List<MedicalDoctorInfoDTO> getAvailableUsersForReplacement(@NotNull GetAvailableUsersForReplacementDTO dto);
 }
 
