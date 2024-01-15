@@ -34,9 +34,6 @@ public class ScheduleBuilder {
     @NotNull
     private List<Constraint> allConstraints;
 
-    /** Objects representing the state of schedule building for each participant doctor */
-    private Map<Long, DoctorUffaPriority> allDoctorUffaPriorities;
-
     /** Shift schedule to be built */
     private Schedule schedule;
 
@@ -47,7 +44,7 @@ public class ScheduleBuilder {
     private List<DoctorHolidays> doctorHolidaysList;
 
     /** All the information about priority levels on the queues of the doctors */
-    private List<DoctorUffaPriority> allDoctorUffaPriority;
+    private List<DoctorUffaPriority> doctorUffaPriorityList;
 
     /** Instance of controllerScocciatura */
     private ControllerScocciatura controllerScocciatura;
@@ -99,6 +96,7 @@ public class ScheduleBuilder {
 
     /**
      * This method has the responsibility to create a new instance of schedule and save it in persistence.
+     * @param schedule New (empty) schedule to be populated
      * @param startDate Date of the start of the new schedule
      * @param endDate Date of the end of the new schedule
      * @param allConstraints Set of constraints to not be violated
@@ -106,8 +104,8 @@ public class ScheduleBuilder {
      * @param doctors Set of doctors that can be added in the schedule
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors,
-                           List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> allDoctorUffaPriority) throws IllegalScheduleException {
+    public ScheduleBuilder(Schedule schedule, LocalDate startDate, LocalDate endDate, List<Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors,
+                           List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> doctorUffaPriorityList) throws IllegalScheduleException {
 
         // Checks on the parameters state
         validateDates(startDate,endDate);
@@ -115,15 +113,13 @@ public class ScheduleBuilder {
         validateConstraints(allConstraints);
 
         // Actual initialization
-        this.schedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), Collections.emptyList());
+        this.schedule = schedule;
         this.schedule.setConcreteShifts(allAssignedShifts);
         this.allConstraints = allConstraints;
-        this.allDoctorUffaPriorities = new HashMap<>();
-        initializeUserScheduleStates(doctors);
 
         this.holidays = holidays;
         this.doctorHolidaysList = doctorHolidaysList;
-        this.allDoctorUffaPriority = allDoctorUffaPriority;
+        this.doctorUffaPriorityList = doctorUffaPriorityList;
 
     }
 
@@ -141,40 +137,30 @@ public class ScheduleBuilder {
     /**
      * This method has the responsibility of creating a new valid schedule from an existing one
      * @param allConstraints Set of constraints to not be violated
-     * @param doctors Set of doctors that can be added in the schedule
+     * @param doctorUffaPriorityList Set of DoctorPriorityList related to all the doctors that can be added in the schedule
      * @param schedule An existing schedule from which to start a new one
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(List<Constraint> allConstraints, List<Doctor> doctors, Schedule schedule) throws IllegalScheduleException {
+    public ScheduleBuilder(List<Constraint> allConstraints, List<DoctorUffaPriority> doctorUffaPriorityList, Schedule schedule) throws IllegalScheduleException {
         // Checks on the parameters state
         validateConstraints(allConstraints);
         validateSchedule(schedule);
 
         this.allConstraints = allConstraints;
         this.schedule=schedule;
-        this.allDoctorUffaPriorities = new HashMap<>();
-        initializeUserScheduleStates(doctors);
+        this.doctorUffaPriorityList = doctorUffaPriorityList;
+
     }
 
 
-
-    /**
-     * Private method that has the responsibility of initializing the state of the schedule for all the users.
-     * @param doctors Set of doctors that can be added in the schedule
-     */
-    private void initializeUserScheduleStates(List<Doctor> doctors){
-
-        for (Doctor u : doctors){
-            DoctorUffaPriority usstate = new DoctorUffaPriority(u, schedule);
-            allDoctorUffaPriorities.put(u.getId(), usstate);
-        }
-    }
     public Schedule build(){
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
 
+        //set new schedule as parameter of all DoctorUffaPriority instances
+
         if(controllerScocciatura != null)   //if controllerScocciatura is instantiated, then we can normalize all the priorities.
-            controllerScocciatura.normalizeUffaPriority(allDoctorUffaPriority);
+            controllerScocciatura.normalizeUffaPriority(doctorUffaPriorityList);
 
         for( ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
             // First step: define doctors on duty in the concrete shift.
@@ -218,7 +204,7 @@ public class ScheduleBuilder {
 
         }
 
-        this.schedule.setDoctorUffaPriorityList(allDoctorUffaPriority); //set of all the DoctorUffaPriority instances so that they can be saved in persistence
+        this.schedule.setDoctorUffaPriorityList(doctorUffaPriorityList); //set of all the DoctorUffaPriority instances so that they can be saved in persistence
         return this.schedule;
 
     }
@@ -236,7 +222,6 @@ public class ScheduleBuilder {
     private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList, ConcreteShiftDoctorStatus status, int selectedTask) throws NotEnoughFeasibleUsersException{
 
         int selectedUsers=0;
-        List<DoctorUffaPriority> allDoctorUffaPriority = new ArrayList<>(allDoctorUffaPriorities.values());
 
         /* If the concrete shift we are populating is in the afternoon, we get the eventual concrete shift allocated in the morning of the same day.
          * It is important to check if there is someone who can be allocated in a long shift (shift in the morning + shift in the afternoon of the same day).
@@ -246,32 +231,32 @@ public class ScheduleBuilder {
         if(concreteShift.getShift().getTimeSlot() == TimeSlot.AFTERNOON) {
             prevConcreteShift = this.getConcreteShift(concreteShift.getDate(), TimeSlot.MORNING);
             if(prevConcreteShift != null)   //case in which there exists a concrete shift the same day in the morning
-                prevConcreteShiftDup = this.getDupFromConcreteShift(prevConcreteShift, allDoctorUffaPriority);
+                prevConcreteShiftDup = this.getDupFromConcreteShift(prevConcreteShift, doctorUffaPriorityList);
 
         }
 
         if(controllerScocciatura != null) {
             //general queue has always to be updated
-            controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueueEnum.GENERAL);
-            controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueueEnum.GENERAL);
+            controllerScocciatura.updatePriorityDoctors(doctorUffaPriorityList, concreteShift, PriorityQueueEnum.GENERAL);
+            controllerScocciatura.orderByPriority(doctorUffaPriorityList, PriorityQueueEnum.GENERAL);
 
             //long shift queue has to be updated only for the doctors that have the possibility to work for a long shift (morning+afternoon)
             if(prevConcreteShift != null) {
                 controllerScocciatura.updatePriorityDoctors(prevConcreteShiftDup, concreteShift, PriorityQueueEnum.LONG_SHIFT);
-                controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueueEnum.LONG_SHIFT);
+                controllerScocciatura.orderByPriority(doctorUffaPriorityList, PriorityQueueEnum.LONG_SHIFT);
 
             }
 
             //night queue has to be updated only if the current concrete shift is nocturne
             if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT) {
-                controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueueEnum.NIGHT);
-                controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueueEnum.NIGHT);
+                controllerScocciatura.updatePriorityDoctors(doctorUffaPriorityList, concreteShift, PriorityQueueEnum.NIGHT);
+                controllerScocciatura.orderByPriority(doctorUffaPriorityList, PriorityQueueEnum.NIGHT);
 
             }
 
         }
 
-        for(DoctorUffaPriority dup: allDoctorUffaPriority){
+        for(DoctorUffaPriority dup: doctorUffaPriorityList){
             if (selectedUsers == qss.getValue()){
                 break;
             }
@@ -379,6 +364,23 @@ public class ScheduleBuilder {
     }
 
 
+    /**
+     * This private method retrieves the DoctorUffaPriority instance associated to a specific doctor.
+     * @param doctor Doctor related to the DoctorUffaPriority instance we want to extract
+     * @return DoctorUffaPriority instance
+     */
+    private DoctorUffaPriority findDupByDoctor(Doctor doctor) {
+
+        for(DoctorUffaPriority dup : doctorUffaPriorityList) {
+            if (dup.getDoctor().equals(doctor))
+                return dup;
+
+        }
+        return null;
+
+    }
+
+
 
     /**
      * This method applies all the constraints to the specified context. If a constraint is violated, then it is added
@@ -425,9 +427,10 @@ public class ScheduleBuilder {
 
         for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
             Doctor doctor = da.getDoctor();
-            //find DoctorHolidays instance associated with current doctor
+            //find DoctorHolidays instance and DoctorUffaPriority instance associated with current doctor
             DoctorHolidays dh = findDhByDoctor(doctor);
-            if (!verifyAllConstraints(new ContextConstraint(this.allDoctorUffaPriorities.get(doctor.getId()), concreteShift, dh, holidays), isForced)){
+            DoctorUffaPriority dup = this.findDupByDoctor(doctor);
+            if (!verifyAllConstraints(new ContextConstraint(dup, concreteShift, dh, holidays), isForced)){
                 schedule.setCauseIllegal(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
             }
         }
@@ -435,30 +438,37 @@ public class ScheduleBuilder {
 
             for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
                 Doctor doctor = da.getDoctor();
-                this.allDoctorUffaPriorities.get(doctor.getId()).addConcreteShift(concreteShift);
-                List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
+                DoctorUffaPriority dup = this.findDupByDoctor(doctor);
 
-                /* If the concrete shift we are populating is in the afternoon, we get the eventual concrete shift allocated in the morning of the same day.
-                 * It is important to check if there is someone who can be allocated in a long shift (shift in the morning + shift in the afternoon of the same day).
-                 */
-                ConcreteShift prevConcreteShift = null;
-                List<DoctorUffaPriority> prevConcreteShiftDup = null;
-                if(concreteShift.getShift().getTimeSlot() == TimeSlot.AFTERNOON) {
-                    prevConcreteShift = this.getConcreteShift(concreteShift.getDate(), TimeSlot.MORNING);
-                    if(prevConcreteShift != null)   //case in which there exists a concrete shift the same day in the morning
-                        prevConcreteShiftDup = this.getDupFromConcreteShift(prevConcreteShift, new ArrayList<>(this.allDoctorUffaPriorities.values()));
+                if(dup != null) {
+                    dup.addConcreteShift(concreteShift);
+                    List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
 
-                }
+                    /* If the concrete shift we are populating is in the afternoon, we get the eventual concrete shift allocated in the morning of the same day.
+                     * It is important to check if there is someone who can be allocated in a long shift (shift in the morning + shift in the afternoon of the same day).
+                     */
+                    ConcreteShift prevConcreteShift = null;
+                    List<DoctorUffaPriority> prevConcreteShiftDup = null;
+                    if (concreteShift.getShift().getTimeSlot() == TimeSlot.AFTERNOON) {
+                        prevConcreteShift = this.getConcreteShift(concreteShift.getDate(), TimeSlot.MORNING);
+                        if (prevConcreteShift != null)   //case in which there exists a concrete shift the same day in the morning
+                            prevConcreteShiftDup = this.getDupFromConcreteShift(prevConcreteShift, doctorUffaPriorityList);
+
+                    }
 
 
-                if(doctorsOnDuty.contains(doctor)) {
-                    //here we need to modify only the appropriate queues
-                    this.allDoctorUffaPriorities.get(doctor.getId()).updatePriority(PriorityQueueEnum.GENERAL);
-                    if(prevConcreteShiftDup != null && prevConcreteShiftDup.contains(this.allDoctorUffaPriorities.get(doctor.getId())))
-                        this.allDoctorUffaPriorities.get(doctor.getId()).updatePriority(PriorityQueueEnum.LONG_SHIFT);
-                    else if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
-                        this.allDoctorUffaPriorities.get(doctor.getId()).updatePriority(PriorityQueueEnum.NIGHT);
+                    if (doctorsOnDuty.contains(doctor)) {
+                        //here we need to modify only the appropriate queues
+                        dup.updatePriority(PriorityQueueEnum.GENERAL);
+                        if (prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
+                            dup.updatePriority(PriorityQueueEnum.LONG_SHIFT);
+                        else if (concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
+                            dup.updatePriority(PriorityQueueEnum.NIGHT);
 
+                    }
+
+                } else {
+                    throw new NullPointerException();
                 }
 
             }

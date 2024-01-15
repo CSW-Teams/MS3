@@ -115,7 +115,12 @@ public class SchedulerController implements ISchedulerController {
 
         //Creation of a schedule builder foreach new shift schedule
         try {
+            Schedule schedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), Collections.emptyList());
+            //initialize attribute schedule for all the doctorUffaPriority instances
+            initializeDoctorUffaPriorities(schedule, doctorUffaPriorityDAO.findAll());
+
             this.scheduleBuilder = new ScheduleBuilder(
+                schedule,                       //New schedule to be defined
                 startDate,                      //Start date of the shift schedule
                 endDate,                        //End date of the shift schedule
                 constraintDAO.findAll(),        //All the constraints to respect when a doctor is assigned to a concrete shift
@@ -129,7 +134,7 @@ public class SchedulerController implements ISchedulerController {
             this.scheduleBuilder.setControllerScocciatura(new ControllerScocciatura(scocciaturaDAO.findAll()));
             //We set the controller that manages doctors priorities.
 
-            Schedule schedule = scheduleDAO.save(this.scheduleBuilder.build());
+            schedule = scheduleDAO.save(this.scheduleBuilder.build());
             for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
                 doctorUffaPriorityDAO.save(dup);
             }
@@ -176,12 +181,14 @@ public class SchedulerController implements ISchedulerController {
      */
     public Schedule addConcreteShift(ConcreteShift concreteShift, boolean forced) throws IllegalScheduleException {
 
-        Schedule schedule;
+        Schedule schedule = scheduleDAO.findByDateBetween(concreteShift.getDate());
+        //initialize attribute schedule for all the doctorUffaPriority instances
+        initializeDoctorUffaPriorities(schedule, doctorUffaPriorityDAO.findAll());
 
         //We create a new builder passing him as parameter an existing shift schedule.
         this.scheduleBuilder = new ScheduleBuilder(
-                constraintDAO.findAll(),    //All the constraints that shall be respected when a doctor is assigned to a concrete shift
-                doctorDAO.findAll(),        //All the possible doctors that can be assigned to the concrete shifts
+                constraintDAO.findAll(),            //All the constraints that shall be respected when a doctor is assigned to a concrete shift
+                doctorUffaPriorityDAO.findAll(),    //All the possible doctors that can be assigned to the concrete shifts
                 scheduleDAO.findByDateBetween(concreteShift.getDate())  //Existing shift schedule
         );
 
@@ -383,6 +390,19 @@ public class SchedulerController implements ISchedulerController {
         return null;    //TODO: establish if it is necessary to adjust this null value.
 
     }
+
+
+    /**
+     * Private method that has the responsibility of initializing the state of the schedule for all the users
+     * (in particular, initializing schedule attribute) and flushing the updated doctorUffaPriorityList instances in the db.
+     */
+    private void initializeDoctorUffaPriorities(Schedule schedule, List<DoctorUffaPriority> doctorUffaPriorityList){
+        for (DoctorUffaPriority dup : doctorUffaPriorityList){
+            dup.setScheduleId(schedule.getId());
+            doctorUffaPriorityDAO.save(dup);
+        }
+    }
+
 
     /**
      * This method retrieves all the existing schedules from the database.

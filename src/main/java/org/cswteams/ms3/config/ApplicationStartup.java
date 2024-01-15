@@ -156,7 +156,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
 
     private void registerScocciature() {
-        List<HolidayDTO> holidaysDTO = registerHolidays(); //TODO: HolidayDTO will be useful for uffa priority differentiation.
+        //TODO: check where it is appropriate to register the holidays in the system.
+        //List<HolidayDTO> holidaysDTO = registerHolidays(); //TODO: HolidayDTO will be useful for uffa priority differentiation.
 
         //We are reasoning about 40 priority levels.
         int uffaPriorityPreference = 10;
@@ -664,10 +665,18 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         ld.add(u33);
         ld.add(u34);
         List<Constraint> vincoli = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
-        Schedule s= null;
+        Schedule s = new Schedule(LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay(), Collections.emptyList());
+
         List<Constraint> v= new ArrayList<>();
+
         try {
+            for (DoctorUffaPriority dup : doctorUffaPriorityDAO.findAll()){
+                dup.setScheduleId(s.getId());
+                doctorUffaPriorityDAO.save(dup);
+            }
+
             s = new ScheduleBuilder(
+                    s,
                     LocalDate.now(),
                     LocalDate.now().plusDays(7),
                     v,
@@ -677,6 +686,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                     doctorHolidaysDAO.findAll(),
                     doctorUffaPriorityDAO.findAll()
             ).build();
+
         } catch (IllegalScheduleException e) {
             throw new RuntimeException(e);
         }
