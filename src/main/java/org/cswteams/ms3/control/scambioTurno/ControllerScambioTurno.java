@@ -9,6 +9,8 @@ import org.cswteams.ms3.dto.ViewUserTurnRequestsDTO;
 import org.cswteams.ms3.dto.concreteshift.GetAvailableUsersForReplacementDTO;
 import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.constraint.ConstraintHoliday;
+import org.cswteams.ms3.entity.constraint.ConstraintMaxPeriodoConsecutivo;
 import org.cswteams.ms3.entity.constraint.ConstraintUbiquità;
 import org.cswteams.ms3.entity.constraint.ContextConstraint;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
@@ -311,27 +313,34 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             availableDoctors = doctorDAO.findBySeniorities(requestedSeniorities);
         }
 
-        /* UBIQUITY CONSTRAINT
+        /* CONSTRAINTS CHECK */
+        List<Doctor> availableDoctorsAfterConstraintsCheck = new ArrayList<>();
 
         for (Doctor doctor : availableDoctors) {
             ConstraintUbiquità constraintUbiquità = new ConstraintUbiquità();
+            ConstraintHoliday constraintHoliday = new ConstraintHoliday();
+            ConstraintMaxPeriodoConsecutivo constraintMaxPeriodoConsecutivo = new ConstraintMaxPeriodoConsecutivo();
+
             ContextConstraint context = new ContextConstraint(
                     doctorUffaPriorityDAO.findByDoctor_Id(doctor.getId()),
                     concreteShift.get(),
                     doctorHolidaysDAO.findByDoctor_Id(doctor.getId()),
                     holidayDAO.findAll()
-
             );
 
             try {
                 constraintUbiquità.verifyConstraint(context);
+                constraintHoliday.verifyConstraint(context);
+                constraintMaxPeriodoConsecutivo.verifyConstraint(context);
+
+                availableDoctorsAfterConstraintsCheck.add(doctor);
             } catch (ViolatedConstraintException e) {
-                availableDoctors.remove(doctor);
+                continue;
             }
         }
-         */
 
-        for (Doctor doctor : availableDoctors) {
+
+        for (Doctor doctor : availableDoctorsAfterConstraintsCheck) {
             MedicalDoctorInfoDTO doctorDTO = new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority());
             availableDoctorsDTOs.add(doctorDTO);
         }
