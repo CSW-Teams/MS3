@@ -109,7 +109,7 @@ class ScheduleView extends React.Component{
             shiftQueriedResponse: "ABOUT_TO_ASK",
             idUser: localStorage.getItem("id"),
             requests: [],
-            lastYear : new Date().getFullYear()
+            lastYears : [new Date().getFullYear(), new Date().getFullYear() +1, new Date().getFullYear() -1]
           };
           /**
            * All filtering functions.
@@ -350,7 +350,11 @@ class ScheduleView extends React.Component{
 
       let allServices = await new ServizioAPI().getService();
       let allDoctors = await new UserAPI().getAllDoctorsInfo();
-      let allHolidays = await new HolidaysAPI().getHolidays(new Date().getFullYear());
+
+      let holiApi = new HolidaysAPI() ;
+      let allHolidays = await holiApi.getHolidays(new Date().getFullYear());
+      allHolidays = allHolidays.concat(await holiApi.getHolidays(new Date().getFullYear() -1)) ;
+      allHolidays = allHolidays.concat(await holiApi.getHolidays(new Date().getFullYear() +1)) ;
 
 
       this.setState(
@@ -493,10 +497,22 @@ class ScheduleView extends React.Component{
               >
                 <ViewState
                   onCurrentDateChange={async (currentDate) => {
-                    if(this.state.lastYear !== currentDate.getFullYear()) {
+                    if(!this.state.lastYears.includes(currentDate.getFullYear())) {
                       this.setState({
-                        holidays : await new HolidaysAPI().getHolidays(currentDate.getFullYear()),
-                        lastYear : currentDate.getFullYear()
+                        holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear())),
+                        lastYears : this.state.lastYears.concat([currentDate.getFullYear()])
+                      }) ;
+                    }
+                    if(!this.state.lastYears.includes(currentDate.getFullYear() +1)) {
+                      this.setState({
+                        holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() +1)),
+                        lastYears : this.state.lastYears.concat(([currentDate.getFullYear() +1]))
+                      }) ;
+                    }
+                    if(!this.state.lastYears.includes(currentDate.getFullYear() -1)) {
+                      this.setState({
+                        holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() -1)),
+                        lastYears : this.state.lastYears.concat([currentDate.getFullYear() -1])
                       }) ;
                     }
                   }}
