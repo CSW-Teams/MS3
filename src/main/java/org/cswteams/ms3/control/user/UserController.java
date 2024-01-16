@@ -5,15 +5,20 @@ import org.cswteams.ms3.dao.UserDAO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.dto.user.UserDetailsDTO;
+import org.cswteams.ms3.dto.userprofile.SingleUserProfileDTO;
+import org.cswteams.ms3.dto.userprofile.TemporaryConditionDTO;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.Preference;
 import org.cswteams.ms3.entity.Specialization;
 import org.cswteams.ms3.entity.User;
 import org.cswteams.ms3.entity.condition.Condition;
+import org.cswteams.ms3.entity.condition.PermanentCondition;
+import org.cswteams.ms3.entity.condition.TemporaryCondition;
 import org.cswteams.ms3.enums.SystemActor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -89,5 +94,78 @@ public class UserController implements IUserController {
     public void addSpecialization(Doctor doctor, Specialization specialization) throws Exception {
         doctor.addSpecialization(specialization);
     }
+
+
+    /**
+     * Function that has the responsibility to retrive information about single user profile
+     * to be shown in the user profile view. In particular this method converts doctor entity of the backend
+     * in the
+     * @param id The ID of the user/doctor we are searching
+     * @return A well formatted DTO or a dummy DTO with id = -1 if id doesn't corresponds to any
+     * DB entry or a null instance if there has been any other problem in the backend
+     */
+    @Override
+    public SingleUserProfileDTO getSingleUserProfileInfos(Long id){
+        try{
+            Doctor doctor = doctorDAO.findById((long)id);
+            List<String> specializations = new ArrayList<>();
+            List<String> systemActors = new ArrayList<>();
+            List<String> permanentConditions = new ArrayList<>();
+            List<TemporaryConditionDTO> temporaryConditions = new ArrayList<>();
+
+            // Convert specialization entity in string for the frontend
+            for(Specialization specialization : doctor.getSpecializations()){
+                specializations.add(specialization.getType());
+            }
+
+            // Convert systemActor entity in string for the frontend
+            for(SystemActor systemActor : doctor.getSystemActors()){
+                systemActors.add(systemActor.name());
+            }
+
+            // Convert permanent conditions entity in string for the frontend
+            for(PermanentCondition permanentCondition : doctor.getPermanentConditions()){
+                permanentConditions.add(permanentCondition.getType());
+            }
+
+            // Convert temporary conditions entity in string for the frontend
+            for(TemporaryCondition temporaryCondition : doctor.getTemporaryConditions()){
+                temporaryConditions.add(new TemporaryConditionDTO(
+                        temporaryCondition.getType(),
+                        temporaryCondition.getStartDate(),
+                        temporaryCondition.getEndDate()
+                ));
+            }
+
+
+            return new SingleUserProfileDTO(
+                    doctor.getId(),
+                    doctor.getName(),
+                    doctor.getLastname(),
+                    doctor.getEmail(),
+                    doctor.getBirthday().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+                    doctor.getSeniority().name(),
+                    specializations,
+                    systemActors,
+                    permanentConditions,
+                    temporaryConditions);
+        }catch (NullPointerException nullPointerException){
+            return new SingleUserProfileDTO(
+                    -1L,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    new ArrayList<>());
+        }catch (Exception e){
+            return null;
+        }
+
+    }
+
 
 }

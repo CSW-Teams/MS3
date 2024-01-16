@@ -14,7 +14,6 @@ import java.util.List;
 
 @Getter
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Doctor extends User{
     /*TODO : Check if it is necessary Setter for password on password change
      *  Should be added a Factory to set protected access to doctor (So that no one can change his credentials

@@ -28,10 +28,10 @@ public class LoginRestEndpoint {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         if (u != null) {
-                return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
-            }
+            return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
+        }
 
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("Username o password errati",HttpStatus.BAD_REQUEST);
     }
 
 }

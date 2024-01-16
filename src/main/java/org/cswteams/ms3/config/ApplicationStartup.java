@@ -245,7 +245,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             Properties prop = new Properties();
             prop.load(propsInput);
 
-            ConfigVincMaxPerCons confOver62 = new ConfigVincMaxPerCons(permanentConditionDAO.findByType("OVER_62"), Integer.parseInt(prop.getProperty("numMaxOreConsecutiveOver62")) * 60);
+            ConfigVincMaxPerCons confOver62 = new ConfigVincMaxPerCons(permanentConditionDAO.findByType("OVER 62"), Integer.parseInt(prop.getProperty("numMaxOreConsecutiveOver62")) * 60);
             ConfigVincMaxPerCons confIncinta = new ConfigVincMaxPerCons(temporaryConditionDAO.findByType("INCINTA"), Integer.parseInt(prop.getProperty("numMaxOreConsecutiveDonneIncinta")) * 60);
             configVincoloMaxPeriodoConsecutivoDAO.saveAndFlush(confOver62);
             configVincoloMaxPeriodoConsecutivoDAO.saveAndFlush(confIncinta);
@@ -310,11 +310,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
         // Condition may be structure specific TODO: Ask if it is needed a configuration file for that
-        PermanentCondition over62 = new PermanentCondition("OVER_62");
+        PermanentCondition over62 = new PermanentCondition("OVER 62");
         TemporaryCondition pregnant = new TemporaryCondition("INCINTA", LocalDate.now().toEpochDay(), LocalDate.now().plusMonths(9).toEpochDay());
-        TemporaryCondition maternity = new TemporaryCondition("IN_MATERNITA'", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(60).toEpochDay());
-        TemporaryCondition vacation = new TemporaryCondition("IN_FERIE", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
-        TemporaryCondition sick = new TemporaryCondition("IN_MALATTIA", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
+        TemporaryCondition maternity = new TemporaryCondition("IN MATERNITA'", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(60).toEpochDay());
+        TemporaryCondition vacation = new TemporaryCondition("IN FERIE", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
+        TemporaryCondition sick = new TemporaryCondition("IN MALATTIA", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
 
 
         //CREA LE CATEGORIE DI TIPO SPECIALIZZAZIONE (INCLUSIVE)
@@ -355,7 +355,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         //Creo utenti
         UserController userController = new UserController();
 
-        Doctor u6 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone@gmail.com", "passw", Seniority.STRUCTURED, List.of(SystemActor.PLANNER));
+        Doctor u6 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone@gmail.com", "passw", Seniority.STRUCTURED, List.of(SystemActor.PLANNER, SystemActor.DOCTOR));
         try {
             userController.addCondition(u6, over62);
             userController.addCondition(u6, vacation);
@@ -366,7 +366,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         Doctor u1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, List.of(SystemActor.CONFIGURATOR));
         try {
-            userController.addCondition(u6, over62);
+            userController.addCondition(u1, over62);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -395,6 +395,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u8 = new Doctor("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, List.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u8, cardiologia);
+            userController.addCondition(u8, sick);
+            userController.addCondition(u8, vacation);
+            userController.addCondition(u8,over62);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

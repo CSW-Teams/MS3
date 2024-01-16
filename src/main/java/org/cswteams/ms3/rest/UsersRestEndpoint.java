@@ -4,6 +4,7 @@ import org.cswteams.ms3.control.user.IUserController;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.dto.user.UserDetailsDTO;
+import org.cswteams.ms3.dto.userprofile.SingleUserProfileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +40,21 @@ public class UsersRestEndpoint {
     public ResponseEntity<?> getSingleUser(@PathVariable Long userId) {
         UserDetailsDTO u = userController.getSingleUser(userId);
         return new ResponseEntity<>(u, HttpStatus.FOUND);
+    }
+
+
+    @RequestMapping(method = RequestMethod.GET, path = "/user-profile/user_id={userId}")
+    public ResponseEntity<?> getSingleUserProfileInfos(@PathVariable Long userId) {
+        if(userId < 0){
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }else{
+            SingleUserProfileDTO singleUserProfileDTO = userController.getSingleUserProfileInfos(userId);
+            if(singleUserProfileDTO == null){
+                return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            }else if(singleUserProfileDTO.getId() == null || singleUserProfileDTO.getId() == -1){
+                return new ResponseEntity<>(singleUserProfileDTO, HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(singleUserProfileDTO, HttpStatus.OK);
+        }
     }
 }
