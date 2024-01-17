@@ -22,6 +22,7 @@ import AggiungiCategoria
   from "../../components/common/BottomViewAggiungiTurnazione";
 import {toast} from "react-toastify";
 import {Button} from "@material-ui/core";
+import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 
 /**
  * Class needed to fromat correctly the attributes permanentConditions and temporaryConditions
@@ -51,6 +52,7 @@ export default class SingleUserProfileView extends React.Component{
       systemActors: [],
       specializations: [],
       conditions:[],
+      isPlanner :false
     }
   }
 
@@ -59,8 +61,12 @@ export default class SingleUserProfileView extends React.Component{
     let user = await(new UserAPI().getSingleUserProfileDetails(id));
     let systemActorsUserItalianTranslation = [];
     let conditionsToShow = [];
+    let isPlanner = false;
 
     for(var i = 0;i < user.systemActors.length;i++){
+      if(user.systemActors[i] === "PLANNER"){
+        isPlanner = true;
+      }
       systemActorsUserItalianTranslation[i] =
         (user.systemActors[i] === "PLANNER" ? "Pianificatore" :
           (user.systemActors[i] === "DOCTOR" ? "Dottore" : "Configuratore"));
@@ -86,17 +92,17 @@ export default class SingleUserProfileView extends React.Component{
       birthday: user.birthday,
       systemActors : systemActorsUserItalianTranslation,
       specializations : user.specializations,
-      conditions: conditionsToShow
+      conditions: conditionsToShow,
+      isPlanner: isPlanner
     })
   }
 
-  async handleDeleteRotazioneLoggedUser(idRotazione, key) {
-    let categoriaUtenteApi = new CategoriaUtenteAPI();
-    let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione,  this.state.userID);
+  async handleDeleteSpecialization(doctorID, specialization) {
+    let singleUserProfileAPI = new SingleUserProfileAPI();
+    let responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
 
     if (responseStatus === 200) {
-      toast.success('Rotazione cancellata con successo', {
+      toast.success('Specializzazione cancellata con successo', {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -118,8 +124,106 @@ export default class SingleUserProfileView extends React.Component{
         progress: undefined,
         theme: "colored",
       });
+    }else{
+      toast.error('Ops, qualcosa è andato storto, riprova più tardi', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     }
   }
+
+
+  async handleAddSpecialization(doctorID, specialization) {
+    let singleUserProfileAPI = new SingleUserProfileAPI();
+    let responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
+
+    if (responseStatus === 200) {
+      toast.success('Specializzazione cancellata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      this.componentDidMount()
+    } else if (responseStatus === 400) {
+      toast.error('Errore nella cancellazione', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }else{
+      toast.error('Ops, qualcosa è andato storto, riprova più tardi', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+  }
+
+
+
+  async handleDeleteSystemActor(doctorID, systemActor) {
+    let singleUserProfileAPI = new SingleUserProfileAPI();
+    let responseStatus = await singleUserProfileAPI.deleteSystemActor(doctorID,  systemActor);
+
+    if (responseStatus === 200) {
+      toast.success('Specializzazione cancellata con successo', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      this.componentDidMount()
+    } else if (responseStatus === 400) {
+      toast.error('Errore nella cancellazione', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }else{
+      toast.error('Ops, qualcosa è andato storto, riprova più tardi', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+  }
+
+
 
   async handlerDeleteCategoriaStatoLoggedUser(idRotazione, key) {
     console.log(idRotazione + key )
@@ -156,41 +260,7 @@ export default class SingleUserProfileView extends React.Component{
 
   render() {
 
-    /*function getTurnazioniSpecializzando() {
-        return <MDBCol>
-          <MDBCard>
-            <MDBCardBody className="text-center">
-              <MDBCardTitle>Rotazioni <AggiungiCategoria onPostAssegnazione = {()=>{this.componentDidMount()}}/> </MDBCardTitle>
-              <MDBTable align="middle">
-                <MDBTableHead>
-                  <tr>
-                    <th scope='col'>Rotazione</th>
-                    <th scope='col'>Inizio validità</th>
-                    <th scope='col'>Fine validità</th>
-                    <th scope='col'></th>
-                  </tr>
-                </MDBTableHead>
-                <MDBTableBody>
-                  {this.state.turnazioni_utente.map((data, key) => {
-                    return (
-                      <tr key={key}>
-                        <td>{data.categoria}</td>
-                        <td>{data.inizio}</td>
-                        <td>{data.fine}</td>
-                        <td><IconButton aria-label="delete" onClick={() => this.handleDeleteRotazioneLoggedUser(data.categoriaUtenteId, key)}>
-                          <DeleteIcon />
-                        </IconButton></td>
-                      </tr>
-                    )
-                  })}
-                </MDBTableBody>
-              </MDBTable>
-            </MDBCardBody>
-          </MDBCard>
-        </MDBCol>;
-    }*/
-
-    function getDoctorCondition() {
+    function renderDoctorCondition() {
       return <MDBCard>
         <MDBCardBody className="text-center">
           <MDBCardTitle>Categorie utente</MDBCardTitle>
@@ -252,20 +322,81 @@ export default class SingleUserProfileView extends React.Component{
                     <td>{formatStringUpperLower(data.label)}</td>
                     <td>{stardDateToShow}</td>
                     <td>{endDateToShow}</td>
-                    <td><IconButton aria-label="delete" onClick={() => this.handlerDeleteCategoriaStatoLoggedUser(this.state.systemActors)}>
+                    {this.state.isPlanner && <td><IconButton aria-label="delete" onClick={() => this.handlerDeleteCategoriaStatoLoggedUser(this.state.systemActors)}>
                       <DeleteIcon />
-                    </IconButton></td>
+                    </IconButton></td>}
                   </tr>
                 );
               })
               }
             </MDBTableBody>
           </MDBTable>
-          <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} />
+          {this.state.isPlanner &&
+            <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount();}} />
+          }
         </MDBCardBody>
       </MDBCard>;
     }
 
+
+    function renderDoctorSpecializations() {
+      return <MDBCard>
+        <MDBCardBody className="text-center">
+          <MDBCardTitle>Specializzazioni</MDBCardTitle>
+          <MDBTable align="middle">
+
+            <MDBTableBody>
+              {this.state.specializations.map( (data) => {
+                return (
+                  <tr>
+                    <td>{formatStringUpperLower(data)}</td>
+                    {this.state.isPlanner && <td><IconButton aria-label="delete" onClick={() => this.handleDeleteSpecialization(this.state.userID,data)}>
+                      <DeleteIcon />
+                    </IconButton></td>}
+                  </tr>
+                );
+              })
+              }
+            </MDBTableBody>
+          </MDBTable>
+          {this.state.isPlanner &&
+            <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} />
+          }
+        </MDBCardBody>
+      </MDBCard>;
+    }
+
+
+    function renderSystemActor() {
+      return <MDBCard>
+        <MDBCardBody className="text-center">
+          <MDBCardTitle>Ruoli nel Sistema</MDBCardTitle>
+          <MDBTable align="middle">
+
+            <MDBTableBody>
+              {this.state.systemActors.map( (data) => {
+                return (
+                  <tr>
+                    <td>{formatStringUpperLower(data)}</td>
+                    {this.state.isPlanner && <td><IconButton aria-label="delete" onClick={() => this.handleDeleteSystemActor(
+                      this.state.userID,
+                      (data === "Pianificatore" ? "PLANNER" :
+                        (data === "Dottore" ? "DOCTOR" : "CONFIGURATOR"))
+                    )}>
+                      <DeleteIcon />
+                    </IconButton></td>}
+                  </tr>
+                );
+              })
+              }
+            </MDBTableBody>
+          </MDBTable>
+          {this.state.isPlanner &&
+            <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} />
+          }
+        </MDBCardBody>
+      </MDBCard>;
+    }
 
     /**
      * Utils function to show correctly formatted string (E.g. House, Lesson, ecc.. not like HOUSE or house
@@ -288,15 +419,16 @@ export default class SingleUserProfileView extends React.Component{
       return (<p>{formattedText}</p>);
     }
 
+
     function showSpecializations(specializations){
       return (
         <MDBRow>
           <MDBCol sm="3">
             <MDBCardText>Specializzazioni</MDBCardText>
           </MDBCol>
-        <MDBCol sm="9">
-          <MDBCardText
-            className="text-muted">{showMultipleDataInSingleLine(specializations)}</MDBCardText>
+          <MDBCol sm="9">
+            <MDBCardText
+              className="text-muted">{showMultipleDataInSingleLine(specializations)}</MDBCardText>
           </MDBCol>
         </MDBRow>);
     }
@@ -397,10 +529,19 @@ export default class SingleUserProfileView extends React.Component{
                 </MDBCard>
               </MDBCol>
             </MDBRow>
-            <MDBRow>
-              {/* (this.state.seniority!=="Medico strutturato") && getTurnazioniSpecializzando.call(this)*/}
+            {this.state.isPlanner &&
+              <MDBRow>
+                <MDBCol>
+                  {renderDoctorSpecializations.call(this)}
+                </MDBCol>
+                <MDBCol>
+                  {renderSystemActor.call(this)}
+                </MDBCol>
+              </MDBRow>
+            }
+            <MDBRow style={{marginTop:"1%"}}>
               <MDBCol>
-                {getDoctorCondition.call(this)}
+                {renderDoctorCondition.call(this)}
               </MDBCol>
             </MDBRow>
           </MDBContainer>

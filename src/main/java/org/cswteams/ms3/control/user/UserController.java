@@ -167,5 +167,12 @@ public class UserController implements IUserController {
 
     }
 
+    @Override
+    public void deleteUserSystemActor(Long userID, String systemActor) {
+        User user = userDAO.findById((long) userID);
+        user.getSystemActors().remove(SystemActor.valueOf(systemActor));
+        userDAO.saveAndFlush(user);
+    }
+
 
 }

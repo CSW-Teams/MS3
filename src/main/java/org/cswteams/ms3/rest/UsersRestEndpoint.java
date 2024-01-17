@@ -1,6 +1,9 @@
 package org.cswteams.ms3.rest;
 
+import org.cswteams.ms3.control.doctor.IDoctorController;
 import org.cswteams.ms3.control.user.IUserController;
+import org.cswteams.ms3.dto.specialization.DoctorSpecializationDTO;
+import org.cswteams.ms3.dto.systemactor.UserSystemActorDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.dto.user.UserDetailsDTO;
@@ -56,5 +59,35 @@ public class UsersRestEndpoint {
             }
             return new ResponseEntity<>(singleUserProfileDTO, HttpStatus.OK);
         }
+    }
+
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/user-profile/delete-system-actor")
+    public ResponseEntity<?> deleteUserSystemActor(@RequestBody() UserSystemActorDTO userSystemActorDTO) {
+        if(userSystemActorDTO.getUserID() < 0){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }else{
+            try{
+                userController.deleteUserSystemActor(userSystemActorDTO.getUserID(), userSystemActorDTO.getSystemActor());
+            }catch (Exception e){
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-specialization")
+    public ResponseEntity<?> addUserSystemActor(@RequestBody() DoctorSpecializationDTO doctorSpecializationDTO) {
+        /*if(doctorSpecializationDTO.getDoctorID() < 0){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }else{
+            try{
+                doctorController.addDoctorSpecialization(doctorSpecializationDTO.getDoctorID(), doctorSpecializationDTO.getSpecialization());
+            }catch (Exception e){
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }*/
+        //TODO
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
