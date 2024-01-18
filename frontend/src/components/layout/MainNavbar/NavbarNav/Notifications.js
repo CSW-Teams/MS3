@@ -78,7 +78,7 @@ export default class Notifications extends React.Component {
                   </div>
                 </div>
                 <div className="notification__content">
-                  <span className="notification__category">Cambio Turno</span> //da sostituire
+                  <span className="notification__category">Cambio Turno</span>
                   <p>{notifica.description}</p>
                 </div>
               </DropdownItem>

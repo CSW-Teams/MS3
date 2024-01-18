@@ -38,7 +38,7 @@ export class ShiftChangeRequestAPI{
     return this.parseRequests(body);
   }
 
-   static answerRequest(requestId, answer) {
+   async answerRequest(requestId, answer) {
 
     let dto = {};
     dto.hasAccepted = answer;
