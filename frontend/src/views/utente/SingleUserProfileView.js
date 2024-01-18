@@ -16,6 +16,8 @@ import {
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 import AggiungiCategoriaStato
   from "../../components/common/BottomViewAggiungiCategoriaStat";
+import AddSpecialization
+  from "../../components/common/BottomViewAddSpecialization";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AggiungiCategoria
@@ -52,13 +54,19 @@ export default class SingleUserProfileView extends React.Component{
       systemActors: [],
       specializations: [],
       conditions:[],
-      isPlanner :false
+      isPlanner :false,
+      specializationList:[]
     }
+
+    this.updateLive = this.componentDidMount.bind(this);
+
   }
 
   async componentDidMount() {
     let id = localStorage.getItem("id");
     let user = await(new UserAPI().getSingleUserProfileDetails(id));
+    let singleUserProfileAPI = new SingleUserProfileAPI();
+    let specializations = await singleUserProfileAPI.getSpecializations();
     let systemActorsUserItalianTranslation = [];
     let conditionsToShow = [];
     let isPlanner = false;
@@ -83,7 +91,7 @@ export default class SingleUserProfileView extends React.Component{
     }
 
     this.setState({
-      userID : id,
+      userID : user.id,
       name: user.name,
       lastname: user.lastname,
       seniority: (user.seniority === "SPECIALIST_JUNIOR" ? "Medico specializzando junior" :
@@ -93,8 +101,10 @@ export default class SingleUserProfileView extends React.Component{
       systemActors : systemActorsUserItalianTranslation,
       specializations : user.specializations,
       conditions: conditionsToShow,
-      isPlanner: isPlanner
+      isPlanner: isPlanner,
+      specializationList: specializations
     })
+
   }
 
   async handleDeleteSpecialization(doctorID, specialization) {
@@ -137,50 +147,6 @@ export default class SingleUserProfileView extends React.Component{
       });
     }
   }
-
-
-  async handleAddSpecialization(doctorID, specialization) {
-    let singleUserProfileAPI = new SingleUserProfileAPI();
-    let responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
-
-    if (responseStatus === 200) {
-      toast.success('Specializzazione cancellata con successo', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-      this.componentDidMount()
-    } else if (responseStatus === 400) {
-      toast.error('Errore nella cancellazione', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }else{
-      toast.error('Ops, qualcosa è andato storto, riprova più tardi', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
-  }
-
-
 
   async handleDeleteSystemActor(doctorID, systemActor) {
     let singleUserProfileAPI = new SingleUserProfileAPI();
@@ -226,11 +192,9 @@ export default class SingleUserProfileView extends React.Component{
 
 
   async handlerDeleteCategoriaStatoLoggedUser(idRotazione, key) {
-    console.log(idRotazione + key )
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
     responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.userID);
-    console.log(responseStatus)
 
     if (responseStatus === 200) {
       toast.success('Rotazione cancellata con successo', {
@@ -360,7 +324,7 @@ export default class SingleUserProfileView extends React.Component{
             </MDBTableBody>
           </MDBTable>
           {this.state.isPlanner &&
-            <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} />
+            <AddSpecialization onPostAdd = {()=>{this.componentDidMount();}} doctorID={this.state.userID} specializations={this.state.specializationList} updatedSpecializationList={this.state.specializations}/>
           }
         </MDBCardBody>
       </MDBCard>;
@@ -392,7 +356,7 @@ export default class SingleUserProfileView extends React.Component{
             </MDBTableBody>
           </MDBTable>
           {this.state.isPlanner &&
-            <AggiungiCategoriaStato onPostAssegnazione = {()=>{this.componentDidMount() ;}} />
+            <AggiungiCategoriaStato onPostAdd = {()=>{this.componentDidMount() ;}} />
           }
         </MDBCardBody>
       </MDBCard>;

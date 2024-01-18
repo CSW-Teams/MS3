@@ -12,10 +12,10 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "ms3_system_user")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "ms3_system_user_id", nullable = false)
     protected Long id;
 

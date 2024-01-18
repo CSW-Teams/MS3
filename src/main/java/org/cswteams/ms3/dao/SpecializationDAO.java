@@ -10,8 +10,6 @@ import java.util.List;
 @Repository
 public interface SpecializationDAO extends JpaRepository<Specialization, String> {
     List<Specialization> findAll();
-    List<Specialization> findAllById(Long id);
-
     Specialization findByType(String specialization);
 
     /*@Query("SELECT s.type FROM Specialization as s JOIN Doctor as d WHERE d.id = :id")

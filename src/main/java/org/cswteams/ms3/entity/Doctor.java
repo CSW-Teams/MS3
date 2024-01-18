@@ -18,12 +18,9 @@ public class Doctor extends User{
     /*TODO : Check if it is necessary Setter for password on password change
      *  Should be added a Factory to set protected access to doctor (So that no one can change his credentials
      * as he pleases) */
-    //@Id
-    //@GeneratedValue(strategy = GenerationType.AUTO)
-    //@Column(name = "doctor_id", nullable = false)
-    //@OneToOne(cascade = CascadeType.ALL)
-    //@JoinColumn(name="user_id")
-    //private User user;
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    protected Long id;
 
     @NotNull
     private Seniority seniority; // TODO: See if seniority is a class instead of an enum

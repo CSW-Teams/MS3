@@ -58,10 +58,13 @@ public class DoctorController implements IDoctorController {
 
     // TODO: Add checks on values
     @Override
-    public void addDoctorSpecialization(Long doctorID, String specialization) {
+    public void addDoctorSpecialization(Long doctorID, Set<String> specialization) {
         Doctor doctor = doctorDAO.findById((long) doctorID);
-        Specialization dbSpecialization = specializationDAO.findByType(specialization);
-        doctor.getSpecializations().add(dbSpecialization);
+        for(String stringSpecialization: specialization){
+            Specialization dbSpecialization = specializationDAO.findByType(stringSpecialization);
+            if(!doctor.getSpecializations().contains(dbSpecialization))
+                doctor.getSpecializations().add(dbSpecialization);
+        }
         doctorDAO.saveAndFlush(doctor);
     }
 }

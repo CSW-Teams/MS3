@@ -11,5 +11,5 @@ public interface IDoctorController {
 
     void deleteDoctorSpecialization(Long doctorID, String specialization);
 
-    void addDoctorSpecialization(Long doctorID, String specialization);
+    void addDoctorSpecialization(Long doctorID, Set<String> specialization);
 }

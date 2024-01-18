@@ -10,6 +10,4 @@ public interface IConditionController {
     Set<PermanentConditionDTO> readPermanentConditions();
     Set<TemporaryConditionDTO> readTemporaryConditions();
 
-    Set<SpecializationDTO> readSpecializations();
-
 }

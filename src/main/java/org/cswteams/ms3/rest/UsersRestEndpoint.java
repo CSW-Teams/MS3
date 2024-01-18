@@ -76,7 +76,7 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-specialization")
+    @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-system-actor")
     public ResponseEntity<?> addUserSystemActor(@RequestBody() DoctorSpecializationDTO doctorSpecializationDTO) {
         /*if(doctorSpecializationDTO.getDoctorID() < 0){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

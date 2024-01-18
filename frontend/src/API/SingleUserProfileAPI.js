@@ -13,17 +13,28 @@ export class SingleUserProfileAPI {
   }
 
 
-  async addSpecialization(doctorID, specialization){
-    let jsonString = "{" + "\"userID\":" + doctorID + ",\"specialization\":\"" + specialization + "\"}";
-
+  async addSpecializations(doctorID, specializations){
     const requestOptions = {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: jsonString
+      body: JSON.stringify({doctorID,specializations})
     };
 
-    const response = await fetch('/api/users/user-profile/add-specialization',requestOptions);
+    const response = await fetch('/api/doctors/user-profile/add-specialization',requestOptions);
     return response.status;
+  }
+
+  async getSpecializations(){
+    const response = await fetch('/api/specializations');
+    const body = await response.json();
+
+    let specializationList = [];
+
+    for (let i = 0; i < body.specializations.length; i++) {
+        specializationList[i] = body.specializations[i];
+    }
+
+    return specializationList;
   }
 
 

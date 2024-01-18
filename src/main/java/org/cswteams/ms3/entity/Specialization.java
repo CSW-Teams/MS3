@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Specialization{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
