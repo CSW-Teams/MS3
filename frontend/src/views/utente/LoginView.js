@@ -62,6 +62,18 @@ export default class LoginView extends React.Component {
         window.location.reload();
 
         break;
+      case 5:
+        toast.error(`Autenticazione Fallita. I server non sono attualmente in servizio, riprova più tardi.`, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        break;
       default:
         const errorMessage = await httpResponse.text();
         toast.error(`Autenticazione Fallita. ${errorMessage}.`, {

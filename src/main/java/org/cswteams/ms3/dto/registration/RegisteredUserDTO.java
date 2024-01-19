@@ -1,16 +1,16 @@
 package org.cswteams.ms3.dto.registration;
 
-import lombok.Data;
+import lombok.Getter;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 /**
  * DTO used in the Registration use case (from Service to REST Controller)
  */
-@Data
+@Getter
 public class RegisteredUserDTO {
     private Long id;
     private String name;
@@ -19,12 +19,11 @@ public class RegisteredUserDTO {
     private String taxCode;
     private String email;
     private String password;
-    private List<SystemActor> systemActors;
+    private Set<SystemActor> systemActors;
     private Seniority seniority;
 
-    public RegisteredUserDTO() {}
 
-    public RegisteredUserDTO(Long id, String name, String lastname, LocalDate birthday, String taxCode, String email, String password, List<SystemActor> systemActors) {
+    public RegisteredUserDTO(Long id, String name, String lastname, LocalDate birthday, String taxCode, String email, String password, Set<SystemActor> systemActors) {
         this.id = id;
         this.name = name;
         this.lastname = lastname;
@@ -35,7 +34,7 @@ public class RegisteredUserDTO {
         this.systemActors = systemActors;
     }
 
-    public RegisteredUserDTO(Long id, String name, String lastname, LocalDate birthday, String taxCode, String email, String password, List<SystemActor> systemActors, Seniority seniority) {
+    public RegisteredUserDTO(Long id, String name, String lastname, LocalDate birthday, String taxCode, String email, String password, Set<SystemActor> systemActors, Seniority seniority) {
         this.id = id;
         this.name = name;
         this.lastname = lastname;

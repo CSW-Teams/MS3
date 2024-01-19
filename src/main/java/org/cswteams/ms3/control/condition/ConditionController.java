@@ -50,15 +50,6 @@ public class ConditionController implements IConditionController {
         return temporaryConditionDTOSet;
     }
 
-    @Override
-    public Set<SpecializationDTO> readSpecializations() {
-        List<Specialization> specializationList = specializationDao.findAll();
-        Set<SpecializationDTO> specializationDTOSet = new HashSet<>();
 
-        for(Specialization specialization : specializationList){
-            specializationDTOSet.add(new SpecializationDTO(specialization.getType()));
-        }
-        return specializationDTOSet;
-    }
 
 }

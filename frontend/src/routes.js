@@ -8,7 +8,6 @@ import { DefaultLayout } from "./layouts";
 import GlobalScheduleView from "./views/utente/GlobalScheduleView";
 import { SchedulerGeneratorView } from "./views/pianificatore/ScheduleGeneratorView";
 import SingleScheduleView from "./views/utente/SingleScheduleView";
-import UserProfileView from "./views/utente/UserProfileView"
 import Preference from "./views/utente/Preference"
 import UserProfilesView from "./views/utente/UserProfilesView"
 import UserProfileViewId from "./views/utente/UserProfileViewId";
@@ -21,6 +20,8 @@ import RichiesteRitiroView from "./views/utente/RichiesteRitiroView";
 import ShiftChangeView from "./views/utente/ShiftChangeView";
 import MedicalServicesView from "./views/configuratore/MedicalServicesView";
 import InserisciFestivita from "./views/configuratore/InserisciFestivita";
+import ModifyUserProfileView from "./views/utente/ModifyUserProfileView";
+import SingleUserProfileView from "./views/utente/SingleUserProfileView";
 
 
 export default [
@@ -46,9 +47,14 @@ export default [
     component:  SchedulerGeneratorView
   },
   {
-    path: "/user-profile/1",
+    path: "/single-user-profile",
     layout: DefaultLayout,
-    component: UserProfileView
+    component: SingleUserProfileView
+  },
+  {
+    path: "/modify-single-user-profile",
+    layout: DefaultLayout,
+    component: ModifyUserProfileView
   },
   {
     path: "/info-utenti",

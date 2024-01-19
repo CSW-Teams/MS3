@@ -2,15 +2,16 @@ package org.cswteams.ms3.entity.condition;
 
 import lombok.Getter;
 
-import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class TemporaryCondition extends Condition{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @NotNull
     private long startDate;
     @NotNull
