@@ -2,9 +2,12 @@ package org.cswteams.ms3.control.shift;
 
 import org.cswteams.ms3.dao.MedicalServiceDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
+import org.cswteams.ms3.dao.TaskDAO;
 import org.cswteams.ms3.dto.shift.*;
 import org.cswteams.ms3.entity.MedicalService;
+import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Shift;
+import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.TimeSlot;
@@ -26,6 +29,8 @@ public class ShiftController implements IShiftController {
 
     @Autowired
     private MedicalServiceDAO medicalServiceDAO ;
+    @Autowired
+    private TaskDAO taskDAO;
 
     private ShiftDTOOut convertShiftToDTO(Shift shift) {
         Set<String> daysOfWeek = new HashSet<>() ;
@@ -36,9 +41,11 @@ public class ShiftController implements IShiftController {
                 shift.getMedicalService().getId(), shift.getMedicalService().getLabel()
         );
 
-        HashMap<String, Integer> quantityShiftSeniorities = new HashMap<>() ;
-        for (Map.Entry<Seniority, Integer> entry : shift.getQuantityShiftSeniority().entrySet()) {
-            quantityShiftSeniorities.put(entry.getKey().name(), entry.getValue()) ;
+       List<QuantityShiftSeniorityDTO> quantityShiftSeniorities= new ArrayList<>() ;
+        for (QuantityShiftSeniority entry : shift.getQuantityShiftSeniority()) {
+            for(Map.Entry<Seniority,Integer> entry1:entry.getSeniorityMap().entrySet()) {
+                quantityShiftSeniorities.add(new QuantityShiftSeniorityDTO(entry.getTask().getId(), entry1.getKey().name(), entry1.getValue()));
+            }
         }
         return new ShiftDTOOut(
                 shift.getId(), shift.getTimeSlot().name(), shift.getStartTime().getHour(),
@@ -53,7 +60,6 @@ public class ShiftController implements IShiftController {
             daysOfWeek.add(DayOfWeek.valueOf(dayOfWeek)) ;
         }
         MedicalService service;
-
             if(shiftDTOIn.getMedicalService().getId() != null)
                 service =new MedicalService(
                         shiftDTOIn.getId(), List.of(), shiftDTOIn.getMedicalService().getLabel()
@@ -63,10 +69,29 @@ public class ShiftController implements IShiftController {
                         List.of(), shiftDTOIn.getMedicalService().getLabel()
                 );
 
+        Map<Long,Map<Seniority,Integer>>map2 = new HashMap<>();
+        for (QuantityShiftSeniorityDTO entry : shiftDTOIn.getQuantityShiftSeniority()) {
+           if(map2.containsKey(entry.getTask())){
+                if(map2.get(entry.getTask()).containsKey(Seniority.valueOf(entry.getSeniority()))) {
+                    int app=map2.get(entry.getTask()).get(Seniority.valueOf(entry.getSeniority()));
+                    app=app+entry.getQuantity();
+                    map2.get(entry.getTask()).put(Seniority.valueOf(entry.getSeniority()),app);
+                }else{
+                    map2.get(entry.getTask()).put(Seniority.valueOf(entry.getSeniority()),entry.getQuantity());
+                }
+           }else{
+               map2.put(entry.getTask(),new HashMap<>());
+               map2.get(entry.getTask()).put(Seniority.valueOf(entry.getSeniority()),entry.getQuantity());
+           }
+        }
 
-        HashMap<Seniority, Integer> quantityShiftSeniorities = new HashMap<>() ;
-        for (Map.Entry<String, Integer> entry : shiftDTOIn.getQuantityShiftSeniority().entrySet()) {
-            quantityShiftSeniorities.put(Seniority.valueOf(entry.getKey()), entry.getValue()) ;
+        List<QuantityShiftSeniority> quantityShiftSeniorities = new ArrayList<>() ;
+        for(Map.Entry<Long,Map<Seniority,Integer>> entry: map2.entrySet()){
+            Optional<Task> t=taskDAO.findById(entry.getKey());
+            if(t.isPresent()){
+                QuantityShiftSeniority q= new QuantityShiftSeniority(entry.getValue(),t.get());
+                quantityShiftSeniorities.add(q);
+            }
         }
 
         ArrayList<AdditionalConstraint> constraints = new ArrayList<>() ;

@@ -16,8 +16,8 @@ export default class Notifications extends React.Component {
   async componentDidMount() {
       // Ottieni le notifiche al caricamento del componente
       await this.fetchNotifications();
-      // Aggiorna le notifiche periodicamente, ad esempio ogni 60 secondi
-      this.intervalId = setInterval(() => this.fetchNotifications(), 60000);
+      // Aggiorna le notifiche periodicamente, ad esempio ogni 6 secondi
+      this.intervalId = setInterval(() => this.fetchNotifications(), 6000);
     }
   componentWillUnmount() {
     // Cancella l'intervallo quando il componente viene smontato
@@ -78,7 +78,7 @@ export default class Notifications extends React.Component {
                   </div>
                 </div>
                 <div className="notification__content">
-                  <span className="notification__category">Cambio Turno</span> //da sostituire
+                  <span className="notification__category">Cambio Turno</span>
                   <p>{notifica.description}</p>
                 </div>
               </DropdownItem>

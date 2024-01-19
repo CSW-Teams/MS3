@@ -2,13 +2,17 @@ package org.cswteams.ms3.entity.constraint;
 
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
 import org.cswteams.ms3.control.utils.ShiftUtil;
+import org.cswteams.ms3.dto.shift.QuantityShiftSeniorityDTO;
 import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloRuoloNumeroException;
 
 import javax.persistence.Entity;
+import javax.validation.constraints.Null;
+import java.nio.charset.CodingErrorAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,14 +37,12 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
 
         //Verifico se sono stati allocati già tutti gli utenti necessari in guardia
         if (DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY)).size() != ShiftUtil.getNumRequiredDoctors(context.getConcreteShift().getShift())) {
-
             //Verifico se è possibile aggiungere l'utente in guardia
             verify(context, DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY)));
         }
 
         //Verifico se sono stati allocati già tutti gli utenti necessari in reperibilità
         else if(DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL)).size() != ShiftUtil.getNumRequiredDoctors(context.getConcreteShift().getShift())){
-
             //Verifico se è possibile aggiungere l'utente in reperibilità
             verify(context, DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL)));
         }
@@ -71,17 +73,15 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
             if (doctor.getSeniority().equals(context.getDoctorUffaPriority().getDoctor().getSeniority()))
                 numAssignedDoctorsForSeniority++;
         }
-
         //Loop on the seniorities
-        for (Map.Entry<Seniority, Integer> quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority().entrySet()) {
+        for (QuantityShiftSeniority quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority()) {
             //If the required number of doctors with that seniority was already reached, then we raise an exception.
             //Otherwise, we can add the doctor to the concrete shift.
-            if (quantityShiftSeniority.getKey().equals(context.getDoctorUffaPriority().getDoctor().getSeniority())) {
-                if (numAssignedDoctorsForSeniority >= quantityShiftSeniority.getValue())
+            if (quantityShiftSeniority.getSeniorityMap().containsKey(context.getDoctorUffaPriority().getDoctor().getSeniority())) {
+                if (numAssignedDoctorsForSeniority >= quantityShiftSeniority.getSeniorityMap().get(context.getDoctorUffaPriority().getDoctor().getSeniority()))
                     throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor());
             }
         }
-
     }
 
     /**
@@ -94,31 +94,32 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
         //We count how many doctors foreach seniority there are in the concrete shift.
         //The hashmap contains the information "seniority - number of doctors of that seniority in the concrete shift".
         HashMap<Seniority,Integer> counter = new HashMap<>();
-
         for (Doctor doctor : assignedDoctors) {
             Seniority seniority = doctor.getSeniority();
-
             counter.merge(seniority, 1, Integer::sum);
             /* IT IS EQUIVALENT TO:
-
             if(counter.get(seniority)==null){
                 counter.put(seniority,1);
             }
             else{
                 counter.put(seniority,counter.get(seniority)+1);
+            }*/
+        }
+
+        //calcolo la mappa senioriti integer  per il turnno
+        Map<Seniority, Integer> mapTotalNeed =new HashMap<>();
+        for (QuantityShiftSeniority quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority()) {
+            for(Map.Entry<Seniority,Integer> entry:quantityShiftSeniority.getSeniorityMap().entrySet()){
+                mapTotalNeed.merge(entry.getKey(), entry.getValue(), Integer::sum);
             }
-             */
-
         }
-
-        //We check if in the concrete shift we have the correct number of doctors foreach seniority.
-        for (Map.Entry<Seniority, Integer>  quantityShiftSeniority : context.getConcreteShift().getShift().getQuantityShiftSeniority().entrySet()) {
-            if (counter.get(quantityShiftSeniority.getKey()) != null && counter.get(quantityShiftSeniority.getKey()) < quantityShiftSeniority.getValue())
-                throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), quantityShiftSeniority, counter.get(quantityShiftSeniority.getKey()));
-            if (counter.get(quantityShiftSeniority.getKey()) == null)
-                throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), quantityShiftSeniority, 0);
+        for(Map.Entry<Seniority,Integer> entry:mapTotalNeed.entrySet()){
+            //We check if in the concrete shift we have the correct number of doctors foreach seniority.
+            if (counter.get(entry.getKey()) != null && counter.get(entry.getKey()) < entry.getValue())
+                throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), entry, counter.get(entry.getKey()));
+            if (counter.get(entry.getKey()) == null)
+                throw new ViolatedVincoloRuoloNumeroException(context.getConcreteShift(), entry, 0);
         }
-
     }
 
 }

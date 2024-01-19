@@ -13,37 +13,37 @@ export default class ShiftChangeView extends React.Component {
       turnChangeRequestsBySender: [],
       turnChangeRequestsToSender: []
     };
-
-    let requestAPI = new ShiftChangeRequestAPI();
-    let turnChangeRequestsBySender = requestAPI.getTurnChangeRequestsByIdUser(localStorage.getItem("id"));
-    console.log(turnChangeRequestsBySender);
-    let turnChangeRequestsToSender = requestAPI.getTurnChangeRequestsToIdUser(localStorage.getItem("id"));
-
-    turnChangeRequestsBySender.then(data => {
-      this.setState({ turnChangeRequestsBySender: data });
-    }).catch(error => {
-      console.error("Error fetching turn change requests:", error);
-    });
-
-    turnChangeRequestsToSender.then(data => {
-      this.setState({ turnChangeRequestsToSender: data });
-    }).catch(error => {
-      console.error("Error fetching turn change requests to sender:", error);
-    });
+    this.requestAPI = new ShiftChangeRequestAPI();
   }
-
-  handleAccept = (requestId) => {
-    ShiftChangeRequestAPI.answerRequest(requestId, true);
+  async componentDidMount() {
+      // Ottieni le notifiche al caricamento del componente
+      await this.fetchData();
+      // Aggiorna le notifiche periodicamente, ad esempio ogni 6 secondi
+      this.intervalId = setInterval(() => this.fetchData(), 6000);
+    }
+  componentWillUnmount() {
+    // Cancella l'intervallo quando il componente viene smontato
+    clearInterval(this.intervalId);
+  }
+  handle= (requestId,response) => {
+    this.requestAPI.answerRequest(requestId, response);
     console.log(`Request ${requestId} accepted`);
   };
 
-  handleReject = (requestId) => {
-    let answerAPI = ShiftChangeRequestAPI.answerRequest(requestId, false);
-    console.log(`Request ${requestId} rejected`);
-  };
-
+  async fetchData(){
+      try {
+        const turnChangeRequestsBySender = await this.requestAPI.getTurnChangeRequestsByIdUser(localStorage.getItem("id"));
+        const turnChangeRequestsToSender = await this.requestAPI.getTurnChangeRequestsToIdUser(localStorage.getItem("id"));
+        this.setState({
+          turnChangeRequestsBySender:turnChangeRequestsBySender,
+          turnChangeRequestsToSender:turnChangeRequestsToSender
+        });
+      } catch (error) {
+        console.error('Errore durante il recupero delle notifiche:', error);
+      }
+  }
   render() {
-    const { turnChangeRequestsBySender } = this.state;
+    const turnChangeRequestsBySender = this.state.turnChangeRequestsBySender;
 
     const currentLocale = navigator.language;
     console.log(currentLocale)
@@ -52,7 +52,7 @@ export default class ShiftChangeView extends React.Component {
       return new Date(a.inizioDate) - new Date(b.inizioDate);
     });
 
-    const { turnChangeRequestsToSender } = this.state;
+    const turnChangeRequestsToSender  = this.state.turnChangeRequestsToSender;
 
     const sortedRequestsToSender = turnChangeRequestsToSender.sort((a, b) => {
       return new Date(a.inizioDate) - new Date(b.inizioDate);
@@ -103,11 +103,11 @@ export default class ShiftChangeView extends React.Component {
               <td>
                 <button className="btn btn-primary"
                         style={{marginRight: '8px'}}
-                        onClick={() => this.handleAccept(request.requestId)}>
+                        onClick={() => this.handle(request.requestId,true)}>
                   Accetta
                 </button>
                 <button className="btn btn-secondary"
-                        onClick={() => this.handleReject(request.requestId)}>
+                        onClick={() => this.handle(request.requestId,false)}>
                   Rifiuta
                 </button>
               </td>

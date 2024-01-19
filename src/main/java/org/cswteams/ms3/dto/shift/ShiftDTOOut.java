@@ -16,7 +16,7 @@ public class ShiftDTOOut {
     private final int durationMinutes ;
     private final Set<String> daysOfWeek ;
     private final MedicalServiceShiftDTO medicalService;
-    private final HashMap<String, Integer> quantityshiftseniority ;
+    private final List<QuantityShiftSeniorityDTO> quantityshiftseniority ;
     //additionalConstraints
 
 
@@ -35,7 +35,7 @@ public class ShiftDTOOut {
     public ShiftDTOOut(Long id, String timeslot, int startHour, int startMinute,
                        int durationMinutes, Set<String> daysOfWeek,
                        MedicalServiceShiftDTO medicalService,
-                       HashMap<String, Integer> quantityshiftseniority) {
+                       List<QuantityShiftSeniorityDTO> quantityshiftseniority) {
         this.id = id;
         this.timeslot = timeslot;
         this.startHour = startHour;

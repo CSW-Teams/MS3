@@ -32,7 +32,6 @@ import java.util.*;
 
 @Service
 public class ControllerScambioTurno implements IControllerScambioTurno {
-
     @Autowired
     private DoctorDAO utenteDao;
 
@@ -276,7 +275,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         if (concreteShift.isEmpty()) {
             return null;
         }
-        HashMap<Seniority, Integer> quantityShiftSeniority = concreteShift.get().getShift().getQuantityShiftSeniority();
+        List<QuantityShiftSeniority> quantityShiftSeniority = concreteShift.get().getShift().getQuantityShiftSeniority();
 
         /* let's consider the requesting user's seniority (say reqUserSen) and the amount of doctors allocated by seniority (say docAllocSen):
         *  - if docAllocSen - 1 < reqUserSen, it means that this doctor can only be replaced by a doctor with the same seniority;
@@ -284,8 +283,10 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         *    (e.g. specialist_junior can be replaced by another doctor with any seniority, while a specialist_senior can be replaced only by
         *    a specialist_senior or a structured doctor).
         */
-
-        Integer requestedAmountOfDoctorsBySeniority = quantityShiftSeniority.get(requestingUserSeniority);
+        Integer requestedAmountOfDoctorsBySeniority =0;
+        for(QuantityShiftSeniority quantityShiftSeniority1:quantityShiftSeniority){
+                requestedAmountOfDoctorsBySeniority += quantityShiftSeniority1.getSeniorityMap().get(requestingUserSeniority);
+        }
         Integer allocatedDoctorsBySeniority = 0;
         for (DoctorAssignment da : concreteShift.get().getDoctorAssignmentList()) {
             if (da.getDoctor().getSeniority() == requestingUserSeniority && da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY)
@@ -320,7 +321,6 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             ConstraintUbiquità constraintUbiquità = new ConstraintUbiquità();
             ConstraintHoliday constraintHoliday = new ConstraintHoliday();
             ConstraintMaxPeriodoConsecutivo constraintMaxPeriodoConsecutivo = new ConstraintMaxPeriodoConsecutivo();
-
             ContextConstraint context = new ContextConstraint(
                     doctorUffaPriorityDAO.findByDoctor_Id(doctor.getId()),
                     concreteShift.get(),
@@ -332,19 +332,15 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
                 constraintUbiquità.verifyConstraint(context);
                 constraintHoliday.verifyConstraint(context);
                 constraintMaxPeriodoConsecutivo.verifyConstraint(context);
-
                 availableDoctorsAfterConstraintsCheck.add(doctor);
             } catch (ViolatedConstraintException e) {
                 continue;
             }
         }
-
-
         for (Doctor doctor : availableDoctorsAfterConstraintsCheck) {
             MedicalDoctorInfoDTO doctorDTO = new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority());
             availableDoctorsDTOs.add(doctorDTO);
         }
-
         return availableDoctorsDTOs;
     }
 }
