@@ -180,14 +180,17 @@ public class ScheduleBuilder {
                 //TODO:Revisionare questo if
                 //Questa linea va rivalutata in seguito
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
-                int count=0;
-                for (Map.Entry<Seniority, Integer>  qss : concreteShift.getShift().getQuantityShiftSeniority().entrySet()){
-                    count += qss.getValue();
-                    this.addDoctors(concreteShift, qss, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_CALL, count);
+                for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
+                        for(Map.Entry<Seniority,Integer> entry:qss.getSeniorityMap().entrySet()) {
+                            this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_CALL,qss.getTask());
+                        }
                 }
+                /*
                 if(concreteShift.getShift().getMedicalService().getTasks().size()>count){
+
                     throw new NotEnoughFeasibleUsersException(concreteShift.getShift().getMedicalService().getTasks().size(),count);
                 }
+               */
             } catch (NotEnoughFeasibleUsersException e) {
                 // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
                 logger.log(Level.SEVERE, e.getMessage(), e);
@@ -203,19 +206,17 @@ public class ScheduleBuilder {
             // Second step: define doctors on call in the concrete shift.
             try {
                 List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
-                int count=0;
-                for (Map.Entry<Seniority, Integer>  qss : concreteShift.getShift().getQuantityShiftSeniority().entrySet()){
-                    count += qss.getValue();
-                    this.addDoctors(concreteShift, qss, doctorsOnCall,ConcreteShiftDoctorStatus.ON_DUTY, count);
+                for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
+                    for(Map.Entry<Seniority,Integer> entry:qss.getSeniorityMap().entrySet()) {
+                        this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
+                    }
                 }
-
             } catch (NotEnoughFeasibleUsersException e){
                 // Here we define the violation of constraints but do not stop the schedule generation.
                 logger.log(Level.SEVERE, e.getMessage(), e);
             }
 
         }
-
         this.schedule.setDoctorUffaPriorityList(allDoctorUffaPriority); //set of all the DoctorUffaPriority instances so that they can be saved in persistence
         return this.schedule;
 
@@ -224,14 +225,13 @@ public class ScheduleBuilder {
     /**
      * This method adds some doctors to a list of assigned doctors for a concrete shift.
      * @param concreteShift Concrete shift in which the new doctors have to be assigned
-     * @param qss Number of doctors that have to be added to the concrete shift
+     * @param qss Number of doctors that have to be added to the concrete shift for a specific seniority for a specific task
      * @param doctorList List  of doctor assigned since the last assegnation
      * @param status type of assignation that we want on the concrateshift
-     * @param selectedTask index of task that we want to start the assegnation
      * @throws NotEnoughFeasibleUsersException Exception thrown if the number of doctors having the possibility to be
      * added to the concrete shift is less than numDoctors
      */
-    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList, ConcreteShiftDoctorStatus status, int selectedTask) throws NotEnoughFeasibleUsersException{
+    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList, ConcreteShiftDoctorStatus status,Task task) throws NotEnoughFeasibleUsersException{
 
         int selectedUsers=0;
 
@@ -240,6 +240,7 @@ public class ScheduleBuilder {
          */
         ConcreteShift prevConcreteShift = null;
         List<DoctorUffaPriority> prevConcreteShiftDup = null;
+
         if(concreteShift.getShift().getTimeSlot() == TimeSlot.AFTERNOON) {
             prevConcreteShift = this.getConcreteShift(concreteShift.getDate(), TimeSlot.MORNING);
             if(prevConcreteShift != null)   //case in which there exists a concrete shift the same day in the morning
@@ -284,14 +285,12 @@ public class ScheduleBuilder {
                 doctorList.add(dup.getDoctor());
                 dup.addConcreteShift(context.getConcreteShift());
                 //Creo il Doctor Assignement
-                int indexTask=selectedTask %(concreteShift.getShift().getMedicalService().getTasks().size());
                 DoctorAssignment da = new DoctorAssignment(dup.getDoctor(),
                                                              status,
                                                              concreteShift,
-                                                         concreteShift.getShift().getMedicalService().getTasks().get(indexTask));
+                                                             task);
                 //lo inserisco nei concrateShift
                 concreteShift.getDoctorAssignmentList().add(da);
-                selectedTask++;
             }
             List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
 

@@ -103,6 +103,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     @Autowired
     private DoctorHolidaysDAO doctorHolidaysDAO;
+    @Autowired
+    private ScheduleDAO scheduleDAO;
 
 
 
@@ -500,12 +502,37 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u33 = doctorDAO.saveAndFlush(u33);
         u34 = doctorDAO.saveAndFlush(u34);
 
-        HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
-        doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
-        doctorsNumberBySeniority.put(Seniority.SPECIALIST_SENIOR, 1);
-        doctorsNumberBySeniority.put(Seniority.SPECIALIST_JUNIOR, 1);
-
-
+    //     HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
+    //     doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
+    //     doctorsNumberBySeniority.put(Seniority.SPECIALIST_SENIOR, 1);
+    //     doctorsNumberBySeniority.put(Seniority.SPECIALIST_JUNIOR, 1);
+        List<QuantityShiftSeniority> quantityShiftSeniorityList1 = new ArrayList<>();
+        for(Task t:ambulatorioCardiologia.getTasks()) {
+            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
+            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
+            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+            quantityShiftSeniorityList1.add(quantityShiftSeniority);
+        }
+        List<QuantityShiftSeniority> quantityShiftSeniorityList2 = new ArrayList<>();
+        for(Task t:ambulatorioCardiologia.getTasks()) {
+            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
+            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
+            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+            quantityShiftSeniorityList2.add(quantityShiftSeniority);
+        }
+        List<QuantityShiftSeniority> quantityShiftSeniorityList3 = new ArrayList<>();
+        for(Task t:ambulatorioCardiologia.getTasks()) {
+            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
+            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
+            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+            quantityShiftSeniorityList3.add(quantityShiftSeniority);
+        }
         Set<DayOfWeek> allDaysOfWeek = new HashSet<>();
         allDaysOfWeek.add(DayOfWeek.MONDAY);
         allDaysOfWeek.add(DayOfWeek.TUESDAY);
@@ -519,7 +546,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 Duration.ofHours(8),
                 ambulatorioCardiologia,
                 TimeSlot.MORNING,
-                doctorsNumberBySeniority,
+                quantityShiftSeniorityList1,
                 allDaysOfWeek,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift1);
@@ -528,7 +555,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 Duration.ofHours(8),
                 ambulatorioCardiologia,
                 TimeSlot.NIGHT,
-                doctorsNumberBySeniority,
+                quantityShiftSeniorityList2,
                 allDaysOfWeek,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift2);
@@ -537,7 +564,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 Duration.ofHours(8),
                 ambulatorioCardiologia,
                 TimeSlot.AFTERNOON,
-                doctorsNumberBySeniority,
+                quantityShiftSeniorityList3,
                 allDaysOfWeek,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift3);
@@ -680,9 +707,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } catch (IllegalScheduleException e) {
             throw new RuntimeException(e);
         }
-
-
-
         //scheduleDAO.save(s);
         /*
         ScheduleRestEndpoint restSchedule=new ScheduleRestEndpoint();

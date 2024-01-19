@@ -2,8 +2,10 @@ package org.cswteams.ms3.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.cswteams.ms3.dto.shift.QuantityShiftSeniorityDTO;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
 import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
 
 
@@ -44,8 +46,8 @@ public class Shift {
     @ManyToOne
     private MedicalService medicalService;
 
-    @Lob
-    private HashMap<Seniority, Integer> quantityShiftSeniority;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<QuantityShiftSeniority> quantityShiftSeniority;
 
     @ManyToMany
     private List<AdditionalConstraint> additionalConstraints;
@@ -61,13 +63,14 @@ public class Shift {
      * @param additionalConstraints List of additional constraints which are specific of a shift (E.g. No over 62, for a risky operation)
      */
     public Shift(LocalTime StartTime, Duration duration, MedicalService medicalService, TimeSlot timeSlot,
-                 HashMap<Seniority, Integer> quantityShiftSeniority, Set<DayOfWeek> daysOfWeek,
+                 List<QuantityShiftSeniority> quantityShiftSeniority, Set<DayOfWeek> daysOfWeek,
                  List<AdditionalConstraint> additionalConstraints) {
         this.startTime = StartTime;
         this.duration = duration;
         this.medicalService = medicalService;
         this.timeSlot = timeSlot;
         this.daysOfWeek = daysOfWeek;
+        //TODO:Check correct data value between this and medicalService for more detail conctact me
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraints;
     }
@@ -80,13 +83,13 @@ public class Shift {
      * @param duration Duration of the shift in hh:mm:ss
      * @param medicalService The medicalService to be provided in a shift
      * @param timeSlot Moment of the day in which the shift will take place (morning, afternoon, night)
-     * @param quantityShiftSeniority Quantity of doctors needed in the shift for each type of seniority
+     * @param quantityShiftSeniority Quantity of doctors needed in the shift for each type of seniority and each task in the medicalService
      * @param daysOfWeek List of days in which this shift will take place
      * @param additionalConstraints List of additional constraints which are specific of a shift (E.g. No over 62, for a risky operation)
      */
     public Shift(Long id, TimeSlot timeSlot, LocalTime startTime, Duration duration,
                  Set<DayOfWeek> daysOfWeek, MedicalService medicalService,
-                 HashMap<Seniority, Integer> quantityShiftSeniority,
+                 List<QuantityShiftSeniority> quantityShiftSeniority,
                  List<AdditionalConstraint> additionalConstraints) {
         this.id = id;
         this.timeSlot = timeSlot;
@@ -96,18 +99,40 @@ public class Shift {
         this.medicalService = medicalService;
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraints;
+        if(!verifyCorrectnessQuantityShiftSeniority()){
+            throw new RuntimeException(); //TODO: inserire un eccezzione più logica
+        }
     }
-
+    private boolean verifyCorrectnessQuantityShiftSeniority(){
+        //per ora verifico solo che ci siano tutti i task
+        List<Task> listTask = this.medicalService.getTasks();
+        Map <TaskEnum,Integer> hashmap= new HashMap<>();
+        for(Task t:listTask){
+            int count = 0;
+            for(QuantityShiftSeniority q:this.quantityShiftSeniority){
+                if(q.getTask().getTaskType()==t.getTaskType()){
+                    count=count+1;
+                }
+            hashmap.put(t.getTaskType(),count);
+            }
+        }
+        for(Map.Entry<TaskEnum, Integer> entry: hashmap.entrySet()) {
+           if(entry.getValue()==0)
+               return  false;
+        }
+        return true;
+    }
     /**
      * Calcola il numero di utenti necessari per il turno sommando
      * il numero di utenti richiesto per ogni ruolo.
      * @return numero di utenti necessari per il turno.
      */
     public int getNumRequiredDoctors(){
-
         int numDoctors = 0;
-        for(Integer i : quantityShiftSeniority.values()){
-            numDoctors += i;
+        for(QuantityShiftSeniority q : this.quantityShiftSeniority){
+            for(Map.Entry<Seniority,Integer> entry:q.getSeniorityMap().entrySet()){
+                numDoctors += entry.getValue();
+            }
         }
         return numDoctors;
     }

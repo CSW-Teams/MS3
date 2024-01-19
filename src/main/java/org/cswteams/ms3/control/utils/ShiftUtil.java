@@ -15,10 +15,10 @@ public class ShiftUtil {
      */
     public static int getNumRequiredDoctors(Shift shift) {
         int numRequiredDoctors = 0;
-
-        for(Map.Entry<Seniority, Integer>  qss : shift.getQuantityShiftSeniority().entrySet()) {
-            numRequiredDoctors += qss.getValue();
-
+        for(QuantityShiftSeniority qss : shift.getQuantityShiftSeniority()) {
+            for(Map.Entry<Seniority,Integer> entry: qss.getSeniorityMap().entrySet()){
+                numRequiredDoctors += entry.getValue();
+            }
         }
         return numRequiredDoctors;
 

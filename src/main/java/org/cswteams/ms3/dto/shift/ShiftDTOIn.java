@@ -41,7 +41,7 @@ public class ShiftDTOIn {
     private final @Valid MedicalServiceShiftDTO medicalService ;
 
     @NotEmpty
-    private final HashMap<@AdmissibleValues(values = {"SPECIALIST", "STRUCTURED"}) String, @Positive Integer> quantityShiftSeniority;
+    private final List<QuantityShiftSeniorityDTO> quantityShiftSeniority;
 
     @NotNull
     private final List<@Valid AdditionalConstraintShiftDTO> additionalConstraints ;
@@ -63,7 +63,7 @@ public class ShiftDTOIn {
                       @JsonProperty("startMinute") Integer startMinute,
                       @JsonProperty("durationMinutes") Integer durationMinutes,@JsonProperty("daysOfWeek") Set<String> daysOfWeek,
                       @JsonProperty("medicalServices") MedicalServiceShiftDTO medicalService,
-                      @JsonProperty("quantityShiftSeniority") HashMap<String, Integer> quantityShiftSeniority,
+                      @JsonProperty("quantityShiftSeniority") List<QuantityShiftSeniorityDTO> quantityShiftSeniority,
                       @JsonProperty("additionalConstraints") List<AdditionalConstraintShiftDTO> additionalConstraints) {
         this.timeSlot = timeSlot;
         this.startHour = startHour;
@@ -93,7 +93,7 @@ public class ShiftDTOIn {
                       @JsonProperty("startMinute") Integer startMinute,
                       @JsonProperty("durationMinutes") Integer durationMinutes, @JsonProperty("daysOfWeek") Set<String> daysOfWeek,
                       @JsonProperty("medicalServices") MedicalServiceShiftDTO medicalService,
-                      @JsonProperty("quantityShiftSeniority") HashMap<String, Integer> quantityShiftSeniority,
+                      @JsonProperty("quantityShiftSeniority") List<QuantityShiftSeniorityDTO> quantityShiftSeniority,
                       @JsonProperty("additionalConstraints") List<AdditionalConstraintShiftDTO> additionalConstraintShiftDTO) {
         this.id = id;
         this.timeSlot = timeSlot;
