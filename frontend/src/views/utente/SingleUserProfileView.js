@@ -18,10 +18,10 @@ import AggiungiCategoriaStato
   from "../../components/common/BottomViewAggiungiCategoriaStat";
 import AddSpecialization
   from "../../components/common/BottomViewAddSpecialization";
+import AddSystemActor
+    from "../../components/common/BottomViewAddSystemActor";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AggiungiCategoria
-  from "../../components/common/BottomViewAggiungiTurnazione";
 import {toast} from "react-toastify";
 import {Button} from "@material-ui/core";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
@@ -55,10 +55,9 @@ export default class SingleUserProfileView extends React.Component{
       specializations: [],
       conditions:[],
       isPlanner :false,
-      specializationList:[]
+      specializationList:[],
+      allSystemActors:[]
     }
-
-    this.updateLive = this.componentDidMount.bind(this);
 
   }
 
@@ -70,6 +69,8 @@ export default class SingleUserProfileView extends React.Component{
     let systemActorsUserItalianTranslation = [];
     let conditionsToShow = [];
     let isPlanner = false;
+    let allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
+    let allSavedSystemActorsInItalian = [];
 
     for(var i = 0;i < user.systemActors.length;i++){
       if(user.systemActors[i] === "PLANNER"){
@@ -78,6 +79,15 @@ export default class SingleUserProfileView extends React.Component{
       systemActorsUserItalianTranslation[i] =
         (user.systemActors[i] === "PLANNER" ? "Pianificatore" :
           (user.systemActors[i] === "DOCTOR" ? "Dottore" : "Configuratore"));
+    }
+
+    for(var i = 0;i < allSavedSystemActors.length;i++){
+      if(allSavedSystemActors[i] === "PLANNER"){
+        isPlanner = true;
+      }
+      allSavedSystemActorsInItalian[i] =
+          (allSavedSystemActors[i] === "PLANNER" ? "Pianificatore" :
+              (allSavedSystemActors[i] === "DOCTOR" ? "Dottore" : "Configuratore"));
     }
 
     for(var i = 0;i<user.permanentConditions.length;i++){
@@ -102,10 +112,39 @@ export default class SingleUserProfileView extends React.Component{
       specializations : user.specializations,
       conditions: conditionsToShow,
       isPlanner: isPlanner,
-      specializationList: specializations
+      specializationList: specializations,
+      allSystemActors:allSavedSystemActorsInItalian
     })
 
   }
+
+    updateSpecializationList = (newSpecializations) => {
+        toast.success('Specializzazioni modificate con successo', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+        this.setState({specializations:newSpecializations});
+    };
+
+  updateSystemActorsList = (newSystemActor) => {
+    toast.success('Ruoli nel sistema modificati con successo', {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
+    this.setState({systemActors:newSystemActor});
+  };
 
   async handleDeleteSpecialization(doctorID, specialization) {
     let singleUserProfileAPI = new SingleUserProfileAPI();
@@ -324,7 +363,7 @@ export default class SingleUserProfileView extends React.Component{
             </MDBTableBody>
           </MDBTable>
           {this.state.isPlanner &&
-            <AddSpecialization onPostAdd = {()=>{this.componentDidMount();}} doctorID={this.state.userID} specializations={this.state.specializationList} updatedSpecializationList={this.state.specializations}/>
+              <AddSpecialization updateFunction = {this.updateSpecializationList}  doctorID={this.state.userID} specializations={this.state.specializationList} updatedSpecializationList={this.state.specializations}/>
           }
         </MDBCardBody>
       </MDBCard>;
@@ -356,7 +395,7 @@ export default class SingleUserProfileView extends React.Component{
             </MDBTableBody>
           </MDBTable>
           {this.state.isPlanner &&
-            <AggiungiCategoriaStato onPostAdd = {()=>{this.componentDidMount() ;}} />
+              <AddSystemActor updateFunction = {this.updateSystemActorsList}  userID={this.state.userID} systemActors={this.state.allSystemActors} updateSystemActorList={this.state.systemActors}/>
           }
         </MDBCardBody>
       </MDBCard>;

@@ -223,7 +223,7 @@ export default class ModifyUserProfileView extends React.Component {
                     value={this.state.seniority}
                     style={{marginBlock:10}}>
                   </TextField>
-                  <TextField
+                  {/*<TextField
                     disabled
                     label="Ruoli nel Sistema"
                     fullWidth
@@ -236,7 +236,7 @@ export default class ModifyUserProfileView extends React.Component {
                     value={this.state.specializations}
                     style={{marginBlock:10}}>
                   </TextField>
-                  {conditionButton}
+                  {conditionButton}*/}
                 </div>
                 <div style={{paddingBottom: "20px", alignSelf:"center"}}>
                   <Button

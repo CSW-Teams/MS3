@@ -50,4 +50,28 @@ export class SingleUserProfileAPI {
     const response = await fetch('/api/users/user-profile/delete-system-actor',requestOptions);
     return response.status;
   }
+
+    async addSystemActors(userID, systemActors) {
+      const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({userID,systemActors})
+      };
+
+      const response = await fetch('/api/users/user-profile/add-system-actors',requestOptions);
+      return response.status;
+    }
+
+  async getSystemActors() {
+    const response = await fetch('/api/system-actors');
+    const body = await response.json();
+
+    let systemActorList = [];
+
+    for (let i = 0; i < body.systemActors.length; i++) {
+      systemActorList[i] = body.systemActors[i];
+    }
+
+    return systemActorList;
+  }
 }

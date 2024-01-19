@@ -1,8 +1,7 @@
 package org.cswteams.ms3.rest;
 
-import org.cswteams.ms3.control.doctor.IDoctorController;
 import org.cswteams.ms3.control.user.IUserController;
-import org.cswteams.ms3.dto.specialization.DoctorSpecializationDTO;
+import org.cswteams.ms3.dto.systemactor.UserSystemActorsDTO;
 import org.cswteams.ms3.dto.systemactor.UserSystemActorDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
@@ -76,18 +75,21 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-system-actor")
-    public ResponseEntity<?> addUserSystemActor(@RequestBody() DoctorSpecializationDTO doctorSpecializationDTO) {
-        /*if(doctorSpecializationDTO.getDoctorID() < 0){
+
+    @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-system-actors")
+    public ResponseEntity<?> addUserSystemActor(@RequestBody() UserSystemActorsDTO userSystemActorsDTO) {
+        if(userSystemActorsDTO.getUserID() < 0){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }else{
             try{
-                doctorController.addDoctorSpecialization(doctorSpecializationDTO.getDoctorID(), doctorSpecializationDTO.getSpecialization());
+                System.out.println("adsfasdf " + userSystemActorsDTO.getSystemActors());
+                userController.addSystemActor(userSystemActorsDTO.getUserID(), userSystemActorsDTO.getSystemActors());
             }catch (Exception e){
+                e.printStackTrace();
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        }*/
-        //TODO
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
 }

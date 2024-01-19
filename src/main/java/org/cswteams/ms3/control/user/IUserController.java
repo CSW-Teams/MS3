@@ -20,4 +20,6 @@ public interface IUserController {
     SingleUserProfileDTO getSingleUserProfileInfos(Long userId);
 
     void deleteUserSystemActor(Long userID, String systemActor);
+
+    void addSystemActor(Long userID, Set<String> systemActors);
 }

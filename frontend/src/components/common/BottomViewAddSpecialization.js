@@ -29,7 +29,7 @@ export default function DoctorSpecializationAdditionDrawer(props){
     }
     return false;
   }
-  const handleAddSpecializations= (doctorID, specializations,checkedSpecializationsCheckBoxes) => {
+  const handleAddSpecializations= (updateFunction,doctorID, specializations,checkedSpecializationsCheckBoxes) => {
     let singleUserProfileAPI = new SingleUserProfileAPI();
 
     for(var i = 0;i<checkedSpecializationsCheckBoxes.length;i++){
@@ -38,32 +38,10 @@ export default function DoctorSpecializationAdditionDrawer(props){
 
     let responseStatus = singleUserProfileAPI.addSpecializations(doctorID,  specializations);
 
-
-    if (responseStatus === 200) {
-      toast.success('Rotazione cancellata con successo', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    } else if (responseStatus === 400) {
-      toast.error('Errore nella cancellazione', {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
     setOpen(false);
-    props.onPostAdd();
+    updateFunction(specializations);
+    setCheckedSpecializationsCheckBoxes(prev => []);
+
   }
 
 
@@ -146,7 +124,7 @@ export default function DoctorSpecializationAdditionDrawer(props){
             <Button
               variant="contained"
               disabled={checkedSpecializationsCheckBoxes.length === 0}
-              onClick={ () => handleAddSpecializations(props.doctorID,currentSpecializationList,checkedSpecializationsCheckBoxes) }
+              onClick={ () => handleAddSpecializations(props.updateFunction, props.doctorID,currentSpecializationList,checkedSpecializationsCheckBoxes) }
             >
               Salva
             </Button>

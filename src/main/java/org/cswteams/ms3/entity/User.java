@@ -8,6 +8,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -40,7 +41,7 @@ public class User {
 
     @Enumerated
     @ElementCollection(targetClass = SystemActor.class)
-    private List<SystemActor> systemActors;
+    private Set<SystemActor> systemActors;
 
 
     /**
@@ -52,10 +53,10 @@ public class User {
      * @param birthday Date of birth
      * @param email E-mail of the user
      * @param password Password of the user
-     * @param systemActors list of roles of the user in the system (configurator/planner/doctor/user)
+     * @param systemActors Set of roles of the user in the system (configurator/planner/doctor/user)
      */
     public User(String name, String lastname, String taxCode,
-                LocalDate birthday, String email, String password, List<SystemActor> systemActors){
+                LocalDate birthday, String email, String password, Set<SystemActor> systemActors){
         this.name = name;
         this.lastname = lastname;
         this.taxCode = taxCode;

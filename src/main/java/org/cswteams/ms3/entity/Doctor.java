@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -55,7 +56,7 @@ public class Doctor extends User{
      */
     public Doctor(String name, String lastname, String taxCode,
                   LocalDate birthday, String email, String password,
-                  Seniority seniority, List<SystemActor> roles) {
+                  Seniority seniority, Set<SystemActor> roles) {
         super(name,lastname,taxCode,birthday,email,password,roles);
         this.maxWeekSchedulableHours = -1;
         this.seniority = seniority;

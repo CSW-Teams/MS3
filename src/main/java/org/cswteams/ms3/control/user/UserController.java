@@ -54,19 +54,19 @@ public class UserController implements IUserController {
     @Override
     public void createUser(UserCreationDTO s) {
 
-        List<SystemActor> enumList = new ArrayList<>();
+        Set<SystemActor> enumSet = new HashSet<>();
 
         for (String str : s.getSystemActors()) {
             try {
                 SystemActor enumValue = SystemActor.valueOf(str);
-                enumList.add(enumValue);
+                enumSet.add(enumValue);
             } catch (IllegalArgumentException e) {
                 System.out.println("String '" + str + "' does not match any enum constant.");
             }
         }
 
         User newUser = new User(s.getName(), s.getLastname(), s.getTaxCode(),
-                s.getBirthday(), s.getEmail(), s.getPassword(), enumList);
+                s.getBirthday(), s.getEmail(), s.getPassword(), enumSet);
         userDAO.save(newUser);
     }
 
@@ -171,6 +171,15 @@ public class UserController implements IUserController {
     public void deleteUserSystemActor(Long userID, String systemActor) {
         User user = userDAO.findById((long) userID);
         user.getSystemActors().remove(SystemActor.valueOf(systemActor));
+        userDAO.saveAndFlush(user);
+    }
+
+    @Override
+    public void addSystemActor(Long userID, Set<String> systemActors) {
+        User user = userDAO.findById((long) userID);
+        for(String stringSystemActor: systemActors){
+            user.getSystemActors().add(SystemActor.valueOf(stringSystemActor));
+        }
         userDAO.saveAndFlush(user);
     }
 
