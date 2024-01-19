@@ -10,21 +10,18 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Doctor extends User{
     /*TODO : Check if it is necessary Setter for password on password change
      *  Should be added a Factory to set protected access to doctor (So that no one can change his credentials
      * as he pleases) */
-    //@Id
-    //@GeneratedValue(strategy = GenerationType.AUTO)
-    //@Column(name = "doctor_id", nullable = false)
-    //@OneToOne(cascade = CascadeType.ALL)
-    //@JoinColumn(name="user_id")
-    //private User user;
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    protected Long id;
 
     @NotNull
     private Seniority seniority; // TODO: See if seniority is a class instead of an enum
@@ -59,7 +56,7 @@ public class Doctor extends User{
      */
     public Doctor(String name, String lastname, String taxCode,
                   LocalDate birthday, String email, String password,
-                  Seniority seniority, List<SystemActor> roles) {
+                  Seniority seniority, Set<SystemActor> roles) {
         super(name,lastname,taxCode,birthday,email,password,roles);
         this.maxWeekSchedulableHours = -1;
         this.seniority = seniority;

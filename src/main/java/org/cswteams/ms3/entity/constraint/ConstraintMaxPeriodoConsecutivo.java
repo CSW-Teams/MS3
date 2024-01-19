@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.condition.Condition;
+import org.cswteams.ms3.entity.condition.PermanentCondition;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
@@ -26,7 +27,7 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
     private long maxConsecutiveMinutes;
     @ManyToOne
     @NotNull
-    private Condition categoriaVincolata;
+    private PermanentCondition categoriaVincolata;
 
 
     public ConstraintMaxPeriodoConsecutivo() {
@@ -34,7 +35,7 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
 
     public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes, Condition categoriaVincolate){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;
-        this.categoriaVincolata = categoriaVincolate;
+        this.categoriaVincolata = (PermanentCondition) categoriaVincolate;
     }
 
     public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes){

@@ -55,7 +55,34 @@ export  class UserAPI {
     return userList;
   }
 
+  /**
+   * This function calls the rest end point in which we obtain the information needed to be shown
+   * in the frontend SingleUserProfileView
+   * @param id The ID of the user we are willing to show in the view
+   * @returns {Promise<{}>} The informations contained in the JSON (DTO class in backend) obtained from API call
+   */
+  async getSingleUserProfileDetails(id){
+    const response = await fetch('/api/users/user-profile/user_id=' + id);
+    const body = await response.json();
 
+    const user = {};
+    user.id = body.id;
+    user.name = body.name;
+    user.lastname = body.lastname;
+    user.seniority = body.seniority;
+    user.email = body.email;
+    user.birthday = body.birthday;
+    user.systemActors = body.systemActors;
+    /** Specializations refers to a doctor, but the profile view is of a generic user,
+     * therefore if this attribute is empty, then it is to interpret as a normal user,
+     * instead if this attribute is full, the user is a doctor
+     */
+    user.specializations = body.specializations;
+    user.permanentConditions = body.permanentConditions;
+    user.temporaryConditions = body.temporaryConditions;
+
+    return user;
+  }
   async getAllDoctorsInfo() {
     const response = await fetch('/api/doctors/');
     const body = await response.json();

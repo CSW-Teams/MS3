@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.control.notification.Notificable;
 import org.cswteams.ms3.control.notification.Observer;
 import org.cswteams.ms3.enums.RequestStatus;
@@ -13,6 +14,7 @@ import javax.validation.constraints.Null;
 @Entity
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@EqualsAndHashCode(callSuper = true)
 //@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "sender_id", "shift_id", "receiver_id" }) })
 public class Request extends Notificable {
     @Id
@@ -37,8 +39,7 @@ public class Request extends Notificable {
 
     private RequestStatus status = RequestStatus.PENDING;
 
-    @Deprecated
-    private Request() {
+    protected Request() {
         super(null);
     }
 

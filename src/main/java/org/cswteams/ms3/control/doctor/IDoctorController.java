@@ -9,4 +9,7 @@ public interface IDoctorController {
     Set<MedicalDoctorInfoDTO> getAllDoctors();
     MedicalDoctorInfoDTO getDoctorById(Long id);
 
+    void deleteDoctorSpecialization(Long doctorID, String specialization);
+
+    void addDoctorSpecialization(Long doctorID, Set<String> specialization);
 }

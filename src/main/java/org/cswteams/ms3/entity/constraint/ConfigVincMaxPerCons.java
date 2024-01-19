@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity.constraint;
 
 import lombok.Data;
 import org.cswteams.ms3.entity.condition.Condition;
+import org.cswteams.ms3.entity.condition.PermanentCondition;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -17,7 +18,7 @@ public class ConfigVincMaxPerCons {
 
     @ManyToOne
     @NotNull
-    private Condition categoriaVincolata;
+    private PermanentCondition categoriaVincolata;
 
     @Transient
     private int numMaxMinutiConsecutivi;
@@ -28,7 +29,7 @@ public class ConfigVincMaxPerCons {
     }
 
     public ConfigVincMaxPerCons(Condition categoriaVincolata, int numMaxOreConsecutive) {
-        this.categoriaVincolata = categoriaVincolata;
+        this.categoriaVincolata = (PermanentCondition) categoriaVincolata;
         this.numMaxMinutiConsecutivi = numMaxOreConsecutive;
     }
 }

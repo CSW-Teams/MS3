@@ -5,13 +5,9 @@ import lombok.Getter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-@Entity
+@MappedSuperclass
 @Getter
-public abstract class Condition{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "condition_id", nullable = false)
-    private Long id;
+public abstract class Condition {
     @NotNull
     private String type;
 
@@ -25,3 +21,4 @@ public abstract class Condition{
 
     }
 }
+

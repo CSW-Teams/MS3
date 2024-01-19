@@ -54,7 +54,7 @@ export default class Notifications extends React.Component {
       const { notifications } = this.state;
 
       return (
-        <NavItem className="border-right dropdown notifications">
+        <NavItem className="border-right dropdown notifications" style={{cursor:"pointer"}}>
           <NavLink
             className="nav-link-icon text-center"
             onClick={this.toggleNotifications}
