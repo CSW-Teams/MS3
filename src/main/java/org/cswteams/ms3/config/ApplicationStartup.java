@@ -331,8 +331,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         List<Holiday> holidays = holidayDAO.findAll();
 
         for(Holiday holiday: holidays) {
-            System.out.println("HOLIDAY: " + holiday.getName());
-
             switch (holiday.getName()) {
                 //case of "standard holidays"
                 case "Epifania":
