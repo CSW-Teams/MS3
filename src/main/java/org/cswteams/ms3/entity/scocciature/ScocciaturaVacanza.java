@@ -21,15 +21,15 @@ public class ScocciaturaVacanza extends Scocciatura {
     private int peso;
     @ManyToOne
     @JoinColumn(name = "vacanza_id")
-    private Holiday vacanza;
+    private Holiday holiday;
     private TimeSlot timeSlot;
 
     public ScocciaturaVacanza() {
     }
 
-    public ScocciaturaVacanza(int peso, Holiday vacanza, TimeSlot timeSlot) {
+    public ScocciaturaVacanza(int peso, Holiday holiday, TimeSlot timeSlot) {
         this.peso = peso;
-        this.vacanza = vacanza;
+        this.holiday = holiday;
         this.timeSlot = timeSlot;
     }
 
@@ -37,11 +37,13 @@ public class ScocciaturaVacanza extends Scocciatura {
     public int calcolaUffa(ContestoScocciatura contesto) {
 
         TimeSlot timeSlot = contesto.getConcreteShift().getShift().getTimeSlot();
-        //LocalDate data = contesto.getConcreteShift().getDate();
 
-        // if(data.equals(this.vacanza.getStartDate()) && timeSlot.equals(this.timeSlot))
-        //     return this.peso;
+        if(contesto.getConcreteShift().getDate() >= this.holiday.getStartDateEpochDay() &&
+                contesto.getConcreteShift().getDate() <= this.holiday.getEndDateEpochDay() && timeSlot.equals(this.timeSlot))
+            return this.peso;
 
         return 0;
+
     }
+
 }

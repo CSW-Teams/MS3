@@ -3,8 +3,10 @@ package org.cswteams.ms3.entity.scocciature;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.cswteams.ms3.entity.Preference;
+import org.cswteams.ms3.enums.TimeSlot;
 
 import javax.persistence.Entity;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -28,10 +30,11 @@ public class ScocciaturaDesiderata extends Scocciatura {
     @Override
     public int calcolaUffa(ContestoScocciatura contesto) {
 
-        List<Preference> desiderate = contesto.getDoctorUffaPriority().getDoctor().getPreferenceList();
+        TimeSlot timeSlot = contesto.getConcreteShift().getShift().getTimeSlot();
 
+        List<Preference> desiderate = contesto.getDoctorUffaPriority().getDoctor().getPreferenceList();
         for(Preference preference : desiderate){
-            if(preference.getDate().equals(contesto.getConcreteShift().getDate()))
+            if(preference.getDate().equals(LocalDate.ofEpochDay(contesto.getConcreteShift().getDate())) && preference.getTimeSlots().contains(timeSlot))
                 return peso;
         }
 

@@ -1,7 +1,6 @@
 package org.cswteams.ms3.control.preferenze;
 
 import org.cswteams.ms3.dto.HolidayDTO;
-import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.jboss.logging.Logger;
@@ -61,7 +60,7 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 			} catch (Exception e) {
 				throw new CalendarServiceException(e);
 			}
-			holidayController.registerHoliday(holidays);
+			holidayController.registerHolidays(holidays);
 			return holidays;
 		} else {
 			throw new CalendarServiceException("Calendar data not found: data searched in '" + this.setting.getURLHoliday() + "'");

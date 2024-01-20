@@ -76,14 +76,11 @@ public class ControllerScocciatura {
          * It is possible because ordering algorithm is in place.
          */
 
-        /* TODO: think about an alternative solution the cases LONG_SHIFT e NIGHT consider first the own priority queue and,
-         * in case of same priority level in this queue, also the GENERAL queue. */
         Collections.shuffle(allDoctorUffaPriority);
+        //LONG_SHIFT and NIGHT consider first the own priority queue and, in case of same priority level in this queue, also the GENERAL queue.
+        allDoctorUffaPriority.sort(Comparator.comparingInt(DoctorUffaPriority::getPartialGeneralPriority));
 
         switch(pq) {
-            case GENERAL:
-                allDoctorUffaPriority.sort(Comparator.comparingInt(DoctorUffaPriority::getPartialGeneralPriority));
-
             case LONG_SHIFT:
                 allDoctorUffaPriority.sort(Comparator.comparingInt(DoctorUffaPriority::getPartialLongShiftPriority));
 
