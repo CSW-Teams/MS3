@@ -26,16 +26,15 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
     @NotNull
     private long maxConsecutiveMinutes;
     @ManyToOne
-    @NotNull
-    private PermanentCondition categoriaVincolata;
+    private Condition categoriaVincolata;
 
 
     public ConstraintMaxPeriodoConsecutivo() {
     }
 
-    public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes, Condition categoriaVincolate){
+    public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes, Condition categoriaVincolata){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;
-        this.categoriaVincolata = (PermanentCondition) categoriaVincolate;
+        this.categoriaVincolata = categoriaVincolata;
     }
 
     public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes){

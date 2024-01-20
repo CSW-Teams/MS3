@@ -7,10 +7,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
-public class TemporaryCondition extends Condition{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class TemporaryCondition extends Condition {
 
     @NotNull
     private long startDate;

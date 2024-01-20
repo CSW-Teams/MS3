@@ -1,6 +1,5 @@
 package org.cswteams.ms3.control.scambioTurno;
 
-import lombok.SneakyThrows;
 import org.cswteams.ms3.control.notification.INotificationSystemController;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.AnswerTurnChangeRequestDTO;
@@ -11,7 +10,7 @@ import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.ConstraintHoliday;
 import org.cswteams.ms3.entity.constraint.ConstraintMaxPeriodoConsecutivo;
-import org.cswteams.ms3.entity.constraint.ConstraintUbiquità;
+import org.cswteams.ms3.entity.constraint.ConstraintUbiquita;
 import org.cswteams.ms3.entity.constraint.ContextConstraint;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.RequestStatus;
@@ -24,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
-import javax.print.Doc;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.time.*;
@@ -318,7 +316,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         List<Doctor> availableDoctorsAfterConstraintsCheck = new ArrayList<>();
 
         for (Doctor doctor : availableDoctors) {
-            ConstraintUbiquità constraintUbiquità = new ConstraintUbiquità();
+            ConstraintUbiquita constraintUbiquita = new ConstraintUbiquita();
             ConstraintHoliday constraintHoliday = new ConstraintHoliday();
             ConstraintMaxPeriodoConsecutivo constraintMaxPeriodoConsecutivo = new ConstraintMaxPeriodoConsecutivo();
             ContextConstraint context = new ContextConstraint(
@@ -329,7 +327,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             );
 
             try {
-                constraintUbiquità.verifyConstraint(context);
+                constraintUbiquita.verifyConstraint(context);
                 constraintHoliday.verifyConstraint(context);
                 constraintMaxPeriodoConsecutivo.verifyConstraint(context);
                 availableDoctorsAfterConstraintsCheck.add(doctor);

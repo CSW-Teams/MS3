@@ -47,7 +47,7 @@ public class ConstraintController implements IConstraintController {
         configuration.setId(configVincoli.getId());
         configVincoliDao.save(configuration);
         //Update constraints
-        ConstraintTipologieTurniContigue vincoloTipologieTurniContigue = (ConstraintTipologieTurniContigue) constraintDAO.findByType("ConstraintTipologieTurniContigue").get(0);
+        ConstraintTurniContigui vincoloTipologieTurniContigue = (ConstraintTurniContigui) constraintDAO.findByType("ConstraintTurniContigui").get(0);
         vincoloTipologieTurniContigue.setHorizon(configuration.getHorizonTurnoNotturno());
 
         ConstraintMaxOrePeriodo vincoloMaxOrePeriodo = (ConstraintMaxOrePeriodo) constraintDAO.findByType("ConstraintMaxOrePeriodo").get(0);

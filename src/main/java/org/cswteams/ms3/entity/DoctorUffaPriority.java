@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity;
 
 import org.cswteams.ms3.enums.PriorityQueueEnum;
 
+import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,17 +115,24 @@ public class DoctorUffaPriority {
 
     }
 
-    public void updatePartialPriority(int priorityDelta, PriorityQueueEnum pq) {  //addUffaTemp() counterpart
+    public void updatePartialPriority(int priorityDelta, PriorityQueueEnum pq, int upperBound, int lowerBound) {  //addUffaTemp() counterpart
+        int newPartialPriority;
 
         switch(pq) {
             case GENERAL:
-                this.partialGeneralPriority = this.generalPriority + priorityDelta;
+                newPartialPriority = Math.max(this.generalPriority+priorityDelta, lowerBound);  //we ensure that new priority level stays into the bounds.
+                newPartialPriority = Math.min(newPartialPriority, upperBound);
+                this.partialGeneralPriority = newPartialPriority;
 
             case LONG_SHIFT:
-                this.partialLongShiftPriority = this.longShiftPriority + priorityDelta;
+                newPartialPriority = Math.max(this.longShiftPriority+priorityDelta, lowerBound);  //we ensure that new priority level stays into the bounds.
+                newPartialPriority = Math.min(newPartialPriority, upperBound);
+                this.partialLongShiftPriority = newPartialPriority;
 
             case NIGHT:
-                this.partialNightPriority = this.nightPriority + priorityDelta;
+                newPartialPriority = Math.max(this.nightPriority+priorityDelta, lowerBound);  //we ensure that new priority level stays into the bounds.
+                newPartialPriority = Math.min(newPartialPriority, upperBound);
+                this.partialNightPriority = newPartialPriority;
 
         }
 

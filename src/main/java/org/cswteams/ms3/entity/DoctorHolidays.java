@@ -24,19 +24,14 @@ public class DoctorHolidays {
     private Doctor doctor;
 
     @Lob
+    @NotNull
     private HashMap<Holiday, Boolean> holidayMap;
 
     protected DoctorHolidays() {}
 
-    public DoctorHolidays(Doctor doctor, List<Holiday> holidays) {
+    public DoctorHolidays(Doctor doctor, HashMap<Holiday, Boolean> holidayMap) {
         this.doctor = doctor;
-        this.holidayMap = new HashMap<>();
-
-        for(Holiday holiday: holidays) {
-            //we are assuming that, at the moment of instantiation of DoctorHolidays, the corresponding doctor has worked in no concrete shift in the past.
-            this.holidayMap.put(holiday, false);
-
-        }
+        this.holidayMap = holidayMap;
 
     }
 
