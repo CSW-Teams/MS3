@@ -152,13 +152,13 @@ public class HolidayController implements IHolidayController {
     }
     @Override
     @Transactional
-    public void registerHoliday(@NotNull List<HolidayDTO> holidays){
-        List<Holiday> listHolliday = new ArrayList<>();
+    public void registerHolidays(@NotNull List<HolidayDTO> holidays){
+        List<Holiday> listHolidays = new ArrayList<>();
         for(HolidayDTO elem: holidays){
             Holiday newHoliday=new Holiday(elem.getName(), HolidayCategory.valueOf(elem.getCategory().toUpperCase()), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
-            listHolliday.add(newHoliday);
+            listHolidays.add(newHoliday);
         }
-        holidayDao.saveAll(listHolliday);
+        holidayDao.saveAll(listHolidays);
     }
 
     @Override

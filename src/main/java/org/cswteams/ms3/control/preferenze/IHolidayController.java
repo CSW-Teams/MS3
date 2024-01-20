@@ -6,7 +6,6 @@ import java.util.List;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
-import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.exception.CalendarServiceException;
 
 import javax.transaction.Transactional;
@@ -34,7 +33,7 @@ public interface IHolidayController {
     void registerSundays(LocalDate start, int years);
 
     @Transactional
-    void registerHoliday(@NotNull List<HolidayDTO> holidays);
+    void registerHolidays(@NotNull List<HolidayDTO> holidays);
 
     void insertCustomHoliday(CustomHolidayDTOIn holiday) ;
 

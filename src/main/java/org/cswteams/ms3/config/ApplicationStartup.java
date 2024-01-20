@@ -115,7 +115,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
          */
       //  if (doctorDAO.count() == 0) {
 
-            List<HolidayDTO> holidaysDTO = registerHolidays();  //TODO: HolidayDTO will be useful for uffa priority differentiation.
+            registerHolidays();
 
             try {
                 populateDB();
@@ -133,10 +133,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     /**
      * Function which has the responsibility to register the holidays into the system, if it has not been registered yet.
-     * @return List of HolidayDTO describing all the default holidays registered in the system.
      */
-    private List<HolidayDTO> registerHolidays() {
-        List<HolidayDTO> holidays = null;
+    private void registerHolidays() {
+        List<HolidayDTO> holidays;
 
         try {
             CalendarSettingBuilder settingBuilder = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
@@ -146,16 +145,55 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 CalendarSetting setting = settingBuilder.create(String.valueOf(LocalDate.now().getYear()), "IT");
                 calendarServiceManager.init(setting);
                 holidays = calendarServiceManager.getHolidays();
-                holidayController.registerHoliday(holidays);
+                holidayController.registerHolidays(holidays);
+            }
+
+            //we are about to register Vigilia di Natale and Vigilia di Capodanno too. To do that, we have to retrieve Natale and Capodanno.
+            for(HolidayDTO holidayDTO : holidays) {
+                if(holidayDTO.getName().equals("Natale")) {
+                    List<HolidayDTO> newHolidays = getNewHolidayDTOs(holidayDTO);
+                    holidayController.registerHolidays(newHolidays);
+
+                }
+
             }
 
         } catch (CalendarServiceException e) {
             e.printStackTrace();
         }
 
-        return holidays;
-
     }
+
+
+
+    /**
+     * Function which has the responsibility to define the holidays Vigilia di Natale and Vigilia di Capodanno, if necessary.
+     * @param holidayDTO Already defined holiday (normally Natale) from which the new holidays will be defined and created
+     * @return List of new holiday DTOs
+     */
+    private static List<HolidayDTO> getNewHolidayDTOs(HolidayDTO holidayDTO) {
+        List<HolidayDTO> newHolidays = new ArrayList<>();
+
+        HolidayDTO vigiliaDiNataleDTO = new HolidayDTO(
+                "Vigilia di Natale",
+                HolidayCategory.RELIGIOUS,
+                holidayDTO.getStartDateEpochDay()-1,
+                holidayDTO.getEndDateEpochDay()-1,
+                holidayDTO.getLocation()
+        );
+        HolidayDTO vigiliaDiCapodannoDTO = new HolidayDTO(
+                "Vigilia di Capodanno",
+                HolidayCategory.CIVIL,
+                holidayDTO.getStartDateEpochDay()+6,
+                holidayDTO.getEndDateEpochDay()+6,
+                holidayDTO.getLocation()
+        );
+
+        newHolidays.add(vigiliaDiNataleDTO);
+        newHolidays.add(vigiliaDiCapodannoDTO);
+        return newHolidays;
+    }
+
 
 
     private void registerScocciature() {
@@ -177,8 +215,30 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         int uffaPrioritySimple;
         int uffaPriorityNight;
 
-        int uffaPriorityDefaultHoliday;  //TODO: customize uffa priority for different holidays and different TimeSlots
+        int uffaPriorityDefaultHoliday;
         int uffaPriorityDefaultHolidayNight;
+
+        int uffaPriorityVigiliaDiCapodannoMorning;
+        int uffaPriorityVigiliaDiCapodannoAfternoon;
+        int uffaPriorityVigiliaDiCapodannoNight;
+        int uffaPriorityCapodannoMorning;
+        int uffaPriorityCapodannoAfternoon;
+        int uffaPriorityCapodannoNight;
+        int uffaPriorityPasquaMorning;
+        int uffaPriorityPasquaAfternoon;
+        int uffaPriorityPasquaNight;
+        int uffaPriorityLunediDellAngeloMorning;
+        int uffaPriorityLunediDellAngeloAfternoon;
+        int uffaPriorityLunediDellAngeloNight;
+        int uffaPriorityFerragostoOAssunzioneMorning;
+        int uffaPriorityFerragostoOAssunzioneAfternoon;
+        int uffaPriorityFerragostoOAssunzioneNight;
+        int uffaPriorityVigiliaDiNataleMorning;
+        int uffaPriorityVigiliaDiNataleAfternoon;
+        int uffaPriorityVigiliaDiNataleNight;
+        int uffaPriorityNataleMorning;
+        int uffaPriorityNataleAfternoon;
+        int uffaPriorityNataleNight;
 
         //we read uffa priorities from configuration file priority.properties
         try {
@@ -201,6 +261,27 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             uffaPriorityNight = Integer.parseInt(prop.getProperty("uffaPriorityNight"));
             uffaPriorityDefaultHoliday = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHoliday"));
             uffaPriorityDefaultHolidayNight = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHolidayNight"));
+            uffaPriorityVigiliaDiCapodannoMorning = Integer.parseInt(prop.getProperty("uffaPriorityVigiliaDiCapodannoMorning"));
+            uffaPriorityVigiliaDiCapodannoAfternoon = Integer.parseInt(prop.getProperty("uffaPriorityVigiliaDiCapodannoAfternoon"));
+            uffaPriorityVigiliaDiCapodannoNight = Integer.parseInt(prop.getProperty("uffaPriorityVigiliaDiCapodannoNight"));
+            uffaPriorityCapodannoMorning = Integer.parseInt(prop.getProperty("uffaPriorityCapodannoMorning"));
+            uffaPriorityCapodannoAfternoon = Integer.parseInt(prop.getProperty("uffaPriorityCapodannoAfternoon"));
+            uffaPriorityCapodannoNight = Integer.parseInt(prop.getProperty("uffaPriorityCapodannoNight"));
+            uffaPriorityPasquaMorning = Integer.parseInt(prop.getProperty("uffaPriorityPasquaMorning"));
+            uffaPriorityPasquaAfternoon = Integer.parseInt(prop.getProperty("uffaPriorityPasquaAfternoon"));
+            uffaPriorityPasquaNight = Integer.parseInt(prop.getProperty("uffaPriorityPasquaNight"));
+            uffaPriorityLunediDellAngeloMorning = Integer.parseInt(prop.getProperty("uffaPriorityLunediDellAngeloMorning"));
+            uffaPriorityLunediDellAngeloAfternoon = Integer.parseInt(prop.getProperty("uffaPriorityLunediDellAngeloAfternoon"));
+            uffaPriorityLunediDellAngeloNight = Integer.parseInt(prop.getProperty("uffaPriorityLunediDellAngeloNight"));
+            uffaPriorityFerragostoOAssunzioneMorning = Integer.parseInt(prop.getProperty("uffaPriorityFerragostoOAssunzioneMorning"));
+            uffaPriorityFerragostoOAssunzioneAfternoon = Integer.parseInt(prop.getProperty("uffaPriorityFerragostoOAssunzioneAfternoon"));
+            uffaPriorityFerragostoOAssunzioneNight = Integer.parseInt(prop.getProperty("uffaPriorityFerragostoOAssunzioneNight"));
+            uffaPriorityVigiliaDiNataleMorning = Integer.parseInt(prop.getProperty("uffaPriorityVigiliaDiNataleMorning"));
+            uffaPriorityVigiliaDiNataleAfternoon = Integer.parseInt(prop.getProperty("uffaPriorityVigiliaDiNataleAfternoon"));
+            uffaPriorityVigiliaDiNataleNight = Integer.parseInt(prop.getProperty("uffaPriorityVigiliaDiNataleNight"));
+            uffaPriorityNataleMorning = Integer.parseInt(prop.getProperty("uffaPriorityNataleMorning"));
+            uffaPriorityNataleAfternoon = Integer.parseInt(prop.getProperty("uffaPriorityNataleAfternoon"));
+            uffaPriorityNataleNight = Integer.parseInt(prop.getProperty("uffaPriorityNataleNight"));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -250,15 +331,96 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         List<Holiday> holidays = holidayDAO.findAll();
 
         for(Holiday holiday: holidays) {
-            System.out.println("HOLIDAY: " + holiday.getName());
+            switch (holiday.getName()) {
+                //case of "standard holidays"
+                case "Epifania":
+                case "Festa della Liberazione":
+                case "Festa del Lavoro":
+                case "Festa della Repubblica":
+                case "Tutti i santi":
+                case "Immacolata Concezione":
+                case "Santo Stefano":
 
-            Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holiday, TimeSlot.MORNING);
-            Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holiday, TimeSlot.AFTERNOON);
-            Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityDefaultHolidayNight, holiday, TimeSlot.NIGHT);
+                    Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holiday, TimeSlot.MORNING);
+                    Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holiday, TimeSlot.AFTERNOON);
+                    Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityDefaultHolidayNight, holiday, TimeSlot.NIGHT);
 
-            scocciaturaDAO.save(scocciaturaHolidayMorning);
-            scocciaturaDAO.save(scocciaturaHolidayAfternoon);
-            scocciaturaDAO.save(scocciaturaHolidayNight);
+                    scocciaturaDAO.save(scocciaturaHolidayMorning);
+                    scocciaturaDAO.save(scocciaturaHolidayAfternoon);
+                    scocciaturaDAO.save(scocciaturaHolidayNight);
+                    break;
+
+                case "Vigilia di Capodanno":
+                    Scocciatura scocciaturaVigiliaDiCapodannoMorning = new ScocciaturaVacanza(uffaPriorityVigiliaDiCapodannoMorning, holiday, TimeSlot.MORNING);
+                    Scocciatura scocciaturaVigiliaDiCapodannoAfternoon = new ScocciaturaVacanza(uffaPriorityVigiliaDiCapodannoAfternoon, holiday, TimeSlot.AFTERNOON);
+                    Scocciatura scocciaturaVigiliaDiCapodannoNight = new ScocciaturaVacanza(uffaPriorityVigiliaDiCapodannoNight, holiday, TimeSlot.NIGHT);
+
+                    scocciaturaDAO.save(scocciaturaVigiliaDiCapodannoMorning);
+                    scocciaturaDAO.save(scocciaturaVigiliaDiCapodannoAfternoon);
+                    scocciaturaDAO.save(scocciaturaVigiliaDiCapodannoNight);
+                    break;
+
+                case "Capodanno":
+                    Scocciatura scocciaturaCapodannoMorning = new ScocciaturaVacanza(uffaPriorityCapodannoMorning, holiday, TimeSlot.MORNING);
+                    Scocciatura scocciaturaCapodannoAfternoon = new ScocciaturaVacanza(uffaPriorityCapodannoAfternoon, holiday, TimeSlot.AFTERNOON);
+                    Scocciatura scocciaturaCapodannoNight = new ScocciaturaVacanza(uffaPriorityCapodannoNight, holiday, TimeSlot.NIGHT);
+
+                    scocciaturaDAO.save(scocciaturaCapodannoMorning);
+                    scocciaturaDAO.save(scocciaturaCapodannoAfternoon);
+                    scocciaturaDAO.save(scocciaturaCapodannoNight);
+                    break;
+
+                case "Pasqua":
+                    Scocciatura scocciaturaPasquaMorning = new ScocciaturaVacanza(uffaPriorityPasquaMorning, holiday, TimeSlot.MORNING);
+                    Scocciatura scocciaturaPasquaAfternoon = new ScocciaturaVacanza(uffaPriorityPasquaAfternoon, holiday, TimeSlot.AFTERNOON);
+                    Scocciatura scocciaturaPasquaNight = new ScocciaturaVacanza(uffaPriorityPasquaNight, holiday, TimeSlot.NIGHT);
+
+                    scocciaturaDAO.save(scocciaturaPasquaMorning);
+                    scocciaturaDAO.save(scocciaturaPasquaAfternoon);
+                    scocciaturaDAO.save(scocciaturaPasquaNight);
+                    break;
+
+                case "Lunedì dell'Angelo":
+                    Scocciatura scocciaturaLunediDellAngeloMorning = new ScocciaturaVacanza(uffaPriorityLunediDellAngeloMorning, holiday, TimeSlot.MORNING);
+                    Scocciatura scocciaturaLunediDellAngeloAfternoon = new ScocciaturaVacanza(uffaPriorityLunediDellAngeloAfternoon, holiday, TimeSlot.AFTERNOON);
+                    Scocciatura scocciaturaLunediDellAngeloNight = new ScocciaturaVacanza(uffaPriorityLunediDellAngeloNight, holiday, TimeSlot.NIGHT);
+
+                    scocciaturaDAO.save(scocciaturaLunediDellAngeloMorning);
+                    scocciaturaDAO.save(scocciaturaLunediDellAngeloAfternoon);
+                    scocciaturaDAO.save(scocciaturaLunediDellAngeloNight);
+                    break;
+
+                case "Ferragosto o Assunzione":
+                    Scocciatura scocciaturaFerragostoOAssunzioneMorning = new ScocciaturaVacanza(uffaPriorityFerragostoOAssunzioneMorning, holiday, TimeSlot.MORNING);
+                    Scocciatura scocciaturaFerragostoOAssunzioneAfternoon = new ScocciaturaVacanza(uffaPriorityFerragostoOAssunzioneAfternoon, holiday, TimeSlot.AFTERNOON);
+                    Scocciatura scocciaturaFerragostoOAssunzioneNight = new ScocciaturaVacanza(uffaPriorityFerragostoOAssunzioneNight, holiday, TimeSlot.NIGHT);
+
+                    scocciaturaDAO.save(scocciaturaFerragostoOAssunzioneMorning);
+                    scocciaturaDAO.save(scocciaturaFerragostoOAssunzioneAfternoon);
+                    scocciaturaDAO.save(scocciaturaFerragostoOAssunzioneNight);
+                    break;
+
+                case "Vigilia di Natale":
+                    Scocciatura scocciaturaVigiliaDiNataleMorning = new ScocciaturaVacanza(uffaPriorityVigiliaDiNataleMorning, holiday, TimeSlot.MORNING);
+                    Scocciatura scocciaturaVigiliaDiNataleAfternoon = new ScocciaturaVacanza(uffaPriorityVigiliaDiNataleAfternoon, holiday, TimeSlot.AFTERNOON);
+                    Scocciatura scocciaturaVigiliaDiNataleNight = new ScocciaturaVacanza(uffaPriorityVigiliaDiNataleNight, holiday, TimeSlot.NIGHT);
+
+                    scocciaturaDAO.save(scocciaturaVigiliaDiNataleMorning);
+                    scocciaturaDAO.save(scocciaturaVigiliaDiNataleAfternoon);
+                    scocciaturaDAO.save(scocciaturaVigiliaDiNataleNight);
+                    break;
+
+                case "Natale":
+                    Scocciatura scocciaturaNataleMorning = new ScocciaturaVacanza(uffaPriorityNataleMorning, holiday, TimeSlot.MORNING);
+                    Scocciatura scocciaturaNataleAfternoon = new ScocciaturaVacanza(uffaPriorityNataleAfternoon, holiday, TimeSlot.AFTERNOON);
+                    Scocciatura scocciaturaNataleNight = new ScocciaturaVacanza(uffaPriorityNataleNight, holiday, TimeSlot.NIGHT);
+
+                    scocciaturaDAO.save(scocciaturaNataleMorning);
+                    scocciaturaDAO.save(scocciaturaNataleAfternoon);
+                    scocciaturaDAO.save(scocciaturaNataleNight);
+                    break;
+
+            }
 
         }
 

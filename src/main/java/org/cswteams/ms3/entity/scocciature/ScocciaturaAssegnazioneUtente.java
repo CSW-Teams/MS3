@@ -7,6 +7,7 @@ import org.cswteams.ms3.enums.TimeSlot;
 
 import javax.persistence.Entity;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 /**
  * Calcola quanto pesa ad un utente essere assegnato ad una assegnazione in base al giorno della settimana
@@ -35,9 +36,7 @@ public class ScocciaturaAssegnazioneUtente extends Scocciatura {
     public int calcolaUffa(ContestoScocciatura contesto) {
 
         TimeSlot timeSlot = contesto.getConcreteShift().getShift().getTimeSlot();
-        //DayOfWeek giornoSettimana = contesto.getConcreteShift().getDate();
-
-        if(giornoSettimana.equals(this.giornoSettimana) && timeSlot.equals(this.timeSlot))
+        if(LocalDate.ofEpochDay(contesto.getConcreteShift().getDate()).getDayOfWeek().equals(this.giornoSettimana) && timeSlot.equals(this.timeSlot))
             return this.peso;
 
         return 0;
