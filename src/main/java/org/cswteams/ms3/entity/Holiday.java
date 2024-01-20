@@ -1,5 +1,6 @@
 package org.cswteams.ms3.entity;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 import javax.persistence.Entity;
@@ -27,7 +28,7 @@ import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
 })*/
 @Data
 @BeforeInTime(firstParam = "startDateEpochDay", secondParam = "endDateEpochDay", comparator = EpochDayComparator.class)
-public class Holiday {
+public class Holiday implements Serializable {
 
     public Holiday() {
     }

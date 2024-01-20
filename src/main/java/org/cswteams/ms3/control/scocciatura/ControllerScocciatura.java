@@ -6,19 +6,39 @@ import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.PriorityQueueEnum;
 
-import java.util.Collections;
-import java.util.List;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.Math;
+import java.util.*;
 
 /**
  * This class manages all the aspects concerning the uffa prioriy levels.
  */
 public class ControllerScocciatura {
 
-    public List<Scocciatura> scocciature;
+    public List<Scocciatura> scocciature;   //why public!?
+    private final int upperBound;
+    private final int lowerBound;
 
 
     public ControllerScocciatura(List<Scocciatura> scocciature) {
         this.scocciature = scocciature;
+
+        //we read upper bound and lower bound of priority levels from configuration file priority.properties
+        try {
+            File file = new File("src/main/resources/priority.properties");
+            FileInputStream propsInput = new FileInputStream(file);
+            Properties prop = new Properties();
+            prop.load(propsInput);
+
+            this.upperBound = Math.max(Integer.parseInt(prop.getProperty("upperBound")), 0);    //we cannot set upperBound < 0
+            this.lowerBound = Math.min(Integer.parseInt(prop.getProperty("lowerBound")), 0);    //we cannot set lowerBound > 0
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 
@@ -36,7 +56,7 @@ public class ControllerScocciatura {
         for(DoctorUffaPriority dup: allDoctorUffaPriority) {
             contestoScocciatura = new ContestoScocciatura(dup, concreteShift);
             priorityDelta = this.calcolaUffaComplessivoUtenteAssegnazione(contestoScocciatura);
-            dup.updatePartialPriority(priorityDelta, pq);
+            dup.updatePartialPriority(priorityDelta, pq, this.upperBound, this.lowerBound);
 
         }
 
@@ -62,13 +82,13 @@ public class ControllerScocciatura {
 
         switch(pq) {
             case GENERAL:
-                allDoctorUffaPriority.sort((u1, u2) -> u1.getPartialGeneralPriority() - u2.getPartialGeneralPriority());
+                allDoctorUffaPriority.sort(Comparator.comparingInt(DoctorUffaPriority::getPartialGeneralPriority));
 
             case LONG_SHIFT:
-                allDoctorUffaPriority.sort((u1, u2) -> u1.getPartialLongShiftPriority() - u2.getPartialLongShiftPriority());
+                allDoctorUffaPriority.sort(Comparator.comparingInt(DoctorUffaPriority::getPartialLongShiftPriority));
 
             case NIGHT:
-                allDoctorUffaPriority.sort((u1, u2) -> u1.getPartialNightPriority() - u2.getPartialNightPriority());
+                allDoctorUffaPriority.sort(Comparator.comparingInt(DoctorUffaPriority::getPartialNightPriority));
 
         }
 
@@ -99,9 +119,9 @@ public class ControllerScocciatura {
      */
     public void normalizeUffaPriority(List<DoctorUffaPriority> allDoctorUffaPriority) {
 
-        int minGeneralPriority = 39;  //39=MAX_PRIORITY
-        int minLongShiftPriority = 39;
-        int minNightPriority = 39;
+        int minGeneralPriority = this.upperBound;
+        int minLongShiftPriority = this.upperBound;
+        int minNightPriority = this.upperBound;
 
         //get the minimum priority values foreach queue
         for(DoctorUffaPriority dup : allDoctorUffaPriority) {
@@ -116,9 +136,10 @@ public class ControllerScocciatura {
 
         //normalization of the priority level foreach doctor and foreach queue
         for(DoctorUffaPriority dup : allDoctorUffaPriority) {
-            dup.setGeneralPriority(dup.getGeneralPriority()-minGeneralPriority);
-            dup.setLongShiftPriority(dup.getLongShiftPriority()-minLongShiftPriority);
-            dup.setLongShiftPriority(dup.getLongShiftPriority()-minLongShiftPriority);
+            //we ensure that nobody will have a priority level > upperBound
+            dup.setGeneralPriority(Math.min(dup.getGeneralPriority()-minGeneralPriority, this.upperBound));
+            dup.setLongShiftPriority(Math.min(dup.getLongShiftPriority()-minLongShiftPriority, this.upperBound));
+            dup.setNightPriority(Math.min(dup.getNightPriority()-minNightPriority, this.upperBound));
 
         }
 

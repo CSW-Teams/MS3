@@ -18,7 +18,7 @@ public class ConfigVincMaxPerCons {
 
     @ManyToOne
     @NotNull
-    private PermanentCondition categoriaVincolata;
+    private Condition categoriaVincolata;
 
     @Transient
     private int numMaxMinutiConsecutivi;
@@ -29,7 +29,7 @@ public class ConfigVincMaxPerCons {
     }
 
     public ConfigVincMaxPerCons(Condition categoriaVincolata, int numMaxOreConsecutive) {
-        this.categoriaVincolata = (PermanentCondition) categoriaVincolata;
+        this.categoriaVincolata = categoriaVincolata;
         this.numMaxMinutiConsecutivi = numMaxOreConsecutive;
     }
 }

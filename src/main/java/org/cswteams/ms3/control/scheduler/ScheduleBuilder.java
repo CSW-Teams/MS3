@@ -174,15 +174,15 @@ public class ScheduleBuilder {
         if(controllerScocciatura != null)   //if controllerScocciatura is instantiated, then we can normalize all the priorities.
             controllerScocciatura.normalizeUffaPriority(allDoctorUffaPriority);
 
-        for( ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
+        for(ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
             // First step: define doctors on duty in the concrete shift.
             try {
                 //TODO:Revisionare questo if
                 //Questa linea va rivalutata in seguito
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
-                        for(Map.Entry<Seniority,Integer> entry:qss.getSeniorityMap().entrySet()) {
-                            this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_CALL,qss.getTask());
+                        for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
+                            this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_CALL, qss.getTask());
                         }
                 }
                 /*
@@ -207,7 +207,7 @@ public class ScheduleBuilder {
             try {
                 List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
-                    for(Map.Entry<Seniority,Integer> entry:qss.getSeniorityMap().entrySet()) {
+                    for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
                         this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
                     }
                 }
@@ -366,7 +366,7 @@ public class ScheduleBuilder {
     private DoctorHolidays findDhByDoctor(Doctor doctor) {
 
         for(DoctorHolidays dh : doctorHolidaysList) {
-            if (dh.getDoctor().equals(doctor))
+            if (dh.getDoctor() == doctor)
                 return dh;
 
         }

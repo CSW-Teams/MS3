@@ -23,7 +23,7 @@ public class ConfigVincoli {
     @NotNull
     private int maxMinutiPeriodo;
 
-    //Parametro ConstraintTipologieTurniContigue
+    //Parametro ConstraintTurniContigui
     @NotNull
     private int horizonTurnoNotturno;
 

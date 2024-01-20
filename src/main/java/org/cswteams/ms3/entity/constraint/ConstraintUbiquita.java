@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-public class ConstraintUbiquità extends ConstraintAssegnazioneTurnoTurno {
+public class ConstraintUbiquita extends ConstraintAssegnazioneTurnoTurno {
 
     /**
      * This method checks if Ubiquita constraint is respected while inserting a new concrete shift into a schedule.

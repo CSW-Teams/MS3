@@ -5,10 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.cswteams.ms3.entity.ConcreteShift;
@@ -29,7 +26,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-public class ConstraintTipologieTurniContigue extends ConstraintAssegnazioneTurnoTurno {
+public class ConstraintTurniContigui extends ConstraintAssegnazioneTurnoTurno {
 
     /**
      * Round of temporal units in which it is prohibited to assign the same doctor to another shift whose category
@@ -54,7 +51,7 @@ public class ConstraintTipologieTurniContigue extends ConstraintAssegnazioneTurn
     @NotNull
     private Set<TimeSlot> forbiddenTimeSlots;
 
-    public ConstraintTipologieTurniContigue(int horizon, ChronoUnit hours, TimeSlot notturno, HashSet<TimeSlot> hashSet) {
+    public ConstraintTurniContigui(int horizon, ChronoUnit hours, TimeSlot notturno, HashSet<TimeSlot> hashSet) {
         this.horizon = horizon;
         this.tUnit = hours;
         this.timeSlot = notturno;

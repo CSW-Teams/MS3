@@ -28,8 +28,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-
-import javax.print.Doc;
 import java.io.*;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -116,14 +114,18 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
          * FIXME: sostiutire count con controllo su entità Config
          */
       //  if (doctorDAO.count() == 0) {
+
+            List<HolidayDTO> holidaysDTO = registerHolidays();  //TODO: HolidayDTO will be useful for uffa priority differentiation.
+
             try {
                 populateDB();
             } catch (ShiftException e) {
                 e.printStackTrace();
             }
 
-            //registerConstraints();
+            registerConstraints();
             registerScocciature();
+
      //   }
 
     }
@@ -144,9 +146,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 CalendarSetting setting = settingBuilder.create(String.valueOf(LocalDate.now().getYear()), "IT");
                 calendarServiceManager.init(setting);
                 holidays = calendarServiceManager.getHolidays();
+                holidayController.registerHoliday(holidays);
             }
-
-            holidayController.registerHoliday(holidays);
 
         } catch (CalendarServiceException e) {
             e.printStackTrace();
@@ -158,28 +159,52 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
 
     private void registerScocciature() {
-        //List<HolidayDTO> holidaysDTO = registerHolidays(); //TODO: HolidayDTO will be useful for uffa priority differentiation.
 
-        //We are reasoning about 40 priority levels.
-        int uffaPriorityPreference = 10;
-        int uffaPriorityRespectedPreference = -1;   //TODO: introduce somehow a mechanism for reducing priority levels not only through periodic balancing
+        int uffaPriorityPreference;
+        int uffaPriorityRespectedPreference;   //TODO: introduce priority level reduction in case of respected preference
 
-        int uffaPrioritySundayAfternoon = 1;
-        int uffaPrioritySundayMorning = 1;
-        int uffaPrioritySaturdayNight = 2;
+        int uffaPrioritySundayMorning;
+        int uffaPrioritySundayAfternoon;
+        int uffaPrioritySaturdayNight;
 
-        int uffaPrioritySaturdayAfternoon = 0;
-        int uffaPrioritySaturdayMorning = 0;
-        int uffaPriorityFridayNight = 1;
-        int uffaPrioritySundayNight = 2;
+        int uffaPrioritySaturdayMorning;
+        int uffaPrioritySaturdayAfternoon;
+        int uffaPrioritySundayNight;
 
-        int uffaPriorityFridayAfternoon = 0;
+        int uffaPriorityFridayAfternoon;
+        int uffaPriorityFridayNight;
 
-        int uffaPrioritySimple = 0;
-        int uffaPriorityNight = 1;
+        int uffaPrioritySimple;
+        int uffaPriorityNight;
 
-        int uffaPriorityHoliday = 4;  //TODO: customize uffa priority for different holidays and different TimeSlots
-        int uffaPriorityHolidayNight = 5;
+        int uffaPriorityDefaultHoliday;  //TODO: customize uffa priority for different holidays and different TimeSlots
+        int uffaPriorityDefaultHolidayNight;
+
+        //we read uffa priorities from configuration file priority.properties
+        try {
+            File file = new File("src/main/resources/priority.properties");
+            FileInputStream propsInput = new FileInputStream(file);
+            Properties prop = new Properties();
+            prop.load(propsInput);
+
+            uffaPriorityPreference = Integer.parseInt(prop.getProperty("uffaPriorityPreference"));
+            uffaPriorityRespectedPreference = Integer.parseInt(prop.getProperty("uffaPriorityRespectedPreference"));
+            uffaPrioritySundayMorning = Integer.parseInt(prop.getProperty("uffaPrioritySundayMorning"));
+            uffaPrioritySundayAfternoon = Integer.parseInt(prop.getProperty("uffaPrioritySundayAfternoon"));
+            uffaPrioritySundayNight = Integer.parseInt(prop.getProperty("uffaPrioritySundayNight"));
+            uffaPrioritySaturdayMorning = Integer.parseInt(prop.getProperty("uffaPrioritySaturdayMorning"));
+            uffaPrioritySaturdayAfternoon = Integer.parseInt(prop.getProperty("uffaPrioritySaturdayAfternoon"));
+            uffaPrioritySaturdayNight = Integer.parseInt(prop.getProperty("uffaPrioritySaturdayNight"));
+            uffaPriorityFridayAfternoon = Integer.parseInt(prop.getProperty("uffaPriorityFridayAfternoon"));
+            uffaPriorityFridayNight = Integer.parseInt(prop.getProperty("uffaPriorityFridayNight"));
+            uffaPrioritySimple = Integer.parseInt(prop.getProperty("uffaPrioritySimple"));
+            uffaPriorityNight = Integer.parseInt(prop.getProperty("uffaPriorityNight"));
+            uffaPriorityDefaultHoliday = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHoliday"));
+            uffaPriorityDefaultHolidayNight = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHolidayNight"));
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         Scocciatura scocciaturaSundayMorning = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayMorning, DayOfWeek.SUNDAY, TimeSlot.MORNING);
         Scocciatura scocciaturaSundayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayAfternoon, DayOfWeek.SUNDAY, TimeSlot.AFTERNOON);
@@ -225,9 +250,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         List<Holiday> holidays = holidayDAO.findAll();
 
         for(Holiday holiday: holidays) {
-            Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityHoliday, holiday, TimeSlot.MORNING);
-            Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityHoliday, holiday, TimeSlot.AFTERNOON);
-            Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityHolidayNight, holiday, TimeSlot.NIGHT);
+            System.out.println("HOLIDAY: " + holiday.getName());
+
+            Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holiday, TimeSlot.MORNING);
+            Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holiday, TimeSlot.AFTERNOON);
+            Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityDefaultHolidayNight, holiday, TimeSlot.NIGHT);
 
             scocciaturaDAO.save(scocciaturaHolidayMorning);
             scocciaturaDAO.save(scocciaturaHolidayAfternoon);
@@ -263,23 +290,24 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             throw new RuntimeException(e);
         }
 
-        // nessun turno può essere allocato a questa persona durante il suo smonto notte
-        ConstraintTipologieTurniContigue constraintConsecutiveShifts = new ConstraintTipologieTurniContigue(
+        //nessun turno può essere allocato a questa persona durante il suo smonto notte
+        ConstraintTurniContigui constraint1 = new ConstraintTurniContigui(
                 configVincoli.getHorizonTurnoNotturno(),
                 ChronoUnit.HOURS,
                 TimeSlot.NIGHT,
                 new HashSet<>(Arrays.asList(TimeSlot.values()))
         );
-        constraintConsecutiveShifts.setViolable(true);
-
-        //Constraint constraint1 = new ConstraintCategorieUtenteTurno();
         Constraint constraint2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getNumMaxMinutiConsecutiviPerTutti());
         Constraint constraint4 = new ConstraintMaxOrePeriodo(configVincoli.getNumGiorniPeriodo(), configVincoli.getMaxMinutiPeriodo());
-        Constraint constraint5 = new ConstraintUbiquità();
+        Constraint constraint5 = new ConstraintUbiquita();
         Constraint constraint6 = new ConstraintNumeroDiRuoloTurno();
         Constraint constraint7 = new ConstraintHoliday();
 
-        //constraint1.setViolable(true);
+        constraint1.setViolable(true);
+        constraint2.setViolable(false);
+        constraint4.setViolable(false);
+        constraint5.setViolable(false);
+        constraint6.setViolable(false);
         constraint7.setViolable(true);
 
         for (ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()) {
@@ -287,23 +315,19 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             vincolo.setDescription("Constraint massimo periodo consecutivo per categoria " + config.getCategoriaVincolata().getType());
             constraintDAO.saveAndFlush(vincolo);
         }
-        //constraint1.setDescription("Constraint Shift Persona: verifica che una determinata categoria non venga associata ad un turno proibito.");
-        constraint2.setDescription("Constraint massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
-        constraint4.setDescription("Constraint massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
-        constraint5.setDescription("Constraint ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
-        constraintConsecutiveShifts.setDescription("Constraint turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
-        constraint6.setDescription("Constraint numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
+        constraint1.setDescription("Vincolo turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
+        constraint2.setDescription("Vincolo massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
+        constraint4.setDescription("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
+        constraint5.setDescription("Vincolo ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
+        constraint6.setDescription("Vincolo numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
         constraint7.setDescription("Vincolo festività. Verifica che un medico che l'anno precedente ha lavorato durante una certa festività non venga assegnato a un turno corrispondente alla medesima festività.");
 
-        constraintDAO.saveAndFlush(constraintConsecutiveShifts);
-        //constraintDAO.saveAndFlush(constraint1);
+        constraintDAO.saveAndFlush(constraint1);
         constraintDAO.saveAndFlush(constraint2);
         constraintDAO.saveAndFlush(constraint4);
         constraintDAO.saveAndFlush(constraint5);
         constraintDAO.saveAndFlush(constraint6);
         constraintDAO.saveAndFlush(constraint7);
-
-        //List<Constraint> constraints = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
 
     }
 
@@ -357,22 +381,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         //Creo utenti
         UserController userController = new UserController();
 
-        Doctor u6 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
-        try {
-            userController.addCondition(u6, over62);
-            userController.addCondition(u6, vacation);
-            userController.addSpecialization(u6, cardiologia);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
         Doctor u1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
         try {
             userController.addCondition(u1, over62);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
 
         Doctor u2 = new Doctor("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u3 = new Doctor("Federica", "Villani", "VLNFDR98P43H501D", LocalDate.of(1998, 9, 3), "federicavillani@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
@@ -384,13 +398,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         }
         Doctor u5 = new Doctor("Daniele", "La Prova", "LPVDNL98R27H501J", LocalDate.of(1998, 2, 12), "danielelaprova@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u5, oncologia);
+            userController.addSpecialization(u5, cardiologia);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        Doctor u6 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
+        try {
+            userController.addCondition(u6, over62);
+            userController.addCondition(u6, vacation);
+            userController.addSpecialization(u6, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         Doctor u7 = new Doctor("Luca", "Fiscariello", "FSCLCU98L07B581O", LocalDate.of(1998, 8, 12), "lucafiscariello@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u7, oncologia);
+            userController.addSpecialization(u7, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -398,25 +420,24 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         try {
             userController.addSpecialization(u8, cardiologia);
             userController.addCondition(u8, sick);
-            userController.addCondition(u8, vacation);
             userController.addCondition(u8,over62);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u9 = new Doctor("Giulia", "Cantone", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u9 = new Doctor("Giulia", "Cantone Jr", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u10 = new Doctor("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u11 = new Doctor("Giada", "Rossi", "RSSGDI92H68H501O", LocalDate.of(1997, 3, 14), "giada.rossi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u12 = new Doctor("Camilla", "Verdi", "VRDCML95B41H501L", LocalDate.of(1997, 5, 23), "camilla.verdi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u13 = new Doctor("Federica", "Pollini", "PLLFDR94S70H501I", LocalDate.of(1998, 2, 12), "federica.pollini@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u14 = new Doctor("Claudia", "Rossi", "RSSCLD91C52H501A", LocalDate.of(1982, 7, 6), "claudia.rossi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u14, oncologia);
+            userController.addSpecialization(u14, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         Doctor u15 = new Doctor("Giorgio", "Bianchi", "BNCGRG88E21H501S", LocalDate.of(1993, 2, 12), "giorgio.bianchi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u15, oncologia);
+            userController.addSpecialization(u15, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -429,7 +450,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u17 = new Doctor("Filippo", "Neri", "NREFLP92R24H501C", LocalDate.of(1998, 2, 12), "filippo.neru@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u18 = new Doctor("Vincenzo", "Grassi", "GRSVNC60A19H501P", LocalDate.of(1998, 8, 12), "vincenzo.grassi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u18, oncologia);
+            userController.addSpecialization(u18, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -470,13 +491,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u33 = new Doctor("Giorgio", "Pesce", "PSCGRG98E08H501T", LocalDate.of(1998, 8, 12), "giorgia.pesce@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u34 = new Doctor("Valerio", "Palmerini", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "valerio.palmerini@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
 
-        u6 = doctorDAO.saveAndFlush(u6);
-        u7 = doctorDAO.saveAndFlush(u7);
         u1 = doctorDAO.saveAndFlush(u1);
         u2 = doctorDAO.saveAndFlush(u2);
         u3 = doctorDAO.saveAndFlush(u3);
         u4 = doctorDAO.saveAndFlush(u4);
         u5 = doctorDAO.saveAndFlush(u5);
+        u6 = doctorDAO.saveAndFlush(u6);
+        u7 = doctorDAO.saveAndFlush(u7);
         u8 = doctorDAO.saveAndFlush(u8);
         u9 = doctorDAO.saveAndFlush(u9);
         u10 = doctorDAO.saveAndFlush(u10);
@@ -505,10 +526,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u33 = doctorDAO.saveAndFlush(u33);
         u34 = doctorDAO.saveAndFlush(u34);
 
-    //     HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
-    //     doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
-    //     doctorsNumberBySeniority.put(Seniority.SPECIALIST_SENIOR, 1);
-    //     doctorsNumberBySeniority.put(Seniority.SPECIALIST_JUNIOR, 1);
+        /* HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
+        doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
+        doctorsNumberBySeniority.put(Seniority.SPECIALIST_SENIOR, 1);
+        doctorsNumberBySeniority.put(Seniority.SPECIALIST_JUNIOR, 1); */
+
         List<QuantityShiftSeniority> quantityShiftSeniorityList1 = new ArrayList<>();
         for(Task t:ambulatorioCardiologia.getTasks()) {
             Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
@@ -521,8 +543,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         List<QuantityShiftSeniority> quantityShiftSeniorityList2 = new ArrayList<>();
         for(Task t:ambulatorioCardiologia.getTasks()) {
             Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
             mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
             mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
             QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
             quantityShiftSeniorityList2.add(quantityShiftSeniority);
@@ -530,8 +552,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         List<QuantityShiftSeniority> quantityShiftSeniorityList3 = new ArrayList<>();
         for(Task t:ambulatorioCardiologia.getTasks()) {
             Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
             mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
             mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
             QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
             quantityShiftSeniorityList3.add(quantityShiftSeniority);
@@ -575,15 +597,22 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //creation of the DoctorHolidays instances
         List<Doctor> allDoctors = doctorDAO.findAll();
-        //registerHolidays();
         List<Holiday> holidays = holidayDAO.findAll();  //retrieve of holiday entities (and not DTOs)
+
+        //we are assuming that, at the moment of instantiation of DoctorHolidays, the corresponding doctor has worked in no concrete shift in the past.
+        HashMap<Holiday, Boolean> holidayMap = new HashMap<>();
+        for(Holiday holiday: holidays) {
+            if(!holiday.getName().equals("Domenica"))   //we do not care about Sundays as holidays
+                holidayMap.put(holiday, false);
+
+        }
 
         for(Doctor doctor: allDoctors) {
             DoctorUffaPriority dup = new DoctorUffaPriority(doctor);
-            DoctorHolidays dh = new DoctorHolidays(doctor, holidays);
+            DoctorHolidays dh = new DoctorHolidays(doctor, holidayMap);
 
             doctorUffaPriorityDAO.save(dup);
-            //doctorHolidaysDAO.save(dh);   //TODO: DEBUG PLZ
+            doctorHolidaysDAO.save(dh);
 
         }
 
@@ -710,6 +739,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } catch (IllegalScheduleException e) {
             throw new RuntimeException(e);
         }
+
         //scheduleDAO.save(s);
         /*
         ScheduleRestEndpoint restSchedule=new ScheduleRestEndpoint();
@@ -722,130 +752,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         gs.setFinalYear(2024);
         restSchedule.createSchedule(gs);
          */
-        /*
 
-
-
-
-        Shift t2 = new Shift(LocalTime.of(14, 0), Duration.ofHours(6), Collections.singletonList(repartoCardiologia1), TimeSlot.AFTERNOON, qssList, allDaysOfWeek, Collections.emptyList());
-
-        t2.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(null,sick, t2, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,vacation, t2,  UserCategoryPolicyValue.EXCLUDE)
-        ));
-
-        t2.setRotationPolicies(List.of(
-                new RotationPolicy(repartoCardiologia, t2, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-
-
-        Shift t3 = new Shift(LocalTime.of(20, 0), Duration.ofHours(12), Collections.singletonList(repartoCardiologia2), TimeSlot.NIGHT, qssList, allDaysOfWeek, Collections.emptyList());
-
-        t3.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(null,sick, t3, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,vacation, t3,  UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,pregnant, t3,  UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(over62, t3,  UserCategoryPolicyValue.EXCLUDE)
-        ));
-
-        t3.setRotationPolicies(List.of(
-                new RotationPolicy(repartoCardiologia, t3, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-
-
-        Shift t5 = new Shift(LocalTime.of(10, 0), Duration.ofHours(2), Collections.singletonList(ambulatorioCardiologia), TimeSlot.MORNING, qssList, allDaysOfWeek, Collections.emptyList());
-
-        t5.setConditionPolicies(Arrays.asList(
-            new ConditionPolicy(null,sick, t5, UserCategoryPolicyValue.EXCLUDE),
-            new ConditionPolicy(null,vacation, t5,  UserCategoryPolicyValue.EXCLUDE)
-        ));
-
-        t5.setSpecializationPolicies(List.of(
-                new SpecializationPolicy(cardiologia, t5, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-        t5.setRotationPolicies(List.of(
-                new RotationPolicy(ambulatorioCardiologia, t5, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-
-
-        Shift t6 = new Shift(LocalTime.of(10, 0), Duration.ofHours(2), Collections.singletonList(ambulatorioOncologia), TimeSlot.MORNING, qssList, allDaysOfWeek, Collections.emptyList());
-
-        t6.setConditionPolicies(Arrays.asList(
-                new ConditionPolicy(null,sick, t6, UserCategoryPolicyValue.EXCLUDE),
-                new ConditionPolicy(null,vacation, t6,  UserCategoryPolicyValue.EXCLUDE)
-        ));
-
-        t6.setSpecializationPolicies(List.of(
-                new SpecializationPolicy(oncologia, t6, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-        t6.setRotationPolicies(List.of(
-                new RotationPolicy(ambulatorioOncologia, t6, UserCategoryPolicyValue.INCLUDE)
-        ));
-
-
-
-        // Creazione del turno in sala operatoria in cardiologia ogni lunedì
-        Shift salaOpCardio = new Shift(LocalTime.of(10, 0), Duration.ofHours(13).plusMinutes(59), Collections.singletonList(salaOperatoriaCardiologia), TimeSlot.MORNING, qssList, Collections.singletonList(DayOfWeek.MONDAY), Collections.emptyList());
-
-        //Salvataggio dei Turni nel DB
-        turnoDao.saveAndFlush(t1);
-        turnoDao.saveAndFlush(t2);
-        turnoDao.saveAndFlush(t3);
-        turnoDao.saveAndFlush(t5);
-        turnoDao.saveAndFlush(t6);
-        turnoDao.saveAndFlush(salaOpCardio);
-
-        Preference preference = new Preference(LocalDate.of(2023,3,12),new ArrayList<>(), Collections.singletonList(u3));
-        u3.getPreferenceList().add(preference);
-
-        desiderataDao.save(preference);
-        doctorDao.saveAndFlush(u3);
-
-*/
     }
 
-
-    /**
-     * Metodo che server per caricare le festività dell'anno 2023/2024
-     */
-    public void LoadHoliday() throws IOException {
-        List<List<String>> data = new ArrayList<>();
-        //String filePath = currPath+"\\src\\main\\resources\\holiday.csv";
-        String filePath = "";
-        File file = new File("src/main/resources/holiday.csv");
-        filePath = file.getAbsolutePath();
-
-        FileReader fr = new FileReader(filePath);
-        BufferedReader br = new BufferedReader(fr);
-        String line = br.readLine();
-        while (line != null) {
-            List<String> lineData = Arrays.asList(line.split(";"));//splitting lines
-            data.add(lineData);
-            line = br.readLine();
-        }
-        for (List<String> list : data) {
-            String HolidayData = Arrays.asList(list.get(0).split(";")).get(0);
-            final String[] HolidayDataS = HolidayData.split("/");
-            int year = Integer.parseInt(HolidayDataS[2].replaceAll("[^0-9]", ""));
-            int month = Integer.parseInt(HolidayDataS[1].replaceAll("[^0-9]", ""));
-            int day = Integer.parseInt(HolidayDataS[0].replaceAll("[^0-9]", ""));
-            String HolidayName = Arrays.asList(list.get(1).split(";")).get(0);
-            String HolidayLocation = Arrays.asList(list.get(2).split(";")).get(0);
-            String Holiday_Category = Arrays.asList(list.get(3).split(";")).get(0);
-            LocalDate Date = LocalDate.of(year, month, day);
-            /*holidayController.registerHolidayPeriod(new HolidayDTO(
-                    HolidayName,
-                    HolidayCategory.valueOf(Holiday_Category),
-                    Date.toEpochDay(),
-                    Date.toEpochDay(),
-                    HolidayLocation
-            ));*/
-        }
-        br.close();
-    }
 }
