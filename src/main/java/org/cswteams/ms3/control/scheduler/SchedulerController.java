@@ -80,6 +80,16 @@ public class SchedulerController implements ISchedulerController {
 
     }
 
+    /**
+     * Proxy of the method createSchedule, when the DoctorUffaPriority list cannot be retrieved
+     */
+    @Override
+    @Transactional
+    public Schedule createSchedule(LocalDate startDate, LocalDate endDate) {
+        List<DoctorUffaPriority> doctorUffaPriorityList = doctorUffaPriorityDAO.findAll();
+        return createSchedule(startDate, endDate, doctorUffaPriorityList);
+    }
+
 
     /**
      * This method creates a new shift schedule by specifying start date and end date.
@@ -89,7 +99,7 @@ public class SchedulerController implements ISchedulerController {
      */
     @Override
     @Transactional
-    public Schedule createSchedule(LocalDate startDate, LocalDate endDate)  {
+    public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList)  {
 
         //Check if there already exists a shift schedule for the dates we want to plan.
         if(!check(startDate,endDate))
@@ -127,7 +137,7 @@ public class SchedulerController implements ISchedulerController {
                 doctorDAO.findAll(),            //All the possible doctors who can be assigned to the concrete shifts
                 holidayDAO.findAll(),           //All the holidays saved in the db
                 doctorHolidaysDAO.findAll(),    //All the associations between doctors and holidays
-                doctorUffaPriorityDAO.findAll() //All the information about priority levels on all the queues of the doctors
+                doctorUffaPriorityList          //All the information about priority levels on all the queues of the doctors
                 );
 
             ControllerScocciatura controllerScocciatura = new ControllerScocciatura(scocciaturaList);
@@ -140,6 +150,7 @@ public class SchedulerController implements ISchedulerController {
                 dup.setSchedule(schedule);
                 doctorUffaPriorityDAO.save(dup);
             }
+
             return schedule;
 
         } catch (IllegalScheduleException e) {
@@ -164,11 +175,13 @@ public class SchedulerController implements ISchedulerController {
         LocalDate startDate = LocalDate.ofEpochDay(schedule.getStartDate());
         LocalDate endDate = LocalDate.ofEpochDay(schedule.getEndDate());
 
+        List<DoctorUffaPriority> prioritiesSnapshot = schedule.getDoctorUffaPrioritiesSnapshot();
+
         //It is not allowed to remove a shift schedule in the past.
         if(!removeSchedule(id))
             return false;
 
-        createSchedule(startDate,endDate);
+        createSchedule(startDate,endDate, prioritiesSnapshot);
         return true;
     }
 

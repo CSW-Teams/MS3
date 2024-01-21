@@ -9,6 +9,7 @@ import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
 import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.DoctorUffaPriority;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
@@ -31,6 +32,7 @@ public interface ISchedulerController {
      * @return  la pianificazione creata 
      * @throws UnableToBuildScheduleException controlla lo stack delle eccezioni per scoprire perché non è stato possibile creare la pianificazione
      */
+    Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList);
     Schedule createSchedule(LocalDate startDate, LocalDate endDate);
     boolean recreateSchedule(long id) throws UnableToBuildScheduleException;
     Schedule addConcreteShift(ConcreteShift concreteShift, boolean forced) throws IllegalScheduleException;
