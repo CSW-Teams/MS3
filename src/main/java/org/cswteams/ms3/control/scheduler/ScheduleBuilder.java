@@ -171,6 +171,19 @@ public class ScheduleBuilder {
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
 
+        /* make a snapshot of all priorities, the following loop is needed to perform a copy by value */
+        List<DoctorUffaPriority> snapshot = new ArrayList<>();
+
+        for (DoctorUffaPriority doctorUffaPriority : this.allDoctorUffaPriority) {
+            DoctorUffaPriority dup = new DoctorUffaPriority(doctorUffaPriority.getDoctor(), doctorUffaPriority.getSchedule());
+            dup.setGeneralPriority(doctorUffaPriority.getGeneralPriority());
+            dup.setNightPriority(doctorUffaPriority.getNightPriority());
+            dup.setLongShiftPriority(doctorUffaPriority.getLongShiftPriority());
+            snapshot.add(dup);
+        }
+
+        schedule.setDoctorUffaPrioritiesSnapshot(snapshot);
+
         if(controllerScocciatura != null)   //if controllerScocciatura is instantiated, then we can normalize all the priorities.
             controllerScocciatura.normalizeUffaPriority(allDoctorUffaPriority);
 
