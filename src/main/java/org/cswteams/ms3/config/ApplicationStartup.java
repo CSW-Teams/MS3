@@ -732,7 +732,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Shift shift1 = new Shift(LocalTime.of(14, 0),
                 Duration.ofHours(8),
                 ambulatorioCardiologia,
-                TimeSlot.MORNING,
+                TimeSlot.AFTERNOON,
                 quantityShiftSeniorityList1,
                 allDaysOfWeek,
                 Collections.emptyList());
@@ -741,7 +741,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Shift shift2 = new Shift(LocalTime.of(9, 0),
                 Duration.ofHours(8),
                 ambulatorioCardiologia,
-                TimeSlot.NIGHT,
+                TimeSlot.MORNING,
                 quantityShiftSeniorityList2,
                 allDaysOfWeek,
                 Collections.emptyList());
@@ -750,7 +750,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Shift shift3 = new Shift(LocalTime.of(0, 0),
                 Duration.ofHours(8),
                 ambulatorioCardiologia,
-                TimeSlot.AFTERNOON,
+                TimeSlot.NIGHT,
                 quantityShiftSeniorityList3,
                 allDaysOfWeek,
                 Collections.emptyList());
@@ -779,7 +779,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         }
 
         //TODO: Eliminare in seguito
-        List<ConcreteShift> lc= new ArrayList<>();
+        /*List<ConcreteShift> lc= new ArrayList<>();
         ConcreteShift concreteShift1 = new ConcreteShift(LocalDate.now().toEpochDay(),shift1);
         concreteShift1=concreteShiftDAO.saveAndFlush(concreteShift1);
         lc.add(concreteShift1);
@@ -900,7 +900,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             ).build();
         } catch (IllegalScheduleException e) {
             throw new RuntimeException(e);
-        }
+        }*/
 
         //scheduleDAO.save(s);
         /*

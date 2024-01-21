@@ -195,7 +195,7 @@ public class ScheduleBuilder {
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
                         for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
-                            this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_CALL, qss.getTask());
+                            this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
                         }
                 }
                 /*
@@ -221,7 +221,7 @@ public class ScheduleBuilder {
                 List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
                     for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
-                        this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
+                        this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_CALL, qss.getTask());
                     }
                 }
             } catch (NotEnoughFeasibleUsersException e){
@@ -244,7 +244,7 @@ public class ScheduleBuilder {
      * @throws NotEnoughFeasibleUsersException Exception thrown if the number of doctors having the possibility to be
      * added to the concrete shift is less than numDoctors
      */
-    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList, ConcreteShiftDoctorStatus status,Task task) throws NotEnoughFeasibleUsersException{
+    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList, ConcreteShiftDoctorStatus status, Task task) throws NotEnoughFeasibleUsersException{
 
         int selectedUsers=0;
 
