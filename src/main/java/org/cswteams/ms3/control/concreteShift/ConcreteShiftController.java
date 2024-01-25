@@ -6,7 +6,7 @@ import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
-import org.cswteams.ms3.dto.user.UserDTO;
+
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorAssignment;
@@ -59,7 +59,8 @@ public class ConcreteShiftController implements IConcreteShiftController {
                             doctorOnDuty.getId(),
                             doctorOnDuty.getName(),
                             doctorOnDuty.getLastname(),
-                            doctorOnDuty.getSeniority()
+                            doctorOnDuty.getSeniority(),
+                            doctorAssignment.getTask().getTaskType().toString()
                     );
 
                     doctorsOnDuty.add(medicalDoctorInfoDTO);
@@ -70,7 +71,8 @@ public class ConcreteShiftController implements IConcreteShiftController {
                             doctorOnCall.getId(),
                             doctorOnCall.getName(),
                             doctorOnCall.getLastname(),
-                            doctorOnCall.getSeniority()
+                            doctorOnCall.getSeniority(),
+                            doctorAssignment.getTask().getTaskType().toString()
                     );
 
                     doctorsOnCall.add(medicalDoctorInfoDTO);
@@ -138,13 +140,13 @@ public class ConcreteShiftController implements IConcreteShiftController {
                 for(DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
                     if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY) {
                         Doctor doctor = assignment.getDoctor();
-                        onDutyDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority()));
+                        onDutyDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority(), assignment.getTask().getTaskType().toString()));
                     } else if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL) {
                         Doctor doctor = assignment.getDoctor();
-                        onCallDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority()));
+                        onCallDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority(), assignment.getTask().getTaskType().toString()));
                     } else{
                         Doctor doctor = assignment.getDoctor();
-                        onRemovedDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority()));
+                        onRemovedDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority(), assignment.getTask().getTaskType().toString()));
                     }
                 }
                 MedicalServiceDTO medicalServiceDTO = new MedicalServiceDTO(concreteShift.getShift().getMedicalService().getLabel(), concreteShift.getShift().getMedicalService().getTasks());

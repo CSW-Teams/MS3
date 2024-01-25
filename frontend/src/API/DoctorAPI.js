@@ -15,7 +15,7 @@ export class DoctorAPI {
       doctor.name = body[i].name;
       doctor.lastname = body[i].lastname;
       doctor.seniority = body[i].seniority;
-
+      doctor.task="";
       doctors[i] = doctor;
     }
 
@@ -25,6 +25,6 @@ export class DoctorAPI {
   async getDoctorById(id) {
     const response = await fetch('/api/doctors/' + id);
     const body = await response.json();
-    return new Doctor(body.id, body.name, body.lastname, body.seniority);
+    return new Doctor(body.id, body.name, body.lastname, body.seniority,"");
   }
 }

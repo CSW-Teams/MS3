@@ -190,6 +190,7 @@ public class ScheduleBuilder {
         for(ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
             // First step: define doctors on duty in the concrete shift.
             try {
+
                 //TODO:Revisionare questo if
                 //Questa linea va rivalutata in seguito
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
@@ -218,6 +219,7 @@ public class ScheduleBuilder {
 
             // Second step: define doctors on call in the concrete shift.
             try {
+
                 List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
                     for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
@@ -283,6 +285,7 @@ public class ScheduleBuilder {
         }
 
         for(DoctorUffaPriority dup: allDoctorUffaPriority){
+
             if (selectedUsers == qss.getValue()){
                 break;
             }
@@ -304,6 +307,8 @@ public class ScheduleBuilder {
                                                              task);
                 //lo inserisco nei concrateShift
                 concreteShift.getDoctorAssignmentList().add(da);
+                selectedUsers++;
+
             }
             List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
 
@@ -316,7 +321,6 @@ public class ScheduleBuilder {
                     dup.updatePriority(PriorityQueueEnum.NIGHT);
 
             }
-            selectedUsers++;
 
         }
         // Case in which the algorithm ends without having found enough doctors to place into the concrete shift
@@ -424,9 +428,10 @@ public class ScheduleBuilder {
             } catch (ViolatedConstraintException e) {
 
                 //schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
+                System.out.println(constraint.getDescription());
 
                 // If the violated constraint is hard, then the shift schedule is illegal.
-                if (!constraint.isViolable() || (constraint.isViolable() && !isForced)){
+                if (!constraint.isViolable() || !isForced){
                     isOk = false;
                 }
 

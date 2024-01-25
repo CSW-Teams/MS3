@@ -462,14 +462,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Constraint constraint2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getNumMaxMinutiConsecutiviPerTutti());
         Constraint constraint4 = new ConstraintMaxOrePeriodo(configVincoli.getNumGiorniPeriodo(), configVincoli.getMaxMinutiPeriodo());
         Constraint constraint5 = new ConstraintUbiquita();
-        Constraint constraint6 = new ConstraintNumeroDiRuoloTurno();
+        //Constraint constraint6 = new ConstraintNumeroDiRuoloTurno();
         Constraint constraint7 = new ConstraintHoliday();
 
         constraint1.setViolable(true);
         constraint2.setViolable(false);
         constraint4.setViolable(false);
         constraint5.setViolable(false);
-        constraint6.setViolable(false);
+        //constraint6.setViolable(false);
         constraint7.setViolable(true);
 
         for (ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()) {
@@ -481,14 +481,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         constraint2.setDescription("Vincolo massimo periodo consecutivo. Verifica che un medico non lavori più di tot ore consecutive in una giornata.");
         constraint4.setDescription("Vincolo massimo ore lavorative in un certo intervallo di tempo. Verifica che un medico non lavori più di tot ore in un arco temporale configurabile.");
         constraint5.setDescription("Vincolo ubiquità. Verifica che lo stesso medico non venga assegnato contemporaneamente a due turni diversi nello stesso giorno");
-        constraint6.setDescription("Vincolo numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
+        //constraint6.setDescription("Vincolo numero utenti per ruolo. Definisce quanti utenti di ogni ruolo devono essere associati ad ogni turno");
         constraint7.setDescription("Vincolo festività. Verifica che un medico che l'anno precedente ha lavorato durante una certa festività non venga assegnato a un turno corrispondente alla medesima festività.");
 
         constraintDAO.saveAndFlush(constraint1);
         constraintDAO.saveAndFlush(constraint2);
         constraintDAO.saveAndFlush(constraint4);
         constraintDAO.saveAndFlush(constraint5);
-        constraintDAO.saveAndFlush(constraint6);
+        //constraintDAO.saveAndFlush(constraint6);
         constraintDAO.saveAndFlush(constraint7);
 
     }

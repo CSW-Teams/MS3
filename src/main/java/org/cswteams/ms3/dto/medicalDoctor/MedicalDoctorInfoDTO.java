@@ -10,11 +10,13 @@ public class MedicalDoctorInfoDTO {
     private String name;
     private String lastname;
     private Seniority seniority;
+    private String task;
 
-    public MedicalDoctorInfoDTO(Long id, String name, String lastname, Seniority seniority) {
+    public MedicalDoctorInfoDTO(Long id, String name, String lastname, Seniority seniority, String task) {
         this.id = id;
         this.name = name;
         this.lastname = lastname;
         this.seniority = seniority;
+        this.task = task;
     }
 }
