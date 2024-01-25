@@ -268,7 +268,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     public List<MedicalDoctorInfoDTO> getAvailableUsersForReplacement(@NotNull GetAvailableUsersForReplacementDTO dto) {
         List<MedicalDoctorInfoDTO> availableDoctorsDTOs = new ArrayList<>();
         Seniority requestingUserSeniority = dto.getSeniority();
-
+        System.out.println("ciao");
         Optional<ConcreteShift> concreteShift = concreteShiftDAO.findById(dto.getShiftId());
         if (concreteShift.isEmpty()) {
             return null;
@@ -319,8 +319,9 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             ConstraintUbiquita constraintUbiquita = new ConstraintUbiquita();
             ConstraintHoliday constraintHoliday = new ConstraintHoliday();
             ConstraintMaxPeriodoConsecutivo constraintMaxPeriodoConsecutivo = new ConstraintMaxPeriodoConsecutivo();
+            DoctorUffaPriority d =  doctorUffaPriorityDAO.findByDoctor_Id(doctor.getId()).get(0); //TODO: FIX IT
             ContextConstraint context = new ContextConstraint(
-                    doctorUffaPriorityDAO.findByDoctor_Id(doctor.getId()),
+                    d,
                     concreteShift.get(),
                     doctorHolidaysDAO.findByDoctor_Id(doctor.getId()),
                     holidayDAO.findAll()

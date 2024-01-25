@@ -108,6 +108,7 @@ export  class AssegnazioneTurnoAPI {
     let availableUsers = [];
 
     for (let i = 0; i < body.length; i++) {
+      console.log(body[i].task);
       let doctor = new Doctor(body[i].id, body[i].name, body[i].lastname, body[i].seniority,body[i].task);
       console.log(doctor.label);
       availableUsers.push(doctor);
