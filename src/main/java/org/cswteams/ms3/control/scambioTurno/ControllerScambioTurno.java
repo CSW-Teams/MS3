@@ -336,7 +336,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             }
         }
         for (Doctor doctor : availableDoctorsAfterConstraintsCheck) {
-            MedicalDoctorInfoDTO doctorDTO = new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority());
+            MedicalDoctorInfoDTO doctorDTO = new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority(),"");
             availableDoctorsDTOs.add(doctorDTO);
         }
         return availableDoctorsDTOs;

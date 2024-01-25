@@ -33,7 +33,8 @@ public class DoctorController implements IDoctorController {
                     d.getId(),
                     d.getName(),
                     d.getLastname(),
-                    d.getSeniority()
+                    d.getSeniority(),
+                    ""
             );
             doctorsSet.add(dto);
         }
@@ -44,7 +45,7 @@ public class DoctorController implements IDoctorController {
     @Override
     public MedicalDoctorInfoDTO getDoctorById(Long id) {
         Optional<Doctor> doctor = doctorDAO.findById(id);
-        return doctor.map(value -> new MedicalDoctorInfoDTO(value.getId(), value.getName(), value.getLastname(), value.getSeniority())).orElse(null);
+        return doctor.map(value -> new MedicalDoctorInfoDTO(value.getId(), value.getName(), value.getLastname(), value.getSeniority(), "")).orElse(null);
     }
 
     // TODO: Add checks on values

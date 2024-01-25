@@ -41,6 +41,7 @@ export  class AssegnazioneTurnoAPI {
             currentUserDto.name,
             currentUserDto.lastname,
             seniority,
+            currentUserDto.task,
           )
           utenti_guardia[j] = utenteAllocato;
           utenti_guardia_id[j] = utenteAllocato.id;
@@ -54,6 +55,7 @@ export  class AssegnazioneTurnoAPI {
             currentUserDto.name,
             currentUserDto.lastname,
             seniority,
+            currentUserDto.task,
           )
           utenti_reperibili[j] = utenteReperibile;
           utenti_reperibili_id[j] = utenteReperibile.id;
@@ -67,6 +69,7 @@ export  class AssegnazioneTurnoAPI {
             currentUserDto.name,
             currentUserDto.lastname,
             seniority,
+            currentUserDto.task,
           )
           utenti_rimossi[j] = utenteRimosso;
           utenti_rimossi_id[j] = utenteRimosso.id;
@@ -105,7 +108,7 @@ export  class AssegnazioneTurnoAPI {
     let availableUsers = [];
 
     for (let i = 0; i < body.length; i++) {
-      let doctor = new Doctor(body[i].id, body[i].name, body[i].lastname, body[i].seniority);
+      let doctor = new Doctor(body[i].id, body[i].name, body[i].lastname, body[i].seniority,body[i].task);
       console.log(doctor.label);
       availableUsers.push(doctor);
     }

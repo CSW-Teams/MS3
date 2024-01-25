@@ -204,7 +204,7 @@ export const Content = ({
                 </Grid>
                 <Grid item xs={10}>
                   <div className={tooltip_classes.text}>
-                    {resourceItem.name} {resourceItem.lastname} - {resourceItem.seniority}
+                    {resourceItem.label}
                   </div>
                 </Grid>
               </Grid>
@@ -225,7 +225,7 @@ export const Content = ({
                     </Grid>
                     <Grid item xs={10}>
                       <div className={tooltip_classes.text}>
-                        {resourceItem.name} {resourceItem.lastname} - {resourceItem.seniority}
+                        {resourceItem.label}
                       </div>
                     </Grid>
                   </Grid>
