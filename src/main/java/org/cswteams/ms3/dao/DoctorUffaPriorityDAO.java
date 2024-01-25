@@ -10,6 +10,6 @@ import java.util.List;
 public interface DoctorUffaPriorityDAO extends JpaRepository<DoctorUffaPriority,Long> {
 
     List<DoctorUffaPriority> findAll();
-    DoctorUffaPriority findByDoctor_Id(Long id);
+    List<DoctorUffaPriority> findByDoctor_Id(Long id);
 
 }
