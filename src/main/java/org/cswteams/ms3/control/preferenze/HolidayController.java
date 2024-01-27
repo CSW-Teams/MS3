@@ -1,19 +1,28 @@
 package org.cswteams.ms3.control.preferenze;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Properties;
 
 import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dao.RecurrentHolidayDAO;
+import org.cswteams.ms3.dao.ScocciaturaDAO;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.entity.RecurrentHoliday;
+import org.cswteams.ms3.entity.scocciature.Scocciatura;
+import org.cswteams.ms3.entity.scocciature.ScocciaturaVacanza;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.enums.ServiceDataENUM;
+import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +36,13 @@ import javax.validation.constraints.NotNull;
 public class HolidayController implements IHolidayController {
 
     @Autowired
-    private HolidayDAO holidayDao;
+    private HolidayDAO holidayDAO;
 
     @Autowired
-    private RecurrentHolidayDAO recurrentHolidayDAO ;
+    private RecurrentHolidayDAO recurrentHolidayDAO;
+
+    @Autowired
+    private ScocciaturaDAO scocciaturaDAO;
 
     @Autowired
     private ICalendarServiceManager calendarServiceManager;
@@ -75,7 +87,7 @@ public class HolidayController implements IHolidayController {
         }
 
         // stores the holiday period in the db
-        holidayDao.save(new Holiday(holidayArgs.getName(), HolidayCategory.valueOf(holidayArgs.getCategory().toUpperCase()), holidayArgs.getStartDateEpochDay(), holidayArgs.getEndDateEpochDay(), holidayArgs.getLocation()));
+        holidayDAO.save(new Holiday(holidayArgs.getName(), HolidayCategory.valueOf(holidayArgs.getCategory().toUpperCase()), holidayArgs.getStartDateEpochDay(), holidayArgs.getEndDateEpochDay(), holidayArgs.getLocation()));
     }
 
     @Override
@@ -103,14 +115,14 @@ public class HolidayController implements IHolidayController {
         Integer currentYear = dto.getYear();
         String currentCountry = dto.getCountry();
 
-        ArrayList<Holiday> holidays = new ArrayList<>(holidayDao.areThereHolidaysInYear(LocalDate.of(currentYear, 1, 1).toEpochDay(), LocalDate.of(currentYear, 12, 31).toEpochDay()));
+        ArrayList<Holiday> holidays = new ArrayList<>(holidayDAO.areThereHolidaysInYear(LocalDate.of(currentYear, 1, 1).toEpochDay(), LocalDate.of(currentYear, 12, 31).toEpochDay()));
 
         if(holidays.isEmpty()) {
             CalendarSettingBuilder calendarSettingBuilder = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
             calendarServiceManager.init(calendarSettingBuilder.create(currentYear.toString(), currentCountry));
             calendarServiceManager.getHolidays() ;
             registerSundays(LocalDate.of(currentYear, 1, 1), 0);
-            holidays.addAll(holidayDao.areThereHolidaysInYear(LocalDate.of(currentYear, 1, 1).toEpochDay(), LocalDate.of(currentYear, 12, 31).toEpochDay())) ;
+            holidays.addAll(holidayDAO.areThereHolidaysInYear(LocalDate.of(currentYear, 1, 1).toEpochDay(), LocalDate.of(currentYear, 12, 31).toEpochDay())) ;
         }
 
         List<HolidayDTO> listDTOHoliday = new ArrayList<>();
@@ -158,24 +170,58 @@ public class HolidayController implements IHolidayController {
             Holiday newHoliday=new Holiday(elem.getName(), HolidayCategory.valueOf(elem.getCategory().toUpperCase()), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
             listHolidays.add(newHoliday);
         }
-        holidayDao.saveAll(listHolidays);
+        holidayDAO.saveAll(listHolidays);
     }
 
     @Override
     @Validant
     public void insertCustomHoliday(@Valid CustomHolidayDTOIn holiday) {
+        Holiday holidayEnt;
+        int currentYear;
 
         if(holiday.isRecurrent()) {
-            RecurrentHoliday holidayEnt = new RecurrentHoliday(holiday.getName(), HolidayCategory.valueOf(holiday.getKind().toUpperCase()),
+            RecurrentHoliday recurrentHolidayEnt = new RecurrentHoliday(holiday.getName(), HolidayCategory.valueOf(holiday.getKind().toUpperCase()),
                     holiday.getStartDay(), holiday.getStartMonth(), holiday.getEndDay(), holiday.getEndMonth(),
                     holiday.getLocation()) ;
 
-            recurrentHolidayDAO.save(holidayEnt) ;
+            recurrentHolidayDAO.save(recurrentHolidayEnt) ;
+
+            Calendar calendar = Calendar.getInstance();
+            currentYear = calendar.get(Calendar.YEAR);
+            holidayEnt = recurrentHolidayEnt.toHolidayOfYear(currentYear); //current-year instance of the holiday
+            holidayDAO.save(holidayEnt) ;
+
         } else {
-            Holiday holidayEnt = new Holiday(holiday.getName(), HolidayCategory.valueOf(holiday.getKind().toUpperCase()),
+            holidayEnt = new Holiday(holiday.getName(), HolidayCategory.valueOf(holiday.getKind().toUpperCase()),
                     holiday.getStartEpochDay(), holiday.getEndEpochDay(), holiday.getLocation()) ;
 
-            holidayDao.save(holidayEnt) ;
+            holidayDAO.save(holidayEnt) ;
         }
+
+        //annoyance registration of the new custom holiday
+        int uffaPriorityDefaultHoliday;
+        int uffaPriorityDefaultHolidayNight;
+
+        try {
+            File file = new File("src/main/resources/priority.properties");
+            FileInputStream propsInput = new FileInputStream(file);
+            Properties prop = new Properties();
+            prop.load(propsInput);
+
+            uffaPriorityDefaultHoliday = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHoliday"));
+            uffaPriorityDefaultHolidayNight = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHolidayNight"));
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holidayEnt, TimeSlot.MORNING);
+        Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holidayEnt, TimeSlot.AFTERNOON);
+        Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityDefaultHolidayNight, holidayEnt, TimeSlot.NIGHT);
+
+        scocciaturaDAO.save(scocciaturaHolidayMorning);
+        scocciaturaDAO.save(scocciaturaHolidayAfternoon);
+        scocciaturaDAO.save(scocciaturaHolidayNight);
+
     }
 }
