@@ -1,11 +1,8 @@
 package org.cswteams.ms3.dto.preferences;
 
 import lombok.Getter;
-import org.cswteams.ms3.enums.TimeSlot;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter

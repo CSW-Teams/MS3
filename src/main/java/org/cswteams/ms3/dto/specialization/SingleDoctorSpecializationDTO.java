@@ -2,7 +2,6 @@ package org.cswteams.ms3.dto.specialization;
 
 import lombok.Getter;
 
-import java.util.Set;
 
 // DTO sent in POST request from client to server to delete a specialization of a doctor
 @Getter
