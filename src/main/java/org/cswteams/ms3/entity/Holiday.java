@@ -8,9 +8,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import lombok.Data;
+import lombok.Setter;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.utils.temporal_consistency.BeforeInTime;
 import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
@@ -39,6 +41,7 @@ public class Holiday implements Serializable {
         this.startDateEpochDay = startDateEpochDay;
         this.endDateEpochDay = endDateEpochDay;
         this.location=Location;
+        this.isCustom = false ;
     }
 
     @Id
@@ -47,6 +50,7 @@ public class Holiday implements Serializable {
 
     /** nome della festività */
     @NotNull
+    @NotEmpty
     private String name;
     /** una targetta per raggruppare diverse festività */
     @NotNull
@@ -59,6 +63,9 @@ public class Holiday implements Serializable {
     private long endDateEpochDay;
     /** locazione */
     private String location;
+
+    @Setter
+    private boolean isCustom ;
 
 
     /** Metodi di convenienza per lavorare con oggetti LocalDate anziché con timestamp */

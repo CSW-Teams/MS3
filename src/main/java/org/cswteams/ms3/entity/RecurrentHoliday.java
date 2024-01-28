@@ -1,5 +1,6 @@
 package org.cswteams.ms3.entity;
 
+import lombok.Getter;
 import org.cswteams.ms3.enums.HolidayCategory;
 
 import javax.persistence.Entity;
@@ -10,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
+@Getter
 public class RecurrentHoliday {
 
     @Id
