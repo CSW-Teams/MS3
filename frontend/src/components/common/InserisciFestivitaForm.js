@@ -263,7 +263,7 @@ function CalendarOrPicker({recurrent, setRecurrent, pickerState, datesState}) {
   );
 }
 
-export default function InserisciFestivitaForm() {
+export default function InserisciFestivitaForm({normalHolidays, setNormalHolidays, recurrentHolidays, setRecurrentHolidays}) {
 
   const [kind, setKind] = React.useState('');
   const [name, setName] = useState('') ;
@@ -342,6 +342,11 @@ export default function InserisciFestivitaForm() {
           autoClose: 1500,
           style : {background : "green", color : "white"}
         })
+        if(recurrent) {
+          setRecurrentHolidays(recurrentHolidays.concat([holiday]))
+        } else {
+          setNormalHolidays(normalHolidays.concat([holiday]))
+        }
       }
     }
   }
