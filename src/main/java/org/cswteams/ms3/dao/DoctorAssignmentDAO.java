@@ -6,8 +6,6 @@ import org.cswteams.ms3.entity.DoctorAssignment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import javax.print.Doc;
-
 @Repository
 public interface DoctorAssignmentDAO extends JpaRepository<DoctorAssignment,Long> {
 
