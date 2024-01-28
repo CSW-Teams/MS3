@@ -8,9 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Questa classe permette di memorizzare quanti utenti di ogni ruolo sono necessari in un turno specifico.
- * Ad esempio nel turno notturno in reparto devono esserci 1 strutturato e 1 specializzando tra gli utenti allocati.
- */
+ * This class allows you to store how many users of each role are needed in a specific shift.
+ * For example, on the night shift in the department there must be 1 resident and 1 specialist among the allocated users. */
 @Entity
 @Data
 public class QuantityShiftSeniority {
@@ -19,24 +18,41 @@ public class QuantityShiftSeniority {
     @GeneratedValue
     private Long id;
 
-    //Ruolo dell'utente
+    /**
+     * User role.
+     * The integer value represents the number of <i>Users</i> of a specific <i>Seniority</i> to be allocated to a specific <i>Shift</i>.
+     */
     private HashMap<Seniority,Integer> seniorityMap;
 
     @ManyToOne
     private Task task;
-    //Numero di utenti di un ruolo specifico da allocare per un turno specifico
 
+    /**
+     * Create a <code>QuantitiShiftSeniority</code> object with the specified parameters.
+     *
+     * @param id        association id
+     * @param seniority <i>seniority</i> level required
+     * @param task      <i>task</i> to be assigned
+     */
     public QuantityShiftSeniority(Long id, Map<Seniority,Integer> seniority,Task task) {
         this.id = id;
         this.seniorityMap =new HashMap<>(seniority);
         this.task = task;
     }
 
+    /**
+     * Create a <code>QuantitiShiftSeniority</code> object with the specified parameters.
+     * @param seniority <i>seniority</i> level required
+     * @param task <i>task</i> to be assigned
+     */
     public QuantityShiftSeniority(Map<Seniority,Integer> seniority, Task task) {
         this.seniorityMap =new HashMap<>(seniority);
         this.task = task;
     }
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public QuantityShiftSeniority(){
 
     }

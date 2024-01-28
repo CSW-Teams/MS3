@@ -24,6 +24,9 @@ public class ScocciaturaVacanza extends Scocciatura {
     private Holiday holiday;
     private TimeSlot timeSlot;
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public ScocciaturaVacanza() {
     }
 

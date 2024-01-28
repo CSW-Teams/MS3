@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import lombok.Data;
@@ -16,7 +14,7 @@ import org.cswteams.ms3.utils.temporal_consistency.BeforeInTime;
 import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
 
 /**
- * Questa Entità modella un periodo di giorni appartenenti ad una festività.
+ * This Entity models a period of days belonging to a holiday.
  */
 @Entity
 /*@Table(uniqueConstraints={
@@ -30,6 +28,42 @@ import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
 @BeforeInTime(firstParam = "startDateEpochDay", secondParam = "endDateEpochDay", comparator = EpochDayComparator.class)
 public class Holiday implements Serializable {
 
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    /**
+     * Holiday name
+     */
+    @NotNull
+    private String name;
+
+    /**
+     * a label to group different holidays
+     */
+    @NotNull
+    private HolidayCategory category;
+
+    /**
+     * holiday start date, in epoch days
+     */
+    @NotNull
+    private long startDateEpochDay;
+
+    /**
+     * holiday end date, in epoch days
+     */
+    @NotNull
+    private long endDateEpochDay;
+
+    /**
+     * holiday location
+     */
+    private String location;
+
+    /**
+     * Default constructor needed by Lombok
+     */
     public Holiday() {
     }
 
@@ -38,30 +72,12 @@ public class Holiday implements Serializable {
         this.category = category;
         this.startDateEpochDay = startDateEpochDay;
         this.endDateEpochDay = endDateEpochDay;
-        this.location=Location;
+        this.location = Location;
     }
 
-    @Id
-    @GeneratedValue
-    private Long id;
-
-    /** nome della festività */
-    @NotNull
-    private String name;
-    /** una targetta per raggruppare diverse festività */
-    @NotNull
-    private HolidayCategory category;
-    /** data di inizio della festività, in giorni dall'Epoch */
-    @NotNull
-    private long startDateEpochDay;
-    /** data di fine della festività, in giorni dall'Epoch */
-    @NotNull
-    private long endDateEpochDay;
-    /** locazione */
-    private String location;
-
-
-    /** Metodi di convenienza per lavorare con oggetti LocalDate anziché con timestamp */
+    /**
+     * Convenience methods for working with LocalDate objects instead of timestamps
+     */
 
     public LocalDate getStartDate() {
         return LocalDate.ofEpochDay(startDateEpochDay);
@@ -79,23 +95,4 @@ public class Holiday implements Serializable {
         this.endDateEpochDay = endDate.toEpochDay();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public HolidayCategory getCategory() {
-        return category;
-    }
-
-    public long getStartDateEpochDay() {
-        return startDateEpochDay;
-    }
-
-    public long getEndDateEpochDay() {
-        return endDateEpochDay;
-    }
 }

@@ -5,6 +5,13 @@ import org.cswteams.ms3.enums.TaskEnum;
 
 import javax.persistence.*;
 
+/**
+ * Class that has the responsibility to map tasks to <i>medical services</i>,
+ * e.g. ward, clinic, emergency room, and so on.
+ *
+ * @see <a href="https://github.com/CSW-Teams/MS3/wiki#mansioni">Glossary</a>.
+ * @see TaskEnum
+ */
 @Entity
 public class Task {
     @Id
@@ -22,7 +29,8 @@ public class Task {
     }
 
     /**
-     * Class that has the responsibility to map tasks to medical services.
+     * Create a new <i>task</i>, of the specified type.
+     *
      * @param taskType Type of all the possible tasks to be assigned to
      */
     public Task(TaskEnum taskType){

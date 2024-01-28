@@ -12,6 +12,9 @@ import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * All the information about priority levels on the queues of the doctors.
+ */
 @Entity
 @Getter
 @Setter
@@ -51,6 +54,9 @@ public class DoctorUffaPriority {
     List<ConcreteShift> assegnazioniTurnoCache;
 
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public DoctorUffaPriority() {
     }
 

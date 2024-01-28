@@ -9,8 +9,10 @@ import org.cswteams.ms3.enums.RequestStatus;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 
+/**
+ * A request for <i>Concrete Shift</i> exchange.
+ */
 @Entity
 @Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -22,30 +24,40 @@ public class Request extends Notificable {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    /** Id utente richiedente */
+    /**
+     * Issuing user.
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
     private User sender;
 
-    /** Id utente ricevente */
+    /**
+     * Recipient user.
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
     private User receiver;
 
-    /** Id turno da modificare */
+    /**
+     * <i>Concrete shift</i> to be updated
+     */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
     private ConcreteShift turn;
 
     private RequestStatus status = RequestStatus.PENDING;
 
+    /**
+     * Default constructor needed by Lombok
+     */
     protected Request() {
         super(null);
     }
 
-    /*
-        questa funzione crea una notifica che in base allo stato può cambiare il destinatario della notifica
-
+    /**
+     * {@inheritDoc}
+     * This function creates a notification which, based on the status, can change the recipient of the notification.
+     * @return a new notification for the shift change request
      */
     @Override
     public Notification getNotification() {
@@ -77,6 +89,10 @@ public class Request extends Notificable {
         this.Notify();
     }
 
+    /**
+     * Set the status of the request to <code>status</code>.
+     * @param status new status for the request
+     */
     public void setStatus(RequestStatus status) {
         this.status = status;
         this.Notify();

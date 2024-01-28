@@ -1,6 +1,5 @@
 package org.cswteams.ms3.entity;
 
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +8,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
- * This class models requests of removal from concrete shift, issued by doctors assigned to them.
+ * This class models requests of removal from <i>concrete shifts</i>, issued by <i>doctors</i> assigned to them.
  */
 @Entity
 @Getter
@@ -67,9 +66,19 @@ public class RequestRemovalFromConcreteShift {
     @Lob
     private byte[] file;
 
+    /**
+     * Default constructor needed by Lombok
+     */
     protected RequestRemovalFromConcreteShift() {
     }
 
+    /**
+     * Create a new request of removal from <i>concrete shift</i>, with the specified parameters
+     *
+     * @param concreteShift    the <i>concrete shift</i> this request is related to
+     * @param requestingDoctor the <i>Doctor</i> issuing this request
+     * @param reason           a brief description for the reason of this request
+     */
     public RequestRemovalFromConcreteShift(ConcreteShift concreteShift, Doctor requestingDoctor, String reason) {
         this.concreteShift = concreteShift;
         this.requestingDoctor = requestingDoctor;

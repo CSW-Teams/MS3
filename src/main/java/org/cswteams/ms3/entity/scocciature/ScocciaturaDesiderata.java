@@ -20,6 +20,9 @@ public class ScocciaturaDesiderata extends Scocciatura {
 
     private int peso;
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public ScocciaturaDesiderata() {
     }
 

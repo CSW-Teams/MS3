@@ -9,6 +9,10 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
+/**
+ * This entity models a recurring holiday,
+ * i.e. an holiday that is repeated each year on the same day(s).
+ */
 @Entity
 public class RecurrentHoliday {
 
@@ -16,13 +20,19 @@ public class RecurrentHoliday {
     @GeneratedValue
     private Long id;
 
-    /** nome della festività */
+    /**
+     * Holiday name
+     */
     @NotNull
     @NotEmpty
     private String name;
-    /** una targetta per raggruppare diverse festività */
+
+    /**
+     * a label to group different holidays
+     */
     @NotNull
     private HolidayCategory category;
+
     @NotNull
     private Integer startDay ;
 
@@ -33,12 +43,25 @@ public class RecurrentHoliday {
     private Integer endDay ;
 
     @NotNull
-    private Integer endMonth ;
-    /** locazione */
+    private Integer endMonth;
+
+    /**
+     * holiday location
+     */
     private String location;
 
-    protected RecurrentHoliday() {}
+    /**
+     * Default constructor needed by Lombok
+     */
+    protected RecurrentHoliday() {
+    }
 
+    /**
+     * Check if the provided year is leap
+     *
+     * @param year year to be checked
+     * @return <code>true</code> if <code>year</code> is leap, <code>false</code> elsewhere.
+     */
     private boolean checkLeapYear(int year) {
         if (year % 4 == 0) {
 
@@ -69,6 +92,12 @@ public class RecurrentHoliday {
         this.location = location;
     }
 
+    /**
+     * Get an <code>Holiday</code> object related to this recurring holiday,
+     * i.e. a single occurrence of the recurring holiday, for the specified year.
+     * @param year year for which the <code>Holiday</code> object is needed
+     * @return a <code>Holiday</code> object, as istance of the recurring holiday for the year <code>year</code>.
+     */
     public Holiday toHolidayOfYear(int year) {
 
         int newStartDay = this.startDay, newEndDay = this.endDay ;
