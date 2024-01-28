@@ -2,7 +2,7 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.requestRemovalFromConcreteShift.IRequestRemovalFromConcreteShiftController;
 import org.cswteams.ms3.dto.RequestRemovalFromConcreteShiftDTO;
-import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,7 +28,7 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         try {
             RequestRemovalFromConcreteShiftDTO ret = controller.createRequest(requestDTO);
             return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
-        } catch (DatabaseException | AssegnazioneTurnoException e) {
+        } catch (DatabaseException | ConcreteShiftException e) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
     }
@@ -61,7 +61,7 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
             ret = controller.reviewRequest(requestDTO);
         } catch (DatabaseException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (AssegnazioneTurnoException e) {
+        } catch (ConcreteShiftException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
