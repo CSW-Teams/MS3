@@ -37,5 +37,5 @@ public interface IHolidayController {
 
     void insertCustomHoliday(CustomHolidayDTOIn holiday) ;
 
-    List<HolidayDTO> retrieveRecurrentHolidays(int year) ;
+    void generateFromRecurrentHolidays(int year) ;
 }
