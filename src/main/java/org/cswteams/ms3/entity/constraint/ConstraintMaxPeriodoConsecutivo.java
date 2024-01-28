@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.condition.Condition;
-import org.cswteams.ms3.entity.condition.PermanentCondition;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
@@ -17,6 +16,8 @@ import java.util.List;
 
 /**
  * This class implements the maximum number of consecutive minutes that a doctor can work.
+ *
+ * @see ConfigVincoli for the configuration of this constraint.
  */
 @Entity
 @Getter
@@ -26,26 +27,28 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
     @NotNull
     private long maxConsecutiveMinutes;
     @ManyToOne
-    private Condition categoriaVincolata;
+    private Condition constrainedCategory;
 
 
     public ConstraintMaxPeriodoConsecutivo() {
     }
 
-    public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes, Condition categoriaVincolata){
+    public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes, Condition constrainedCategory){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;
-        this.categoriaVincolata = categoriaVincolata;
+        this.constrainedCategory = constrainedCategory;
     }
 
     public ConstraintMaxPeriodoConsecutivo(int maxConsecutiveMinutes){
         this.maxConsecutiveMinutes = maxConsecutiveMinutes;
-        this.categoriaVincolata = null;
+        this.constrainedCategory = null;
     }
 
     /**
-     * This method checks if maxPeriodoConsescutivo constraint is respected while inserting a new concrete shift into a schedule.
+     * This method checks if maxPeriodoConsecutivo constraint is respected while inserting a new concrete shift into a schedule.
+     *
      * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
      * @throws ViolatedConstraintException Exception thrown if the constraint is violated
+     * @see ConstraintMaxPeriodoConsecutivo
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
@@ -109,11 +112,11 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
      */
     private boolean verificaAppartenenzaCategoria(ContextConstraint context){
 
-        if(categoriaVincolata == null){
+        if(constrainedCategory == null){
             return true;
         }
          for (Condition condition : context.getDoctorUffaPriority().getDoctor().getPermanentConditions()) {
-             if (condition.getType().compareTo(categoriaVincolata.getType()) == 0) {
+             if (condition.getType().compareTo(constrainedCategory.getType()) == 0) {
                  //if ((condition.getStartDate() < context.getConcreteShift().getDate() || condition.getStartDate() == context.getConcreteShift().getDate()) && (condition.getEndDate() > context.getConcreteShift().getDate()) || condition.getEndDate() == context.getConcreteShift().getDate()) {
                      return true;
                  //}

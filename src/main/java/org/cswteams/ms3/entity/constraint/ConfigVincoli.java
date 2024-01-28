@@ -7,6 +7,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
+/**
+ * Parameters for <i>constraint</i> management.
+ */
 @Entity
 @Getter
 @Setter
@@ -19,31 +22,50 @@ public class ConfigVincoli {
 
     //Parametri ConstraintMaxOrePeriodo
     @NotNull
-    private int numGiorniPeriodo;
+    private int periodDaysNo;
+
+    /**
+     * in minutes
+     */
     @NotNull
-    private int maxMinutiPeriodo;
+    private int periodMaxTime;
 
     //Parametro ConstraintTurniContigui
     @NotNull
-    private int horizonTurnoNotturno;
+    private int horizonNightShift;
 
     //Parametri ConstraintMaxPeriodoConsecutivo
+    /**
+     * in minutes
+     */
     @NotNull
-    private int numMaxMinutiConsecutiviPerTutti;
+    private int maxConsecutiveTimeForEveryone;
 
     @OneToMany
     @NotNull
     private List<ConfigVincMaxPerCons> configVincMaxPerConsPerCategoria;
 
-    public ConfigVincoli(int numGiorniPeriodo, int maxOrePeriodo, int horizonTurnoNotturno, int numMaxOreConsecutivePerTutti, List<ConfigVincMaxPerCons> configVincMaxPerConsPerCategoria) {
-        this.numGiorniPeriodo = numGiorniPeriodo;
-        this.maxMinutiPeriodo = maxOrePeriodo;
-        this.horizonTurnoNotturno = horizonTurnoNotturno;
-        this.numMaxMinutiConsecutiviPerTutti = numMaxOreConsecutivePerTutti;
+    /**
+     * Constructor
+     *
+     * @param periodDaysNo
+     * @param periodMaxTime                    [minutes]
+     * @param horizonNightShift
+     * @param maxConsecutiveTimeForEveryone    [minutes]
+     * @param configVincMaxPerConsPerCategoria
+     */
+    public ConfigVincoli(int periodDaysNo, int periodMaxTime, int horizonNightShift, int maxConsecutiveTimeForEveryone, List<ConfigVincMaxPerCons> configVincMaxPerConsPerCategoria) {
+        this.periodDaysNo = periodDaysNo;
+        this.periodMaxTime = periodMaxTime;
+        this.horizonNightShift = horizonNightShift;
+        this.maxConsecutiveTimeForEveryone = maxConsecutiveTimeForEveryone;
         this.configVincMaxPerConsPerCategoria = configVincMaxPerConsPerCategoria;
     }
 
-    public ConfigVincoli(){
+    /**
+     * Default constructor needed by Lombok
+     */
+    public ConfigVincoli() {
 
     }
 }

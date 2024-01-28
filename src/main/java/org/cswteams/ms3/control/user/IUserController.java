@@ -16,7 +16,14 @@ public interface IUserController {
 
     UserDetailsDTO getSingleUser(long userId);
 
-
+    /**
+     * Function that has the responsibility to retrive information about single user profile
+     * to be shown in the user profile view. In particular this method converts doctor entity of the backend
+     * in the
+     * @param userId The ID of the user/doctor we are searching
+     * @return A well formatted DTO or a dummy DTO with id = -1 if id doesn't corresponds to any
+     * DB entry or a null instance if there has been any other problem in the backend
+     */
     SingleUserProfileDTO getSingleUserProfileInfos(Long userId);
 
     void deleteUserSystemActor(Long userID, String systemActor);

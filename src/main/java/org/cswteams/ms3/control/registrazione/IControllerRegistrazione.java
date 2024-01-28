@@ -6,5 +6,5 @@ import org.cswteams.ms3.exception.registration.RegistrationException;
 
 public interface IControllerRegistrazione {
 
-    RegisteredUserDTO registraUtente(RegistrationDTO registrationDTO) throws RegistrationException;
+    RegisteredUserDTO registerUser(RegistrationDTO registrationDTO) throws RegistrationException;
 }

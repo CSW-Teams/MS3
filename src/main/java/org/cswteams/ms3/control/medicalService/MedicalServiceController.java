@@ -26,6 +26,10 @@ public class MedicalServiceController implements IMedicalServiceController {
     @Autowired
     ITaskController taskController;
 
+    /**
+     * {@inheritDoc}
+     * This method internally calls #createService.
+     */
     @Override
     public MedicalService createService(@NotNull MedicalServiceCreationDTO medicalServiceCreationDTO) {
         List<Task> taskList = new ArrayList<>();

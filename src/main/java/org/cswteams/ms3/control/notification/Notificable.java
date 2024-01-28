@@ -1,6 +1,5 @@
 package org.cswteams.ms3.control.notification;
 
-import org.aspectj.weaver.ast.Not;
 import org.cswteams.ms3.entity.Notification;
 
 public abstract class Notificable {

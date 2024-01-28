@@ -8,6 +8,10 @@ import org.cswteams.ms3.exception.ViolatedConstraintHolidayException;
 
 import javax.persistence.Entity;
 
+/**
+ * This <i>constraint</i> is to make sure that a doctor who worked on a certain holiday
+ * in the previous year is not assigned to a shift corresponding to the same holiday.
+ */
 @Entity
 public class ConstraintHoliday extends Constraint {
 

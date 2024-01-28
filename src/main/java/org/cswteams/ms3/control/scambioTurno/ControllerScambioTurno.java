@@ -15,7 +15,7 @@ import org.cswteams.ms3.entity.constraint.ContextConstraint;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.RequestStatus;
 import org.cswteams.ms3.enums.Seniority;
-import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.hibernate.exception.ConstraintViolationException;
@@ -31,7 +31,7 @@ import java.util.*;
 @Service
 public class ControllerScambioTurno implements IControllerScambioTurno {
     @Autowired
-    private DoctorDAO utenteDao;
+    private DoctorDAO userDao;
 
     @Autowired
     private ConcreteShiftDAO concreteShiftDAO;
@@ -59,28 +59,23 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     @Autowired
     private HolidayDAO holidayDAO;
 
-    /**
-     * Questo metodo crea una richiesta di modifica turno.
-     * @param requestTurnChangeDto
-     * @return
-     */
     @Override
     @Transactional
-    public void requestShiftChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws AssegnazioneTurnoException {
+    public void requestShiftChange(@NotNull RequestTurnChangeDto requestTurnChangeDto) throws ConcreteShiftException {
         Optional<ConcreteShift> assegnazioneTurno = concreteShiftDAO.findById(requestTurnChangeDto.getConcreteShiftId());
         if(assegnazioneTurno.isEmpty()){
-            throw new AssegnazioneTurnoException("Turno non presente");
+            throw new ConcreteShiftException("Shift not present.");
         }
 
-        Optional<Doctor> senderOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getSenderId()));
+        Optional<Doctor> senderOptional = Optional.ofNullable(userDao.findById(requestTurnChangeDto.getSenderId()));
         if(senderOptional.isEmpty()){
-            throw new AssegnazioneTurnoException("Utente richiedente non presente nel database");
+            throw new ConcreteShiftException("Requesting user not present in the database.");
         }
 
 
-        Optional<Doctor> receiverOptional = Optional.ofNullable(utenteDao.findById(requestTurnChangeDto.getReceiverId()));
+        Optional<Doctor> receiverOptional = Optional.ofNullable(userDao.findById(requestTurnChangeDto.getReceiverId()));
         if(receiverOptional.isEmpty()){
-            throw new AssegnazioneTurnoException("Utente richiesto non presente nel database");
+            throw new ConcreteShiftException("Requested user not present in database.");
         }
 
         ConcreteShift concreteShift = assegnazioneTurno.get();
@@ -97,11 +92,11 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         }
 
         if(!onCallDoctorIds.contains(requestTurnChangeDto.getSenderId()) && !onDutyDoctorIds.contains(requestTurnChangeDto.getSenderId())){
-            throw new AssegnazioneTurnoException("Utente richiedente non assegnato al turno");
+            throw new ConcreteShiftException("Requesting user is not assigned to shift.");
         }
 
         if(onDutyDoctorIds.contains(requestTurnChangeDto.getReceiverId()) || onCallDoctorIds.contains(requestTurnChangeDto.getReceiverId())){
-            throw new AssegnazioneTurnoException("Utente richiesto già assegnato al turno");
+            throw new ConcreteShiftException("Required user is already assigned to shift.");
         }
 
         Request request = new Request(senderOptional.get(), receiverOptional.get(), concreteShift,this.notificationSystemController);
@@ -109,13 +104,13 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         List<Request> requests = shiftChangeRequestDAO.findBySenderIdAndTurnIdAndStatus(requestTurnChangeDto.getSenderId(), requestTurnChangeDto.getConcreteShiftId(), RequestStatus.PENDING);
 
         if(!requests.isEmpty()){
-            throw new AssegnazioneTurnoException("esiste già una richiesta in corso per la modifica di questo turno");
+            throw new ConcreteShiftException("There is already a request in progress to change this shift.");
         }
 
         try {
             shiftChangeRequestDAO.saveAndFlush(request);
         } catch(ConstraintViolationException e){
-            throw new AssegnazioneTurnoException("esiste già un cambio pendente");
+            throw new ConcreteShiftException("there is already a pending change.");
         }
     }
 
@@ -228,14 +223,14 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     public void answerTurnChangeRequest(AnswerTurnChangeRequestDTO answerTurnChangeRequestDTO) throws ShiftException {
         Optional<Request> optionalRequest=shiftChangeRequestDAO.findById(answerTurnChangeRequestDTO.getRequestID());
         if (optionalRequest.isEmpty()){
-                throw new ShiftException("Utente Richiesto non trovato");
+                throw new ShiftException("Required user not found.");
         }
         Request request=optionalRequest.get();
         request.attach(notificationSystemController);
         if(answerTurnChangeRequestDTO.isHasAccepted()){
             request.setStatus(RequestStatus.ACCEPTED);
             ConcreteShift shift = request.getTurn();
-            Doctor newDoctor=utenteDao.getOne(request.getReceiver().getId());
+            Doctor newDoctor= userDao.getOne(request.getReceiver().getId());
             List<DoctorAssignment> list=shift.getDoctorAssignmentList();
             for(int i=0;i<list.size();i++){
                 DoctorAssignment currAssignment = list.get(i);
