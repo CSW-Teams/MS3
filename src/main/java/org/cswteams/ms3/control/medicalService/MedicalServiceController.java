@@ -88,7 +88,7 @@ public class MedicalServiceController implements IMedicalServiceController {
             if (receivedTasks.stream().anyMatch(task -> task.getTaskType() == persistent.getTaskType()))
                 updatedTasks.add(persistent);
             else if (taskDAO.isTaskAssigned(persistent.getId()))
-                throw new RuntimeException("e");
+                throw new RuntimeException("Task " + persistent.getTaskType() + " is assigned.");
             else {
                 toBeRemovedTasks.add(persistent);
             }

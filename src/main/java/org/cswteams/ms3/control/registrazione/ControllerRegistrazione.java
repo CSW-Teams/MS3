@@ -97,21 +97,21 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
     public RegisteredUserDTO registerUser(@NotNull RegistrationDTO registrationDTO) throws RegistrationException {
 
         if (Objects.equals(registrationDTO.getName(), ""))
-            throw new RegistrationException("Non è stato specificato il nome");
+            throw new RegistrationException("Name not specified.");
         if (Objects.equals(registrationDTO.getLastname(), ""))
-            throw new RegistrationException("Non è stato specificato il cognome");
+            throw new RegistrationException("Last name not specified.");
         if (!validaCodiceFiscale(registrationDTO.getTaxCode()))
-            throw new RegistrationException("Il codice fiscale non è valido");
+            throw new RegistrationException("Invalid tax code.");
         if (Objects.equals(registrationDTO.getPassword(), ""))
-            throw new RegistrationException("La password non può essere vuota");
+            throw new RegistrationException("Password cannot be empty.");
         if (!checkEmail(registrationDTO.getEmail()))
-            throw new RegistrationException("Indirizzo email già registrato");
+            throw new RegistrationException("Email address already registered.");
         if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR) &&
                 (!registrationDTO.getSeniority().toString().equals("STRUCTURED") &&
                         !registrationDTO.getSeniority().toString().equals("SPECIALIZED")
                 )
         ) {
-            throw new RegistrationException("Non è stata specificata la seniority");
+            throw new RegistrationException("Seniority not specified.");
         }
 
         if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR)) {

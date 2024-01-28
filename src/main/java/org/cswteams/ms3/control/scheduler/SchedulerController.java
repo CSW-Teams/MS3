@@ -218,7 +218,7 @@ public class SchedulerController implements ISchedulerController {
         //We need a shift which is present in the database in order to convert the DTO into an entity.
         List<Shift> shiftsList = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
         if(shiftsList.isEmpty())
-            throw new ConcreteShiftException("Non esiste uno shift coi servizi specificati.");
+            throw new ConcreteShiftException("A shift with the specified services does not exist.");
         Shift shift = null;
         for(Shift shiftDB: shiftsList){
             //if(shiftDB.getMansione().equals(registerConcreteShiftDTO.getMansione())){
@@ -228,7 +228,7 @@ public class SchedulerController implements ISchedulerController {
             }
         }
         if(shift == null){
-            throw new ConcreteShiftException("Non esiste uno shift coi servizi specificati.");
+            throw new ConcreteShiftException("A shift with the specified services does not exist.");
         }
 
         ConcreteShift concreteShift = new ConcreteShift(
@@ -244,7 +244,7 @@ public class SchedulerController implements ISchedulerController {
         }
 
         if(!checkDoctorsOnConcreteShift(concreteShift)){
-            throw new ConcreteShiftException("Collisione tra utenti reperibili e di guardia");
+            throw new ConcreteShiftException("Collision between on-call and on-duty doctors.");
         }
 
         return this.addConcreteShift(concreteShift,forced);
