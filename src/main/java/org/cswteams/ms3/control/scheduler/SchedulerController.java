@@ -17,13 +17,17 @@ import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
+import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
+import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.cswteams.ms3.utils.DateConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 // TODO: Generate concrete shift controller from this class
 @Service
@@ -251,10 +255,11 @@ public class SchedulerController implements ISchedulerController {
      * @throws IllegalScheduleException Rised if the new concrete shift makes the schedule illegal
      */
     @Override
-    public Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
+    @Validant
+    public Schedule addConcreteShift(@Valid @NotNull RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
 
         //We need a shift which is present in the database in order to convert the DTO into an entity.
-        List<Shift> shiftsList = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
+        List<Shift> shiftsList = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), TimeSlot.valueOf(registerConcreteShiftDTO.getTimeSlot()));
         if(shiftsList.isEmpty())
             throw new AssegnazioneTurnoException("Non esiste uno shift coi servizi specificati.");
         Shift shift = null;
@@ -320,7 +325,8 @@ public class SchedulerController implements ISchedulerController {
      */
     @Override
     @Transactional
-    public Schedule modifyConcreteShift(ModifyConcreteShiftDTO modifyConcreteShiftDTO) throws IllegalScheduleException {
+    @Validant
+    public Schedule modifyConcreteShift(@Valid ModifyConcreteShiftDTO modifyConcreteShiftDTO) throws IllegalScheduleException {
 
         if(concreteShiftDAO.findById(modifyConcreteShiftDTO.getConcreteShiftId()).isPresent()) {
             ConcreteShift concreteShiftOld = concreteShiftDAO.findById(modifyConcreteShiftDTO.getConcreteShiftId()).get();

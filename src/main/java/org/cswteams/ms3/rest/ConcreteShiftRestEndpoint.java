@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ValidationException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public class ConcreteShiftRestEndpoint {
 
         Schedule schedule;
 
-        if (assegnazione != null) {
+        try {
             // Se l'utente chiede l'aggiunta forzata di un assegnazione viene fatto
             // controllo solo sui vincoli non violabili
             try {
@@ -67,12 +68,13 @@ public class ConcreteShiftRestEndpoint {
                     }
                     return new ResponseEntity<>(risposta, HttpStatus.NOT_ACCEPTABLE);
                 }
-
-                return new ResponseEntity<>(HttpStatus.ACCEPTED);
             }
 
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+
+        } catch (ValidationException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/user_id={userID}")
@@ -113,6 +115,8 @@ public class ConcreteShiftRestEndpoint {
             schedule = controllerScheduler.modifyConcreteShift(modifyConcreteShiftDTO);
         } catch (IllegalScheduleException e) {
             schedule=null;
+        } catch (ValidationException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST) ;
         }
 
         // Se la modifica dell'assegnazione turno comporta una violazione dei vincoli, la modifica non va a buon fine
@@ -146,8 +150,13 @@ public class ConcreteShiftRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST, path = "/available-users-for-replacement/")
     public ResponseEntity<?> getAvailableUsersForReplacement(@RequestBody GetAvailableUsersForReplacementDTO dto) {
-        List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUsersForReplacement(dto);
-        return new ResponseEntity<>(returnList, HttpStatus.FOUND);
+        try {
+            List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUsersForReplacement(dto);
+            return new ResponseEntity<>(returnList, HttpStatus.FOUND);
+        } catch (ValidationException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST) ;
+        }
+
     }
 
 

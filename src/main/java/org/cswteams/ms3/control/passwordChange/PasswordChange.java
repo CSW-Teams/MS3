@@ -8,9 +8,11 @@ import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.User;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.cswteams.ms3.exception.changePassword.WrongOldPasswordException;
+import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
@@ -20,7 +22,8 @@ public class PasswordChange implements IPasswordChange {
     private UserDAO userDAO;
 
     @Override
-    public ChangePasswordDTO changePassword(@NotNull ChangePasswordDTO dto) throws DatabaseException, WrongOldPasswordException {
+    @Validant
+    public ChangePasswordDTO changePassword(@Valid @NotNull ChangePasswordDTO dto) throws DatabaseException, WrongOldPasswordException {
         Optional<User> u = userDAO.findById(dto.getUserId());
         if (u.isEmpty()) {
             throw new DatabaseException("Utente non trovato");

@@ -13,6 +13,7 @@ import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.SystemActor;
+import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -106,7 +107,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
     @Override
     public ConcreteShift createNewConcreteShift(RegisterConcreteShiftDTO dto) throws AssegnazioneTurnoException {
 
-        Shift shift = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(dto.getServizio().getNome(), dto.getTimeSlot()).get(0);
+        Shift shift = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(dto.getServizio().getNome(), TimeSlot.valueOf(dto.getTimeSlot())).get(0);
         if(shift == null)
             throw new AssegnazioneTurnoException("Non esiste uno shift con la coppia di attributi servizio: "+dto.getServizio().getNome() +",tipologia shift: "+dto.getTimeSlot().toString());
 

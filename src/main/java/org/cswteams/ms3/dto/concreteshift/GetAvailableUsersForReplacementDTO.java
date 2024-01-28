@@ -1,7 +1,11 @@
 package org.cswteams.ms3.dto.concreteshift;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.utils.admissible_values.AdmissibleValues;
+
+import javax.validation.constraints.NotNull;
 
 
 /**
@@ -13,10 +17,15 @@ import org.cswteams.ms3.enums.Seniority;
  */
 @Getter
 public class GetAvailableUsersForReplacementDTO {
-    private final Seniority seniority;
+    @NotNull
+    @AdmissibleValues(values = {"SPECIALIST_SENIOR", "STRUCTURED", "SPECIALIST_JUNIOR"})
+    private final String seniority;
+    @NotNull
     private final Long shiftId;
 
-    public GetAvailableUsersForReplacementDTO(Seniority seniority, Long shiftId) {
+    public GetAvailableUsersForReplacementDTO(
+            @JsonProperty("seniority") String seniority,
+            @JsonProperty("shiftId") Long shiftId) {
         this.seniority = seniority;
         this.shiftId = shiftId;
     }

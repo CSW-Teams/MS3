@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.ValidationException;
+
 @RestController
 @RequestMapping("/change_password/")
 public class    ChangePasswordRestEndpoint {
@@ -26,7 +28,7 @@ public class    ChangePasswordRestEndpoint {
         try {
             ChangePasswordDTO returnDto = controllerPassword.changePassword(dto);
             return new ResponseEntity<>(returnDto, HttpStatus.ACCEPTED);
-        } catch (DatabaseException | WrongOldPasswordException e) {
+        } catch (DatabaseException | WrongOldPasswordException | ValidationException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

@@ -18,12 +18,14 @@ import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.exception.AssegnazioneTurnoException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
+import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.time.*;
 import java.util.*;
@@ -265,9 +267,10 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
 
     @Override
     @Transactional
-    public List<MedicalDoctorInfoDTO> getAvailableUsersForReplacement(@NotNull GetAvailableUsersForReplacementDTO dto) {
+    @Validant
+    public List<MedicalDoctorInfoDTO> getAvailableUsersForReplacement(@Valid @NotNull GetAvailableUsersForReplacementDTO dto) {
         List<MedicalDoctorInfoDTO> availableDoctorsDTOs = new ArrayList<>();
-        Seniority requestingUserSeniority = dto.getSeniority();
+        Seniority requestingUserSeniority = Seniority.valueOf(dto.getSeniority());
 
         Optional<ConcreteShift> concreteShift = concreteShiftDAO.findById(dto.getShiftId());
         if (concreteShift.isEmpty()) {
