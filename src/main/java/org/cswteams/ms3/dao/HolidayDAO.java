@@ -1,5 +1,6 @@
 package org.cswteams.ms3.dao;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.cswteams.ms3.entity.Holiday;
@@ -7,6 +8,8 @@ import org.cswteams.ms3.enums.HolidayCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.validation.constraints.NotNull;
 
 @Repository
 public interface HolidayDAO extends JpaRepository<Holiday, Long>{
@@ -25,4 +28,6 @@ public interface HolidayDAO extends JpaRepository<Holiday, Long>{
 
     @Query("select h from Holiday h where (h.startDateEpochDay >= ?1 and h.startDateEpochDay <= ?2) or (h.endDateEpochDay >= ?1 and h.endDateEpochDay <= ?2)")
     List<Holiday> areThereHolidaysInYear(long start, long end) ;
+
+    long countByNameAndStartDateEpochDayAndEndDateEpochDay(@NotNull String name, long startDate, long endDate) ;
 }

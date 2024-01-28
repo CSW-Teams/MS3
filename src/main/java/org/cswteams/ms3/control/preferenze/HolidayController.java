@@ -91,21 +91,41 @@ public class HolidayController implements IHolidayController {
     }
 
     @Override
-    public List<HolidayDTO> retrieveRecurrentHolidays(int year) {
+    public void generateFromRecurrentHolidays(int year) {
         List<RecurrentHoliday> holidays = recurrentHolidayDAO.findAll() ;
-        ArrayList<Holiday> list = new ArrayList<>() ;
-        ArrayList<HolidayDTO> dtos = new ArrayList<>() ;
 
         for (RecurrentHoliday hd : holidays) {
-            list.add(hd.toHolidayOfYear(year)) ;
-        }
+            Holiday generated = hd.toHolidayOfYear(year) ;
 
-        for(Holiday elem: list){
-            HolidayDTO newHolidayDTO=new HolidayDTO(elem.getName(), elem.getCategory(), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
-            dtos.add(newHolidayDTO);
-        }
+            if(holidayDAO.countByNameAndStartDateEpochDayAndEndDateEpochDay(generated.getName(), generated.getStartDateEpochDay(), generated.getEndDateEpochDay()) == 0) {
+                //annoyance registration of the new custom holiday
+                int uffaPriorityDefaultHoliday;
+                int uffaPriorityDefaultHolidayNight;
 
-        return dtos ;
+                try {
+                    File file = new File("src/main/resources/priority.properties");
+                    FileInputStream propsInput = new FileInputStream(file);
+                    Properties prop = new Properties();
+                    prop.load(propsInput);
+
+                    uffaPriorityDefaultHoliday = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHoliday"));
+                    uffaPriorityDefaultHolidayNight = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHolidayNight"));
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                holidayDAO.save(generated) ;
+
+                Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, generated, TimeSlot.MORNING);
+                Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, generated, TimeSlot.AFTERNOON);
+                Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityDefaultHolidayNight, generated, TimeSlot.NIGHT);
+
+                scocciaturaDAO.save(scocciaturaHolidayMorning);
+                scocciaturaDAO.save(scocciaturaHolidayAfternoon);
+                scocciaturaDAO.save(scocciaturaHolidayNight);
+            }
+        }
     }
 
     @Override
@@ -114,6 +134,8 @@ public class HolidayController implements IHolidayController {
 
         Integer currentYear = dto.getYear();
         String currentCountry = dto.getCountry();
+
+        generateFromRecurrentHolidays(currentYear);
 
         ArrayList<Holiday> holidays = new ArrayList<>(holidayDAO.areThereHolidaysInYear(LocalDate.of(currentYear, 1, 1).toEpochDay(), LocalDate.of(currentYear, 12, 31).toEpochDay()));
 
@@ -130,7 +152,6 @@ public class HolidayController implements IHolidayController {
             HolidayDTO newHolidayDTO=new HolidayDTO(elem.getName(), elem.getCategory(), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
             listDTOHoliday.add(newHolidayDTO);
         }
-        listDTOHoliday.addAll(retrieveRecurrentHolidays(currentYear)) ;
         return listDTOHoliday;
     }
 
@@ -196,32 +217,31 @@ public class HolidayController implements IHolidayController {
                     holiday.getStartEpochDay(), holiday.getEndEpochDay(), holiday.getLocation()) ;
 
             holidayDAO.save(holidayEnt) ;
+
+            int uffaPriorityDefaultHoliday;
+            int uffaPriorityDefaultHolidayNight;
+
+            try {
+                File file = new File("src/main/resources/priority.properties");
+                FileInputStream propsInput = new FileInputStream(file);
+                Properties prop = new Properties();
+                prop.load(propsInput);
+
+                uffaPriorityDefaultHoliday = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHoliday"));
+                uffaPriorityDefaultHolidayNight = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHolidayNight"));
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holidayEnt, TimeSlot.MORNING);
+            Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holidayEnt, TimeSlot.AFTERNOON);
+            Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityDefaultHolidayNight, holidayEnt, TimeSlot.NIGHT);
+
+            scocciaturaDAO.save(scocciaturaHolidayMorning);
+            scocciaturaDAO.save(scocciaturaHolidayAfternoon);
+            scocciaturaDAO.save(scocciaturaHolidayNight);
+
         }
-
-        //annoyance registration of the new custom holiday
-        int uffaPriorityDefaultHoliday;
-        int uffaPriorityDefaultHolidayNight;
-
-        try {
-            File file = new File("src/main/resources/priority.properties");
-            FileInputStream propsInput = new FileInputStream(file);
-            Properties prop = new Properties();
-            prop.load(propsInput);
-
-            uffaPriorityDefaultHoliday = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHoliday"));
-            uffaPriorityDefaultHolidayNight = Integer.parseInt(prop.getProperty("uffaPriorityDefaultHolidayNight"));
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holidayEnt, TimeSlot.MORNING);
-        Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, holidayEnt, TimeSlot.AFTERNOON);
-        Scocciatura scocciaturaHolidayNight = new ScocciaturaVacanza(uffaPriorityDefaultHolidayNight, holidayEnt, TimeSlot.NIGHT);
-
-        scocciaturaDAO.save(scocciaturaHolidayMorning);
-        scocciaturaDAO.save(scocciaturaHolidayAfternoon);
-        scocciaturaDAO.save(scocciaturaHolidayNight);
-
     }
 }
