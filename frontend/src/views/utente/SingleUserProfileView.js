@@ -25,6 +25,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {toast} from "react-toastify";
 import {Button} from "@material-ui/core";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
+import {t} from "i18next";
 
 /**
  * Class needed to fromat correctly the attributes permanentConditions and temporaryConditions
@@ -66,7 +67,6 @@ export default class SingleUserProfileView extends React.Component{
     let user = await(new UserAPI().getSingleUserProfileDetails(id));
     let singleUserProfileAPI = new SingleUserProfileAPI();
     let specializations = await singleUserProfileAPI.getSpecializations();
-    let systemActorsUserItalianTranslation = [];
     let conditionsToShow = [];
     let isPlanner = false;
     let allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
@@ -76,18 +76,12 @@ export default class SingleUserProfileView extends React.Component{
       if(user.systemActors[i] === "PLANNER"){
         isPlanner = true;
       }
-      systemActorsUserItalianTranslation[i] =
-        (user.systemActors[i] === "PLANNER" ? "Pianificatore" :
-          (user.systemActors[i] === "DOCTOR" ? "Dottore" : "Configuratore"));
     }
 
     for(var i = 0;i < allSavedSystemActors.length;i++){
       if(allSavedSystemActors[i] === "PLANNER"){
         isPlanner = true;
       }
-      allSavedSystemActorsInItalian[i] =
-          (allSavedSystemActors[i] === "PLANNER" ? "Pianificatore" :
-              (allSavedSystemActors[i] === "DOCTOR" ? "Dottore" : "Configuratore"));
     }
 
     for(var i = 0;i<user.permanentConditions.length;i++){
@@ -104,11 +98,10 @@ export default class SingleUserProfileView extends React.Component{
       userID : user.id,
       name: user.name,
       lastname: user.lastname,
-      seniority: (user.seniority === "SPECIALIST_JUNIOR" ? "Medico specializzando junior" :
-        (user.seniority === "SPECIALIST_SENIOR") ? "Medico specializzando senior" : "Medico strutturato"),
+      seniority: user.seniority,
       email: user.email,
       birthday: user.birthday,
-      systemActors : systemActorsUserItalianTranslation,
+      systemActors : user.systemActors,
       specializations : user.specializations,
       conditions: conditionsToShow,
       isPlanner: isPlanner,
@@ -119,7 +112,7 @@ export default class SingleUserProfileView extends React.Component{
   }
 
     updateSpecializationList = (newSpecializations) => {
-        toast.success('Specializzazioni modificate con successo', {
+        toast.success(t('Specializations modified successfully'), {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: true,
@@ -133,7 +126,7 @@ export default class SingleUserProfileView extends React.Component{
     };
 
   updateSystemActorsList = (newSystemActor) => {
-    toast.success('Ruoli nel sistema modificati con successo', {
+    toast.success(t('System Roles modified successfully'), {
       position: "top-center",
       autoClose: 5000,
       hideProgressBar: true,
@@ -151,7 +144,7 @@ export default class SingleUserProfileView extends React.Component{
     let responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
 
     if (responseStatus === 200) {
-      toast.success('Specializzazione cancellata con successo', {
+      toast.success(t('Specialization deleted successfully'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -163,7 +156,7 @@ export default class SingleUserProfileView extends React.Component{
       });
       this.componentDidMount()
     } else if (responseStatus === 400) {
-      toast.error('Errore nella cancellazione', {
+      toast.error(t('Error during removal'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -174,7 +167,7 @@ export default class SingleUserProfileView extends React.Component{
         theme: "colored",
       });
     }else{
-      toast.error('Ops, qualcosa è andato storto, riprova più tardi', {
+      toast.error(t('Something went wrong, try again later'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -192,7 +185,7 @@ export default class SingleUserProfileView extends React.Component{
     let responseStatus = await singleUserProfileAPI.deleteSystemActor(doctorID,  systemActor);
 
     if (responseStatus === 200) {
-      toast.success('Specializzazione cancellata con successo', {
+      toast.success(t('Specialization deleted successfully'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -204,7 +197,7 @@ export default class SingleUserProfileView extends React.Component{
       });
       this.componentDidMount()
     } else if (responseStatus === 400) {
-      toast.error('Errore nella cancellazione', {
+      toast.error(t('Error during removal'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -215,7 +208,7 @@ export default class SingleUserProfileView extends React.Component{
         theme: "colored",
       });
     }else{
-      toast.error('Ops, qualcosa è andato storto, riprova più tardi', {
+      toast.error(t('Something went wrong, try again later'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -236,7 +229,7 @@ export default class SingleUserProfileView extends React.Component{
     responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.userID);
 
     if (responseStatus === 200) {
-      toast.success('Rotazione cancellata con successo', {
+      toast.success(t('Rotation deleted successfully'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -248,7 +241,7 @@ export default class SingleUserProfileView extends React.Component{
       });
       this.componentDidMount()
     } else if (responseStatus === 400) {
-      toast.error('Errore nella cancellazione', {
+      toast.error(t('Error during removal'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -266,18 +259,18 @@ export default class SingleUserProfileView extends React.Component{
     function renderDoctorCondition() {
       return <MDBCard>
         <MDBCardBody className="text-center">
-          <MDBCardTitle>Categorie utente</MDBCardTitle>
+          <MDBCardTitle>{t('User Categories')}</MDBCardTitle>
           <MDBTable align="middle">
             <MDBTableHead>
               <tr>
-                <th scope='col'>Categoria</th>
-                <th scope='col'>Inizio validità</th>
-                <th scope='col'>Fine validità</th>
+                <th scope='col'>{t('Category')}</th>
+                <th scope='col'>{t('Start Date')}</th>
+                <th scope='col'>{t('End Date')}</th>
                 <th scope='col'></th>
               </tr>
             </MDBTableHead>
             <MDBTableBody>
-              {this.state.conditions.map( (data) => {
+              {this.state.conditions.map((data) => {
                 const options = {
                   timeZone: 'Europe/Berlin',
                   weekday: 'long',
@@ -345,7 +338,7 @@ export default class SingleUserProfileView extends React.Component{
     function renderDoctorSpecializations() {
       return <MDBCard>
         <MDBCardBody className="text-center">
-          <MDBCardTitle>Specializzazioni</MDBCardTitle>
+          <MDBCardTitle>{t('Specializations')}</MDBCardTitle>
           <MDBTable align="middle">
 
             <MDBTableBody>
@@ -373,7 +366,7 @@ export default class SingleUserProfileView extends React.Component{
     function renderSystemActor() {
       return <MDBCard>
         <MDBCardBody className="text-center">
-          <MDBCardTitle>Ruoli nel Sistema</MDBCardTitle>
+          <MDBCardTitle>{t('System Roles')}</MDBCardTitle>
           <MDBTable align="middle">
 
             <MDBTableBody>
@@ -382,9 +375,7 @@ export default class SingleUserProfileView extends React.Component{
                   <tr>
                     <td>{formatStringUpperLower(data)}</td>
                     {this.state.isPlanner && <td><IconButton aria-label="delete" onClick={() => this.handleDeleteSystemActor(
-                      this.state.userID,
-                      (data === "Pianificatore" ? "PLANNER" :
-                        (data === "Dottore" ? "DOCTOR" : "CONFIGURATOR"))
+                      this.state.userID,data
                     )}>
                       <DeleteIcon />
                     </IconButton></td>}
@@ -427,7 +418,7 @@ export default class SingleUserProfileView extends React.Component{
       return (
         <MDBRow>
           <MDBCol sm="3">
-            <MDBCardText>Specializzazioni</MDBCardText>
+            <MDBCardText>{t('Specialization')}</MDBCardText>
           </MDBCol>
           <MDBCol sm="9">
             <MDBCardText
@@ -451,7 +442,7 @@ export default class SingleUserProfileView extends React.Component{
                       style={{width: '150px'}}
                       fluid/>
                     <p className="text-muted mb-1">{this.state.name + " " + this.state.lastname}</p>
-                    <p className="text-muted mb-4">{this.state.seniority}</p>
+                    <p className="text-muted mb-4">{t(this.state.seniority)}</p>
                   </MDBCardBody>
                 </MDBCard>
               </MDBCol>
@@ -462,7 +453,7 @@ export default class SingleUserProfileView extends React.Component{
                       <div style={{display:"flex", justifyContent:"space-between"}}>
                         <div>
                           <MDBCardText>
-                            Informazioni utente
+                            {t('User Information')}
                           </MDBCardText>
                         </div>
                         <div style={{marginLeft: "auto"}}>
@@ -473,7 +464,7 @@ export default class SingleUserProfileView extends React.Component{
 
                     <MDBRow>
                       <MDBCol sm="3">
-                        <MDBCardText>Nome</MDBCardText>
+                        <MDBCardText>{t('Name')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
                         <MDBCardText className="text-muted">
@@ -483,7 +474,7 @@ export default class SingleUserProfileView extends React.Component{
                     </MDBRow>
                     <MDBRow>
                       <MDBCol sm="3">
-                        <MDBCardText>Cognome</MDBCardText>
+                        <MDBCardText>{t('Surname')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
                         <MDBCardText
@@ -492,7 +483,7 @@ export default class SingleUserProfileView extends React.Component{
                     </MDBRow>
                     <MDBRow>
                       <MDBCol sm="3">
-                        <MDBCardText>Email</MDBCardText>
+                        <MDBCardText>{t('Email Address')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
                         <MDBCardText
@@ -502,7 +493,7 @@ export default class SingleUserProfileView extends React.Component{
                     </MDBRow>
                     <MDBRow>
                       <MDBCol sm="3">
-                        <MDBCardText>Data di Nascita</MDBCardText>
+                        <MDBCardText>{t('Birthdate')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
                         <MDBCardText
@@ -511,21 +502,27 @@ export default class SingleUserProfileView extends React.Component{
                     </MDBRow>
                     <MDBRow>
                       <MDBCol sm="3">
-                        <MDBCardText>Anzianità</MDBCardText>
+                        <MDBCardText>{t('Seniority')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
                         <MDBCardText
-                          className="text-muted">{this.state.seniority}</MDBCardText>
+                          className="text-muted">{t(this.state.seniority)}</MDBCardText>
                       </MDBCol>
                     </MDBRow>
-                    {(this.state.seniority==="Medico strutturato") && showSpecializations(this.state.specializations)}
+                    {(this.state.seniority==="STRUCTURED") && showSpecializations(this.state.specializations)}
                     <MDBRow>
                       <MDBCol sm="3">
-                        <MDBCardText>Ruoli nel sistema</MDBCardText>
+                        <MDBCardText>{t('System Roles')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
-                        <MDBCardText
-                          className="text-muted">{showMultipleDataInSingleLine(this.state.systemActors)}</MDBCardText>
+                        <MDBCardText className="text-muted">
+                          {this.state.systemActors.map((systemActor, index) => (
+                            <span key={index}>
+                              {t(systemActor)}
+                              {index < this.state.systemActors.length - 1 && ', '}
+                            </span>
+                          ))}
+                        </MDBCardText>
                       </MDBCol>
                     </MDBRow>
                   </MDBCardBody>

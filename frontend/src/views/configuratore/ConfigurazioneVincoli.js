@@ -12,6 +12,7 @@ import {
 
 import {toast, ToastContainer} from "react-toastify";
 import {VincoloAPI} from "../../API/VincoliAPI";
+import { t } from "i18next";
 
 export default class ConfigurazioneVincoli extends React.Component{
 
@@ -55,7 +56,7 @@ export default class ConfigurazioneVincoli extends React.Component{
 
     let response = await vincoliApi.setConfigurazioneVincoli(conf)
     if (response.status === 202) {
-      toast.success('Configurazione salvata con successo', {
+      toast.success(t("Configuration saved successfully"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -66,7 +67,7 @@ export default class ConfigurazioneVincoli extends React.Component{
         theme: "colored",
       });
     } else if (response.status === 400) {
-      toast.error('Errore nel salvataggio della configurazione', {
+      toast.error(t("Error saving the configuration"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -96,16 +97,16 @@ export default class ConfigurazioneVincoli extends React.Component{
         <MDBContainer className="py-5">
           <MDBCard alignment='center'>
             <MDBCardBody style={{height: '80vh'}}>
-              <MDBCardTitle>Gestione parametri dei vincoli</MDBCardTitle>
+              <MDBCardTitle>{t("Constraint parameters management")}</MDBCardTitle>
               <MDBRow className='g-3' style={{paddingTop: '10px'}}>
-                <MDBCol>Orizzonte turni contigui
+                <MDBCol>{t("Continuous shifts horizon")}
                 </MDBCol>
                 <MDBCol size='sm'>
                 <MDBInput
                   wrapperClass='col-auto'
                   type='text'
                   name='horizonTurnoNotturno'
-                  label='Numero di ore non allocabili prima e dopo il turno notturno'
+                  label={t("Number of non-assignable hours before and after the night shift")}
                   id='formTextExample2'
                   aria-describedby='textExample2'
                   value={this.state.horizonTurnoNotturno}
@@ -114,13 +115,13 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
               </MDBRow>
               <MDBRow style={{paddingTop: '10px'}}>
-                <MDBCol>Massimo numero di ore in un periodo
+                <MDBCol>{t("Max number of hours in a period")}
                 </MDBCol>
                 <MDBCol>
                   <MDBInput
                     wrapperClass='col-auto'
                     type='text'
-                    label='Periodo in giorni'
+                    label={t("Period in days")}
                     name='numGiorniPeriodo'
                     id='formTextExample2'
                     aria-describedby='textExample2'
@@ -132,7 +133,7 @@ export default class ConfigurazioneVincoli extends React.Component{
                   <MDBInput
                     wrapperClass='col-auto'
                     type='text'
-                    label='Numero massimo ore nel periodo indicato'
+                    label={t("Max number of hours in the period")}
                     id='formTextExample2'
                     name='maxOrePeriodo'
                     aria-describedby='textExample2'
@@ -142,13 +143,13 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
               </MDBRow>
               <MDBRow style={{paddingTop: '10px'}}>
-                <MDBCol>Massimo numero di ore consecutive
+                <MDBCol>{t("Max consecutive hours")}
                 </MDBCol>
                 <MDBCol>
                   <MDBInput
                     wrapperClass='col-auto'
                     type='text'
-                    label='Numero ore consecutive'
+                    label={t("Number of consecutive hours")}
                     id='formTextExample2'
                     name='numMaxOreConsecutivePerTutti'
                     aria-describedby='textExample2'
@@ -158,13 +159,13 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
               </MDBRow>
               <MDBRow style={{paddingTop: '10px'}}>
-                <MDBCol>Massimo numero di ore consecutive per Over 62
+                <MDBCol>{t("Max hours for Over 62")}
                 </MDBCol>
                 <MDBCol>
                   <MDBInput
                     wrapperClass='col-auto'
                     type='text'
-                    label='Numero ore consecutive'
+                    label={t("Number of consecutive hours")}
                     name='numMaxOreConsecutiveOver62'
                     id='formTextExample2'
                     aria-describedby='textExample2'
@@ -174,13 +175,13 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
               </MDBRow>
               <MDBRow style={{paddingTop: '10px'}}>
-                <MDBCol>Massimo numero di ore consecutive per donne incinta
+                <MDBCol>{t("Max hours for pregnant women")}
                 </MDBCol>
                 <MDBCol>
                   <MDBInput
                     wrapperClass='col-auto'
                     type='text'
-                    label='Numero ore consecutive'
+                    label={t("Number of consecutive hours")}
                     name='numMaxOreConsecutiveDonneIncinta'
                     id='formTextExample2'
                     aria-describedby='textExample2'
@@ -191,7 +192,7 @@ export default class ConfigurazioneVincoli extends React.Component{
               </MDBRow>
               <MDBRow>
                 <MDBCol style={{paddingTop: '10px'}}>
-                  <MDBBtn onClick={this.handleSalvataggio}>Salva</MDBBtn>
+                  <MDBBtn onClick={this.handleSalvataggio}>{t("Save")}</MDBBtn>
                 </MDBCol>
               </MDBRow>
 

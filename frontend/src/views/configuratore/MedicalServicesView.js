@@ -13,6 +13,7 @@ import Typography from "@mui/material/Typography";
 import DialogEliminaServizio from '../../components/common/DialogEliminaServizio';
 import MedicalServiceCreationDrawer from "../../components/common/BottomViewCreaServizio";
 import MedicalServiceUpdateDrawer from "../../components/common/BottomViewModificaServizio";
+import {t} from "i18next";
 
 function defaultComparator(prop1, prop2) {
     if (prop1 < prop2) return -1;
@@ -106,7 +107,7 @@ export default class MedicalServicesView extends React.Component {
                 <MDBCard>
                     <MDBCardBody className="text-center">
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                            <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>Informazioni Servizi</MDBCardTitle>
+                            <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>{t('Services Informations')}</MDBCardTitle>
                         </div>
                         <MDBTable align="middle"
                                   bordered
@@ -115,13 +116,13 @@ export default class MedicalServicesView extends React.Component {
                             <MDBTableHead color='tempting-azure-gradient' textWhite>
                                 <tr>
                                     <th scope='col'>
-                                        Servizio
+                                      {t('Service')}
                                     </th>
                                     <th scope='col'>
-                                        Mansioni
+                                      {t('Task')}
                                     </th>
                                     <th scope='col'>
-                                        Operazioni
+                                      {t('Operations')}
                                     </th>
                                 </tr>
                             </MDBTableHead>

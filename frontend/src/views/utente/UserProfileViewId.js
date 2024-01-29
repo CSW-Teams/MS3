@@ -19,6 +19,7 @@ import AggiungiCategoriaStato from "../../components/common/BottomViewAggiungiCa
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import {toast} from "react-toastify";
+import {t} from "i18next";
 
 export default class UserProfileView extends React.Component{
   constructor(props){
@@ -64,7 +65,7 @@ export default class UserProfileView extends React.Component{
     responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione, this.props.match.params.idUser);
 
     if (responseStatus === 200) {
-      toast.success('Rotazione cancellata con successo', {
+      toast.success(t('Rotation deleted successfully'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -76,7 +77,7 @@ export default class UserProfileView extends React.Component{
       });
       this.componentDidMount()
     } else if (responseStatus === 400) {
-      toast.error('Errore nella cancellazione', {
+      toast.error(t('Error during deletion'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -95,7 +96,7 @@ export default class UserProfileView extends React.Component{
     responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.props.match.params.idUser );
 
     if (responseStatus === 200) {
-      toast.success('Rotazione cancellata con successo', {
+      toast.success(t('Rotation deleted successfully'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -107,7 +108,7 @@ export default class UserProfileView extends React.Component{
       });
       this.componentDidMount()
     } else if (responseStatus === 400) {
-      toast.error('Errore nella cancellazione', {
+      toast.error(t('Error during deletion'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -126,15 +127,15 @@ export default class UserProfileView extends React.Component{
         return <MDBCol>
           <MDBCard>
             <MDBCardBody className="text-center">
-              <MDBCardTitle>Rotazioni
+              <MDBCardTitle>{t('Rotations')}
                 <AggiungiCategoria onPostAssegnazione = {()=>{this.componentDidMount() ;}} ></AggiungiCategoria>
               </MDBCardTitle>
               <MDBTable align="middle">
                 <MDBTableHead>
                   <tr>
-                    <th scope='col'>Rotazione</th>
-                    <th scope='col'>Inizio validità</th>
-                    <th scope='col'>Fine validità</th>
+                    <th scope='col'>{t('Rotation')}</th>
+                    <th scope='col'>{t('Start Date')}</th>
+                    <th scope='col'>{t('End Date')}</th>
                     <th scope='col'></th>
                   </tr>
                 </MDBTableHead>
@@ -160,7 +161,7 @@ export default class UserProfileView extends React.Component{
     function getSpecializzazioneStrutturato() {
           return <MDBRow>
             <MDBCol sm="3">
-              <MDBCardText>Indirizzo</MDBCardText>
+              <MDBCardText>{t('Address')}</MDBCardText>
             </MDBCol>
             <MDBCol sm="9">
               <MDBCardText className="text-muted">
@@ -181,7 +182,7 @@ export default class UserProfileView extends React.Component{
     function getCategoriaStatoUtente() {
         return <MDBCard>
           <MDBCardBody className="text-center">
-            <MDBCardTitle>Categorie utente
+            <MDBCardTitle>{t('User Category')}
               <AggiungiCategoriaStato onPostAssegnazione={() => {
                 this.componentDidMount();
               }}></AggiungiCategoriaStato>
@@ -189,9 +190,9 @@ export default class UserProfileView extends React.Component{
             <MDBTable align="middle">
               <MDBTableHead>
                 <tr>
-                  <th scope='col'>Categoria</th>
-                  <th scope='col'>Inizio validità</th>
-                  <th scope='col'>Fine validità</th>
+                  <th scope='col'>{t('Category')}</th>
+                  <th scope='col'>{t('Start Date')}</th>
+                  <th scope='col'>{t('End Date')}</th>
                   <th scope='col'></th>
                 </tr>
               </MDBTableHead>
@@ -237,11 +238,11 @@ export default class UserProfileView extends React.Component{
             <MDBCol lg="8">
               <MDBCard className="mb-4">
                 <MDBCardBody>
-                  <MDBCardTitle>Informazioni utente
+                  <MDBCardTitle>{t('User Information')}
                   </MDBCardTitle>
                   <MDBRow>
                     <MDBCol sm="3">
-                      <MDBCardText>Nome</MDBCardText>
+                      <MDBCardText>{t('Name')}</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
                       <MDBCardText
@@ -250,7 +251,7 @@ export default class UserProfileView extends React.Component{
                   </MDBRow>
                   <MDBRow>
                     <MDBCol sm="3">
-                      <MDBCardText>Cognome</MDBCardText>
+                      <MDBCardText>{t('Surname')}</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
                       <MDBCardText
@@ -259,7 +260,7 @@ export default class UserProfileView extends React.Component{
                   </MDBRow>
                   <MDBRow>
                     <MDBCol sm="3">
-                      <MDBCardText>Email</MDBCardText>
+                      <MDBCardText>{t('Email Address')}</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
                       <MDBCardText
@@ -269,7 +270,7 @@ export default class UserProfileView extends React.Component{
                   </MDBRow>
                   <MDBRow>
                     <MDBCol sm="3">
-                      <MDBCardText>Data di Nascita</MDBCardText>
+                      <MDBCardText>{t('Birthdate')}</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
                       <MDBCardText
@@ -278,11 +279,11 @@ export default class UserProfileView extends React.Component{
                   </MDBRow>
                   <MDBRow>
                     <MDBCol sm="3">
-                      <MDBCardText>Ruolo</MDBCardText>
+                      <MDBCardText>{t('Role')}</MDBCardText>
                     </MDBCol>
                     <MDBCol sm="9">
                       <MDBCardText
-                        className="text-muted">{this.state.ruolo}</MDBCardText>
+                        className="text-muted">{t(this.state.ruolo)}</MDBCardText>
                     </MDBCol>
                   </MDBRow>
                   { this.state.ruolo==="STRUTTURATO" && getSpecializzazioneStrutturato.call(this)}

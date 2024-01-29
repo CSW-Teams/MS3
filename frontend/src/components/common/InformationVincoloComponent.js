@@ -9,6 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
 import HelpOutlineSharpIcon from '@mui/icons-material/HelpOutlineSharp';
 import { VincoloAPI } from '../../API/VincoliAPI';
+import { t } from "i18next";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -72,7 +73,7 @@ export default function InformationDialogs() {
 
   return (
     <div>
-      
+
 
       <IconButton color="primary" style={{'margin-top':'-28%','margin-left':'85%'}} onClick={handleClickOpen}  >
          <HelpOutlineSharpIcon />
@@ -84,29 +85,27 @@ export default function InformationDialogs() {
         open={open}
       >
         <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
-          Quali sono i vincoli non stringenti ?
+          {t("Which Constraints are Optional?")}
         </BootstrapDialogTitle>
         <DialogContent dividers>
           <Typography gutterBottom>
-            I vincoli si dividono in due categorie : stringenti e non stringenti. I vincolo stringenti sono quelli 
-            che per legge lo schedulo non può infrangere. I vincoli non stringeti sono invece vincoli che 
-            all'occorrenza il pianificatore può decidere di violare.
+            {t("Constraints description body")}
           </Typography>
           <Typography gutterBottom>
-            <h4>Vincoli stringenti</h4>
+            <h4>{t("Mandatory Constraints")}</h4>
             <ul>
             {Array.from(vincoli).map((vincolo, i) => (
             !vincolo.violabile? <li>{ vincolo.descrizione }</li>:null
-            ))}  
+            ))}
             </ul>
                     </Typography>
           <Typography gutterBottom>
-          <h4>Vincoli non stringenti</h4>
+          <h4>{t("Optional Constraints")}</h4>
           <ul>
           {Array.from(vincoli).map((vincolo, i) => (
             vincolo.violabile? <li>{ vincolo.descrizione }</li>:null
             ))}
-          
+
           </ul>
           </Typography>
         </DialogContent>

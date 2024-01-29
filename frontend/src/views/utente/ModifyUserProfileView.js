@@ -12,6 +12,7 @@ import TextField from "@mui/material/TextField";
 import {Button} from "@mui/material";
 import {UserAPI} from "../../API/UserAPI";
 import {ConditionsToShow} from "./SingleUserProfileView";
+import {t} from "i18next";
 
 
 export default class ModifyUserProfileView extends React.Component {
@@ -42,16 +43,10 @@ export default class ModifyUserProfileView extends React.Component {
   async componentDidMount() {
     let id = localStorage.getItem("id");
     let user = await(new UserAPI().getSingleUserProfileDetails(id));
-    let systemActorsUserItalianTranslation = [];
+    let systemActorsUser = user.systemActors;
     let conditionsToShow = [];
     let formattedSpecialization = [];
     var i;
-
-    for(i = 0;i < user.systemActors.length;i++){
-      systemActorsUserItalianTranslation[i] =
-        (user.systemActors[i] === "PLANNER" ? "Pianificatore" :
-          (user.systemActors[i] === "DOCTOR" ? "Dottore" : "Configuratore"));
-    }
 
     function formatStringUpperLower(stringToFormat){
       return stringToFormat.toString().substring(0,1).toUpperCase() + stringToFormat.toString().substring(1,stringToFormat.toString().length).toLowerCase();
@@ -88,11 +83,10 @@ export default class ModifyUserProfileView extends React.Component {
       userID : id,
       name: user.name,
       lastname: user.lastname,
-      seniority: (user.seniority === "SPECIALIST_JUNIOR" ? "Medico specializzando junior" :
-        (user.seniority === "SPECIALIST_SENIOR") ? "Medico specializzando senior" : "Medico strutturato"),
+      seniority: t(user.seniority),
       email: user.email,
       birthday: user.birthday,
-      systemActors : showMultipleDataInSingleLine(systemActorsUserItalianTranslation),
+      systemActors : showMultipleDataInSingleLine(systemActorsUser),
       specializations : showMultipleDataInSingleLine(formattedSpecialization),
       conditions: conditionsToShow
     })
@@ -129,7 +123,7 @@ export default class ModifyUserProfileView extends React.Component {
     switch (responseStatusClass) {
       case 2:
         // Success
-        toast.success('Utente registrato con successo!', {
+        toast.success(t('User registered successfully'), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -143,7 +137,7 @@ export default class ModifyUserProfileView extends React.Component {
 
         break;
       default:
-        toast.error('Registrazione Fallita. Riprova inserendo i dati corretti.', {
+        toast.error(t('Registration Failed'), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -166,7 +160,7 @@ export default class ModifyUserProfileView extends React.Component {
           variant="contained"
           disabled={false}
         >
-          Visualizza Condizioni
+          {t('View Conditions')}
         </Button>
       </div>;
     } else {
@@ -177,7 +171,7 @@ export default class ModifyUserProfileView extends React.Component {
         <MDBContainer className="py-5" style={{maxWidth:"50%"}}>
           <MDBCard alignment='center'>
             <MDBCardBody>
-              <MDBCardTitle>Modifica Profilo</MDBCardTitle>
+              <MDBCardTitle>{t('Modify Profile')}</MDBCardTitle>
               <MDBRow>
                 <div style={{
                   display: "block",
@@ -186,21 +180,21 @@ export default class ModifyUserProfileView extends React.Component {
                 }}>
                   <TextField
                     disabled
-                    label="Nome"
+                    label={t('Name')}
                     fullWidth
                     value={this.state.name}
                     style={{marginBlock:10}}>
                   </TextField>
                   <TextField
                     disabled
-                    label="Cognome"
+                    label={t('Surname')}
                     value={this.state.lastname}
                     fullWidth
                     style={{marginBlock:10}}>
                   </TextField>
                   <TextField
                     required
-                    label="Email"
+                    label={t('Email Address')}
                     fullWidth
                     value={this.state.email}
                     onChange={(event) => {
@@ -211,14 +205,14 @@ export default class ModifyUserProfileView extends React.Component {
                   </TextField>
                   <TextField
                     disabled
-                    label="Data di Nascità"
+                    label={t('Birthdate')}
                     fullWidth
                     value={this.state.birthday}
                     style={{marginBlock:10}}>
                   </TextField>
                   <TextField
                     disabled
-                    label="Anzianità"
+                    label={t('Seniority')}
                     fullWidth
                     value={this.state.seniority}
                     style={{marginBlock:10}}>
@@ -243,7 +237,7 @@ export default class ModifyUserProfileView extends React.Component {
                     variant="contained"
                     disabled={false}
                   >
-                    Salva Modifiche
+                    {t('Save Changes')}
                   </Button>
                 </div>
               </MDBRow>

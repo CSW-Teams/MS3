@@ -2,7 +2,7 @@ import React from "react"
 import {LoginAPI} from "../../API/LoginAPI";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-
+import {t} from "i18next";
 
 export default class LoginView extends React.Component {
   constructor(props){
@@ -63,7 +63,7 @@ export default class LoginView extends React.Component {
 
         break;
       case 5:
-        toast.error(`Autenticazione Fallita. I server non sono attualmente in servizio, riprova più tardi.`, {
+        toast.error(`${t('Authentication Failed. Server not online')}`, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -76,7 +76,7 @@ export default class LoginView extends React.Component {
         break;
       default:
         const errorMessage = await httpResponse.text();
-        toast.error(`Autenticazione Fallita. ${errorMessage}.`, {
+        toast.error(`${t('Authentication Failed')} ${errorMessage}.`, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -97,23 +97,23 @@ export default class LoginView extends React.Component {
           <div className="Auth-form-content">
             <h3 className="Auth-form-title">Login</h3>
             <div className="form-group mt-3">
-              <label>Indirizzo Email</label>
+              <label>{t('Email Address')}</label>
               <input
                 name = "email"
                 type="email"
                 className="form-control mt-1"
-                placeholder="Inserisci l'indirizzo email"
+                placeholder={t('Enter email address')}
                 value={this.state.username}
                 onChange={e => this.handleChange(e)}
               />
             </div>
             <div className="form-group mt-3">
-              <label>Password</label>
+              <label>{t('Password')}</label>
               <input
                 name="password"
                 type="password"
                 className="form-control mt-1"
-                placeholder="Inserisci la password"
+                placeholder={t('Enter password')}
                 value={this.state.password}
                 onChange={e => this.handleChange(e)}
               />
@@ -121,11 +121,11 @@ export default class LoginView extends React.Component {
             <div className="d-grid gap-2 mt-3">
               <button onClick={this.handleSubmit} type="submit"
                       className="btn btn-primary">
-                Login
+                {t('Login')}
               </button>
             </div>
             <div className="d-grid gap-2 mt-3">
-              <label>Accedi come:</label>
+              <label>{t('Login as:')}</label>
               <select
                 name="systemActor"
                 className="form-select mt-1"
@@ -133,17 +133,18 @@ export default class LoginView extends React.Component {
                 onChange={e => this.handleChange(e)}
               >
                 {/* Placeholder. It should be a call on the backend */}
-                <option value="DOCTOR">Dottore</option>
-                <option value="CONFIGURATOR">Configuratore</option>
-                <option value="PLANNER">Pianificatore</option>
+                <option value="DOCTOR">{t('Doctor')}</option>
+                <option value="CONFIGURATOR">{t('Configurator')}</option>
+                <option value="PLANNER">{t('Planner')}</option>
               </select>
             </div>
             <div className="form-check gap-2 mt-3">
-              <input className="form-check-input" type="checkbox" value=""></input>
-              Ricordami
+              <input className="form-check-input" type="checkbox"
+                     value=""></input>
+              {t('Remember me')}
             </div>
             <p className="forgot-password text-center mt-2">
-              <a href="">Password Dimenticata?</a>
+              <a href="">{t('Forgot Password?')}</a>
             </p>
           </div>
         </form>

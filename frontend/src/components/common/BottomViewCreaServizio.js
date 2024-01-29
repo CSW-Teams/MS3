@@ -14,6 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
 import {MedicalService} from "../../entity/MedicalService";
 import {Task} from "../../entity/Task";
+import { t } from "i18next";
 
 toast.configure();
 
@@ -73,9 +74,9 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
             setNewMedicalServiceName("");
             setCheckedTasksStringArray([]);
 
-            toast.success("Servizio creato con successo.");
+            toast.success(t('Service Created Successfully'));
             } else {
-            toast.error("Il servizio è già esistente. Riprovare.");
+            toast.error(t("Service already exists"));
         }
     };
 
@@ -91,14 +92,14 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                 'margin-bottom' : '1%'
             }}
             >
-            Crea nuovo servizio
+          {t('Create new Service')}
         </Button>
         <Drawer anchor="bottom" open={open} onClose={handleClose}>
             <AppBar position="static" color="transparent">
                 <Toolbar>
                     <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'center' }}>
                         <Typography variant="h5" component="div" sx={{ marginLeft: '20px' }}>
-                            Crea nuovo servizio
+                          {t('Create new Service')}
                         </Typography>
                     </Box>
                     <IconButton color="inherit" onClick={handleClose}>
@@ -119,7 +120,7 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                     <TextField
                         id        = "outlined-basic"
                         autoFocus = "true"
-                        label     = "Nome del servizio"
+                        label     ={t('Service Name')}
                         required  = "true"
                         variant   = "outlined"
                         onChange  = {
@@ -132,7 +133,7 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                     <p>
                     </p>
                     <Typography variant="h6">
-                        Seleziona le mansioni da assegnare:
+                      {t("Select tasks:")}
                     </Typography>
                     {
                     (names && names[0]) ?
@@ -170,7 +171,7 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                         disabled={newMedicalServiceName==="" || checkedTasksStringArray.length===0}
                         onClick={postNewRequest}
                         >
-                        Crea servizio
+                      {t('Save')}
                     </Button>
                 </Box>
             </div>
