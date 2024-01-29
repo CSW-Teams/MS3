@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
@@ -14,8 +13,7 @@ import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dao.RecurrentHolidayDAO;
 import org.cswteams.ms3.dao.ScocciaturaDAO;
 import org.cswteams.ms3.dto.HolidayDTO;
-import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
-import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
+import org.cswteams.ms3.dto.holidays.*;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.entity.RecurrentHoliday;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
@@ -91,8 +89,9 @@ public class HolidayController implements IHolidayController {
     }
 
     @Override
-    public void generateFromRecurrentHolidays(int year) {
+    public List<HolidayDTO> generateFromRecurrentHolidays(int year) {
         List<RecurrentHoliday> holidays = recurrentHolidayDAO.findAll() ;
+        ArrayList<HolidayDTO> retVal = new ArrayList<>() ;
 
         for (RecurrentHoliday hd : holidays) {
             Holiday generated = hd.toHolidayOfYear(year) ;
@@ -115,7 +114,7 @@ public class HolidayController implements IHolidayController {
                     throw new RuntimeException(e);
                 }
 
-                holidayDAO.save(generated) ;
+                Holiday savedHoliday = holidayDAO.save(generated) ;
 
                 Scocciatura scocciaturaHolidayMorning = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, generated, TimeSlot.MORNING);
                 Scocciatura scocciaturaHolidayAfternoon = new ScocciaturaVacanza(uffaPriorityDefaultHoliday, generated, TimeSlot.AFTERNOON);
@@ -124,8 +123,13 @@ public class HolidayController implements IHolidayController {
                 scocciaturaDAO.save(scocciaturaHolidayMorning);
                 scocciaturaDAO.save(scocciaturaHolidayAfternoon);
                 scocciaturaDAO.save(scocciaturaHolidayNight);
+
+                retVal.add(new HolidayDTO(savedHoliday.getName(), savedHoliday.getCategory(),
+                        savedHoliday.getStartDateEpochDay(), savedHoliday.getEndDateEpochDay(), savedHoliday.getLocation())) ;
             }
         }
+
+        return retVal ;
     }
 
     @Override
@@ -134,8 +138,6 @@ public class HolidayController implements IHolidayController {
 
         Integer currentYear = dto.getYear();
         String currentCountry = dto.getCountry();
-
-        generateFromRecurrentHolidays(currentYear);
 
         ArrayList<Holiday> holidays = new ArrayList<>(holidayDAO.areThereHolidaysInYear(LocalDate.of(currentYear, 1, 1).toEpochDay(), LocalDate.of(currentYear, 12, 31).toEpochDay()));
 
@@ -147,7 +149,7 @@ public class HolidayController implements IHolidayController {
             holidays.addAll(holidayDAO.areThereHolidaysInYear(LocalDate.of(currentYear, 1, 1).toEpochDay(), LocalDate.of(currentYear, 12, 31).toEpochDay())) ;
         }
 
-        List<HolidayDTO> listDTOHoliday = new ArrayList<>();
+        List<HolidayDTO> listDTOHoliday = new ArrayList<>(generateFromRecurrentHolidays(currentYear));
         for(Holiday elem: holidays){
             HolidayDTO newHolidayDTO=new HolidayDTO(elem.getName(), elem.getCategory(), elem.getStartDateEpochDay(), elem.getEndDateEpochDay(), elem.getLocation());
             listDTOHoliday.add(newHolidayDTO);
@@ -194,29 +196,27 @@ public class HolidayController implements IHolidayController {
         holidayDAO.saveAll(listHolidays);
     }
 
+
     @Override
     @Validant
-    public void insertCustomHoliday(@Valid CustomHolidayDTOIn holiday) {
+    public CustomHolidayIdDTO insertCustomHoliday(@Valid CustomHolidayDTOIn holiday) {
         Holiday holidayEnt;
-        int currentYear;
 
         if(holiday.isRecurrent()) {
             RecurrentHoliday recurrentHolidayEnt = new RecurrentHoliday(holiday.getName(), HolidayCategory.valueOf(holiday.getKind().toUpperCase()),
                     holiday.getStartDay(), holiday.getStartMonth(), holiday.getEndDay(), holiday.getEndMonth(),
                     holiday.getLocation()) ;
 
-            recurrentHolidayDAO.save(recurrentHolidayEnt) ;
+            RecurrentHoliday saved = recurrentHolidayDAO.save(recurrentHolidayEnt) ;
 
-            Calendar calendar = Calendar.getInstance();
-            currentYear = calendar.get(Calendar.YEAR);
-            holidayEnt = recurrentHolidayEnt.toHolidayOfYear(currentYear); //current-year instance of the holiday
-            holidayDAO.save(holidayEnt) ;
+            return new CustomHolidayIdDTO(saved.getId(), true) ;
 
         } else {
             holidayEnt = new Holiday(holiday.getName(), HolidayCategory.valueOf(holiday.getKind().toUpperCase()),
                     holiday.getStartEpochDay(), holiday.getEndEpochDay(), holiday.getLocation()) ;
+            holidayEnt.setCustom(true) ;
 
-            holidayDAO.save(holidayEnt) ;
+            Holiday saved = holidayDAO.save(holidayEnt) ;
 
             int uffaPriorityDefaultHoliday;
             int uffaPriorityDefaultHolidayNight;
@@ -242,6 +242,48 @@ public class HolidayController implements IHolidayController {
             scocciaturaDAO.save(scocciaturaHolidayAfternoon);
             scocciaturaDAO.save(scocciaturaHolidayNight);
 
+            return new CustomHolidayIdDTO(saved.getId(), false) ;
+
         }
+    }
+
+    @Override
+    public CustomHolidaysDTOOut getCustomHolidays() {
+
+        List<Holiday> holidays = holidayDAO.getHolidaysByCustomTrue() ;
+        List<RecurrentHoliday> recurrentHolidays = recurrentHolidayDAO.findAll() ;
+
+        List<NormalCustomHolidayDTOOut> holidaysDTO = new ArrayList<>() ;
+        List<RecurrentHolidayDTOOut> recurrentHolidayDTOOuts = new ArrayList<>() ;
+
+        for(Holiday holiday : holidays) {
+            holidaysDTO.add(new NormalCustomHolidayDTOOut(
+                    holiday.getId(), holiday.getName(), holiday.getCategory().toString(), holiday.getLocation(),
+                    holiday.getStartDateEpochDay(), holiday.getEndDateEpochDay()
+            )) ;
+        }
+
+        for (RecurrentHoliday holiday : recurrentHolidays) {
+            recurrentHolidayDTOOuts.add(new RecurrentHolidayDTOOut(
+                    holiday.getId(), holiday.getName(), holiday.getCategory().toString(), holiday.getLocation(),
+                    holiday.getStartDay(), holiday.getEndDay(), holiday.getStartMonth(), holiday.getEndMonth()
+            )) ;
+        }
+
+        return new CustomHolidaysDTOOut(holidaysDTO, recurrentHolidayDTOOuts) ;
+    }
+
+    @Override
+    @Transactional
+    @Validant
+    public void deleteCustomHoliday(@Valid @NotNull CustomHolidayIdDTO dto) {
+
+        if(dto.getIsRecurrent()) {
+            RecurrentHoliday recurrentHoliday = recurrentHolidayDAO.getOne(dto.getId()) ;
+            holidayDAO.deleteHolidaysFromRecurrent(recurrentHoliday.getName(), recurrentHoliday.getCategory(),
+                    recurrentHoliday.getLocation(), LocalDate.now().toEpochDay());
+            recurrentHolidayDAO.deleteById(dto.getId());
+        }
+        else holidayDAO.deleteById(dto.getId());
     }
 }

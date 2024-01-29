@@ -20,6 +20,7 @@ public class QuantityShiftSeniority {
     private Long id;
 
     //Ruolo dell'utente
+    @Lob
     private HashMap<Seniority,Integer> seniorityMap;
 
     @ManyToOne

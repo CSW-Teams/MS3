@@ -60,13 +60,37 @@ export class HolidaysAPI {
 
     async saveCustomHoliday(holiday) {
 
-      return (await fetch('/api/holidays/new-holiday', {
+      let response = await fetch('/api/holidays/new-holiday', {
         method : 'POST',
         headers : {
           "Content-Type": "application/json"
         },
         body : JSON.stringify(holiday)
-      })).status ;
+      })
+
+      let content = await response.json()
+
+      return [response.status, content] ;
+    }
+
+    async getCustomHolidays() {
+      let response = await fetch('/api/holidays/custom-holidays')
+
+      let content = await response.json()
+
+      return [response.status, content]
+    }
+
+    async deleteCustomHoliday(holidayID) {
+      let response = await fetch('/api/holidays/delete-custom', {
+        method : 'DELETE',
+        headers : {
+          "Content-Type": "application/json"
+        },
+        body : JSON.stringify(holidayID)
+      })
+
+      return response.status
     }
 }
 

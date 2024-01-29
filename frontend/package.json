@@ -50,7 +50,7 @@
     "react-swipeable-views": "*",
     "react-toastify": "^8.2.0",
     "shards-react": "^1.0.0",
-    "shards-ui": "^2.1.0",
+    "shards-ui": "^3.0.0",
     "shortid": "^2.2.14"
   },
   "scripts": {

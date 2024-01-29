@@ -253,6 +253,16 @@
   "Choose a place for the holiday": "Inserisci la località della festa",
   "Insert the holiday name": "Inserisci il nome della festività",
   "Recurring": "Ricorrente",
-  "Add new holiday": "Inserisci una nuova festività"
+  "Add new holiday": "Inserisci una nuova festività",
+  "Manage custom holidays" : "Gestione festività",
+  "ReadHolidayName" : "Nome",
+  "ReadHolidayStart" : "Inizio",
+  "ReadHolidayEnd" : "Fine",
+  "ReadHolidayCategory" : "Tipo",
+  "ReadHolidayPlace" : "Località",
+  "ReadDeleteHoliday" : "Elimina",
+
+  "Normal Holidays" : "Festività normali",
+  "Recurrent Holidays" : "Festività ricorrenti"
 
 }
