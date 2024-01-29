@@ -6,19 +6,20 @@ import javax.persistence.Id;
 import lombok.Data;
 
 /**
- * Racchiude tutte le configurazioni utili a tutte le parti del
- * sistema
+ * This class contains all the configurations useful for all parts of the system
  */
 @Entity
 @Data
 public class Config {
-    
+
     /**
      * The name of the configuration
      */
     @Id
     private String name;
 
-    /** Has the application booted before? */
+    /**
+     * Has the application booted before?
+     */
     private boolean firstBoot;
 }

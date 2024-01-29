@@ -25,9 +25,9 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
 
 
     /*
-     * L'ultimo carattere del codice fiscale viene calcolato così: i caratteri in posizione dispari tra i primi 15 hanno determinati pesi (il conteggio della
-     * posizione parte da 1), mentre i caratteri in posizione pari hanno altri pesi. Si calcola la somma dei pesi per tutti e 15 i caratteri e se ne deriva
-     * il modulo 26. Il valore ottenuto alla fine corrisponde all'ultima lettera del codice fiscale.
+     * The last character of the tax code is calculated like this: the characters in odd positions among the first 15 have certain weights (the count of
+     * position starts from 1), while characters in even positions have other weights. The sum of the weights for all 15 characters is calculated and derived
+     * form 26. The value obtained at the end corresponds to the last letter of the tax code.
      */
     private static char calcolaCarattereControllo(String caratteriBase) {
         // Array dei pesi associati ai caratteri del codice fiscale
@@ -94,24 +94,24 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
 
 
     @Override
-    public RegisteredUserDTO registraUtente(@NotNull RegistrationDTO registrationDTO) throws RegistrationException {
+    public RegisteredUserDTO registerUser(@NotNull RegistrationDTO registrationDTO) throws RegistrationException {
 
         if (Objects.equals(registrationDTO.getName(), ""))
-            throw new RegistrationException("Non è stato specificato il nome");
+            throw new RegistrationException("Name not specified.");
         if (Objects.equals(registrationDTO.getLastname(), ""))
-            throw new RegistrationException("Non è stato specificato il cognome");
+            throw new RegistrationException("Last name not specified.");
         if (!validaCodiceFiscale(registrationDTO.getTaxCode()))
-            throw new RegistrationException("Il codice fiscale non è valido");
+            throw new RegistrationException("Invalid tax code.");
         if (Objects.equals(registrationDTO.getPassword(), ""))
-            throw new RegistrationException("La password non può essere vuota");
+            throw new RegistrationException("Password cannot be empty.");
         if (!checkEmail(registrationDTO.getEmail()))
-            throw new RegistrationException("Indirizzo email già registrato");
+            throw new RegistrationException("Email address already registered.");
         if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR) &&
                 (!registrationDTO.getSeniority().toString().equals("STRUCTURED") &&
                         !registrationDTO.getSeniority().toString().equals("SPECIALIZED")
                 )
         ) {
-            throw new RegistrationException("Non è stata specificata la seniority");
+            throw new RegistrationException("Seniority not specified.");
         }
 
         if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR)) {

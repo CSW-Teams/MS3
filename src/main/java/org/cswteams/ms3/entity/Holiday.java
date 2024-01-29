@@ -16,7 +16,7 @@ import org.cswteams.ms3.utils.temporal_consistency.BeforeInTime;
 import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
 
 /**
- * Questa Entità modella un periodo di giorni appartenenti ad una festività.
+ * This Entity models a period of days belonging to a holiday.
  */
 @Entity
 /*@Table(uniqueConstraints={
@@ -30,6 +30,9 @@ import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
 @BeforeInTime(firstParam = "startDateEpochDay", secondParam = "endDateEpochDay", comparator = EpochDayComparator.class)
 public class Holiday implements Serializable {
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public Holiday() {
     }
 
@@ -46,27 +49,42 @@ public class Holiday implements Serializable {
     @GeneratedValue
     private Long id;
 
-    /** nome della festività */
+    /**
+     * Holiday name
+     */
     @NotNull
     @NotEmpty
     private String name;
-    /** una targetta per raggruppare diverse festività */
+
+    /**
+     * a label to group different holidays
+     */
     @NotNull
     private HolidayCategory category;
-    /** data di inizio della festività, in giorni dall'Epoch */
+
+    /**
+     * holiday start date, in epoch days
+     */
     @NotNull
     private long startDateEpochDay;
-    /** data di fine della festività, in giorni dall'Epoch */
+
+    /**
+     * holiday end date, in epoch days
+     */
     @NotNull
     private long endDateEpochDay;
-    /** locazione */
+
+    /**
+     * holiday location
+     */
     private String location;
 
     @Setter
     private boolean custom;
 
-
-    /** Metodi di convenienza per lavorare con oggetti LocalDate anziché con timestamp */
+    /**
+     * Convenience methods for working with LocalDate objects instead of timestamps
+     */
 
     public LocalDate getStartDate() {
         return LocalDate.ofEpochDay(startDateEpochDay);
@@ -84,23 +102,4 @@ public class Holiday implements Serializable {
         this.endDateEpochDay = endDate.toEpochDay();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public HolidayCategory getCategory() {
-        return category;
-    }
-
-    public long getStartDateEpochDay() {
-        return startDateEpochDay;
-    }
-
-    public long getEndDateEpochDay() {
-        return endDateEpochDay;
-    }
 }

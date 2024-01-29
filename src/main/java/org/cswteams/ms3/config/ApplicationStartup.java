@@ -6,7 +6,6 @@ import org.cswteams.ms3.control.preferenze.CalendarSetting;
 import org.cswteams.ms3.control.preferenze.CalendarSettingBuilder;
 import org.cswteams.ms3.control.preferenze.ICalendarServiceManager;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
-import org.cswteams.ms3.control.scheduler.ScheduleBuilder;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
@@ -20,7 +19,6 @@ import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaVacanza;
 import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.CalendarServiceException;
-import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -454,13 +452,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //nessun turno può essere allocato a questa persona durante il suo smonto notte
         ConstraintTurniContigui constraint1 = new ConstraintTurniContigui(
-                configVincoli.getHorizonTurnoNotturno(),
+                configVincoli.getHorizonNightShift(),
                 ChronoUnit.HOURS,
                 TimeSlot.NIGHT,
                 new HashSet<>(Arrays.asList(TimeSlot.values()))
         );
-        Constraint constraint2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getNumMaxMinutiConsecutiviPerTutti());
-        Constraint constraint4 = new ConstraintMaxOrePeriodo(configVincoli.getNumGiorniPeriodo(), configVincoli.getMaxMinutiPeriodo());
+        Constraint constraint2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getMaxConsecutiveTimeForEveryone());
+        Constraint constraint4 = new ConstraintMaxOrePeriodo(configVincoli.getPeriodDaysNo(), configVincoli.getPeriodMaxTime());
         Constraint constraint5 = new ConstraintUbiquita();
         //Constraint constraint6 = new ConstraintNumeroDiRuoloTurno();
         Constraint constraint7 = new ConstraintHoliday();
@@ -473,8 +471,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         constraint7.setViolable(true);
 
         for (ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()) {
-            Constraint vincolo = new ConstraintMaxPeriodoConsecutivo(config.getNumMaxMinutiConsecutivi(), config.getCategoriaVincolata());
-            vincolo.setDescription("Constraint massimo periodo consecutivo per categoria " + config.getCategoriaVincolata().getType());
+            Constraint vincolo = new ConstraintMaxPeriodoConsecutivo(config.getMaxConsecutiveMinutes(), config.getConstrainedCondition());
+            vincolo.setDescription("Constraint massimo periodo consecutivo per categoria " + config.getConstrainedCondition().getType());
             constraintDAO.saveAndFlush(vincolo);
         }
         constraint1.setDescription("Vincolo turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");

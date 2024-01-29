@@ -13,6 +13,7 @@ public interface TaskDAO extends JpaRepository<Task, Long> {
      * See issue #413 for further details.
      *
      * @param taskId task id
+     * @see <a href="https://github.com/CSW-Teams/MS3/issues/413">Issue #413</a>
      * @return <code>true</code> if found, <code>false</code> elsewhere.
      */
     @Query(value =

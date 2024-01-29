@@ -1,6 +1,5 @@
 package org.cswteams.ms3.entity;
 
-
 import lombok.Data;
 import org.cswteams.ms3.enums.TimeSlot;
 
@@ -8,6 +7,9 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Set;
 
+/**
+ * A justification for constraints forcing.
+ */
 @Data
 @Entity
 public class GiustificazioneForzaturaVincoli {
@@ -20,34 +22,36 @@ public class GiustificazioneForzaturaVincoli {
   /*  @OneToMany(cascade = CascadeType.ALL)
     private Set<Waiver> liberatorie;*/
 
-    private TimeSlot turnoViolante;
+    private TimeSlot violatingShift;
 
-    private LocalDate data;
+    private LocalDate date;
 
     @ManyToMany
-    private Set<Doctor> utentiAllocati;
+    private Set<Doctor> assignedDoctors;
 
     @ManyToOne
-    private MedicalService servizio;
+    private MedicalService service;
 
     /*@ManyToMany
     private List<Constraint> vincoliViolati;*/
-    private String motivazione;
+    private String reason;
 
     @ManyToOne
-    private Doctor doctorGiustificatore;
+    private Doctor justifyingDoctor;
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public GiustificazioneForzaturaVincoli() {
 
     }
 
-
-    public GiustificazioneForzaturaVincoli(String message, TimeSlot turnoViolante, MedicalService servizio, LocalDate data, Set<Doctor> utentiAllocati, Doctor doctorGiustificatore) {
-        this.turnoViolante = turnoViolante;
-        this.data = data;
-        this.utentiAllocati = utentiAllocati;
-        this.servizio = servizio;
-        this.motivazione = message;
-        this.doctorGiustificatore = doctorGiustificatore;
+    public GiustificazioneForzaturaVincoli(String message, TimeSlot violatingShift, MedicalService service, LocalDate date, Set<Doctor> assignedDoctors, Doctor justifyingDoctor) {
+        this.violatingShift = violatingShift;
+        this.date = date;
+        this.assignedDoctors = assignedDoctors;
+        this.service = service;
+        this.reason = message;
+        this.justifyingDoctor = justifyingDoctor;
     }
 }

@@ -9,10 +9,10 @@ import java.util.List;
 public interface RequestRemovalFromConcreteShiftDAO extends JpaRepository<RequestRemovalFromConcreteShift, Long> {
 
     /**
-     * Ritorna una lista di tutte le richieste di rimozione da turno assegnato <i>pending</i>,
-     * ossia non esaminate, i.e. con campo <code>esaminata</code> settato a <code>false</code>.
+     * Returns a list of all requests for removal from assigned shift <i>pending</i>,
+     * i.e. not examined, i.e. with <code>examined</code> field set to <code>false</code>.
      *
-     * @return lista di richieste di rimozione da turno assegnato <i>pending</i>
+     * @return list of requests to remove from assigned shift <i>pending</i>
      */
     @Query("SELECT  r " +
             "FROM   RequestRemovalFromConcreteShift r " +
@@ -20,32 +20,32 @@ public interface RequestRemovalFromConcreteShiftDAO extends JpaRepository<Reques
     List<RequestRemovalFromConcreteShift> findAllPending();
 
     /**
-     * Ritorna una lista di tutte le richieste di rimozione da turno assegnato
-     * per una specifica <code>AssegnazioneTurno</code> ed uno specifico <code>Utente</code>.
-     * La cardinalità di tale lista dovrebbe essere sempre 0 o 1 (se la richiesta esiste, è unica).
+     * Returns a list of all removal requests from assigned shift
+     * for a specific <code>ConcreteShift</code> and a specific <code>User</code>.
+     * The cardinality of this list should always be 0 or 1 (if the request exists, it is unique).
      *
-     * @param assegnazioneTurnoId id assegnazione turno
-     * @param UtenteId            id utente
-     * @return lista, eventualmente vuota, di richieste di rimozione da turno assegnato per la specifica
-     * <code>AssegnazioneTurno</code> e per lo specifico <code>Utente</code>
+     * @param shift assignmentId shift assignment id
+     * @param UserId user id
+     * @return list, possibly empty, of removal requests from the assigned shift for the specification
+     * <code>Shift Assignment</code> and for the specific <code>User</code>
      */
     @Query("SELECT  r " +
             "FROM   RequestRemovalFromConcreteShift r " +
             "WHERE  r.concreteShift.id = ?1 " +
             "       AND " +
             "       r.requestingDoctor.id = ?2")
-    List<RequestRemovalFromConcreteShift> findAllByAssegnazioneTurnoIdAndUtenteId(Long assegnazioneTurnoId, Long UtenteId);
+    List<RequestRemovalFromConcreteShift> findAllByAssegnazioneTurnoIdAndUtenteId(Long shift, Long UserId);
 
     /**
-     * Ritorna una lista di tutte le richieste di rimozione da turno assegnato
-     * per uno specifico <code>Utente</code>.
+     * Returns a list of all removal requests from assigned shift
+     * for a specific <code>User</code>.
      *
-     * @param UtenteId id utente
-     * @return lista, eventualmente vuota, di richieste di rimozionde da turno assegnato
-     * per lo specifico <code>Utente</code>.
+     * @param UserId user id
+     * @return list, possibly empty, of removal requests from assigned shift
+     * for the specific <code>User</code>.
      */
     @Query("SELECT  r " +
             "FROM   RequestRemovalFromConcreteShift r " +
             "WHERE  r.requestingDoctor.id = ?1")
-    List<RequestRemovalFromConcreteShift> findAllByUser(Long UtenteId);
+    List<RequestRemovalFromConcreteShift> findAllByUser(Long UserId);
 }

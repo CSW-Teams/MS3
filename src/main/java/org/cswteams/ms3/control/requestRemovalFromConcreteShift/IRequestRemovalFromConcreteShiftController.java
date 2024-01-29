@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.requestRemovalFromConcreteShift;
 
 import org.cswteams.ms3.dto.RequestRemovalFromConcreteShiftDTO;
-import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,9 +17,9 @@ public interface IRequestRemovalFromConcreteShiftController {
      * @param requestRemovalFromConcreteShiftDTO DTO related to the request
      * @return DTO object related to the request
      * @throws DatabaseException          in case an error during database lookup occurs
-     * @throws AssegnazioneTurnoException in case an error during database lookup occurs
+     * @throws ConcreteShiftException in case an error during database lookup occurs
      */
-    RequestRemovalFromConcreteShiftDTO createRequest(RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, AssegnazioneTurnoException;
+    RequestRemovalFromConcreteShiftDTO createRequest(RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, ConcreteShiftException;
 
     /**
      * Get a specific request, given an ID.
@@ -59,7 +59,7 @@ public interface IRequestRemovalFromConcreteShiftController {
      * @return DTO related to the request, updated with the outcome of the review
      * @throws DatabaseException in case an error during database lookup occurs
      */
-    RequestRemovalFromConcreteShiftDTO reviewRequest(RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, AssegnazioneTurnoException;
+    RequestRemovalFromConcreteShiftDTO reviewRequest(RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, ConcreteShiftException;
 
     /**
      * Upload a file (not mandatory) to be attached to a request, given the request ID.

@@ -10,6 +10,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * A Log entry for constraint violations.
+ */
 @Data
 @Entity
 @NoArgsConstructor(force = true)

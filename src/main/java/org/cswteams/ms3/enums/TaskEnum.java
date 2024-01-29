@@ -1,21 +1,27 @@
 package org.cswteams.ms3.enums;
 
 /**
- * Questa enum descrive le possibili mansioni di cui un servizio può essere composto
+ * This enum describes the possible tasks of which a service can be composed.
+ *
+ * @see <a href="https://github.com/CSW-Teams/MS3/wiki#mansioni">Glossary</a>.
+ * @see org.cswteams.ms3.entity.Task
  */
 public enum TaskEnum {
 
     CLINIC,
+
     /**
-     * supervisiona e risponde a esigenze del momento. Molto importante che non rimanga scoperto.
+     * Supervises and responds to current needs. Very important that it does not remain uncovered.
      */
-    EMERGENCY, // Dottore di guardia
+    EMERGENCY,
+
     /**
-     * gestisce ricoverati dal pronto soccorso
+     * Manages patients admitted from the emergency room
      */
     WARD,
+
     /**
-     * gestisce, allestisce o partecipa in sala operatoria
+     * Manages, sets up or participates in the operating room
      */
     OPERATING_ROOM
 }

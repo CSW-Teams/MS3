@@ -17,7 +17,7 @@ import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
-import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.utils.DateConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,9 +80,7 @@ public class SchedulerController implements ISchedulerController {
 
     }
 
-    /**
-     * Proxy of the method createSchedule, when the DoctorUffaPriority list cannot be retrieved
-     */
+
     @Override
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate) {
@@ -91,12 +89,6 @@ public class SchedulerController implements ISchedulerController {
     }
 
 
-    /**
-     * This method creates a new shift schedule by specifying start date and end date.
-     * @param startDate First date of the shift schedule
-     * @param endDate Last date of the shift schedule
-     * @return An instance of schedule if correctly created and saved in persistence, null otherwise
-     */
     @Override
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList)  {
@@ -160,11 +152,6 @@ public class SchedulerController implements ISchedulerController {
 
     }
 
-    /**
-     * This method recreates an existing shift scheduling. It is not possible to recreate a schedule in the past.
-     * @param id An existing schedule ID
-     * @return Boolean that represents if the regeneration ended successfully
-     */
     @Override
     public boolean recreateSchedule(long id) {
         Optional<Schedule> optionalSchedule = scheduleDAO.findById(id);
@@ -185,15 +172,7 @@ public class SchedulerController implements ISchedulerController {
         return true;
     }
 
-    /**
-     * This method adds a new concrete shift to an existing schedule. In particular, it looks for the schedule containing
-     * the date of the new concrete shift and passes it to ScheduleBuilder.
-     * @param concreteShift The new concrete shift to be added to the schedule
-     * @param forced If true, the concrete shift will be added if it respects all the non-violable constraints;
-     *               if false, the concrete shift will be added only if it respects all the existing constraints.
-     * @return An instance of the updated shift schedule
-     * @throws IllegalScheduleException Rised if the new concrete shift makes the schedule illegal
-     */
+    @Override
     public Schedule addConcreteShift(ConcreteShift concreteShift, boolean forced) throws IllegalScheduleException {
 
         Schedule schedule;
@@ -215,21 +194,13 @@ public class SchedulerController implements ISchedulerController {
 
     }
 
-    /**
-     * This method removes a concrete shift from a schedule but not from the database.
-     * @param concreteShiftOld Concrete shift to be removed
-     */
+    @Override
     public void removeConcreteShiftFromSchedule(ConcreteShift concreteShiftOld) {
         Schedule schedule = scheduleDAO.findByDateBetween(concreteShiftOld.getDate());
         schedule.getConcreteShifts().remove(concreteShiftOld);
         scheduleDAO.flush();
     }
 
-    /**
-     * This method removes a concrete shift from the database.
-     * @param concreteShiftId ID of the concrete shift to be removed
-     * @return Boolean that represents if the deletion was successful
-     */
     @Override
     public boolean removeConcreteShift(Long concreteShiftId) {
        Optional<ConcreteShift> concreteShift = concreteShiftDAO.findById(concreteShiftId);
@@ -241,22 +212,13 @@ public class SchedulerController implements ISchedulerController {
         return true;
     }
 
-    /**
-     * This method adds a new concrete shift to an existing schedule; the concrete shift is described by the DTO parameter.
-     * @param registerConcreteShiftDTO DTO class that describes the new concrete shift
-     * @param forced If true, the concrete shift will be added if it respects all the non-violable constraints;
-     *               if false, the concrete shift will be added only if it respects all the existing constraints.
-     * @return An instance of the updated shift schedule
-     * @throws AssegnazioneTurnoException Rised if the DTO parameter describes a non-existing concrete shift
-     * @throws IllegalScheduleException Rised if the new concrete shift makes the schedule illegal
-     */
     @Override
-    public Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws AssegnazioneTurnoException, IllegalScheduleException {
+    public Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws ConcreteShiftException, IllegalScheduleException {
 
         //We need a shift which is present in the database in order to convert the DTO into an entity.
         List<Shift> shiftsList = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
         if(shiftsList.isEmpty())
-            throw new AssegnazioneTurnoException("Non esiste uno shift coi servizi specificati.");
+            throw new ConcreteShiftException("A shift with the specified services does not exist.");
         Shift shift = null;
         for(Shift shiftDB: shiftsList){
             //if(shiftDB.getMansione().equals(registerConcreteShiftDTO.getMansione())){
@@ -266,7 +228,7 @@ public class SchedulerController implements ISchedulerController {
             }
         }
         if(shift == null){
-            throw new AssegnazioneTurnoException("Non esiste uno shift coi servizi specificati.");
+            throw new ConcreteShiftException("A shift with the specified services does not exist.");
         }
 
         ConcreteShift concreteShift = new ConcreteShift(
@@ -282,7 +244,7 @@ public class SchedulerController implements ISchedulerController {
         }
 
         if(!checkDoctorsOnConcreteShift(concreteShift)){
-            throw new AssegnazioneTurnoException("Collisione tra utenti reperibili e di guardia");
+            throw new ConcreteShiftException("Collision between on-call and on-duty doctors.");
         }
 
         return this.addConcreteShift(concreteShift,forced);
@@ -309,15 +271,6 @@ public class SchedulerController implements ISchedulerController {
         return true;
     }
 
-    /**
-     * This method modifies an existing concrete shift. In particular, it removes the existing concrete shifts, checks if
-     * the new version of the concrete shift respects all the constraints and, if the checks succeed, then saves the new
-     * version of the concrete shift into the database. Instead, if there are some violated constraints, then the old
-     * version of the concrete shift is saved into the database again.
-     * @param modifyConcreteShiftDTO DTO instance representing the changes to make in an existing concrete shift
-     * @return An instance of the updated shift schedule containing the modified concrete shift
-     * @throws IllegalScheduleException Rised if the new concrete shift makes the schedule illegal
-     */
     @Override
     @Transactional
     public Schedule modifyConcreteShift(ModifyConcreteShiftDTO modifyConcreteShiftDTO) throws IllegalScheduleException {
@@ -404,29 +357,18 @@ public class SchedulerController implements ISchedulerController {
 
     }
 
-    /**
-     * This method retrieves all the existing schedules from the database.
-     * @return List of DTO instances representing all the existing schedules to be delivered to the frontend
-     */
+    @Override
     public List<ScheduleDTO> readSchedules(){
         return scheduleEntitytoDTO(scheduleDAO.findAll());
     }
 
-    /**
-     * This method retrieves the illegal schedules from the database.
-     * @return List of DTO instances representing the illegal schedules to be delivered to the frontend
-     */
     @Override
     public List<ScheduleDTO> readIllegalSchedules() {
         return scheduleEntitytoDTO(scheduleDAO.leggiSchedulazioniIllegali());
     }
 
-    /**
-     * This method removes an existing shift schedule. This operation can be performed correctly only if the schedule is
-     * in the future and not in the past.
-     * @param id ID of the shift schedule to be removed
-     * @return Boolean that represents if the deletion was successful
-     */
+
+    @Override
     public boolean removeSchedule(long id){
 
         Optional<Schedule> scheduleOptional = scheduleDAO.findById(id);

@@ -7,9 +7,12 @@ import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+/**
+ * This entity models the association between <i>Doctors</i> and <i>concrete shifts</i>.
+ */
 @Entity
 @Getter
-@Table(name="doctor_assignment") //see issue #413
+@Table(name = "doctor_assignment") //see issue #413
 public class DoctorAssignment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,7 +30,7 @@ public class DoctorAssignment {
     private ConcreteShiftDoctorStatus concreteShiftDoctorStatus;
 
     @ManyToOne
-    @JoinColumn(name="concrete_shift_id")
+    @JoinColumn(name = "concrete_shift_id")
     @NotNull
     private ConcreteShift concreteShift;
 
@@ -35,14 +38,25 @@ public class DoctorAssignment {
     @NotNull
     private Task task;
 
-    public DoctorAssignment(Doctor doctor, ConcreteShiftDoctorStatus concreteShiftDoctorStatus, ConcreteShift concreteShift, Task task){
+    /**
+     * Create a <i>Doctor</i>-<i>concrete shift</i> association with the specified parameters
+     *
+     * @param doctor                    <i>Doctor</i> involved
+     * @param concreteShiftDoctorStatus state with which the <i>Doctor</i> is involved in the association
+     * @param concreteShift             <i>concrete shift</i>
+     * @param task                      <i>task</i> for the association
+     */
+    public DoctorAssignment(Doctor doctor, ConcreteShiftDoctorStatus concreteShiftDoctorStatus, ConcreteShift concreteShift, Task task) {
         this.doctor = doctor;
         this.concreteShiftDoctorStatus = concreteShiftDoctorStatus;
         this.concreteShift = concreteShift;
         this.task = task;
     }
 
-    protected DoctorAssignment(){
+    /**
+     * Default constructor needed by Lombok
+     */
+    protected DoctorAssignment() {
 
     }
 

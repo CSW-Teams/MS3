@@ -10,11 +10,15 @@ import javax.persistence.Entity;
 
 import java.util.List;
 
+/**
+ * A condition imposed when generating associations between shifts.
+ */
 @Entity
 public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
 
     /**
      * This method checks if cShift2 starts at the same hour which cShift1 finishes at.
+     *
      * @param cShift1 First concrete shift in temporal order
      * @param cShift2 Second concrete shift in temporal order
      * @return Boolean that represents if the check succeeded
@@ -27,13 +31,14 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
     /**
      * This method checks if cShift2 starts at the same hour which cShift1 finishes at plus a delay equal to delta.
      * The concrete shifts shall not overlap.
+     *
      * @param cShift1 First concrete shift in temporal order
      * @param cShift2 Second concrete shift in temporal order
-     * @param tu Measure unit for param delta (e.g. minutes, hours)
-     * @param delta max number of tolerable temporal units in order to consider cShift1 and cShift2 contiguous
+     * @param tu      Measure unit for param delta (e.g. minutes, hours)
+     * @param delta   max number of tolerable temporal units in order to consider cShift1 and cShift2 contiguous
      * @return Boolean that represents if the check succeeded
      */
-    protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift cShift1, ConcreteShift cShift2, TemporalUnit tu, long delta){
+    protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift cShift1, ConcreteShift cShift2, TemporalUnit tu, long delta) {
 
         LocalDate cShift1Date = LocalDate.ofEpochDay(cShift1.getDate());   //conversion Epoch -> LocalDate of cShift1.getDate()
         LocalDateTime cShift1Start = cShift1Date.atTime(cShift1.getShift().getStartTime());
@@ -45,8 +50,7 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
 
         if (cShift1Start.isBefore(cShift2Start)) {
             return Math.abs(cShift1End.until(cShift2Start, tu)) <= delta;
-        }
-        else {
+        } else {
             return Math.abs(cShift2End.until(cShift1Start, tu)) <= delta;
         }
 
@@ -54,19 +58,20 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
 
     /**
      * This method returns the concrete shift that is before a new concrete shift passed as parameter.
-     * @param concreteShifts List of all the existent concrete shifts
+     *
+     * @param concreteShifts            List of all the existent concrete shifts
      * @param concreteShiftToBeAssigned The new concrete shift to be assigned
      * @return The existent concrete shift that is before concreteShiftToBeAssigned
      */
-    protected int getAssegnazioneTurnoPrecedenteIdx(List<ConcreteShift> concreteShifts, ConcreteShift concreteShiftToBeAssigned){
+    protected int getAssegnazioneTurnoPrecedenteIdx(List<ConcreteShift> concreteShifts, ConcreteShift concreteShiftToBeAssigned) {
 
-        for(int i = 0; i < concreteShifts.size(); i++){
+        for (int i = 0; i < concreteShifts.size(); i++) {
             //conversion Epoch -> LocalDate of concreteShifts.get(i).getDate() and concreteShiftToBeAssigned.getDate()
             LocalDate cShiftDate = LocalDate.ofEpochDay(concreteShifts.get(i).getDate());
             LocalDate cShiftDateToBeAssignedDate = LocalDate.ofEpochDay(concreteShiftToBeAssigned.getDate());
 
-            if(cShiftDate.isAfter(cShiftDateToBeAssignedDate) || cShiftDate.isEqual(cShiftDateToBeAssignedDate)){
-                if(concreteShifts.get(i).getShift().getStartTime().isAfter(concreteShiftToBeAssigned.getShift().getStartTime()) || concreteShifts.get(i).getShift().getStartTime().equals(concreteShiftToBeAssigned.getShift().getStartTime())) {
+            if (cShiftDate.isAfter(cShiftDateToBeAssignedDate) || cShiftDate.isEqual(cShiftDateToBeAssignedDate)) {
+                if (concreteShifts.get(i).getShift().getStartTime().isAfter(concreteShiftToBeAssigned.getShift().getStartTime()) || concreteShifts.get(i).getShift().getStartTime().equals(concreteShiftToBeAssigned.getShift().getStartTime())) {
                     return i - 1;
                 }
             }

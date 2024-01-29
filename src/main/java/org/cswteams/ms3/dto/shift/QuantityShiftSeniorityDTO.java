@@ -1,11 +1,6 @@
 package org.cswteams.ms3.dto.shift;
 
-
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.cswteams.ms3.entity.QuantityShiftSeniority;
-
-import javax.persistence.Entity;
 
 @Getter
 public class QuantityShiftSeniorityDTO {

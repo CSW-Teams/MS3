@@ -1,6 +1,5 @@
 package org.cswteams.ms3.entity.scocciature;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.cswteams.ms3.enums.TimeSlot;
@@ -23,6 +22,9 @@ public class ScocciaturaAssegnazioneUtente extends Scocciatura {
     private DayOfWeek giornoSettimana;
     private TimeSlot timeSlot;
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public ScocciaturaAssegnazioneUtente() {
     }
 

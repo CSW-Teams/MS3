@@ -57,7 +57,7 @@ public class NotificationSystemController implements INotificationSystemControll
     public void changeStatus(NotificationDTO dto) throws Exception {
             Notification notification = notificationDAO.getOne(dto.getIdNotification());
             if(notification==null)
-                throw new Exception("la notifica selezionata non esiste");
+                throw new Exception("Selected notification does not exist");
             notification.setStatus(false);
             notificationDAO.save(notification);
     }

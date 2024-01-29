@@ -23,7 +23,7 @@ public class SignInRestEndpoint {
     public ResponseEntity<?> registrazione(@RequestBody RegistrationDTO registrationDTO) {
 
         try {
-            RegisteredUserDTO u = controllerRegistrazione.registraUtente(registrationDTO);
+            RegisteredUserDTO u = controllerRegistrazione.registerUser(registrationDTO);
             if (u != null) {
                 return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
             }

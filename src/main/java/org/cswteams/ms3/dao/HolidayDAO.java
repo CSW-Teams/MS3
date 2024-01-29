@@ -16,13 +16,13 @@ import javax.validation.constraints.NotNull;
 @Repository
 public interface HolidayDAO extends JpaRepository<Holiday, Long>{
 
-    /** Ritrova tutte le festività registrate*/
+    /** Find all registered holidays*/
     List<Holiday> findAll();
 
-    /** Ritrova tutti i periodi di festività con il nome indicato */
+    /** Finds all holiday periods with the given name */
     List<Holiday>findByName(String name);
 
-    /** ritrova tutti i periodi di festività contenuti nel range indicato */
+    /** finds all holiday periods contained in the indicated range */
     List<Holiday> findByStartDateEpochDayGreaterThanEqualAndEndDateEpochDayLessThanEqual(long start, long end);
 
     /**finds all holidays of a given category */

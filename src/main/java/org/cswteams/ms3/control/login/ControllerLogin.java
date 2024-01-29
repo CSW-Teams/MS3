@@ -20,6 +20,11 @@ public class ControllerLogin implements IControllerLogin {
     @Autowired
     private UserDAO userDAO;
 
+    /**
+     * Check if the provided email address is valid, according to a standard regex.
+     * @param email address to be validated
+     * @return <code>true</code> if <code>email</code> is valid, <code>false</code> elsewhere.
+     */
     private boolean checkEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
         Pattern pattern = Pattern.compile(emailRegex);
@@ -33,14 +38,14 @@ public class ControllerLogin implements IControllerLogin {
 
         /* check email address */
         if (!isEmailValid) {
-            throw new InvalidEmailAddressException("Il formato dell'indirizzo email non è valido");
+            throw new InvalidEmailAddressException("Invalid e-mail address format.");
         }
 
         User user = userDAO.findByEmailAndPassword(loginDTO.getEmail(), loginDTO.getPassword());
         LoggedUserDTO dto = null;
         if (user != null){
             if (!user.getSystemActors().contains(loginDTO.getSystemActor())) {
-                throw new InvalidRoleException("Il ruolo non è valido");
+                throw new InvalidRoleException("Invalid role.");
             }
             dto = new LoggedUserDTO(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getSystemActors());
         }
