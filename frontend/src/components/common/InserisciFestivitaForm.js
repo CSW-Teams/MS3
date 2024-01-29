@@ -264,7 +264,7 @@ function CalendarOrPicker({recurrent, setRecurrent, pickerState, datesState}) {
   );
 }
 
-export default function InserisciFestivitaForm() {
+export default function InserisciFestivitaForm({normalHolidays, setNormalHolidays, recurrentHolidays, setRecurrentHolidays}) {
 
   const [kind, setKind] = React.useState('');
   const [name, setName] = useState('') ;
@@ -328,7 +328,7 @@ export default function InserisciFestivitaForm() {
     }
 
     if(checkDataIsCorrect(holiday)) {
-      const code = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
+      const [code, content] = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
 
       if(code !== 200) {
         toast(t("Error saving the holiday"), {
@@ -343,6 +343,15 @@ export default function InserisciFestivitaForm() {
           autoClose: 1500,
           style : {background : "green", color : "white"}
         })
+        holiday.id = content.id
+        holiday.startDateEpochDay = holiday.startEpochDay
+        holiday.endDateEpochDay = holiday.endEpochDay
+        holiday.category = holiday.kind
+        if(recurrent) {
+          setRecurrentHolidays(recurrentHolidays.concat([holiday]))
+        } else {
+          setNormalHolidays(normalHolidays.concat([holiday]))
+        }
       }
     }
   }

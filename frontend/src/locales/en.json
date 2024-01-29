@@ -252,6 +252,16 @@
   "Choose a place for the holiday": "Choose a place for the holiday",
   "Insert the holiday name": "Insert the holiday name",
   "Recurring": "Recurring",
-  "Add new holiday": "Add new holiday"
+  "Add new holiday": "Add new holiday",
+  "Manage custom holidays" : "Manage custom holidays",
+  "ReadHolidayName" : "Name",
+  "ReadHolidayStart" : "Start",
+  "ReadHolidayEnd" : "End",
+  "ReadHolidayCategory" : "Category",
+  "ReadHolidayPlace" : "Place",
+  "ReadDeleteHoliday" : "Delete",
+
+  "Normal Holidays" : "Normal custom holidays",
+  "Recurrent Holidays" : "Recurrent custom holidays"
 
 }
