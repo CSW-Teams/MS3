@@ -6,6 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import {CategoriaAPI} from "../../API/CategoriaAPI";
+import { t } from "i18next";
 
 
 export default function MultipleSelect(props) {
@@ -34,10 +35,10 @@ export default function MultipleSelect(props) {
     <Stack spacing={3}>
       <Box sx={{minWidth: 120}}>
         <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Rotazioni</InputLabel>
+          <InputLabel id="demo-simple-select-label">{t("Rotations")}</InputLabel>
           <Select
             value={categoria}
-            label='Rotazioni'
+            label={t("Rotations")}
             onChange={handleChangeCategoria}
           >
             {categorie.map((elementData) => (

@@ -9,6 +9,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 import {toast} from "react-toastify";
+import {t} from "i18next";
 
 
 
@@ -73,7 +74,7 @@ export default function DoctorSpecializationAdditionDrawer(props){
           <Toolbar>
             <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'center' }}>
               <Typography variant="h5" component="div" sx={{ marginLeft: '20px' }}>
-                Aggiungi Specializzazione
+                {t('Add Specialization')}
               </Typography>
             </Box>
             <IconButton color="inherit" onClick={handleClose}>
@@ -94,7 +95,7 @@ export default function DoctorSpecializationAdditionDrawer(props){
             <p>
             </p>
             <Typography variant="h6">
-              Seleziona le mansioni da assegnare:
+              {t('Select tasks to assign:')}
             </Typography>
             {
                 specializationList.map((item) => (
@@ -126,7 +127,7 @@ export default function DoctorSpecializationAdditionDrawer(props){
               disabled={checkedSpecializationsCheckBoxes.length === 0}
               onClick={ () => handleAddSpecializations(props.updateFunction, props.doctorID,currentSpecializationList,checkedSpecializationsCheckBoxes) }
             >
-              Salva
+              {t('Save')}
             </Button>
           </Box>
         </div>

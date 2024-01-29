@@ -3,15 +3,25 @@ import { EventEmitter } from "events";
 import Dispatcher from "./dispatcher";
 import Constants from "./constants";
 import {attore, configuratore, pianificatore} from "../data/sidebar-nav-items";
+import i18n from '../i18n';
+
+function translateSidebarItems(items, translateFn) {
+  return items.map(item => ({
+    ...item,
+    title: translateFn(item.title),
+  }));
+}
 
 function getNavBar() {
-  let att = localStorage.getItem("actor");
-  if (att === "DOCTOR"){
-    return attore();
-  } else if((att === "PLANNER")){
-    return pianificatore();
-  }else{
-    return configuratore();
+  const att = localStorage.getItem('actor');
+  const translateFn = key => i18n.t(key);
+
+  if (att === 'DOCTOR') {
+    return translateSidebarItems(attore(), translateFn);
+  } else if (att === 'PLANNER') {
+    return translateSidebarItems(pianificatore(), translateFn);
+  } else {
+    return translateSidebarItems(configuratore(), translateFn);
   }
 }
 

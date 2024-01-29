@@ -8,6 +8,7 @@ import {
 import React from "react";
 import {ToastContainer} from "react-toastify";
 import InserisciFestivitaForm from "../../components/common/InserisciFestivitaForm";
+import { t } from "i18next";
 
 export default function InserisciFestivita() {
 
@@ -16,7 +17,7 @@ export default function InserisciFestivita() {
       <MDBContainer className="py-5" style={{height: '85vh',}}>
         <MDBCard alignment='center'>
           <MDBCardBody>
-            <MDBCardTitle>Inserisci una nuova festività</MDBCardTitle>
+            <MDBCardTitle>{t("Add new holiday")}</MDBCardTitle>
             <MDBRow>
               <InserisciFestivitaForm/>
             </MDBRow>

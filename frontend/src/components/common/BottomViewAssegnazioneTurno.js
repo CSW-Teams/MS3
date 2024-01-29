@@ -17,6 +17,7 @@ import {MDBBtn, MDBCard, MDBCardBody, MDBCardTitle} from "mdb-react-ui-kit";
 import FilesUpload from './FilesUpload'
 import {GiustificaForzaturaAPI} from "../../API/GiustificaForzaturaAPI";
 import {MDBTextArea} from "mdb-react-ui-kit";
+import { t } from "i18next";
 
 function ViolationLog(props){
 
@@ -86,7 +87,7 @@ export default function TemporaryDrawer(props) {
     if(giustificazione !== ''){
       setGiustificato(true)
     }else{
-      toast.error('Giustificazione non compilata', {
+      toast.error(t("Justification not compiled"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -132,7 +133,7 @@ export default function TemporaryDrawer(props) {
       // 200 family, success
       case 2:
         // Informa l'utente che l'assegnazione turno è stata registrata con successo
-        toast.success('Assegnazione creata con successo', {
+        toast.success(t("Assignment successfully created"), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -150,7 +151,7 @@ export default function TemporaryDrawer(props) {
           let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
           status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
           if(status === 202){
-            toast.success('Giustificazione salvata', {
+            toast.success(t("Justification saved"), {
               position: "top-center",
               autoClose: 5000,
               hideProgressBar: true,
@@ -162,7 +163,7 @@ export default function TemporaryDrawer(props) {
             });
           }else{
             // TODO: Bisogna cancellare l'assegnazione turno inserita
-            toast.error('Errore nel salvataggio della giustificazione', {
+            toast.error(t("An error occurred while trying to save the justification"), {
               position: "top-center",
               autoClose: 5000,
               hideProgressBar: true,
@@ -202,7 +203,7 @@ export default function TemporaryDrawer(props) {
         } else {
           // malformed request
 
-          toast.error('Errore nei parametri di input!', {
+          toast.error(t("Parameters Error"), {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: true,
@@ -242,7 +243,7 @@ export default function TemporaryDrawer(props) {
         return (
           <MDBCard>
               <MDBCardBody>
-                <MDBCardTitle className="text-center">Motiva la forzatura!</MDBCardTitle>
+                <MDBCardTitle className="text-center">{t("Explain the override")}</MDBCardTitle>
                 <MDBTextArea
                              contrast id='textAreaGiustifica'
                              rows={4}
@@ -251,10 +252,10 @@ export default function TemporaryDrawer(props) {
                              required>
 
                 </MDBTextArea>
-                <li>Aggiungi la/le liberatoria/e :</li>
+                <li>{t("Add Waiver:")}</li>
                   <FilesUpload/>
-                <Button title="Conferma" onClick={giustificaCompilata('bottom', false)}>
-                  Conferma
+                <Button title={t('Save')} onClick={giustificaCompilata('bottom', false)}>
+                  {t('Save')}
                 </Button>
               </MDBCardBody>
             </MDBCard>
@@ -272,7 +273,7 @@ export default function TemporaryDrawer(props) {
           'margin-right': 'auto',
           'margin-top':'1%',
           'margin-bottom':'-1%'
-        }} >Aggiungi assegnazione</Button>
+        }} >{t("Add Assignment")}</Button>
         <Drawer anchor='bottom' open={state['bottom']} onClose={toggleDrawer('bottom', false)}>
           <div style={{
             display: 'flex',
@@ -290,24 +291,24 @@ export default function TemporaryDrawer(props) {
                 multiple
                 options={user}
                 sx={{ width: 300 }}
-                renderInput={(params) => <TextField {...params} label="Medici Guardia" />}
+                renderInput={(params) => <TextField {...params} label={t("Doctors on Duty")} />}
               />
               <Autocomplete
                 onChange={(event, value) => setUtentiSelezionatiReperibilita(value)}
                 multiple
                 options={user}
                 sx={{ width: 300 }}
-                renderInput={(params) => <TextField {...params} label="Medici Reperibili" />}
+                renderInput={(params) => <TextField {...params} label={t("Doctors on Call")} />}
               />
               <div>
-                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced); setGiustificato(false)}}/>} label="Forza Vincoli non stringenti" />
+                <FormControlLabel control={<Switch  onClick={() => {setForced(!forced); setGiustificato(false)}}/>} label={t("Override Optional Constraints")} />
                 <InformationDialogs></InformationDialogs>
                 { (forced && !giustificato && <Giustifica/>  ) }
               </div>
-              { (forced && giustificato && <MDBCard><MDBCardBody>Giustificazione compilata</MDBCardBody></MDBCard>)}
+              { (forced && giustificato && <MDBCard><MDBCardBody>{t("Compiled Justification")}</MDBCardBody></MDBCard>)}
 
               <Button variant="contained" size="small" disabled={forced && !giustificato} onClick={assegnaTurno('bottom', false)} >
-                Assegna turno
+                {t("Assign Turn")}
               </Button>
             </Stack>
           </div>

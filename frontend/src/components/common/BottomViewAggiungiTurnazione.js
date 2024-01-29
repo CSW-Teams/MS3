@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
+import { t } from "i18next";
 
 export default function TemporaryDrawer(props) {
 
@@ -63,7 +64,7 @@ export default function TemporaryDrawer(props) {
 
     //Verifico la risposta del server analizzando il codice di risposta http
     if(status===202){
-      toast.success('Rotazione creata con successo', {
+      toast.success(t("Rotation created successfully"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -74,7 +75,7 @@ export default function TemporaryDrawer(props) {
         theme: "colored",
       });
     }else if (status === 400){
-      toast.error('Errore nei parametri. Riprova con nuove date', {
+      toast.error(t("Parameters Error"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -106,11 +107,11 @@ export default function TemporaryDrawer(props) {
             height: '65vh',
           }}>
             <Stack spacing={1}>
-                <label>Data inizio</label>
+                <label>{t("Start Date")}</label>
                 <BasicDatePicker  onSelectData={handleDataInizio}></BasicDatePicker>
-              <label>Data fine</label>
+              <label>{t("End Date")}</label>
               <BasicDatePicker  onSelectData={handleDataFine}></BasicDatePicker>
-              <label>Rotazioni</label>
+              <label>{t("Rotations")}</label>
               <SelectCategoria onSelectCategoria = {handleCategoria} ></SelectCategoria>
 
               <Button variant="contained" size="small" onClick={aggiungiCategoria('bottom', false)}>

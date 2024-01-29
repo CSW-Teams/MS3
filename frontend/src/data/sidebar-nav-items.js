@@ -4,23 +4,23 @@
 export function attore() {
        return [
         {
-          title: "Turni globali",
+          title: "Global Shifts",
           htmlBefore: '<i class="material-icons">vertical_split</i>',
           to: "/pianificazione-globale",
         },
 
         {
-          title: "I miei turni",
+          title: "My Shifts",
           htmlBefore: '<i class="material-icons">view_module</i>',
           to: "/pianificazione-privata",
         },
         {
-          title: "Utenti",
+          title: "Users",
           htmlBefore: '<i class="material-icons">view_module</i>',
           to: "/info-utenti",
         },
          {
-           title: "Scambio Turni",
+           title: "Shift Exchange",
            htmlBefore: '<i class="material-icons">view_module</i>',
            to: "/scambio-turni",
          },
@@ -32,28 +32,28 @@ export function pianificatore() {
     return [
 
       {
-        title: "Turni globali",
+        title: "Global Shifts",
         htmlBefore: '<i class="material-icons">vertical_split</i>',
         to: "/pianificazione-globale",
       },
 
       {
-        title: "I miei turni",
+        title: "My Shifts",
         htmlBefore: '<i class="material-icons">view_module</i>',
         to: "/pianificazione-privata",
       },
       {
-        title: "Genera Pianificazione",
+        title: "Generate Schedule",
         htmlBefore: '<i class="material-icons">view_module</i>',
         to: "/generazione-scheduling",
       },
       {
-        title: "Utenti",
+        title: "Users",
         htmlBefore: '<i class="material-icons">view_module</i>',
         to: "/info-utenti",
       },
       {
-        title: "Scambio Turni",
+        title: "Shift Exchange",
         htmlBefore: '<i class="material-icons">view_module</i>',
         to: "/scambio-turni",
       },
@@ -65,37 +65,37 @@ export function pianificatore() {
 export function configuratore() {
   return [
     {
-      title: "Turni globali",
+      title: "Global Shifts",
       htmlBefore: '<i class="material-icons">vertical_split</i>',
       to: "/pianificazione-globale",
     },
     {
-      title: "I miei turni",
+      title: "My Shifts",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/pianificazione-privata",
     },
     {
-      title: "Utenti",
+      title: "Users",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/info-utenti",
     },
     {
-      title: "Configurazione vincoli",
+      title: "Constraint Configuration",
       htmlBefore: '<i class="material-icons">vertical_split</i>',
       to: "/configurazione-vincoli",
     },
     {
-      title: "Scambio Turni",
+      title: "Shift Exchange",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/scambio-turni",
     },
     {
-      title: "Servizi",
+      title: "Services",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/servizi",
     },
     {
-      title: "Inserisci nuova festività",
+      title: "Add Holiday",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/nuova-festivita"
     },

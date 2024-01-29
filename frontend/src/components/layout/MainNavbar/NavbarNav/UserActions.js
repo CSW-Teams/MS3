@@ -9,55 +9,51 @@ import {
   NavItem,
   NavLink
 } from "shards-react";
+import { useTranslation } from 'react-i18next';
 
-export default class UserActions extends React.Component {
-  constructor(props) {
-    super(props);
+export default function UserActions() {
+  const { t } = useTranslation();
 
-    this.state = {
-      visible: false,
-      nome : localStorage.getItem("name"),
-      cognome: localStorage.getItem("lastname"),
-    };
+  const [state, setState] = React.useState({
+    visible: false,
+    nome: localStorage.getItem("name"),
+    cognome: localStorage.getItem("lastname"),
+  });
 
-    this.toggleUserActions = this.toggleUserActions.bind(this);
-  }
-
-  async componentDidMount() {
-    this.setState({
+  React.useEffect(() => {
+    setState({
+      ...state,
       nome: localStorage.getItem("name"),
-      cognome : localStorage.getItem("lastname")
-    })
-  }
-
-    toggleUserActions() {
-    this.setState({
-      visible: !this.state.visible
+      cognome: localStorage.getItem("lastname")
     });
-  }
+  }, []);
 
-  render() {
-    return (
-      <NavItem tag={Dropdown} caret toggle={this.toggleUserActions}>
-        <DropdownToggle caret tag={NavLink} className="text-nowrap px-3"  style={{cursor:"pointer"}}>
+  const toggleUserActions = () => {
+    setState({
+      ...state,
+      visible: !state.visible
+    });
+  };
 
-          <span className="d-none d-md-inline-block">{this.state.nome+" "+this.state.cognome}</span>
-        </DropdownToggle>
-        <Collapse tag={DropdownMenu} right small open={this.state.visible}>
-          <DropdownItem tag={Link} to="/single-user-profile">
-            <i className="material-icons">&#xE7FD;</i> Profilo
-          </DropdownItem>
-          <DropdownItem tag={Link} to="/cambia-password/">
-            <i className="material-icons">password</i> Modifica Password
-          </DropdownItem>
-          <DropdownItem tag={Link} to="/preference">
-            <i className="material-icons">&#xE8B8;</i> Gestione Desiderata
-          </DropdownItem>
-          <DropdownItem tag={Link} to="/" className="text-danger">
-            <i className="material-icons text-danger">&#xE879;</i> Logout
-          </DropdownItem>
-        </Collapse>
-      </NavItem>
-    );
-  }
+  return (
+    <NavItem tag={Dropdown} caret toggle={toggleUserActions}>
+      <DropdownToggle caret tag={NavLink} className="text-nowrap px-3" style={{ cursor: "pointer" }}>
+        <span className="d-none d-md-inline-block">{state.nome + " " + state.cognome}</span>
+      </DropdownToggle>
+      <Collapse tag={DropdownMenu} right small open={state.visible}>
+        <DropdownItem tag={Link} to="/single-user-profile">
+          <i className="material-icons">&#xE7FD;</i> {t('Profile')}
+        </DropdownItem>
+        <DropdownItem tag={Link} to="/cambia-password/">
+          <i className="material-icons">password</i> {t('Change Password')}
+        </DropdownItem>
+        <DropdownItem tag={Link} to="/preference">
+          <i className="material-icons">&#xE8B8;</i> {t('Manage Preferences')}
+        </DropdownItem>
+        <DropdownItem tag={Link} to="/" className="text-danger">
+          <i className="material-icons text-danger">&#xE879;</i> {t('Logout')}
+        </DropdownItem>
+      </Collapse>
+    </NavItem>
+  );
 }
