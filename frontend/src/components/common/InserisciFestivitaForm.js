@@ -6,27 +6,28 @@ import React, {useState} from "react";
 import {toast} from "react-toastify";
 import {HolidaysAPI} from "../../API/HolidaysAPI";
 import {Calendar} from "react-multi-date-picker";
+import { t } from "i18next";
 
 const monthNum = {
-  1 : "Gennaio",
-  2 : "Febbraio",
-  3 : "Marzo",
-  4 : "Aprile",
-  5 : "Maggio",
-  6 : "Giugno",
-  7 : "Luglio",
-  8 : "Agosto",
-  9 : "Settembre",
-  10 : "Ottobre",
-  11 : "Novembre",
-  12 : "Dicembre"
+  1 : t("January"),
+  2 : t("February"),
+  3 : t("March"),
+  4 : t("April"),
+  5 : t("May"),
+  6 : t("June"),
+  7 : t("July"),
+  8 : t("August"),
+  9 : t("September"),
+  10 : t("October"),
+  11 : t("November"),
+  12 : t("December")
 }
 
 function checkDataIsCorrect(holiday) {
 
   if(holiday.recurrent) {
     if(holiday.endMonth < holiday.startMonth) {
-      toast("La festività deve cominciare prima della sua fine!", {
+      toast(t("The Holiday should begin before its end"), {
         position : "top-center",
         autoClose: 1500,
         style : {background : "red", color : "white"}
@@ -35,7 +36,7 @@ function checkDataIsCorrect(holiday) {
     }
     if(holiday.endMonth === holiday.startMonth) {
       if(holiday.startDay > holiday.endDay) {
-        toast("La festività deve cominciare prima della sua fine!", {
+        toast(t("The Holiday should begin before its end"), {
           position : "top-center",
           autoClose: 1500,
           style : {background : "red", color : "white"}
@@ -46,7 +47,7 @@ function checkDataIsCorrect(holiday) {
   }
 
   if(holiday.name === '') {
-    toast("Inserire un nome per la festività!", {
+    toast(t("Add a name for the Holiday"), {
       position : "top-center",
       autoClose: 1500,
       style : {background : "red", color : "white"}
@@ -55,7 +56,7 @@ function checkDataIsCorrect(holiday) {
   }
 
   if(holiday.kind === '') {
-    toast("Inserire la tipologia di festività!", {
+    toast(t("Add a type to the holiday"), {
       position : "top-center",
       autoClose: 1500,
       style : {background : "red", color : "white"}
@@ -232,8 +233,8 @@ function RecurrentResult({recurrent, pickerState, datesState}) {
   if(recurrent) {
     return (
       <div style={{paddingTop : 42}}>
-        <DayMonthPicker labelText={"Inizio festività"} pickerState={startPickerState} childrenState={endPickerState}/>
-        <DayMonthPicker labelText={"Fine festività"} pickerState={endPickerState} parentState={startPickerState}/>
+        <DayMonthPicker labelText={t("Start Date")} pickerState={startPickerState} childrenState={endPickerState}/>
+        <DayMonthPicker labelText={t("End Date")} pickerState={endPickerState} parentState={startPickerState}/>
       </div>
     )
   } else {
@@ -251,7 +252,7 @@ function CalendarOrPicker({recurrent, setRecurrent, pickerState, datesState}) {
   return (
     <div style={{display: "flex", alignItems : "center", flexDirection : "column"}}>
       <div style={{display : "flex", flexDirection : "row", paddingBottom : 10}}>
-        <div style={{paddingRight : 10}}>La festività è ricorrente</div>
+        <div style={{paddingRight : 10}}>{t("Recurring")}</div>
         <input type={"checkbox"} name={"recurrent"}
                checked={recurrent} onChange={e => {
           setRecurrent(!recurrent)
@@ -263,7 +264,7 @@ function CalendarOrPicker({recurrent, setRecurrent, pickerState, datesState}) {
   );
 }
 
-export default function InserisciFestivitaForm() {
+export default function InserisciFestivitaForm({normalHolidays, setNormalHolidays, recurrentHolidays, setRecurrentHolidays}) {
 
   const [kind, setKind] = React.useState('');
   const [name, setName] = useState('') ;
@@ -327,21 +328,30 @@ export default function InserisciFestivitaForm() {
     }
 
     if(checkDataIsCorrect(holiday)) {
-      const code = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
+      const [code, content] = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
 
       if(code !== 200) {
-        toast("Errore nel salvataggio della festività", {
+        toast(t("Error saving the holiday"), {
           position : "top-center",
           autoClose: 1500,
           style : {background : "red", color : "white"}
         })
       }
       else {
-        toast("Festività salvata con successo!", {
+        toast(t("Holiday saved successfully"), {
           position : "top-center",
           autoClose: 1500,
           style : {background : "green", color : "white"}
         })
+        holiday.id = content.id
+        holiday.startDateEpochDay = holiday.startEpochDay
+        holiday.endDateEpochDay = holiday.endEpochDay
+        holiday.category = holiday.kind
+        if(recurrent) {
+          setRecurrentHolidays(recurrentHolidays.concat([holiday]))
+        } else {
+          setNormalHolidays(normalHolidays.concat([holiday]))
+        }
       }
     }
   }
@@ -379,7 +389,7 @@ export default function InserisciFestivitaForm() {
             maxWidth: 300
           }}>
             <TextField
-              label="Inserisci il nome della festività"
+              label={t("Insert the holiday name")}
               fullWidth
               onChange={(event) => {
                 setName(event.target.value)
@@ -390,7 +400,7 @@ export default function InserisciFestivitaForm() {
               alignItems: "flex-start",
               fontSize: 12,
               color: "gray"
-            }}>Obbligatorio
+            }}>{t("Mandatory")}
             </div>
           </div>
           <div style={{
@@ -403,31 +413,31 @@ export default function InserisciFestivitaForm() {
               alignItems: "flex-start",
               fontSize: 12,
               color: "gray"
-            }}>Scegli la tipologia
+            }}>{t("Choose the type")}
             </div>
             <Select
               value={kind}
               onChange={handleChange}
               fullWidth
             >
-              <MenuItem value={"Religious"}>Religiosa</MenuItem>
-              <MenuItem value={"Secular"}>Laica</MenuItem>
-              <MenuItem value={"Civil"}>Civile</MenuItem>
-              <MenuItem value={"National"}>Nazionale</MenuItem>
-              <MenuItem value={"Corporate"}>Aziendale</MenuItem>
+              <MenuItem value={"Religious"}>{t("Religious")}</MenuItem>
+              <MenuItem value={"Secular"}>{t("Secular")}</MenuItem>
+              <MenuItem value={"Civil"}>{t("Civil")}</MenuItem>
+              <MenuItem value={"National"}>{t("National")}</MenuItem>
+              <MenuItem value={"Corporate"}>{t("Corporate")}</MenuItem>
             </Select>
             <div style={{
               display: "flex",
               alignItems: "flex-start",
               fontSize: 12,
               color: "gray"
-            }}>Obbligatorio
+            }}>{t("Mandatory")}
             </div>
           </div>
           <div style={{paddingBottom: "20px", minWidth: 300, maxWidth: 300}}>
             <TextField
               id="fullWidth"
-              label="Inserisci la località della festa"
+              label={t("Choose a place for the holiday")}
               fullWidth
               onChange={(event) => {
                 setLocation(event.target.value)
@@ -436,7 +446,7 @@ export default function InserisciFestivitaForm() {
           </div>
           <div style={{paddingBottom: "20px", minWidth: 300, maxWidth: 300}}>
             <Button onClick={onSaveClick}>
-              Salva
+              {t("Save")}
             </Button>
           </div>
         </div>

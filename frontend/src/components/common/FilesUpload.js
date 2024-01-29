@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import {UploadFilesAPI} from "../../API/UploadFilesAPI"
+import { t } from "i18next";
 
 const FilesUpload = ({type, request, updateRequest}) => {
 
@@ -44,12 +45,12 @@ const FilesUpload = ({type, request, updateRequest}) => {
     if(response.status === 202){
       setMessage((prevMessage) => ([
         ...prevMessage,
-        "Caricamento file avvenuto con successo: " + file.name,
+        t("File successfully uploaded: ") + file.name,
       ]));
     }else if(response.status ===417){
       setMessage((prevMessage) => ([
         ...prevMessage,
-        "Impossibile caricare il file: " + file.name+ "!",
+        t("Error uploading file: ")+ file.name+ "!",
       ]));
     }
 
@@ -123,7 +124,7 @@ const FilesUpload = ({type, request, updateRequest}) => {
             disabled={!selectedFiles}
             onClick={uploadFiles}
           >
-            Carica
+            {t('Upload')}
           </button>
         </div>
       </div>

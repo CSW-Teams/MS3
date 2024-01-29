@@ -27,8 +27,11 @@ class SidebarMainNavbar extends React.Component {
         >
           <Container>
             <NavbarBrand className="mr-auto" href="/pianificazione-globale">
-              <i className="fas fa-hospital"
-                 style={{fontSize: 25, marginRight: 5}}></i>
+              <img
+                src="/hospital-solid.svg"
+                alt="Hospital Icon"
+                style={{height: 25, marginRight: 5}}
+              />
               {''}
               <font style={{fontWeight: 800, fontstyle: FormatItalic}}>
                 Menu

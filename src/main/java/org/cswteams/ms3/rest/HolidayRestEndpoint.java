@@ -7,6 +7,7 @@ import java.util.List;
 import org.cswteams.ms3.control.preferenze.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
+import org.cswteams.ms3.dto.holidays.CustomHolidayIdDTO;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.enums.ServiceDataENUM;
 import org.cswteams.ms3.exception.CalendarServiceException;
@@ -52,16 +53,38 @@ public class HolidayRestEndpoint {
 
         if(dto != null) {
             try {
-                holidayController.insertCustomHoliday(dto); ;
+                CustomHolidayIdDTO id = holidayController.insertCustomHoliday(dto);
+                return new ResponseEntity<>(id, HttpStatus.OK) ;
             } catch (ValidationException e) {
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE) ;
             } catch (Exception e) {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR) ;
             }
-
-            return new ResponseEntity<>(HttpStatus.OK) ;
         } else
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST) ;
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/custom-holidays")
+    public ResponseEntity<?> getCustomHolidays() {
+
+        try {
+            return new ResponseEntity<>(holidayController.getCustomHolidays(), HttpStatus.OK) ;
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR) ;
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/delete-custom")
+    public ResponseEntity<?> deleteCustomHoliday(@RequestBody CustomHolidayIdDTO dto) {
+
+        try {
+            holidayController.deleteCustomHoliday(dto);
+            return new ResponseEntity<>(HttpStatus.OK) ;
+        } catch (ValidationException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST) ;
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR) ;
+        }
     }
 
 }

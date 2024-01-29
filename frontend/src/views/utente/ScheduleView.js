@@ -42,6 +42,7 @@ import { ShiftPrinterCSV } from "../../components/common/ShiftPrinterCSV";
 import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
+import { t } from "i18next";
 
 
 /**
@@ -184,7 +185,7 @@ class ScheduleView extends React.Component{
       let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(params);
 
       if (httpResponse.status === 202) {
-        toast.success('Richiesta inoltrata con successo', {
+        toast.success(t("Request sent successfully"), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -196,7 +197,7 @@ class ScheduleView extends React.Component{
         });
 
       } else {
-        toast.error('Non è stato possibile inoltrare la richiesta', {
+        toast.error(t("Request couldn't be forwarded"), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -239,7 +240,7 @@ class ScheduleView extends React.Component{
 
         if(responseStatusClass === 5){
 
-          toast.error('Errore nel server!', {
+          toast.error(t("Server Error"), {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: true,
@@ -268,7 +269,7 @@ class ScheduleView extends React.Component{
 
         }else{
 
-          toast.success('Assegnazione modificata con successo', {
+          toast.success(t("Assignment moified successfully"), {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: true,
@@ -292,7 +293,7 @@ class ScheduleView extends React.Component{
 
         if(responseStatusClass !== 2){
 
-          toast.error('Non è stato possibile eliminare l\'assegnazione selezionata!!', {
+          toast.error(t("Selected Assignment Couldn't Be Removed"), {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: true,
@@ -306,7 +307,7 @@ class ScheduleView extends React.Component{
 
         else{
 
-          toast.success("Eliminazione avvenuta con successo", {
+          toast.success(t("Elimination Successful"), {
             position: "top-center",
             hideProgressBar: false,
             closeOnClick: true,
@@ -408,13 +409,13 @@ class ScheduleView extends React.Component{
         let textLink = "";
         switch(this.state.shiftQueriedResponse){
           case "GOOD":
-            textLink="Scarica questi "+shifts.length+" turni come file CSV ⬇️"
+            textLink= t("Download these turns as CSV")
             break;
           case "BAD":
-            textLink="Non è stato possibile caricare i turni dal backend. Riprova più tardi o contattare un tecnico. ❌"
+            textLink=t("Turn Backend Failure")
             break;
           case "ABOUT_TO_ASK":
-            textLink="Caricamento... ⏳"
+            textLink=t("Loading")
             break;
           default:
             // this should never appear
@@ -436,7 +437,7 @@ class ScheduleView extends React.Component{
               marginBottom: view !== "global" ? '1%' : '0%'
               }}
               href={view === "global" ? "/richieste-ritiro" : "/richieste-ritiro?locale=true"}
-            > Visualizza storico richieste di ritiro
+            > {t("View Retire Requests History")}
             </Button>
             }
             <Paper>
@@ -460,7 +461,7 @@ class ScheduleView extends React.Component{
                     multiple
                     options={this.state.allUser}
                     sx={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label="Medici di guardia" />}
+                    renderInput={(params) => <TextField {...params} label={t('Doctors on Duty')} />}
                   />
                   {/** Service Filter selectors */}
                   <div style={{display : 'flex','justify-content': 'space-between','column-gap': '20px'}}>
@@ -485,7 +486,7 @@ class ScheduleView extends React.Component{
                   'margin-bottom':'-1%'
                 }}
               >
-                {this.state.openOptionFilter?"Chiudi":"Filtra"}
+                {this.state.openOptionFilter?t("Close"):t("Filter")}
               </Button>
 
               <ButtonLegalSchedulation ></ButtonLegalSchedulation>
@@ -518,18 +519,18 @@ class ScheduleView extends React.Component{
                   }}
                 />
                 <WeekView
-                  displayName="Settimanale"
+                  displayName={t(  "Weekly")}
                   startDayHour={0}
                   endDayHour={24}
                   cellDuration={60}
                 />
                 <DayView
-                  displayName="Giornaliero"
+                  displayName={t(  "Daily")}
                   startDayHour={0}
                   endDayHour={24}
                   cellDuration={60}
                 />
-                <MonthView displayName="Mensile" />
+                <MonthView displayName={t(  "Monthly")} />
                 <Toolbar/>
 
 

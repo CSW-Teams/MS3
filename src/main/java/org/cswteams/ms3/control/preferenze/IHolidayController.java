@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
+import org.cswteams.ms3.dto.holidays.CustomHolidayIdDTO;
+import org.cswteams.ms3.dto.holidays.CustomHolidaysDTOOut;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.exception.CalendarServiceException;
 
@@ -45,7 +47,11 @@ public interface IHolidayController {
     @Transactional
     void registerHolidays(@NotNull List<HolidayDTO> holidays);
 
-    void insertCustomHoliday(CustomHolidayDTOIn holiday) ;
+    CustomHolidayIdDTO insertCustomHoliday(CustomHolidayDTOIn holiday) ;
 
-    List<HolidayDTO> retrieveRecurrentHolidays(int year) ;
+    List<HolidayDTO> generateFromRecurrentHolidays(int year) ;
+
+    CustomHolidaysDTOOut getCustomHolidays() ;
+
+    void deleteCustomHoliday(CustomHolidayIdDTO dto) ;
 }

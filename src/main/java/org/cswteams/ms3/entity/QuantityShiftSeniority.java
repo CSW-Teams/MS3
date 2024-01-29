@@ -22,6 +22,7 @@ public class QuantityShiftSeniority {
      * User role.
      * The integer value represents the number of <i>Users</i> of a specific <i>Seniority</i> to be allocated to a specific <i>Shift</i>.
      */
+    @Lob
     private HashMap<Seniority,Integer> seniorityMap;
 
     @ManyToOne

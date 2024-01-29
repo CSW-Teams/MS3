@@ -108,7 +108,7 @@ export default [
   },
 
   {
-    path: "/nuova-festivita",
+    path: "/gestione-festivita",
     layout: DefaultLayout,
     component: InserisciFestivita
   },

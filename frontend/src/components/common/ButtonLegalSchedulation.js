@@ -3,7 +3,7 @@ import WarningAmberSharpIcon from '@mui/icons-material/WarningAmberSharp';
 import React, { useState} from "react";
 import { ScheduleAPI } from "../../API/ScheduleAPI";
 import Tooltip from '@mui/material/Tooltip';
-
+import { t } from "i18next";
 
 
 export default function ButtonLegalSchedulation() {
@@ -22,9 +22,9 @@ export default function ButtonLegalSchedulation() {
     let title;
 
     if(AllLegal)
-      title ="Tutte le schedulazioni sono complete"
+      title = t("All schedulations are complete")
     else
-      title ="Alcune schedulazioni sono incomplete"
+      title =t("Some schedulations are incomplete")
 
     setTitle(title)
 

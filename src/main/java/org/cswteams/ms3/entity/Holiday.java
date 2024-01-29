@@ -6,9 +6,11 @@ import java.time.LocalDate;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import lombok.Data;
+import lombok.Setter;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.utils.temporal_consistency.BeforeInTime;
 import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
@@ -28,6 +30,21 @@ import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
 @BeforeInTime(firstParam = "startDateEpochDay", secondParam = "endDateEpochDay", comparator = EpochDayComparator.class)
 public class Holiday implements Serializable {
 
+    /**
+     * Default constructor needed by Lombok
+     */
+    public Holiday() {
+    }
+
+    public Holiday(String name, HolidayCategory category, long startDateEpochDay, long endDateEpochDay, String Location) {
+        this.name = name;
+        this.category = category;
+        this.startDateEpochDay = startDateEpochDay;
+        this.endDateEpochDay = endDateEpochDay;
+        this.location=Location;
+        this.custom = false ;
+    }
+
     @Id
     @GeneratedValue
     private Long id;
@@ -36,6 +53,7 @@ public class Holiday implements Serializable {
      * Holiday name
      */
     @NotNull
+    @NotEmpty
     private String name;
 
     /**
@@ -61,19 +79,8 @@ public class Holiday implements Serializable {
      */
     private String location;
 
-    /**
-     * Default constructor needed by Lombok
-     */
-    public Holiday() {
-    }
-
-    public Holiday(String name, HolidayCategory category, long startDateEpochDay, long endDateEpochDay, String Location) {
-        this.name = name;
-        this.category = category;
-        this.startDateEpochDay = startDateEpochDay;
-        this.endDateEpochDay = endDateEpochDay;
-        this.location = Location;
-    }
+    @Setter
+    private boolean custom;
 
     /**
      * Convenience methods for working with LocalDate objects instead of timestamps

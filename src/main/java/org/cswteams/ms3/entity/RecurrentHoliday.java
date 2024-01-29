@@ -1,5 +1,6 @@
 package org.cswteams.ms3.entity;
 
+import lombok.Getter;
 import org.cswteams.ms3.enums.HolidayCategory;
 
 import javax.persistence.Entity;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
  * i.e. an holiday that is repeated each year on the same day(s).
  */
 @Entity
+@Getter
 public class RecurrentHoliday {
 
     @Id

@@ -12,6 +12,7 @@ import IconButton from "@mui/material/IconButton";
 import {DesiderateAPI} from "../../API/DesiderataAPI";
 import {toast, ToastContainer} from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
+import {t} from "i18next";
 
 function defaultComparator(prop1, prop2){
   if (prop1 < prop2)
@@ -67,7 +68,7 @@ export default class Preference extends React.Component {
     if (responseStatus === 200) {
       //window.location.reload()
       this.componentDidMount()
-      toast.success('Desiderata cancellata con successo', {
+      toast.success(t('Preference deleted successfully'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -78,7 +79,7 @@ export default class Preference extends React.Component {
         theme: "colored",
       });
     } else if (responseStatus === 400) {
-      toast.error('Errore nella cancellazione', {
+      toast.error(t('Error during removal'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -108,7 +109,7 @@ export default class Preference extends React.Component {
         <MDBContainer className="py-5" style={{height: '85vh',}}>
           <MDBCard alignment='center'>
             <MDBCardBody>
-              <MDBCardTitle>Inserisci le tue desiderata</MDBCardTitle>
+              <MDBCardTitle>{t('Add your preferences')}</MDBCardTitle>
               <MDBRow>
                 <MDBCol>
                   <PreferencesDatePick onSelectdate={() => this.componentDidMount()} desiderate={this.state.desiderate} toDelPrefs = {this.state.toDeletePreferences} setDesiderate={this.updatePreferences}/>

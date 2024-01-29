@@ -23,6 +23,7 @@ import TableBody from "@mui/material/TableBody";
 import TemporaryDrawerRetirement
   from "../../components/common/BottomViewGestisciRitiro";
 import {DoctorAPI} from "../../API/DoctorAPI";
+import { t } from "i18next";
 
 
 const ModalLinkFile = ({request, updateRequest}) => {
@@ -34,17 +35,17 @@ const ModalLinkFile = ({request, updateRequest}) => {
   return (
     <>
       <Button onClick={handleOpen}>
-        Allega file
+        {t("Add file")}
       </Button>
 
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Allega file</DialogTitle>
+        <DialogTitle>{t("Add file")}</DialogTitle>
         <DialogContent>
           <FilesUpload type={"retirement"} idRequest={request.idRequest} request={request} updateRequest={updateRequest} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Chiudi
+            {t("Close")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -56,7 +57,7 @@ const getSostituto = (users, request) => {
   if (request.idSubstitute === null)
     return null;
   let u = users.find(user => user.id === request.idSubstitute);
-  let seniority = u.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+  let seniority = t(u.seniority)
   return u.name + " " + u.lastname + " - " + seniority;
 }
 
@@ -105,7 +106,7 @@ export default class RichiesteRitiroView extends React.Component {
 
   getDoctor = (request) => {
     const doctor = this.state.doctors.find(user => user.id === request.idRequestingUser);
-    const seniority = doctor.seniority === "STRUCTURED" ? "Strutturato" : "Specializzando";
+    const seniority = t(doctor.seniority);
     return doctor.name + " " + doctor.lastname + " - " + seniority;
   }
 
@@ -119,13 +120,13 @@ export default class RichiesteRitiroView extends React.Component {
                 <caption> Richieste di ritiro da turni </caption>
                 <TableHead>
                   <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Richiedente</TableCell>
-                    <TableCell>Giustificazione</TableCell>
-                    <TableCell>Stato</TableCell>
-                    <TableCell>Esito</TableCell>
-                    <TableCell>Allegato</TableCell>
-                    <TableCell>Sostituto</TableCell>
+                    <TableCell>{t("ID")}</TableCell>
+                    <TableCell>{t(  "Requester")}</TableCell>
+                    <TableCell>{t(  "Justification")}</TableCell>
+                    <TableCell>{t(  "Status")}</TableCell>
+                    <TableCell>{t(  "Outcome")}</TableCell>
+                    <TableCell>{t(  "Attachment")}</TableCell>
+                    <TableCell>{t(  "Substitute")}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -134,7 +135,7 @@ export default class RichiesteRitiroView extends React.Component {
                       <TableCell>{request.idRequest}</TableCell>
                       <TableCell>{this.getDoctor(request)}</TableCell>
                       <TableCell>{request.justification}</TableCell>
-                      <TableCell>{request.examined ? 'Esaminata' : 'In attesa'}</TableCell>
+                      <TableCell>{request.examined ?   t("Examined"): t("Waiting")}</TableCell>
                       <TableCell>
                         <div
                           style={{
@@ -152,7 +153,7 @@ export default class RichiesteRitiroView extends React.Component {
                       <TableCell>
                         {request.file === null ?
                           <ModalLinkFile request={request} updateRequest={this.updateRequest}/>
-                          : "Allegato presente"}
+                          : t("File Attached")}
                       </TableCell>
                       <TableCell>{getSostituto(this.state.doctors, request)}</TableCell>
                     </TableRow>
@@ -169,16 +170,15 @@ export default class RichiesteRitiroView extends React.Component {
           <Box mt={2} ml={2} mr={2} mb={2}>
             <TableContainer component={Paper}>
               <Table>
-                <caption> Richieste di ritiro da turni </caption>
                 <TableHead>
                   <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Richiedente</TableCell>
-                    <TableCell>Giustificazione</TableCell>
-                    <TableCell>Stato</TableCell>
-                    <TableCell>Esito</TableCell>
-                    <TableCell>Processamento</TableCell>
-                    <TableCell>Sostituto</TableCell>
+                    <TableCell>{t("ID")}</TableCell>
+                    <TableCell>{t(  "Requester")}</TableCell>
+                    <TableCell>{t(  "Justification")}</TableCell>
+                    <TableCell>{t(  "Status")}</TableCell>
+                    <TableCell>{t(  "Outcome")}</TableCell>
+                    <TableCell>{t(  "Processing")}</TableCell>
+                    <TableCell>{t(  "Substitute")}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -187,7 +187,7 @@ export default class RichiesteRitiroView extends React.Component {
                       <TableCell>{request.idRequest}</TableCell>
                       <TableCell>{this.getDoctor(request)}</TableCell>
                       <TableCell>{request.justification}</TableCell>
-                      <TableCell>{request.examined ? 'Esaminata' : 'In attesa'}</TableCell>
+                      <TableCell>{request.examined ? t("Examined"): t("Waiting")}</TableCell>
                       <TableCell>
                         <div
                           style={{
@@ -204,7 +204,7 @@ export default class RichiesteRitiroView extends React.Component {
                       </TableCell>
                       <TableCell>
                         {request.examined ?
-                          "Richiesta processata"
+                          t("Processed Request")
                           : <TemporaryDrawerRetirement request={request} shifts={this.state.shifts} users={this.state.doctors} updateRequest={this.updateRequest}/>
                         }
                       </TableCell>

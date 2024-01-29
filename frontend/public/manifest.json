@@ -3,9 +3,9 @@
   "name": "Medical Staff Shift Scheduler",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "hospital-solid.svg",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/svg+xml"
     }
   ],
   "start_url": ".",
