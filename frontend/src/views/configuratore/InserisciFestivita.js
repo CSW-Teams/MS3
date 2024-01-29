@@ -5,15 +5,34 @@ import {
   MDBContainer,
   MDBRow
 } from "mdb-react-ui-kit";
-import React, {useState} from "react";
-import {ToastContainer} from "react-toastify";
+import React, {useEffect, useState} from "react";
+import {toast, ToastContainer} from "react-toastify";
 import InserisciFestivitaForm from "../../components/common/InserisciFestivitaForm";
 import FestivitaInseriteList from "../../components/common/FestivitaInseriteList";
+import {HolidaysAPI} from "../../API/HolidaysAPI";
 
 export default function InserisciFestivita() {
 
   let [normalHolidays, setNormalHolidays] = useState([])
   let [recurrentHolidays, setRecurrentHolidays] = useState([])
+
+  useEffect(() => {
+
+    const asyncFetch = async () => {
+
+      let [response, content] = await new HolidaysAPI().getCustomHolidays()
+      if (response !== 200) {
+        window.location.reload()
+      }
+
+      setNormalHolidays(content.normalHolidays)
+      setRecurrentHolidays(content.recurrentHolidays)
+    }
+
+    asyncFetch().then(() => {})
+
+  }, []);
+
 
   return (
     <section style={{backgroundColor: '#eee'}}>

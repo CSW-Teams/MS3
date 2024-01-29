@@ -276,7 +276,7 @@ public class HolidayController implements IHolidayController {
     @Override
     @Transactional
     @Validant
-    public void deleteCustomHoliday(@Valid CustomHolidayIdDTO dto) {
+    public void deleteCustomHoliday(@Valid @NotNull CustomHolidayIdDTO dto) {
 
         if(dto.getIsRecurrent()) {
             RecurrentHoliday recurrentHoliday = recurrentHolidayDAO.getOne(dto.getId()) ;

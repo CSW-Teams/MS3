@@ -95,9 +95,9 @@ export function configuratore() {
       to: "/servizi",
     },
     {
-      title: "Inserisci nuova festività",
+      title: "Gestione festività",
       htmlBefore: '<i class="material-icons">view_module</i>',
-      to: "/nuova-festivita"
+      to: "/gestione-festivita"
     },
   ];
 }

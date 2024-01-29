@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -41,7 +39,7 @@ public class Holiday implements Serializable {
         this.startDateEpochDay = startDateEpochDay;
         this.endDateEpochDay = endDateEpochDay;
         this.location=Location;
-        this.isCustom = false ;
+        this.custom = false ;
     }
 
     @Id
@@ -65,7 +63,7 @@ public class Holiday implements Serializable {
     private String location;
 
     @Setter
-    private boolean isCustom ;
+    private boolean custom;
 
 
     /** Metodi di convenienza per lavorare con oggetti LocalDate anziché con timestamp */

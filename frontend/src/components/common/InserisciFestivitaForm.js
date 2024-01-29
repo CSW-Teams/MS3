@@ -327,7 +327,7 @@ export default function InserisciFestivitaForm({normalHolidays, setNormalHoliday
     }
 
     if(checkDataIsCorrect(holiday)) {
-      const code = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
+      const [code, content] = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
 
       if(code !== 200) {
         toast("Errore nel salvataggio della festività", {
@@ -342,6 +342,10 @@ export default function InserisciFestivitaForm({normalHolidays, setNormalHoliday
           autoClose: 1500,
           style : {background : "green", color : "white"}
         })
+        holiday.id = content.id
+        holiday.startDateEpochDay = holiday.startEpochDay
+        holiday.endDateEpochDay = holiday.endEpochDay
+        holiday.category = holiday.kind
         if(recurrent) {
           setRecurrentHolidays(recurrentHolidays.concat([holiday]))
         } else {
