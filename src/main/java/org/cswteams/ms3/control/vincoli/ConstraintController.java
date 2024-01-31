@@ -38,7 +38,7 @@ public class ConstraintController implements IConstraintController {
     @Override
     public ConfigVincoli updateConstraints(ConfigVincoli configuration) {
         for(ConfigVincMaxPerCons config: configuration.getConfigVincMaxPerConsPerCategoria()){
-            ConfigVincMaxPerCons configVincMaxPerCons = configVincoloMaxPeriodoConsecutivoDao.findAllByCategoriaVincolataType(config.getConstrainedCondition().getType()).get(0);
+            ConfigVincMaxPerCons configVincMaxPerCons = configVincoloMaxPeriodoConsecutivoDao.findAllByConstrainedConditionType(config.getConstrainedCondition().getType()).get(0);
             config.setId(configVincMaxPerCons.getId());
             configVincoloMaxPeriodoConsecutivoDao.save(config);
         }
