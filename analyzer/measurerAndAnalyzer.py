@@ -5,7 +5,7 @@ import datetime
 import calendar
 import json
 import sys
-
+import time
 name="sprintfloyd"
 psw="sprintfloyd"
 
@@ -221,6 +221,7 @@ def esegui_richiesta_post(data_inizio, data_fine):
         print(f"Errore nella connessione al server: {e}")
 
 def generaSchedulazioni():
+    fileTmp=open("tmp.txt","w+")
     data_attuale = datetime.datetime.now()
     deltaDay=calendar.monthrange(data_attuale.year,data_attuale.month)[1]
     mese_successivo = data_attuale.replace(day=1) + datetime.timedelta(days=deltaDay)
@@ -230,12 +231,16 @@ def generaSchedulazioni():
         data_inizio = mese_successivo
         data_fine = mese_successivo.replace(day=(calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]))
         # Chiamata alla funzione
+        tempo_inizio = time.time()
         esegui_richiesta_post(data_inizio, data_fine)
+        tempo_fine = time.time()
+        tempo_trascorso = tempo_fine - tempo_inizio
+        fileTmp.write(f"Tempo di esecuzione: {tempo_trascorso} secondi\n")
+        fileTmp.flush()
         # Passa al mese successivo
         deltaDay=calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]
         mese_successivo = mese_successivo.replace(day=1) + datetime.timedelta(days=deltaDay)
-
 if __name__ == "__main__":
-    #generaSchedulazioni()
+    generaSchedulazioni()
     computazionePerSchedule(sys.argv[1])
     computazioneTotale(sys.argv[1])
