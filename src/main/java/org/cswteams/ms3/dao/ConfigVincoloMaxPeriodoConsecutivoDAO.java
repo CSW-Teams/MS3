@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ConfigVincoloMaxPeriodoConsecutivoDAO extends JpaRepository<ConfigVincMaxPerCons, Long> {
 
-    List<ConfigVincMaxPerCons> findAllByCategoriaVincolataType(String type);
+    List<ConfigVincMaxPerCons> findAllByConstrainedConditionType(String type);
 }
