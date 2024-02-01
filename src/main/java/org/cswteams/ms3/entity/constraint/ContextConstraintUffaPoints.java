@@ -6,8 +6,7 @@ import org.cswteams.ms3.entity.scheduling.algo.DoctorScheduleState;
 
 import javax.validation.constraints.NotNull;
 
-@Data
-public class ContextConstraintUffaPoints {
+public class ContextConstraintUffaPoints extends ContextConstraint{
 
     @NotNull
     private DoctorScheduleState doctorScheduleState;

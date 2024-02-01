@@ -64,7 +64,7 @@ public class ConstraintTurniContigui extends ConstraintAssegnazioneTurnoTurno {
      * @throws ViolatedConstraintException Exception thrown if the constraint is violated
      */
     @Override
-    public void verifyConstraint(ContextConstraintPriority context) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
                 
         // We check if the shift to be allocated is of the type that must be excluded the constraint
         if (forbiddenTimeSlots.contains(context.getConcreteShift().getShift().getTimeSlot())){

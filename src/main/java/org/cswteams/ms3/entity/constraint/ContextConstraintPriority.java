@@ -12,18 +12,7 @@ import java.util.List;
 /**
  * Context for <i>constraints</i> validation.
  */
-@Data
-public class ContextConstraintPriority {
-
-    @NotNull
-    private DoctorUffaPriority doctorUffaPriority;
-
-    @NotNull
-    private ConcreteShift concreteShift;
-
-    private DoctorHolidays doctorHolidays;
-
-    private List<Holiday> holidays;
+public class ContextConstraintPriority extends ContextConstraint{
 
     public ContextConstraintPriority(DoctorUffaPriority doctorUffaPriority, ConcreteShift concreteShift, DoctorHolidays doctorHolidays, List<Holiday> holidays){
         this.concreteShift = concreteShift;
