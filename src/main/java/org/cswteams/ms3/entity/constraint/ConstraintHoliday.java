@@ -16,7 +16,7 @@ import javax.persistence.Entity;
 public class ConstraintHoliday extends Constraint {
 
     @Override
-    public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraintPriority context) throws ViolatedConstraintException {
         Doctor doctor = context.getDoctorUffaPriority().getDoctor();
         ConcreteShift concreteShift = context.getConcreteShift();
 

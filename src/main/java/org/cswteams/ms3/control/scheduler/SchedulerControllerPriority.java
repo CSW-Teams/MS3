@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
+import org.cswteams.ms3.control.scocciatura.ControllerScocciaturaPriority;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
@@ -27,7 +27,7 @@ import javax.transaction.Transactional;
 
 // TODO: Generate concrete shift controller from this class
 @Service
-public class SchedulerController implements ISchedulerController {
+public class SchedulerControllerPriority implements ISchedulerController {
 
     @Autowired
     private DoctorDAO doctorDAO;
@@ -60,7 +60,7 @@ public class SchedulerController implements ISchedulerController {
     private DoctorUffaPriorityDAO doctorUffaPriorityDAO;
 
 
-    private ScheduleBuilder scheduleBuilder;
+    private ScheduleBuilderPriority scheduleBuilder;
 
     @Override
     public Set<ShowScheduleToPlannerDTO> getAllSchedulesWithDates(){
@@ -121,7 +121,7 @@ public class SchedulerController implements ISchedulerController {
             //NB: DO NOT move this line
             List<Scocciatura> scocciaturaList = scocciaturaDAO.findAll();
 
-            this.scheduleBuilder = new ScheduleBuilder(
+            this.scheduleBuilder = new ScheduleBuilderPriority(
                 startDate,                      //Start date of the shift schedule
                 endDate,                        //End date of the shift schedule
                 constraintDAO.findAll(),        //All the constraints to respect when a doctor is assigned to a concrete shift
@@ -132,7 +132,7 @@ public class SchedulerController implements ISchedulerController {
                 doctorUffaPriorityList          //All the information about priority levels on all the queues of the doctors
                 );
 
-            ControllerScocciatura controllerScocciatura = new ControllerScocciatura(scocciaturaList);
+            ControllerScocciaturaPriority controllerScocciatura = new ControllerScocciaturaPriority(scocciaturaList);
             //We set the controller that manages doctors priorities.
             this.scheduleBuilder.setControllerScocciatura(controllerScocciatura);
 
@@ -178,7 +178,7 @@ public class SchedulerController implements ISchedulerController {
         Schedule schedule;
 
         //We create a new builder passing him as parameter an existing shift schedule.
-        this.scheduleBuilder = new ScheduleBuilder(
+        this.scheduleBuilder = new ScheduleBuilderPriority(
                 constraintDAO.findAll(),            //All the constraints that shall be respected when a doctor is assigned to a concrete shift
                 doctorUffaPriorityDAO.findAll(),    //All the possible doctors that can be assigned to the concrete shifts
                 scheduleDAO.findByDateBetween(concreteShift.getDate())  //Existing shift schedule

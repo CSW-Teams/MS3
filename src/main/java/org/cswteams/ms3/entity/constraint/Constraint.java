@@ -43,5 +43,5 @@ public abstract class Constraint {
      *
      * @throws ViolatedConstraintException if the <i>constraint</i> is violated.
      */
-    public abstract void verifyConstraint(ContextConstraint contesto) throws ViolatedConstraintException;
+    public abstract void verifyConstraint(ContextConstraintPriority contesto) throws ViolatedConstraintException;
 }

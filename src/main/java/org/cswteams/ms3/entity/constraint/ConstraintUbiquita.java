@@ -17,7 +17,7 @@ public class ConstraintUbiquita extends ConstraintAssegnazioneTurnoTurno {
      * @throws ViolatedConstraintException Exception thrown if the constraint is violated
      */
     @Override
-    public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraintPriority context) throws ViolatedConstraintException {
 
         if(!context.getDoctorUffaPriority().getAssegnazioniTurnoCache().isEmpty()){
             for(ConcreteShift assignedConcreteShift: context.getDoctorUffaPriority().getAssegnazioniTurnoCache()){

@@ -48,7 +48,7 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
      * @throws ViolatedConstraintException Exception thrown if the constraint is violated
      */
     @Override
-    public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraintPriority context) throws ViolatedConstraintException {
 
         List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
         if(concreteShiftList != null && !concreteShiftList.isEmpty()) {

@@ -51,7 +51,7 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
      * @see ConstraintMaxPeriodoConsecutivo
      */
     @Override
-    public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraintPriority context) throws ViolatedConstraintException {
         if(context.getDoctorUffaPriority().getAssegnazioniTurnoCache().size() != 0 && verificaAppartenenzaCategoria(context)) {
             List<ConcreteShift> assignedConcreteShifts = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
             List<ConcreteShift> consecConcreteShifts = new ArrayList<>();
@@ -110,7 +110,7 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
      * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
      * @return Boolean that represents if the doctor belongs (right now) to the category
      */
-    private boolean verificaAppartenenzaCategoria(ContextConstraint context){
+    private boolean verificaAppartenenzaCategoria(ContextConstraintPriority context){
 
         if(constrainedCategory == null){
             return true;

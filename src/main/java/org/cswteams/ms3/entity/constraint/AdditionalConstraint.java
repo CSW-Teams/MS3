@@ -9,7 +9,7 @@ import javax.persistence.Entity;
 @Entity
 public class AdditionalConstraint extends Constraint {
     @Override
-    public void verifyConstraint(ContextConstraint contesto) throws ViolatedConstraintException {
+    public void verifyConstraint(ContextConstraintPriority contesto) throws ViolatedConstraintException {
 
     }
 }
