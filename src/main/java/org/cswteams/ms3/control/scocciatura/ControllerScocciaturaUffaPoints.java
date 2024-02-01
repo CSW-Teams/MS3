@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.scocciatura;
 
 import org.cswteams.ms3.entity.ConcreteShift;
-import org.cswteams.ms3.entity.DoctorScheduleState;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorScheduleState;
 import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 

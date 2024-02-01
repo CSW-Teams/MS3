@@ -1,4 +1,4 @@
-package org.cswteams.ms3.entity;
+package org.cswteams.ms3.entity.scheduling.algo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,10 @@ import javax.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.DoctorAssignment;
+import org.cswteams.ms3.entity.Schedule;
 
 @Entity
 @Getter

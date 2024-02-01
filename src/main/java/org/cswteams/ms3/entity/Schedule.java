@@ -3,6 +3,7 @@ package org.cswteams.ms3.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.entity.constraint.Constraint;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

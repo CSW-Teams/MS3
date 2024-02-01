@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.scocciatura;
 
 import org.cswteams.ms3.entity.ConcreteShift;
-import org.cswteams.ms3.entity.DoctorUffaPriority;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.PriorityQueueEnum;
