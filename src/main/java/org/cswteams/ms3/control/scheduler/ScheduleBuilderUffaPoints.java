@@ -164,8 +164,7 @@ public class ScheduleBuilderUffaPoints {
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()) {
                     for (Map.Entry<Seniority, Integer> qssEntry : qss.getSeniorityMap().entrySet()) {
                         count += qssEntry.getValue();
-                        // TODO mismatch onDuty/ON_CALL - giusto così o è un errore?
-                        this.addDoctors(concreteShift, qssEntry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_CALL, count);
+                        this.addDoctors(concreteShift, qssEntry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_DUTY, count);
                     }
                 }
                 if(concreteShift.getShift().getMedicalService().getTasks().size()>count){
@@ -190,8 +189,7 @@ public class ScheduleBuilderUffaPoints {
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()) {
                     for (Map.Entry<Seniority, Integer> qssEntry : qss.getSeniorityMap().entrySet()) {
                         count += qssEntry.getValue();
-                        // TODO mismatch onDuty/ON_CALL - giusto così?
-                        this.addDoctors(concreteShift, qssEntry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_DUTY, count);
+                        this.addDoctors(concreteShift, qssEntry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_CALL, count);
                     }
                 }
 
