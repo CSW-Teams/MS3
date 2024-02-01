@@ -71,6 +71,12 @@ public class SchedulerControllerUffaPoints implements ISchedulerController {
 
     }
 
+    @Override
+    public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList) {
+        // FIXME rimuovere dall'interfaccia?
+        return null;
+    }
+
 
     /**
      * This method creates a new shift schedule by specifying start date and end date.

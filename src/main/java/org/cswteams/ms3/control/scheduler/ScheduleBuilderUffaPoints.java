@@ -269,7 +269,7 @@ public class ScheduleBuilderUffaPoints {
 
         for(Constraint constraint : this.allConstraints){
             try {
-                constraint.verificaVincolo(context);
+                constraint.verifyConstraint(context);
             } catch (ViolatedConstraintException e) {
 
                 //schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
