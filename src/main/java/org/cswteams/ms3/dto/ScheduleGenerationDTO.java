@@ -15,6 +15,14 @@ public class ScheduleGenerationDTO {
     private int finalMonth;
     private int finalYear;
 
+    /**
+     * FOR DEBUG/ANALYSIS ONLY
+     * 0 = reserved as default value
+     * 1 = "old" scheduling algorithm ("uffa points")
+     * 2 = "new" scheduling algorithm ("priority queues")
+     */
+    private int algorithm;
+
     public LocalDate getStartDate(){
         return LocalDate.of(initialYear, initialMonth, initialDay);
     }

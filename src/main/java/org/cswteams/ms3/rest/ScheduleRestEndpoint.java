@@ -5,6 +5,7 @@ import org.cswteams.ms3.dto.ScheduleGenerationDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
 import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.entity.Schedule;
+import org.cswteams.ms3.entity.scheduling.factory.SchedulerControllerFactory;
 import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,9 @@ public class ScheduleRestEndpoint {
         if (gs != null) {
             //Only the requests with admissible dates will be considered.
             if(gs.getStartDate().isBefore(gs.getEndDate())){
+
+                SchedulerControllerFactory factory = new SchedulerControllerFactory();
+                schedulerController = factory.createSchedulerController(gs.getAlgorithm());
 
                 //The request is passed to the controller.
                 Schedule schedule = schedulerController.createSchedule(gs.getStartDate(),gs.getEndDate());
