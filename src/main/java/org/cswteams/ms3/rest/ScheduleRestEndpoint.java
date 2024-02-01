@@ -19,7 +19,7 @@ import java.util.Set;
 @RequestMapping("/schedule/")
 public class ScheduleRestEndpoint {
 
-    @Autowired
+    //@Autowired
     private ISchedulerController schedulerController;
 
     /*
