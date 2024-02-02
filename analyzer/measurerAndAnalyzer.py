@@ -6,8 +6,8 @@ import calendar
 import json
 import sys
 
-name="sprintfloyd"
-psw="sprintfloyd"
+user="kobero"
+psw="kobero"
 
 def funcMedia(dizionario):
     # Conta il numero totale di elementi nel dizionario
@@ -74,7 +74,7 @@ def funcMin(dizionario):
     
 def computazioneTotale(name):
     conn = pg8000.connect(
-        user=name,
+        user=user,
         password=psw,
         host="127.0.0.1",
         port=5432,
@@ -132,7 +132,7 @@ def computazioneTotale(name):
 def computazionePerSchedule(name):
     # Configura la connessione al database
     conn = pg8000.connect(
-        user=name,
+        user=user,
         password=psw,
         host="127.0.0.1",
         port=5432,
@@ -227,7 +227,10 @@ def esegui_richiesta_post(data_inizio, data_fine,alg):
     except requests.exceptions.RequestException as e:
         print(f"Errore nella connessione al server: {e}")
 
-def generaSchedulazioni(alg):
+def generaSchedulazioni(name,alg):
+
+    fileTmp=open(name+"tmp.txt","w+")
+
     #vengono generate tutte schedulazioni di durata pari a un mese
     data_attuale = datetime.datetime.now()
     deltaDay=calendar.monthrange(data_attuale.year,data_attuale.month)[1]
@@ -237,13 +240,21 @@ def generaSchedulazioni(alg):
     for _ in range(24):
         data_inizio = mese_successivo
         data_fine = mese_successivo.replace(day=(calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]))
+
+        tempo_inizio = time.time()
+
         # Chiamata alla funzione del backend che si occupa di generare ciascuna schedulazione
-        esegui_richiesta_post(data_inizio, data_fine,alg)
+
+        esegui_richiesta_post(data_inizio, data_fine)
+        tempo_fine = time.time()
+        tempo_trascorso = tempo_fine - tempo_inizio
+        fileTmp.write(f"Tempo di esecuzione: {tempo_trascorso} secondi\n")
+        fileTmp.flush()
         # Passa al mese successivo
         deltaDay=calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]
         mese_successivo = mese_successivo.replace(day=1) + datetime.timedelta(days=deltaDay)
 
 if __name__ == "__main__":
-    generaSchedulazioni(2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    generaSchedulazioni(sys.argv[1],2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
     computazionePerSchedule(sys.argv[1]) #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
     computazioneTotale(sys.argv[1])	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
