@@ -2,7 +2,7 @@ package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
 import org.cswteams.ms3.entity.ConcreteShift;
-import org.cswteams.ms3.entity.DoctorUffaPriority;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 
 @Data
 public class ContestoScocciatura {

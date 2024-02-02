@@ -3,33 +3,36 @@ package org.cswteams.ms3.entity.constraint;
 import lombok.Data;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.DoctorHolidays;
-import org.cswteams.ms3.entity.DoctorUffaPriority;
 import org.cswteams.ms3.entity.Holiday;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorScheduleState;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
- * Context for <i>constraints</i> validation.
+ * !!! - Classe temporanea per far funzionare i controlli sui vincoli di entrambi gli algoritmi di scheduling
  */
 @Data
-public class ContextConstraint {
+public abstract class ContextConstraint {
 
     @NotNull
-    private DoctorUffaPriority doctorUffaPriority;
+    protected ConcreteShift concreteShift;
+
+    protected DoctorHolidays doctorHolidays;
+
+    protected List<Holiday> holidays;
+
+
+
+
+    // ... in particolare, i seguenti due attributi appartengono ciascuno ad una delle due versioni dell'algoritmo
 
     @NotNull
-    private ConcreteShift concreteShift;
+    protected DoctorUffaPriority doctorUffaPriority;
 
-    private DoctorHolidays doctorHolidays;
+    @NotNull
+    protected DoctorScheduleState doctorScheduleState;
 
-    private List<Holiday> holidays;
-
-    public ContextConstraint(DoctorUffaPriority doctorUffaPriority, ConcreteShift concreteShift, DoctorHolidays doctorHolidays, List<Holiday> holidays){
-        this.concreteShift = concreteShift;
-        this.doctorUffaPriority = doctorUffaPriority;
-        this.doctorHolidays = doctorHolidays;
-        this.holidays = holidays;
-    }
 
 }

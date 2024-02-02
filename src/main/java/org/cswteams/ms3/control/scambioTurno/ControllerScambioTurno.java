@@ -11,7 +11,8 @@ import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.ConstraintHoliday;
 import org.cswteams.ms3.entity.constraint.ConstraintMaxPeriodoConsecutivo;
 import org.cswteams.ms3.entity.constraint.ConstraintUbiquita;
-import org.cswteams.ms3.entity.constraint.ContextConstraint;
+import org.cswteams.ms3.entity.constraint.ContextConstraintPriority;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.RequestStatus;
 import org.cswteams.ms3.enums.Seniority;
@@ -315,7 +316,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             ConstraintHoliday constraintHoliday = new ConstraintHoliday();
             ConstraintMaxPeriodoConsecutivo constraintMaxPeriodoConsecutivo = new ConstraintMaxPeriodoConsecutivo();
             DoctorUffaPriority d =  doctorUffaPriorityDAO.findByDoctor_Id(doctor.getId()).get(0); //TODO: FIX IT
-            ContextConstraint context = new ContextConstraint(
+            ContextConstraintPriority context = new ContextConstraintPriority(
                     d,
                     concreteShift.get(),
                     doctorHolidaysDAO.findByDoctor_Id(doctor.getId()),

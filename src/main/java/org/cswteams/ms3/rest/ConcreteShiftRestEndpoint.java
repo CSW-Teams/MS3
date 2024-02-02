@@ -3,6 +3,7 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
 import org.cswteams.ms3.control.scambioTurno.IControllerScambioTurno;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
+import org.cswteams.ms3.control.scheduler.SchedulerControllerPriority;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dto.concreteshift.GetAllConcreteShiftDTO;
 import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
@@ -30,8 +31,10 @@ public class ConcreteShiftRestEndpoint {
     @Autowired
     private IConcreteShiftController concreteShiftController;
 
-    @Autowired
-    private ISchedulerController controllerScheduler;
+    //@Autowired
+    //private ISchedulerController controllerScheduler;
+    //FIXME lasciato priority perché non chiamato dall'analyzer
+    private SchedulerControllerPriority controllerScheduler;
 
     @Autowired
     private IControllerScambioTurno controllerScambioTurno;

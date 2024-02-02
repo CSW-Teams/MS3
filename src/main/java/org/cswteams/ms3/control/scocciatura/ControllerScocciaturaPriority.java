@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.scocciatura;
 
 import org.cswteams.ms3.entity.ConcreteShift;
-import org.cswteams.ms3.entity.DoctorUffaPriority;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.PriorityQueueEnum;
@@ -15,14 +15,14 @@ import java.util.*;
 /**
  * This class manages all the aspects concerning the uffa prioriy levels.
  */
-public class ControllerScocciatura {
+public class ControllerScocciaturaPriority {
 
     public List<Scocciatura> scocciature;   //why public!?
     private final int upperBound;
     private final int lowerBound;
 
 
-    public ControllerScocciatura(List<Scocciatura> scocciature) {
+    public ControllerScocciaturaPriority(List<Scocciatura> scocciature) {
         this.scocciature = scocciature;
 
         //we read upper bound and lower bound of priority levels from configuration file priority.properties

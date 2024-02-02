@@ -12,6 +12,7 @@ import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.condition.*;
 import org.cswteams.ms3.entity.constraint.*;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
