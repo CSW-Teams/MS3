@@ -5,7 +5,7 @@ import datetime
 import calendar
 import json
 import sys
-
+import time
 name="sprintfloyd"
 psw="sprintfloyd"
 
@@ -227,7 +227,11 @@ def esegui_richiesta_post(data_inizio, data_fine):
         print(f"Errore nella connessione al server: {e}")
 
 def generaSchedulazioni():
+
+    fileTmp=open("tmp.txt","w+")
+
     #vengono generate tutte schedulazioni di durata pari a un mese
+
     data_attuale = datetime.datetime.now()
     deltaDay=calendar.monthrange(data_attuale.year,data_attuale.month)[1]
     mese_successivo = data_attuale.replace(day=1) + datetime.timedelta(days=deltaDay)
@@ -236,13 +240,21 @@ def generaSchedulazioni():
     for _ in range(24):
         data_inizio = mese_successivo
         data_fine = mese_successivo.replace(day=(calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]))
+
+        tempo_inizio = time.time()
+
         # Chiamata alla funzione del backend che si occupa di generare ciascuna schedulazione
+
         esegui_richiesta_post(data_inizio, data_fine)
+        tempo_fine = time.time()
+        tempo_trascorso = tempo_fine - tempo_inizio
+        fileTmp.write(f"Tempo di esecuzione: {tempo_trascorso} secondi\n")
+        fileTmp.flush()
         # Passa al mese successivo
         deltaDay=calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]
         mese_successivo = mese_successivo.replace(day=1) + datetime.timedelta(days=deltaDay)
-
 if __name__ == "__main__":
+
     #generaSchedulazioni()		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
     computazionePerSchedule(sys.argv[1])#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
     computazioneTotale(sys.argv[1])	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
