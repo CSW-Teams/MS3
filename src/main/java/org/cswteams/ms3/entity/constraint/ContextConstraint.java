@@ -9,6 +9,7 @@ import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorXY;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,7 +23,8 @@ public abstract class ContextConstraint {
 
     protected DoctorHolidays doctorHolidays;
 
-    protected List<Holiday> holidays;
+    // FIXME inizializzazione temporanea per compatibilità con algoritmo vecchio
+    protected List<Holiday> holidays=new ArrayList<>();
 
 
 
