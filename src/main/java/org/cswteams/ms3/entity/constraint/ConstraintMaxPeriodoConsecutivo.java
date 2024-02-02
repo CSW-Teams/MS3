@@ -52,8 +52,8 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
-        if(context.getDoctorUffaPriority().getAssegnazioniTurnoCache().size() != 0 && verificaAppartenenzaCategoria(context)) {
-            List<ConcreteShift> assignedConcreteShifts = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
+        if(context.getDoctorXY().getAssegnazioniTurnoCache().size() != 0 && verificaAppartenenzaCategoria(context)) {
+            List<ConcreteShift> assignedConcreteShifts = context.getDoctorXY().getAssegnazioniTurnoCache();
             List<ConcreteShift> consecConcreteShifts = new ArrayList<>();
 
             //Prendo l'indice del turno precedente all'assegnazione che sto per fare
@@ -98,7 +98,7 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
                 consecMinutes += turno.getShift().getDuration().toMinutes();
             }
             if (consecMinutes > maxConsecutiveMinutes) {
-                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor(), maxConsecutiveMinutes);
+                throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorXY().getDoctor(), maxConsecutiveMinutes);
             }
         }
 
@@ -115,7 +115,7 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
         if(constrainedCategory == null){
             return true;
         }
-         for (Condition condition : context.getDoctorUffaPriority().getDoctor().getPermanentConditions()) {
+         for (Condition condition : context.getDoctorXY().getDoctor().getPermanentConditions()) {
              if (condition.getType().compareTo(constrainedCategory.getType()) == 0) {
                  //if ((condition.getStartDate() < context.getConcreteShift().getDate() || condition.getStartDate() == context.getConcreteShift().getDate()) && (condition.getEndDate() > context.getConcreteShift().getDate()) || condition.getEndDate() == context.getConcreteShift().getDate()) {
                      return true;

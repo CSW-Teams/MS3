@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -31,20 +30,7 @@ TODO: Check why there is this constraint
     })
 })
 */
-public class DoctorUffaPriority {
-    
-    @Id
-    @GeneratedValue
-    private Long id;
-
-    /** Doctor which the Uffa priority refers to */
-    @OneToOne
-    @NotNull
-    private Doctor doctor;
-
-    /** Current schedule */
-    @OneToOne
-    private Schedule schedule;
+public class DoctorUffaPriority extends DoctorXY{
 
     private int partialGeneralPriority = 0;
     private int generalPriority = 0;
@@ -52,10 +38,6 @@ public class DoctorUffaPriority {
     private int longShiftPriority = 0;
     private int partialNightPriority = 0;
     private int nightPriority = 0;
-
-    /** All the concrete shifts assigned to the doctor in the current schedule */
-    @Transient
-    List<ConcreteShift> assegnazioniTurnoCache;
 
 
     /**
@@ -78,6 +60,7 @@ public class DoctorUffaPriority {
 
 
     /** This method returns a ConcreteShift list for the current schedule. **/
+    @Override
     public List<ConcreteShift> getAssegnazioniTurnoCache(){
 
         if (assegnazioniTurnoCache == null){

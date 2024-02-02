@@ -17,7 +17,7 @@ public class ConstraintHoliday extends Constraint {
 
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
-        Doctor doctor = context.getDoctorUffaPriority().getDoctor();
+        Doctor doctor = context.getDoctorXY().getDoctor();
         ConcreteShift concreteShift = context.getConcreteShift();
 
         for(Holiday holiday: context.getHolidays()) {
