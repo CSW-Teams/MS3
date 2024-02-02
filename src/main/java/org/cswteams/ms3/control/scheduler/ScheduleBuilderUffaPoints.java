@@ -9,6 +9,7 @@ import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.constraint.ContextConstraintUffaPoints;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorScheduleState;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorXY;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.exception.IllegalAssegnazioneTurnoException;
@@ -215,12 +216,12 @@ public class ScheduleBuilderUffaPoints {
      */
     private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList,ConcreteShiftDoctorStatus status,int selectedTask) throws NotEnoughFeasibleUsersException{
         int selectedUser=0;
-        List<DoctorScheduleState> allDoctorScheduleState = new ArrayList<>(allUserScheduleStates.values());
+        List<DoctorXY> allDoctorScheduleState = new ArrayList<>(allUserScheduleStates.values());
         if(controllerScocciatura != null){
             controllerScocciatura.addUffaTempUtenti(allDoctorScheduleState,concreteShift);
             controllerScocciatura.ordinaByUffa(allDoctorScheduleState);
         }
-        for(DoctorScheduleState d:allDoctorScheduleState){
+        for(DoctorXY d:allDoctorScheduleState){
             if (selectedUser == qss.getValue()){
                 break;
             }

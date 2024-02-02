@@ -16,7 +16,7 @@ public class ContextConstraintPriority extends ContextConstraint{
 
     public ContextConstraintPriority(DoctorUffaPriority doctorUffaPriority, ConcreteShift concreteShift, DoctorHolidays doctorHolidays, List<Holiday> holidays){
         this.concreteShift = concreteShift;
-        this.doctorUffaPriority = doctorUffaPriority;
+        this.doctorXY = doctorUffaPriority;
         this.doctorHolidays = doctorHolidays;
         this.holidays = holidays;
     }

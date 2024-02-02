@@ -50,12 +50,12 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
 
-        List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
+        List<ConcreteShift> concreteShiftList = context.getDoctorXY().getAssegnazioniTurnoCache();
         if(concreteShiftList != null && !concreteShiftList.isEmpty()) {
             //We find the bounds of the period to be considered in the schedule in which there is the new concrete shift to be assigned.
-            long startPeriodDate = context.getDoctorUffaPriority().getSchedule().getStartDate();
+            long startPeriodDate = context.getDoctorXY().getSchedule().getStartDate();
             long endPeriodDate = startPeriodDate + periodDuration;
-            while(endPeriodDate < context.getDoctorUffaPriority().getSchedule().getEndDate()){
+            while(endPeriodDate < context.getDoctorXY().getSchedule().getEndDate()){
                 if(context.getConcreteShift().getDate() < endPeriodDate && (context.getConcreteShift().getDate() > startPeriodDate || context.getConcreteShift().getDate() == startPeriodDate)){
                     break;
                 }
@@ -69,7 +69,7 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
                 if(concreteShift.getDate() < endPeriodDate && (concreteShift.getDate() > startPeriodDate || concreteShift.getDate() == startPeriodDate)){
                     totalMinutes += concreteShift.getShift().getDuration().toMinutes();
                     if(totalMinutes > periodMaxTime){
-                        throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor(), periodDuration, periodMaxTime);
+                        throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorXY().getDoctor(), periodDuration, periodMaxTime);
                     }
                 }
             }

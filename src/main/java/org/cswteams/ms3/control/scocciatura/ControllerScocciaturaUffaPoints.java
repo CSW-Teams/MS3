@@ -2,6 +2,7 @@ package org.cswteams.ms3.control.scocciatura;
 
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorScheduleState;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorXY;
 import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 
@@ -26,11 +27,11 @@ public class ControllerScocciaturaUffaPoints {
      * @param utentiState : Stato dell'utente
      * @param concreteShift : Assegnazione a cui vogliamo assegnarla
      */
-    public void addUffaTempUtenti(List<DoctorScheduleState> utentiState, ConcreteShift concreteShift){
+    public void addUffaTempUtenti(List<DoctorXY> utentiState, ConcreteShift concreteShift){
         int uffa;
         ContestoScocciatura contestoScocciatura;
 
-        for(DoctorScheduleState doctorScheduleState :utentiState ){
+        for(DoctorXY doctorScheduleState :utentiState ){
             /*contestoScocciatura = new ContestoScocciatura(doctorScheduleState, concreteShift);
             uffa = this.calcolaUffaComplessivoUtenteAssegnazione(contestoScocciatura);
             doctorScheduleState.addUffaTemp(uffa);*/
@@ -42,7 +43,7 @@ public class ControllerScocciaturaUffaPoints {
      * @param utenti
      * @return
      */
-    public void ordinaByUffa(List<DoctorScheduleState> utenti){
+    public void ordinaByUffa(List<DoctorXY> utenti){
 
         /*
          * Mescoliamo prima la lista degli utenti e poi ordiniamo in base al valore di UFFA.

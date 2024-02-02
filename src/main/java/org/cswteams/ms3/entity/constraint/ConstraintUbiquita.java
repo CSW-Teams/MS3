@@ -19,8 +19,8 @@ public class ConstraintUbiquita extends ConstraintAssegnazioneTurnoTurno {
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
 
-        if(!context.getDoctorUffaPriority().getAssegnazioniTurnoCache().isEmpty()){
-            for(ConcreteShift assignedConcreteShift: context.getDoctorUffaPriority().getAssegnazioniTurnoCache()){
+        if(!context.getDoctorXY().getAssegnazioniTurnoCache().isEmpty()){
+            for(ConcreteShift assignedConcreteShift: context.getDoctorXY().getAssegnazioniTurnoCache()){
                 LocalDate dateStartA = LocalDate.ofEpochDay(assignedConcreteShift.getDate());   //conversion Epoch -> LocalDate of assignedConcreteShift.getDate()
                 LocalDateTime startA = dateStartA.atTime(assignedConcreteShift.getShift().getStartTime());
 
@@ -31,7 +31,7 @@ public class ConstraintUbiquita extends ConstraintAssegnazioneTurnoTurno {
                 LocalDateTime endB = startB.plus(context.getConcreteShift().getShift().getDuration());
 
                 if(!((startA.isBefore(startB) && (endA.isBefore(startB) || endA.isEqual(startB))) || (startB.isBefore(startA) && (endB.isBefore(startA) || endB.isEqual(startA))))){
-                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), assignedConcreteShift, context.getDoctorUffaPriority().getDoctor());
+                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), assignedConcreteShift, context.getDoctorXY().getDoctor());
                 }
             }
         }
