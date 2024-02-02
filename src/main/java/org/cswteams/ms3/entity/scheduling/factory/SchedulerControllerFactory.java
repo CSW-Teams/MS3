@@ -5,7 +5,7 @@ import org.cswteams.ms3.control.scheduler.SchedulerControllerPriority;
 import org.cswteams.ms3.control.scheduler.SchedulerControllerUffaPoints;
 
 public class SchedulerControllerFactory {
-
+/*
     public ISchedulerController createSchedulerController(SchedulerType schedulerType) {
         switch (schedulerType) {
             case SCHEDULER_UFFAPOINTS:
@@ -16,13 +16,13 @@ public class SchedulerControllerFactory {
                 throw new RuntimeException("Invalid scheduling algorithm");
         }
     }
-
+*/
     /**
      * same as before, but more handy for rest endpoints handling
      * @param algorithm
      * @return
      */
-    public ISchedulerController createSchedulerController(int algorithm) {
+  /*  public ISchedulerController createSchedulerController(int algorithm) {
         switch (algorithm) {
             case 1:
                 return new SchedulerControllerUffaPoints();
@@ -33,5 +33,5 @@ public class SchedulerControllerFactory {
                 return new SchedulerControllerPriority();
                 //throw new RuntimeException("Invalid scheduling algorithm");
         }
-    }
+    }*/
 }

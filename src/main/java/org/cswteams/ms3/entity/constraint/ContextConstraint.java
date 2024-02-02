@@ -6,8 +6,10 @@ import org.cswteams.ms3.entity.DoctorHolidays;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorScheduleState;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorXY;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,7 +23,8 @@ public abstract class ContextConstraint {
 
     protected DoctorHolidays doctorHolidays;
 
-    protected List<Holiday> holidays;
+    // FIXME inizializzazione temporanea per compatibilità con algoritmo vecchio
+    protected List<Holiday> holidays=new ArrayList<>();
 
 
 
@@ -29,10 +32,14 @@ public abstract class ContextConstraint {
     // ... in particolare, i seguenti due attributi appartengono ciascuno ad una delle due versioni dell'algoritmo
 
     @NotNull
+    protected DoctorXY doctorXY;
+
+    /*
+    @NotNull
     protected DoctorUffaPriority doctorUffaPriority;
 
     @NotNull
     protected DoctorScheduleState doctorScheduleState;
-
+*/
 
 }

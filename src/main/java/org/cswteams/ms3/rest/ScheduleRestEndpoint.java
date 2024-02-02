@@ -40,6 +40,7 @@ public class ScheduleRestEndpoint {
 
                 //The request is passed to the controller.
                 Schedule schedule=null;
+                System.out.println("--------------- ALGO "+gs.getAlgorithm());
                 if(gs.getAlgorithm()==1) schedule = schedulerController2.createSchedule(gs.getStartDate(),gs.getEndDate());
                 else schedule = schedulerController.createSchedule(gs.getStartDate(),gs.getEndDate());
 
