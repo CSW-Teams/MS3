@@ -202,7 +202,7 @@ def computazionePerSchedule(name):
     json.dump(dictFindMin, minFile, indent=2)
     json.dump(dictFinDiffMin, minDiffFile, indent=2)
     
-def esegui_richiesta_post(data_inizio, data_fine):
+def esegui_richiesta_post(data_inizio, data_fine,alg):
     url = "http://localhost:3000/api/schedule/generation"
     headers= { 'Content-Type': 'application/json' }
     print(data_inizio,data_fine)
@@ -212,7 +212,8 @@ def esegui_richiesta_post(data_inizio, data_fine):
         "initialYear": data_inizio.year,
         "finalDay": data_fine.day,
         "finalMonth": data_fine.month,
-        "finalYear": data_fine.year
+        "finalYear": data_fine.year,
+        "algorithm":alg
     }
     try:
         response = requests.post(url,headers=headers, data=json.dumps(parametri))	#recupero della risposta del server
@@ -226,7 +227,7 @@ def esegui_richiesta_post(data_inizio, data_fine):
     except requests.exceptions.RequestException as e:
         print(f"Errore nella connessione al server: {e}")
 
-def generaSchedulazioni():
+def generaSchedulazioni(alg):
     #vengono generate tutte schedulazioni di durata pari a un mese
     data_attuale = datetime.datetime.now()
     deltaDay=calendar.monthrange(data_attuale.year,data_attuale.month)[1]
@@ -237,12 +238,12 @@ def generaSchedulazioni():
         data_inizio = mese_successivo
         data_fine = mese_successivo.replace(day=(calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]))
         # Chiamata alla funzione del backend che si occupa di generare ciascuna schedulazione
-        esegui_richiesta_post(data_inizio, data_fine)
+        esegui_richiesta_post(data_inizio, data_fine,alg)
         # Passa al mese successivo
         deltaDay=calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]
         mese_successivo = mese_successivo.replace(day=1) + datetime.timedelta(days=deltaDay)
 
 if __name__ == "__main__":
-    #generaSchedulazioni()		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
-    computazionePerSchedule(sys.argv[1])#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    generaSchedulazioni(2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    computazionePerSchedule(sys.argv[1]) #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
     computazioneTotale(sys.argv[1])	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
