@@ -28,7 +28,7 @@ import javax.transaction.Transactional;
 
 // TODO: Generate concrete shift controller from this class
 @Service
-public class SchedulerControllerUffaPoints implements ISchedulerController {
+public class SchedulerControllerUffaPoints implements ISchedulerController2 {
 
     @Autowired
     private DoctorDAO doctorDAO;

@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
+import org.cswteams.ms3.control.scheduler.ISchedulerController2;
 import org.cswteams.ms3.dto.ScheduleGenerationDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
 import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
@@ -19,8 +20,10 @@ import java.util.Set;
 @RequestMapping("/schedule/")
 public class ScheduleRestEndpoint {
 
-    //@Autowired
+    @Autowired
     private ISchedulerController schedulerController;
+    @Autowired
+    private ISchedulerController2 schedulerController2;
 
     /*
      * This method is invoked by the frontend to request a new shift schedule in the range of
@@ -32,11 +35,14 @@ public class ScheduleRestEndpoint {
             //Only the requests with admissible dates will be considered.
             if(gs.getStartDate().isBefore(gs.getEndDate())){
 
-                SchedulerControllerFactory factory = new SchedulerControllerFactory();
-                schedulerController = factory.createSchedulerController(gs.getAlgorithm());
+               //  SchedulerControllerFactory factory = new SchedulerControllerFactory();
+               // schedulerController = factory.createSchedulerController(gs.getAlgorithm());
 
                 //The request is passed to the controller.
-                Schedule schedule = schedulerController.createSchedule(gs.getStartDate(),gs.getEndDate());
+                Schedule schedule=null;
+                if(gs.getAlgorithm()==1) schedule = schedulerController2.createSchedule(gs.getStartDate(),gs.getEndDate());
+                else schedule = schedulerController.createSchedule(gs.getStartDate(),gs.getEndDate());
+
                 if(schedule == null)
                     return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
                 if(!schedule.getViolatedConstraints().isEmpty())

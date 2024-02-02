@@ -34,11 +34,11 @@ def funcMedia(dizionario):
     return {"giornaliero":float(average_g),"pomeridiano":float(average_p),"notturno":float(average_n),"domeniche":float(average_d),"lunga":float(average_l)}
 
 def funcMax(dizionario):
-    mg=0;
-    mp=0;
-    mn=0;
-    md=0
-    ml=0
+    mg=0;	#max giornaliero
+    mp=0;	#max pomeridiano
+    mn=0;	#max notturno
+    md=0	#max domenicale
+    ml=0	#max lungo
     for item in dizionario.values():
         if(mg<item["giornaliero"]):
             mg=item["giornaliero"]
@@ -53,12 +53,12 @@ def funcMax(dizionario):
     return {"giornaliero":float(mg),"pomeridiano":float(mp),"notturno":float(mn),"domeniche":float(md),"lunga":float(ml)}
 
 def funcMin(dizionario):
-    idCasuale= list(dizionario.keys())[0]
-    mg=dizionario.get(idCasuale)["giornaliero"];
-    mp=dizionario.get(idCasuale)["pomeridiano"];
-    mn=dizionario.get(idCasuale)["notturno"];
-    md=dizionario.get(idCasuale)["domeniche"];
-    ml=dizionario.get(idCasuale)["lunga"];
+    idCasuale = list(dizionario.keys())[0]	#per avere la certezza di inizializzare le variabili di minimo con un valore non minore del minimo effettivo, si prende il valore relativo a uno dei medici scelto (pseudo-)casualmente.
+    mg=dizionario.get(idCasuale)["giornaliero"];	#min giornaliero
+    mp=dizionario.get(idCasuale)["pomeridiano"];	#min pomeridiano
+    mn=dizionario.get(idCasuale)["notturno"];		#min notturno
+    md=dizionario.get(idCasuale)["domeniche"];		#min domenicale
+    ml=dizionario.get(idCasuale)["lunga"];		#min lungo
     for item in dizionario.values():
         if(mg>item["giornaliero"]):
             mg=item["giornaliero"]
@@ -71,6 +71,7 @@ def funcMin(dizionario):
         if(ml>item["lunga"]):
             ml=item["lunga"]
     return {"giornaliero":float(mg),"pomeridiano":float(mp),"notturno":float(mn),"domeniche":float(md),"lunga":float(ml)}
+    
 def computazioneTotale(name):
     conn = pg8000.connect(
         user=name,
@@ -79,21 +80,21 @@ def computazioneTotale(name):
         port=5432,
         database="ms3"
     )
-    AllUser = pd.read_sql("SELECT ms3_system_user_id,name,lastname FROM Doctor", con=conn)
+    AllUser = pd.read_sql("SELECT ms3_system_user_id,name,lastname FROM Doctor", con=conn)	#tutti gli utenti del sistema
     dictApp={}
     for ms3_id in AllUser["ms3_system_user_id"]:
         queryShiftTime="SELECT count(*) as c FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE ds.doctor_ms3_system_user_id="+str(ms3_id)+" and shift.time_slot="
-        count0 = pd.read_sql(queryShiftTime+"0", con=conn) #quanti giornalieri
-        count1 = pd.read_sql(queryShiftTime+"1", con=conn) #quanti pomeridiani
-        count2 = pd.read_sql(queryShiftTime+"2", con=conn) #quanti notturnix
+        count0 = pd.read_sql(queryShiftTime+"0", con=conn) #quanti turni giornalieri
+        count1 = pd.read_sql(queryShiftTime+"1", con=conn) #quanti turni pomeridiani
+        count2 = pd.read_sql(queryShiftTime+"2", con=conn) #quanti turni notturni
 
         querySunday="SELECT count(*) as c FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE ds.doctor_ms3_system_user_id="+str(ms3_id)+" and cs.date%7=3"
 
-        count3 = pd.read_sql(querySunday, con=conn)
+        count3 = pd.read_sql(querySunday, con=conn)	#quanti turni domenicali
 
-        queryDouble="SELECT count(*) as c from (SELECT count(*) as ctemp FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE ds.doctor_ms3_system_user_id="+str(ms3_id)+" and ds.concrete_shift_doctor_status=0 group by date having count(*)>=2) as temporary";
+        queryDouble="SELECT count(*) as c from (SELECT count(*) as ctemp FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE ds.doctor_ms3_system_user_id="+str(ms3_id)+" and ds.concrete_shift_doctor_status=0 group by date having count(*)>=2) as temporary"
 
-        count4 = pd.read_sql(queryDouble, con=conn)
+        count4 = pd.read_sql(queryDouble, con=conn)	#quanti turni lunghi
 
         dictApp[ms3_id]={
                             "giornaliero":count0["c"].values[0],
@@ -106,7 +107,7 @@ def computazioneTotale(name):
     dictFindMax=funcMax(dictApp)
     dictFindMin=funcMin(dictApp)
 
-    #caloclo differenza
+    #calcolo differenza
     for item in dictApp.values():
         item["giornaliero"] = abs(item["giornaliero"]-dictFinMedia  ["giornaliero"]);
         item["pomeridiano"] = abs(item["pomeridiano"]-dictFinMedia["pomeridiano"]);
@@ -125,8 +126,9 @@ def computazioneTotale(name):
             "discostamento_max_media_asseganzioni":dictFinDiffMax,
             "discostamento_min_media_asseganzioni":dictFinDiffMin,
         }
-    filesalv=open("./statistic/"+name+"/result_totale.json","w+")
+    filesalv=open("./statistic/"+name+"/result_totale.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 143->148)
     json.dump(oggettoDaSalvare, filesalv, indent=2)
+    
 def computazionePerSchedule(name):
     # Configura la connessione al database
     conn = pg8000.connect(
@@ -136,15 +138,18 @@ def computazionePerSchedule(name):
         port=5432,
         database="ms3"
     )
-    mediaFile=open("./statistic/"+name+"/media.json","w+")
-    mediaDiffFile=open("./statistic/"+name+"/mediaDiff.json","w+")
-    maxFile=open("./statistic/"+name+"/max.json","w+")
-    maxDiffFile=open("./statistic/"+name+"/maxDiff.json","w+")
-    minFile=open("./statistic/"+name+"/min.json","w+")
-    minDiffFile=open("./statistic/"+name+"/minDiff.json","w+")
+    
+    #crea i file in cui memorizzare le statistiche per schedule
+    mediaFile=open("./statistic/"+name+"/media.json","w+")		#media == numero medio di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo (e.g. turno notturno)
+    mediaDiffFile=open("./statistic/"+name+"/mediaDiff.json","w+")	#mediaDiff == media delle differenze tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
+    maxFile=open("./statistic/"+name+"/max.json","w+")			#max == numero massimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
+    maxDiffFile=open("./statistic/"+name+"/maxDiff.json","w+")		#maxDiff == differenza massima tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
+    minFile=open("./statistic/"+name+"/min.json","w+")			#min == numero minimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
+    minDiffFile=open("./statistic/"+name+"/minDiff.json","w+")		#minDiff == differenza minima tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
 
-    AllUser = pd.read_sql("SELECT ms3_system_user_id,name,lastname FROM Doctor", con=conn)
-    AllSchedule = pd.read_sql("SELECT Schedule_id FROM Schedule", con=conn)
+    AllUser = pd.read_sql("SELECT ms3_system_user_id,name,lastname FROM Doctor", con=conn)	#tutti gli utenti del sistema
+    AllSchedule = pd.read_sql("SELECT Schedule_id FROM Schedule", con=conn)			#tutti gli schedule che sono stati messi in piedi con generaSchedulazioni()
+    #dizionari da cui verranno creati i json che popoleranno i file appena creati
     dictFinMedia={}
     dictFinDiffMedia={}
     dictFinDiffMax={}
@@ -155,17 +160,17 @@ def computazionePerSchedule(name):
         dictApp={}
         for ms3_id in AllUser["ms3_system_user_id"]:
             queryShiftTime="SELECT count(*) as c FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE scs.schedule_schedule_id="+str(schedule_id)+" and ds.doctor_ms3_system_user_id="+str(ms3_id)+" and shift.time_slot="
-            count0 = pd.read_sql(queryShiftTime+"0", con=conn) #quanti giornalieri
-            count1 = pd.read_sql(queryShiftTime+"1", con=conn) #quanti pomeridiani
-            count2 = pd.read_sql(queryShiftTime+"2", con=conn) #quanti notturnix
+            count0 = pd.read_sql(queryShiftTime+"0", con=conn) #quanti turni giornalieri
+            count1 = pd.read_sql(queryShiftTime+"1", con=conn) #quanti turni pomeridiani
+            count2 = pd.read_sql(queryShiftTime+"2", con=conn) #quanti turni notturni
 
             querySunday="SELECT count(*) as c FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE scs.schedule_schedule_id="+str(schedule_id)+" and ds.doctor_ms3_system_user_id="+str(ms3_id)+" and cs.date%7=3"
 
-            count3 = pd.read_sql(querySunday, con=conn)
+            count3 = pd.read_sql(querySunday, con=conn)	#quanti turni domenicali
 
             queryDouble="SELECT count(*) as c from (SELECT count(*) as ctemp FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE scs.schedule_schedule_id="+str(schedule_id)+" and ds.doctor_ms3_system_user_id="+str(ms3_id)+" and ds.concrete_shift_doctor_status=0 group by date having count(*)>=2) as  temporary";
 
-            count4 = pd.read_sql(queryDouble, con=conn)
+            count4 = pd.read_sql(queryDouble, con=conn)	#quanti turni lunghi
 
             dictApp[ms3_id]={
                                 "giornaliero":count0["c"].values[0],
@@ -178,7 +183,7 @@ def computazionePerSchedule(name):
         dictFindMax[schedule_id]=funcMax(dictApp)
         dictFindMin[schedule_id]=funcMin(dictApp)
 
-        #caloclo differenza
+        #calcolo differenza
         for item in dictApp.values():
             item["giornaliero"] = abs(item["giornaliero"]-dictFinMedia[schedule_id]["giornaliero"]);
             item["pomeridiano"] = abs(item["pomeridiano"]-dictFinMedia[schedule_id]["pomeridiano"]);
@@ -196,31 +201,34 @@ def computazionePerSchedule(name):
     json.dump(dictFindMax, maxFile, indent=2)
     json.dump(dictFindMin, minFile, indent=2)
     json.dump(dictFinDiffMin, minDiffFile, indent=2)
-def esegui_richiesta_post(data_inizio, data_fine):
+    
+def esegui_richiesta_post(data_inizio, data_fine,alg):
     url = "http://localhost:3000/api/schedule/generation"
     headers= { 'Content-Type': 'application/json' }
     print(data_inizio,data_fine)
-    parametri = {
+    parametri = {	#campi della struttura json che compone la richiesta http da inviare al servizio di backend che genera la schedulazione; questi campi corrispondono ai parametri della funzione.
         "initialDay": data_inizio.day,
         "initialMonth": data_inizio.month,
         "initialYear": data_inizio.year,
         "finalDay": data_fine.day,
         "finalMonth": data_fine.month,
-        "finalYear": data_fine.year
+        "finalYear": data_fine.year,
+        "algorithm":alg
     }
     try:
-        response = requests.post(url,headers=headers, data=json.dumps(parametri))
+        response = requests.post(url,headers=headers, data=json.dumps(parametri))	#recupero della risposta del server
 
-        if response.status_code == 200 or response.status_code == 202 :
+        if response.status_code == 200 or response.status_code == 202 :	#caso in cui la chiamata al servizio è andata a buon fine
             print("Richiesta POST effettuata con successo!")
             print("Risposta dal server:", response.text)
-        else:
+        else:	#caso in cui la chiamata al servizio non è andata a buon fine
             print(f"Errore nella richiesta POST. Codice di stato: {response.status_code}")
             print("Dettagli dell'errore:", response.text)
     except requests.exceptions.RequestException as e:
         print(f"Errore nella connessione al server: {e}")
 
-def generaSchedulazioni():
+def generaSchedulazioni(alg):
+    #vengono generate tutte schedulazioni di durata pari a un mese
     data_attuale = datetime.datetime.now()
     deltaDay=calendar.monthrange(data_attuale.year,data_attuale.month)[1]
     mese_successivo = data_attuale.replace(day=1) + datetime.timedelta(days=deltaDay)
@@ -229,13 +237,13 @@ def generaSchedulazioni():
     for _ in range(24):
         data_inizio = mese_successivo
         data_fine = mese_successivo.replace(day=(calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]))
-        # Chiamata alla funzione
-        esegui_richiesta_post(data_inizio, data_fine)
+        # Chiamata alla funzione del backend che si occupa di generare ciascuna schedulazione
+        esegui_richiesta_post(data_inizio, data_fine,alg)
         # Passa al mese successivo
         deltaDay=calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]
         mese_successivo = mese_successivo.replace(day=1) + datetime.timedelta(days=deltaDay)
 
 if __name__ == "__main__":
-    #generaSchedulazioni()
-    computazionePerSchedule(sys.argv[1])
-    computazioneTotale(sys.argv[1])
+    generaSchedulazioni(2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    computazionePerSchedule(sys.argv[1]) #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    computazioneTotale(sys.argv[1])	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
