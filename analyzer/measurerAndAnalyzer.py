@@ -5,6 +5,7 @@ import datetime
 import calendar
 import json
 import sys
+import time
 
 user="kobero"
 psw="kobero"
@@ -237,7 +238,7 @@ def generaSchedulazioni(name,alg):
     mese_successivo = data_attuale.replace(day=1) + datetime.timedelta(days=deltaDay)
     print(data_attuale)
     print(mese_successivo)
-    for _ in range(24):
+    for _ in range(12):
         data_inizio = mese_successivo
         data_fine = mese_successivo.replace(day=(calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]))
 
@@ -245,7 +246,7 @@ def generaSchedulazioni(name,alg):
 
         # Chiamata alla funzione del backend che si occupa di generare ciascuna schedulazione
 
-        esegui_richiesta_post(data_inizio, data_fine)
+        esegui_richiesta_post(data_inizio, data_fine,alg)
         tempo_fine = time.time()
         tempo_trascorso = tempo_fine - tempo_inizio
         fileTmp.write(f"Tempo di esecuzione: {tempo_trascorso} secondi\n")
@@ -253,8 +254,33 @@ def generaSchedulazioni(name,alg):
         # Passa al mese successivo
         deltaDay=calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]
         mese_successivo = mese_successivo.replace(day=1) + datetime.timedelta(days=deltaDay)
+def func_delete():
+    conn = pg8000.connect(
+        user=user,
+        password=psw,
+        host="127.0.0.1",
+        port=5432,
+        database="ms3"
+    )
+    results = pd.read_sql("SELECT schedule_id as id FROM schedule", con=conn)	#tutti gli utenti del sistema
+    url = "http://localhost:3000/api/schedule/id="
+    for id in results["id"]:
+        try:
+            response = requests.delete(url+str(id))	#recupero della risposta del server
+            if response.status_code == 200 or response.status_code == 202 :	#caso in cui la chiamata al servizio è andata a buon fine
+                print("Richiesta POST effettuata con successo!")
+                print("Risposta dal server:", response.text)
+            else:	#caso in cui la chiamata al servizio non è andata a buon fine
+                print(f"Errore nella richiesta POST. Codice di stato: {response.status_code}")
+                print("Dettagli dell'errore:", response.text)
+        except requests.exceptions.RequestException as e:
+            print(f"Errore nella connessione al server: {e}")
 
 if __name__ == "__main__":
-    generaSchedulazioni(sys.argv[1],2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
-    computazionePerSchedule(sys.argv[1]) #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
-    computazioneTotale(sys.argv[1])	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
+    generaSchedulazioni("nuovoScheduler",2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    computazionePerSchedule("nuovoScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    computazioneTotale("nuovoScheduler")	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
+    func_delete()
+    generaSchedulazioni("vecchioScheduler",1)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    computazionePerSchedule("vecchioScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    computazioneTotale("vecchioScheduler")
