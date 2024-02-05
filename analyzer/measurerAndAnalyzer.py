@@ -265,6 +265,7 @@ def func_delete():
     results = pd.read_sql("SELECT schedule_id as id FROM schedule", con=conn)	#tutti gli utenti del sistema
     url = "http://localhost:3000/api/schedule/id="
     for id in results["id"]:
+        print(id)
         try:
             response = requests.delete(url+str(id))	#recupero della risposta del server
             if response.status_code == 200 or response.status_code == 202 :	#caso in cui la chiamata al servizio è andata a buon fine
@@ -277,10 +278,10 @@ def func_delete():
             print(f"Errore nella connessione al server: {e}")
 
 if __name__ == "__main__":
-    generaSchedulazioni("nuovoScheduler",2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
-    computazionePerSchedule("nuovoScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
-    computazioneTotale("nuovoScheduler")	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
-    func_delete()
+    # generaSchedulazioni("nuovoScheduler",2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    #  computazionePerSchedule("nuovoScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    #   computazioneTotale("nuovoScheduler")	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
+
     generaSchedulazioni("vecchioScheduler",1)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
     computazionePerSchedule("vecchioScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
     computazioneTotale("vecchioScheduler")
