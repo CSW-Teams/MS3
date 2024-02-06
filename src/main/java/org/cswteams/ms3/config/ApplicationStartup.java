@@ -585,12 +585,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u9 = new Doctor("Giulia", "Cantone Jr", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u9 = new Doctor("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u10 = new Doctor("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u11 = new Doctor("Giada", "Rossi", "RSSGDI92H68H501O", LocalDate.of(1997, 3, 14), "giada.rossi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u12 = new Doctor("Camilla", "Verdi", "VRDCML95B41H501L", LocalDate.of(1997, 5, 23), "camilla.verdi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u13 = new Doctor("Federica", "Pollini", "PLLFDR94S70H501I", LocalDate.of(1998, 2, 12), "federica.pollini@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u14 = new Doctor("Claudia", "Rossi", "RSSCLD91C52H501A", LocalDate.of(1982, 7, 6), "claudia.rossi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+        Doctor u14 = new Doctor("Claudia", "Rossi II", "RSSCLD91C52H501A", LocalDate.of(1982, 7, 6), "claudia.rossi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u14, cardiologia);
         } catch (Exception e) {
@@ -728,17 +728,17 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         allDaysOfWeek.add(DayOfWeek.SATURDAY);
         allDaysOfWeek.add(DayOfWeek.SUNDAY);
 
-        Shift shift1 = new Shift(LocalTime.of(14, 0),
-                Duration.ofHours(8),
+        Shift shift1 = new Shift(LocalTime.of(1, 0),
+                Duration.ofHours(6),
                 ambulatorioCardiologia,
-                TimeSlot.AFTERNOON,
+                TimeSlot.NIGHT,
                 quantityShiftSeniorityList1,
                 allDaysOfWeek,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift1);
 
-        Shift shift2 = new Shift(LocalTime.of(9, 0),
-                Duration.ofHours(8),
+        Shift shift2 = new Shift(LocalTime.of(8, 0),
+                Duration.ofHours(6),
                 ambulatorioCardiologia,
                 TimeSlot.MORNING,
                 quantityShiftSeniorityList2,
@@ -746,10 +746,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift2);
 
-        Shift shift3 = new Shift(LocalTime.of(0, 0),
-                Duration.ofHours(8),
+        Shift shift3 = new Shift(LocalTime.of(15, 0),
+                Duration.ofHours(6),
                 ambulatorioCardiologia,
-                TimeSlot.NIGHT,
+                TimeSlot.AFTERNOON,
                 quantityShiftSeniorityList3,
                 allDaysOfWeek,
                 Collections.emptyList());
