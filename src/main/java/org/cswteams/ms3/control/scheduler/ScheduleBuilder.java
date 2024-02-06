@@ -272,14 +272,12 @@ public class ScheduleBuilder {
             if(prevConcreteShift != null) {
                 controllerScocciatura.updatePriorityDoctors(prevConcreteShiftDup, concreteShift, PriorityQueueEnum.LONG_SHIFT);
                 controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueueEnum.LONG_SHIFT);
-
             }
 
             //night queue has to be updated only if the current concrete shift is nocturne
             if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT) {
                 controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueueEnum.NIGHT);
                 controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueueEnum.NIGHT);
-
             }
 
         }
@@ -300,25 +298,42 @@ public class ScheduleBuilder {
             if(verifyAllConstraints(context, false)){
                 doctorList.add(dup.getDoctor());
                 dup.addConcreteShift(context.getConcreteShift());
-                //Creo il Doctor Assignement
+                //Doctor Assignment creation
                 DoctorAssignment da = new DoctorAssignment(dup.getDoctor(),
                                                              status,
                                                              concreteShift,
                                                              task);
-                //lo inserisco nei concrateShift
+                //we insert it into concreteShift
                 concreteShift.getDoctorAssignmentList().add(da);
                 selectedUsers++;
 
-            }
-            List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
 
-            //here we need to modify only the appropriate queues
-            if(contextDoctorsOnDuty.size() < qss.getValue()){
-                dup.updatePriority(PriorityQueueEnum.GENERAL);
-                if(prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
-                    dup.updatePriority(PriorityQueueEnum.LONG_SHIFT);
-                else if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
-                    dup.updatePriority(PriorityQueueEnum.NIGHT);
+                //List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
+
+                /* here we need to modify only the appropriate queues */
+                //if(contextDoctorsOnDuty.size() < qss.getValue()) {
+                    dup.updatePriority(PriorityQueueEnum.GENERAL);
+                    if (prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
+                        dup.updatePriority(PriorityQueueEnum.LONG_SHIFT);
+                    else if (concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
+                        dup.updatePriority(PriorityQueueEnum.NIGHT);
+
+                //}
+
+                System.out.println("NUOVA ASSEGNAZIONE");
+                System.out.println("Giorno: " + concreteShift.getDate());
+                System.out.println("Fascia oraria: " + concreteShift.getShift().getTimeSlot());
+                System.out.println("Stato: " + status);
+                System.out.println("Seniority: " + qss.getKey());
+                System.out.println("Task: " + task.getTaskType());
+                System.out.println("Dottore: " + dup.getDoctor().getName() + " " + dup.getDoctor().getLastname());
+                System.out.println("Livello di priorità General parziale: " + dup.getPartialGeneralPriority());
+                System.out.println("Livello di priorità Long Shift parziale: " + dup.getPartialLongShiftPriority());
+                System.out.println("Livello di priorità Night parziale: " + dup.getPartialNightPriority());
+                System.out.println("Livello di priorità General: " + dup.getGeneralPriority());
+                System.out.println("Livello di priorità Long Shift: " + dup.getLongShiftPriority());
+                System.out.println("Livello di priorità Night: " + dup.getNightPriority());
+                System.out.println();
 
             }
 
