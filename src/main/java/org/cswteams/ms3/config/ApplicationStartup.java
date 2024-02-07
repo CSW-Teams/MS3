@@ -98,6 +98,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private DoctorUffaPriorityDAO doctorUffaPriorityDAO;
 
     @Autowired
+    private DoctorUffaPrioritySnapshotDAO doctorUffaPrioritySnapshotDAO;
+
+    @Autowired
     private DoctorHolidaysDAO doctorHolidaysDAO;
     @Autowired
     private ScheduleDAO scheduleDAO;
@@ -768,10 +771,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         for(Doctor doctor: allDoctors) {
             DoctorUffaPriority dup = new DoctorUffaPriority(doctor);
+            DoctorUffaPrioritySnapshot doctorUffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doctor);
             DoctorHolidays dh = new DoctorHolidays(doctor, holidayMap);
 
             doctorUffaPriorityDAO.save(dup);
             doctorHolidaysDAO.save(dh);
+            doctorUffaPrioritySnapshotDAO.save(doctorUffaPrioritySnapshot);
 
         }
 

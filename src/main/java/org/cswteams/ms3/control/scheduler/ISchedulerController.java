@@ -10,6 +10,7 @@ import org.cswteams.ms3.dto.ScheduleDTO;
 import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.DoctorUffaPriority;
+import org.cswteams.ms3.entity.DoctorUffaPrioritySnapshot;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
@@ -30,7 +31,7 @@ public interface ISchedulerController {
      * @param endDate   end day (inclusive) of the validity of the schedule
      * @return the created schedule
      */
-    Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList);
+    Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot);
 
     /**
      * Proxy of the method createSchedule, when the DoctorUffaPriority list cannot be retrieved.

@@ -59,6 +59,8 @@ public class SchedulerController implements ISchedulerController {
     @Autowired
     private DoctorUffaPriorityDAO doctorUffaPriorityDAO;
 
+    @Autowired
+    private DoctorUffaPrioritySnapshotDAO doctorUffaPrioritySnapshotDAO;
 
     private ScheduleBuilder scheduleBuilder;
 
@@ -85,13 +87,14 @@ public class SchedulerController implements ISchedulerController {
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate) {
         List<DoctorUffaPriority> doctorUffaPriorityList = doctorUffaPriorityDAO.findAll();
-        return createSchedule(startDate, endDate, doctorUffaPriorityList);
+        List<DoctorUffaPrioritySnapshot> doctorUffaPrioritySnapshot = doctorUffaPrioritySnapshotDAO.findAll();
+        return createSchedule(startDate, endDate, doctorUffaPriorityList, doctorUffaPrioritySnapshot);
     }
 
 
     @Override
     @Transactional
-    public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList)  {
+    public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot)  {
 
         //Check if there already exists a shift schedule for the dates we want to plan.
         if(!check(startDate,endDate))
@@ -129,7 +132,8 @@ public class SchedulerController implements ISchedulerController {
                 doctorDAO.findAll(),            //All the possible doctors who can be assigned to the concrete shifts
                 holidayDAO.findAll(),           //All the holidays saved in the db
                 doctorHolidaysDAO.findAll(),    //All the associations between doctors and holidays
-                doctorUffaPriorityList          //All the information about priority levels on all the queues of the doctors
+                doctorUffaPriorityList,         //All the information about priority levels on all the queues of the doctors
+                snapshot                        //Snapshot to update to save actual priorities
                 );
 
             ControllerScocciatura controllerScocciatura = new ControllerScocciatura(scocciaturaList);
@@ -137,6 +141,7 @@ public class SchedulerController implements ISchedulerController {
             this.scheduleBuilder.setControllerScocciatura(controllerScocciatura);
 
             Schedule schedule = this.scheduleBuilder.build();
+
             scheduleDAO.save(schedule);
             for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
                 dup.setSchedule(schedule);
@@ -162,13 +167,29 @@ public class SchedulerController implements ISchedulerController {
         LocalDate startDate = LocalDate.ofEpochDay(schedule.getStartDate());
         LocalDate endDate = LocalDate.ofEpochDay(schedule.getEndDate());
 
-        List<DoctorUffaPriority> prioritiesSnapshot = schedule.getDoctorUffaPrioritiesSnapshot();
+        List<DoctorUffaPrioritySnapshot> doctorUffaPrioritySnapshot = doctorUffaPrioritySnapshotDAO.findAll();
+        List<DoctorUffaPriority> doctorUffaPriorityList = doctorUffaPriorityDAO.findAll();
+
+        /* Restore priorities to snapshot */
+        for (DoctorUffaPrioritySnapshot dupSnapshot : doctorUffaPrioritySnapshot) {
+            for (DoctorUffaPriority dup : doctorUffaPriorityList) {
+                if (dupSnapshot.getDoctor() == dupSnapshot.getDoctor()) {
+                    int generalPriority = dupSnapshot.getGeneralPriority();
+                    int longShiftPriority = dupSnapshot.getLongShiftPriority();;
+                    int nightPriority = dupSnapshot.getNightPriority();
+
+                    dup.setGeneralPriority(generalPriority);
+                    dup.setNightPriority(nightPriority);
+                    dup.setLongShiftPriority(longShiftPriority);
+                }
+            }
+        }
 
         //It is not allowed to remove a shift schedule in the past.
         if(!removeSchedule(id))
             return false;
 
-        createSchedule(startDate,endDate, prioritiesSnapshot);
+        createSchedule(startDate,endDate, doctorUffaPriorityList, doctorUffaPrioritySnapshot);
         return true;
     }
 
