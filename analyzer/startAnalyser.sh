@@ -1,4 +1,6 @@
 #!/bin/bash
+
 mkdir ./statistic
-mkdir ./statistic/nostroScheduler
-python3 measurerAndAnalyzer.py nostroScheduler
+mkdir ./statistic/vecchioScheduler
+mkdir ./statistic/nuovoScheduler
+python3 measurerAndAnalyzer.py
