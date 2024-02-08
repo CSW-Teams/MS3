@@ -4,7 +4,6 @@ import requests
 import datetime
 import calendar
 import json
-import sys
 import time
 
 user="kobero"
@@ -17,6 +16,9 @@ def funcMedia(dizionario):
     total_n = 0
     total_d = 0
     total_l = 0
+    total_level_g = 0
+    total_level_n = 0
+    total_level_l = 0
     num_elements = len(dizionario)
     # Somma i valori di "g", "p", e "n" su tutti gli elementi
     for item in dizionario.values():
@@ -25,14 +27,29 @@ def funcMedia(dizionario):
         total_n += item["notturno"]
         total_d += item["domeniche"]
         total_l += item["lunga"]
+        total_level_g += item["general_priority"]
+        total_level_n += item["night_priority"]
+        total_level_l += item["long_shift_priority"]
     # Calcola le medie
     average_g = total_g / num_elements
     average_p = total_p / num_elements
     average_n = total_n / num_elements
     average_d = total_d / num_elements
     average_l = total_l / num_elements
+    average_level_g = total_level_g / num_elements
+    average_level_n = total_level_n / num_elements
+    average_level_l = total_level_l / num_elements
 
-    return {"giornaliero":float(average_g),"pomeridiano":float(average_p),"notturno":float(average_n),"domeniche":float(average_d),"lunga":float(average_l)}
+
+    return {"giornaliero":float(average_g),
+            "pomeridiano":float(average_p),
+            "notturno":float(average_n),
+            "domeniche":float(average_d),
+            "lunga":float(average_l),
+            "general_priority":float(average_level_g),
+            "nigth_priority":float(average_level_n),
+            "long_priority":float(average_level_l)
+            }
 
 def funcMax(dizionario):
     mg=0;	#max giornaliero
@@ -97,13 +114,22 @@ def computazioneTotale(name):
 
         count4 = pd.read_sql(queryDouble, con=conn)	#quanti turni lunghi
 
-        dictApp[ms3_id]={
+        queryLevel="SELECT night_priority,long_shift_priority,general_priority FROM doctor_uffa_priority WHERE doctor_ms3_system_user_id="+str(ms3_id)
+        result5=pd.read_sql(queryLevel,conn)
+        print(ms3_id)
+        print(result5["general_priority"].values.size)
+        print(result5)
+        dictApp[ms3_id] = {
                             "giornaliero":count0["c"].values[0],
                             "pomeridiano":count1["c"].values[0],
                             "notturno":count2["c"].values[0],
                             "domeniche":count3["c"].values[0],
-                            "lunga":count4["c"].values[0]
-                        }
+                            "lunga":count4["c"].values[0],
+                            "general_priority":result5["general_priority"].values[0],
+                            "night_priority":result5["night_priority"].values[0],
+                            "long_shift_priority":result5["long_shift_priority"].values[0]
+                            }
+
     dictFinMedia=funcMedia(dictApp)
     dictFindMax=funcMax(dictApp)
     dictFindMin=funcMin(dictApp)
@@ -278,10 +304,10 @@ def func_delete():
             print(f"Errore nella connessione al server: {e}")
 
 if __name__ == "__main__":
-    # generaSchedulazioni("nuovoScheduler",2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
-    #  computazionePerSchedule("nuovoScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
-    #   computazioneTotale("nuovoScheduler")	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
+    #generaSchedulazioni("nuovoScheduler",2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    #computazionePerSchedule("nuovoScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    computazioneTotale("nuovoScheduler")	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
 
-    generaSchedulazioni("vecchioScheduler",1)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
-    computazionePerSchedule("vecchioScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
-    computazioneTotale("vecchioScheduler")
+    #generaSchedulazioni("vecchioScheduler",1)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    #computazionePerSchedule("vecchioScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    #computazioneTotale("vecchioScheduler")
