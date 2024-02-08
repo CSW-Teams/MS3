@@ -110,12 +110,15 @@ public class DoctorUffaPriority {
         switch(pq) {
             case GENERAL:
                 this.generalPriority = this.partialGeneralPriority;
+                break;
 
             case LONG_SHIFT:
                 this.longShiftPriority = this.partialLongShiftPriority;
+                break;
 
             case NIGHT:
                 this.nightPriority = this.partialNightPriority;
+                break;
 
         }
 
@@ -129,16 +132,19 @@ public class DoctorUffaPriority {
                 newPartialPriority = Math.max(this.generalPriority+priorityDelta, lowerBound);  //we ensure that new priority level stays into the bounds.
                 newPartialPriority = Math.min(newPartialPriority, upperBound);
                 this.partialGeneralPriority = newPartialPriority;
+                break;
 
             case LONG_SHIFT:
                 newPartialPriority = Math.max(this.longShiftPriority+priorityDelta, lowerBound);  //we ensure that new priority level stays into the bounds.
                 newPartialPriority = Math.min(newPartialPriority, upperBound);
                 this.partialLongShiftPriority = newPartialPriority;
+                break;
 
             case NIGHT:
                 newPartialPriority = Math.max(this.nightPriority+priorityDelta, lowerBound);  //we ensure that new priority level stays into the bounds.
                 newPartialPriority = Math.min(newPartialPriority, upperBound);
                 this.partialNightPriority = newPartialPriority;
+                break;
 
         }
 
