@@ -1,0 +1,242 @@
+{
+  "0": {
+    "general_priority": 19.0,
+    "night_priority": 16.0,
+    "long_shift_priority": 1.0
+  },
+  "1": {
+    "general_priority": 24.0,
+    "night_priority": 17.0,
+    "long_shift_priority": 2.0
+  },
+  "2": {
+    "general_priority": 24.0,
+    "night_priority": 17.0,
+    "long_shift_priority": 2.0
+  },
+  "3": {
+    "general_priority": 25.0,
+    "night_priority": 17.0,
+    "long_shift_priority": 2.0
+  },
+  "4": {
+    "general_priority": 23.0,
+    "night_priority": 17.0,
+    "long_shift_priority": 2.0
+  },
+  "5": {
+    "general_priority": 30.0,
+    "night_priority": 20.0,
+    "long_shift_priority": 2.0
+  },
+  "6": {
+    "general_priority": 29.0,
+    "night_priority": 19.0,
+    "long_shift_priority": 2.0
+  },
+  "7": {
+    "general_priority": 31.0,
+    "night_priority": 20.0,
+    "long_shift_priority": 3.0
+  },
+  "8": {
+    "general_priority": 32.0,
+    "night_priority": 22.0,
+    "long_shift_priority": 3.0
+  },
+  "9": {
+    "general_priority": 52.0,
+    "night_priority": 31.0,
+    "long_shift_priority": 3.0
+  },
+  "10": {
+    "general_priority": 37.0,
+    "night_priority": 24.0,
+    "long_shift_priority": 3.0
+  },
+  "11": {
+    "general_priority": 36.0,
+    "night_priority": 23.0,
+    "long_shift_priority": 3.0
+  },
+  "12": {
+    "general_priority": 39.0,
+    "night_priority": 24.0,
+    "long_shift_priority": 3.0
+  },
+  "13": {
+    "general_priority": 38.0,
+    "night_priority": 25.0,
+    "long_shift_priority": 3.0
+  },
+  "14": {
+    "general_priority": 39.0,
+    "night_priority": 27.0,
+    "long_shift_priority": 3.0
+  },
+  "15": {
+    "general_priority": 42.0,
+    "night_priority": 27.0,
+    "long_shift_priority": 3.0
+  },
+  "16": {
+    "general_priority": 41.0,
+    "night_priority": 28.0,
+    "long_shift_priority": 3.0
+  },
+  "17": {
+    "general_priority": 44.0,
+    "night_priority": 29.0,
+    "long_shift_priority": 3.0
+  },
+  "18": {
+    "general_priority": 44.0,
+    "night_priority": 30.0,
+    "long_shift_priority": 3.0
+  },
+  "19": {
+    "general_priority": 47.0,
+    "night_priority": 31.0,
+    "long_shift_priority": 3.0
+  },
+  "20": {
+    "general_priority": 49.0,
+    "night_priority": 31.0,
+    "long_shift_priority": 4.0
+  },
+  "21": {
+    "general_priority": 51.0,
+    "night_priority": 33.0,
+    "long_shift_priority": 4.0
+  },
+  "22": {
+    "general_priority": 51.0,
+    "night_priority": 34.0,
+    "long_shift_priority": 4.0
+  },
+  "23": {
+    "general_priority": 51.0,
+    "night_priority": 34.0,
+    "long_shift_priority": 4.0
+  },
+  "24": {
+    "general_priority": 55.0,
+    "night_priority": 35.0,
+    "long_shift_priority": 4.0
+  },
+  "25": {
+    "general_priority": 53.0,
+    "night_priority": 35.0,
+    "long_shift_priority": 4.0
+  },
+  "26": {
+    "general_priority": 57.0,
+    "night_priority": 37.0,
+    "long_shift_priority": 4.0
+  },
+  "27": {
+    "general_priority": 58.0,
+    "night_priority": 38.0,
+    "long_shift_priority": 4.0
+  },
+  "28": {
+    "general_priority": 60.0,
+    "night_priority": 38.0,
+    "long_shift_priority": 4.0
+  },
+  "29": {
+    "general_priority": 62.0,
+    "night_priority": 39.0,
+    "long_shift_priority": 4.0
+  },
+  "30": {
+    "general_priority": 62.0,
+    "night_priority": 40.0,
+    "long_shift_priority": 4.0
+  },
+  "31": {
+    "general_priority": 63.0,
+    "night_priority": 42.0,
+    "long_shift_priority": 4.0
+  },
+  "32": {
+    "general_priority": 66.0,
+    "night_priority": 41.0,
+    "long_shift_priority": 4.0
+  },
+  "33": {
+    "general_priority": 66.0,
+    "night_priority": 43.0,
+    "long_shift_priority": 4.0
+  },
+  "34": {
+    "general_priority": 68.0,
+    "night_priority": 44.0,
+    "long_shift_priority": 4.0
+  },
+  "35": {
+    "general_priority": 68.0,
+    "night_priority": 44.0,
+    "long_shift_priority": 4.0
+  },
+  "36": {
+    "general_priority": 72.0,
+    "night_priority": 45.0,
+    "long_shift_priority": 4.0
+  },
+  "37": {
+    "general_priority": 72.0,
+    "night_priority": 46.0,
+    "long_shift_priority": 4.0
+  },
+  "38": {
+    "general_priority": 74.0,
+    "night_priority": 47.0,
+    "long_shift_priority": 4.0
+  },
+  "39": {
+    "general_priority": 74.0,
+    "night_priority": 48.0,
+    "long_shift_priority": 4.0
+  },
+  "40": {
+    "general_priority": 76.0,
+    "night_priority": 49.0,
+    "long_shift_priority": 5.0
+  },
+  "41": {
+    "general_priority": 78.0,
+    "night_priority": 50.0,
+    "long_shift_priority": 5.0
+  },
+  "42": {
+    "general_priority": 79.0,
+    "night_priority": 50.0,
+    "long_shift_priority": 5.0
+  },
+  "43": {
+    "general_priority": 81.0,
+    "night_priority": 52.0,
+    "long_shift_priority": 5.0
+  },
+  "44": {
+    "general_priority": 82.0,
+    "night_priority": 52.0,
+    "long_shift_priority": 5.0
+  },
+  "45": {
+    "general_priority": 84.0,
+    "night_priority": 53.0,
+    "long_shift_priority": 5.0
+  },
+  "46": {
+    "general_priority": 85.0,
+    "night_priority": 54.0,
+    "long_shift_priority": 5.0
+  },
+  "47": {
+    "general_priority": 84.0,
+    "night_priority": 55.0,
+    "long_shift_priority": 5.0
+  }
+}
