@@ -2,16 +2,16 @@ package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
 import org.cswteams.ms3.entity.ConcreteShift;
-import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorXY;
 
 @Data
 public class ContestoScocciatura {
 
-    private DoctorUffaPriority doctorUffaPriority;
+    private DoctorXY doctorUffaPriority;
 
     private ConcreteShift concreteShift;
 
-    public ContestoScocciatura(DoctorUffaPriority utente, ConcreteShift turno){
+    public ContestoScocciatura(DoctorXY utente, ConcreteShift turno){
         this.concreteShift = turno;
         this.doctorUffaPriority = utente;
     }

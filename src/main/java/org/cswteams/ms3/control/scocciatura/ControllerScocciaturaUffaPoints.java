@@ -32,9 +32,9 @@ public class ControllerScocciaturaUffaPoints {
         ContestoScocciatura contestoScocciatura;
 
         for(DoctorXY doctorScheduleState :utentiState ){
-            /*contestoScocciatura = new ContestoScocciatura(doctorScheduleState, concreteShift);
+            contestoScocciatura = new ContestoScocciatura(doctorScheduleState, concreteShift);
             uffa = this.calcolaUffaComplessivoUtenteAssegnazione(contestoScocciatura);
-            doctorScheduleState.addUffaTemp(uffa);*/
+            doctorScheduleState.addUffaTemp(uffa);
         }
     }
 
