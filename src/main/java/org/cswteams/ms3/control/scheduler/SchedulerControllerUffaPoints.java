@@ -14,6 +14,7 @@ import org.cswteams.ms3.dto.ScheduleDTO;
 import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.scheduling.algo.DoctorScheduleState;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
@@ -51,6 +52,8 @@ public class SchedulerControllerUffaPoints implements ISchedulerController2 {
     @Autowired
     private ScocciaturaDAO scocciaturaDAO;
 
+    @Autowired
+    private DoctorScheduleStateDAO doctorScheduleStateDAO;
 
     private ScheduleBuilderUffaPoints scheduleBuilder;
 
@@ -125,8 +128,12 @@ public class SchedulerControllerUffaPoints implements ISchedulerController2 {
             this.scheduleBuilder.setControllerScocciatura(new ControllerScocciaturaUffaPoints(scocciaturaDAO.findAll()));
             //We set the controller that manages doctors priorities.
 
-            return  scheduleDAO.save(this.scheduleBuilder.build());
-
+            Schedule schedule = this.scheduleBuilder.build();
+            scheduleDAO.save(schedule);
+            for (DoctorScheduleState dup : this.scheduleBuilder.getAllUserScheduleStates().values()) {
+                doctorScheduleStateDAO.save(dup);
+            }
+            return schedule;
         } catch (IllegalScheduleException e) {
             System.out.println(e.getMessage());
             return null;
