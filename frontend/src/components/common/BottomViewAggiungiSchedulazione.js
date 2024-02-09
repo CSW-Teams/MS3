@@ -7,12 +7,15 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { t } from "i18next";
+import "./../../style/LoadingOverlay.css"
+
 
 export default function TemporaryDrawerSchedulo(props) {
 
   const [dataInizio,setDataInizio] = React.useState("")
   const [dataFine,setDataFine] = React.useState("")
   const [open,setOpen] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
 
   const handleDataInizio = (dataInizio) => {
     setDataInizio(dataInizio);
@@ -34,6 +37,9 @@ export default function TemporaryDrawerSchedulo(props) {
 
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare un nuovo schedulo.
   const aggiungiSchedulo= async () => {
+
+    setLoading(true)
+
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI();
     let status = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio,dataFine)
 
@@ -49,10 +55,7 @@ export default function TemporaryDrawerSchedulo(props) {
         progress: undefined,
         theme: "colored",
       });
-
-
     }
-
     else if (status == 206){
       toast.warning(t("Warning! Incomplete Schedule"), {
         position: "top-center",
@@ -65,7 +68,6 @@ export default function TemporaryDrawerSchedulo(props) {
         theme: "colored",
       });
     }
-
     else if (status == 406){
       toast.error(t("Error: Schedule already exists"), {
         position: "top-center",
@@ -91,6 +93,7 @@ export default function TemporaryDrawerSchedulo(props) {
       });
     }
     setOpen(false)
+    setLoading(false)
     props.onPostGeneration();
   }
 
@@ -112,10 +115,17 @@ export default function TemporaryDrawerSchedulo(props) {
             height: '45vh',
           }}>
 
-            <Stack spacing={3} >
+            {loading ? (
+              // Visualizza la schermata di caricamento
+              <div className="loading-overlay">
+                <div className="loading-spinner"></div>
+              </div>
+            ) : (
+              // Visualizza il contenuto normale quando non è in corso il caricamento
+              <Stack spacing={3}>
                 <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
+                  display: 'flex',
+                  justifyContent: 'center',
                 }}>
                   {t("Insert Schedule Start and End Date")}
                 </div>
@@ -124,8 +134,8 @@ export default function TemporaryDrawerSchedulo(props) {
                 <Button variant="contained" size="small" onClick={aggiungiSchedulo} >
                   {t("Create schedule")}
                 </Button>
-
-            </Stack>
+              </Stack>
+            )}
 
             <ToastContainer
               position="top-center"
