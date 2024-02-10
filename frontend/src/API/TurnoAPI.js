@@ -17,6 +17,7 @@ export  class TurnoAPI {
     for (let i = 0; i < body.length; i++) {
       let turno = {}
       turno.tipologia = body[i].timeslot
+      turno.daysOfWeek = body[i].daysOfWeek
       turno.mansione = body[i].medicalServices
       turni[i] = turno
     }
