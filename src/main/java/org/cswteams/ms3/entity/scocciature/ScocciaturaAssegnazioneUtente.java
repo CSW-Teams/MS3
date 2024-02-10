@@ -18,7 +18,8 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = true)
 public class ScocciaturaAssegnazioneUtente extends Scocciatura {
 
-    private int peso;
+    private int peso;           // per il nuovo algoritmo
+    private int pesoUffaPoints; // per il vecchio algoritmo
     private DayOfWeek giornoSettimana;
     private TimeSlot timeSlot;
 
@@ -28,8 +29,9 @@ public class ScocciaturaAssegnazioneUtente extends Scocciatura {
     public ScocciaturaAssegnazioneUtente() {
     }
 
-    public ScocciaturaAssegnazioneUtente(int peso, DayOfWeek giornoSettimana, TimeSlot timeSlot) {
+    public ScocciaturaAssegnazioneUtente(int peso, int pesoUffaPoints, DayOfWeek giornoSettimana, TimeSlot timeSlot) {
         this.peso = peso;
+        this.pesoUffaPoints = pesoUffaPoints;
         this.giornoSettimana = giornoSettimana;
         this.timeSlot = timeSlot;
     }
@@ -39,8 +41,14 @@ public class ScocciaturaAssegnazioneUtente extends Scocciatura {
 
         TimeSlot timeSlot = contesto.getConcreteShift().getShift().getTimeSlot();
         if(LocalDate.ofEpochDay(contesto.getConcreteShift().getDate()).getDayOfWeek().equals(this.giornoSettimana) && timeSlot.equals(this.timeSlot))
-            return this.peso;
-
+            switch (contesto.getSchedulerType()) {
+                case SCHEDULER_UFFAPOINTS:
+                    return this.pesoUffaPoints;
+                case SCHEDULER_UFFAPRIORITY:
+                    return this.peso;
+                default:
+                    throw new RuntimeException("Invalid Scheduler type.");
+            }
         return 0;
     }
 }

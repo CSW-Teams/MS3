@@ -2,6 +2,7 @@ package org.cswteams.ms3.control.scocciatura;
 
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorUffaPriority;
+import org.cswteams.ms3.entity.scheduling.factory.SchedulerType;
 import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.PriorityQueueEnum;
@@ -54,7 +55,7 @@ public class ControllerScocciaturaPriority {
         ContestoScocciatura contestoScocciatura;
 
         for(DoctorUffaPriority dup: allDoctorUffaPriority) {
-            contestoScocciatura = new ContestoScocciatura(dup, concreteShift);
+            contestoScocciatura = new ContestoScocciatura(dup, concreteShift, SchedulerType.SCHEDULER_UFFAPRIORITY);
             priorityDelta = this.calcolaUffaComplessivoUtenteAssegnazione(contestoScocciatura);
             dup.updatePartialPriority(priorityDelta, pq, this.upperBound, this.lowerBound);
 
