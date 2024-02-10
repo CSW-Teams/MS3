@@ -654,6 +654,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         User u42 = new User("Fabio", "Armani", "RMNFBA50M12G156E", LocalDate.of(1950, 8, 12), "fabioarmani@gmail.com", "passw", Set.of(SystemActor.CONFIGURATOR));
 
+        Doctor u43 = new Doctor("Sara","Da Canal","PLMVLR93B12H501U",LocalDate.of(1999,6,19),"saradacanal@gmail.com","passw",Seniority.SPECIALIST_SENIOR,Set.of(SystemActor.DOCTOR));
         u1 = doctorDAO.saveAndFlush(u1);
         u2 = doctorDAO.saveAndFlush(u2);
         u3 = doctorDAO.saveAndFlush(u3);
@@ -698,6 +699,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         u42 = userDAO.saveAndFlush(u42);
 
+        u43 = doctorDAO.saveAndFlush(u43);
         /* HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
         doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
         doctorsNumberBySeniority.put(Seniority.SPECIALIST_SENIOR, 1);
