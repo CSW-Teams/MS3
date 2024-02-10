@@ -298,29 +298,29 @@ public class ScheduleBuilderPriority {
             DoctorHolidays dh = findDhByDoctor(dup.getDoctor());
 
             ContextConstraintPriority context = new ContextConstraintPriority(dup, concreteShift, dh, holidays);
-            if(verifyAllConstraints(context, false)){
+            if(verifyAllConstraints(context, false)) {
                 doctorList.add(dup.getDoctor());
                 dup.addConcreteShift(context.getConcreteShift());
                 //Creo il Doctor Assignement
                 DoctorAssignment da = new DoctorAssignment(dup.getDoctor(),
-                                                             status,
-                                                             concreteShift,
-                                                             task);
+                        status,
+                        concreteShift,
+                        task);
                 //lo inserisco nei concrateShift
                 concreteShift.getDoctorAssignmentList().add(da);
                 selectedUsers++;
 
-            }
-            List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
+                //List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
 
-            //here we need to modify only the appropriate queues
-            if(contextDoctorsOnDuty.size() < qss.getValue()){
+                //here we need to modify only the appropriate queues
+                //if(contextDoctorsOnDuty.size() < qss.getValue()){
                 dup.updatePriority(PriorityQueueEnum.GENERAL);
-                if(prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
+                if (prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
                     dup.updatePriority(PriorityQueueEnum.LONG_SHIFT);
-                else if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
+                else if (concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
                     dup.updatePriority(PriorityQueueEnum.NIGHT);
 
+                //}
             }
 
         }
