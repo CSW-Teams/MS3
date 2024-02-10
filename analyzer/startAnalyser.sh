@@ -5,6 +5,6 @@
 #mkdir ./statistic/nuovoScheduler/ToTSchedule
 #mkdir ./statistic/nuovoScheduler/PerSchedule
 
-# python3 measurerAndAnalyzer.py
+#python3 measurerAndAnalyzer.py
 python3 HypothesisTest.py
 python3 Plotter.py
