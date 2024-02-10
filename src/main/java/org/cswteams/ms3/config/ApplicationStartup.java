@@ -239,6 +239,27 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         int uffaPriorityNataleAfternoon;
         int uffaPriorityNataleNight;
 
+
+        // vecchio algoritmo ---------------------------
+        int pesoDesiderata;
+
+        int pesoDomenicaPomeriggio;
+        int pesoDomenicaMattina;
+        int pesoSabatoNotte;
+
+        int pesoSabatoPomeriggio;
+        int pesoSabatoMattina;
+        int pesoVenerdiNotte;
+        int pesoDomenicaNotte;
+
+        int pesoVenerdiPomeriggio;
+
+        int pesoFerialeSemplice;
+        int pesoFerialeNotturno;
+
+        // ---------------------------------------------
+
+
         //we read uffa priorities from configuration file priority.properties
         try {
             File file = new File("src/main/resources/priority.properties");
@@ -286,19 +307,41 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             throw new RuntimeException(e);
         }
 
-        Scocciatura scocciaturaSundayMorning = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayMorning, DayOfWeek.SUNDAY, TimeSlot.MORNING);
-        Scocciatura scocciaturaSundayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayAfternoon, DayOfWeek.SUNDAY, TimeSlot.AFTERNOON);
-        Scocciatura scocciaturaSundayNight = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayNight, DayOfWeek.SUNDAY, TimeSlot.NIGHT);
+        //we read uffa points (old scheduler) from configuration file priority.properties
+        try {
+            File file = new File("src/main/resources/uffapoints.properties");
+            FileInputStream propsInput = new FileInputStream(file);
+            Properties prop = new Properties();
+            prop.load(propsInput);
 
-        Scocciatura scocciaturaSaturdayMorning = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayMorning, DayOfWeek.SATURDAY, TimeSlot.MORNING);
-        Scocciatura scocciaturaSaturdayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayAfternoon, DayOfWeek.SATURDAY, TimeSlot.AFTERNOON);
-        Scocciatura scocciaturaSaturdayNight = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayNight, DayOfWeek.SATURDAY, TimeSlot.NIGHT);
+            pesoDesiderata = Integer.parseInt(prop.getProperty("pesoDesiderata"));
+            pesoDomenicaPomeriggio = Integer.parseInt(prop.getProperty("pesoDomenicaPomeriggio"));
+            pesoDomenicaMattina = Integer.parseInt(prop.getProperty("pesoDomenicaMattina"));
+            pesoSabatoNotte = Integer.parseInt(prop.getProperty("pesoSabatoNotte"));
+            pesoSabatoPomeriggio = Integer.parseInt(prop.getProperty("pesoSabatoPomeriggio"));
+            pesoSabatoMattina = Integer.parseInt(prop.getProperty("pesoSabatoMattina"));
+            pesoVenerdiNotte = Integer.parseInt(prop.getProperty("pesoVenerdiNotte"));
+            pesoDomenicaNotte = Integer.parseInt(prop.getProperty("pesoDomenicaNotte"));
+            pesoVenerdiPomeriggio = Integer.parseInt(prop.getProperty("pesoVenerdiPomeriggio"));
+            pesoFerialeSemplice = Integer.parseInt(prop.getProperty("pesoFerialeSemplice"));
+            pesoFerialeNotturno = Integer.parseInt(prop.getProperty("pesoFerialeNotturno"));
 
-        Scocciatura scocciaturaFridayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPriorityFridayAfternoon, DayOfWeek.FRIDAY, TimeSlot.AFTERNOON);
-        Scocciatura scocciaturaFridayNight = new ScocciaturaAssegnazioneUtente(uffaPriorityFridayNight, DayOfWeek.FRIDAY, TimeSlot.NIGHT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Scocciatura scocciaturaSundayMorning = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayMorning, pesoDomenicaMattina, DayOfWeek.SUNDAY, TimeSlot.MORNING);
+        Scocciatura scocciaturaSundayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayAfternoon, pesoDomenicaPomeriggio, DayOfWeek.SUNDAY, TimeSlot.AFTERNOON);
+        Scocciatura scocciaturaSundayNight = new ScocciaturaAssegnazioneUtente(uffaPrioritySundayNight, pesoDomenicaNotte, DayOfWeek.SUNDAY, TimeSlot.NIGHT);
 
-        Scocciatura scocciaturaPreference = new ScocciaturaDesiderata(uffaPriorityPreference);
-        Scocciatura scocciaturaRespectedPreference = new ScocciaturaDesiderata(uffaPriorityRespectedPreference);
+        Scocciatura scocciaturaSaturdayMorning = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayMorning, pesoSabatoMattina, DayOfWeek.SATURDAY, TimeSlot.MORNING);
+        Scocciatura scocciaturaSaturdayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayAfternoon, pesoSabatoPomeriggio, DayOfWeek.SATURDAY, TimeSlot.AFTERNOON);
+        Scocciatura scocciaturaSaturdayNight = new ScocciaturaAssegnazioneUtente(uffaPrioritySaturdayNight, pesoSabatoNotte, DayOfWeek.SATURDAY, TimeSlot.NIGHT);
+
+        Scocciatura scocciaturaFridayAfternoon = new ScocciaturaAssegnazioneUtente(uffaPriorityFridayAfternoon, pesoVenerdiPomeriggio, DayOfWeek.FRIDAY, TimeSlot.AFTERNOON);
+        Scocciatura scocciaturaFridayNight = new ScocciaturaAssegnazioneUtente(uffaPriorityFridayNight, pesoVenerdiNotte, DayOfWeek.FRIDAY, TimeSlot.NIGHT);
+
+        Scocciatura scocciaturaPreference = new ScocciaturaDesiderata(uffaPriorityPreference, pesoDesiderata);
+        Scocciatura scocciaturaRespectedPreference = new ScocciaturaDesiderata(uffaPriorityRespectedPreference, 0);
 
         scocciaturaDAO.save(scocciaturaSundayMorning);
         scocciaturaDAO.save(scocciaturaSundayAfternoon);
@@ -316,12 +359,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         List<DayOfWeek> giorniFeriali = Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
         for (DayOfWeek giornoFeriale : giorniFeriali) {
-            ScocciaturaAssegnazioneUtente scocciaturaFerialeMattina = new ScocciaturaAssegnazioneUtente(uffaPrioritySimple, giornoFeriale, TimeSlot.MORNING);
+            ScocciaturaAssegnazioneUtente scocciaturaFerialeMattina = new ScocciaturaAssegnazioneUtente(uffaPrioritySimple, pesoFerialeSemplice, giornoFeriale, TimeSlot.MORNING);
             scocciaturaDAO.save(scocciaturaFerialeMattina);
             if (giornoFeriale != DayOfWeek.FRIDAY) {
-                ScocciaturaAssegnazioneUtente scocciaturaFerialePomeriggio = new ScocciaturaAssegnazioneUtente(uffaPrioritySimple, giornoFeriale, TimeSlot.AFTERNOON);
+                ScocciaturaAssegnazioneUtente scocciaturaFerialePomeriggio = new ScocciaturaAssegnazioneUtente(uffaPrioritySimple, pesoFerialeSemplice, giornoFeriale, TimeSlot.AFTERNOON);
                 scocciaturaDAO.save(scocciaturaFerialePomeriggio);
-                ScocciaturaAssegnazioneUtente scocciaturaFerialeNotturno = new ScocciaturaAssegnazioneUtente(uffaPriorityNight, giornoFeriale, TimeSlot.NIGHT);
+                ScocciaturaAssegnazioneUtente scocciaturaFerialeNotturno = new ScocciaturaAssegnazioneUtente(uffaPriorityNight, pesoFerialeNotturno, giornoFeriale, TimeSlot.NIGHT);
                 scocciaturaDAO.save(scocciaturaFerialeNotturno);
             }
         }

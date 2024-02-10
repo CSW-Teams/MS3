@@ -18,7 +18,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class ScocciaturaDesiderata extends Scocciatura {
 
-    private int peso;
+    private int peso;           // per il nuovo algoritmo
+    private int pesoUffaPoints; // per il vecchio algoritmo
 
     /**
      * Default constructor needed by Lombok
@@ -26,8 +27,9 @@ public class ScocciaturaDesiderata extends Scocciatura {
     public ScocciaturaDesiderata() {
     }
 
-    public ScocciaturaDesiderata(int peso) {
+    public ScocciaturaDesiderata(int peso, int pesoUffaPoints) {
         this.peso = peso;
+        this.pesoUffaPoints = pesoUffaPoints;
     }
 
     @Override
@@ -38,7 +40,14 @@ public class ScocciaturaDesiderata extends Scocciatura {
         List<Preference> desiderate = contesto.getDoctorUffaPriority().getDoctor().getPreferenceList();
         for(Preference preference : desiderate){
             if(preference.getDate().equals(LocalDate.ofEpochDay(contesto.getConcreteShift().getDate())) && preference.getTimeSlots().contains(timeSlot))
-                return peso;
+                switch (contesto.getSchedulerType()) {
+                    case SCHEDULER_UFFAPOINTS:
+                        return this.pesoUffaPoints;
+                    case SCHEDULER_UFFAPRIORITY:
+                        return this.peso;
+                    default:
+                        throw new RuntimeException("Invalid Scheduler type.");
+                }
         }
 
         return 0;

@@ -3,6 +3,7 @@ package org.cswteams.ms3.control.scocciatura;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorScheduleState;
 import org.cswteams.ms3.entity.scheduling.algo.DoctorXY;
+import org.cswteams.ms3.entity.scheduling.factory.SchedulerType;
 import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 
@@ -32,7 +33,7 @@ public class ControllerScocciaturaUffaPoints {
         ContestoScocciatura contestoScocciatura;
 
         for(DoctorXY doctorScheduleState :utentiState ){
-            contestoScocciatura = new ContestoScocciatura(doctorScheduleState, concreteShift);
+            contestoScocciatura = new ContestoScocciatura(doctorScheduleState, concreteShift, SchedulerType.SCHEDULER_UFFAPOINTS);
             uffa = this.calcolaUffaComplessivoUtenteAssegnazione(contestoScocciatura);
             doctorScheduleState.addUffaTemp(uffa);
         }
