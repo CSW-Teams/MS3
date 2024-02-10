@@ -1,0 +1,386 @@
+{
+  "213": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "979": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "1675": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "2358": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "3055": {
+    "giornaliero": 1.0,
+    "pomeridiano": 0.0,
+    "notturno": 3.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "3818": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "4594": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 1.0,
+    "domeniche": 1.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "5304": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "5967": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "6643": {
+    "giornaliero": 0.0,
+    "pomeridiano": 1.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 2.0
+  },
+  "7373": {
+    "giornaliero": 1.0,
+    "pomeridiano": 0.0,
+    "notturno": 3.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "8121": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "8787": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "9522": {
+    "giornaliero": 1.0,
+    "pomeridiano": 0.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "10253": {
+    "giornaliero": 0.0,
+    "pomeridiano": 1.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "10983": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 1.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "11744": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "12481": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "13189": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "13900": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "14671": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "15426": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 3.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "16127": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "16816": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "17472": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "18207": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "18860": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "19566": {
+    "giornaliero": 0.0,
+    "pomeridiano": 2.0,
+    "notturno": 3.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "20253": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "20976": {
+    "giornaliero": 0.0,
+    "pomeridiano": 1.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "21700": {
+    "giornaliero": 1.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "22382": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "23129": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 2.0,
+    "domeniche": 1.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "23849": {
+    "giornaliero": 0.0,
+    "pomeridiano": 1.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "24582": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 2.0,
+    "domeniche": 1.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "25320": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "25981": {
+    "giornaliero": 1.0,
+    "pomeridiano": 0.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "26694": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "27357": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "28078": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "28751": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "29462": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 2.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "30240": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "30953": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  },
+  "31675": {
+    "giornaliero": 0.0,
+    "pomeridiano": 1.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "32371": {
+    "giornaliero": 1.0,
+    "pomeridiano": 1.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 2.0
+  },
+  "33072": {
+    "giornaliero": 1.0,
+    "pomeridiano": 0.0,
+    "notturno": 3.0,
+    "domeniche": 1.0,
+    "lunga": 0.0,
+    "uffaPoint": 1.0
+  },
+  "33787": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 1.0,
+    "domeniche": 0.0,
+    "lunga": 0.0,
+    "uffaPoint": 0.0
+  }
+}
