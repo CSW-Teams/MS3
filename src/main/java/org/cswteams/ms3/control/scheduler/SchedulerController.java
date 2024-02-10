@@ -243,7 +243,7 @@ public class SchedulerController implements ISchedulerController {
         Shift shift = null;
         for(Shift shiftDB: shiftsList){
             //if(shiftDB.getMansione().equals(registerConcreteShiftDTO.getMansione())){
-            if(shiftDB.getMedicalService().equals(registerConcreteShiftDTO.getServices())) {
+            if(shiftDB.getMedicalService().getLabel().equals(registerConcreteShiftDTO.getServizio().getNome())) {
                 shift = shiftDB;
                 break;
             }
