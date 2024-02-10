@@ -550,14 +550,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
 
         Doctor u2 = new Doctor("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u3 = new Doctor("Federica", "Villani", "VLNFDR98P43H501D", LocalDate.of(1998, 9, 3), "federicavillani@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u3 = new Doctor("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u4 = new Doctor("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u4, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u5 = new Doctor("Daniele", "La Prova", "LPVDNL98R27H501J", LocalDate.of(1998, 2, 12), "danielelaprova@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+        Doctor u5 = new Doctor("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u5, cardiologia);
         } catch (Exception e) {
@@ -565,7 +565,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         }
         Doctor u6 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
 
-        Doctor u7 = new Doctor("Luca", "Fiscariello", "FSCLCU98L07B581O", LocalDate.of(1998, 8, 12), "lucafiscariello@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+        Doctor u7 = new Doctor("Luca", "Fiscariello", "FSCLCU99D15A783Z", LocalDate.of(1998, 8, 12), "lucafiscariello@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u7, cardiologia);
         } catch (Exception e) {
@@ -607,7 +607,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u19 = new Doctor("Diana", "Pasquali", "PSQDNI97D22H501Q", LocalDate.of(1997, 4, 22), "diana.pasquali@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u19 = new Doctor("Diana", "Pasquali", "PSQDNI97D62H501U", LocalDate.of(1997, 4, 22), "diana.pasquali@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u20 = new Doctor("Francesco", "Lo Presti", "LPSFRC66T05G071E", LocalDate.of(1998, 8, 12), "francesco.lopresti@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         Doctor u21 = new Doctor("Andrea", "Pepe", "PPENDR99M05I150J", LocalDate.of(1999, 8, 5), "andrea.pepe@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u22 = new Doctor("Matteo", "Fanfarillo", "FNFMTT99E10A123E", LocalDate.of(1999, 5, 10), "matteo.fanfarillo99@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.PLANNER));
@@ -636,23 +636,23 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u28 = new Doctor("Livia", "Simoncini", "SMNLVI98L17H501O", LocalDate.of(1998, 7, 19), "livia.simoncini@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u29 = new Doctor("Ludovico", "Zarrelli", "ZRRLDV99E03I370A", LocalDate.of(1998, 5, 3), "ludovico.zerrelli@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u28 = new Doctor("Livia", "Simoncini", "SMNLVI98L57H501S", LocalDate.of(1998, 7, 19), "livia.simoncini@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u29 = new Doctor("Ludovico", "Zarrelli", "ZRRLVC99E03G482P", LocalDate.of(1998, 5, 3), "ludovico.zerrelli@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u30 = new Doctor("Alessandro", "Montenegro", "MNTLSS96P20H501J", LocalDate.of(1998, 8, 12), "alessandro.montenegro@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u31 = new Doctor("Daniel", "Lungu", "LNGDNL98T04H501I", LocalDate.of(1998, 12, 4), "daniel.lungu@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u32 = new Doctor("Andrea", "Tosti", "TSTNDR97A10H501E", LocalDate.of(1998, 8, 12), "andrea.tosti@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u33 = new Doctor("Giorgio", "Pesce", "PSCGRG98E08H501T", LocalDate.of(1998, 8, 12), "giorgia.pesce@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u34 = new Doctor("Valerio", "Palmerini", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "valerio.palmerini@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
 
-        Doctor u35 = new Doctor("Simone", "Bauco", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "simonebauco@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u36 = new Doctor("Simone", "Staccone", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "simonestaccone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u37 = new Doctor("Massimo", "Stanzione", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "massimostanzione@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u38 = new Doctor("Danilo", "D'Amico", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "danilodamico@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u39 = new Doctor("Matteo", "Kobero", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "matteokobero@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u40 = new Doctor("Sebastian", "Opriscan", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "sebastianopriscan@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u41 = new Doctor("Simone", "Festa", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "simonefesta@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u35 = new Doctor("Simone", "Bauco", "BCASMN00T01A123Y", LocalDate.of(2000, 12, 1), "simonebauco@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u36 = new Doctor("Simone", "Staccone", "STCSMN00M16D810O", LocalDate.of(2000, 8, 16), "simonestaccone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u37 = new Doctor("Massimo", "Stanzione", "STNMSM96L12F205R", LocalDate.of(1996, 7, 12), "massimostanzione@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u38 = new Doctor("Danilo", "D'Amico", "DMCDNL99A08A345C", LocalDate.of(2000, 1, 8), "danilodamico@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u39 = new Doctor("Matteo", "Kobero", "FDRMTT98S20H501D", LocalDate.of(1998, 11, 20), "matteokobero@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u40 = new Doctor("Sebastian", "Opriscan", "PRSSST00D12H501L", LocalDate.of(2000, 4, 12), "sebastianopriscan@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u41 = new Doctor("Simone", "Festa", "FSTSMN98E26H501N", LocalDate.of(1998, 5, 26), "simonefesta@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
 
-        User u42 = new User("Fabio", "Armani", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "fabioarmani@gmail.com", "passw", Set.of(SystemActor.CONFIGURATOR));
+        User u42 = new User("Fabio", "Armani", "RMNFBA50M12G156E", LocalDate.of(1950, 8, 12), "fabioarmani@gmail.com", "passw", Set.of(SystemActor.CONFIGURATOR));
 
         u1 = doctorDAO.saveAndFlush(u1);
         u2 = doctorDAO.saveAndFlush(u2);
