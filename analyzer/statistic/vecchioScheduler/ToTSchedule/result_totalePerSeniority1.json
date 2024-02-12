@@ -1,0 +1,44 @@
+{
+  "media_asseganzioni": {
+    "giornaliero": 215.07142857142858,
+    "pomeridiano": 225.64285714285714,
+    "notturno": 243.57142857142858,
+    "domeniche": 99.78571428571429,
+    "lunga": 34.642857142857146
+  },
+  "max_assegnazioni": {
+    "giornaliero": 252.0,
+    "pomeridiano": 245.0,
+    "notturno": 268.0,
+    "domeniche": 110.0,
+    "lunga": 45.0
+  },
+  "min_assegnazioni": {
+    "giornaliero": 192.0,
+    "pomeridiano": 198.0,
+    "notturno": 215.0,
+    "domeniche": 90.0,
+    "lunga": 27.0
+  },
+  "discostamento_medio_media_asseganzioni": {
+    "giornaliero": 11.22448979591837,
+    "pomeridiano": 10.693877551020408,
+    "notturno": 11.346938775510202,
+    "domeniche": 5.785714285714286,
+    "lunga": 3.734693877551021
+  },
+  "discostamento_max_media_asseganzioni": {
+    "giornaliero": 36.928571428571416,
+    "pomeridiano": 27.64285714285714,
+    "notturno": 28.571428571428584,
+    "domeniche": 10.214285714285708,
+    "lunga": 10.357142857142854
+  },
+  "discostamento_min_media_asseganzioni": {
+    "giornaliero": 0.07142857142858361,
+    "pomeridiano": 0.3571428571428612,
+    "notturno": 0.4285714285714164,
+    "domeniche": 0.2142857142857082,
+    "lunga": 0.3571428571428541
+  }
+}

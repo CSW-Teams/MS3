@@ -64,6 +64,7 @@ def secondoGrafico(nameFile):
     plt.show()
 
 primoGrafico()
+
 nameFile="statistic/nuovoScheduler/PerSchedule/mediaDiff.json"
 secondoGrafico(nameFile)
 
