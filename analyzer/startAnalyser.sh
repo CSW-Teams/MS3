@@ -6,5 +6,5 @@
 #mkdir ./statistic/nuovoScheduler/PerSchedule
 
 #python3 measurerAndAnalyzer.py
-python3 HypothesisTest.py
+python3 HypothesisTest.py > risultatiDeiTest.txt
 python3 Plotter.py
