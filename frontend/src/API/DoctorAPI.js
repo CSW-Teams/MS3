@@ -10,11 +10,13 @@ export class DoctorAPI {
     const doctors = [];
 
     for (let i = 0; i < body.length; i++) {
+      let seniority = body[i].seniority === "STRUCTURED" ? "Strutturato" : (body[i].seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno");
+
       const doctor = {};
       doctor.id = body[i].id;
       doctor.name = body[i].name;
       doctor.lastname = body[i].lastname;
-      doctor.seniority = body[i].seniority;
+      doctor.seniority = seniority;
       doctor.task="";
       doctors[i] = doctor;
     }
