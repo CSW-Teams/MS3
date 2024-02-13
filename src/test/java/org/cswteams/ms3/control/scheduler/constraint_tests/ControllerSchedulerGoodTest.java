@@ -5,6 +5,8 @@ import org.cswteams.ms3.control.scheduler.constraint_tests.ControllerSchedulerTe
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.condition.PermanentCondition;
+import org.cswteams.ms3.entity.condition.TemporaryCondition;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TaskEnum;
@@ -52,8 +54,28 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
     @Autowired
     private DoctorUffaPrioritySnapshotDAO doctorUffaPrioritySnapshotDAO ;
 
+    @Autowired
+    private PermanentConditionDAO permanentConditionDAO ;
+
+    @Autowired
+    private TemporaryConditionDAO temporaryConditionDAO ;
+
     @Override
     public void populateDB() {
+
+        //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
+        // Condition may be structure specific TODO: Ask if it is needed a configuration file for that
+        PermanentCondition over62 = new PermanentCondition("OVER 62");
+        TemporaryCondition pregnant = new TemporaryCondition("INCINTA", LocalDate.now().toEpochDay(), LocalDate.now().plusMonths(9).toEpochDay());
+        TemporaryCondition maternity = new TemporaryCondition("IN MATERNITA'", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(60).toEpochDay());
+        TemporaryCondition vacation = new TemporaryCondition("IN FERIE", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
+        TemporaryCondition sick = new TemporaryCondition("IN MALATTIA", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
+
+        permanentConditionDAO.saveAndFlush(over62) ;
+        temporaryConditionDAO.saveAndFlush(pregnant) ;
+        temporaryConditionDAO.saveAndFlush(maternity) ;
+        temporaryConditionDAO.saveAndFlush(vacation) ;
+        temporaryConditionDAO.saveAndFlush(sick) ;
 
         //Specializations
         Specialization a_logia = new Specialization("ALOGIA") ;

@@ -102,20 +102,6 @@ public abstract class ControllerSchedulerTest {
         registerHolidays();
 
         try {
-            //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
-            // Condition may be structure specific TODO: Ask if it is needed a configuration file for that
-            PermanentCondition over62 = new PermanentCondition("OVER 62");
-            TemporaryCondition pregnant = new TemporaryCondition("INCINTA", LocalDate.now().toEpochDay(), LocalDate.now().plusMonths(9).toEpochDay());
-            TemporaryCondition maternity = new TemporaryCondition("IN MATERNITA'", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(60).toEpochDay());
-            TemporaryCondition vacation = new TemporaryCondition("IN FERIE", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
-            TemporaryCondition sick = new TemporaryCondition("IN MALATTIA", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
-
-            permanentConditionDAO.saveAndFlush(over62) ;
-            temporaryConditionDAO.saveAndFlush(pregnant) ;
-            temporaryConditionDAO.saveAndFlush(maternity) ;
-            temporaryConditionDAO.saveAndFlush(vacation) ;
-            temporaryConditionDAO.saveAndFlush(sick) ;
-
             populateDB();
         } catch (Exception e) {
             e.printStackTrace();
