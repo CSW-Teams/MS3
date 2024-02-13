@@ -1,8 +1,8 @@
-package org.cswteams.ms3.control.scheduler;
+package org.cswteams.ms3.control.scheduler.constraint_tests;
 
 import org.cswteams.ms3.control.medicalService.MedicalServiceController;
+import org.cswteams.ms3.control.scheduler.constraint_tests.ControllerSchedulerTest;
 import org.cswteams.ms3.control.user.UserController;
-import org.cswteams.ms3.control.vincoli.IConstraintController;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.Seniority;
@@ -20,7 +20,7 @@ import java.util.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-public class ControllerSchedulerOverWorkedTest extends ControllerSchedulerTest {
+public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
 
     @Autowired
     private SpecializationDAO specializationDAO ;
@@ -56,8 +56,8 @@ public class ControllerSchedulerOverWorkedTest extends ControllerSchedulerTest {
     public void populateDB() {
 
         //Specializations
-        Specialization a_logia = new Specialization("Alogia") ;
-        Specialization b_logia = new Specialization("Blogia") ;
+        Specialization a_logia = new Specialization("ALOGIA") ;
+        Specialization b_logia = new Specialization("BLOGIA") ;
 
         specializationDAO.save(a_logia) ;
         specializationDAO.save(b_logia) ;
@@ -67,8 +67,8 @@ public class ControllerSchedulerOverWorkedTest extends ControllerSchedulerTest {
         Task ward = new Task(TaskEnum.WARD) ;
         taskDAO.saveAndFlush(ward) ;
 
-        MedicalService repartoAlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "REPARTO ALOGIA") ;
-        MedicalService repartoBlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "REPARTO BLOGIA") ;
+        MedicalService repartoAlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "ALOGIA") ;
+        MedicalService repartoBlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "BLOGIA") ;
 
         //Doctors
 
@@ -90,13 +90,13 @@ public class ControllerSchedulerOverWorkedTest extends ControllerSchedulerTest {
         QuantityShiftSeniority repartoAlogiaQss = new QuantityShiftSeniority(alogiaQuantities, ward) ;
 
         Map<Seniority, Integer> blogiaQuantities = new HashMap<>() ;
-        blogiaQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
+        alogiaQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
         QuantityShiftSeniority repartoBlogiaQss = new QuantityShiftSeniority(blogiaQuantities, ward) ;
 
         Set<DayOfWeek> monday = new HashSet<>(Collections.singletonList(DayOfWeek.MONDAY)) ;
 
         Shift shift1 = new Shift(LocalTime.of(8, 0),
-                Duration.ofHours(24),
+                Duration.ofHours(6),
                 repartoAlogia,
                 TimeSlot.MORNING,
                 Collections.singletonList(repartoAlogiaQss),
@@ -117,8 +117,8 @@ public class ControllerSchedulerOverWorkedTest extends ControllerSchedulerTest {
 
         //we are assuming that, at the moment of instantiation of DoctorHolidays, the corresponding doctor has worked in no concrete shift in the past.
         HashMap<Holiday, Boolean> holidayMap = new HashMap<>();
-        for(Holiday holiday: holidays) {
-            if(!holiday.getName().equals("Domenica"))   //we do not care about Sundays as holidays
+        for (Holiday holiday : holidays) {
+            if (!holiday.getName().equals("Domenica"))   //we do not care about Sundays as holidays
                 holidayMap.put(holiday, false);
 
         }
@@ -141,7 +141,7 @@ public class ControllerSchedulerOverWorkedTest extends ControllerSchedulerTest {
 
         //Set all parameters in parent class, like in @Parametrized
 
-        super.isPossible = false ;
+        super.isPossible = true ;
         super.start = LocalDate.of(2024, 3, 1) ;
         super.end = LocalDate.of(2024, 3, 31) ;
 

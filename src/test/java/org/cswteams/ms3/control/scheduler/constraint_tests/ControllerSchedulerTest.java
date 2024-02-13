@@ -1,9 +1,10 @@
-package org.cswteams.ms3.control.scheduler;
+package org.cswteams.ms3.control.scheduler.constraint_tests;
 
 import org.cswteams.ms3.control.preferenze.CalendarSetting;
 import org.cswteams.ms3.control.preferenze.CalendarSettingBuilder;
 import org.cswteams.ms3.control.preferenze.ICalendarServiceManager;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
+import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
@@ -18,6 +19,7 @@ import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaVacanza;
 import org.cswteams.ms3.enums.HolidayCategory;
 import org.cswteams.ms3.enums.ServiceDataENUM;
+import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.junit.Before;
@@ -28,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
@@ -44,7 +47,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
 @ActiveProfiles("test")
@@ -86,10 +89,15 @@ public abstract class ControllerSchedulerTest {
     @Autowired
     private ConstraintDAO constraintDAO ;
 
+    @LocalServerPort
+    private int port;
+
     public abstract void populateDB() ;
 
     @Before
     public void beforeScript() {
+
+        System.out.println("Port :" + port);
 
         registerHolidays();
 
@@ -110,6 +118,7 @@ public abstract class ControllerSchedulerTest {
 
             populateDB();
         } catch (Exception e) {
+            e.printStackTrace();
             fail() ;
         }
 
@@ -118,14 +127,15 @@ public abstract class ControllerSchedulerTest {
     }
 
     @Test
+    @Transactional
     public void testScheduler() {
 
         Schedule schedule = controller.createSchedule(start, end) ;
 
         if(isPossible) {
-            assertNotNull(schedule) ;
+            assertNull(schedule.getCauseIllegal());
         } else {
-            assertNull(schedule);
+            assertNotNull(schedule.getCauseIllegal());
         }
     }
     private void registerHolidays() {

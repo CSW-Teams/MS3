@@ -1,12 +1,9 @@
-package org.cswteams.ms3.control.scheduler;
+package org.cswteams.ms3.control.scheduler.constraint_tests;
 
 import org.cswteams.ms3.control.medicalService.MedicalServiceController;
+import org.cswteams.ms3.control.scheduler.constraint_tests.ControllerSchedulerTest;
 import org.cswteams.ms3.control.user.UserController;
-import org.cswteams.ms3.control.vincoli.IConstraintController;
-import org.cswteams.ms3.dao.DoctorDAO;
-import org.cswteams.ms3.dao.ShiftDAO;
-import org.cswteams.ms3.dao.SpecializationDAO;
-import org.cswteams.ms3.dao.TaskDAO;
+import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
@@ -23,7 +20,7 @@ import java.util.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
+public class ControllerSchedulerOverWorkedTest extends ControllerSchedulerTest {
 
     @Autowired
     private SpecializationDAO specializationDAO ;
@@ -42,6 +39,18 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
 
     @Autowired
     private TaskDAO taskDAO ;
+
+    @Autowired
+    private HolidayDAO holidayDAO ;
+
+    @Autowired
+    private DoctorUffaPriorityDAO doctorUffaPriorityDAO ;
+
+    @Autowired
+    private DoctorHolidaysDAO doctorHolidaysDAO ;
+
+    @Autowired
+    private DoctorUffaPrioritySnapshotDAO doctorUffaPrioritySnapshotDAO ;
 
     @Override
     public void populateDB() {
@@ -81,13 +90,13 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
         QuantityShiftSeniority repartoAlogiaQss = new QuantityShiftSeniority(alogiaQuantities, ward) ;
 
         Map<Seniority, Integer> blogiaQuantities = new HashMap<>() ;
-        alogiaQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
+        blogiaQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
         QuantityShiftSeniority repartoBlogiaQss = new QuantityShiftSeniority(blogiaQuantities, ward) ;
 
         Set<DayOfWeek> monday = new HashSet<>(Collections.singletonList(DayOfWeek.MONDAY)) ;
 
         Shift shift1 = new Shift(LocalTime.of(8, 0),
-                Duration.ofHours(6),
+                Duration.ofHours(24),
                 repartoAlogia,
                 TimeSlot.MORNING,
                 Collections.singletonList(repartoAlogiaQss),
@@ -104,9 +113,35 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift2);
 
+        List<Holiday> holidays = holidayDAO.findAll();  //retrieve of holiday entities (and not DTOs)
+
+        //we are assuming that, at the moment of instantiation of DoctorHolidays, the corresponding doctor has worked in no concrete shift in the past.
+        HashMap<Holiday, Boolean> holidayMap = new HashMap<>();
+        for(Holiday holiday: holidays) {
+            if(!holiday.getName().equals("Domenica"))   //we do not care about Sundays as holidays
+                holidayMap.put(holiday, false);
+
+        }
+
+        DoctorUffaPriority dup = new DoctorUffaPriority(doc1);
+        DoctorUffaPrioritySnapshot doc1UffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doc1);
+        DoctorHolidays dh = new DoctorHolidays(doc1, holidayMap);
+
+        doctorUffaPriorityDAO.save(dup);
+        doctorHolidaysDAO.save(dh);
+        doctorUffaPrioritySnapshotDAO.save(doc1UffaPrioritySnapshot);
+
+        DoctorUffaPriority dup2 = new DoctorUffaPriority(doc2);
+        DoctorUffaPrioritySnapshot doc2UffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doc2);
+        DoctorHolidays dh2 = new DoctorHolidays(doc2, holidayMap);
+
+        doctorUffaPriorityDAO.save(dup2);
+        doctorHolidaysDAO.save(dh2);
+        doctorUffaPrioritySnapshotDAO.save(doc2UffaPrioritySnapshot);
+
         //Set all parameters in parent class, like in @Parametrized
 
-        super.isPossible = true ;
+        super.isPossible = false ;
         super.start = LocalDate.of(2024, 3, 1) ;
         super.end = LocalDate.of(2024, 3, 31) ;
 
