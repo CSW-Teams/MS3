@@ -1,0 +1,242 @@
+{
+  "0": {
+    "general_priority": 16.571428571428573,
+    "night_priority": 12.571428571428571,
+    "long_shift_priority": 0.0
+  },
+  "1": {
+    "general_priority": 19.571428571428573,
+    "night_priority": 14.428571428571429,
+    "long_shift_priority": 0.0
+  },
+  "2": {
+    "general_priority": 18.0,
+    "night_priority": 13.428571428571429,
+    "long_shift_priority": 0.047619047619047616
+  },
+  "3": {
+    "general_priority": 18.285714285714285,
+    "night_priority": 12.714285714285714,
+    "long_shift_priority": 0.047619047619047616
+  },
+  "4": {
+    "general_priority": 14.714285714285714,
+    "night_priority": 11.857142857142858,
+    "long_shift_priority": 0.047619047619047616
+  },
+  "5": {
+    "general_priority": 18.285714285714285,
+    "night_priority": 13.428571428571429,
+    "long_shift_priority": 0.047619047619047616
+  },
+  "6": {
+    "general_priority": 15.285714285714286,
+    "night_priority": 11.571428571428571,
+    "long_shift_priority": 0.047619047619047616
+  },
+  "7": {
+    "general_priority": 15.714285714285714,
+    "night_priority": 11.714285714285714,
+    "long_shift_priority": 0.047619047619047616
+  },
+  "8": {
+    "general_priority": 16.142857142857142,
+    "night_priority": 12.714285714285714,
+    "long_shift_priority": 0.07142857142857142
+  },
+  "9": {
+    "general_priority": 30.428571428571427,
+    "night_priority": 17.571428571428573,
+    "long_shift_priority": 0.07142857142857142
+  },
+  "10": {
+    "general_priority": 17.857142857142858,
+    "night_priority": 12.714285714285714,
+    "long_shift_priority": 0.07142857142857142
+  },
+  "11": {
+    "general_priority": 16.428571428571427,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.07142857142857142
+  },
+  "12": {
+    "general_priority": 18.0,
+    "night_priority": 11.714285714285714,
+    "long_shift_priority": 0.07142857142857142
+  },
+  "13": {
+    "general_priority": 16.142857142857142,
+    "night_priority": 11.571428571428571,
+    "long_shift_priority": 0.07142857142857142
+  },
+  "14": {
+    "general_priority": 15.857142857142858,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.07142857142857142
+  },
+  "15": {
+    "general_priority": 15.857142857142858,
+    "night_priority": 12.142857142857142,
+    "long_shift_priority": 0.07142857142857142
+  },
+  "16": {
+    "general_priority": 15.285714285714286,
+    "night_priority": 12.285714285714286,
+    "long_shift_priority": 0.11904761904761904
+  },
+  "17": {
+    "general_priority": 15.857142857142858,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.11904761904761904
+  },
+  "18": {
+    "general_priority": 14.0,
+    "night_priority": 11.857142857142858,
+    "long_shift_priority": 0.14285714285714285
+  },
+  "19": {
+    "general_priority": 15.428571428571429,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.16666666666666666
+  },
+  "20": {
+    "general_priority": 15.714285714285714,
+    "night_priority": 11.428571428571429,
+    "long_shift_priority": 0.19047619047619047
+  },
+  "21": {
+    "general_priority": 16.142857142857142,
+    "night_priority": 12.571428571428571,
+    "long_shift_priority": 0.19047619047619047
+  },
+  "22": {
+    "general_priority": 15.857142857142858,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.19047619047619047
+  },
+  "23": {
+    "general_priority": 14.428571428571429,
+    "night_priority": 11.285714285714286,
+    "long_shift_priority": 0.21428571428571427
+  },
+  "24": {
+    "general_priority": 16.714285714285715,
+    "night_priority": 11.714285714285714,
+    "long_shift_priority": 0.21428571428571427
+  },
+  "25": {
+    "general_priority": 14.857142857142858,
+    "night_priority": 11.571428571428571,
+    "long_shift_priority": 0.21428571428571427
+  },
+  "26": {
+    "general_priority": 16.428571428571427,
+    "night_priority": 12.285714285714286,
+    "long_shift_priority": 0.23809523809523808
+  },
+  "27": {
+    "general_priority": 15.571428571428571,
+    "night_priority": 12.142857142857142,
+    "long_shift_priority": 0.23809523809523808
+  },
+  "28": {
+    "general_priority": 16.0,
+    "night_priority": 11.285714285714286,
+    "long_shift_priority": 0.2619047619047619
+  },
+  "29": {
+    "general_priority": 16.571428571428573,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.2619047619047619
+  },
+  "30": {
+    "general_priority": 14.714285714285714,
+    "night_priority": 11.857142857142858,
+    "long_shift_priority": 0.2619047619047619
+  },
+  "31": {
+    "general_priority": 15.428571428571429,
+    "night_priority": 12.285714285714286,
+    "long_shift_priority": 0.2857142857142857
+  },
+  "32": {
+    "general_priority": 16.428571428571427,
+    "night_priority": 11.428571428571429,
+    "long_shift_priority": 0.2857142857142857
+  },
+  "33": {
+    "general_priority": 14.857142857142858,
+    "night_priority": 12.571428571428571,
+    "long_shift_priority": 0.3333333333333333
+  },
+  "34": {
+    "general_priority": 16.428571428571427,
+    "night_priority": 12.285714285714286,
+    "long_shift_priority": 0.3333333333333333
+  },
+  "35": {
+    "general_priority": 15.0,
+    "night_priority": 11.571428571428571,
+    "long_shift_priority": 0.35714285714285715
+  },
+  "36": {
+    "general_priority": 16.428571428571427,
+    "night_priority": 11.714285714285714,
+    "long_shift_priority": 0.35714285714285715
+  },
+  "37": {
+    "general_priority": 15.571428571428571,
+    "night_priority": 11.571428571428571,
+    "long_shift_priority": 0.38095238095238093
+  },
+  "38": {
+    "general_priority": 16.142857142857142,
+    "night_priority": 12.285714285714286,
+    "long_shift_priority": 0.40476190476190477
+  },
+  "39": {
+    "general_priority": 15.285714285714286,
+    "night_priority": 12.142857142857142,
+    "long_shift_priority": 0.40476190476190477
+  },
+  "40": {
+    "general_priority": 16.0,
+    "night_priority": 11.571428571428571,
+    "long_shift_priority": 0.40476190476190477
+  },
+  "41": {
+    "general_priority": 16.285714285714285,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.42857142857142855
+  },
+  "42": {
+    "general_priority": 16.428571428571427,
+    "night_priority": 11.857142857142858,
+    "long_shift_priority": 0.42857142857142855
+  },
+  "43": {
+    "general_priority": 18.0,
+    "night_priority": 12.571428571428571,
+    "long_shift_priority": 0.42857142857142855
+  },
+  "44": {
+    "general_priority": 17.142857142857142,
+    "night_priority": 11.428571428571429,
+    "long_shift_priority": 0.42857142857142855
+  },
+  "45": {
+    "general_priority": 16.571428571428573,
+    "night_priority": 11.571428571428571,
+    "long_shift_priority": 0.42857142857142855
+  },
+  "46": {
+    "general_priority": 17.142857142857142,
+    "night_priority": 12.285714285714286,
+    "long_shift_priority": 0.5
+  },
+  "47": {
+    "general_priority": 16.0,
+    "night_priority": 11.857142857142858,
+    "long_shift_priority": 0.5238095238095238
+  }
+}

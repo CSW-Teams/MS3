@@ -8,7 +8,7 @@ import org.cswteams.ms3.dto.RequestRemovalFromConcreteShiftDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.RequestRemovalFromConcreteShift;
-import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ public class RequestRemovalFromConcreteShiftController implements IRequestRemova
     private DoctorDAO doctorDAO;
 
     @Override
-    public RequestRemovalFromConcreteShiftDTO createRequest(@NotNull RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, AssegnazioneTurnoException {
+    public RequestRemovalFromConcreteShiftDTO createRequest(@NotNull RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, ConcreteShiftException {
         // Some sanity check before calling the actual creation method:
         // 1. check if the provided ConcreteShift is existing
         Long concreteShiftId = requestRemovalFromConcreteShiftDTO.getIdShift();
@@ -69,14 +69,14 @@ public class RequestRemovalFromConcreteShiftController implements IRequestRemova
      * @param requestingDoctor doctor issuing a request
      * @param concreteShift    shift against which the request is issued
      * @throws DatabaseException          in case an error during database lookup occurs
-     * @throws AssegnazioneTurnoException in case an error during database lookup occurs
+     * @throws ConcreteShiftException in case an error during database lookup occurs
      */
-    private void checkRequestAllowance(Doctor requestingDoctor, ConcreteShift concreteShift) throws DatabaseException, AssegnazioneTurnoException {
+    private void checkRequestAllowance(Doctor requestingDoctor, ConcreteShift concreteShift) throws DatabaseException, ConcreteShiftException {
         if (!requestRemovalFromConcreteShiftDAO.findAllByAssegnazioneTurnoIdAndUtenteId(concreteShift.getId(), requestingDoctor.getId()).isEmpty()) {
             throw new DatabaseException("A request of removal is already existing for doctor " + requestingDoctor + " for the concrete shift " + concreteShift);
         }
         if (!concreteShift.isDoctorAssigned(requestingDoctor)) {
-            throw new AssegnazioneTurnoException("Doctor " + requestingDoctor + " is not assigned to the concrete shift " + concreteShift);
+            throw new ConcreteShiftException("Doctor " + requestingDoctor + " is not assigned to the concrete shift " + concreteShift);
         }
     }
 
@@ -88,9 +88,9 @@ public class RequestRemovalFromConcreteShiftController implements IRequestRemova
      * @param reason           reason for the request
      * @return object related to the request, if no error occur.
      * @throws DatabaseException          in case an error during database lookup occurs
-     * @throws AssegnazioneTurnoException in case an error during database lookup occurs
+     * @throws ConcreteShiftException in case an error during database lookup occurs
      */
-    private RequestRemovalFromConcreteShift _createRequestRemovalFromConcreteShift(@NotNull Doctor requestingDoctor, @NotNull ConcreteShift concreteShift, @NotNull String reason) throws AssegnazioneTurnoException, DatabaseException {
+    private RequestRemovalFromConcreteShift _createRequestRemovalFromConcreteShift(@NotNull Doctor requestingDoctor, @NotNull ConcreteShift concreteShift, @NotNull String reason) throws ConcreteShiftException, DatabaseException {
         checkRequestAllowance(requestingDoctor, concreteShift);
         RequestRemovalFromConcreteShift richiestaRimozioneDaTurno = new RequestRemovalFromConcreteShift(concreteShift, requestingDoctor, reason);
         requestRemovalFromConcreteShiftDAO.saveAndFlush(richiestaRimozioneDaTurno);
@@ -146,7 +146,7 @@ public class RequestRemovalFromConcreteShiftController implements IRequestRemova
 
     @Override
     @Transactional
-    public RequestRemovalFromConcreteShiftDTO reviewRequest(RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, AssegnazioneTurnoException {
+    public RequestRemovalFromConcreteShiftDTO reviewRequest(RequestRemovalFromConcreteShiftDTO requestRemovalFromConcreteShiftDTO) throws DatabaseException, ConcreteShiftException {
         RequestRemovalFromConcreteShift request = _getRequest(requestRemovalFromConcreteShiftDTO.getIdRequest());
         if (request.isReviewed()) {
             throw new RuntimeException("RequestRemovalFromConcreteShift with id = " + request.getId() + " is already reviewed.");

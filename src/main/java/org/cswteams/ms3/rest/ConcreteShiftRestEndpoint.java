@@ -1,7 +1,6 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.concreteShift.IConcreteShiftController;
-import org.cswteams.ms3.control.scambioTurno.ControllerScambioTurno;
 import org.cswteams.ms3.control.scambioTurno.IControllerScambioTurno;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
@@ -10,11 +9,9 @@ import org.cswteams.ms3.dto.ModifyConcreteShiftDTO;
 import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.concreteshift.GetAvailableUsersForReplacementDTO;
 import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
-import org.cswteams.ms3.dto.user.UserDTO;
-import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.constraint.Constraint;
-import org.cswteams.ms3.exception.AssegnazioneTurnoException;
+import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -50,7 +46,7 @@ public class ConcreteShiftRestEndpoint {
             // controllo solo sui vincoli non violabili
             try {
                 schedule = controllerScheduler.addConcreteShift(assegnazione, assegnazione.isForced());
-            } catch (AssegnazioneTurnoException e) {
+            } catch (ConcreteShiftException e) {
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
             } catch (IllegalScheduleException e) {
                 schedule = null;

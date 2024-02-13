@@ -19,7 +19,7 @@ export  class ScheduleAPI {
   }
 
 
-  async deleteSchedulo(idSchedulo){
+  async deleteSchedule(idSchedulo){
     const response = await fetch('/api/schedule/id='+idSchedulo,
       { method: 'DELETE' });
     return response.status;

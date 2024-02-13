@@ -1,62 +1,46 @@
-import React from "react"
-import {ToastContainer} from "react-toastify";
+import React from "react";
+import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import {ShiftChangeRequestAPI} from "../../API/ShiftChangeRequestAPI";
-import {Button} from "@mui/material";
+import { ShiftChangeRequestAPI } from "../../API/ShiftChangeRequestAPI";
+import { Button } from "@mui/material";
+import { useTranslation } from 'react-i18next';
 
+export default function ShiftChangeView() {
+  const { t } = useTranslation();
 
-export default class ShiftChangeView extends React.Component {
-  constructor(props) {
-    super(props);
+  const [state, setState] = React.useState({
+    turnChangeRequestsBySender: [],
+    turnChangeRequestsToSender: []
+  });
 
-    this.state = {
-      turnChangeRequestsBySender: [],
-      turnChangeRequestsToSender: []
-    };
-    this.requestAPI = new ShiftChangeRequestAPI();
-  }
-  async componentDidMount() {
-      // Ottieni le notifiche al caricamento del componente
-      await this.fetchData();
-      // Aggiorna le notifiche periodicamente, ad esempio ogni 6 secondi
-      this.intervalId = setInterval(() => this.fetchData(), 6000);
-    }
-  componentWillUnmount() {
-    // Cancella l'intervallo quando il componente viene smontato
-    clearInterval(this.intervalId);
-  }
-  handle= (requestId,response) => {
-    this.requestAPI.answerRequest(requestId, response);
+  const requestAPI = new ShiftChangeRequestAPI();
+
+  React.useEffect(() => {
+    fetchData();
+    const intervalId = setInterval(() => fetchData(), 6000);
+    return () => clearInterval(intervalId); // Cleanup on component unmount
+  }, []);
+
+  const handle = (requestId, response) => {
+    requestAPI.answerRequest(requestId, response);
     console.log(`Request ${requestId} accepted`);
   };
 
-  async fetchData(){
-      try {
-        const turnChangeRequestsBySender = await this.requestAPI.getTurnChangeRequestsByIdUser(localStorage.getItem("id"));
-        const turnChangeRequestsToSender = await this.requestAPI.getTurnChangeRequestsToIdUser(localStorage.getItem("id"));
-        this.setState({
-          turnChangeRequestsBySender:turnChangeRequestsBySender,
-          turnChangeRequestsToSender:turnChangeRequestsToSender
-        });
-      } catch (error) {
-        console.error('Errore durante il recupero delle notifiche:', error);
-      }
-  }
-  render() {
-    const turnChangeRequestsBySender = this.state.turnChangeRequestsBySender;
+  const fetchData = async () => {
+    try {
+      const turnChangeRequestsBySender = await requestAPI.getTurnChangeRequestsByIdUser(localStorage.getItem("id"));
+      const turnChangeRequestsToSender = await requestAPI.getTurnChangeRequestsToIdUser(localStorage.getItem("id"));
+      setState({
+        turnChangeRequestsBySender,
+        turnChangeRequestsToSender
+      });
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
 
-    const currentLocale = navigator.language;
-    console.log(currentLocale)
-
-    const sortedRequestsBySender = turnChangeRequestsBySender.sort((a, b) => {
-      return new Date(a.inizioDate) - new Date(b.inizioDate);
-    });
-
-    const turnChangeRequestsToSender  = this.state.turnChangeRequestsToSender;
-
-    const sortedRequestsToSender = turnChangeRequestsToSender.sort((a, b) => {
-      return new Date(a.inizioDate) - new Date(b.inizioDate);
-    });
+  const renderTable = (requests, headerText) => {
+    const sortedRequests = requests.sort((a, b) => new Date(a.inizioDate) - new Date(b.inizioDate));
 
     const options = {
       timeZone: 'Europe/Berlin',
@@ -70,93 +54,72 @@ export default class ShiftChangeView extends React.Component {
     };
 
     return (
-      <div className="Table-page-container" style={{padding: '20px'}}>
-        <style>
-          {`
-            .h2-padding {
-              margin-top: 20px;
-              margin-bottom: 20px;
-            }
-          `}
-        </style>
-        <h2 className="h2-padding">Richieste Ricevute</h2>
-        <table className="table" style={{borderRadius: '8px'}}>
+      <>
+        <h2 className="h2-padding">{headerText}</h2>
+        <table className="table" style={{ borderRadius: '8px' }}>
           <thead>
           <tr>
-            <th>Turno</th>
-            <th>Data e Ora Inizio</th>
-            <th>Data e Ora Fine</th>
-            <th>Richiedente</th>
-            <th>Actions</th>
+            <th>{t('Shift')}</th>
+            <th>{t('Start Date and Time')}</th>
+            <th>{t('End Date and Time')}</th>
+            <th>{t('User')}</th>
+            <th>{t('Actions')}</th>
           </tr>
           </thead>
           <tbody>
-          {sortedRequestsToSender.map((request, index) => {
-            const startDate = new Date(request.inizioDate);
-            const endDate = new Date(request.fineDate);
-            return (
-            <tr key={request.requestId}>
-              <td>{request.turnDescription[currentLocale] || request.turnDescription["en"]}</td>
-              <td>{startDate.toLocaleString(navigator.language, options)}</td>
-              <td>{endDate.toLocaleString(navigator.language, options)}</td>
-              <td>{request.userDetails}</td>
-              <td>
-                <button className="btn btn-primary"
-                        style={{marginRight: '8px'}}
-                        onClick={() => this.handle(request.requestId,true)}>
-                  Accetta
-                </button>
-                <button className="btn btn-secondary"
-                        onClick={() => this.handle(request.requestId,false)}>
-                  Rifiuta
-                </button>
-              </td>
-            </tr>
-          )})}
-          </tbody>
-        </table>
-        <h2 className="h2-padding">Richieste Inviate</h2>
-        <table className="table" style={{borderRadius: '8px'}}>
-          <thead>
-          <tr>
-            <th>Turno</th>
-            <th>Data e Ora Inizio</th>
-            <th>Data e Ora Fine</th>
-            <th>Destinatario</th>
-            <th>Status</th>
-          </tr>
-          </thead>
-          <tbody>
-          {sortedRequestsBySender.map((request, index) => {
+          {sortedRequests.map((request, index) => {
             const startDate = new Date(request.inizioDate);
             const endDate = new Date(request.fineDate);
             return (
               <tr key={request.requestId}>
-                <td>{request.turnDescription[currentLocale] || request.turnDescription["en"]}</td>
+                <td>{request.turnDescription[t('en')]}</td>
                 <td>{startDate.toLocaleString(navigator.language, options)}</td>
                 <td>{endDate.toLocaleString(navigator.language, options)}</td>
                 <td>{request.userDetails}</td>
-                <td>{request.status[currentLocale] || request.status["en"]}</td>
+                <td>
+                  <Button variant="contained" color="primary" style={{ marginRight: '8px' }} onClick={() => handle(request.requestId, true)}>
+                    {t('Accept')}
+                  </Button>
+                  <Button variant="contained" color="secondary" onClick={() => handle(request.requestId, false)}>
+                    {t('Reject')}
+                  </Button>
+                </td>
               </tr>
             );
           })}
           </tbody>
         </table>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-        <div style={{marginTop: 'auto'}}></div>
-      </div>
-    )
-  }
+      </>
+    );
+  };
 
+  return (
+    <div className="Table-page-container" style={{ padding: '20px' }}>
+      <style>
+        {`
+          .h2-padding {
+            margin-top: 20px;
+            margin-bottom: 20px;
+          }
+        `}
+      </style>
+
+      {renderTable(state.turnChangeRequestsToSender, t('Requests Received'))}
+      {renderTable(state.turnChangeRequestsBySender, t('Requests Sent'))}
+
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      <div style={{ marginTop: 'auto' }}></div>
+    </div>
+  );
 }

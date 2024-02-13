@@ -2,7 +2,6 @@ package org.cswteams.ms3.entity.constraint;
 
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
 import org.cswteams.ms3.control.utils.ShiftUtil;
-import org.cswteams.ms3.dto.shift.QuantityShiftSeniorityDTO;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
@@ -11,8 +10,6 @@ import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloRuoloNumeroException;
 
 import javax.persistence.Entity;
-import javax.validation.constraints.Null;
-import java.nio.charset.CodingErrorAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

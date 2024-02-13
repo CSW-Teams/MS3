@@ -20,11 +20,10 @@ public class RegisterConcreteShiftDTO {
 
     private Set<UserCreationDTO> onDutyDoctors;
     private Set<UserCreationDTO> onCallDoctors;
-    private Set<MedicalServiceDTO> services;
+    private Set<MedicalServiceDTO> services;    //TODO: to be removed?
     private boolean forced;
 
-    //TODO: to be removed?
-    private TaskEnum mansione;
+    private TaskEnum mansione;  //TODO: to be removed?
     private MedicalServiceDTO servizio;
 
     public RegisterConcreteShiftDTO(){}

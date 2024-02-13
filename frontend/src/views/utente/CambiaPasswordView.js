@@ -9,7 +9,7 @@ import {
   MDBCardTitle, MDBCol,
   MDBContainer, MDBInput, MDBRow, MDBTypography
 } from "mdb-react-ui-kit";
-
+import {t} from "i18next";
 
 export default class CambiaPasswordView extends React.Component {
   constructor(props) {
@@ -47,7 +47,7 @@ export default class CambiaPasswordView extends React.Component {
     switch (responseStatusClass) {
       case 2:
         // Success
-        toast.success('Password modificata con successo!', {
+        toast.success(t('Password updated successfully'), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -58,11 +58,9 @@ export default class CambiaPasswordView extends React.Component {
           theme: "colored",
         });
         break;
-
-        break;
       default:
         // Failure
-        toast.error('Errore nel cambio della password. Assicurati che la password attuale sia corretta e che la nuova password rispetti le policy di sicurezza definite dal configuratore.', {
+        toast.error(t('Invalid Password'), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -82,16 +80,16 @@ export default class CambiaPasswordView extends React.Component {
         <MDBContainer className="py-5">
           <MDBCard alignment='center'>
             <MDBCardBody style={{height: '70vh'}}>
-              <MDBCardTitle>Benvenuto in cambia la tua Password!</MDBCardTitle>
+              <MDBCardTitle>{t('Change your password')}</MDBCardTitle>
               <MDBRow className='g-3' style={{paddingTop: '10px'}}>
-                <MDBCol>Password Attuale:
+                <MDBCol>{t('Current Password')}
                 </MDBCol>
                 <MDBCol size='sm'>
                   <MDBInput
                     wrapperClass='col-auto'
                     type='password'
                     name='oldPassword'
-                    placeholder="Inserisci qui la tua Password..."
+                    placeholder={t('Insert your password here')}
                     value={this.state.oldPassword}
                     onChange={e => this.handleChange(e)}
                   />
@@ -105,7 +103,7 @@ export default class CambiaPasswordView extends React.Component {
                     wrapperClass='col-auto'
                     type='password'
                     name='newPassword'
-                    placeholder="Inserisci qui la tua nuova password..."
+                    placeholder={t('Insert your new password here')}
                     value={this.state.newPassword}
                     onChange={e => this.handleChange(e)}
                   />
@@ -113,12 +111,13 @@ export default class CambiaPasswordView extends React.Component {
               </MDBRow>
               <MDBRow>
                 <MDBCol style={{paddingTop: '10px'}}>
-                  <MDBTypography><mark>Attenzione!</mark> Ricordati di inserire caratteri minuscoli, maiuscoli, numeri e caratteri speciali.</MDBTypography>
+                  <MDBTypography>{
+                    t('Remember to use lowercase, uppercase characters, numbers and special characters')}</MDBTypography>
                 </MDBCol>
               </MDBRow>
               <MDBRow>
                 <MDBCol style={{paddingTop: '0px'}}>
-                  <button onClick={this.handleSubmit} type="submit" className="btn btn-primary">Salva</button>
+                  <button onClick={this.handleSubmit} type="submit" className="btn btn-primary">{t('Save')}</button>
                 </MDBCol>
               </MDBRow>
             </MDBCardBody>

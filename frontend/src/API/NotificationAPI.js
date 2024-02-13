@@ -37,7 +37,7 @@ export  class NotificationAPI {
               });
               // Verifica se la richiesta è stata eseguita con successo
               if (!response.ok) {
-                throw new Error(`Errore nella risposta HTTP: ${response.status}`);
+                throw new Error(`Error with the HTTP response: ${response.status}`);
               }
         } catch (error) {
           console.error('Errore durante il recupero delle notifiche:', error);

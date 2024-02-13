@@ -28,7 +28,6 @@ public class ScheduleRestEndpoint {
     @RequestMapping(method = RequestMethod.POST, path = "generation")
     public ResponseEntity<?> createSchedule(@RequestBody() ScheduleGenerationDTO gs) {
         if (gs != null) {
-
             //Only the requests with admissible dates will be considered.
             if(gs.getStartDate().isBefore(gs.getEndDate())){
 
@@ -40,9 +39,7 @@ public class ScheduleRestEndpoint {
                     return new ResponseEntity<>(HttpStatus.PARTIAL_CONTENT);
                 else
                     return new ResponseEntity<>(HttpStatus.ACCEPTED);
-
             }
-
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

@@ -1,7 +1,6 @@
 package org.cswteams.ms3.entity.scocciature;
 
 import lombok.Data;
-import org.cswteams.ms3.exception.ViolatedConstraintException;
 
 import javax.persistence.*;
 

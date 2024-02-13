@@ -23,7 +23,7 @@ public class PasswordChange implements IPasswordChange {
     public ChangePasswordDTO changePassword(@NotNull ChangePasswordDTO dto) throws DatabaseException, WrongOldPasswordException {
         Optional<User> u = userDAO.findById(dto.getUserId());
         if (u.isEmpty()) {
-            throw new DatabaseException("Utente non trovato");
+            throw new DatabaseException("User not found.");
         } else {
             User user = u.get();
             if (user.getPassword().equals(dto.getOldPassword())) {
@@ -31,7 +31,7 @@ public class PasswordChange implements IPasswordChange {
                 userDAO.saveAndFlush(user);
                 return new ChangePasswordDTO(user.getId(), dto.getOldPassword(), user.getPassword());
             } else {
-                throw new WrongOldPasswordException("La vecchia password non è corretta");
+                throw new WrongOldPasswordException("The old password is wrong.");
             }
         }
     }

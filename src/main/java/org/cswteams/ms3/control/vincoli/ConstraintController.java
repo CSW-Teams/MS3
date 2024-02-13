@@ -38,7 +38,7 @@ public class ConstraintController implements IConstraintController {
     @Override
     public ConfigVincoli updateConstraints(ConfigVincoli configuration) {
         for(ConfigVincMaxPerCons config: configuration.getConfigVincMaxPerConsPerCategoria()){
-            ConfigVincMaxPerCons configVincMaxPerCons = configVincoloMaxPeriodoConsecutivoDao.findAllByCategoriaVincolataType(config.getCategoriaVincolata().getType()).get(0);
+            ConfigVincMaxPerCons configVincMaxPerCons = configVincoloMaxPeriodoConsecutivoDao.findAllByConstrainedConditionType(config.getConstrainedCondition().getType()).get(0);
             config.setId(configVincMaxPerCons.getId());
             configVincoloMaxPeriodoConsecutivoDao.save(config);
         }
@@ -48,21 +48,21 @@ public class ConstraintController implements IConstraintController {
         configVincoliDao.save(configuration);
         //Update constraints
         ConstraintTurniContigui vincoloTipologieTurniContigue = (ConstraintTurniContigui) constraintDAO.findByType("ConstraintTurniContigui").get(0);
-        vincoloTipologieTurniContigue.setHorizon(configuration.getHorizonTurnoNotturno());
+        vincoloTipologieTurniContigue.setHorizon(configuration.getHorizonNightShift());
 
         ConstraintMaxOrePeriodo vincoloMaxOrePeriodo = (ConstraintMaxOrePeriodo) constraintDAO.findByType("ConstraintMaxOrePeriodo").get(0);
-        vincoloMaxOrePeriodo.setNumGiorniPeriodo(configuration.getNumGiorniPeriodo());
-        vincoloMaxOrePeriodo.setNumMinutiMaxPeriodo(configuration.getMaxMinutiPeriodo());
+        vincoloMaxOrePeriodo.setPeriodDuration(configuration.getPeriodDaysNo());
+        vincoloMaxOrePeriodo.setPeriodMaxTime(configuration.getPeriodMaxTime());
 
         List<Constraint> vincoliMaxPeriodoConsecutivo = constraintDAO.findByType("ConstraintMaxPeriodoConsecutivo");
         for(Constraint constraint : vincoliMaxPeriodoConsecutivo){
             ConstraintMaxPeriodoConsecutivo vincoloMaxPeriodoConsecutivo = (ConstraintMaxPeriodoConsecutivo) constraint;
-            if(vincoloMaxPeriodoConsecutivo.getCategoriaVincolata() == null){
-                vincoloMaxPeriodoConsecutivo.setMaxConsecutiveMinutes(configuration.getNumMaxMinutiConsecutiviPerTutti());
+            if(vincoloMaxPeriodoConsecutivo.getConstrainedCategory() == null){
+                vincoloMaxPeriodoConsecutivo.setMaxConsecutiveMinutes(configuration.getMaxConsecutiveTimeForEveryone());
             }else{
                 for(ConfigVincMaxPerCons config: configuration.getConfigVincMaxPerConsPerCategoria()){
-                    if(vincoloMaxPeriodoConsecutivo.getCategoriaVincolata().getType().equals(config.getCategoriaVincolata().getType())){
-                        vincoloMaxPeriodoConsecutivo.setMaxConsecutiveMinutes(config.getNumMaxMinutiConsecutivi());
+                    if(vincoloMaxPeriodoConsecutivo.getConstrainedCategory().getType().equals(config.getConstrainedCondition().getType())){
+                        vincoloMaxPeriodoConsecutivo.setMaxConsecutiveMinutes(config.getMaxConsecutiveMinutes());
                     }
                 }
             }

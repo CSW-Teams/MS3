@@ -8,6 +8,7 @@ import {
   MDBTableHead
 } from "mdb-react-ui-kit";
 import {Button, Link} from "@material-ui/core";
+import { t } from "i18next";
 
 function defaultComparator(prop1, prop2){
   if (prop1 < prop2)
@@ -76,25 +77,14 @@ export default class UserProfilesView extends React.Component{
 
     })
 
-    // Needed to show system actors in italian on all user view
-    for(var i = 0;i<this.state.utenti.length;i++){
-      for(var j = 0;j<this.state.utenti[i].systemActors.length;j++){
-        this.state.utenti[i].systemActors[j] = (
-          (this.state.utenti[i].systemActors[j] === "PLANNER") ? "Pianificatore" :
-            (this.state.utenti[i].systemActors[j] === "CONFIGURATOR") ? "Configuratore" :
-              "Dottore"
-        );
-      }
-    }
-
     return(
       <MDBCard>
         <MDBCardBody className="text-center">
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                      <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>Informazioni Utenti</MDBCardTitle>
+                      <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>{t("User Information")}</MDBCardTitle>
                       {this.state.attore === "CONFIGURATOR" && (
                         <Button variant="contained" color="primary" href="/nuovo-utente" style={{ marginLeft: 450, marginBottom: 10 }}>
-                          Registra nuovo utente
+                          {t("Register New User")}
                         </Button>
                       )}
                     </div>
@@ -104,12 +94,12 @@ export default class UserProfilesView extends React.Component{
                     hover >
             <MDBTableHead color='tempting-azure-gradient' textwhite>
               <tr>
-                <th scope='col' onClick={() => this.setOrderBy("name")} > Nome </th>
-                <th scope='col' onClick={() => this.setOrderBy("lastname")} >Cognome</th>
-                <th scope='col' onClick={() => this.setOrderBy("birthday")} >Data Nascita</th>
-                <th scope='col' onClick={() => this.setOrderBy("systemActors")} >Attore</th>
-                {this.state.attore!=="PLANNER" && <th scope='col'>Info</th>}
-                {this.state.attore==="PLANNER" && <th scope='col'>Modifica</th>}
+                <th scope='col' onClick={() => this.setOrderBy("name")} >{t("Name")}</th>
+                <th scope='col' onClick={() => this.setOrderBy("lastname")} >{t("Surname")}</th>
+                <th scope='col' onClick={() => this.setOrderBy("birthday")} >{t("Birthdate")}</th>
+                <th scope='col' onClick={() => this.setOrderBy("systemActors")} >{t("Actor")}</th>
+                {this.state.attore!=="PLANNER" && <th scope='col'>{t("Info")}</th>}
+                {this.state.attore==="PLANNER" && <th scope='col'>{t("Modify")}</th>}
 
               </tr>
             </MDBTableHead>
@@ -120,8 +110,9 @@ export default class UserProfilesView extends React.Component{
                     <td>{data.name}</td>
                     <td>{data.lastname}</td>
                     <td>{data.birthday}</td>
-                    <td>{data.systemActors.join(", ")}</td>
-                    {this.state.attore==="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
+                    <td>{data.systemActors.map(actor => t(actor)).join(", ")}</td>
+                    {this.state.attore === "UTENTE" &&
+                      <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
                     {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
                   </tr>
                 )

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
+import org.cswteams.ms3.dao.DoctorUffaPrioritySnapshotDAO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.constraint.ContextConstraint;
@@ -48,6 +49,8 @@ public class ScheduleBuilder {
 
     /** Instance of controllerScocciatura */
     private ControllerScocciatura controllerScocciatura;
+
+    private List<DoctorUffaPrioritySnapshot> snapshot;
 
 
     /**
@@ -104,7 +107,7 @@ public class ScheduleBuilder {
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
     public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors,
-                           List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> allDoctorUffaPriority) throws IllegalScheduleException {
+                           List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> allDoctorUffaPriority, List<DoctorUffaPrioritySnapshot> snapshot) throws IllegalScheduleException {
 
         // Checks on the parameters state
         validateDates(startDate,endDate);
@@ -115,6 +118,7 @@ public class ScheduleBuilder {
         this.schedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), Collections.emptyList());
         this.schedule.setConcreteShifts(allAssignedShifts);
         this.allConstraints = allConstraints;
+        this.snapshot = snapshot;
 
         this.holidays = holidays;
         this.doctorHolidaysList = doctorHolidaysList;
@@ -171,18 +175,22 @@ public class ScheduleBuilder {
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
 
-        /* make a snapshot of all priorities, the following loop is needed to perform a copy by value */
-        List<DoctorUffaPriority> snapshot = new ArrayList<>();
+        /* update snapshot of all priorities, the following loop is needed to perform a copy by value */
 
-        for (DoctorUffaPriority doctorUffaPriority : this.allDoctorUffaPriority) {
-            DoctorUffaPriority dup = new DoctorUffaPriority(doctorUffaPriority.getDoctor(), doctorUffaPriority.getSchedule());
-            dup.setGeneralPriority(doctorUffaPriority.getGeneralPriority());
-            dup.setNightPriority(doctorUffaPriority.getNightPriority());
-            dup.setLongShiftPriority(doctorUffaPriority.getLongShiftPriority());
-            snapshot.add(dup);
+        for (DoctorUffaPriority dup : this.allDoctorUffaPriority) {
+            for (DoctorUffaPrioritySnapshot dupSnapshot : snapshot) {
+                if (dup.getDoctor() == dupSnapshot.getDoctor()) {
+                    int generalPriority = dup.getGeneralPriority();
+                    int nightPriority = dup.getNightPriority();
+                    int longShiftPriority = dup.getLongShiftPriority();
+                    dupSnapshot.setGeneralPriority(generalPriority);
+                    dupSnapshot.setNightPriority(nightPriority);
+                    dupSnapshot.setLongShiftPriority(longShiftPriority);
+                }
+            }
         }
 
-        schedule.setDoctorUffaPrioritiesSnapshot(snapshot);
+        this.schedule.setDoctorUffaPrioritiesSnapshot(snapshot);
 
         if(controllerScocciatura != null)   //if controllerScocciatura is instantiated, then we can normalize all the priorities.
             controllerScocciatura.normalizeUffaPriority(allDoctorUffaPriority);
@@ -272,14 +280,12 @@ public class ScheduleBuilder {
             if(prevConcreteShift != null) {
                 controllerScocciatura.updatePriorityDoctors(prevConcreteShiftDup, concreteShift, PriorityQueueEnum.LONG_SHIFT);
                 controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueueEnum.LONG_SHIFT);
-
             }
 
             //night queue has to be updated only if the current concrete shift is nocturne
             if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT) {
                 controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueueEnum.NIGHT);
                 controllerScocciatura.orderByPriority(allDoctorUffaPriority, PriorityQueueEnum.NIGHT);
-
             }
 
         }
@@ -300,25 +306,42 @@ public class ScheduleBuilder {
             if(verifyAllConstraints(context, false)){
                 doctorList.add(dup.getDoctor());
                 dup.addConcreteShift(context.getConcreteShift());
-                //Creo il Doctor Assignement
+                //Doctor Assignment creation
                 DoctorAssignment da = new DoctorAssignment(dup.getDoctor(),
                                                              status,
                                                              concreteShift,
                                                              task);
-                //lo inserisco nei concrateShift
+                //we insert it into concreteShift
                 concreteShift.getDoctorAssignmentList().add(da);
                 selectedUsers++;
 
-            }
-            List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
 
-            //here we need to modify only the appropriate queues
-            if(contextDoctorsOnDuty.size() < qss.getValue()){
-                dup.updatePriority(PriorityQueueEnum.GENERAL);
-                if(prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
-                    dup.updatePriority(PriorityQueueEnum.LONG_SHIFT);
-                else if(concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
-                    dup.updatePriority(PriorityQueueEnum.NIGHT);
+                //List<Doctor> contextDoctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(context.getConcreteShift(), Collections.singletonList(status));
+
+                /* here we need to modify only the appropriate queues */
+                //if(contextDoctorsOnDuty.size() < qss.getValue()) {
+                    dup.updatePriority(PriorityQueueEnum.GENERAL);
+                    if (prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
+                        dup.updatePriority(PriorityQueueEnum.LONG_SHIFT);
+                    else if (concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
+                        dup.updatePriority(PriorityQueueEnum.NIGHT);
+
+                //}
+
+                System.out.println("NUOVA ASSEGNAZIONE");
+                System.out.println("Giorno: " + concreteShift.getDate());
+                System.out.println("Fascia oraria: " + concreteShift.getShift().getTimeSlot());
+                System.out.println("Stato: " + status);
+                System.out.println("Seniority: " + qss.getKey());
+                System.out.println("Task: " + task.getTaskType());
+                System.out.println("Dottore: " + dup.getDoctor().getName() + " " + dup.getDoctor().getLastname());
+                System.out.println("Livello di priorità General parziale: " + dup.getPartialGeneralPriority());
+                System.out.println("Livello di priorità Long Shift parziale: " + dup.getPartialLongShiftPriority());
+                System.out.println("Livello di priorità Night parziale: " + dup.getPartialNightPriority());
+                System.out.println("Livello di priorità General: " + dup.getGeneralPriority());
+                System.out.println("Livello di priorità Long Shift: " + dup.getLongShiftPriority());
+                System.out.println("Livello di priorità Night: " + dup.getNightPriority());
+                System.out.println();
 
             }
 

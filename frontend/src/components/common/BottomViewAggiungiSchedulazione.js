@@ -6,12 +6,16 @@ import Button from '@mui/material/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
+import { t } from "i18next";
+import "./../../style/LoadingOverlay.css"
+
 
 export default function TemporaryDrawerSchedulo(props) {
 
   const [dataInizio,setDataInizio] = React.useState("")
   const [dataFine,setDataFine] = React.useState("")
   const [open,setOpen] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
 
   const handleDataInizio = (dataInizio) => {
     setDataInizio(dataInizio);
@@ -33,12 +37,15 @@ export default function TemporaryDrawerSchedulo(props) {
 
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare un nuovo schedulo.
   const aggiungiSchedulo= async () => {
+
+    setLoading(true)
+
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI();
     let status = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio,dataFine)
 
     if(status==202){
 
-      toast.success('Pianificazione creata con successo', {
+      toast.success(t("Schedule successfully created"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -48,12 +55,9 @@ export default function TemporaryDrawerSchedulo(props) {
         progress: undefined,
         theme: "colored",
       });
-    
-
     }
-    
     else if (status == 206){
-      toast.warning('Attenzione! Generata una pianificazione incompleta! ', {
+      toast.warning(t("Warning! Incomplete Schedule"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -64,9 +68,8 @@ export default function TemporaryDrawerSchedulo(props) {
         theme: "colored",
       });
     }
-
     else if (status == 406){
-      toast.error('Nei giorni selezionati è stata già generata una pianificazione! ', {
+      toast.error(t("Error: Schedule already exists"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -78,7 +81,7 @@ export default function TemporaryDrawerSchedulo(props) {
       });
     }
     else{
-      toast.error('Errore nella generazione della pianificazione', {
+      toast.error(t("Schedule Generation Error"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -90,6 +93,7 @@ export default function TemporaryDrawerSchedulo(props) {
       });
     }
     setOpen(false)
+    setLoading(false)
     props.onPostGeneration();
   }
 
@@ -101,7 +105,7 @@ export default function TemporaryDrawerSchedulo(props) {
           'margin-left': 'auto',
           'margin-right': 'auto',
           'margin-top':'3%',
-        }} variant="contained" size="small" > Crea schedulazione </Button>
+        }} variant="contained" size="small" > {t("Create schedule")} </Button>
 
         <Drawer anchor='bottom' open={open} onClose={toggleDrawer(false)}>
           <div style={{
@@ -110,21 +114,28 @@ export default function TemporaryDrawerSchedulo(props) {
             justifyContent: 'center',
             height: '45vh',
           }}>
-            
-            <Stack spacing={3} >
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                }}>
-                    Inserisci inizio e fine pianificazione
-                </div>
-                <BasicDatePicker onSelectData={handleDataInizio} label={"data inizio"}></BasicDatePicker>
-                <BasicDatePicker onSelectData={handleDataFine} label={"data fine"}></BasicDatePicker>
-                <Button variant="contained" size="small" onClick={aggiungiSchedulo} >
-                  Genera Pianificazione
-                </Button>
 
-            </Stack>
+            {loading ? (
+              // Visualizza la schermata di caricamento
+              <div className="loading-overlay">
+                <div className="loading-spinner"></div>
+              </div>
+            ) : (
+              // Visualizza il contenuto normale quando non è in corso il caricamento
+              <Stack spacing={3}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}>
+                  {t("Insert Schedule Start and End Date")}
+                </div>
+                <BasicDatePicker onSelectData={handleDataInizio} label={t("Start Date")}></BasicDatePicker>
+                <BasicDatePicker onSelectData={handleDataFine} label={t("End Date")}></BasicDatePicker>
+                <Button variant="contained" size="small" onClick={aggiungiSchedulo} >
+                  {t("Create schedule")}
+                </Button>
+              </Stack>
+            )}
 
             <ToastContainer
               position="top-center"
@@ -138,7 +149,7 @@ export default function TemporaryDrawerSchedulo(props) {
               pauseOnHover
               theme="light"
             />
-            
+
           </div>
         </Drawer>
       </React.Fragment>

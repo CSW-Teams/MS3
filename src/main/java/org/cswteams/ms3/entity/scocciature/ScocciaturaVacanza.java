@@ -5,7 +5,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.TimeSlot;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -21,9 +24,13 @@ public class ScocciaturaVacanza extends Scocciatura {
     private int peso;
     @ManyToOne
     @JoinColumn(name = "vacanza_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Holiday holiday;
     private TimeSlot timeSlot;
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public ScocciaturaVacanza() {
     }
 

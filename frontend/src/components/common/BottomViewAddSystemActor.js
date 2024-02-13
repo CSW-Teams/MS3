@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
+import {t} from "i18next";
 
 
 
@@ -33,13 +34,6 @@ export default function UserSystemActorAdditionDrawer(props){
 
         for(var i = 0;i<checkedSpecializationsCheckBoxes.length;i++){
             allSystemActors.push(checkedSpecializationsCheckBoxes[i]);
-        }
-
-        // Convert in english for the backend (TODO: Refactor after Issue "Localizzazione")
-
-        for(var i=0;i<allSystemActors.length;i++){
-            allSystemActors[i] = (allSystemActors[i]  === "Pianificatore" ? "PLANNER" :
-                (allSystemActors[i]  === "Dottore" ? "DOCTOR" : "CONFIGURATOR"))
         }
 
         let responseStatus = singleUserProfileAPI.addSystemActors(userID,  allSystemActors);
@@ -79,7 +73,7 @@ export default function UserSystemActorAdditionDrawer(props){
                     <Toolbar>
                         <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'center' }}>
                             <Typography variant="h5" component="div" sx={{ marginLeft: '20px' }}>
-                                Aggiungi Specializzazione
+                              {t('Add Role')}
                             </Typography>
                         </Box>
                         <IconButton color="inherit" onClick={handleClose}>
@@ -100,7 +94,7 @@ export default function UserSystemActorAdditionDrawer(props){
                         <p>
                         </p>
                         <Typography variant="h6">
-                            Seleziona le mansioni da assegnare:
+                          {t('Select role to assign:')}
                         </Typography>
                         {
                             systemActorsList.map((item) => (
@@ -132,7 +126,7 @@ export default function UserSystemActorAdditionDrawer(props){
                             disabled={checkedSpecializationsCheckBoxes.length === 0}
                             onClick={ () => handleAddSpecializations(props.updateFunction, props.userID,currentSystemActorsList,checkedSpecializationsCheckBoxes) }
                         >
-                            Salva
+                          {t('Save')}
                         </Button>
                     </Box>
                 </div>

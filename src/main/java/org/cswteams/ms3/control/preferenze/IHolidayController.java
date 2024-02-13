@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.CustomHolidayDTOIn;
+import org.cswteams.ms3.dto.holidays.CustomHolidayIdDTO;
+import org.cswteams.ms3.dto.holidays.CustomHolidaysDTOOut;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.exception.CalendarServiceException;
 
@@ -13,29 +15,43 @@ import javax.validation.constraints.NotNull;
 
 public interface IHolidayController {
 
-    /** Registra un intervallo di date come un periodo festivo */
+    /**
+     * Register a date range as a holiday
+     */
     void registerHolidayPeriod(HolidayDTO holidayArgs);
 
-    /** Legge tutti i periodi festivi */
+    /**
+     * Read all holiday periods
+     */
     List<HolidayDTO> readHolidays(RetrieveHolidaysDTOIn dto) throws CalendarServiceException;
 
-    /** Registra un intervallo di date come un periodo festivo, e ripete la procedura
-     * per il numero ulteriore di anni specificato .
-     * @param years numero di anni da ripetere oltre quello specificato, nelle date di inizio e fine. >0 nel futuro,
-     * <0 nel passato, 0 solo per l'anno specificato.
-     * Se la ripetizione è nel passato, l'anno corrente non viene considerato.
+    /**
+     * Registers a date range as a holiday, and repeats the procedure
+     * for the additional number of years specified.
+     *
+     * @param years number of years to repeat beyond the specified one, in the start and end dates.
+     *              greater than 0 in the future,
+     *              less than 0 in the past,
+     *              equal to 0 for the specified year only.
+     *              If the repetition is in the past, the current year is not considered.
      */
     void registerHolidayPeriod(HolidayDTO holidayArgs, int years);
 
     /**
-     * Registra le domeniche come festività per il numero di anni specificato
+     * Records Sundays as holidays for the specified number of years, starting from <code>start</code>.
+     * @param start start date
+     * @param years number of years
      */
     void registerSundays(LocalDate start, int years);
 
     @Transactional
     void registerHolidays(@NotNull List<HolidayDTO> holidays);
 
-    void insertCustomHoliday(CustomHolidayDTOIn holiday) ;
+    CustomHolidayIdDTO insertCustomHoliday(CustomHolidayDTOIn holiday) ;
 
-    void generateFromRecurrentHolidays(int year) ;
+    List<HolidayDTO> generateFromRecurrentHolidays(int year) ;
+
+    CustomHolidaysDTOOut getCustomHolidays() ;
+
+    void deleteCustomHoliday(CustomHolidayIdDTO dto) ;
 }

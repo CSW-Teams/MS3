@@ -3,9 +3,15 @@ package org.cswteams.ms3.entity.constraint;
 import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+/**
+ * A condition, imposed on some pianification parameter.
+ *
+ * @see <a href="https://github.com/CSW-Teams/MS3/wiki#vincoli">Glossary</a>.
+ */
 @Entity
 @Getter
 @Setter
@@ -19,16 +25,23 @@ public abstract class Constraint {
     @Column(name = "constraint_id", nullable = false)
     private Long id;
 
-    /** True se il vincolo è non-stringente */
+    /**
+     * Violability of the <i>constraint</i>.
+     * <code>true</code>if the <i>constraint</i> is not-stringent (i.e. can be violated).
+     */
     @NotNull
     private boolean violable = false;
 
-    /** TODO: descrizione di che cosa in particolare del vincolo? */
+    /**
+     * TODO: descrizione di che cosa in particolare del vincolo?
+     */
     @NotNull
     private String description;
 
     /**
-     * @throws ViolatedConstraintException : se il vincolo è violato
+     * Check if the <i>constraint</i> is violated.
+     *
+     * @throws ViolatedConstraintException if the <i>constraint</i> is violated.
      */
     public abstract void verifyConstraint(ContextConstraint contesto) throws ViolatedConstraintException;
 }

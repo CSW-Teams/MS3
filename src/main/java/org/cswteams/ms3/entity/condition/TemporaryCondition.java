@@ -5,31 +5,42 @@ import lombok.Getter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+/**
+ * This <i>condition</i> is temporary, e.g. pregnancy and so on.
+ */
 @Entity
 @Getter
 public class TemporaryCondition extends Condition {
 
+    /**
+     * Start date for the <i>condition</i>, in <i>epoch</i> days.
+     */
     @NotNull
     private long startDate;
+
+    /**
+     * End date for the <i>condition</i>, in <i>epoch</i> days.
+     */
     @NotNull
     private long endDate;
 
-    public TemporaryCondition(String type,long startDate, long endDate) {
+    /**
+     * Create a temporary <code>condition</code> as descripted by <code>type</code>, .
+     *
+     * @param type      temporary condition description
+     * @param startDate Start date for the <i>condition</i>, in <i>epoch</i> days.
+     * @param endDate   End date for the <i>condition</i>, in <i>epoch</i> days.
+     */
+    public TemporaryCondition(String type, long startDate, long endDate) {
         super(type);
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
+    /**
+     * Default constructor needed by Lombok
+     */
     protected TemporaryCondition() {
 
-    }
-
-    /**
-     * Verifica se la categoria è valida in una dato giorno.
-     * @param compareDate Giorno per cui si vuole verificare la validità della categoria
-     * @return {@code true} se la categoria è valida in quel giorno, {@code false} altrimenti
-     */
-    public boolean isValid(long compareDate){
-        return startDate >= 0 && endDate <= 0;
     }
 }

@@ -1,6 +1,5 @@
 package org.cswteams.ms3.entity;
 
-
 import lombok.Getter;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 
@@ -9,6 +8,13 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represents the concrete shift present in a schedule for a certain date.
+ * This class should be operated only by the planners.
+ * Instantiation of a <i>shift</i>, with some <i>Doctors</i> associated.
+ *
+ * @see <a href="https://github.com/CSW-Teams/MS3/wiki#assegnazione-turno">Glossary</a>.
+ */
 @Entity
 @Getter
 public class ConcreteShift {
@@ -17,13 +23,23 @@ public class ConcreteShift {
     @Column(name = "concrete_shift_id", nullable = false)
     private Long id;
 
+    /**
+     * Date of the <i>concrete shift</i>.
+     * This date is in epoch format to keep track of the timezone
+     */
     @NotNull
-    private long date; // This date is in epoch format to keep track of the timezone
+    private long date;
 
+    /**
+     * The <i>shift</i> istantiated by this <i>concrete shift</i>.
+     */
     @ManyToOne
     @NotNull
     private Shift shift;
 
+    /**
+     * List of all the <i>Doctors</i> involved in this <i>concrete shift</i>.
+     */
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @NotNull
     private List<DoctorAssignment> doctorAssignmentList = new ArrayList<>(); //TODO: check that the doctors involved in this list are all different
@@ -36,9 +52,9 @@ public class ConcreteShift {
     }
 
     /**
-     * This class represents the concrete shift present in a schedule for a certain date.
-     * This class should be operated only by the planners.
-     * @param date The date of the concrete shift
+     * Create a <i>concrete shift</i> for a specific <i>shift</i> in a specific date.
+     *
+     * @param date  The date of the concrete shift
      * @param shift The abstract shift from which this shift is created
      */
     public ConcreteShift(Long date, Shift shift) {
@@ -47,12 +63,23 @@ public class ConcreteShift {
         this.doctorAssignmentList = new ArrayList<>();
     }
 
+    /**
+     * Create a <i>concrete shift</i> for a specific <i>shift</i> in a specific date,
+     * with a specific list of <i>Doctors</i> assigned.
+     *
+     * @param date                 The date of the concrete shift
+     * @param shift                The abstract shift from which this shift is created
+     * @param doctorAssignmentList List of <i>Doctors</i> assigned to this <i>concrete shift</i>.
+     */
     protected ConcreteShift(Long date, Shift shift, List<DoctorAssignment> doctorAssignmentList) {
         this.date = date;
         this.shift = shift;
         this.doctorAssignmentList = doctorAssignmentList;
     }
 
+    /**
+     * Default constructor needed by Lombok
+     */
     protected ConcreteShift() {
 
     }

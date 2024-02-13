@@ -19,18 +19,27 @@ import java.util.List;
 @Setter
 @EqualsAndHashCode(callSuper = true)
 public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
+    /**
+     * Period duration, in days
+     */
     @NotNull
-    private int numGiorniPeriodo;
+    private int periodDuration;
 
+    /**
+     * Maximum work time, in minutes
+     */
     @NotNull
-    private long numMinutiMaxPeriodo;
+    private long periodMaxTime;
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public ConstraintMaxOrePeriodo() {
     }
 
-    public ConstraintMaxOrePeriodo(int numGiorniPeriodo, long numMinutiMax){
-        this.numGiorniPeriodo = numGiorniPeriodo;
-        this.numMinutiMaxPeriodo = numMinutiMax;
+    public ConstraintMaxOrePeriodo(int periodDuration, long periodMaxTime){
+        this.periodDuration = periodDuration;
+        this.periodMaxTime = periodMaxTime;
     }
 
     /**
@@ -45,13 +54,13 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
         if(concreteShiftList != null && !concreteShiftList.isEmpty()) {
             //We find the bounds of the period to be considered in the schedule in which there is the new concrete shift to be assigned.
             long startPeriodDate = context.getDoctorUffaPriority().getSchedule().getStartDate();
-            long endPeriodDate = startPeriodDate + numGiorniPeriodo;
+            long endPeriodDate = startPeriodDate + periodDuration;
             while(endPeriodDate < context.getDoctorUffaPriority().getSchedule().getEndDate()){
                 if(context.getConcreteShift().getDate() < endPeriodDate && (context.getConcreteShift().getDate() > startPeriodDate || context.getConcreteShift().getDate() == startPeriodDate)){
                     break;
                 }
                 startPeriodDate = endPeriodDate;
-                endPeriodDate = endPeriodDate + numGiorniPeriodo;
+                endPeriodDate = endPeriodDate + periodDuration;
             }
 
             //We count the number of minutes composing the existent concrete shift assigned to our doctor in the considered period + the number of minutes composing the new concrete shift.
@@ -59,8 +68,8 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
             for(ConcreteShift concreteShift: concreteShiftList){
                 if(concreteShift.getDate() < endPeriodDate && (concreteShift.getDate() > startPeriodDate || concreteShift.getDate() == startPeriodDate)){
                     totalMinutes += concreteShift.getShift().getDuration().toMinutes();
-                    if(totalMinutes > numMinutiMaxPeriodo){
-                        throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor(), numGiorniPeriodo, numMinutiMaxPeriodo);
+                    if(totalMinutes > periodMaxTime){
+                        throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor(), periodDuration, periodMaxTime);
                     }
                 }
             }

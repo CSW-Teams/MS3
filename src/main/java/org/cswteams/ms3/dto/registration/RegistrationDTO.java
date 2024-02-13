@@ -1,6 +1,5 @@
 package org.cswteams.ms3.dto.registration;
 
-import lombok.Data;
 import lombok.Getter;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;

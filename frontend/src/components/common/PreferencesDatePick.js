@@ -5,9 +5,27 @@ import React, {useRef, useState} from "react";
 import {DesiderateAPI} from "../../API/DesiderataAPI"
 import {toast, ToastContainer} from "react-toastify";
 import {MDBCard} from "mdb-react-ui-kit";
+import {t} from "i18next";
 
-const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
-const weeksName= ["Dom","Lun","Mar","Mer","Gio","Ven","Sab"]
+const months =   [t("January"),
+  t("February"),
+  t("March"),
+  t("April"),
+  t("May"),
+  t("June"),
+  t("July"),
+  t("August"),
+  t("September"),
+  t("October"),
+  t("November"),
+  t("December")]
+const weeksName= [  t("Sun"),
+  t("Mon"),
+  t("Tue"),
+  t("Wed"),
+  t("Thu"),
+  t("Fri"),
+  t("Sat")]
 
 function DateSelectSlots({props}) {
 
@@ -26,7 +44,7 @@ function DateSelectSlots({props}) {
     if(canSend) {
       await saveDesiderate() ;
     } else {
-      toast('Scegli almeno un turno per ogni data!', {
+      toast(t('Select at least a turn for each date'), {
         position: 'top-center',
         autoClose: 1500,
         style : {background : "red", color : "white"}
@@ -39,7 +57,7 @@ function DateSelectSlots({props}) {
 
     if (responseStatus === 202) {
       setPreferences(response, []) ;
-      toast.success('Desiderate caricate con successo', {
+      toast.success(t('Preferences added successfully'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -50,7 +68,7 @@ function DateSelectSlots({props}) {
         theme: "colored",
       });
     } else if (responseStatus === 400) {
-      toast.error('Errore nel caricamento delle desiderate', {
+      toast.error(t('Error loading preferences'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -91,7 +109,7 @@ function DateSelectSlots({props}) {
             preferences = preferences.filter((value) => {return value !== singlePref})
             toDelPreferences = toDelPreferences.concat([singlePref]) ;
             setPreferences(preferences, toDelPreferences) ;
-          }}>Elimina</Button>
+          }}>{t('Delete')}</Button>
         </div>
         <div style={{paddingRight : 40, paddingLeft : 40, display : "flex", alignItems : "center"}}>
           <div style={{paddingLeft: 30, paddingRight: 10, paddingTop: 5}}>
@@ -101,7 +119,7 @@ function DateSelectSlots({props}) {
                    }}/>
           </div>
           <div style={{paddingTop: 5}}>
-            Turno mattutino
+            {t('Morning Shift')}
           </div>
         </div>
         <div style={{paddingRight: 40, paddingLeft: 40,  display : "flex", alignItems : "center"}}>
@@ -114,7 +132,7 @@ function DateSelectSlots({props}) {
                    }}/>
           </div>
           <div style={{paddingTop: 5}}>
-            Turno pomeridiano
+            {t('Afternoon Shift')}
           </div>
         </div>
         <div style={{paddingRight: 40, paddingLeft: 40, display : "flex", alignItems : "center"}}>
@@ -126,7 +144,7 @@ function DateSelectSlots({props}) {
             }}/>
           </div>
           <div style={{paddingTop : 5}}>
-            Turno notturno
+            {t('Night Shift')}
           </div>
         </div>
       </div>
@@ -139,7 +157,7 @@ function DateSelectSlots({props}) {
         {processedPrefs}
       </div>
       <div>
-        <Button position="bottom" onClick={checkMayBeSent} >Salva</Button>
+        <Button position="bottom" onClick={checkMayBeSent} >{t('Save')}</Button>
       </div>
     </div>
   )
@@ -218,7 +236,7 @@ export default function PreferencesDatePick(props) {
             if (desiderataPresente) return {
               disabled: true,
               style: {color: "#ccc"},
-              onClick: () => toast.error('Desiderata già inserita', {
+              onClick: () => toast.error(t('Preference already present'), {
                 position: "top-center",
                 autoClose: 5000,
                 hideProgressBar: true,
@@ -235,8 +253,8 @@ export default function PreferencesDatePick(props) {
             <ToolBar
               position="bottom"
               names={{
-                today: "Oggi",
-                deselect: "Deseleziona"
+                today: t('Today'),
+                deselect: t('Deselect')
               }}
             />
           ]}

@@ -9,6 +9,9 @@ import org.cswteams.ms3.entity.Holiday;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
+/**
+ * Context for <i>constraints</i> validation.
+ */
 @Data
 public class ContextConstraint {
 

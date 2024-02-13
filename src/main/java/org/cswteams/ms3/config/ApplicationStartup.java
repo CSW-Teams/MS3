@@ -6,7 +6,6 @@ import org.cswteams.ms3.control.preferenze.CalendarSetting;
 import org.cswteams.ms3.control.preferenze.CalendarSettingBuilder;
 import org.cswteams.ms3.control.preferenze.ICalendarServiceManager;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
-import org.cswteams.ms3.control.scheduler.ScheduleBuilder;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
@@ -20,7 +19,6 @@ import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaVacanza;
 import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.CalendarServiceException;
-import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -100,9 +98,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private DoctorUffaPriorityDAO doctorUffaPriorityDAO;
 
     @Autowired
+    private DoctorUffaPrioritySnapshotDAO doctorUffaPrioritySnapshotDAO;
+
+    @Autowired
     private DoctorHolidaysDAO doctorHolidaysDAO;
     @Autowired
     private ScheduleDAO scheduleDAO;
+
+    @Autowired
+    private UserDAO userDAO;
 
 
 
@@ -454,13 +458,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //nessun turno può essere allocato a questa persona durante il suo smonto notte
         ConstraintTurniContigui constraint1 = new ConstraintTurniContigui(
-                configVincoli.getHorizonTurnoNotturno(),
+                configVincoli.getHorizonNightShift(),
                 ChronoUnit.HOURS,
                 TimeSlot.NIGHT,
                 new HashSet<>(Arrays.asList(TimeSlot.values()))
         );
-        Constraint constraint2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getNumMaxMinutiConsecutiviPerTutti());
-        Constraint constraint4 = new ConstraintMaxOrePeriodo(configVincoli.getNumGiorniPeriodo(), configVincoli.getMaxMinutiPeriodo());
+        Constraint constraint2 = new ConstraintMaxPeriodoConsecutivo(configVincoli.getMaxConsecutiveTimeForEveryone());
+        Constraint constraint4 = new ConstraintMaxOrePeriodo(configVincoli.getPeriodDaysNo(), configVincoli.getPeriodMaxTime());
         Constraint constraint5 = new ConstraintUbiquita();
         //Constraint constraint6 = new ConstraintNumeroDiRuoloTurno();
         Constraint constraint7 = new ConstraintHoliday();
@@ -473,8 +477,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         constraint7.setViolable(true);
 
         for (ConfigVincMaxPerCons config : configVincoli.getConfigVincMaxPerConsPerCategoria()) {
-            Constraint vincolo = new ConstraintMaxPeriodoConsecutivo(config.getNumMaxMinutiConsecutivi(), config.getCategoriaVincolata());
-            vincolo.setDescription("Constraint massimo periodo consecutivo per categoria " + config.getCategoriaVincolata().getType());
+            Constraint vincolo = new ConstraintMaxPeriodoConsecutivo(config.getMaxConsecutiveMinutes(), config.getConstrainedCondition());
+            vincolo.setDescription("Constraint massimo periodo consecutivo per categoria " + config.getConstrainedCondition().getType());
             constraintDAO.saveAndFlush(vincolo);
         }
         constraint1.setDescription("Vincolo turni contigui. Verifica se alcune tipologie possono essere assegnate in modo contiguo.");
@@ -544,35 +548,24 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         UserController userController = new UserController();
 
         Doctor u1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
-        try {
-            userController.addCondition(u1, over62);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
 
         Doctor u2 = new Doctor("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u3 = new Doctor("Federica", "Villani", "VLNFDR98P43H501D", LocalDate.of(1998, 9, 3), "federicavillani@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u3 = new Doctor("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u4 = new Doctor("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u4, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u5 = new Doctor("Daniele", "La Prova", "LPVDNL98R27H501J", LocalDate.of(1998, 2, 12), "danielelaprova@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+        Doctor u5 = new Doctor("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u5, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         Doctor u6 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
-        try {
-            userController.addCondition(u6, over62);
-            userController.addCondition(u6, vacation);
-            userController.addSpecialization(u6, cardiologia);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        Doctor u7 = new Doctor("Luca", "Fiscariello", "FSCLCU98L07B581O", LocalDate.of(1998, 8, 12), "lucafiscariello@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+
+        Doctor u7 = new Doctor("Luca", "Fiscariello", "FSCLCU99D15A783Z", LocalDate.of(1998, 8, 12), "lucafiscariello@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u7, cardiologia);
         } catch (Exception e) {
@@ -581,17 +574,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         Doctor u8 = new Doctor("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u8, cardiologia);
-            userController.addCondition(u8, sick);
-            userController.addCondition(u8,over62);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u9 = new Doctor("Giulia", "Cantone Jr", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u9 = new Doctor("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u10 = new Doctor("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u11 = new Doctor("Giada", "Rossi", "RSSGDI92H68H501O", LocalDate.of(1997, 3, 14), "giada.rossi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u12 = new Doctor("Camilla", "Verdi", "VRDCML95B41H501L", LocalDate.of(1997, 5, 23), "camilla.verdi@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u13 = new Doctor("Federica", "Pollini", "PLLFDR94S70H501I", LocalDate.of(1998, 2, 12), "federica.pollini@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u14 = new Doctor("Claudia", "Rossi", "RSSCLD91C52H501A", LocalDate.of(1982, 7, 6), "claudia.rossi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+        Doctor u14 = new Doctor("Claudia", "Rossi II", "RSSCLD91C52H501A", LocalDate.of(1982, 7, 6), "claudia.rossi@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
             userController.addSpecialization(u14, cardiologia);
         } catch (Exception e) {
@@ -616,43 +607,54 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u19 = new Doctor("Diana", "Pasquali", "PSQDNI97D22H501Q", LocalDate.of(1997, 4, 22), "diana.pasquali@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u19 = new Doctor("Diana", "Pasquali", "PSQDNI97D62H501U", LocalDate.of(1997, 4, 22), "diana.pasquali@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u20 = new Doctor("Francesco", "Lo Presti", "LPSFRC66T05G071E", LocalDate.of(1998, 8, 12), "francesco.lopresti@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         Doctor u21 = new Doctor("Andrea", "Pepe", "PPENDR99M05I150J", LocalDate.of(1999, 8, 5), "andrea.pepe@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u22 = new Doctor("Matteo", "Fanfarillo", "FNFMTT99E10A123E", LocalDate.of(1999, 5, 10), "matteo.fanfarillo99@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.PLANNER));
         Doctor u23 = new Doctor("Matteo", "Ciccaglione", "CCCMTT99H15C439X", LocalDate.of(1998, 6, 15), "matteo.ciccaglione@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u24 = new Doctor("Vittoria", "De Nitto", "DNTVTT60C59E612D", LocalDate.of(1998, 8, 12), "vittoria.denitto@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u24, oncologia);
+            userController.addSpecialization(u24, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         Doctor u25 = new Doctor("Valeria", "Cardellini", "CRDVLR68L44H501B", LocalDate.of(1998, 8, 12), "valeria.cardellini@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u25, oncologia);
+            userController.addSpecialization(u25, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         Doctor u26 = new Doctor("Roberto", "Monte", "MNTRBT69R01D666W", LocalDate.of(1998, 8, 12), "roberto.monte@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u26, oncologia);
+            userController.addSpecialization(u26, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         Doctor u27 = new Doctor("Giovanni", "Saggio", "SGGGVN65D30H501J", LocalDate.of(1998, 8, 12), "giovanni.saggio@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         try {
-            userController.addSpecialization(u27, oncologia);
+            userController.addSpecialization(u27, cardiologia);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Doctor u28 = new Doctor("Livia", "Simoncini", "SMNLVI98L17H501O", LocalDate.of(1998, 7, 19), "livia.simoncini@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-        Doctor u29 = new Doctor("Ludovico", "Zarrelli", "ZRRLDV99E03I370A", LocalDate.of(1998, 5, 3), "ludovico.zerrelli@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u28 = new Doctor("Livia", "Simoncini", "SMNLVI98L57H501S", LocalDate.of(1998, 7, 19), "livia.simoncini@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u29 = new Doctor("Ludovico", "Zarrelli", "ZRRLVC99E03G482P", LocalDate.of(1998, 5, 3), "ludovico.zerrelli@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u30 = new Doctor("Alessandro", "Montenegro", "MNTLSS96P20H501J", LocalDate.of(1998, 8, 12), "alessandro.montenegro@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u31 = new Doctor("Daniel", "Lungu", "LNGDNL98T04H501I", LocalDate.of(1998, 12, 4), "daniel.lungu@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u32 = new Doctor("Andrea", "Tosti", "TSTNDR97A10H501E", LocalDate.of(1998, 8, 12), "andrea.tosti@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
         Doctor u33 = new Doctor("Giorgio", "Pesce", "PSCGRG98E08H501T", LocalDate.of(1998, 8, 12), "giorgia.pesce@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
         Doctor u34 = new Doctor("Valerio", "Palmerini", "PLMVLR93B12H501U", LocalDate.of(1998, 8, 12), "valerio.palmerini@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
 
+        Doctor u35 = new Doctor("Simone", "Bauco", "BCASMN00T01A123Y", LocalDate.of(2000, 12, 1), "simonebauco@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u36 = new Doctor("Simone", "Staccone", "STCSMN00M16D810O", LocalDate.of(2000, 8, 16), "simonestaccone@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u37 = new Doctor("Massimo", "Stanzione", "STNMSM96L12F205R", LocalDate.of(1996, 7, 12), "massimostanzione@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u38 = new Doctor("Danilo", "D'Amico", "DMCDNL99A08A345C", LocalDate.of(2000, 1, 8), "danilodamico@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u39 = new Doctor("Matteo", "Kobero", "FDRMTT98S20H501D", LocalDate.of(1998, 11, 20), "matteokobero@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u40 = new Doctor("Sebastian", "Opriscan", "PRSSST00D12H501L", LocalDate.of(2000, 4, 12), "sebastianopriscan@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+        Doctor u41 = new Doctor("Simone", "Festa", "FSTSMN98E26H501N", LocalDate.of(1998, 5, 26), "simonefesta@gmail.com", "passw", Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+
+        User u42 = new User("Fabio", "Armani", "RMNFBA50M12G156E", LocalDate.of(1950, 8, 12), "fabioarmani@gmail.com", "passw", Set.of(SystemActor.CONFIGURATOR));
+
+        Doctor u43 = new Doctor("Sara","Da Canal","PLMVLR93B12H501U",LocalDate.of(1999,6,19),"saradacanal@gmail.com","passw",Seniority.SPECIALIST_SENIOR,Set.of(SystemActor.DOCTOR));
         u1 = doctorDAO.saveAndFlush(u1);
         u2 = doctorDAO.saveAndFlush(u2);
         u3 = doctorDAO.saveAndFlush(u3);
@@ -687,7 +689,17 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u32 = doctorDAO.saveAndFlush(u32);
         u33 = doctorDAO.saveAndFlush(u33);
         u34 = doctorDAO.saveAndFlush(u34);
+        u35 = doctorDAO.saveAndFlush(u35);
+        u36 = doctorDAO.saveAndFlush(u36);
+        u37 = doctorDAO.saveAndFlush(u37);
+        u38 = doctorDAO.saveAndFlush(u38);
+        u39 = doctorDAO.saveAndFlush(u39);
+        u40 = doctorDAO.saveAndFlush(u40);
+        u41 = doctorDAO.saveAndFlush(u41);
 
+        u42 = userDAO.saveAndFlush(u42);
+
+        u43 = doctorDAO.saveAndFlush(u43);
         /* HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
         doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
         doctorsNumberBySeniority.put(Seniority.SPECIALIST_SENIOR, 1);
@@ -729,17 +741,17 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         allDaysOfWeek.add(DayOfWeek.SATURDAY);
         allDaysOfWeek.add(DayOfWeek.SUNDAY);
 
-        Shift shift1 = new Shift(LocalTime.of(14, 0),
-                Duration.ofHours(8),
+        Shift shift1 = new Shift(LocalTime.of(1, 0),
+                Duration.ofHours(6),
                 ambulatorioCardiologia,
-                TimeSlot.AFTERNOON,
+                TimeSlot.NIGHT,
                 quantityShiftSeniorityList1,
                 allDaysOfWeek,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift1);
 
-        Shift shift2 = new Shift(LocalTime.of(9, 0),
-                Duration.ofHours(8),
+        Shift shift2 = new Shift(LocalTime.of(8, 0),
+                Duration.ofHours(6),
                 ambulatorioCardiologia,
                 TimeSlot.MORNING,
                 quantityShiftSeniorityList2,
@@ -747,15 +759,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift2);
 
-        Shift shift3 = new Shift(LocalTime.of(0, 0),
-                Duration.ofHours(8),
+        Shift shift3 = new Shift(LocalTime.of(15, 0),
+                Duration.ofHours(6),
                 ambulatorioCardiologia,
-                TimeSlot.NIGHT,
+                TimeSlot.AFTERNOON,
                 quantityShiftSeniorityList3,
                 allDaysOfWeek,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift3);
-
 
         //creation of the DoctorHolidays instances
         List<Doctor> allDoctors = doctorDAO.findAll();
@@ -771,10 +782,12 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         for(Doctor doctor: allDoctors) {
             DoctorUffaPriority dup = new DoctorUffaPriority(doctor);
+            DoctorUffaPrioritySnapshot doctorUffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doctor);
             DoctorHolidays dh = new DoctorHolidays(doctor, holidayMap);
 
             doctorUffaPriorityDAO.save(dup);
             doctorHolidaysDAO.save(dh);
+            doctorUffaPrioritySnapshotDAO.save(doctorUffaPrioritySnapshot);
 
         }
 

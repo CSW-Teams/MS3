@@ -70,6 +70,7 @@ public class UserController implements IUserController {
         userDAO.save(newUser);
     }
 
+    @Override
     public UserDetailsDTO getSingleUser(long userId) {
         Doctor doctor = doctorDAO.findById(userId);
         return new UserDetailsDTO(doctor.getName(), doctor.getLastname(), doctor.getEmail(), doctor.getBirthday(), doctor.getSeniority().toString());
@@ -95,19 +96,10 @@ public class UserController implements IUserController {
         doctor.addSpecialization(specialization);
     }
 
-
-    /**
-     * Function that has the responsibility to retrive information about single user profile
-     * to be shown in the user profile view. In particular this method converts doctor entity of the backend
-     * in the
-     * @param id The ID of the user/doctor we are searching
-     * @return A well formatted DTO or a dummy DTO with id = -1 if id doesn't corresponds to any
-     * DB entry or a null instance if there has been any other problem in the backend
-     */
     @Override
-    public SingleUserProfileDTO getSingleUserProfileInfos(Long id){
+    public SingleUserProfileDTO getSingleUserProfileInfos(Long userId){
         try{
-            Doctor doctor = doctorDAO.findById((long)id);
+            Doctor doctor = doctorDAO.findById((long)userId);
             List<String> specializations = new ArrayList<>();
             List<String> systemActors = new ArrayList<>();
             List<String> permanentConditions = new ArrayList<>();

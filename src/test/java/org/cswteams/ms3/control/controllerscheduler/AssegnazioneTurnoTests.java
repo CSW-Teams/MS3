@@ -157,7 +157,7 @@ public class AssegnazioneTurnoTests extends SchedulerControllerTestEnv {
         try {
             schedule = this.instance.aggiungiAssegnazioneTurno(this.registraAssegnazioneTurnoDTO, true);
         } catch (
-                AssegnazioneTurnoException | IllegalScheduleException e) {
+                ConcreteShiftException | IllegalScheduleException e) {
             throw new RuntimeException(e);
         }
         Assert.assertNotNull(schedule);

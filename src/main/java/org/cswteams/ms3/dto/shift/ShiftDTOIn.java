@@ -9,7 +9,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +53,7 @@ public class ShiftDTOIn {
      * @param durationMinutes The duration of the shift, in minutes
      * @param daysOfWeek A set of Strings that represents names of {@link java.time.DayOfWeek}
      * @param medicalService the DTO representing the medical service associated with the shift
-     * @param quantityShiftSeniority A map of strings representing names of {@link org.cswteams.ms3.entity.Seniority} into quantities ;
+     * @param quantityShiftSeniority A map of strings representing names of {@link org.cswteams.ms3.enums.Seniority} into quantities ;
      *                               <br/>it represents how many doctors of every seniority are needed to cover the shift
      * @param additionalConstraints A list of DTOs representing the additional constraints related to the shift
      */
@@ -84,7 +83,7 @@ public class ShiftDTOIn {
      * @param durationMinutes The duration of the shift, in minutes
      * @param daysOfWeek A set of Strings that represents names of {@link java.time.DayOfWeek}
      * @param medicalService the DTO representing the medical service associated with the shift
-     * @param quantityShiftSeniority A map of strings representing names of {@link org.cswteams.ms3.entity.Seniority} into quantities ;
+     * @param quantityShiftSeniority A map of strings representing names of {@link org.cswteams.ms3.enums.Seniority} into quantities ;
      *                               <br/>it represents how many doctors of every seniority are needed to cover the shift
      * @param additionalConstraintShiftDTO A list of DTOs representing the additional constraints related to the shift
      */

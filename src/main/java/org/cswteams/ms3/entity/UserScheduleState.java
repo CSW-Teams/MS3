@@ -22,18 +22,18 @@ public class UserScheduleState {
     @GeneratedValue
     private Long id;
     
-    /**  Utente a cui appartiene questo stato */
+    /** User to whom this status belongs */
     @ManyToOne
     private User utente;
 
-    /**  Pianificazione a cui appartiene questo stato */
+    /** Planning to which this state belongs */
     @OneToOne
     private Schedule schedule;
 
     private int uffaParziale=0;
     private int uffaCumulativo=0;
 
-    /** tutti i turni assegnati a questo utente nella pianificazione corrente */
+    /** all shifts assigned to this user in the current schedule */
     @Transient
     List<ConcreteShift> assegnazioniTurnoCache;
 
@@ -55,7 +55,7 @@ public class UserScheduleState {
         return assegnazioniTurnoCache;
     }
 
-    /**Aggiunge in ordine la nuova assegnazione alla lista delle assegnazioni dell'utente **/
+    /**Adds the new assignment to the user's assignment list in order **/
     public void addAssegnazioneTurno(ConcreteShift nuovaAssegnazione){
         /*List<ConcreteShift> turniAssegnati = getAssegnazioniTurnoCache();
         int idInsert = turniAssegnati.size();
@@ -77,6 +77,9 @@ public class UserScheduleState {
         this.uffaParziale =this.uffaCumulativo+ uffa;
     }
 
+    /**
+     * Default constructor needed by Lombok
+     */
     public UserScheduleState() {
     }
     
