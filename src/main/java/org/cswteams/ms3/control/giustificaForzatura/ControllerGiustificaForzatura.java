@@ -63,7 +63,7 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
     }
 
     public static MedicalService buildServiceDTO(MedicalServiceDTO dto) {
-        return new MedicalService(dto.getMansioni(), dto.getNome());
+        return new MedicalService(dto.getTasks(), dto.getName());
     }
 
     private Doctor _getDoctor(Long doctorId) throws DatabaseException {

@@ -2,6 +2,7 @@ package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
@@ -23,6 +24,7 @@ import org.cswteams.ms3.utils.DateConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.print.Doc;
 import javax.transaction.Transactional;
 
 // TODO: Generate concrete shift controller from this class
@@ -237,13 +239,13 @@ public class SchedulerController implements ISchedulerController {
     public Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws ConcreteShiftException, IllegalScheduleException {
 
         //We need a shift which is present in the database in order to convert the DTO into an entity.
-        List<Shift> shiftsList = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getNome(), registerConcreteShiftDTO.getTimeSlot());
+        List<Shift> shiftsList = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(registerConcreteShiftDTO.getServizio().getName(), registerConcreteShiftDTO.getTimeSlot());
         if(shiftsList.isEmpty())
             throw new ConcreteShiftException("A shift with the specified services does not exist.");
         Shift shift = null;
         for(Shift shiftDB: shiftsList){
             //if(shiftDB.getMansione().equals(registerConcreteShiftDTO.getMansione())){
-            if(shiftDB.getMedicalService().getLabel().equals(registerConcreteShiftDTO.getServizio().getNome())) {
+            if(shiftDB.getMedicalService().getLabel().equals(registerConcreteShiftDTO.getServizio().getName())) {
                 shift = shiftDB;
                 break;
             }
@@ -253,10 +255,13 @@ public class SchedulerController implements ISchedulerController {
         }
 
         ConcreteShift concreteShift = new ConcreteShift(
-                LocalDate.of(registerConcreteShiftDTO.getYear(), registerConcreteShiftDTO.getMonth(), registerConcreteShiftDTO.getDay()).atStartOfDay(ZoneId.systemDefault()).toEpochSecond()*1000,
+                ChronoUnit.DAYS.between(LocalDate.of(1970, 1, 1), LocalDate.of(registerConcreteShiftDTO.getYear(), registerConcreteShiftDTO.getMonth(), registerConcreteShiftDTO.getDay())),
                 shift
         );
         //definition of doctorAssignmentList to set into concreteShift
+
+
+
         for(Doctor onCallDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnCallDoctors())) {
             concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onCallDoctor, ConcreteShiftDoctorStatus.ON_CALL, concreteShift, null));   //TODO: define the TASK.
         }
@@ -459,7 +464,8 @@ public class SchedulerController implements ISchedulerController {
      * @param userDTO DTO user to be converted into doctor
      * @return Doctor instance
      */
-    private static Doctor userDTOtoEntity(UserCreationDTO userDTO) {
+    private Doctor userDTOtoEntity(UserCreationDTO userDTO) {
+        /*
         Seniority seniority = null;
         if(userDTO.getSeniority().equals("STRUCTURED"))
             seniority = Seniority.STRUCTURED;
@@ -478,7 +484,12 @@ public class SchedulerController implements ISchedulerController {
                 systemActors.add(SystemActor.DOCTOR);
         }
 
-        return new Doctor(userDTO.getName(),userDTO.getLastname(),userDTO.getTaxCode(),userDTO.getBirthday(),userDTO.getEmail(), userDTO.getPassword(), seniority, systemActors);
+        Doctor doctor = new Doctor(userDTO.getId(), userDTO.getName(),userDTO.getLastname(),userDTO.getTaxCode(),userDTO.getBirthday(),userDTO.getEmail(), userDTO.getPassword(), seniority, systemActors);
+
+         */
+
+        Optional<Doctor> doctor = doctorDAO.findById(userDTO.getId());
+        return doctor.orElse(null);
     }
 
     /**
@@ -486,7 +497,7 @@ public class SchedulerController implements ISchedulerController {
      * @param usersDTO List of DTO users instances to be converted into doctors.
      * @return Doctor list
      */
-    private static Set<Doctor> usersDTOtoEntity(Set<UserCreationDTO> usersDTO) {
+    private Set<Doctor> usersDTOtoEntity(Set<UserCreationDTO> usersDTO) {
         Set<Doctor> doctors = new HashSet<>();
         for (UserCreationDTO dto: usersDTO){
             doctors.add(userDTOtoEntity(dto));
