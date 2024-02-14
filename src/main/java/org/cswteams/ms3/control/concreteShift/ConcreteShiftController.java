@@ -97,9 +97,9 @@ public class ConcreteShiftController implements IConcreteShiftController {
     @Override
     public ConcreteShift createNewConcreteShift(RegisterConcreteShiftDTO dto) throws ConcreteShiftException {
 
-        Shift shift = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(dto.getServizio().getNome(), dto.getTimeSlot()).get(0);
+        Shift shift = shiftDAO.findAllByMedicalServiceLabelAndTimeSlot(dto.getServizio().getName(), dto.getTimeSlot()).get(0);
         if(shift == null)
-            throw new ConcreteShiftException("A shift with the following attributes does not exist. Service: "+dto.getServizio().getNome() +", time slot: "+dto.getTimeSlot().toString());
+            throw new ConcreteShiftException("A shift with the following attributes does not exist. Service: "+dto.getServizio().getName() +", time slot: "+dto.getTimeSlot().toString());
 
         // TODO: Implement the correct logic this is dummy!!!
         ConcreteShift concreteShift = new ConcreteShift(LocalDate.of(dto.getYear(),dto.getMonth(),dto.getDay()).toEpochDay(), shift);

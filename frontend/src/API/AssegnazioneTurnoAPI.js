@@ -154,24 +154,44 @@ export  class AssegnazioneTurnoAPI {
    * 400 se i parametri della richiesta sono malformati e il backend non è riuscito a interpretarli;
    * 406 se la richiesta di assegnazone è stata rigettata, ad esempio perché violerebbe dei vincoli per la sua pianificazione.
    */
-  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,mansione,forced) {
+  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizio,mansione,forced) {
 
       let assegnazioneTurno = {};
 
-      const giorno = data.$d.getDate();
-      const mese = data.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
-      const anno = data.$d.getFullYear();
+      const day = data.$d.getDate();
+      const month = data.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
+      const year = data.$d.getFullYear();
 
       // Creating an ISO 8601 formatted date string
-      assegnazioneTurno.giorno = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
+      // assegnazioneTurno.giorno = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
+
+      assegnazioneTurno.day = day;
+      assegnazioneTurno.month = month;
+      assegnazioneTurno.year = year;
 
       assegnazioneTurno.forced = forced;
 
-      assegnazioneTurno.servizio = servizioNome;
-      assegnazioneTurno.mansione = mansione;
-      assegnazioneTurno.tipologiaTurno = turnoTipologia
-      assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
-      assegnazioneTurno.utentiReperibili = utentiReperibilita;
+      assegnazioneTurno.servizio = servizio;
+      // assegnazioneTurno.mansione = mansione;
+      assegnazioneTurno.timeSlot = turnoTipologia;
+
+      let onDutyDoctorsValues = [];
+      let onCallDoctorsValues = [];
+
+      for (let i = 0; i < utentiSelezionatiGuardia.length; i++) {
+        utentiSelezionatiGuardia[i].value.systemActors = ["DOCTOR"]
+        onDutyDoctorsValues.push(utentiSelezionatiGuardia[i].value);
+      }
+
+      for (let i = 0; i < utentiReperibilita.length; i++) {
+        utentiReperibilita[i].value.systemActors = ["DOCTOR"]
+        onCallDoctorsValues.push(utentiReperibilita[i].value);
+      }
+
+      assegnazioneTurno.onDutyDoctors = onDutyDoctorsValues;
+      assegnazioneTurno.onCallDoctors = onCallDoctorsValues;
+
+      console.log("Assegnazione turno: ", assegnazioneTurno);
 
       const requestOptions = {
         method: 'POST',

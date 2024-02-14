@@ -18,12 +18,12 @@ public class RegisterConcreteShiftDTO {
 
     private TimeSlot timeSlot;
 
-    private Set<UserCreationDTO> onDutyDoctors;
-    private Set<UserCreationDTO> onCallDoctors;
-    private Set<MedicalServiceDTO> services;    //TODO: to be removed?
+    private Set<UserCreationDTO> onDutyDoctors; // todo maybe this should be a MedicalDoctorInfoDTO's list
+    private Set<UserCreationDTO> onCallDoctors; // todo maybe this should be a MedicalDoctorInfoDTO's list
+    //private Set<MedicalServiceDTO> services;    //TODO: to be removed?
     private boolean forced;
 
-    private TaskEnum mansione;  //TODO: to be removed?
+    //private TaskEnum mansione;  //TODO: to be removed?
     private MedicalServiceDTO servizio;
 
     public RegisterConcreteShiftDTO(){}

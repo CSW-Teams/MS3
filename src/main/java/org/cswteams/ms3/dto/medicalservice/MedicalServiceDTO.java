@@ -13,23 +13,23 @@ import java.util.List;
 public class MedicalServiceDTO {
 
     private Long id;
-    private String nome;
-    private List<Task> mansioni = new ArrayList<>();
+    private String name;
+    private List<Task> tasks = new ArrayList<>();
 
-    public MedicalServiceDTO(Long id, String nome, List<Task> mansioni) {
+    public MedicalServiceDTO(Long id, String name, List<Task> tasks) {
         this.id = id;
-        this.nome = nome;
-        this.mansioni = mansioni;
+        this.name = name;
+        this.tasks = tasks;
     }
 
-    public MedicalServiceDTO(String nome, List<Task> mansioni){
+    public MedicalServiceDTO(String name, List<Task> tasks){
         this.id = null;
-        this.nome = nome;
-        this.mansioni = mansioni;
+        this.name = name;
+        this.tasks = tasks;
     }
 
-    public MedicalServiceDTO(String nome){
-        this.nome = nome;
+    public MedicalServiceDTO(String name){
+        this.name = name;
     }
     public MedicalServiceDTO(){}
 }

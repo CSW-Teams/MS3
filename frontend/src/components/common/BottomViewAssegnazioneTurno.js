@@ -45,6 +45,7 @@ export default function TemporaryDrawer(props) {
   const [state, setState] = React.useState({bottom: false});
   const [giustificato, setGiustificato] = React.useState(false)
   const [allServices, setAllServices] = React.useState([])
+  const [timeSlot, setTimeSlot] = React.useState("")
   let giustificazione = ''
 
 
@@ -114,13 +115,16 @@ export default function TemporaryDrawer(props) {
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
   //Viene passata al componente <MultipleSelect>
-  const handleTurno = (turno) => {
-    setTurno(turno);
+  const handleTurno = (timeslot) => {
+    if (timeslot.length > 0)
+      setTimeSlot(timeslot[0].value.tipologia)
   }
 
   const handleServizio = (servizio) => {
-    setServizio(servizio);
-    getShift(servizio);
+    if (servizio.length > 0) {
+      setServizio(servizio[0].value);
+      getShift(servizio);
+    }
   }
 
   //Funzione che apre la schermata secondaria che permette di creare un associazione.
@@ -171,10 +175,9 @@ export default function TemporaryDrawer(props) {
      */
     {/*const mansione = turno.toString().substring(turno.toString().lastIndexOf(" ")+1, turno.toString().length)
     const tipologiaTurno = turno.toString().substring(0,turno.toString().indexOf(" "))*/}
-    const mansione = turno.mansione
-    const tipologiaTurno = turno.tipologia
-    console.log(mansione)
-    console.log(tipologiaTurno)
+    const mansione = turno
+    const tipologiaTurno = timeSlot
+    console.log("Servizio: ", servizio)
     response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
@@ -377,7 +380,7 @@ export default function TemporaryDrawer(props) {
 
               <Button variant="contained" size="small" disabled={forced && !giustificato} onClick={assegnaTurno('bottom', false)} >
                 {t("Assign Turn")}
-              </Button>
+              </Button> {/* todo shift porcodiiii */}
             </Stack>
           </div>
         </Drawer>
