@@ -1,7 +1,6 @@
 package org.cswteams.ms3.control.scheduler.constraint_tests;
 
 import org.cswteams.ms3.control.medicalService.MedicalServiceController;
-import org.cswteams.ms3.control.scheduler.constraint_tests.ControllerSchedulerTest;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
@@ -19,10 +18,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
+public class ControllerSchedulerUbiquityViolatedTest extends ControllerSchedulerTest {
 
     @Autowired
     private SpecializationDAO specializationDAO ;
@@ -77,20 +75,24 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
         temporaryConditionDAO.saveAndFlush(vacation) ;
         temporaryConditionDAO.saveAndFlush(sick) ;
 
-        //Specializations
-        Specialization a_logia = new Specialization("ALOGIA") ;
-        Specialization b_logia = new Specialization("BLOGIA") ;
 
-        specializationDAO.save(a_logia) ;
-        specializationDAO.save(b_logia) ;
+        //Specializations
+        Specialization a_logia = new Specialization("Alogia");
+        Specialization b_logia = new Specialization("Blogia");
+
+        specializationDAO.save(a_logia);
+        specializationDAO.save(b_logia);
 
         //Tasks and services
 
-        Task ward = new Task(TaskEnum.WARD) ;
-        taskDAO.saveAndFlush(ward) ;
+        Task ward = new Task(TaskEnum.WARD);
+        Task clinic = new Task(TaskEnum.CLINIC) ;
+        taskDAO.saveAndFlush(ward);
+        taskDAO.saveAndFlush(clinic) ;
 
-        MedicalService repartoAlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "ALOGIA") ;
-        MedicalService repartoBlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "BLOGIA") ;
+        MedicalService repartoAlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "REPARTO ALOGIA");
+        MedicalService ambulatorioAlogia = medicalServiceControllercontroller.createService(Collections.singletonList(clinic), "AMBULATORIO ALOGIA") ;
+        MedicalService repartoBlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "REPARTO BLOGIA");
 
         //Doctors
 
@@ -98,27 +100,24 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
         Doctor doc2 = new Doctor("Esperto", "Blogia", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoblogia97@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
 
         try {
-            userController.addSpecialization(doc1, a_logia) ;
-            userController.addSpecialization(doc2, b_logia) ;
+            userController.addSpecialization(doc1, a_logia);
+            userController.addSpecialization(doc2, b_logia);
         } catch (Exception e) {
-            fail() ;
+            fail();
         }
 
-        doctorDAO.save(doc1) ;
-        doctorDAO.save(doc2) ;
+        doctorDAO.save(doc1);
+        doctorDAO.save(doc2);
 
-        Map<Seniority, Integer> alogiaQuantities = new HashMap<>() ;
-        alogiaQuantities.put(Seniority.STRUCTURED, 1) ;
-        QuantityShiftSeniority repartoAlogiaQss = new QuantityShiftSeniority(alogiaQuantities, ward) ;
+        Map<Seniority, Integer> alogiaQuantities = new HashMap<>();
+        alogiaQuantities.put(Seniority.STRUCTURED, 1);
+        QuantityShiftSeniority repartoAlogiaQss = new QuantityShiftSeniority(alogiaQuantities, ward);
+        QuantityShiftSeniority ambulatorioAlogiaQss = new QuantityShiftSeniority(alogiaQuantities, clinic) ;
 
-        Map<Seniority, Integer> blogiaQuantities = new HashMap<>() ;
-        blogiaQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
-        QuantityShiftSeniority repartoBlogiaQss = new QuantityShiftSeniority(blogiaQuantities, ward) ;
-
-        Set<DayOfWeek> monday = new HashSet<>(Collections.singletonList(DayOfWeek.MONDAY)) ;
+        Set<DayOfWeek> monday = new HashSet<>(Collections.singletonList(DayOfWeek.MONDAY));
 
         Shift shift1 = new Shift(LocalTime.of(8, 0),
-                Duration.ofHours(6),
+                Duration.ofHours(4),
                 repartoAlogia,
                 TimeSlot.MORNING,
                 Collections.singletonList(repartoAlogiaQss),
@@ -126,14 +125,14 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift1);
 
-        Shift shift2 = new Shift(LocalTime.of(8, 0),
-                Duration.ofHours(6),
-                repartoBlogia,
+        Shift shift1Bis = new Shift(LocalTime.of(8, 0),
+                Duration.ofHours(4),
+                ambulatorioAlogia,
                 TimeSlot.MORNING,
-                Collections.singletonList(repartoBlogiaQss),
+                Collections.singletonList(ambulatorioAlogiaQss),
                 monday,
                 Collections.emptyList());
-        shiftDAO.saveAndFlush(shift2);
+        shiftDAO.saveAndFlush(shift1Bis);
 
         List<Holiday> holidays = holidayDAO.findAll();  //retrieve of holiday entities (and not DTOs)
 
@@ -163,9 +162,9 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
 
         //Set all parameters in parent class, like in @Parametrized
 
-        super.isPossible = true ;
-        super.start = LocalDate.of(2024, 3, 1) ;
-        super.end = LocalDate.of(2024, 3, 31) ;
+        super.isPossible = false;
+        super.start = LocalDate.of(2024, 3, 1);
+        super.end = LocalDate.of(2024, 3, 31);
 
     }
 }

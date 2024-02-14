@@ -1,7 +1,6 @@
 package org.cswteams.ms3.control.scheduler.constraint_tests;
 
 import org.cswteams.ms3.control.medicalService.MedicalServiceController;
-import org.cswteams.ms3.control.scheduler.constraint_tests.ControllerSchedulerTest;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
@@ -19,10 +18,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
+public class ControllerSchedulerServiceTypesRespectedTest extends ControllerSchedulerExtraTest {
 
     @Autowired
     private SpecializationDAO specializationDAO ;
@@ -79,41 +77,53 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
 
         //Specializations
         Specialization a_logia = new Specialization("ALOGIA") ;
-        Specialization b_logia = new Specialization("BLOGIA") ;
 
         specializationDAO.save(a_logia) ;
-        specializationDAO.save(b_logia) ;
 
         //Tasks and services
 
         Task ward = new Task(TaskEnum.WARD) ;
+        Task clinic = new Task(TaskEnum.CLINIC) ;
         taskDAO.saveAndFlush(ward) ;
+        taskDAO.saveAndFlush(clinic) ;
 
-        MedicalService repartoAlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "ALOGIA") ;
-        MedicalService repartoBlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "BLOGIA") ;
+        MedicalService repartoAlogia = medicalServiceControllercontroller.createService(List.of(ward, clinic), "ALOGIA") ;
 
         //Doctors
 
-        Doctor doc1 = new Doctor("Esperto", "Alogia", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoalogia@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.CONFIGURATOR));
-        Doctor doc2 = new Doctor("Esperto", "Blogia", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoblogia97@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
+        Doctor doc1 = new Doctor("Esperto", "Alogia1", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoalogia@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.CONFIGURATOR));
+        Doctor doc2 = new Doctor("Esperto", "Alogia2", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoblogia97@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.CONFIGURATOR));
+        Doctor doc3 = new Doctor("Esperto", "Alogia3", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoalogia@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.CONFIGURATOR));
+        Doctor doc4 = new Doctor("Esperto", "Alogia4", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoblogia97@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
+        Doctor doc5 = new Doctor("Esperto", "Alogia5", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoalogia@gmail.com", "passw", Seniority.STRUCTURED, Set.of(SystemActor.CONFIGURATOR));
+        Doctor doc6 = new Doctor("Esperto", "Alogia6", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "espertoblogia97@gmail.com", "passw", Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
 
         try {
             userController.addSpecialization(doc1, a_logia) ;
-            userController.addSpecialization(doc2, b_logia) ;
+            userController.addSpecialization(doc2, a_logia) ;
+            userController.addSpecialization(doc3, a_logia) ;
+            userController.addSpecialization(doc4, a_logia) ;
+            userController.addSpecialization(doc5, a_logia) ;
+            userController.addSpecialization(doc6, a_logia) ;
         } catch (Exception e) {
             fail() ;
         }
 
         doctorDAO.save(doc1) ;
         doctorDAO.save(doc2) ;
+        doctorDAO.save(doc3) ;
+        doctorDAO.save(doc4) ;
+        doctorDAO.save(doc5) ;
+        doctorDAO.save(doc6) ;
 
-        Map<Seniority, Integer> alogiaQuantities = new HashMap<>() ;
-        alogiaQuantities.put(Seniority.STRUCTURED, 1) ;
-        QuantityShiftSeniority repartoAlogiaQss = new QuantityShiftSeniority(alogiaQuantities, ward) ;
+        Map<Seniority, Integer> alogiaClinicQuantities = new HashMap<>() ;
+        alogiaClinicQuantities.put(Seniority.STRUCTURED, 1) ;
+        QuantityShiftSeniority repartoAlogiaQssClinic = new QuantityShiftSeniority(alogiaClinicQuantities, clinic) ; //Service only has ward, only Qss is clinic
 
-        Map<Seniority, Integer> blogiaQuantities = new HashMap<>() ;
-        blogiaQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
-        QuantityShiftSeniority repartoBlogiaQss = new QuantityShiftSeniority(blogiaQuantities, ward) ;
+        Map<Seniority, Integer> alogiaWardQuantities = new HashMap<>() ;
+        alogiaWardQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
+        alogiaWardQuantities.put(Seniority.STRUCTURED, 1) ;
+        QuantityShiftSeniority repartoAlogiaQssWard = new QuantityShiftSeniority(alogiaWardQuantities, ward) ; //Service only has ward, only Qss is clinic
 
         Set<DayOfWeek> monday = new HashSet<>(Collections.singletonList(DayOfWeek.MONDAY)) ;
 
@@ -121,19 +131,10 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
                 Duration.ofHours(6),
                 repartoAlogia,
                 TimeSlot.MORNING,
-                Collections.singletonList(repartoAlogiaQss),
+                List.of(repartoAlogiaQssClinic, repartoAlogiaQssWard),
                 monday,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift1);
-
-        Shift shift2 = new Shift(LocalTime.of(8, 0),
-                Duration.ofHours(6),
-                repartoBlogia,
-                TimeSlot.MORNING,
-                Collections.singletonList(repartoBlogiaQss),
-                monday,
-                Collections.emptyList());
-        shiftDAO.saveAndFlush(shift2);
 
         List<Holiday> holidays = holidayDAO.findAll();  //retrieve of holiday entities (and not DTOs)
 
@@ -161,11 +162,48 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
         doctorHolidaysDAO.save(dh2);
         doctorUffaPrioritySnapshotDAO.save(doc2UffaPrioritySnapshot);
 
+        DoctorUffaPriority dup3 = new DoctorUffaPriority(doc3);
+        DoctorUffaPrioritySnapshot doc3UffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doc3);
+        DoctorHolidays dh3 = new DoctorHolidays(doc3, holidayMap);
+
+        doctorUffaPriorityDAO.save(dup3);
+        doctorHolidaysDAO.save(dh3);
+        doctorUffaPrioritySnapshotDAO.save(doc3UffaPrioritySnapshot);
+
+        DoctorUffaPriority dup4 = new DoctorUffaPriority(doc4);
+        DoctorUffaPrioritySnapshot doc4UffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doc4);
+        DoctorHolidays dh4 = new DoctorHolidays(doc4, holidayMap);
+
+        doctorUffaPriorityDAO.save(dup4);
+        doctorHolidaysDAO.save(dh4);
+        doctorUffaPrioritySnapshotDAO.save(doc4UffaPrioritySnapshot);
+
+        DoctorUffaPriority dup5 = new DoctorUffaPriority(doc5);
+        DoctorUffaPrioritySnapshot doc5UffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doc5);
+        DoctorHolidays dh5 = new DoctorHolidays(doc5, holidayMap);
+
+        doctorUffaPriorityDAO.save(dup5);
+        doctorHolidaysDAO.save(dh5);
+        doctorUffaPrioritySnapshotDAO.save(doc5UffaPrioritySnapshot);
+
+        DoctorUffaPriority dup6 = new DoctorUffaPriority(doc6);
+        DoctorUffaPrioritySnapshot doc6UffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doc6);
+        DoctorHolidays dh6 = new DoctorHolidays(doc6, holidayMap);
+
+        doctorUffaPriorityDAO.save(dup6);
+        doctorHolidaysDAO.save(dh6);
+        doctorUffaPrioritySnapshotDAO.save(doc6UffaPrioritySnapshot);
+
         //Set all parameters in parent class, like in @Parametrized
 
-        super.isPossible = true ;
+        super.isPossible = false ;
         super.start = LocalDate.of(2024, 3, 1) ;
         super.end = LocalDate.of(2024, 3, 31) ;
+
+    }
+
+    @Override
+    public void extraChecks() {
 
     }
 }

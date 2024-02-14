@@ -1,7 +1,6 @@
 package org.cswteams.ms3.control.scheduler.constraint_tests;
 
 import org.cswteams.ms3.control.medicalService.MedicalServiceController;
-import org.cswteams.ms3.control.scheduler.constraint_tests.ControllerSchedulerTest;
 import org.cswteams.ms3.control.user.UserController;
 import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.*;
@@ -19,10 +18,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
+public class ControllerSchedulerServicesTaskTypeRespectedTest extends ControllerSchedulerTest {
 
     @Autowired
     private SpecializationDAO specializationDAO ;
@@ -87,7 +85,9 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
         //Tasks and services
 
         Task ward = new Task(TaskEnum.WARD) ;
+        Task clinic = new Task(TaskEnum.CLINIC) ;
         taskDAO.saveAndFlush(ward) ;
+        taskDAO.saveAndFlush(clinic) ;
 
         MedicalService repartoAlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "ALOGIA") ;
         MedicalService repartoBlogia = medicalServiceControllercontroller.createService(Collections.singletonList(ward), "BLOGIA") ;
@@ -109,11 +109,11 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
 
         Map<Seniority, Integer> alogiaQuantities = new HashMap<>() ;
         alogiaQuantities.put(Seniority.STRUCTURED, 1) ;
-        QuantityShiftSeniority repartoAlogiaQss = new QuantityShiftSeniority(alogiaQuantities, ward) ;
+        QuantityShiftSeniority repartoAlogiaQss = new QuantityShiftSeniority(alogiaQuantities, clinic) ; //Service only has ward, only Qss is clinic
 
         Map<Seniority, Integer> blogiaQuantities = new HashMap<>() ;
         blogiaQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
-        QuantityShiftSeniority repartoBlogiaQss = new QuantityShiftSeniority(blogiaQuantities, ward) ;
+        QuantityShiftSeniority repartoBlogiaQss = new QuantityShiftSeniority(blogiaQuantities, clinic) ; //Service only has ward, only Qss is clinic
 
         Set<DayOfWeek> monday = new HashSet<>(Collections.singletonList(DayOfWeek.MONDAY)) ;
 
@@ -163,7 +163,7 @@ public class ControllerSchedulerGoodTest extends ControllerSchedulerTest {
 
         //Set all parameters in parent class, like in @Parametrized
 
-        super.isPossible = true ;
+        super.isPossible = false ;
         super.start = LocalDate.of(2024, 3, 1) ;
         super.end = LocalDate.of(2024, 3, 31) ;
 
