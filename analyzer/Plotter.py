@@ -1,5 +1,6 @@
 import json
 import matplotlib.pyplot as plt
+import numpy as np
 
 def primoGrafico():
     # Carica i dati dal file JSON
@@ -11,9 +12,14 @@ def primoGrafico():
     night_priority = [dati[str(i)]['night_priority'] for i in range(len(dati))]
     long_shift_priority = [dati[str(i)]['long_shift_priority'] for i in range(len(dati))]
 
+    with open("statistic/vecchioScheduler/PerSchedule/mediaDiff.json") as file:
+        dati2 = json.load(file)
+    uffa_point = [dati2[str(i)]['uffaPoint'] for i in dati2]
+    uffa_point = np.divide(uffa_point,5)
     # Crea il plot
     plt.figure(figsize=(10, 6))
 
+    plt.subplot(1, 2, 1)  # Primo grafico
     # Plot dei dati generali
     plt.plot(general_priority, label='General Priority', color='blue')
 
@@ -27,7 +33,18 @@ def primoGrafico():
     plt.title('Andamento livelli di priorità')
     plt.xlabel('Indice')
     plt.ylabel('Priorità')
+    #plt.ylim(0, max(max(general_priority), max(night_priority), max(long_shift_priority), max(uffa_point)))  # Imposta il limite dell'asse y
     plt.legend()
+
+    plt.subplot(1, 2, 2)  # Secondo grafico
+    plt.plot(uffa_point, label='Uffa point', color='red')
+    #plt.ylim(0, max(max(general_priority), max(night_priority), max(long_shift_priority), max(uffa_point)))  # Imposta il limite dell'asse y
+    # Aggiungi titolo e legenda
+    plt.title('Andamento dei punti di uffa')
+    plt.xlabel('Indice')
+    plt.ylabel('Priorità')
+    plt.legend()
+
     # Mostra il plot
     plt.show()
 def secondoGrafico(nameFile):
