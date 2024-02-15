@@ -134,7 +134,7 @@ public class ScheduleBuilder {
     private void validateSchedule(Schedule schedule) throws IllegalScheduleException {
         if(schedule == null)
             throw new IllegalScheduleException("[ERROR] Cannot create new schedule from a null one");
-        else if (schedule.getCauseIllegal() == null)
+        else if (schedule.getCauseIllegal() != null)
             throw new IllegalScheduleException("[ERROR] Cannot create new schedule from an illegal one");
     }
 
@@ -145,7 +145,11 @@ public class ScheduleBuilder {
      * @param schedule An existing schedule from which to start a new one
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(List<Constraint> allConstraints, List<DoctorUffaPriority> allDoctorUffaPriority, Schedule schedule) throws IllegalScheduleException {
+    public ScheduleBuilder(List<Constraint> allConstraints,
+                           List<DoctorUffaPriority> allDoctorUffaPriority,
+                           Schedule schedule,
+                           List<DoctorHolidays> doctorHolidaysList,
+                           List<Holiday> holidays) throws IllegalScheduleException {
         // Checks on the parameters state
         validateConstraints(allConstraints);
         validateSchedule(schedule);
@@ -153,7 +157,11 @@ public class ScheduleBuilder {
         this.allConstraints = allConstraints;
         this.schedule=schedule;
         this.allDoctorUffaPriority = allDoctorUffaPriority;
+        this.doctorHolidaysList = doctorHolidaysList;
+        this.holidays = holidays;
         initializeDoctorUffaPriorities();
+
+
     }
 
 
