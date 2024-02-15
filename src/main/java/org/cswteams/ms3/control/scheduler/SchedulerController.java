@@ -204,7 +204,9 @@ public class SchedulerController implements ISchedulerController {
         this.scheduleBuilder = new ScheduleBuilder(
                 constraintDAO.findAll(),            //All the constraints that shall be respected when a doctor is assigned to a concrete shift
                 doctorUffaPriorityDAO.findAll(),    //All the possible doctors that can be assigned to the concrete shifts
-                scheduleDAO.findByDateBetween(concreteShift.getDate())  //Existing shift schedule
+                scheduleDAO.findByDateBetween(concreteShift.getDate()),  //Existing shift schedule
+                doctorHolidaysDAO.findAll(),
+                holidayDAO.findAll()
         );
 
         schedule = this.scheduleBuilder.addConcreteShift(concreteShift,forced);

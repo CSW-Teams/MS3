@@ -538,10 +538,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         // Load services offered by the wards
         // Save in persistence all possible rotations
-        MedicalService repartoCardiologia = medicalServiceController.createService(Collections.singletonList(ward), "CARDIOLOGIA");
+        //MedicalService repartoCardiologia = medicalServiceController.createService(Collections.singletonList(ward), "CARDIOLOGIA");
         MedicalService ambulatorioCardiologia = medicalServiceController.createService(Collections.singletonList(clinic), "CARDIOLOGIA");
-        MedicalService guardiaCardiologia = medicalServiceController.createService(Collections.singletonList(emergency), "CARDIOLOGIA");
-        MedicalService salaOperatoriaCardiologia = medicalServiceController.createService(Collections.singletonList(operatingRoom), "CARDIOLOGIA");
+        //MedicalService guardiaCardiologia = medicalServiceController.createService(Collections.singletonList(emergency), "CARDIOLOGIA");
+        //MedicalService salaOperatoriaCardiologia = medicalServiceController.createService(Collections.singletonList(operatingRoom), "CARDIOLOGIA");
         MedicalService ambulatorioOncologia = medicalServiceController.createService(Collections.singletonList(clinic), "ONCOLOGIA");
 
         //Creo utenti
@@ -708,9 +708,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         List<QuantityShiftSeniority> quantityShiftSeniorityList1 = new ArrayList<>();
         for(Task t:ambulatorioCardiologia.getTasks()) {
             Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
+            //mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
             mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
+            //mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
             QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
             quantityShiftSeniorityList1.add(quantityShiftSeniority);
         }
@@ -718,8 +718,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         for(Task t:ambulatorioCardiologia.getTasks()) {
             Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
             mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
+            //mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
+            //mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
             QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
             quantityShiftSeniorityList2.add(quantityShiftSeniority);
         }
@@ -727,8 +727,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         for(Task t:ambulatorioCardiologia.getTasks()) {
             Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
             mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
+            //mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
+            //mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
             QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
             quantityShiftSeniorityList3.add(quantityShiftSeniority);
         }

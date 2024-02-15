@@ -49,6 +49,7 @@ public class ConcreteShiftRestEndpoint {
             } catch (ConcreteShiftException e) {
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
             } catch (IllegalScheduleException e) {
+                e.printStackTrace();
                 schedule = null;
             }
 
