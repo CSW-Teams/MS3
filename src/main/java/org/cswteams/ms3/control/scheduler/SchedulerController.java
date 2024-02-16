@@ -157,7 +157,6 @@ public class SchedulerController implements ISchedulerController {
             return schedule;
 
         } catch (IllegalScheduleException e) {
-            System.out.println(e.getMessage());
             return null;
         }
 

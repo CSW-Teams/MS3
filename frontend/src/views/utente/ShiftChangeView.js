@@ -1,5 +1,5 @@
 import React from "react";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { ShiftChangeRequestAPI } from "../../API/ShiftChangeRequestAPI";
 import { Button } from "@mui/material";
@@ -23,7 +23,17 @@ export default function ShiftChangeView() {
 
   const handle = (requestId, response) => {
     requestAPI.answerRequest(requestId, response);
-    console.log(`Request ${requestId} accepted`);
+    toast.success(t("Request "+response), {
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                      });
+    fetchData();
   };
 
   const fetchData = async () => {
@@ -39,7 +49,7 @@ export default function ShiftChangeView() {
     }
   };
 
-  const renderTable = (requests, headerText) => {
+  const renderTable = (requests, headerText,flag) => {
     const sortedRequests = requests.sort((a, b) => new Date(a.inizioDate) - new Date(b.inizioDate));
 
     const options = {
@@ -70,6 +80,7 @@ export default function ShiftChangeView() {
           {sortedRequests.map((request, index) => {
             const startDate = new Date(request.inizioDate);
             const endDate = new Date(request.fineDate);
+            if(flag==0){
             return (
               <tr key={request.requestId}>
                 <td>{request.turnDescription[t('en')]}</td>
@@ -86,6 +97,19 @@ export default function ShiftChangeView() {
                 </td>
               </tr>
             );
+          }
+          else{
+          return (
+                        <tr key={request.requestId}>
+                          <td>{request.turnDescription[t('en')]}</td>
+                          <td>{startDate.toLocaleString(navigator.language, options)}</td>
+                          <td>{endDate.toLocaleString(navigator.language, options)}</td>
+                          <td>{request.userDetails}</td>
+                          <td></td>
+                        </tr>
+                      );
+
+          }
           })}
           </tbody>
         </table>
@@ -104,21 +128,20 @@ export default function ShiftChangeView() {
         `}
       </style>
 
-      {renderTable(state.turnChangeRequestsToSender, t('Requests Received'))}
-      {renderTable(state.turnChangeRequestsBySender, t('Requests Sent'))}
-
+      {renderTable(state.turnChangeRequestsToSender, t('Requests Received'),0)}
+      {renderTable(state.turnChangeRequestsBySender, t('Requests Sent'),1)}
       <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+                position="top-center"
+                autoClose={5000}
+                hideProgressBar={true}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
       <div style={{ marginTop: 'auto' }}></div>
     </div>
   );

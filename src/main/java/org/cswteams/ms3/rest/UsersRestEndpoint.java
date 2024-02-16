@@ -82,7 +82,6 @@ public class UsersRestEndpoint {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }else{
             try{
-                System.out.println("adsfasdf " + userSystemActorsDTO.getSystemActors());
                 userController.addSystemActor(userSystemActorsDTO.getUserID(), userSystemActorsDTO.getSystemActors());
             }catch (Exception e){
                 e.printStackTrace();

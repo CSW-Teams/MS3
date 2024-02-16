@@ -119,19 +119,25 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
         await sleep(1000);
 
         if (active) {
-          let avDoctors = await getAvailableUsersForShiftExchange();
-
+          let doctorAPI = new DoctorAPI();
+          const currentDoctor = await doctorAPI.getDoctorById(parseInt(localStorage.getItem("id")));
+          const param = {
+                  seniority: currentDoctor.seniority,
+                  shiftId: appointmentData.id
+                }
+          console.log("param: "+param+" "+currentDoctor.seniority+" "+appointmentData.id);
+          let avDoctors = await getAvailableUsersForShiftExchange(param);
+          console.log(avDoctors)
           const autocompleteList = [];
           for (let i = 0; i < avDoctors.length; i++) {
             const label = avDoctors[i].label;
             const value = avDoctors[i].id;
             autocompleteList.push({ label: label, value: value })
           }
-
+          console.log("taglia 2: "+avDoctors);
           setAvailableUsers([...autocompleteList]);
         }
       })();
-
       return () => {
         active = false;
       };
