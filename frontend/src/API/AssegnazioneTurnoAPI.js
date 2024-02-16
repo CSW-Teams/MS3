@@ -35,12 +35,11 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
           let currentUserDto = body[i].doctorsOnDuty[j];
-          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : (currentUserDto.seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno");
           let utenteAllocato = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            seniority,
+            currentUserDto.seniority,
             currentUserDto.task,
           )
           utenti_guardia[j] = utenteAllocato;
@@ -49,12 +48,11 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
           let currentUserDto = body[i].doctorsOnCall[j];
-          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : (currentUserDto.seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno");
           let utenteReperibile = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            seniority,
+            currentUserDto.seniority,
             currentUserDto.task,
           )
           utenti_reperibili[j] = utenteReperibile;
