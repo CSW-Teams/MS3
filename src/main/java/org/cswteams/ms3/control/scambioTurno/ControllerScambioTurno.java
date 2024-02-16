@@ -311,7 +311,7 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
         for (Doctor doctor : availableDoctors) {
             ConstraintUbiquita constraintUbiquita = new ConstraintUbiquita();
             ConstraintHoliday constraintHoliday = new ConstraintHoliday();
-            ConstraintMaxPeriodoConsecutivo constraintMaxPeriodoConsecutivo = new ConstraintMaxPeriodoConsecutivo();
+            ConstraintMaxPeriodoConsecutivo constraintMaxPeriodoConsecutivo = new ConstraintMaxPeriodoConsecutivo(12*60); //TODO:FIX IT
             DoctorUffaPriority d =  doctorUffaPriorityDAO.findByDoctor_Id(doctor.getId()).get(0); //TODO: FIX IT
             ContextConstraint context = new ContextConstraint(
                     d,
