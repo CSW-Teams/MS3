@@ -75,6 +75,8 @@ export default function TemporaryDrawer(props) {
       setAllServices(d);
     }
 
+
+
     async function getShift(servizio) {
         if(servizio.length > 0) {
           console.log(servizio[0].label)

@@ -18,6 +18,7 @@ import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
+import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.utils.DateConverter;
@@ -63,6 +64,9 @@ public class SchedulerController implements ISchedulerController {
 
     @Autowired
     private DoctorUffaPrioritySnapshotDAO doctorUffaPrioritySnapshotDAO;
+
+    @Autowired
+    private TaskDAO taskDAO;
 
     private ScheduleBuilder scheduleBuilder;
 
@@ -262,13 +266,13 @@ public class SchedulerController implements ISchedulerController {
         );
         //definition of doctorAssignmentList to set into concreteShift
 
-
-
-        for(Doctor onCallDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnCallDoctors())) {
-            concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onCallDoctor, ConcreteShiftDoctorStatus.ON_CALL, concreteShift, null));   //TODO: define the TASK.
-        }
-        for(Doctor onDutyDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnDutyDoctors())) {
-            concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onDutyDoctor, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, null));   //TODO: define the TASK.
+        for (Task task : shift.getMedicalService().getTasks()) {
+            for (Doctor onCallDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnCallDoctors())) {
+                concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onCallDoctor, ConcreteShiftDoctorStatus.ON_CALL, concreteShift, task));
+            }
+            for (Doctor onDutyDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnDutyDoctors())) {
+                concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onDutyDoctor, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, task));
+            }
         }
 
         if(!checkDoctorsOnConcreteShift(concreteShift)){
