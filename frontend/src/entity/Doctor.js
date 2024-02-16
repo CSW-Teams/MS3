@@ -11,6 +11,6 @@ export class Doctor {
       this.task = "";
     }
     this.label = name + " " + lastname + " - "+this.task+" - "+ (seniority === "STRUCTURED" ? "Strutturato" : (seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno"));
-    console.log("ciao"+task)
+    console.log("label: "+this.label)
   }
 }

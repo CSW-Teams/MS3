@@ -11,7 +11,6 @@ export class DoctorAPI {
 
     for (let i = 0; i < body.length; i++) {
       let seniority = body[i].seniority === "STRUCTURED" ? "Strutturato" : (body[i].seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno");
-
       const doctor = {};
       doctor.id = body[i].id;
       doctor.name = body[i].name;
@@ -20,7 +19,7 @@ export class DoctorAPI {
       doctor.task="";
       doctors[i] = doctor;
     }
-
+    console.log("ciao 2 matteo federico")
     return doctors;
   }
 

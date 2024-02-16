@@ -67,13 +67,12 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             throw new ConcreteShiftException("Shift not present.");
         }
 
-        Optional<Doctor> senderOptional = Optional.ofNullable(userDao.findById(requestTurnChangeDto.getSenderId()));
+        Optional<Doctor> senderOptional = Optional.ofNullable(doctorDAO.findById(requestTurnChangeDto.getSenderId()));
         if(senderOptional.isEmpty()){
             throw new ConcreteShiftException("Requesting user not present in the database.");
         }
 
-
-        Optional<Doctor> receiverOptional = Optional.ofNullable(userDao.findById(requestTurnChangeDto.getReceiverId()));
+        Optional<Doctor> receiverOptional = Optional.ofNullable(doctorDAO.findById(requestTurnChangeDto.getReceiverId()));
         if(receiverOptional.isEmpty()){
             throw new ConcreteShiftException("Requested user not present in database.");
         }
@@ -263,7 +262,6 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
     public List<MedicalDoctorInfoDTO> getAvailableUsersForReplacement(@NotNull GetAvailableUsersForReplacementDTO dto) {
         List<MedicalDoctorInfoDTO> availableDoctorsDTOs = new ArrayList<>();
         Seniority requestingUserSeniority = dto.getSeniority();
-        System.out.println("ciao");
         Optional<ConcreteShift> concreteShift = concreteShiftDAO.findById(dto.getShiftId());
         if (concreteShift.isEmpty()) {
             return null;
@@ -325,12 +323,16 @@ public class ControllerScambioTurno implements IControllerScambioTurno {
             try {
                 constraintUbiquita.verifyConstraint(context);
                 constraintHoliday.verifyConstraint(context);
+
                 constraintMaxPeriodoConsecutivo.verifyConstraint(context);
+
                 availableDoctorsAfterConstraintsCheck.add(doctor);
             } catch (ViolatedConstraintException e) {
+                System.out.println("vediamo se tutti violano lo stesso constraint "+e.getMessage());
                 continue;
             }
         }
+        System.out.println("lista dei dottori che passano i check: "+availableDoctorsAfterConstraintsCheck.size());
         for (Doctor doctor : availableDoctorsAfterConstraintsCheck) {
             MedicalDoctorInfoDTO doctorDTO = new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority(),"");
             availableDoctorsDTOs.add(doctorDTO);

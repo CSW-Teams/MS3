@@ -231,8 +231,10 @@ async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(shiftChangeRequest)
   };
-
-  return await fetch('/api/change-shift-request/', requestOptions);
+  let response = await fetch('/api/change-shift-request/', requestOptions);
+  console.log(response)
+  console.log(response.body)
+  return response;
 }
 
 
