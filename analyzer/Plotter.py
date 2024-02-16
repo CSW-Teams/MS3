@@ -6,7 +6,6 @@ def primoGrafico():
     # Carica i dati dal file JSON
     with open("statistic/nuovoScheduler/PerSchedule/mediaDiffLevel.json") as file:
         dati = json.load(file)
-
     # Estrai i valori delle colonne
     general_priority = [dati[str(i)]['general_priority'] for i in range(len(dati))]
     night_priority = [dati[str(i)]['night_priority'] for i in range(len(dati))]
@@ -47,7 +46,7 @@ def primoGrafico():
 
     # Mostra il plot
     plt.show()
-def secondoGrafico(nameFile):
+def secondoGrafico(nameFile,nameFile2):
     # Carica i dati dal file JSON
     with open(nameFile) as file:
         dati = json.load(file)
@@ -60,30 +59,51 @@ def secondoGrafico(nameFile):
     # Crea il plot
     plt.figure(figsize=(10, 6))
 
+    with open(nameFile2) as file:
+        dati2 = json.load(file)
+    giornaliero2 = [dati2[str(i)]['giornaliero'] for i in dati2]
+    pomeridiano2 = [dati2[str(i)]['pomeridiano'] for i in dati2]
+    notturno2 = [dati2[str(i)]['notturno'] for i in dati2]
+    lunga2 = [dati2[str(i)]['lunga'] for i in dati2]
+    domeniche2 = [dati2[str(i)]['domeniche'] for i in dati2]
     # Plot dei dati generali
+    plt.subplot(1, 2, 1)  # Primo grafico
     plt.plot(giornaliero, label='Giornaliero', color='blue')
-
     # Plot dei dati notturni
     plt.plot(pomeridiano, label='Pomeridiano', color='red')
-
     # Plot dei dati dei turni lunghi
     plt.plot(notturno, label='Notturno', color='green')
-
     plt.plot(domeniche, label='Domeniche', color='yellow')
-
     plt.plot(lunga, label='Lunghe', color='pink')
     # Aggiungi titolo e legenda
-    plt.title('Andamento livelli di priorità')
+    plt.title('Andamento livelli di priorità del nuovo scheduler')
     plt.xlabel('Indice')
     plt.ylabel('Priorità')
     plt.legend()
-    # Mostra il plot
+
+    plt.subplot(1, 2, 2)  # Primo grafico
+    plt.plot(giornaliero2, label='Giornaliero', color='blue')
+    # Plot dei dati notturni
+    plt.plot(pomeridiano2, label='Pomeridiano', color='red')
+    # Plot dei dati dei turni lunghi
+    plt.plot(notturno2, label='Notturno', color='green')
+    plt.plot(domeniche2, label='Domeniche', color='yellow')
+    plt.plot(lunga2, label='Lunghe', color='pink')
+    # Aggiungi titolo e legenda
+    plt.title('Andamento degli uffaPoint del vecchio scheduler')
+    plt.xlabel('Indice')
+    plt.ylabel('UffaPoint')
+    plt.legend()
+
+# Mostra il plot
     plt.show()
 
 primoGrafico()
 
 nameFile="statistic/nuovoScheduler/PerSchedule/mediaDiff.json"
-secondoGrafico(nameFile)
+nameFile2="statistic/vecchioScheduler/PerSchedule/mediaDiff.json"
+secondoGrafico(nameFile,nameFile2)
 
 nameFile="statistic/nuovoScheduler/PerSchedule/media.json"
-secondoGrafico(nameFile)
+nameFile2="statistic/vecchioScheduler/PerSchedule/media.json"
+secondoGrafico(nameFile,nameFile2)

@@ -1,5 +1,5 @@
 import React from "react";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { ShiftChangeRequestAPI } from "../../API/ShiftChangeRequestAPI";
 import { Button } from "@mui/material";
@@ -23,7 +23,16 @@ export default function ShiftChangeView() {
 
   const handle = (requestId, response) => {
     requestAPI.answerRequest(requestId, response);
-    console.log(`Request ${requestId} accepted`);
+    toast.success(t("Request "+response), {
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                      });
     fetchData();
   };
 
@@ -121,19 +130,18 @@ export default function ShiftChangeView() {
 
       {renderTable(state.turnChangeRequestsToSender, t('Requests Received'),0)}
       {renderTable(state.turnChangeRequestsBySender, t('Requests Sent'),1)}
-
       <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+                position="top-center"
+                autoClose={5000}
+                hideProgressBar={true}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
       <div style={{ marginTop: 'auto' }}></div>
     </div>
   );
