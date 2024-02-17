@@ -60,7 +60,18 @@ export default function TemporaryDrawer(props) {
     let index = url.lastIndexOf("/");
     let utente_id = url.substring(index+1);
     let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-    status = await categoriaUtenteAPI.postAggiungiStato(categoria, dataInizio, dataFine, utente_id)
+
+    try {
+      status = await categoriaUtenteAPI.postAggiungiStato(categoria, dataInizio, dataFine, utente_id)
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     props.onPostAssegnazione()
 

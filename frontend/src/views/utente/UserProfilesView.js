@@ -9,6 +9,7 @@ import {
 } from "mdb-react-ui-kit";
 import {Button, Link} from "@material-ui/core";
 import { t } from "i18next";
+import {toast} from "react-toastify";
 
 function defaultComparator(prop1, prop2){
   if (prop1 < prop2)
@@ -54,11 +55,21 @@ export default class UserProfilesView extends React.Component{
 
 
   async componentDidMount() {
-    let utenti = await(new UserAPI().getAllUsersInfo());
+    try {
 
-    this.setState({
-      utenti : utenti,
-    })
+      let utenti = await(new UserAPI().getAllUsersInfo());
+
+      this.setState({
+        utenti : utenti,
+      })
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+    }
 
   }
 

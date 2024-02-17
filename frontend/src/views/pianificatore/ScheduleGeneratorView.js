@@ -34,7 +34,18 @@ export class SchedulerGeneratorView extends React.Component{
     }
 
     async componentDidMount() {
-      let schedulazioni = await(new ScheduleAPI().getSchedulazini());
+      let schedulazioni
+      try {
+        schedulazioni = await(new ScheduleAPI().getSchedulazini());
+      } catch (err) {
+
+        toast(t('Connection Error, please try again later'), {
+          position: 'top-center',
+          autoClose: 1500,
+          style : {background : "red", color : "white"}
+        })
+        return
+      }
 
       this.setState({
         schedulazioni: schedulazioni,
@@ -48,7 +59,17 @@ export class SchedulerGeneratorView extends React.Component{
 
       let scheduleAPI = new ScheduleAPI();
       let responseStatus;
-      responseStatus = await scheduleAPI.deleteSchedule(idSchedule);
+      try {
+        responseStatus = await scheduleAPI.deleteSchedule(idSchedule);
+      } catch (err) {
+
+        toast(t('Connection Error, please try again later'), {
+          position: 'top-center',
+          autoClose: 1500,
+          style : {background : "red", color : "white"}
+        })
+        return
+      }
 
       if (responseStatus === 200) {
         this.componentDidMount()
@@ -93,7 +114,17 @@ export class SchedulerGeneratorView extends React.Component{
     async handleRegeneration(idSchedule) {
       let scheduleAPI = new ScheduleAPI();
       let responseStatus;
-      responseStatus = await scheduleAPI.rigeneraSchedule(idSchedule);
+      try {
+        responseStatus = await scheduleAPI.rigeneraSchedule(idSchedule);
+      } catch (err) {
+
+        toast(t('Connection Error, please try again later'), {
+          position: 'top-center',
+          autoClose: 1500,
+          style : {background : "red", color : "white"}
+        })
+        return
+      }
 
       if (responseStatus === 202) {
         this.componentDidMount()

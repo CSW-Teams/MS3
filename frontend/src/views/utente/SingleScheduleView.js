@@ -5,6 +5,7 @@ import {AppointmentSingleContent} from "../../components/common/CustomAppointmen
 import React from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import {Button} from "@mui/material";
+import { t } from "i18next";
 
 
 /**
@@ -15,7 +16,19 @@ export default class SingleScheduleView extends ScheduleView {
 
   async componentDidMount() {
     let apiTurno = new AssegnazioneTurnoAPI();
-    let turni = await apiTurno.getShiftByIdUser(localStorage.getItem("id"));
+    let turni
+    try {
+      turni = await apiTurno.getShiftByIdUser(localStorage.getItem("id"));
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      super.componentDidMount(turni)
+      return
+    }
 
     this.setState(
       {appointmentContentComponent:AppointmentSingleContent},

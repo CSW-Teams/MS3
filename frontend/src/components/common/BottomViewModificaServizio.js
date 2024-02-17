@@ -16,6 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
 import {MedicalService} from "../../entity/MedicalService";
 import {Task} from "../../entity/Task";
+import { t } from "i18next";
 
 toast.configure();
 
@@ -71,7 +72,18 @@ const MedicalServiceUpdateDrawer = ({availableTasks, services, updateServicesLis
             nome        : newMedicalServiceName.toUpperCase(),
             mansioni    : outTaskArray
         }
-        serviceAPI.updateMedicalService(requestParams);
+
+        try {
+          serviceAPI.updateMedicalService(requestParams);
+        } catch (err) {
+
+          toast(t('Connection Error, please try again later'), {
+            position: 'top-center',
+            autoClose: 1500,
+            style : {background : "red", color : "white"}
+          })
+          return
+        }
 
         // build service infos for view update
         var viewUpdateServiceInfo = new MedicalService (

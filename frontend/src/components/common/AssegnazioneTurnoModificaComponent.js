@@ -25,6 +25,7 @@ import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { ToastContainer, toast } from 'react-toastify';
   import {DoctorAPI} from "../../API/DoctorAPI";
   import {Doctor} from "../../entity/Doctor";
+  import {t} from "i18next";
 
 
 const prova = [
@@ -121,6 +122,8 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
         if (active) {
           let avDoctors = await getAvailableUsersForShiftExchange();
 
+          if(avDoctors === undefined) return
+
           const autocompleteList = [];
           for (let i = 0; i < avDoctors.length; i++) {
             const label = avDoctors[i].label;
@@ -150,15 +153,26 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      * @returns list of users who can replace the requesting user, in this concrete shift
      */
     async function getAvailableUsersForShiftExchange() {
-      let doctorAPI = new DoctorAPI();
-      const currentDoctor = await doctorAPI.getDoctorById(parseInt(localStorage.getItem("id")));
 
-      const params = {
-        seniority: currentDoctor.seniority,
-        shiftId: appointmentData.id
+      try {
+
+        let doctorAPI = new DoctorAPI();
+        const currentDoctor = await doctorAPI.getDoctorById(parseInt(localStorage.getItem("id")));
+
+        const params = {
+          seniority: currentDoctor.seniority,
+          shiftId: appointmentData.id
+        }
+
+        return await assegnazioneTurnoApi.getAvailableUsersForShiftExchange(params);
+      } catch (err) {
+
+        toast(t('Connection Error, please try again later'), {
+          position: 'top-center',
+          autoClose: 1500,
+          style : {background : "red", color : "white"}
+        })
       }
-
-      return await assegnazioneTurnoApi.getAvailableUsersForShiftExchange(params);
     }
 
 
@@ -169,7 +183,17 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      */
     async function buildAssegnazioneModificata(contesto){
 
-      let response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati, appointmentData, parseInt(localStorage.getItem("id")))
+      let response = null
+      try {
+        response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati, appointmentData, parseInt(localStorage.getItem("id")))
+      } catch (err) {
+        toast(t('Connection Error, please try again later'), {
+          position: 'top-center',
+          autoClose: 1500,
+          style : {background : "red", color : "white"}
+        })
+        return
+      }
       let responseStatusClass = Math.floor(response.status / 100)
 
         if(responseStatusClass===5){
@@ -215,7 +239,18 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
           });
 
           //Aggiorno i turni sull'interfaccia
-          let turni = await assegnazioneTurnoApi.getShiftByIdUser(localStorage.getItem("id"));
+          let turni = null ;
+          try {
+            turni = await assegnazioneTurnoApi.getShiftByIdUser(localStorage.getItem("id"));
+          } catch (err) {
+
+            toast(t('Connection Error, please try again later'), {
+              position: 'top-center',
+              autoClose: 1500,
+              style : {background : "red", color : "white"}
+            })
+            return
+          }
           contesto.setState({data:turni});
         }
 

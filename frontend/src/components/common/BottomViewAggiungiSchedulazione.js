@@ -41,7 +41,18 @@ export default function TemporaryDrawerSchedulo(props) {
     setLoading(true)
 
     let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI();
-    let status = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio,dataFine)
+    let status ;
+    try {
+      status = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio,dataFine)
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     if(status==202){
 

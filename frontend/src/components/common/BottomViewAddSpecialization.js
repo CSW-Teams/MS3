@@ -37,8 +37,17 @@ export default function DoctorSpecializationAdditionDrawer(props){
       specializations.push(checkedSpecializationsCheckBoxes[i]);
     }
 
-    let responseStatus = singleUserProfileAPI.addSpecializations(doctorID,  specializations);
+    try {
+      let responseStatus = singleUserProfileAPI.addSpecializations(doctorID, specializations);
+    } catch (err) {
 
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     setOpen(false);
     updateFunction(specializations);
     setCheckedSpecializationsCheckBoxes(prev => []);

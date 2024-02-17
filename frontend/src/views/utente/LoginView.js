@@ -36,7 +36,18 @@ export default class LoginView extends React.Component {
 
     // Manda una HTTP Post al backend
     let loginAPI = new LoginAPI();
-    let httpResponse = await loginAPI.postLogin(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postLogin(this.state);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     /* Se l'autenticazione ha esito positivo, l'utente viene
        reindirizzato sul suo profilo, altrimenti viene mostrato

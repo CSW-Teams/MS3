@@ -4,6 +4,7 @@ import React, { useState} from "react";
 import { ScheduleAPI } from "../../API/ScheduleAPI";
 import Tooltip from '@mui/material/Tooltip';
 import { t } from "i18next";
+import {toast} from "react-toastify";
 
 
 export default function ButtonLegalSchedulation() {
@@ -15,7 +16,18 @@ export default function ButtonLegalSchedulation() {
   // Scarico le schedulazioni illegali dal server
   async function getScheduleIllegal() {
     let scheduloAPI = new ScheduleAPI();
-    let responde = await scheduloAPI.getSchedulaziniIllegali();
+    let responde
+    try {
+      responde = await scheduloAPI.getSchedulaziniIllegali();
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     let AllLegal = responde.length ==0;
     setallLegal(AllLegal);
 

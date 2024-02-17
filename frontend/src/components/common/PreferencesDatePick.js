@@ -52,7 +52,18 @@ function DateSelectSlots({props}) {
     }
   }
   async function saveDesiderate() {
-    let response = await(desiderataApi.editDesiderate(preferences, toDelPreferences,id))
+    let response
+    try {
+      response = await(desiderataApi.editDesiderate(preferences, toDelPreferences,id))
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     let responseStatus  = response.status
 
     if (responseStatus === 202) {

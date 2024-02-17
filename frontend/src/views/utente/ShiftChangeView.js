@@ -1,5 +1,5 @@
 import React from "react";
-import { ToastContainer } from "react-toastify";
+import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { ShiftChangeRequestAPI } from "../../API/ShiftChangeRequestAPI";
 import { Button } from "@mui/material";
@@ -22,7 +22,16 @@ export default function ShiftChangeView() {
   }, []);
 
   const handle = (requestId, response) => {
-    requestAPI.answerRequest(requestId, response);
+    try {
+      requestAPI.answerRequest(requestId, response);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+    }
     console.log(`Request ${requestId} accepted`);
   };
 

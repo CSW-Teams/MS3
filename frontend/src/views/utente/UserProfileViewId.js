@@ -39,12 +39,28 @@ export default class UserProfileView extends React.Component{
 
   }
   async componentDidMount() {
-    let id = this.props.match.params.idUser;
-    let attore = localStorage.getItem("attore");
-    let utente = await(new UserAPI().getUserDetails(id));
-    let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
-    let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
-    let turnazioni_utente = await(new CategoriaUtenteAPI().getTurnazioniUtente(id))
+    let id
+    let attore
+    let utente
+    let categorie_utente
+    let specializzazioni_utente
+    let turnazioni_utente
+    try {
+      id = this.props.match.params.idUser;
+      attore = localStorage.getItem("attore");
+      utente = await(new UserAPI().getUserDetails(id));
+      categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
+      specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
+      turnazioni_utente = await(new CategoriaUtenteAPI().getTurnazioniUtente(id))
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     this.setState({
       attore : attore,
@@ -62,7 +78,17 @@ export default class UserProfileView extends React.Component{
   async handleDeleteRotazione(idRotazione, key) {
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione, this.props.match.params.idUser);
+    try {
+      responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione, this.props.match.params.idUser);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     if (responseStatus === 200) {
       toast.success(t('Rotation deleted successfully'), {
@@ -93,7 +119,17 @@ export default class UserProfileView extends React.Component{
   async handlerDeleteCategoriaStato(idRotazione, key) {
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.props.match.params.idUser );
+    try {
+      responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.props.match.params.idUser );
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     if (responseStatus === 200) {
       toast.success(t('Rotation deleted successfully'), {

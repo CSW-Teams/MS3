@@ -21,7 +21,18 @@ export default function InserisciFestivita() {
 
     const asyncFetch = async () => {
 
-      let [response, content] = await new HolidaysAPI().getCustomHolidays()
+      let response, content
+      try {
+        [response, content] = await new HolidaysAPI().getCustomHolidays()
+      } catch (err) {
+
+        toast(t('Connection Error, please try again later'), {
+          position: 'top-center',
+          autoClose: 1500,
+          style : {background : "red", color : "white"}
+        })
+        return
+      }
       if (response !== 200) {
         window.location.reload()
       }

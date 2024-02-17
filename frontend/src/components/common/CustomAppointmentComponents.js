@@ -10,6 +10,7 @@ import PropTypes from "prop-types";
 import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 import Button from "@mui/material/Button";
+import { t } from "i18next";
 
 import {
   Dialog,
@@ -21,6 +22,7 @@ import {
 import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
+import {toast} from "react-toastify";
 
 
 // AppointmentContent di SingleScheduleView
@@ -338,7 +340,18 @@ export class AppointmentContent extends React.Component{
     }
 
     let api = new RichiestaRimozioneDaTurnoAPI();
-    let array = await api.getAllPendingRequests();
+    let array
+    try {
+      array = await api.getAllPendingRequests();
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     this.setState({ requests: array })
   }
 

@@ -36,7 +36,18 @@ export default class CambiaPasswordView extends React.Component {
 
     // Manda una HTTP Post su api/password/
     let loginAPI = new LoginAPI();
-    let httpResponse = await loginAPI.postPassword(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postPassword(this.state);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     /* Se la modifica della password ha esito positivo, viene
        mostrato un toast... altrimenti viene mostrato

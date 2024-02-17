@@ -52,8 +52,19 @@ export default function TemporaryDrawer(props) {
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
     let doctorApi = new DoctorAPI();
-    let doctors = await doctorApi.getAllDoctorsInfo()
+    let doctors
 
+    try {
+      doctors = await doctorApi.getAllDoctorsInfo()
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     const d = []
     for(let i=0; i<doctors.length; i++) {
       d.push({label: doctors[i].name + " " + doctors[i].lastname + " - " + doctors[i].seniority, value: doctors[i]})
@@ -64,7 +75,18 @@ export default function TemporaryDrawer(props) {
 
     async function getService() {
       let servizioAPI = new ServizioAPI();
-      let services = await servizioAPI.getAllServices()
+      let services
+      try {
+        services = await servizioAPI.getAllServices()
+      } catch (err) {
+
+        toast(t('Connection Error, please try again later'), {
+          position: 'top-center',
+          autoClose: 1500,
+          style : {background : "red", color : "white"}
+        })
+        return
+      }
 
       const d = []
       for(let i=0; i<services.length; i++) {
@@ -80,7 +102,19 @@ export default function TemporaryDrawer(props) {
           console.log(servizio[0].label)
 
           let turnoApi = new TurnoAPI();
-          let shifts = await turnoApi.getTurniByServizio(servizio[0].label)
+          let shifts
+
+          try {
+            shifts = await turnoApi.getTurniByServizio(servizio[0].label)
+          } catch (err) {
+
+            toast(t('Connection Error, please try again later'), {
+              position: 'top-center',
+              autoClose: 1500,
+              style : {background : "red", color : "white"}
+            })
+            return
+          }
 
           const d = []
           for(let i=0; i<shifts.length; i++) {
@@ -178,7 +212,18 @@ export default function TemporaryDrawer(props) {
     const mansione = turno
     const tipologiaTurno = timeSlot
     console.log("Servizio: ", servizio)
-    response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
+
+    try {
+      response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
     props.onPostAssegnazione()
@@ -206,7 +251,18 @@ export default function TemporaryDrawer(props) {
           let assegnazioneTurnoId = bodyResponse.turno
           let utente_id = 7
           let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-          status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
+
+          try {
+            status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
+          } catch (err) {
+
+            toast(t('Connection Error, please try again later'), {
+              position: 'top-center',
+              autoClose: 1500,
+              style : {background : "red", color : "white"}
+            })
+            return
+          }
           if(status === 202){
             toast.success(t("Justification saved"), {
               position: "top-center",

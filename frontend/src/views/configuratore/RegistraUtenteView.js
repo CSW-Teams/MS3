@@ -65,7 +65,18 @@ export default class LoginView extends React.Component {
       delete this.state.seniority;
     }
 
-    let httpResponse = await loginAPI.postRegistration(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postRegistration(this.state);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     /* Se la registrazione del nuovo utente ha esito positivo, viene
            mostrato un toast... altrimenti viene mostrato

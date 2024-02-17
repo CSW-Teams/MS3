@@ -52,7 +52,18 @@ function NormalHolidays({holidays, setHolidays}) {
                   isRecurrent: false
                 }
 
-                let response = await (new HolidaysAPI().deleteCustomHoliday(data))
+                let response
+                try {
+                  response = await (new HolidaysAPI().deleteCustomHoliday(data))
+                } catch (err) {
+
+                  toast(t('Connection Error, please try again later'), {
+                    position: 'top-center',
+                    autoClose: 1500,
+                    style : {background : "red", color : "white"}
+                  })
+                  return
+                }
 
                 if (response === 200) {
                   setHolidays(holidays.filter((value1) => {

@@ -263,6 +263,7 @@
   "ReadDeleteHoliday" : "Elimina",
 
   "Normal Holidays" : "Festività normali",
-  "Recurrent Holidays" : "Festività ricorrenti"
+  "Recurrent Holidays" : "Festività ricorrenti",
 
+  "Connection Error, please try again later" : "Errore di connessione, riprova più tardi"
 }

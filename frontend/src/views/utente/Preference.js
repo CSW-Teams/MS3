@@ -52,7 +52,18 @@ export default class Preference extends React.Component {
 
   async componentDidMount() {
     let id = localStorage.getItem("id");
-    let desiderate = await(new DesiderateAPI().getDesiderate(id));
+    let desiderate
+    try {
+      desiderate = await(new DesiderateAPI().getDesiderate(id));
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     this.setState({
       desiderate : desiderate,
     })
@@ -63,7 +74,17 @@ export default class Preference extends React.Component {
     let id = localStorage.getItem("id");
     let desiderata = new DesiderateAPI();
     let responseStatus;
-    responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
+    try {
+      responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
     if (responseStatus === 200) {
       //window.location.reload()

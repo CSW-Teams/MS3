@@ -41,11 +41,26 @@ export default class UserProfileView extends React.Component{
   }
 
   async componentDidMount() {
-    let id = localStorage.getItem("id");
-    let utente = await(new UserAPI().getUserDetails(id));
-    let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
-    let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
-    let turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(id));
+    let id
+    let utente
+    let categorie_utente
+    let specializzazioni_utente
+    let turnazioni_utente
+    try {
+      id = localStorage.getItem("id");
+      utente = await(new UserAPI().getUserDetails(id));
+      categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
+      specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
+      turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(id));
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     this.setState({
       idUser : id,
       nome: utente.name,
@@ -63,7 +78,17 @@ export default class UserProfileView extends React.Component{
     console.log(idRotazione + key)
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione,  this.state.idUser);
+    try {
+      responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione,  this.state.idUser);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     console.log(responseStatus)
 
     if (responseStatus === 200) {
@@ -96,7 +121,17 @@ export default class UserProfileView extends React.Component{
     console.log(idRotazione + key )
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.idUser);
+    try {
+      responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.idUser);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     console.log(responseStatus)
 
     if (responseStatus === 200) {

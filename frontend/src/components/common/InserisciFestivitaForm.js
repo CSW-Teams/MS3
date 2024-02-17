@@ -328,7 +328,18 @@ export default function InserisciFestivitaForm({normalHolidays, setNormalHoliday
     }
 
     if(checkDataIsCorrect(holiday)) {
-      const [code, content] = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
+      let code, content
+      try {
+        [code, content] = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
+      } catch (err) {
+
+        toast(t('Connection Error, please try again later'), {
+          position: 'top-center',
+          autoClose: 1500,
+          style : {background : "red", color : "white"}
+        })
+        return
+      }
 
       if(code !== 200) {
         toast(t("Error saving the holiday"), {

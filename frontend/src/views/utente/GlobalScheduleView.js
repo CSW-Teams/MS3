@@ -4,6 +4,8 @@ import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { UserAPI } from '../../API/UserAPI';
 import TemporaryDrawer from "../../components/common/BottomViewAssegnazioneTurno.js";
 import { Stack } from "@mui/system";
+import {toast} from "react-toastify";
+import { t } from "i18next";
 
 class GlobalScheduleView extends ScheduleView {
 
@@ -11,7 +13,16 @@ class GlobalScheduleView extends ScheduleView {
 
     let turni = [];
     let turnoAPI = new AssegnazioneTurnoAPI();
-    turni = await turnoAPI.getGlobalShift();
+    try {
+      turni = await turnoAPI.getGlobalShift();
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+    }
     super.componentDidMount(turni);
   }
 

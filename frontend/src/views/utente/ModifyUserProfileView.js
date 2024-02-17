@@ -42,7 +42,18 @@ export default class ModifyUserProfileView extends React.Component {
 
   async componentDidMount() {
     let id = localStorage.getItem("id");
-    let user = await(new UserAPI().getSingleUserProfileDetails(id));
+    let user
+    try {
+      user = await(new UserAPI().getSingleUserProfileDetails(id));
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     let systemActorsUser = user.systemActors;
     let conditionsToShow = [];
     let formattedSpecialization = [];
@@ -114,8 +125,18 @@ export default class ModifyUserProfileView extends React.Component {
       delete this.state.seniority;
     }
 
-    let httpResponse = await loginAPI.postRegistration(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postRegistration(this.state);
+    } catch (err) {
 
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
 
 
     let responseStatusClass = Math.floor(httpResponse.status / 100) // Grazie Fede

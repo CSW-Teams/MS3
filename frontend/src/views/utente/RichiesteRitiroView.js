@@ -24,6 +24,7 @@ import TemporaryDrawerRetirement
   from "../../components/common/BottomViewGestisciRitiro";
 import {DoctorAPI} from "../../API/DoctorAPI";
 import { t } from "i18next";
+import {toast} from "react-toastify";
 
 
 const ModalLinkFile = ({request, updateRequest}) => {
@@ -79,21 +80,53 @@ export default class RichiesteRitiroView extends React.Component {
     let apiRetirement = new RichiestaRimozioneDaTurnoAPI();
     let apiShifts = new AssegnazioneTurnoAPI();
 
-    const doctors = await apiDoctors.getAllDoctorsInfo();
+    let doctors
+    try {
+      doctors = await apiDoctors.getAllDoctorsInfo();
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
+    let shifts
+    try {
+      shifts = await apiShifts.getGlobalShift();
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     this.setState({doctors: doctors});
-    const shifts = await apiShifts.getGlobalShift();
     this.setState({shifts: shifts})
     const searchParams = new URLSearchParams(this.props.location.search);
-    const local = searchParams.get('locale');
-    if (local === "true") {
-      this.setState({isLocal: true});
-      let requestsForUser = await apiRetirement.getAllRequestsForUser(localStorage.getItem("id"));
-      this.setState({userRequests: requestsForUser});
-    } else {
-      let allRequests = await apiRetirement.getAllRequests();
-      this.setState({requests: allRequests});
-    }
+    try {
 
+      const local = searchParams.get('locale');
+      if (local === "true") {
+        this.setState({isLocal: true});
+        let requestsForUser = await apiRetirement.getAllRequestsForUser(localStorage.getItem("id"));
+        this.setState({userRequests: requestsForUser});
+      } else {
+        let allRequests = await apiRetirement.getAllRequests();
+        this.setState({requests: allRequests});
+      }
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
   }
 
   updateRequest = (updatedRequest) => {

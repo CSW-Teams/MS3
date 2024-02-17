@@ -54,7 +54,18 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                 name        : newMedicalServiceName.toUpperCase(),
                 taskTypes   : checkedTasksStringArray
             }
-            serviceAPI.createMedicalService(requestParams);
+
+            try {
+              serviceAPI.createMedicalService(requestParams);
+            } catch (err) {
+
+              toast(t('Connection Error, please try again later'), {
+                position: 'top-center',
+                autoClose: 1500,
+                style : {background : "red", color : "white"}
+              })
+              return
+            }
 
             // build params for view update
             const outTaskArray = [];

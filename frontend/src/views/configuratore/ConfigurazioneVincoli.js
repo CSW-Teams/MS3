@@ -36,7 +36,18 @@ export default class ConfigurazioneVincoli extends React.Component{
   }
 
   async componentDidMount() {
-    let conf = await(new VincoloAPI().getConfigurazioneVincoli())
+    let conf
+    try {
+      conf = await(new VincoloAPI().getConfigurazioneVincoli())
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     this.setState({
       numGiorniPeriodo: conf.numGiorniPeriodo,
       maxOrePeriodo: conf.maxOrePeriodo,
@@ -54,7 +65,18 @@ export default class ConfigurazioneVincoli extends React.Component{
     let conf = {}
     conf = this.state
 
-    let response = await vincoliApi.setConfigurazioneVincoli(conf)
+    let response
+    try {
+      response = await vincoliApi.setConfigurazioneVincoli(conf)
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     if (response.status === 202) {
       toast.success(t("Configuration saved successfully"), {
         position: "top-center",

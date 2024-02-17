@@ -7,6 +7,8 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import { TurnoAPI } from '../../API/TurnoAPI';
 import { ServizioAPI } from '../../API/ServizioAPI';
+import {toast} from "react-toastify";
+import { t } from "i18next";
 
 
 
@@ -31,7 +33,18 @@ export default function MultipleSelect(props) {
 
   async function getTurni(servizio) {
     let turniAPI = new TurnoAPI();
-    let turni = await turniAPI.getTurniByServizio(servizio);
+    let turni
+    try {
+      turni = await turniAPI.getTurniByServizio(servizio);
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     let turniEMansioni = []
     for (let i = 0; i < turni.length; i++) {
       turniEMansioni[i] = turni[i].tipologia + " - " + turni[i].mansione
@@ -41,7 +54,18 @@ export default function MultipleSelect(props) {
 
   async function getServizi() {
     let serviceAPI = new ServizioAPI();
-    let servizi = await serviceAPI.getService()
+    let servizi
+    try {
+      servizi = await serviceAPI.getService()
+    } catch (err) {
+
+      toast(t('Connection Error, please try again later'), {
+        position: 'top-center',
+        autoClose: 1500,
+        style : {background : "red", color : "white"}
+      })
+      return
+    }
     setServizi(servizi);
   }
 
