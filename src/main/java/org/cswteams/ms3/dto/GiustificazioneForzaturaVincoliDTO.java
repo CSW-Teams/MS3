@@ -23,10 +23,23 @@ public class GiustificazioneForzaturaVincoliDTO {
     private Set<UserDTO> utentiAllocati;
     private MedicalServiceDTO servizio;
 
-
     //private Set<Waiver> liberatorie;
 
     public GiustificazioneForzaturaVincoliDTO() {
+
+    }
+
+    public GiustificazioneForzaturaVincoliDTO(String message, String utenteGiustificatoreId, int giorno, int mese, int anno,
+                                              TimeSlot timeSlot, Set<UserDTO> utentiAllocati, MedicalServiceDTO servizio) {
+
+        this.message = message;
+        this.utenteGiustificatoreId = utenteGiustificatoreId;
+        this.giorno = giorno;
+        this.mese = mese;
+        this.anno = anno;
+        this.timeSlot = timeSlot;
+        this.utentiAllocati = utentiAllocati;
+        this.servizio = servizio;
 
     }
 

@@ -151,7 +151,7 @@
   "Server Error": "Errore nel server!",
   "Assignment successfully created": "Assegnazione creata con successo",
   "Assignment modified successfully": "Assegnazione modificata con successo",
-  "Selected Assignment Couldn't Be Removed": "Non è stato possibile eliminare l\\'assegnazione selezionata!",
+  "Selected Assignment Couldn't Be Removed": "Non è stato possibile eliminare l'assegnazione selezionata!",
   "Elimination Successful": "Eliminazione avvenuta con successo",
   "Download these turns as CSV": "Scarica questi turni come CSV",
   "Turn Backend Failure": "Non è stato possibile caricare i turni dal backend. Riprova più tardi o contattare un tecnico. ❌",

@@ -266,12 +266,33 @@ public class SchedulerController implements ISchedulerController {
         //definition of doctorAssignmentList to set into concreteShift
 
         for (Task task : shift.getMedicalService().getTasks()) {
+
             for (Doctor onCallDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnCallDoctors())) {
-                concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onCallDoctor, ConcreteShiftDoctorStatus.ON_CALL, concreteShift, task));
+                //check if onCallDoctor is already in doctorAssignmentList
+                /*boolean isAssigned = false;
+                for(DoctorAssignment da : concreteShift.getDoctorAssignmentList()) {
+                    if (onCallDoctor == da.getDoctor()) {
+                        isAssigned = true;
+                        break;
+                    }
+                }
+                if(!isAssigned)*/
+                    concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onCallDoctor, ConcreteShiftDoctorStatus.ON_CALL, concreteShift, task));
             }
+
             for (Doctor onDutyDoctor : usersDTOtoEntity(registerConcreteShiftDTO.getOnDutyDoctors())) {
-                concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onDutyDoctor, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, task));
+                //check if onCallDoctor is already in doctorAssignmentList
+                /*boolean isAssigned = false;
+                for(DoctorAssignment da : concreteShift.getDoctorAssignmentList()) {
+                    if (onDutyDoctor == da.getDoctor()) {
+                        isAssigned = true;
+                        break;
+                    }
+                }
+                if(!isAssigned)*/
+                    concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(onDutyDoctor, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, task));
             }
+
         }
 
         if(!checkDoctorsOnConcreteShift(concreteShift)){

@@ -42,9 +42,9 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
                         giustificazioneForzaturaVincoliDTO.getTimeSlot(),
                         buildServiceDTO(giustificazioneForzaturaVincoliDTO.getServizio()),
                         LocalDate.of(
-                                giustificazioneForzaturaVincoliDTO.getGiorno(),
+                                giustificazioneForzaturaVincoliDTO.getAnno(),
                                 giustificazioneForzaturaVincoliDTO.getMese(),
-                                giustificazioneForzaturaVincoliDTO.getAnno()),
+                                giustificazioneForzaturaVincoliDTO.getGiorno()),
                         convertDTOSetToEntitySet(giustificazioneForzaturaVincoliDTO.getUtentiAllocati()),
                         giustificatore);
         giustificazioneFozaturaDao.save(giustificazioneForzaturaVincoli);
