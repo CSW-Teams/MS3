@@ -10,6 +10,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 import {t} from "i18next";
+import {panic} from "./Panic";
 
 export default function TemporaryDrawer(props) {
 
@@ -60,7 +61,14 @@ export default function TemporaryDrawer(props) {
     let index = url.lastIndexOf("/");
     let utente_id = url.substring(index+1);
     let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-    status = await categoriaUtenteAPI.postAggiungiStato(categoria, dataInizio, dataFine, utente_id)
+
+    try {
+      status = await categoriaUtenteAPI.postAggiungiStato(categoria, dataInizio, dataFine, utente_id)
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     props.onPostAssegnazione()
 
@@ -123,18 +131,6 @@ export default function TemporaryDrawer(props) {
           </div>
         </Drawer>
       </React.Fragment>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </div>
 
   );

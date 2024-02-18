@@ -13,6 +13,7 @@ import {DesiderateAPI} from "../../API/DesiderataAPI";
 import {toast, ToastContainer} from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 function defaultComparator(prop1, prop2){
   if (prop1 < prop2)
@@ -52,7 +53,14 @@ export default class Preference extends React.Component {
 
   async componentDidMount() {
     let id = localStorage.getItem("id");
-    let desiderate = await(new DesiderateAPI().getDesiderate(id));
+    let desiderate
+    try {
+      desiderate = await(new DesiderateAPI().getDesiderate(id));
+    } catch (err) {
+
+      panic()
+      return
+    }
     this.setState({
       desiderate : desiderate,
     })
@@ -63,7 +71,13 @@ export default class Preference extends React.Component {
     let id = localStorage.getItem("id");
     let desiderata = new DesiderateAPI();
     let responseStatus;
-    responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
+    try {
+      responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     if (responseStatus === 200) {
       //window.location.reload()
@@ -118,18 +132,6 @@ export default class Preference extends React.Component {
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </section>
     )
   }

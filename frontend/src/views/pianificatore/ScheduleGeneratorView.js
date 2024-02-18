@@ -15,6 +15,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import TemporaryDrawerSchedule from "../../components/common/BottomViewAggiungiSchedulazione";
 import {ScheduleAPI} from "../../API/ScheduleAPI";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 /*
 * Schermata che permette di generare un nuovo schedule
@@ -34,7 +35,14 @@ export class SchedulerGeneratorView extends React.Component{
     }
 
     async componentDidMount() {
-      let schedulazioni = await(new ScheduleAPI().getSchedulazini());
+      let schedulazioni
+      try {
+        schedulazioni = await(new ScheduleAPI().getSchedulazini());
+      } catch (err) {
+
+        panic()
+        return
+      }
 
       this.setState({
         schedulazioni: schedulazioni,
@@ -48,7 +56,13 @@ export class SchedulerGeneratorView extends React.Component{
 
       let scheduleAPI = new ScheduleAPI();
       let responseStatus;
-      responseStatus = await scheduleAPI.deleteSchedule(idSchedule);
+      try {
+        responseStatus = await scheduleAPI.deleteSchedule(idSchedule);
+      } catch (err) {
+
+        panic()
+        return
+      }
 
       if (responseStatus === 200) {
         this.componentDidMount()
@@ -93,7 +107,13 @@ export class SchedulerGeneratorView extends React.Component{
     async handleRegeneration(idSchedule) {
       let scheduleAPI = new ScheduleAPI();
       let responseStatus;
-      responseStatus = await scheduleAPI.rigeneraSchedule(idSchedule);
+      try {
+        responseStatus = await scheduleAPI.rigeneraSchedule(idSchedule);
+      } catch (err) {
+
+        panic()
+        return
+      }
 
       if (responseStatus === 202) {
         this.componentDidMount()
@@ -207,18 +227,6 @@ export class SchedulerGeneratorView extends React.Component{
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </section>
     )
   }

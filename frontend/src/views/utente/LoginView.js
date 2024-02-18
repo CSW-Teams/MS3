@@ -1,8 +1,9 @@
-import React from "react"
+import React, {useContext} from "react"
 import {LoginAPI} from "../../API/LoginAPI";
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {t} from "i18next";
+import {panic, PanicContext} from "../../components/common/Panic";
 
 export default class LoginView extends React.Component {
   constructor(props){
@@ -36,7 +37,14 @@ export default class LoginView extends React.Component {
 
     // Manda una HTTP Post al backend
     let loginAPI = new LoginAPI();
-    let httpResponse = await loginAPI.postLogin(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postLogin(this.state);
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     /* Se l'autenticazione ha esito positivo, l'utente viene
        reindirizzato sul suo profilo, altrimenti viene mostrato
@@ -148,18 +156,6 @@ export default class LoginView extends React.Component {
             </p>
           </div>
         </form>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </div>
     )
   }

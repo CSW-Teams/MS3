@@ -10,6 +10,7 @@ import {
   MDBContainer, MDBInput, MDBRow, MDBTypography
 } from "mdb-react-ui-kit";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class CambiaPasswordView extends React.Component {
   constructor(props) {
@@ -36,7 +37,14 @@ export default class CambiaPasswordView extends React.Component {
 
     // Manda una HTTP Post su api/password/
     let loginAPI = new LoginAPI();
-    let httpResponse = await loginAPI.postPassword(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postPassword(this.state);
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     /* Se la modifica della password ha esito positivo, viene
        mostrato un toast... altrimenti viene mostrato
@@ -123,18 +131,6 @@ export default class CambiaPasswordView extends React.Component {
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </section>
     )
   }

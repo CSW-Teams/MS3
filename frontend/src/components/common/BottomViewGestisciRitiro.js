@@ -11,6 +11,9 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import {RichiestaRimozioneDaTurnoAPI} from "../../API/RichiestaRimozioneDaTurnoAPI";
 import {Modal} from "react-bootstrap";
+import {toast} from "react-toastify";
+import { t } from "i18next";
+import {panic} from "./Panic";
 
 
 const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
@@ -60,7 +63,13 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
 
 
     updateRequest(request);
-    return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
+
+    try {
+      return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
+    } catch (err) {
+
+      panic()
+    }
 
   };
 
@@ -80,7 +89,13 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
 
 
     updateRequest(request);
-    return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
+
+    try {
+      return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
+    } catch (err) {
+
+      panic()
+    }
   };
 
 

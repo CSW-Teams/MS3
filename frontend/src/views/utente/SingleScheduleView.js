@@ -5,6 +5,8 @@ import {AppointmentSingleContent} from "../../components/common/CustomAppointmen
 import React from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import {Button} from "@mui/material";
+import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 
 /**
@@ -15,7 +17,15 @@ export default class SingleScheduleView extends ScheduleView {
 
   async componentDidMount() {
     let apiTurno = new AssegnazioneTurnoAPI();
-    let turni = await apiTurno.getShiftByIdUser(localStorage.getItem("id"));
+    let turni
+    try {
+      turni = await apiTurno.getShiftByIdUser(localStorage.getItem("id"));
+    } catch (err) {
+
+      panic()
+      super.componentDidMount(turni)
+      return
+    }
 
     this.setState(
       {appointmentContentComponent:AppointmentSingleContent},
@@ -29,18 +39,6 @@ export default class SingleScheduleView extends ScheduleView {
 
     return (
       <div>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       { super.render()}
     </div>
 

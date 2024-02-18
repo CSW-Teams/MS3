@@ -26,6 +26,7 @@ import {toast} from "react-toastify";
 import {Button} from "@material-ui/core";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 /**
  * Class needed to fromat correctly the attributes permanentConditions and temporaryConditions
@@ -63,14 +64,28 @@ export default class SingleUserProfileView extends React.Component{
   }
 
   async componentDidMount() {
-    let id = localStorage.getItem("id");
-    let user = await(new UserAPI().getSingleUserProfileDetails(id));
-    let singleUserProfileAPI = new SingleUserProfileAPI();
-    let specializations = await singleUserProfileAPI.getSpecializations();
-    let conditionsToShow = [];
-    let isPlanner = false;
-    let allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
-    let allSavedSystemActorsInItalian = [];
+    let id
+    let user
+    let singleUserProfileAPI
+    let specializations
+    let conditionsToShow
+    let isPlanner
+    let allSavedSystemActors
+    let allSavedSystemActorsInItalian
+    try {
+      id = localStorage.getItem("id");
+      user = await(new UserAPI().getSingleUserProfileDetails(id));
+      singleUserProfileAPI = new SingleUserProfileAPI();
+      specializations = await singleUserProfileAPI.getSpecializations();
+      conditionsToShow = [];
+      isPlanner = false;
+      allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
+      allSavedSystemActorsInItalian = [];
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     for(var i = 0;i < user.systemActors.length;i++){
       if(user.systemActors[i] === "PLANNER"){
@@ -141,7 +156,14 @@ export default class SingleUserProfileView extends React.Component{
 
   async handleDeleteSpecialization(doctorID, specialization) {
     let singleUserProfileAPI = new SingleUserProfileAPI();
-    let responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
+    let responseStatus
+    try {
+      responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     if (responseStatus === 200) {
       toast.success(t('Specialization deleted successfully'), {
@@ -182,7 +204,14 @@ export default class SingleUserProfileView extends React.Component{
 
   async handleDeleteSystemActor(doctorID, systemActor) {
     let singleUserProfileAPI = new SingleUserProfileAPI();
-    let responseStatus = await singleUserProfileAPI.deleteSystemActor(doctorID,  systemActor);
+    let responseStatus
+    try {
+      responseStatus = await singleUserProfileAPI.deleteSystemActor(doctorID,  systemActor);
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     if (responseStatus === 200) {
       toast.success(t('Specialization deleted successfully'), {
@@ -226,7 +255,13 @@ export default class SingleUserProfileView extends React.Component{
   async handlerDeleteCategoriaStatoLoggedUser(idRotazione, key) {
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.userID);
+    try {
+      responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.userID);
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     if (responseStatus === 200) {
       toast.success(t('Rotation deleted successfully'), {

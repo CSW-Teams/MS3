@@ -10,6 +10,8 @@ import Typography from '@mui/material/Typography';
 import HelpOutlineSharpIcon from '@mui/icons-material/HelpOutlineSharp';
 import { VincoloAPI } from '../../API/VincoliAPI';
 import { t } from "i18next";
+import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -60,7 +62,14 @@ export default function InformationDialogs() {
 
   async function getVincoli() {
       let vincoloApi = new VincoloAPI();
-      let vincoli = await vincoloApi.getVincoli()
+      let vincoli
+      try {
+        vincoli = await vincoloApi.getVincoli()
+      } catch (err) {
+
+        panic()
+        return
+      }
       setVincoli(vincoli);
   }
 

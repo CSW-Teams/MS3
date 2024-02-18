@@ -11,6 +11,7 @@ import {HolidaysAPI} from "../../API/HolidaysAPI";
 import {toast} from "react-toastify";
 import {useEffect} from "react";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 function translateCategory(category) {
   switch (category) {
@@ -52,7 +53,14 @@ function NormalHolidays({holidays, setHolidays}) {
                   isRecurrent: false
                 }
 
-                let response = await (new HolidaysAPI().deleteCustomHoliday(data))
+                let response
+                try {
+                  response = await (new HolidaysAPI().deleteCustomHoliday(data))
+                } catch (err) {
+
+                  panic()
+                  return
+                }
 
                 if (response === 200) {
                   setHolidays(holidays.filter((value1) => {

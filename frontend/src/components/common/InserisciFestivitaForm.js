@@ -7,6 +7,7 @@ import {toast} from "react-toastify";
 import {HolidaysAPI} from "../../API/HolidaysAPI";
 import {Calendar} from "react-multi-date-picker";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 const monthNum = {
   1 : t("January"),
@@ -328,7 +329,14 @@ export default function InserisciFestivitaForm({normalHolidays, setNormalHoliday
     }
 
     if(checkDataIsCorrect(holiday)) {
-      const [code, content] = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
+      let code, content
+      try {
+        [code, content] = await ((new HolidaysAPI()).saveCustomHoliday(holiday)) ;
+      } catch (err) {
+
+        panic()
+        return
+      }
 
       if(code !== 200) {
         toast(t("Error saving the holiday"), {
