@@ -13,6 +13,7 @@ import {
 import {toast, ToastContainer} from "react-toastify";
 import {VincoloAPI} from "../../API/VincoliAPI";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class ConfigurazioneVincoli extends React.Component{
 
@@ -41,11 +42,7 @@ export default class ConfigurazioneVincoli extends React.Component{
       conf = await(new VincoloAPI().getConfigurazioneVincoli())
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     this.setState({
@@ -70,11 +67,7 @@ export default class ConfigurazioneVincoli extends React.Component{
       response = await vincoliApi.setConfigurazioneVincoli(conf)
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     if (response.status === 202) {
@@ -221,18 +214,6 @@ export default class ConfigurazioneVincoli extends React.Component{
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
 
       </section>
     )

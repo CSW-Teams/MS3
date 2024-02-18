@@ -23,6 +23,7 @@ import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
 import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 
 // AppointmentContent di SingleScheduleView
@@ -345,11 +346,7 @@ export class AppointmentContent extends React.Component{
       array = await api.getAllPendingRequests();
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     this.setState({ requests: array })

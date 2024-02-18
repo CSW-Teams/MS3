@@ -22,6 +22,7 @@ import AggiungiCategoria
   from "../../components/common/BottomViewAggiungiTurnazione";
 import {toast} from "react-toastify";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class UserProfileView extends React.Component{
   constructor(props){
@@ -54,11 +55,7 @@ export default class UserProfileView extends React.Component{
       turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(id));
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     this.setState({
@@ -82,11 +79,7 @@ export default class UserProfileView extends React.Component{
       responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione,  this.state.idUser);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     console.log(responseStatus)
@@ -125,11 +118,7 @@ export default class UserProfileView extends React.Component{
       responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.idUser);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     console.log(responseStatus)

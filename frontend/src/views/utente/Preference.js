@@ -13,6 +13,7 @@ import {DesiderateAPI} from "../../API/DesiderataAPI";
 import {toast, ToastContainer} from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 function defaultComparator(prop1, prop2){
   if (prop1 < prop2)
@@ -57,11 +58,7 @@ export default class Preference extends React.Component {
       desiderate = await(new DesiderateAPI().getDesiderate(id));
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     this.setState({
@@ -78,11 +75,7 @@ export default class Preference extends React.Component {
       responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -139,18 +132,6 @@ export default class Preference extends React.Component {
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </section>
     )
   }

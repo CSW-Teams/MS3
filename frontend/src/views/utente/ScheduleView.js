@@ -43,6 +43,7 @@ import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 
 /**
@@ -167,11 +168,7 @@ class ScheduleView extends React.Component{
           userDetails = await api.getUserDetails(idUser);
         } catch (err) {
 
-          toast(t('Connection Error, please try again later'), {
-            position: 'top-center',
-            autoClose: 1500,
-            style : {background : "red", color : "white"}
-          })
+          panic()
           return
         }
         let name = userDetails.name;
@@ -198,11 +195,7 @@ class ScheduleView extends React.Component{
         httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(params);
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
 
@@ -262,11 +255,7 @@ class ScheduleView extends React.Component{
           response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],localStorage.getItem("id"));
         } catch (err) {
 
-          toast(t('Connection Error, please try again later'), {
-            position: 'top-center',
-            autoClose: 1500,
-            style : {background : "red", color : "white"}
-          })
+          panic()
           return
         }
         let responseStatusClass = Math.floor(response.status / 100)
@@ -318,11 +307,7 @@ class ScheduleView extends React.Component{
             turni = await assegnazioneTurnoApi.getGlobalShift();
           } catch (err) {
 
-            toast(t('Connection Error, please try again later'), {
-              position: 'top-center',
-              autoClose: 1500,
-              style : {background : "red", color : "white"}
-            })
+            panic()
             return
           }
 
@@ -337,11 +322,7 @@ class ScheduleView extends React.Component{
           response = await assegnazioneTurnoApi.eliminaAssegnazioneTurno(deleted);
         } catch (err) {
 
-          toast(t('Connection Error, please try again later'), {
-            position: 'top-center',
-            autoClose: 1500,
-            style : {background : "red", color : "white"}
-          })
+          panic()
           return
         }
         let responseStatusClass = Math.floor(response.status / 100);
@@ -378,11 +359,7 @@ class ScheduleView extends React.Component{
             turni = await assegnazioneTurnoApi.getGlobalShift();
           } catch (err) {
 
-            toast(t('Connection Error, please try again later'), {
-              position: 'top-center',
-              autoClose: 1500,
-              style : {background : "red", color : "white"}
-            })
+            panic()
             return
           }
 
@@ -433,11 +410,7 @@ class ScheduleView extends React.Component{
         allHolidays = allHolidays.concat(await holiApi.getHolidays(new Date().getFullYear() +1)) ;
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
 
@@ -589,11 +562,7 @@ class ScheduleView extends React.Component{
                         }) ;
                       } catch (err) {
 
-                        toast(t('Connection Error, please try again later'), {
-                          position: 'top-center',
-                          autoClose: 1500,
-                          style : {background : "red", color : "white"}
-                        })
+                        panic()
                         return
                       }
                     }
@@ -605,11 +574,7 @@ class ScheduleView extends React.Component{
                         }) ;
                       } catch (err) {
 
-                        toast(t('Connection Error, please try again later'), {
-                          position: 'top-center',
-                          autoClose: 1500,
-                          style : {background : "red", color : "white"}
-                        })
+                        panic()
                         return
                       }
                     }
@@ -621,11 +586,7 @@ class ScheduleView extends React.Component{
                         }) ;
                       } catch (err) {
 
-                        toast(t('Connection Error, please try again later'), {
-                          position: 'top-center',
-                          autoClose: 1500,
-                          style : {background : "red", color : "white"}
-                        })
+                        panic()
                       }
                     }
                   }}

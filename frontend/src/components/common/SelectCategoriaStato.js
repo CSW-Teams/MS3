@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import {CategoriaAPI} from "../../API/CategoriaAPI";
 import { t } from "i18next";
 import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 
 export default function MultipleSelect(props) {
@@ -28,11 +29,7 @@ export default function MultipleSelect(props) {
       categorie = await categoriaAPI.getStati()
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     setCategorie(categorie);

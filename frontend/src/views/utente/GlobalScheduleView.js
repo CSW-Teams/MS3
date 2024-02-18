@@ -6,6 +6,7 @@ import TemporaryDrawer from "../../components/common/BottomViewAssegnazioneTurno
 import { Stack } from "@mui/system";
 import {toast} from "react-toastify";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 class GlobalScheduleView extends ScheduleView {
 
@@ -17,11 +18,7 @@ class GlobalScheduleView extends ScheduleView {
       turni = await turnoAPI.getGlobalShift();
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
     }
     super.componentDidMount(turni);
   }

@@ -5,6 +5,7 @@ import { ScheduleAPI } from "../../API/ScheduleAPI";
 import Tooltip from '@mui/material/Tooltip';
 import { t } from "i18next";
 import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 
 export default function ButtonLegalSchedulation() {
@@ -21,11 +22,7 @@ export default function ButtonLegalSchedulation() {
       responde = await scheduloAPI.getSchedulaziniIllegali();
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     let AllLegal = responde.length ==0;

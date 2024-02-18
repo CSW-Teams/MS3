@@ -11,6 +11,7 @@ import {HolidaysAPI} from "../../API/HolidaysAPI";
 import {toast} from "react-toastify";
 import {useEffect} from "react";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 function translateCategory(category) {
   switch (category) {
@@ -57,11 +58,7 @@ function NormalHolidays({holidays, setHolidays}) {
                   response = await (new HolidaysAPI().deleteCustomHoliday(data))
                 } catch (err) {
 
-                  toast(t('Connection Error, please try again later'), {
-                    position: 'top-center',
-                    autoClose: 1500,
-                    style : {background : "red", color : "white"}
-                  })
+                  panic()
                   return
                 }
 

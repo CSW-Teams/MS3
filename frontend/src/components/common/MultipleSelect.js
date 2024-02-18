@@ -9,6 +9,7 @@ import { TurnoAPI } from '../../API/TurnoAPI';
 import { ServizioAPI } from '../../API/ServizioAPI';
 import {toast} from "react-toastify";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 
 
@@ -38,11 +39,7 @@ export default function MultipleSelect(props) {
       turni = await turniAPI.getTurniByServizio(servizio);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     let turniEMansioni = []
@@ -59,11 +56,7 @@ export default function MultipleSelect(props) {
       servizi = await serviceAPI.getService()
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     setServizi(servizi);

@@ -10,6 +10,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 import {t} from "i18next";
+import {panic} from "./Panic";
 
 export default function TemporaryDrawer(props) {
 
@@ -65,11 +66,7 @@ export default function TemporaryDrawer(props) {
       status = await categoriaUtenteAPI.postAggiungiStato(categoria, dataInizio, dataFine, utente_id)
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -134,18 +131,6 @@ export default function TemporaryDrawer(props) {
           </div>
         </Drawer>
       </React.Fragment>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </div>
 
   );

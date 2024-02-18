@@ -17,6 +17,7 @@ import {ServizioAPI} from "../../API/ServizioAPI";
 import {MedicalService} from "../../entity/MedicalService";
 import {Task} from "../../entity/Task";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 toast.configure();
 
@@ -77,11 +78,7 @@ const MedicalServiceUpdateDrawer = ({availableTasks, services, updateServicesLis
           serviceAPI.updateMedicalService(requestParams);
         } catch (err) {
 
-          toast(t('Connection Error, please try again later'), {
-            position: 'top-center',
-            autoClose: 1500,
-            style : {background : "red", color : "white"}
-          })
+          panic()
           return
         }
 

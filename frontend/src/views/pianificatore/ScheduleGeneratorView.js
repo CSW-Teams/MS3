@@ -15,6 +15,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import TemporaryDrawerSchedule from "../../components/common/BottomViewAggiungiSchedulazione";
 import {ScheduleAPI} from "../../API/ScheduleAPI";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 /*
 * Schermata che permette di generare un nuovo schedule
@@ -39,11 +40,7 @@ export class SchedulerGeneratorView extends React.Component{
         schedulazioni = await(new ScheduleAPI().getSchedulazini());
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
 
@@ -63,11 +60,7 @@ export class SchedulerGeneratorView extends React.Component{
         responseStatus = await scheduleAPI.deleteSchedule(idSchedule);
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
 
@@ -118,11 +111,7 @@ export class SchedulerGeneratorView extends React.Component{
         responseStatus = await scheduleAPI.rigeneraSchedule(idSchedule);
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
 
@@ -238,18 +227,6 @@ export class SchedulerGeneratorView extends React.Component{
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </section>
     )
   }

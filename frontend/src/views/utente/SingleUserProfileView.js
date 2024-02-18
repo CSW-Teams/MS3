@@ -26,6 +26,7 @@ import {toast} from "react-toastify";
 import {Button} from "@material-ui/core";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 /**
  * Class needed to fromat correctly the attributes permanentConditions and temporaryConditions
@@ -82,11 +83,7 @@ export default class SingleUserProfileView extends React.Component{
       allSavedSystemActorsInItalian = [];
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -164,11 +161,7 @@ export default class SingleUserProfileView extends React.Component{
       responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -216,11 +209,7 @@ export default class SingleUserProfileView extends React.Component{
       responseStatus = await singleUserProfileAPI.deleteSystemActor(doctorID,  systemActor);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -270,11 +259,7 @@ export default class SingleUserProfileView extends React.Component{
       responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.userID);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 

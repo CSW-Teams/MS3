@@ -13,6 +13,7 @@ import {Button} from "@mui/material";
 import {UserAPI} from "../../API/UserAPI";
 import {ConditionsToShow} from "./SingleUserProfileView";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 
 export default class ModifyUserProfileView extends React.Component {
@@ -47,11 +48,7 @@ export default class ModifyUserProfileView extends React.Component {
       user = await(new UserAPI().getSingleUserProfileDetails(id));
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     let systemActorsUser = user.systemActors;
@@ -130,11 +127,7 @@ export default class ModifyUserProfileView extends React.Component {
       httpResponse = await loginAPI.postRegistration(this.state);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -265,7 +258,6 @@ export default class ModifyUserProfileView extends React.Component {
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer/>
       </section>
     )
   }

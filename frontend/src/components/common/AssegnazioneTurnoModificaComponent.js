@@ -26,6 +26,7 @@ import { ToastContainer, toast } from 'react-toastify';
   import {DoctorAPI} from "../../API/DoctorAPI";
   import {Doctor} from "../../entity/Doctor";
   import {t} from "i18next";
+  import {panic} from "./Panic";
 
 
 const prova = [
@@ -71,19 +72,6 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
           text="Effettua le modifiche selezionando i nuovi utenti da allocare "
           type="ordinaryLabel"
         />
-
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
 
       </AppointmentForm.BasicLayout>
     );
@@ -167,11 +155,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
         return await assegnazioneTurnoApi.getAvailableUsersForShiftExchange(params);
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
       }
     }
 
@@ -187,11 +171,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
       try {
         response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati, appointmentData, parseInt(localStorage.getItem("id")))
       } catch (err) {
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
       let responseStatusClass = Math.floor(response.status / 100)
@@ -244,11 +224,7 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
             turni = await assegnazioneTurnoApi.getShiftByIdUser(localStorage.getItem("id"));
           } catch (err) {
 
-            toast(t('Connection Error, please try again later'), {
-              position: 'top-center',
-              autoClose: 1500,
-              style : {background : "red", color : "white"}
-            })
+            panic()
             return
           }
           contesto.setState({data:turni});

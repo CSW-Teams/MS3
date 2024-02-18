@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ShiftChangeRequestAPI } from "../../API/ShiftChangeRequestAPI";
 import { Button } from "@mui/material";
 import { useTranslation } from 'react-i18next';
+import {panic} from "../../components/common/Panic";
 
 export default function ShiftChangeView() {
   const { t } = useTranslation();
@@ -26,11 +27,7 @@ export default function ShiftChangeView() {
       requestAPI.answerRequest(requestId, response);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
     }
     console.log(`Request ${requestId} accepted`);
   };
@@ -116,18 +113,6 @@ export default function ShiftChangeView() {
       {renderTable(state.turnChangeRequestsToSender, t('Requests Received'))}
       {renderTable(state.turnChangeRequestsBySender, t('Requests Sent'))}
 
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       <div style={{ marginTop: 'auto' }}></div>
     </div>
   );

@@ -25,6 +25,7 @@ import TemporaryDrawerRetirement
 import {DoctorAPI} from "../../API/DoctorAPI";
 import { t } from "i18next";
 import {toast} from "react-toastify";
+import {panic} from "../../components/common/Panic";
 
 
 const ModalLinkFile = ({request, updateRequest}) => {
@@ -85,11 +86,7 @@ export default class RichiesteRitiroView extends React.Component {
       doctors = await apiDoctors.getAllDoctorsInfo();
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     let shifts
@@ -97,11 +94,7 @@ export default class RichiesteRitiroView extends React.Component {
       shifts = await apiShifts.getGlobalShift();
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     this.setState({doctors: doctors});
@@ -120,11 +113,7 @@ export default class RichiesteRitiroView extends React.Component {
       }
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
   }

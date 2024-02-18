@@ -6,6 +6,7 @@ import React from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import {Button} from "@mui/material";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 
 /**
@@ -21,11 +22,7 @@ export default class SingleScheduleView extends ScheduleView {
       turni = await apiTurno.getShiftByIdUser(localStorage.getItem("id"));
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       super.componentDidMount(turni)
       return
     }
@@ -42,18 +39,6 @@ export default class SingleScheduleView extends ScheduleView {
 
     return (
       <div>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       { super.render()}
     </div>
 

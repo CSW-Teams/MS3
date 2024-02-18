@@ -10,6 +10,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 import {toast} from "react-toastify";
 import {t} from "i18next";
+import {panic} from "./Panic";
 
 
 
@@ -41,11 +42,7 @@ export default function DoctorSpecializationAdditionDrawer(props){
       let responseStatus = singleUserProfileAPI.addSpecializations(doctorID, specializations);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     setOpen(false);

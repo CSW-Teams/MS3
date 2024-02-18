@@ -11,6 +11,7 @@ import InserisciFestivitaForm from "../../components/common/InserisciFestivitaFo
 import { t } from "i18next";
 import FestivitaInseriteList from "../../components/common/FestivitaInseriteList";
 import {HolidaysAPI} from "../../API/HolidaysAPI";
+import {panic} from "../../components/common/Panic";
 
 export default function InserisciFestivita() {
 
@@ -26,11 +27,7 @@ export default function InserisciFestivita() {
         [response, content] = await new HolidaysAPI().getCustomHolidays()
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
       if (response !== 200) {
@@ -63,7 +60,6 @@ export default function InserisciFestivita() {
           </MDBCardBody>
         </MDBCard>
       </MDBContainer>
-      <ToastContainer/>
     </section>
   )
 }

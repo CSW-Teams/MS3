@@ -13,6 +13,7 @@ import {RichiestaRimozioneDaTurnoAPI} from "../../API/RichiestaRimozioneDaTurnoA
 import {Modal} from "react-bootstrap";
 import {toast} from "react-toastify";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 
 const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
@@ -67,11 +68,7 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
       return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
     }
 
   };
@@ -97,11 +94,7 @@ const TemporaryDrawerRetirement = ({request, shifts, users, updateRequest}) => {
       return richiestaRimozioneDaTurnoAPI.risolviRichiesta(request);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
     }
   };
 

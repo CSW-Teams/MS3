@@ -15,6 +15,7 @@ import MedicalServiceCreationDrawer from "../../components/common/BottomViewCrea
 import MedicalServiceUpdateDrawer from "../../components/common/BottomViewModificaServizio";
 import {t} from "i18next";
 import {toast} from "react-toastify";
+import {panic} from "../../components/common/Panic";
 
 function defaultComparator(prop1, prop2) {
     if (prop1 < prop2) return -1;
@@ -69,11 +70,7 @@ export default class MedicalServicesView extends React.Component {
           retrievedAvailableTaskTypes = await serviceAPI.getAvailableTaskTypes();
         } catch (err) {
 
-          toast(t('Connection Error, please try again later'), {
-            position: 'top-center',
-            autoClose: 1500,
-            style : {background : "red", color : "white"}
-          })
+          panic()
           return
         }
         this.setState({

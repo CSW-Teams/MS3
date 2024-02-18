@@ -21,6 +21,7 @@ import FilesUpload from './FilesUpload'
 import {GiustificaForzaturaAPI} from "../../API/GiustificaForzaturaAPI";
 import {MDBTextArea} from "mdb-react-ui-kit";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 function ViolationLog(props){
 
@@ -58,11 +59,7 @@ export default function TemporaryDrawer(props) {
       doctors = await doctorApi.getAllDoctorsInfo()
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     const d = []
@@ -80,11 +77,7 @@ export default function TemporaryDrawer(props) {
         services = await servizioAPI.getAllServices()
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
 
@@ -108,11 +101,7 @@ export default function TemporaryDrawer(props) {
             shifts = await turnoApi.getTurniByServizio(servizio[0].label)
           } catch (err) {
 
-            toast(t('Connection Error, please try again later'), {
-              position: 'top-center',
-              autoClose: 1500,
-              style : {background : "red", color : "white"}
-            })
+            panic()
             return
           }
 
@@ -217,11 +206,7 @@ export default function TemporaryDrawer(props) {
       response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -256,11 +241,7 @@ export default function TemporaryDrawer(props) {
             status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
           } catch (err) {
 
-            toast(t('Connection Error, please try again later'), {
-              position: 'top-center',
-              autoClose: 1500,
-              style : {background : "red", color : "white"}
-            })
+            panic()
             return
           }
           if(status === 202){
@@ -441,18 +422,6 @@ export default function TemporaryDrawer(props) {
           </div>
         </Drawer>
       </React.Fragment>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </div>
 
   );

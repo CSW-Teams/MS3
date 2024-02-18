@@ -4,6 +4,7 @@ import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from 'react-router-dom';
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class LoginView extends React.Component {
 
@@ -70,11 +71,7 @@ export default class LoginView extends React.Component {
       httpResponse = await loginAPI.postRegistration(this.state);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -267,18 +264,6 @@ export default class LoginView extends React.Component {
             </div>
           </div>
         </form>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </div>
     )
   }

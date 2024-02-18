@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { t } from "i18next";
 import "./../../style/LoadingOverlay.css"
+import {panic} from "./Panic";
 
 
 export default function TemporaryDrawerSchedulo(props) {
@@ -46,11 +47,7 @@ export default function TemporaryDrawerSchedulo(props) {
       status = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio,dataFine)
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -147,19 +144,6 @@ export default function TemporaryDrawerSchedulo(props) {
                 </Button>
               </Stack>
             )}
-
-            <ToastContainer
-              position="top-center"
-              autoClose={5000}
-              hideProgressBar={true}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
 
           </div>
         </Drawer>

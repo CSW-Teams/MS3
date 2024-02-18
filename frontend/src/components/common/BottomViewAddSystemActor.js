@@ -10,6 +10,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 import {t} from "i18next";
 import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 
 
@@ -41,11 +42,7 @@ export default function UserSystemActorAdditionDrawer(props){
           let responseStatus = singleUserProfileAPI.addSystemActors(userID,  allSystemActors);
         } catch (err) {
 
-          toast(t('Connection Error, please try again later'), {
-            position: 'top-center',
-            autoClose: 1500,
-            style : {background : "red", color : "white"}
-          })
+          panic()
           return
         }
 

@@ -11,6 +11,7 @@ import HelpOutlineSharpIcon from '@mui/icons-material/HelpOutlineSharp';
 import { VincoloAPI } from '../../API/VincoliAPI';
 import { t } from "i18next";
 import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -66,11 +67,7 @@ export default function InformationDialogs() {
         vincoli = await vincoloApi.getVincoli()
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
       setVincoli(vincoli);

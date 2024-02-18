@@ -20,6 +20,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import {toast} from "react-toastify";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class UserProfileView extends React.Component{
   constructor(props){
@@ -54,11 +55,7 @@ export default class UserProfileView extends React.Component{
       turnazioni_utente = await(new CategoriaUtenteAPI().getTurnazioniUtente(id))
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -82,11 +79,7 @@ export default class UserProfileView extends React.Component{
       responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione, this.props.match.params.idUser);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 
@@ -123,11 +116,7 @@ export default class UserProfileView extends React.Component{
       responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.props.match.params.idUser );
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 

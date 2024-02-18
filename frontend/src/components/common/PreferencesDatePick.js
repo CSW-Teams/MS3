@@ -6,6 +6,7 @@ import {DesiderateAPI} from "../../API/DesiderataAPI"
 import {toast, ToastContainer} from "react-toastify";
 import {MDBCard} from "mdb-react-ui-kit";
 import {t} from "i18next";
+import {panic} from "./Panic";
 
 const months =   [t("January"),
   t("February"),
@@ -57,11 +58,7 @@ function DateSelectSlots({props}) {
       response = await(desiderataApi.editDesiderate(preferences, toDelPreferences,id))
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     let responseStatus  = response.status

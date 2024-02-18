@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {UploadFilesAPI} from "../../API/UploadFilesAPI"
 import { t } from "i18next";
 import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 const FilesUpload = ({type, request, updateRequest}) => {
 
@@ -20,11 +21,7 @@ const FilesUpload = ({type, request, updateRequest}) => {
       });
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
     }
   }, []);
 
@@ -47,11 +44,7 @@ const FilesUpload = ({type, request, updateRequest}) => {
         }, request.idRequest)
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
     } else {
@@ -65,11 +58,7 @@ const FilesUpload = ({type, request, updateRequest}) => {
         })
       } catch (err) {
 
-        toast(t('Connection Error, please try again later'), {
-          position: 'top-center',
-          autoClose: 1500,
-          style : {background : "red", color : "white"}
-        })
+        panic()
         return
       }
     }
@@ -112,11 +101,7 @@ const FilesUpload = ({type, request, updateRequest}) => {
         });
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
 

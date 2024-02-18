@@ -10,6 +10,7 @@ import {
 import {Button, Link} from "@material-ui/core";
 import { t } from "i18next";
 import {toast} from "react-toastify";
+import {panic} from "../../components/common/Panic";
 
 function defaultComparator(prop1, prop2){
   if (prop1 < prop2)
@@ -64,11 +65,7 @@ export default class UserProfilesView extends React.Component{
       })
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
     }
 
   }

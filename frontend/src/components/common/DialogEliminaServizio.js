@@ -11,6 +11,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { ToastContainer, toast } from 'react-toastify';
 import {ServizioAPI} from "../../API/ServizioAPI";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 toast.configure();
 
@@ -27,11 +28,7 @@ export default function DialogEliminaServizio({currentServiceInfo, updateService
       serviceAPI.deleteMedicalService(currentServiceInfo.id);
     } catch (err) {
 
-      toast(t('Connection Error, please try again later'), {
-        position: 'top-center',
-        autoClose: 1500,
-        style : {background : "red", color : "white"}
-      })
+      panic()
       return
     }
     updateServicesList(currentServiceInfo);
