@@ -95,7 +95,7 @@ export default function DoctorSpecializationAdditionDrawer(props){
             <p>
             </p>
             <Typography variant="h6">
-              {t('Select tasks to assign:')}
+              {t('Select specializations to assign:')}
             </Typography>
             {
                 specializationList.map((item) => (

@@ -106,7 +106,7 @@ export default function UserSystemActorAdditionDrawer(props){
                                             onChange={() => handleCheckboxChange(item)}
                                         />
                                     }
-                                    label={`${item}`}
+                                    label={`${t(item)}`}
                                 />
                             ))
                         }

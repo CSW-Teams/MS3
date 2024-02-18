@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
-import MultipleSelect from './MultipleSelect';
+import ConcreteShiftMultipleSelect from './ConcreteShiftMultipleSelect';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
@@ -64,7 +64,7 @@ export default function TemporaryDrawer(props) {
 
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
-  //Viene passata al componente <MultipleSelect>
+  //Viene passata al componente <ConcreteShiftMultipleSelect>
   const handleTurno = (turno) => {
     setTurno(turno);
   }
@@ -285,7 +285,7 @@ export default function TemporaryDrawer(props) {
 
             <Stack spacing={3} >
               <BasicDatePicker onSelectData={handleData}></BasicDatePicker>
-              <MultipleSelect onSelectTurno = {handleTurno} onSelectServizio = {handleServizio}></MultipleSelect>
+              <ConcreteShiftMultipleSelect onSelectTurno = {handleTurno} onSelectServizio = {handleServizio}></ConcreteShiftMultipleSelect>
               <Autocomplete
                 onChange={(event, value) => setUtentiSelezionatiGuardia(value)}
                 multiple

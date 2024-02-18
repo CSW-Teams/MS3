@@ -1,6 +1,7 @@
 package org.cswteams.ms3.dto.userprofile;
 
 import lombok.Getter;
+import org.cswteams.ms3.dto.condition.PermanentConditionDTO;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class SingleUserProfileDTO {
     private final String seniority;
     private final List<String> specializations;
     private final List<String> systemActors;
-    private final List<String> permanentConditions;
+    private final List<PermanentConditionDTO> permanentConditions;
     private final List<TemporaryConditionDTO> temporaryConditions;
 
     /**
@@ -39,7 +40,7 @@ public class SingleUserProfileDTO {
                                 String birthday,
                                 String seniority,
                                 List<String> specializations,
-                                List<String> systemActors, List<String> permanentConditions, List<TemporaryConditionDTO> temporaryConditions) {
+                                List<String> systemActors, List<PermanentConditionDTO> permanentConditions, List<TemporaryConditionDTO> temporaryConditions) {
         this.id = id;
         this.name = name;
         this.lastname = lastname;

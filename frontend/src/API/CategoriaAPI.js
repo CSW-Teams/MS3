@@ -1,3 +1,6 @@
+/**
+ * Deprecated class
+ */
 export class CategoriaAPI {
 
   async getTurnazioni() {

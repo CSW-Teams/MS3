@@ -18,6 +18,7 @@ export default function BasicDatePicker(props) {
           setValue(newValue);
           props.onSelectData(newValue)
         }}
+        disabled = {props.disabled}
         renderInput={(params) => <TextField {...params} />}
       />
     </LocalizationProvider>

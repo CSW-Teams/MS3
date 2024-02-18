@@ -43,7 +43,7 @@ export class ConditionsToShow {
 
 
 
-export default class SingleUserProfileView extends React.Component{
+export default class PersonalSingleUserProfileView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
@@ -65,7 +65,7 @@ export default class SingleUserProfileView extends React.Component{
   }
 
   async componentDidMount() {
-    let id = this.props.match.params.idUser*1;
+    let id = localStorage.getItem("id");
     let loggedID = localStorage.getItem("id");
 
 
