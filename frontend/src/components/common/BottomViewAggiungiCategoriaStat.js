@@ -2,7 +2,6 @@ import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
-import SelectCategoria from './SelectCategoria';
 import SelectCategoriaStato from './SelectCategoriaStato';
 
 import Button from '@mui/material/Button';

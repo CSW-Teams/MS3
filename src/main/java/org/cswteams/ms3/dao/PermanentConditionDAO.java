@@ -12,5 +12,6 @@ public interface PermanentConditionDAO extends JpaRepository<PermanentCondition,
     List<PermanentCondition> findAll();
 
     PermanentCondition findByType(String type);
+    PermanentCondition findById(long id);
 
 }

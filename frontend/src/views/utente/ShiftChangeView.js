@@ -61,7 +61,6 @@ export default function ShiftChangeView() {
     const sortedRequests = requests.sort((a, b) => new Date(a.inizioDate) - new Date(b.inizioDate));
 
     const options = {
-      timeZone: 'Europe/Berlin',
       weekday: 'long',
       day: "numeric",
       month: 'long',

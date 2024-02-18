@@ -7,7 +7,6 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import {CategoriaAPI} from "../../API/CategoriaAPI";
 import { t } from "i18next";
-import {toast} from "react-toastify";
 import {panic} from "./Panic";
 
 

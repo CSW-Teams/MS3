@@ -15,7 +15,7 @@ import {
 } from "mdb-react-ui-kit";
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 import AggiungiCategoriaStato
-  from "../../components/common/BottomViewAggiungiCategoriaStat";
+  from "../../components/common/BottomViewAddCondition";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AggiungiCategoria
@@ -24,6 +24,9 @@ import {toast} from "react-toastify";
 import { t } from "i18next";
 import {panic} from "../../components/common/Panic";
 
+/*
+* Deprecated class
+*/
 export default class UserProfileView extends React.Component{
   constructor(props){
     super(props);

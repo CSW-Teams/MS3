@@ -40,8 +40,8 @@
   "Remember me": "Remember me",
   "Forgot Password?": "Forgot Password?",
 
-  "Rotation deleted successfully": "Rotation deleted successfully",
-  "Rotation created successfully": "Rotation created successfully",
+  "Condition deleted successfully": "Condition deleted successfully",
+  "Condition created successfully": "Condition created successfully",
   "Error during deletion": "Error during deletion",
   "Rotations": "Rotations",
   "Rotation": "Rotation",
@@ -60,6 +60,8 @@
   "DOCTOR": "Doctor",
   "CONFIGURATOR": "Configurator",
 
+  "Conditions":"Conditions",
+  "Conditions modified successfully": "Conditions modified successfully",
   "Specializations modified successfully": "Specializations modified successfully",
   "System Roles modified successfully": "System Roles modified successfully",
   "Specialization deleted successfully": "Specialization deleted successfully",
@@ -124,7 +126,8 @@
   "Modify Profile": "Modify Profile",
   "Save Changes": "Save Changes",
   "Add Specialization": "Add Specialization",
-  "Select tasks to assign:": "Select tasks to assign:",
+  "Select specializations to assign:": "Select specializations to assign:",
+  "System actor deleted successfully": "System actor deleted successfully",
   "Add Role": "Add Role",
   "Select role to assign:": "Select role to assign:",
   "Category created successfully": "Category created successfully",
@@ -264,5 +267,9 @@
   "Normal Holidays" : "Normal custom holidays",
   "Recurrent Holidays" : "Recurrent custom holidays",
 
+  "End date must be after start date" : "End date must be after start date",
+  "Condition field must not be null" : "Condition field must not be null",
+  "Date must be selected": "Date must be selected",
+  "Start date must be after at least today": "Start date must be after at least today",
   "Connection Error, please try again later" : "Connection Error, Please reload the page later"
 }

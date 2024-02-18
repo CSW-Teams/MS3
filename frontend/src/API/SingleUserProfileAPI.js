@@ -57,7 +57,6 @@ export class SingleUserProfileAPI {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({userID,systemActors})
       };
-
       const response = await fetch('/api/users/user-profile/add-system-actors',requestOptions);
       return response.status;
     }
@@ -74,4 +73,76 @@ export class SingleUserProfileAPI {
 
     return systemActorList;
   }
+
+  async deletePermanentCondition(doctorID, conditionID,condition) {
+    let jsonString = "{" + "\"doctorID\":" + doctorID + ",\"conditionID\":" + conditionID + ",\"condition\":\"" + condition + "\"}";
+
+    const requestOptions = {
+      method: 'DELETE',
+      headers: {'Content-Type': 'application/json'},
+      body: jsonString
+    };
+
+    const response = await fetch('/api/doctors/user-profile/delete-permanent-condition',requestOptions);
+    return response.status;
+  }
+
+  async deleteTemporaryCondition(doctorID, conditionID, condition) {
+    let jsonString = "{" + "\"doctorID\":" + doctorID + ",\"conditionID\":" + conditionID + ",\"condition\":\"" + condition + "\"}";
+
+    const requestOptions = {
+      method: 'DELETE',
+      headers: {'Content-Type': 'application/json'},
+      body: jsonString
+    };
+
+    const response = await fetch('/api/doctors/user-profile/delete-temporary-condition',requestOptions);
+    return response.status;
+  }
+
+    /**
+     * Method used to return all the conditions saved in the database to the frontend, ù
+     * to show all conditions when we want to add one
+     * @returns {Promise<void>}
+     */
+    async getAllConditionSaved() {
+      const response = await fetch('/api/conditions');
+      const body = await response.json();
+
+      let conditionList = [];
+
+
+      for (let i = 0; i < body.allSavedConditions.length; i++) {
+            conditionList[i] = body.allSavedConditions[i];
+        }
+
+      return conditionList;
+    }
+
+  /**
+   * Api to add a new condition to a doctor
+   * @param doctorID
+   * @param newCondition
+   * @returns {Promise<number>}
+   */
+  async addCondition(doctorID, newCondition) {
+    let condition = {};
+
+    condition["condition"] = newCondition.label;
+    condition["startDate"] = newCondition.startDate/1000;
+    condition["endDate"] = newCondition.endDate/1000;
+
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({doctorID,condition})
+    };
+
+    const response = await fetch('/api/doctors/user-profile/add-condition',requestOptions);
+    const json = await response.json();
+    const id = json.conditionID;
+    return id;
+  }
+
+
 }

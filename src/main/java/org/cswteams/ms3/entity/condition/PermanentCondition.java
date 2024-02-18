@@ -11,6 +11,7 @@ import javax.persistence.*;
 @Getter
 public class PermanentCondition extends Condition {
 
+
     /**
      * Create a permament <code>condition</code> as descripted by <code>type</code>.
      * @param type permanent condition description

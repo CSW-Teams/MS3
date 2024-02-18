@@ -15,13 +15,16 @@ import {
 } from "mdb-react-ui-kit";
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 import AggiungiCategoria from "../../components/common/BottomViewAggiungiTurnazione"
-import AggiungiCategoriaStato from "../../components/common/BottomViewAggiungiCategoriaStat"
+import AggiungiCategoriaStato from "../../components/common/BottomViewAddCondition"
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import {toast} from "react-toastify";
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 
+/**
+ * Deprecated Class
+ */
 export default class UserProfileView extends React.Component{
   constructor(props){
     super(props);

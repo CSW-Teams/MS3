@@ -13,7 +13,7 @@ import {panic} from "./Panic";
 
 
 
-export default function MultipleSelect(props) {
+export default function ConcreteShiftMultipleSelect(props) {
   const [servizio, setServizio] = React.useState('');
   const [turno, setTurno] = React.useState('');
   const [turni,setTurni] = React.useState([])

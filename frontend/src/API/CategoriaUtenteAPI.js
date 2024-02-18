@@ -1,3 +1,6 @@
+/**
+ * Deprecated class
+ */
 export class CategoriaUtenteAPI {
 
   async deleteRotazione(idRotazione, idUtente){

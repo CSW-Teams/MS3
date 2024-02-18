@@ -1,7 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.specialization.ISpecializationController;
-import org.cswteams.ms3.dto.category.SpecializationDTO;
+import org.cswteams.ms3.dto.specializations.SpecializationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

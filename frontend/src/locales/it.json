@@ -40,8 +40,10 @@
   "Remember me": "Ricordami",
   "Forgot Password?": "Password Dimenticata?",
 
-  "Rotation deleted successfully": "Rotazione cancellata con successo",
-  "Rotation created successfully": "Rotazione creata con successo",
+  "Conditions": "Condizioni",
+  "Conditions modified successfully": "Condizioni modificate con successo",
+  "Condition deleted successfully": "Condizione cancellata con successo",
+  "Condition created successfully": "Condizione creata con successo",
   "Error during deletion": "Errore nella cancellazione",
   "Rotations": "Rotazioni",
   "Rotation": "Rotazione",
@@ -125,7 +127,8 @@
   "Modify Profile": "Modifica Profilo",
   "Save Changes": "Salva Modifiche",
   "Add Specialization": "Aggiungi Specializzazione",
-  "Select tasks to assign:": "Seleziona le mansioni da assegnare:",
+  "Select specializations to assign:": "Seleziona le specializzazioni da assegnare:",
+  "System actor deleted successfully": "Ruolo nel sistema eliminato con successo",
   "Add Role": "Aggiungi Ruolo",
   "Select role to assign:": "Seleziona ruolo da assegnare",
   "Category created successfully": "Categoria creata con successo",
@@ -265,5 +268,9 @@
   "Normal Holidays" : "Festività normali",
   "Recurrent Holidays" : "Festività ricorrenti",
 
+  "End date must be after start date": "La data finale deve essere successiva a quella iniziale",
+  "Condition field must not be null" : "Il campo relativo alle condizioni non deve essere vuoto",
+  "Date must be selected": "Scegli due date",
+  "Start date must be after at least today": "Inserisci una data iniziale a partire almeno da oggi",
   "Connection Error, please try again later" : "Errore di connessione, ricarica la pagina più tardi"
 }

@@ -25,7 +25,6 @@ import {toast} from "react-toastify";
 import {Button} from "@material-ui/core";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 import {t} from "i18next";
-import {panic} from "../../components/common/Panic";
 
 /**
  * Class needed to fromat correctly the attributes permanentConditions and temporaryConditions
@@ -44,7 +43,7 @@ export class ConditionsToShow {
 
 
 
-export default class SingleUserProfileView extends React.Component{
+export default class PersonalSingleUserProfileView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
@@ -66,38 +65,24 @@ export default class SingleUserProfileView extends React.Component{
   }
 
   async componentDidMount() {
-    let id
-    let loggedID
-    let loggedUser
-    let user
-    let singleUserProfileAPI
-    let specializations
-    let conditionsToShow
-    let isPlanner
-    let allSavedSystemActors
-    let allSavedSystemActorsInItalian
-    let allSavedConditions
-    try {
-      id = this.props.match.params.idUser*1;
-      loggedID = localStorage.getItem("id");
-      user = await(new UserAPI().getSingleUserProfileDetails(id));
-      loggedUser = await(new UserAPI().getSingleUserProfileDetails(loggedID));
-      singleUserProfileAPI = new SingleUserProfileAPI();
-      specializations = await singleUserProfileAPI.getSpecializations();
-      conditionsToShow = [];
-      isPlanner = false;
-      allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
-      allSavedConditions = await singleUserProfileAPI.getAllConditionSaved();
-    } catch (err) {
+    let id = localStorage.getItem("id");
+    let loggedID = localStorage.getItem("id");
 
-      panic()
-      return
-    }
 
     /* Used when going to your own profile*/
     /*if(this.props.match.params.idUser === undefined){
       id = loggedID;
     }*/
+
+    let user = await(new UserAPI().getSingleUserProfileDetails(id));
+    let loggedUser = await(new UserAPI().getSingleUserProfileDetails(loggedID));
+    let singleUserProfileAPI = new SingleUserProfileAPI();
+    let specializations = await singleUserProfileAPI.getSpecializations();
+    let conditionsToShow = [];
+    let isPlanner = false;
+    let allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
+    let allSavedConditions = await singleUserProfileAPI.getAllConditionSaved();
+    //console.log(user);
 
 
     for(var i = 0;i < loggedUser.systemActors.length;i++){
@@ -184,14 +169,7 @@ export default class SingleUserProfileView extends React.Component{
 
   async handleDeleteSpecialization(doctorID, specialization) {
     let singleUserProfileAPI = new SingleUserProfileAPI();
-    let responseStatus
-    try {
-      responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
-    } catch (err) {
-
-      panic()
-      return
-    }
+    let responseStatus = await singleUserProfileAPI.deleteSpecialization(doctorID,  specialization);
 
     if (responseStatus === 200) {
       toast.success(t('Specialization deleted successfully'), {
@@ -232,14 +210,7 @@ export default class SingleUserProfileView extends React.Component{
 
   async handleDeleteSystemActor(doctorID, systemActor) {
     let singleUserProfileAPI = new SingleUserProfileAPI();
-    let responseStatus
-    try {
-      responseStatus = await singleUserProfileAPI.deleteSystemActor(doctorID,  systemActor);
-    } catch (err) {
-
-      panic()
-      return
-    }
+    let responseStatus = await singleUserProfileAPI.deleteSystemActor(doctorID,  systemActor);
 
     if (responseStatus === 200) {
       toast.success(t('System actor deleted successfully'), {
@@ -283,17 +254,12 @@ export default class SingleUserProfileView extends React.Component{
   async handleDeleteCondition(doctorID, conditionID,condition,startDate) {
     let singleUserProfileAPI = new SingleUserProfileAPI();
     let responseStatus;
-
-    try {
-      if(startDate === "" || startDate === null){
-        responseStatus = await singleUserProfileAPI.deletePermanentCondition(doctorID,conditionID,condition);
-      }else{
-        responseStatus = await singleUserProfileAPI.deleteTemporaryCondition(doctorID,conditionID,condition);
-      }
-    } catch (err) { 
-      panic()
-      return
+    if(startDate === "" || startDate === null){
+      responseStatus = await singleUserProfileAPI.deletePermanentCondition(doctorID,conditionID,condition);
+    }else{
+      responseStatus = await singleUserProfileAPI.deleteTemporaryCondition(doctorID,conditionID,condition);
     }
+
 
     if (responseStatus === 200) {
       toast.success(t('Condition deleted successfully'), {
@@ -339,6 +305,7 @@ export default class SingleUserProfileView extends React.Component{
             <MDBTableBody>
               {this.state.conditions.map((data) => {
                 const options = {
+                  timeZone: 'Europe/Berlin',
                   weekday: 'long',
                   day: "numeric",
                   month: 'long',

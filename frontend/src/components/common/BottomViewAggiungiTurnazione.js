@@ -2,7 +2,7 @@ import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
-import SelectCategoria from './SelectCategoria';
+import SelectCategoria from './ConditionMultipleSelect';
 import Button from '@mui/material/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,6 +10,9 @@ import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
 import { t } from "i18next";
 import {panic} from "./Panic";
 
+/**
+ * Deprecated class
+ */
 export default function TemporaryDrawer(props) {
 
   const [dataInizio,setDataInizio] = React.useState("")
@@ -32,7 +35,7 @@ export default function TemporaryDrawer(props) {
   }
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
-  //Viene passata al componente <MultipleSelect>
+  //Viene passata al componente <ConcreteShiftMultipleSelect>
   const handleCategoria = (categoria) => {
     setCategoria(categoria);
   }
