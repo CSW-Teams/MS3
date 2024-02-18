@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ShiftChangeRequestAPI } from "../../API/ShiftChangeRequestAPI";
 import { Button } from "@mui/material";
 import { useTranslation } from 'react-i18next';
+import {panic} from "../../components/common/Panic";
 
 export default function ShiftChangeView() {
   const { t } = useTranslation();
@@ -22,17 +23,23 @@ export default function ShiftChangeView() {
   }, []);
 
   const handle = (requestId, response) => {
-    requestAPI.answerRequest(requestId, response);
-    toast.success(t("Request "+response), {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        theme: "colored",
-                      });
+    try {
+
+      requestAPI.answerRequest(requestId, response);
+      toast.success(t("Request "+response), {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } catch (err) {
+      panic()
+      return ;
+    }
     fetchData();
   };
 
@@ -46,6 +53,7 @@ export default function ShiftChangeView() {
       });
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      panic()
     }
   };
 
@@ -130,18 +138,6 @@ export default function ShiftChangeView() {
 
       {renderTable(state.turnChangeRequestsToSender, t('Requests Received'),0)}
       {renderTable(state.turnChangeRequestsBySender, t('Requests Sent'),1)}
-      <ToastContainer
-                position="top-center"
-                autoClose={5000}
-                hideProgressBar={true}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-              />
       <div style={{ marginTop: 'auto' }}></div>
     </div>
   );

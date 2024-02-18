@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import {UploadFilesAPI} from "../../API/UploadFilesAPI"
 import { t } from "i18next";
+import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 const FilesUpload = ({type, request, updateRequest}) => {
 
@@ -13,9 +15,14 @@ const FilesUpload = ({type, request, updateRequest}) => {
 
   useEffect(() => {
     let UploadAPI = new UploadFilesAPI()
-    UploadAPI.getFiles().then((response) => {
-      setFileInfos(response.data);
-    });
+    try {
+      UploadAPI.getFiles().then((response) => {
+        setFileInfos(response.data);
+      });
+    } catch (err) {
+
+      panic()
+    }
   }, []);
 
   const selectFiles = (event) => {
@@ -28,19 +35,32 @@ const FilesUpload = ({type, request, updateRequest}) => {
     let uploadAPI = new UploadFilesAPI();
     let response = null;
     if (type === "retirement") {
-      response = await uploadAPI.uploadFileRetirement(file, (event) => {
-        _progressInfos[idx].percentage = Math.round(
-          (100 * event.loaded) / event.total
-        );
-        setProgressInfos({ val: _progressInfos });
-      }, request.idRequest)
+      try {
+        response = await uploadAPI.uploadFileRetirement(file, (event) => {
+          _progressInfos[idx].percentage = Math.round(
+            (100 * event.loaded) / event.total
+          );
+          setProgressInfos({ val: _progressInfos });
+        }, request.idRequest)
+      } catch (err) {
+
+        panic()
+        return
+      }
     } else {
-      response = await uploadAPI.uploadGiustifica(file, (event) => {
-        _progressInfos[idx].percentage = Math.round(
-          (100 * event.loaded) / event.total
-        );
-        setProgressInfos({val: _progressInfos});
-      })
+      try {
+
+        response = await uploadAPI.uploadGiustifica(file, (event) => {
+          _progressInfos[idx].percentage = Math.round(
+            (100 * event.loaded) / event.total
+          );
+          setProgressInfos({val: _progressInfos});
+        })
+      } catch (err) {
+
+        panic()
+        return
+      }
     }
     if(response.status === 202){
       setMessage((prevMessage) => ([
@@ -73,12 +93,17 @@ const FilesUpload = ({type, request, updateRequest}) => {
 
     const uploadPromises = files.map((file, i) => upload(i, file));
 
-    Promise.all(uploadPromises)
-      .then(() => UploadFiles.getFiles())
-      .then((files) => {
-        setFileInfos(files.data);
-      });
+    try {
+      Promise.all(uploadPromises)
+        .then(() => UploadFiles.getFiles())
+        .then((files) => {
+          setFileInfos(files.data);
+        });
+    } catch (err) {
 
+      panic()
+      return
+    }
 
     setMessage([]);
 

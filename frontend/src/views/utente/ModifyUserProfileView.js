@@ -13,6 +13,7 @@ import {Button} from "@mui/material";
 import {UserAPI} from "../../API/UserAPI";
 import {ConditionsToShow} from "./SingleUserProfileView";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 
 export default class ModifyUserProfileView extends React.Component {
@@ -42,7 +43,14 @@ export default class ModifyUserProfileView extends React.Component {
 
   async componentDidMount() {
     let id = localStorage.getItem("id");
-    let user = await(new UserAPI().getSingleUserProfileDetails(id));
+    let user
+    try {
+      user = await(new UserAPI().getSingleUserProfileDetails(id));
+    } catch (err) {
+
+      panic()
+      return
+    }
     let systemActorsUser = user.systemActors;
     let conditionsToShow = [];
     let formattedSpecialization = [];
@@ -114,8 +122,14 @@ export default class ModifyUserProfileView extends React.Component {
       delete this.state.seniority;
     }
 
-    let httpResponse = await loginAPI.postRegistration(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postRegistration(this.state);
+    } catch (err) {
 
+      panic()
+      return
+    }
 
 
     let responseStatusClass = Math.floor(httpResponse.status / 100) // Grazie Fede
@@ -244,7 +258,6 @@ export default class ModifyUserProfileView extends React.Component {
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer/>
       </section>
     )
   }

@@ -16,6 +16,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
 import {MedicalService} from "../../entity/MedicalService";
 import {Task} from "../../entity/Task";
+import { t } from "i18next";
+import {panic} from "./Panic";
 
 toast.configure();
 
@@ -71,7 +73,14 @@ const MedicalServiceUpdateDrawer = ({availableTasks, services, updateServicesLis
             nome        : newMedicalServiceName.toUpperCase(),
             mansioni    : outTaskArray
         }
-        serviceAPI.updateMedicalService(requestParams);
+
+        try {
+          serviceAPI.updateMedicalService(requestParams);
+        } catch (err) {
+
+          panic()
+          return
+        }
 
         // build service infos for view update
         var viewUpdateServiceInfo = new MedicalService (

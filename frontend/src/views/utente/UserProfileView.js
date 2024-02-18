@@ -22,6 +22,7 @@ import AggiungiCategoria
   from "../../components/common/BottomViewAggiungiTurnazione";
 import {toast} from "react-toastify";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class UserProfileView extends React.Component{
   constructor(props){
@@ -41,11 +42,22 @@ export default class UserProfileView extends React.Component{
   }
 
   async componentDidMount() {
-    let id = localStorage.getItem("id");
-    let utente = await(new UserAPI().getUserDetails(id));
-    let categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
-    let specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
-    let turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(id));
+    let id
+    let utente
+    let categorie_utente
+    let specializzazioni_utente
+    let turnazioni_utente
+    try {
+      id = localStorage.getItem("id");
+      utente = await(new UserAPI().getUserDetails(id));
+      categorie_utente = await(new CategoriaUtenteAPI().getCategoriaUtente(id))
+      specializzazioni_utente = await(new CategoriaUtenteAPI().getSpecializzazioniUtente(id))
+      turnazioni_utente =  await(new CategoriaUtenteAPI().getTurnazioniUtente(id));
+    } catch (err) {
+
+      panic()
+      return
+    }
     this.setState({
       idUser : id,
       nome: utente.name,
@@ -63,7 +75,13 @@ export default class UserProfileView extends React.Component{
     console.log(idRotazione + key)
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione,  this.state.idUser);
+    try {
+      responseStatus = await categoriaUtenteApi.deleteRotazione(idRotazione,  this.state.idUser);
+    } catch (err) {
+
+      panic()
+      return
+    }
     console.log(responseStatus)
 
     if (responseStatus === 200) {
@@ -96,7 +114,13 @@ export default class UserProfileView extends React.Component{
     console.log(idRotazione + key )
     let categoriaUtenteApi = new CategoriaUtenteAPI();
     let responseStatus;
-    responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.idUser);
+    try {
+      responseStatus = await categoriaUtenteApi.deleteStato(idRotazione, this.state.idUser);
+    } catch (err) {
+
+      panic()
+      return
+    }
     console.log(responseStatus)
 
     if (responseStatus === 200) {

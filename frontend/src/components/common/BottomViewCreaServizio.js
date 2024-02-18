@@ -15,6 +15,7 @@ import {ServizioAPI} from "../../API/ServizioAPI";
 import {MedicalService} from "../../entity/MedicalService";
 import {Task} from "../../entity/Task";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 toast.configure();
 
@@ -54,7 +55,14 @@ const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => 
                 name        : newMedicalServiceName.toUpperCase(),
                 taskTypes   : checkedTasksStringArray
             }
-            serviceAPI.createMedicalService(requestParams);
+
+            try {
+              serviceAPI.createMedicalService(requestParams);
+            } catch (err) {
+
+              panic()
+              return
+            }
 
             // build params for view update
             const outTaskArray = [];
