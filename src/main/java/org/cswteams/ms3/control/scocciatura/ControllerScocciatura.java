@@ -83,10 +83,11 @@ public class ControllerScocciatura {
         switch(pq) {
             case LONG_SHIFT:
                 allDoctorUffaPriority.sort(Comparator.comparingInt(DoctorUffaPriority::getPartialLongShiftPriority));
+                break;
 
             case NIGHT:
                 allDoctorUffaPriority.sort(Comparator.comparingInt(DoctorUffaPriority::getPartialNightPriority));
-
+                break;
         }
 
     }

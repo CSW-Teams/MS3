@@ -305,7 +305,6 @@ export default class SingleUserProfileView extends React.Component{
             <MDBTableBody>
               {this.state.conditions.map((data) => {
                 const options = {
-                  timeZone: 'Europe/Berlin',
                   weekday: 'long',
                   day: "numeric",
                   month: 'long',

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
+import org.cswteams.ms3.dao.DoctorUffaPrioritySnapshotDAO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.constraint.ContextConstraint;
@@ -48,6 +49,8 @@ public class ScheduleBuilder {
 
     /** Instance of controllerScocciatura */
     private ControllerScocciatura controllerScocciatura;
+
+    private List<DoctorUffaPrioritySnapshot> snapshot;
 
 
     /**
@@ -104,7 +107,7 @@ public class ScheduleBuilder {
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
     public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors,
-                           List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> allDoctorUffaPriority) throws IllegalScheduleException {
+                           List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> allDoctorUffaPriority, List<DoctorUffaPrioritySnapshot> snapshot) throws IllegalScheduleException {
 
         // Checks on the parameters state
         validateDates(startDate,endDate);
@@ -115,6 +118,7 @@ public class ScheduleBuilder {
         this.schedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), Collections.emptyList());
         this.schedule.setConcreteShifts(allAssignedShifts);
         this.allConstraints = allConstraints;
+        this.snapshot = snapshot;
 
         this.holidays = holidays;
         this.doctorHolidaysList = doctorHolidaysList;
@@ -130,7 +134,7 @@ public class ScheduleBuilder {
     private void validateSchedule(Schedule schedule) throws IllegalScheduleException {
         if(schedule == null)
             throw new IllegalScheduleException("[ERROR] Cannot create new schedule from a null one");
-        else if (schedule.getCauseIllegal() == null)
+        else if (schedule.getCauseIllegal() != null)
             throw new IllegalScheduleException("[ERROR] Cannot create new schedule from an illegal one");
     }
 
@@ -141,7 +145,11 @@ public class ScheduleBuilder {
      * @param schedule An existing schedule from which to start a new one
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
-    public ScheduleBuilder(List<Constraint> allConstraints, List<DoctorUffaPriority> allDoctorUffaPriority, Schedule schedule) throws IllegalScheduleException {
+    public ScheduleBuilder(List<Constraint> allConstraints,
+                           List<DoctorUffaPriority> allDoctorUffaPriority,
+                           Schedule schedule,
+                           List<DoctorHolidays> doctorHolidaysList,
+                           List<Holiday> holidays) throws IllegalScheduleException {
         // Checks on the parameters state
         validateConstraints(allConstraints);
         validateSchedule(schedule);
@@ -149,7 +157,11 @@ public class ScheduleBuilder {
         this.allConstraints = allConstraints;
         this.schedule=schedule;
         this.allDoctorUffaPriority = allDoctorUffaPriority;
+        this.doctorHolidaysList = doctorHolidaysList;
+        this.holidays = holidays;
         initializeDoctorUffaPriorities();
+
+
     }
 
 
@@ -171,18 +183,22 @@ public class ScheduleBuilder {
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
 
-        /* make a snapshot of all priorities, the following loop is needed to perform a copy by value */
-        List<DoctorUffaPriority> snapshot = new ArrayList<>();
+        /* update snapshot of all priorities, the following loop is needed to perform a copy by value */
 
-        for (DoctorUffaPriority doctorUffaPriority : this.allDoctorUffaPriority) {
-            DoctorUffaPriority dup = new DoctorUffaPriority(doctorUffaPriority.getDoctor(), doctorUffaPriority.getSchedule());
-            dup.setGeneralPriority(doctorUffaPriority.getGeneralPriority());
-            dup.setNightPriority(doctorUffaPriority.getNightPriority());
-            dup.setLongShiftPriority(doctorUffaPriority.getLongShiftPriority());
-            snapshot.add(dup);
+        for (DoctorUffaPriority dup : this.allDoctorUffaPriority) {
+            for (DoctorUffaPrioritySnapshot dupSnapshot : snapshot) {
+                if (dup.getDoctor() == dupSnapshot.getDoctor()) {
+                    int generalPriority = dup.getGeneralPriority();
+                    int nightPriority = dup.getNightPriority();
+                    int longShiftPriority = dup.getLongShiftPriority();
+                    dupSnapshot.setGeneralPriority(generalPriority);
+                    dupSnapshot.setNightPriority(nightPriority);
+                    dupSnapshot.setLongShiftPriority(longShiftPriority);
+                }
+            }
         }
 
-        schedule.setDoctorUffaPrioritiesSnapshot(snapshot);
+        this.schedule.setDoctorUffaPrioritiesSnapshot(snapshot);
 
         if(controllerScocciatura != null)   //if controllerScocciatura is instantiated, then we can normalize all the priorities.
             controllerScocciatura.normalizeUffaPriority(allDoctorUffaPriority);

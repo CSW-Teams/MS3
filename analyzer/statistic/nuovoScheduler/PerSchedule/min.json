@@ -1,0 +1,338 @@
+{
+  "271": {
+    "giornaliero": 0.0,
+    "pomeridiano": 1.0,
+    "notturno": 7.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "1481": {
+    "giornaliero": 0.0,
+    "pomeridiano": 1.0,
+    "notturno": 5.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "2652": {
+    "giornaliero": 0.0,
+    "pomeridiano": 2.0,
+    "notturno": 7.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "3862": {
+    "giornaliero": 1.0,
+    "pomeridiano": 0.0,
+    "notturno": 6.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "5033": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "6243": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 6.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "7453": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "8624": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "9834": {
+    "giornaliero": 1.0,
+    "pomeridiano": 0.0,
+    "notturno": 6.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "11005": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 6.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "12215": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 6.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "13425": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "14518": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "15728": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "16899": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "18109": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "19280": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "20490": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "21700": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "22871": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "24081": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "25252": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "26462": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "27672": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "28765": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "29975": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "31146": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "32356": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "33527": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "34737": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "35947": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "37118": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "38328": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "39499": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "40709": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "41919": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "43012": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "44222": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "45393": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 7.0,
+    "domeniche": 3.0,
+    "lunga": 0.0
+  },
+  "46603": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "47774": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 1.0,
+    "lunga": 0.0
+  },
+  "48984": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "50194": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "51365": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "52575": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "53746": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "54956": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  },
+  "56166": {
+    "giornaliero": 0.0,
+    "pomeridiano": 0.0,
+    "notturno": 8.0,
+    "domeniche": 2.0,
+    "lunga": 0.0
+  }
+}

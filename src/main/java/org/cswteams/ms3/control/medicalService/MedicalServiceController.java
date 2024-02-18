@@ -74,13 +74,13 @@ public class MedicalServiceController implements IMedicalServiceController {
             throw new DatabaseException("MedicalService not found for id = " + medicalServiceDTO.getId());
         }
         MedicalService medicalService = medicalServiceOpt.get();
-        medicalService.setLabel(medicalServiceDTO.getNome());
+        medicalService.setLabel(medicalServiceDTO.getName());
 
         // compare persistent tasks with the received ones:
         // 1. assigned (i.e., via DoctorAssignment(s)) tasks must be included into received ones
         // 2. persistent task must only be updated, whilst new task should be created
         List<Task> persistentTasks = medicalService.getTasks();
-        List<Task> receivedTasks = medicalServiceDTO.getMansioni();
+        List<Task> receivedTasks = medicalServiceDTO.getTasks();
         List<Task> updatedTasks = new ArrayList<>();
         List<Task> toBeRemovedTasks = new ArrayList<>();
 

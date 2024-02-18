@@ -35,12 +35,11 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnDuty.length; j++) {
           let currentUserDto = body[i].doctorsOnDuty[j];
-          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : (currentUserDto.seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno");
           let utenteAllocato = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            seniority,
+            currentUserDto.seniority,
             currentUserDto.task,
           )
           utenti_guardia[j] = utenteAllocato;
@@ -49,12 +48,11 @@ export  class AssegnazioneTurnoAPI {
 
         for (let j = 0; j < body[i].doctorsOnCall.length; j++) {
           let currentUserDto = body[i].doctorsOnCall[j];
-          let seniority = currentUserDto.seniority === "STRUCTURED" ? "Strutturato" : (currentUserDto.seniority === "SPECIALIST_JUNIOR" ? "Specializzando I/II anno" : "Specializzando III/IV/V anno");
           let utenteReperibile = new Doctor(
             currentUserDto.id,
             currentUserDto.name,
             currentUserDto.lastname,
-            seniority,
+            currentUserDto.seniority,
             currentUserDto.task,
           )
           utenti_reperibili[j] = utenteReperibile;
@@ -154,24 +152,44 @@ export  class AssegnazioneTurnoAPI {
    * 400 se i parametri della richiesta sono malformati e il backend non è riuscito a interpretarli;
    * 406 se la richiesta di assegnazone è stata rigettata, ad esempio perché violerebbe dei vincoli per la sua pianificazione.
    */
-  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizioNome,mansione,forced) {
+  async postAssegnazioneTurno(data,turnoTipologia,utentiSelezionatiGuardia,utentiReperibilita,servizio,mansione,forced) {
 
       let assegnazioneTurno = {};
 
-      const giorno = data.$d.getDate();
-      const mese = data.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
-      const anno = data.$d.getFullYear();
+      const day = data.$d.getDate();
+      const month = data.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
+      const year = data.$d.getFullYear();
 
       // Creating an ISO 8601 formatted date string
-      assegnazioneTurno.giorno = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
+      // assegnazioneTurno.giorno = `${anno}-${mese.toString().padStart(2, '0')}-${giorno.toString().padStart(2, '0')}`;
+
+      assegnazioneTurno.day = day;
+      assegnazioneTurno.month = month;
+      assegnazioneTurno.year = year;
 
       assegnazioneTurno.forced = forced;
 
-      assegnazioneTurno.servizio = servizioNome;
-      assegnazioneTurno.mansione = mansione;
-      assegnazioneTurno.tipologiaTurno = turnoTipologia
-      assegnazioneTurno.utentiDiGuardia = utentiSelezionatiGuardia;
-      assegnazioneTurno.utentiReperibili = utentiReperibilita;
+      assegnazioneTurno.servizio = servizio;
+      // assegnazioneTurno.mansione = mansione;
+      assegnazioneTurno.timeSlot = turnoTipologia;
+
+      let onDutyDoctorsValues = [];
+      let onCallDoctorsValues = [];
+
+      for (let i = 0; i < utentiSelezionatiGuardia.length; i++) {
+        utentiSelezionatiGuardia[i].value.systemActors = ["DOCTOR"]
+        onDutyDoctorsValues.push(utentiSelezionatiGuardia[i].value);
+      }
+
+      for (let i = 0; i < utentiReperibilita.length; i++) {
+        utentiReperibilita[i].value.systemActors = ["DOCTOR"]
+        onCallDoctorsValues.push(utentiReperibilita[i].value);
+      }
+
+      assegnazioneTurno.onDutyDoctors = onDutyDoctorsValues;
+      assegnazioneTurno.onCallDoctors = onCallDoctorsValues;
+
+      console.log("Assegnazione turno: ", assegnazioneTurno);
 
       const requestOptions = {
         method: 'POST',
@@ -213,8 +231,10 @@ async requestShiftChange(utenteCambio, assegnazione, idLoggato) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(shiftChangeRequest)
   };
-
-  return await fetch('/api/change-shift-request/', requestOptions);
+  let response = await fetch('/api/change-shift-request/', requestOptions);
+  console.log(response)
+  console.log(response.body)
+  return response;
 }
 
 

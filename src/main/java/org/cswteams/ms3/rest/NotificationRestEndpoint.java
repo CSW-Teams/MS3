@@ -20,8 +20,11 @@ public class NotificationRestEndpoint {
     @RequestMapping(method = RequestMethod.GET,path = "id={userId}")
     public ResponseEntity<?> getAllMedicalServices(@PathVariable long userId) {
         Set<NotificationDTO> notificationDTOS = notificationSystemController.getAllNotificationByUser(userId);
-        if (notificationDTOS == null || notificationDTOS.isEmpty()) {
+        if (notificationDTOS == null ) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        if (notificationDTOS.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
         return new ResponseEntity<>(notificationDTOS, HttpStatus.OK);
     }

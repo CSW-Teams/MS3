@@ -8,6 +8,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { UserAPI } from '../../API/UserAPI';
+import { DoctorAPI } from '../../API/DoctorAPI';
+import { ServizioAPI } from '../../API/ServizioAPI';
+import { TurnoAPI } from '../../API/TurnoAPI';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { ToastContainer, toast } from 'react-toastify';
@@ -32,7 +35,7 @@ function ViolationLog(props){
 
 export default function TemporaryDrawer(props) {
 
-  const [user,setUser] = React.useState([{}])
+  const [user,setUser] = React.useState([])
   const [data,setdata] = React.useState("")
   const [turno,setTurno] = React.useState("")
   const [servizio,setServizio] = React.useState("")
@@ -41,19 +44,68 @@ export default function TemporaryDrawer(props) {
   const [utentiSelezionatiReperibilità,setUtentiSelezionatiReperibilita] = React.useState([])
   const [state, setState] = React.useState({bottom: false});
   const [giustificato, setGiustificato] = React.useState(false)
+  const [allServices, setAllServices] = React.useState([])
+  const [timeSlot, setTimeSlot] = React.useState("")
   let giustificazione = ''
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
-    let userApi = new UserAPI();
-    let utenti = await userApi.getAllUsersInfo()
-    setUser(utenti);
+    let doctorApi = new DoctorAPI();
+    let doctors = await doctorApi.getAllDoctorsInfo()
+
+    const d = []
+    for(let i=0; i<doctors.length; i++) {
+      d.push({label: doctors[i].name + " " + doctors[i].lastname + " - " + doctors[i].seniority, value: doctors[i]})
+    }
+
+    setUser(d);
   }
+
+    async function getService() {
+      let servizioAPI = new ServizioAPI();
+      let services = await servizioAPI.getAllServices()
+
+      const d = []
+      for(let i=0; i<services.length; i++) {
+        d.push({label: services[i].name, value: services[i]})
+      }
+
+      setServizio(d);
+      setAllServices(d);
+    }
+
+
+
+    async function getShift(servizio) {
+        if(servizio.length > 0) {
+          console.log(servizio[0].label)
+
+          let turnoApi = new TurnoAPI();
+          let shifts = await turnoApi.getTurniByServizio(servizio[0].label)
+
+          const d = []
+          for(let i=0; i<shifts.length; i++) {
+            if(shifts[i].daysOfWeek.length == 7) {
+              d.push({label: shifts[i].tipologia + " - everyday", value: shifts[i]});
+            } else {
+              d.push({label: shifts[i].tipologia + " - " + shifts[i].daysOfWeek, value: shifts[i]});
+            }
+          }
+
+          setTurno(d);
+        }
+
+        else {
+          setTurno([]);
+        }
+    }
 
   //Questa funzione aggiorna lo stato del componente.
   React.useEffect(() => {
     getUser();
+    getService();
+    getShift(servizio);
   }, []);
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare la data.
@@ -64,13 +116,17 @@ export default function TemporaryDrawer(props) {
 
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
-  //Viene passata al componente <ConcreteShiftMultipleSelect>
-  const handleTurno = (turno) => {
-    setTurno(turno);
+  //Viene passata al componente <MultipleSelect>
+  const handleTurno = (timeslot) => {
+    if (timeslot.length > 0)
+      setTimeSlot(timeslot[0].value.tipologia)
   }
 
   const handleServizio = (servizio) => {
-    setServizio(servizio);
+    if (servizio.length > 0) {
+      setServizio(servizio[0].value);
+      getShift(servizio);
+    }
   }
 
   //Funzione che apre la schermata secondaria che permette di creare un associazione.
@@ -119,8 +175,11 @@ export default function TemporaryDrawer(props) {
      * oppure se è stata rigettata.
      * In quest'ultimo caso ci verranno forniti dei messaggi informativi per l'utente riguardo a cosa è andato storto.
      */
-    const mansione = turno.toString().substring(turno.toString().lastIndexOf(" ")+1, turno.toString().length)
-    const tipologiaTurno = turno.toString().substring(0,turno.toString().indexOf(" "))
+    {/*const mansione = turno.toString().substring(turno.toString().lastIndexOf(" ")+1, turno.toString().length)
+    const tipologiaTurno = turno.toString().substring(0,turno.toString().indexOf(" "))*/}
+    const mansione = turno
+    const tipologiaTurno = timeSlot
+    console.log("Servizio: ", servizio)
     response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
 
     //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
@@ -285,7 +344,21 @@ export default function TemporaryDrawer(props) {
 
             <Stack spacing={3} >
               <BasicDatePicker onSelectData={handleData}></BasicDatePicker>
-              <ConcreteShiftMultipleSelect onSelectTurno = {handleTurno} onSelectServizio = {handleServizio}></ConcreteShiftMultipleSelect>
+              {/*<MultipleSelect onSelectTurno = {handleTurno} onSelectServizio = {handleServizio}></MultipleSelect>*/}
+              <Autocomplete
+                onChange={(event, value) => handleServizio(value)}
+                multiple
+                options={allServices}
+                sx={{ width: 300 }}
+                renderInput={(params) => <TextField {...params} label={t("Service")} />}
+              />
+              <Autocomplete
+                onChange={(event, value) => handleTurno(value)}
+                multiple
+                options={turno}
+                sx={{ width: 300 }}
+                renderInput={(params) => <TextField {...params} label={t("Shift")} />}
+              />
               <Autocomplete
                 onChange={(event, value) => setUtentiSelezionatiGuardia(value)}
                 multiple
@@ -309,7 +382,7 @@ export default function TemporaryDrawer(props) {
 
               <Button variant="contained" size="small" disabled={forced && !giustificato} onClick={assegnaTurno('bottom', false)} >
                 {t("Assign Turn")}
-              </Button>
+              </Button> {/* todo shift porcodiiii */}
             </Stack>
           </div>
         </Drawer>

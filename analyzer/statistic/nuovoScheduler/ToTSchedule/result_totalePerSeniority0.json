@@ -1,0 +1,62 @@
+{
+  "media_asseganzioni": {
+    "giornaliero": 417.42857142857144,
+    "pomeridiano": 417.42857142857144,
+    "notturno": 417.42857142857144,
+    "domeniche": 179.14285714285714,
+    "lunga": 45.714285714285715,
+    "general_priority": 16.0,
+    "night_priority": 11.857142857142858,
+    "long_shift_priority": 0.6428571428571429
+  },
+  "max_assegnazioni": {
+    "giornaliero": 809.0,
+    "pomeridiano": 706.0,
+    "notturno": 420.0,
+    "domeniche": 187.0,
+    "lunga": 101.0,
+    "general_priority": 21.0,
+    "night_priority": 13.0,
+    "long_shift_priority": 1.0
+  },
+  "min_assegnazioni": {
+    "giornaliero": 153.0,
+    "pomeridiano": 61.0,
+    "notturno": 411.0,
+    "domeniche": 170.0,
+    "lunga": 4.0,
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "discostamento_medio_media_asseganzioni": {
+    "giornaliero": 182.40816326530611,
+    "pomeridiano": 185.77551020408166,
+    "notturno": 2.2448979591836666,
+    "domeniche": 4.285714285714286,
+    "lunga": 23.3265306122449,
+    "general_priority": 3.2857142857142856,
+    "night_priority": 0.4897959183673467,
+    "long_shift_priority": 0.4591836734693877
+  },
+  "discostamento_max_media_asseganzioni": {
+    "giornaliero": 391.57142857142856,
+    "pomeridiano": 356.42857142857144,
+    "notturno": 6.428571428571445,
+    "domeniche": 9.142857142857139,
+    "lunga": 55.285714285714285,
+    "general_priority": 5.0,
+    "night_priority": 1.1428571428571423,
+    "long_shift_priority": 0.6428571428571429
+  },
+  "discostamento_min_media_asseganzioni": {
+    "giornaliero": 7.428571428571445,
+    "pomeridiano": 1.4285714285714448,
+    "notturno": 0.5714285714285552,
+    "domeniche": 0.1428571428571388,
+    "lunga": 0.2857142857142847,
+    "general_priority": 2.0,
+    "night_priority": 0.14285714285714235,
+    "long_shift_priority": 0.3571428571428571
+  }
+}

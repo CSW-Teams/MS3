@@ -20,13 +20,14 @@ import { t } from "i18next";
 * Schermata che permette di generare un nuovo schedule
 */
 export class SchedulerGeneratorView extends React.Component{
+
     constructor(props){
         super(props);
         this.state = {
             dataStart: "",
             dataEnd: "",
-            schedulazioni: [{}]
-
+            schedulazioni: [{}],
+            loading: false,
         }
 
         this.componentDidMount = this.componentDidMount.bind(this);
@@ -42,6 +43,9 @@ export class SchedulerGeneratorView extends React.Component{
     }
 
     async handleDelete(idSchedule) {
+
+      this.setState({loading: true});
+
       let scheduleAPI = new ScheduleAPI();
       let responseStatus;
       responseStatus = await scheduleAPI.deleteSchedule(idSchedule);
@@ -81,6 +85,8 @@ export class SchedulerGeneratorView extends React.Component{
           theme: "colored",
         });
       }
+
+      this.setState({loading: false});
     }
 
 
@@ -134,7 +140,7 @@ export class SchedulerGeneratorView extends React.Component{
       <section>
         <TemporaryDrawerSchedule onPostGeneration={this.componentDidMount}></TemporaryDrawerSchedule>
         <MDBContainer className="py-5">
-          <MDBCard alignment='center'>
+          <MDBCard alignment='center' style={{ maxHeight: '70vh', overflowY: 'auto' }}>
             <MDBCardBody style={{ height: '64vh' }}>
               <MDBCardTitle>{t("Schedule management")}</MDBCardTitle>
               <MDBRow>
@@ -158,7 +164,6 @@ export class SchedulerGeneratorView extends React.Component{
                       const finalDayMillis = schedule.finalDate * millisecondsInDay;
 
                       const options = {
-                        timeZone: 'Europe/Berlin',
                         weekday: 'long',
                         day: "numeric",
                         month: 'long',
@@ -174,12 +179,16 @@ export class SchedulerGeneratorView extends React.Component{
                           <td className="align-middle">{endDate.toLocaleString(navigator.language, options)}</td>
                           <td className="align-middle">{schedule.isIllegal ? "Incompleta" : "Completa"}</td>
                           <td className="align-middle">
-                            <IconButton aria-label="delete" onClick={() => this.handleDelete(schedule.id)}>
+                            <IconButton
+                              aria-label="delete"
+                              onClick={() => this.handleDelete(schedule.id)}>
                               <DeleteIcon />
                             </IconButton>
                           </td>
                           <td className="align-middle">
+                            {schedule === this.state.schedulazioni[this.state.schedulazioni.length - 1] &&
                             <Button onClick={() => this.handleRegeneration(schedule.id)}>Rigenera</Button>
+                            }
                           </td>
                         </tr>
                       )
@@ -187,6 +196,13 @@ export class SchedulerGeneratorView extends React.Component{
                   </MDBTableBody>
                 </MDBTable>
               </MDBRow>
+
+              {this.state.loading && (
+                <div className="loading-overlay">
+                  <div className="loading-spinner"></div>
+                </div>
+              )}
+
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>

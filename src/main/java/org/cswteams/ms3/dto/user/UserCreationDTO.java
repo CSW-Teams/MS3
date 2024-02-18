@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class UserCreationDTO {
+    private Long id;
     private String name;
     private String lastname;
     private LocalDate birthday;

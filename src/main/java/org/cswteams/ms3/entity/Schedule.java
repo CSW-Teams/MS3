@@ -46,8 +46,8 @@ public class Schedule {
     private List<DoctorUffaPriority> doctorUffaPriorityList;
 
     /** Snapshot of all priority levels before the scheduling, to be restored if the scheduling is recreated */
-    @OneToMany(cascade = {CascadeType.ALL})
-    private List<DoctorUffaPriority> doctorUffaPrioritiesSnapshot;
+    @Transient
+    private List<DoctorUffaPrioritySnapshot> doctorUffaPrioritiesSnapshot;
 
     /**
      * Class representing a valid schedule

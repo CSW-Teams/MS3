@@ -1,0 +1,242 @@
+{
+  "0": {
+    "general_priority": 15.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "1": {
+    "general_priority": 17.0,
+    "night_priority": 13.0,
+    "long_shift_priority": 0.0
+  },
+  "2": {
+    "general_priority": 16.0,
+    "night_priority": 13.0,
+    "long_shift_priority": 0.0
+  },
+  "3": {
+    "general_priority": 17.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "4": {
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "5": {
+    "general_priority": 17.0,
+    "night_priority": 13.0,
+    "long_shift_priority": 0.0
+  },
+  "6": {
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "7": {
+    "general_priority": 15.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "8": {
+    "general_priority": 14.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "9": {
+    "general_priority": 26.0,
+    "night_priority": 16.0,
+    "long_shift_priority": 0.0
+  },
+  "10": {
+    "general_priority": 14.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "11": {
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "12": {
+    "general_priority": 15.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "13": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "14": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "15": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "16": {
+    "general_priority": 14.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "17": {
+    "general_priority": 15.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "18": {
+    "general_priority": 12.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "19": {
+    "general_priority": 14.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "20": {
+    "general_priority": 13.0,
+    "night_priority": 10.0,
+    "long_shift_priority": 0.0
+  },
+  "21": {
+    "general_priority": 14.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "22": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "23": {
+    "general_priority": 12.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "24": {
+    "general_priority": 15.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "25": {
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "26": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "27": {
+    "general_priority": 13.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "28": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "29": {
+    "general_priority": 15.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "30": {
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "31": {
+    "general_priority": 13.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "32": {
+    "general_priority": 15.0,
+    "night_priority": 10.0,
+    "long_shift_priority": 0.0
+  },
+  "33": {
+    "general_priority": 13.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "34": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "35": {
+    "general_priority": 12.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "36": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "37": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "38": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "39": {
+    "general_priority": 13.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "40": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "41": {
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "42": {
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "43": {
+    "general_priority": 14.0,
+    "night_priority": 12.0,
+    "long_shift_priority": 0.0
+  },
+  "44": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "45": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "46": {
+    "general_priority": 14.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  },
+  "47": {
+    "general_priority": 13.0,
+    "night_priority": 11.0,
+    "long_shift_priority": 0.0
+  }
+}

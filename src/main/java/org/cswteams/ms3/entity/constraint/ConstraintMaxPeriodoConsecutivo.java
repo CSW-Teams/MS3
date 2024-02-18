@@ -52,6 +52,9 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
+        if(context.getConcreteShift().getShift().getDuration().toMinutes() > maxConsecutiveMinutes) {
+            throw new ViolatedVincoloAssegnazioneTurnoTurnoException(context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor(), maxConsecutiveMinutes);
+        }
         if(context.getDoctorUffaPriority().getAssegnazioniTurnoCache().size() != 0 && verificaAppartenenzaCategoria(context)) {
             List<ConcreteShift> assignedConcreteShifts = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
             List<ConcreteShift> consecConcreteShifts = new ArrayList<>();

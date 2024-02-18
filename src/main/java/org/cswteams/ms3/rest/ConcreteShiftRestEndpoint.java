@@ -49,6 +49,7 @@ public class ConcreteShiftRestEndpoint {
             } catch (ConcreteShiftException e) {
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
             } catch (IllegalScheduleException e) {
+                e.printStackTrace();
                 schedule = null;
             }
 
@@ -142,7 +143,6 @@ public class ConcreteShiftRestEndpoint {
 
     @RequestMapping(method = RequestMethod.POST, path = "/available-users-for-replacement/")
     public ResponseEntity<?> getAvailableUsersForReplacement(@RequestBody GetAvailableUsersForReplacementDTO dto) {
-        System.out.println("ciao");
         List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUsersForReplacement(dto);
         return new ResponseEntity<>(returnList, HttpStatus.FOUND);
     }
