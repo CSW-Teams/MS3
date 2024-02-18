@@ -8,6 +8,8 @@ import withTracker from "./withTracker";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./shards-dashboard/styles/shards-dashboards.1.1.0.min.css";
+import {ToastContainer} from "react-toastify";
+import PanicTableau from "./components/common/Panic";
 
 const App = () => (
   <I18nextProvider i18n={i18n}>
@@ -29,8 +31,10 @@ const App = () => (
             />
           );
         })}
+        <ToastContainer/>
       </div>
     </Router>
+    <PanicTableau/>
   </I18nextProvider>
 );
 

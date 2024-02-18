@@ -9,6 +9,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 import {t} from "i18next";
+import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 
 
@@ -36,7 +38,13 @@ export default function UserSystemActorAdditionDrawer(props){
             allSystemActors.push(checkedSpecializationsCheckBoxes[i]);
         }
 
-        let responseStatus = singleUserProfileAPI.addSystemActors(userID,  allSystemActors);
+        try {
+          let responseStatus = singleUserProfileAPI.addSystemActors(userID,  allSystemActors);
+        } catch (err) {
+
+          panic()
+          return
+        }
 
         setOpen(false);
         updateFunction(allSystemActors);

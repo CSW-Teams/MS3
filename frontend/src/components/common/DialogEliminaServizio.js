@@ -10,6 +10,8 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ToastContainer, toast } from 'react-toastify';
 import {ServizioAPI} from "../../API/ServizioAPI";
+import { t } from "i18next";
+import {panic} from "./Panic";
 
 toast.configure();
 
@@ -22,7 +24,13 @@ export default function DialogEliminaServizio({currentServiceInfo, updateService
   };
 
   const handleRemove = () => {
-    serviceAPI.deleteMedicalService(currentServiceInfo.id);
+    try {
+      serviceAPI.deleteMedicalService(currentServiceInfo.id);
+    } catch (err) {
+
+      panic()
+      return
+    }
     updateServicesList(currentServiceInfo);
     toast.success("Servizio eliminato con successo.");
     setOpen(false);

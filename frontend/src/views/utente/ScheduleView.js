@@ -43,6 +43,7 @@ import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 
 /**
@@ -162,7 +163,14 @@ class ScheduleView extends React.Component{
 
       if (idUser !== -1) {
         let api = new UserAPI();
-        const userDetails = await api.getUserDetails(idUser);
+        let userDetails
+        try {
+          userDetails = await api.getUserDetails(idUser);
+        } catch (err) {
+
+          panic()
+          return
+        }
         let name = userDetails.name;
         let surname = userDetails.lastname;
         return `${name} ${surname}`
@@ -182,7 +190,14 @@ class ScheduleView extends React.Component{
       }
 
       let richiestaRimozioneDaTurnoAPI = new RichiestaRimozioneDaTurnoAPI();
-      let httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(params);
+      let httpResponse
+      try {
+        httpResponse = await richiestaRimozioneDaTurnoAPI.postRequest(params);
+      } catch (err) {
+
+        panic()
+        return
+      }
 
       if (httpResponse.status === 202) {
         toast.success(t("Request sent successfully"), {
@@ -235,7 +250,14 @@ class ScheduleView extends React.Component{
         }
 
 
-        let response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],localStorage.getItem("id"));
+        let response
+        try {
+          response = await assegnazioneTurnoApi.aggiornaAssegnazioneTurno(appointmentChanged,changed[appointmentChanged.id],localStorage.getItem("id"));
+        } catch (err) {
+
+          panic()
+          return
+        }
         let responseStatusClass = Math.floor(response.status / 100)
 
         if(responseStatusClass === 5){
@@ -280,7 +302,14 @@ class ScheduleView extends React.Component{
             theme: "colored",
           });
 
-          let turni = await assegnazioneTurnoApi.getGlobalShift();
+          let turni
+          try {
+            turni = await assegnazioneTurnoApi.getGlobalShift();
+          } catch (err) {
+
+            panic()
+            return
+          }
 
           this.setState({data:turni});
           this.forceUpdate();
@@ -288,7 +317,14 @@ class ScheduleView extends React.Component{
 
       } else if(deleted){
 
-        let response = await assegnazioneTurnoApi.eliminaAssegnazioneTurno(deleted);
+        let response
+        try {
+          response = await assegnazioneTurnoApi.eliminaAssegnazioneTurno(deleted);
+        } catch (err) {
+
+          panic()
+          return
+        }
         let responseStatusClass = Math.floor(response.status / 100);
 
         if(responseStatusClass !== 2){
@@ -318,7 +354,14 @@ class ScheduleView extends React.Component{
             autoClose: false,
           });
 
-          let turni = await assegnazioneTurnoApi.getGlobalShift();
+          let turni
+          try {
+            turni = await assegnazioneTurnoApi.getGlobalShift();
+          } catch (err) {
+
+            panic()
+            return
+          }
 
           this.setState({data:turni});
           this.forceUpdate();
@@ -350,16 +393,29 @@ class ScheduleView extends React.Component{
   async componentDidMount(turni) {
 
       let api = new RichiestaRimozioneDaTurnoAPI();
-      let requestsArray = await api.getAllPendingRequests();
+      let requestsArray
 
-      let allServices = await new ServizioAPI().getService();
-      let allDoctors = await new UserAPI().getAllDoctorsInfo();
+      let allServices
+      let allDoctors
 
       let holiApi = new HolidaysAPI() ;
-      let allHolidays = await holiApi.getHolidays(new Date().getFullYear());
-      allHolidays = allHolidays.concat(await holiApi.getHolidays(new Date().getFullYear() -1)) ;
-      allHolidays = allHolidays.concat(await holiApi.getHolidays(new Date().getFullYear() +1)) ;
+      let allHolidays
 
+      try {
+
+        requestsArray = await api.getAllPendingRequests();
+
+        allServices = await new ServizioAPI().getService();
+        allDoctors = await new UserAPI().getAllDoctorsInfo();
+
+        allHolidays = await holiApi.getHolidays(new Date().getFullYear());
+        allHolidays = allHolidays.concat(await holiApi.getHolidays(new Date().getFullYear() -1)) ;
+        allHolidays = allHolidays.concat(await holiApi.getHolidays(new Date().getFullYear() +1)) ;
+      } catch (err) {
+
+        panic()
+        return
+      }
 
       this.setState(
         {
@@ -508,22 +564,39 @@ class ScheduleView extends React.Component{
                 <ViewState
                   onCurrentDateChange={async (currentDate) => {
                     if(!this.state.lastYears.includes(currentDate.getFullYear())) {
-                      this.setState({
-                        holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear())),
-                        lastYears : this.state.lastYears.concat([currentDate.getFullYear()])
-                      }) ;
+                      try {
+                        this.setState({
+                          holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear())),
+                          lastYears : this.state.lastYears.concat([currentDate.getFullYear()])
+                        }) ;
+                      } catch (err) {
+
+                        panic()
+                        return
+                      }
                     }
                     if(!this.state.lastYears.includes(currentDate.getFullYear() +1)) {
-                      this.setState({
-                        holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() +1)),
-                        lastYears : this.state.lastYears.concat(([currentDate.getFullYear() +1]))
-                      }) ;
+                      try {
+                        this.setState({
+                          holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() +1)),
+                          lastYears : this.state.lastYears.concat(([currentDate.getFullYear() +1]))
+                        }) ;
+                      } catch (err) {
+
+                        panic()
+                        return
+                      }
                     }
                     if(!this.state.lastYears.includes(currentDate.getFullYear() -1)) {
-                      this.setState({
-                        holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() -1)),
-                        lastYears : this.state.lastYears.concat([currentDate.getFullYear() -1])
-                      }) ;
+                      try {
+                        this.setState({
+                          holidays : this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() -1)),
+                          lastYears : this.state.lastYears.concat([currentDate.getFullYear() -1])
+                        }) ;
+                      } catch (err) {
+
+                        panic()
+                      }
                     }
                   }}
                 />

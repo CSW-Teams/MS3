@@ -13,6 +13,7 @@ import {
 import {toast, ToastContainer} from "react-toastify";
 import {VincoloAPI} from "../../API/VincoliAPI";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class ConfigurazioneVincoli extends React.Component{
 
@@ -36,7 +37,14 @@ export default class ConfigurazioneVincoli extends React.Component{
   }
 
   async componentDidMount() {
-    let conf = await(new VincoloAPI().getConfigurazioneVincoli())
+    let conf
+    try {
+      conf = await(new VincoloAPI().getConfigurazioneVincoli())
+    } catch (err) {
+
+      panic()
+      return
+    }
     this.setState({
       numGiorniPeriodo: conf.numGiorniPeriodo,
       maxOrePeriodo: conf.maxOrePeriodo,
@@ -54,7 +62,14 @@ export default class ConfigurazioneVincoli extends React.Component{
     let conf = {}
     conf = this.state
 
-    let response = await vincoliApi.setConfigurazioneVincoli(conf)
+    let response
+    try {
+      response = await vincoliApi.setConfigurazioneVincoli(conf)
+    } catch (err) {
+
+      panic()
+      return
+    }
     if (response.status === 202) {
       toast.success(t("Configuration saved successfully"), {
         position: "top-center",
@@ -199,18 +214,6 @@ export default class ConfigurazioneVincoli extends React.Component{
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
 
       </section>
     )

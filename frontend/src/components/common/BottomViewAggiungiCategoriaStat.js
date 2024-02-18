@@ -2,17 +2,15 @@ import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
-import SelectCategoria from './ConditionMultipleSelect';
+import SelectCategoriaStato from './SelectCategoriaStato';
+
 import Button from '@mui/material/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {CategoriaUtenteAPI} from "../../API/CategoriaUtenteAPI";
-import { t } from "i18next";
+import {t} from "i18next";
 import {panic} from "./Panic";
 
-/**
- * Deprecated class
- */
 export default function TemporaryDrawer(props) {
 
   const [dataInizio,setDataInizio] = React.useState("")
@@ -35,7 +33,7 @@ export default function TemporaryDrawer(props) {
   }
 
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
-  //Viene passata al componente <ConcreteShiftMultipleSelect>
+  //Viene passata al componente <MultipleSelect>
   const handleCategoria = (categoria) => {
     setCategoria(categoria);
   }
@@ -51,7 +49,7 @@ export default function TemporaryDrawer(props) {
 
   //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare una nuova assegnazione.
   //Viene passata come callback al componente <Button>Assegna turno</Button>
-  const aggiungiCategoria= (anchor, open) => async (event) => {
+  const AggiungiCategoriaStato= (anchor, open) => async (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
@@ -64,7 +62,7 @@ export default function TemporaryDrawer(props) {
     let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
 
     try {
-      status = await categoriaUtenteAPI.postAggiungiTurnazione(categoria, dataInizio, dataFine, utente_id)
+      status = await categoriaUtenteAPI.postAggiungiStato(categoria, dataInizio, dataFine, utente_id)
     } catch (err) {
 
       panic()
@@ -75,7 +73,7 @@ export default function TemporaryDrawer(props) {
 
     //Verifico la risposta del server analizzando il codice di risposta http
     if(status===202){
-      toast.success(t("Rotation created successfully"), {
+      toast.success(t( 'Category created successfully'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -86,7 +84,7 @@ export default function TemporaryDrawer(props) {
         theme: "colored",
       });
     }else if (status === 400){
-      toast.error(t("Parameters Error"), {
+      toast.error(t('Parameters Error'), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -118,14 +116,14 @@ export default function TemporaryDrawer(props) {
             height: '65vh',
           }}>
             <Stack spacing={1}>
-                <label>{t("Start Date")}</label>
+                <label>{t('Start Date')}</label>
                 <BasicDatePicker  onSelectData={handleDataInizio}></BasicDatePicker>
-              <label>{t("End Date")}</label>
+              <label>{t('End Date')}</label>
               <BasicDatePicker  onSelectData={handleDataFine}></BasicDatePicker>
-              <label>{t("Rotations")}</label>
-              <SelectCategoria onSelectCategoria = {handleCategoria} ></SelectCategoria>
+              <label>{t('User Status')}</label>
+              <SelectCategoriaStato onSelectCategoria = {handleCategoria} ></SelectCategoriaStato>
 
-              <Button variant="contained" size="small" onClick={aggiungiCategoria('bottom', false)}>
+              <Button variant="contained" size="small" onClick={AggiungiCategoriaStato('bottom', false)}>
                 <i className="fa fa-plus" aria-hidden="true"> </i>
               </Button>
             </Stack>

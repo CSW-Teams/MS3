@@ -25,6 +25,8 @@ import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { ToastContainer, toast } from 'react-toastify';
   import {DoctorAPI} from "../../API/DoctorAPI";
   import {Doctor} from "../../entity/Doctor";
+  import {t} from "i18next";
+  import {panic} from "./Panic";
 
 
 const prova = [
@@ -71,19 +73,6 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
           type="ordinaryLabel"
         />
 
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-
       </AppointmentForm.BasicLayout>
     );
   };
@@ -128,6 +117,8 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
           console.log("param: "+param+" "+currentDoctor.seniority+" "+appointmentData.id);
           let avDoctors = await getAvailableUsersForShiftExchange(param);
           console.log(avDoctors)
+          if(avDoctors === undefined) return
+
           const autocompleteList = [];
           for (let i = 0; i < avDoctors.length; i++) {
             const label = avDoctors[i].label;
@@ -156,15 +147,22 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      * @returns list of users who can replace the requesting user, in this concrete shift
      */
     async function getAvailableUsersForShiftExchange() {
-      let doctorAPI = new DoctorAPI();
-      const currentDoctor = await doctorAPI.getDoctorById(parseInt(localStorage.getItem("id")));
 
-      const params = {
-        seniority: currentDoctor.seniority,
-        shiftId: appointmentData.id
+      try {
+
+        let doctorAPI = new DoctorAPI();
+        const currentDoctor = await doctorAPI.getDoctorById(parseInt(localStorage.getItem("id")));
+
+        const params = {
+          seniority: currentDoctor.seniority,
+          shiftId: appointmentData.id
+        }
+
+        return await assegnazioneTurnoApi.getAvailableUsersForShiftExchange(params);
+      } catch (err) {
+
+        panic()
       }
-
-      return await assegnazioneTurnoApi.getAvailableUsersForShiftExchange(params);
     }
 
 
@@ -175,7 +173,13 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
      */
     async function buildAssegnazioneModificata(contesto){
 
-      let response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati, appointmentData, parseInt(localStorage.getItem("id")))
+      let response = null
+      try {
+        response = await assegnazioneTurnoApi.requestShiftChange(utentiSelezionati, appointmentData, parseInt(localStorage.getItem("id")))
+      } catch (err) {
+        panic()
+        return
+      }
       let responseStatusClass = Math.floor(response.status / 100)
 
         if(responseStatusClass===5){
@@ -221,7 +225,14 @@ export const BasicLayout = ({ onFieldChange, appointmentData, ...restProps }) =>
           });
 
           //Aggiorno i turni sull'interfaccia
-          let turni = await assegnazioneTurnoApi.getShiftByIdUser(localStorage.getItem("id"));
+          let turni = null ;
+          try {
+            turni = await assegnazioneTurnoApi.getShiftByIdUser(localStorage.getItem("id"));
+          } catch (err) {
+
+            panic()
+            return
+          }
           contesto.setState({data:turni});
         }
 
