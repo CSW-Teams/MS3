@@ -486,10 +486,6 @@ class ScheduleView extends React.Component{
               <Button
                 onClick={() => {
                   this.setState({openOptionFilter: !this.state.openOptionFilter});
-                  //TODO remove
-                  console.log("maglia oro")
-                  console.log(this.state.allUser)
-                  console.log("non paragonarmi a una bitch così")
                 }}
                 style={{
                   'display': 'block',
