@@ -338,13 +338,16 @@ class ScheduleView extends React.Component{
      * the updateLogic() function must take the filterCriteria object as argument and change its properties values.
      * An example: function updateLogic(filterCriteria) { filterCriteria.myAttribute = myValue; }
      */
-    updateFilterCriteria(updateLogic){
-      updateLogic(this.state.filterCriteria);
-      this.forceUpdate();
+    updateFilterCriteria(updateLogic) {
+      this.setState(prevState => {
+        const newFilterCriteria = { ...prevState.filterCriteria };
+        newFilterCriteria.users = updateLogic(newFilterCriteria.users);
+        return { filterCriteria: newFilterCriteria };
+      });
     }
 
 
-    async componentDidMount(turni) {
+  async componentDidMount(turni) {
 
       let api = new RichiestaRimozioneDaTurnoAPI();
       let requestsArray = await api.getAllPendingRequests();
@@ -456,12 +459,18 @@ class ScheduleView extends React.Component{
 
                   <Autocomplete
                     onChange={(event, value) => {
-                      this.updateFilterCriteria(()=>this.state.filterCriteria.users.setState(value))
+                      this.updateFilterCriteria(()=>value)
                       }}
                     multiple
                     options={this.state.allUser}
+                    getOptionLabel={(option) => `${option.name} ${option.lastname}`}
                     sx={{ width: 300 }}
                     renderInput={(params) => <TextField {...params} label={t('Doctors on Duty')} />}
+                    renderOption={(props, option) => (
+                      <li {...props}>
+                        {`${option.name} ${option.lastname}`}
+                      </li>
+                    )}
                   />
                   {/** Service Filter selectors */}
                   <div style={{display : 'flex','justify-content': 'space-between','column-gap': '20px'}}>
@@ -477,6 +486,10 @@ class ScheduleView extends React.Component{
               <Button
                 onClick={() => {
                   this.setState({openOptionFilter: !this.state.openOptionFilter});
+                  //TODO remove
+                  console.log("maglia oro")
+                  console.log(this.state.allUser)
+                  console.log("non paragonarmi a una bitch così")
                 }}
                 style={{
                   'display': 'block',
