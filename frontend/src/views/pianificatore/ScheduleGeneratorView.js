@@ -164,7 +164,6 @@ export class SchedulerGeneratorView extends React.Component{
                       const finalDayMillis = schedule.finalDate * millisecondsInDay;
 
                       const options = {
-                        timeZone: 'Europe/Berlin',
                         weekday: 'long',
                         day: "numeric",
                         month: 'long',
