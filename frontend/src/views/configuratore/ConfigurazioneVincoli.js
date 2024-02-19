@@ -14,6 +14,7 @@ import {toast, ToastContainer} from "react-toastify";
 import {VincoloAPI} from "../../API/VincoliAPI";
 import { t } from "i18next";
 import {panic} from "../../components/common/Panic";
+import {Button} from "@mui/material";
 
 export default class ConfigurazioneVincoli extends React.Component{
 
@@ -207,7 +208,7 @@ export default class ConfigurazioneVincoli extends React.Component{
               </MDBRow>
               <MDBRow>
                 <MDBCol style={{paddingTop: '10px'}}>
-                  <MDBBtn onClick={this.handleSalvataggio}>{t("Save")}</MDBBtn>
+                  <Button variant="contained" onClick={this.handleSalvataggio}>{t("Save")}</Button>
                 </MDBCol>
               </MDBRow>
 

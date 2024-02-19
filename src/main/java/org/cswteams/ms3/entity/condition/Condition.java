@@ -1,5 +1,7 @@
 package org.cswteams.ms3.entity.condition;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 
 import javax.persistence.*;
@@ -11,6 +13,14 @@ import javax.validation.constraints.NotNull;
  * @see PermanentCondition
  * @see TemporaryCondition
  */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "kind"
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PermanentCondition.class, name = "permanent"),
+        @JsonSubTypes.Type(value = TemporaryCondition.class, name = "temporary")
+})
 @Entity
 @Getter
 @Inheritance(strategy = InheritanceType.JOINED)
