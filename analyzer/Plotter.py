@@ -68,13 +68,14 @@ def secondoGrafico(nameFile,nameFile2):
     domeniche2 = [dati2[str(i)]['domeniche'] for i in dati2]
     # Plot dei dati generali
     plt.subplot(1, 2, 1)  # Primo grafico
+    plt.grid(True);
     plt.plot(giornaliero, label='Giornaliero', color='blue')
     # Plot dei dati notturni
     plt.plot(pomeridiano, label='Pomeridiano', color='red')
     # Plot dei dati dei turni lunghi
     plt.plot(notturno, label='Notturno', color='green')
-    plt.plot(domeniche, label='Domeniche', color='yellow')
-    plt.plot(lunga, label='Lunghe', color='pink')
+    plt.plot(domeniche, label='Domeniche', color='orange')
+    plt.plot(lunga, label='Lunghe', color='purple')
     # Aggiungi titolo e legenda
     plt.title('Andamento livelli di priorità del nuovo scheduler')
     plt.xlabel('Indice')
@@ -82,13 +83,14 @@ def secondoGrafico(nameFile,nameFile2):
     plt.legend()
 
     plt.subplot(1, 2, 2)  # Primo grafico
+    plt.grid(True);
     plt.plot(giornaliero2, label='Giornaliero', color='blue')
     # Plot dei dati notturni
     plt.plot(pomeridiano2, label='Pomeridiano', color='red')
     # Plot dei dati dei turni lunghi
     plt.plot(notturno2, label='Notturno', color='green')
-    plt.plot(domeniche2, label='Domeniche', color='yellow')
-    plt.plot(lunga2, label='Lunghe', color='pink')
+    plt.plot(domeniche2, label='Domeniche', color='orange')
+    plt.plot(lunga2, label='Lunghe', color='purple')
     # Aggiungi titolo e legenda
     plt.title('Andamento degli uffaPoint del vecchio scheduler')
     plt.xlabel('Indice')
