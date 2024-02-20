@@ -205,10 +205,15 @@ export  class AssegnazioneTurnoAPI {
   async aggiornaAssegnazioneTurno(appointmentChanged,changes,idLoggato) {
 
     let assegnazioneModificata = {};
-    assegnazioneModificata.idAssegnazione = appointmentChanged.id;
-    assegnazioneModificata.utenti_guardia = changes.utenti_guardia_id
-    assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili_id
-    assegnazioneModificata.utenteModificatoreId = idLoggato;
+    assegnazioneModificata.concreteShiftId = appointmentChanged.id;
+    assegnazioneModificata.onDutyDoctors = changes.utenti_guardia_id
+    assegnazioneModificata.onCallDoctors = changes.utenti_reperibili_id
+    assegnazioneModificata.modifyingDoctorId = idLoggato;
+
+    console.log("FANFADEBUG :" + appointmentChanged.id)
+    console.log("FANFADEBUG :" + changes.utenti_guardia_id)
+    console.log("FANFADEBUG :" + changes.utenti_reperibili_id)
+    console.log("FANFADEBUG :" + idLoggato)
 
     const requestOptions = {
       method: 'PUT',

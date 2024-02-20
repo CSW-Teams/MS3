@@ -339,11 +339,7 @@ public class SchedulerController implements ISchedulerController {
             //If necessary, we modify doctors on duty list. This requires an initial squash of this list.
             if (modifyConcreteShiftDTO.getOnDutyDoctors() != null) {
                 //The squash
-                for (DoctorAssignment da : concreteShiftNew.getDoctorAssignmentList()) {
-                    if(da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY)
-                        concreteShiftNew.getDoctorAssignmentList().remove(da);
-
-                }
+                concreteShiftNew.getDoctorAssignmentList().removeIf(da -> da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY);
                 //The update
                 for (long onDutyId : modifyConcreteShiftDTO.getOnDutyDoctors()) {
                     Task involvedTask = doctorAssignmentDAO.findByDoctorAndConcreteShift(doctorDAO.findById(onDutyId), concreteShiftNew).getTask();
@@ -356,11 +352,7 @@ public class SchedulerController implements ISchedulerController {
             //If necessary, we modify doctors on call list. This requires an initial squash of this list.
             if (modifyConcreteShiftDTO.getOnCallDoctors() != null) {
                 //The squash
-                for (DoctorAssignment da : concreteShiftNew.getDoctorAssignmentList()) {
-                    if(da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL)
-                        concreteShiftNew.getDoctorAssignmentList().remove(da);
-
-                }
+                concreteShiftNew.getDoctorAssignmentList().removeIf(da -> da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL);
                 //The update
                 for (long onCallId : modifyConcreteShiftDTO.getOnCallDoctors()) {
                     Task involvedTask = doctorAssignmentDAO.findByDoctorAndConcreteShift(doctorDAO.findById(onCallId), concreteShiftNew).getTask();
