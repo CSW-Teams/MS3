@@ -1,5 +1,4 @@
-package org.cswteams.ms3.dto.category;
-
+package org.cswteams.ms3.dto.specializations;
 
 import lombok.Getter;
 

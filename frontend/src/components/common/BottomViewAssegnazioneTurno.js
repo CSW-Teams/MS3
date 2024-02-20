@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
-import MultipleSelect from './MultipleSelect';
+import ConcreteShiftMultipleSelect from './ConcreteShiftMultipleSelect';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';

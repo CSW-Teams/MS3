@@ -2,6 +2,7 @@ package org.cswteams.ms3.control.user;
 
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.UserDAO;
+import org.cswteams.ms3.dto.condition.PermanentConditionDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.dto.user.UserDetailsDTO;
@@ -102,7 +103,7 @@ public class UserController implements IUserController {
             Doctor doctor = doctorDAO.findById((long)userId);
             List<String> specializations = new ArrayList<>();
             List<String> systemActors = new ArrayList<>();
-            List<String> permanentConditions = new ArrayList<>();
+            List<PermanentConditionDTO> permanentConditions = new ArrayList<>();
             List<TemporaryConditionDTO> temporaryConditions = new ArrayList<>();
 
             // Convert specialization entity in string for the frontend
@@ -117,13 +118,18 @@ public class UserController implements IUserController {
 
             // Convert permanent conditions entity in string for the frontend
             for(PermanentCondition permanentCondition : doctor.getPermanentConditions()){
-                permanentConditions.add(permanentCondition.getType());
+                permanentConditions.add(new PermanentConditionDTO(
+                        userId,
+                        permanentCondition.getId(),
+                        permanentCondition.getType()
+                ));
             }
 
             // Convert temporary conditions entity in string for the frontend
             for(TemporaryCondition temporaryCondition : doctor.getTemporaryConditions()){
                 temporaryConditions.add(new TemporaryConditionDTO(
                         temporaryCondition.getType(),
+                        temporaryCondition.getId(),
                         temporaryCondition.getStartDate(),
                         temporaryCondition.getEndDate()
                 ));

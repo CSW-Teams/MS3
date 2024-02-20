@@ -13,7 +13,6 @@ public class LoginDTO {
     private String password;
     private SystemActor systemActor;
 
-    public LoginDTO() { }
 
     public LoginDTO(String email, String password, SystemActor systemActor) {
         this.email = email;

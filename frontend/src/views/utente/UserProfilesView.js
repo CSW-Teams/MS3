@@ -112,8 +112,8 @@ export default class UserProfilesView extends React.Component{
                     <td>{data.birthday}</td>
                     <td>{data.systemActors.map(actor => t(actor)).join(", ")}</td>
                     {this.state.attore === "UTENTE" &&
-                      <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
-                    {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/profilo-utente/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
+                      <td><Button className="overlay" variant="primary" href={`/single-user-profile/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}
+                    {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/single-user-profile/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}
                   </tr>
                 )
               })}

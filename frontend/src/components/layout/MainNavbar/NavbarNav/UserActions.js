@@ -41,7 +41,7 @@ export default function UserActions() {
         <span className="d-none d-md-inline-block">{state.nome + " " + state.cognome}</span>
       </DropdownToggle>
       <Collapse tag={DropdownMenu} right small open={state.visible}>
-        <DropdownItem tag={Link} to="/single-user-profile">
+        <DropdownItem tag={Link} to='/personal-single-user-profile/'>
           <i className="material-icons">&#xE7FD;</i> {t('Profile')}
         </DropdownItem>
         <DropdownItem tag={Link} to="/cambia-password/">

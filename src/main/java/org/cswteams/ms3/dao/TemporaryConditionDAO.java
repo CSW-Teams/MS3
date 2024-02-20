@@ -11,5 +11,6 @@ public interface TemporaryConditionDAO extends JpaRepository<TemporaryCondition,
     List<TemporaryCondition> findAll();
 
     TemporaryCondition findByType(String type);
+    TemporaryCondition findById(long id);
 
 }

@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public class TemporaryConditionDTO {
     private final String label;
+    private final long conditionID;
     private final long startDate;
     private final long endDate;
 
@@ -14,8 +15,9 @@ public class TemporaryConditionDTO {
      * @param startDate The start date of the condition
      * @param endDate The end date of the condition
      */
-    public TemporaryConditionDTO(String label, long startDate, long endDate){
+    public TemporaryConditionDTO(String label, long conditionID,long startDate, long endDate){
         this.label = label;
+        this.conditionID = conditionID;
         this.startDate = startDate;
         this.endDate = endDate;
     }
