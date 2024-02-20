@@ -4,7 +4,7 @@ import numpy as np
 
 def primoGrafico():
     # Carica i dati dal file JSON
-    with open("statistic/nuovoScheduler/PerSchedule/mediaDiffLevel.json") as file:
+    with open("statistic/nuovoScheduler2/PerSchedule/mediaDiffLevel.json") as file:
         dati = json.load(file)
     # Estrai i valori delle colonne
     general_priority = [dati[str(i)]['general_priority'] for i in range(len(dati))]
@@ -19,6 +19,7 @@ def primoGrafico():
     plt.figure(figsize=(10, 6))
 
     plt.subplot(1, 2, 1)  # Primo grafico
+    plt.grid(True);
     # Plot dei dati generali
     plt.plot(general_priority, label='General Priority', color='blue')
 
@@ -36,6 +37,7 @@ def primoGrafico():
     plt.legend()
 
     plt.subplot(1, 2, 2)  # Secondo grafico
+    plt.grid(True);
     plt.plot(uffa_point, label='Uffa point', color='red')
     #plt.ylim(0, max(max(general_priority), max(night_priority), max(long_shift_priority), max(uffa_point)))  # Imposta il limite dell'asse y
     # Aggiungi titolo e legenda
@@ -102,10 +104,10 @@ def secondoGrafico(nameFile,nameFile2):
 
 primoGrafico()
 
-nameFile="statistic/nuovoScheduler/PerSchedule/mediaDiff.json"
-nameFile2="statistic/vecchioScheduler/PerSchedule/mediaDiff.json"
-secondoGrafico(nameFile,nameFile2)
+#nameFile="statistic/nuovoScheduler2/PerSchedule/mediaDiff.json"
+#nameFile2="statistic/vecchioScheduler/PerSchedule/mediaDiff.json"
+#secondoGrafico(nameFile,nameFile2)
 
-nameFile="statistic/nuovoScheduler/PerSchedule/media.json"
+nameFile="statistic/nuovoScheduler2/PerSchedule/media.json"
 nameFile2="statistic/vecchioScheduler/PerSchedule/media.json"
 secondoGrafico(nameFile,nameFile2)
