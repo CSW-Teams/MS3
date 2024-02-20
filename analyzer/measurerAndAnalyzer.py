@@ -6,8 +6,8 @@ import calendar
 import json
 import time
 numeroMesi=48
-user="kobero"
-psw="kobero"
+user="sprintfloyd"
+psw="sprintfloyd"
 
 def funcMedia(dizionario,keys):
     # Conta il numero totale di elementi nel dizionario
@@ -312,9 +312,9 @@ def func_delete():
             print(f"Errore nella connessione al server: {e}")
 
 if __name__ == "__main__":
-    generaSchedulazioni("nuovoScheduler",2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
-    computazionePerSchedule("nuovoScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
-    computazioneTotale("nuovoScheduler")	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
+    generaSchedulazioni("nuovoScheduler2",2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    computazionePerSchedule("nuovoScheduler2") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    computazioneTotale("nuovoScheduler2")	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
 
     #generaSchedulazioni("vecchioScheduler",1)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
     #computazionePerSchedule("vecchioScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
