@@ -246,7 +246,7 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  const response = await fetch('/api/concrete_shifts/'+idDaEliminare,requestOptions);
+  const response = await fetch('/api/concrete-shifts/'+idDaEliminare,requestOptions);
   return response;
 
 }

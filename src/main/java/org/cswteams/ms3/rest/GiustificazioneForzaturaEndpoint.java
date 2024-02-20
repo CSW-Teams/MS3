@@ -6,10 +6,7 @@ import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -20,7 +17,7 @@ public class GiustificazioneForzaturaEndpoint {
     private IControllerGiustificaForzatura iControllerGiustificaForzatura;
 
     @RequestMapping(method = RequestMethod.POST, path = "/uploadJustification")
-    public ResponseEntity<String> caricaGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazione) {
+    public ResponseEntity<String> caricaGiustificazione(@RequestBody(required = true) GiustificazioneForzaturaVincoliDTO giustificazione) {
         try {
             iControllerGiustificaForzatura.saveGiustificazione(giustificazione);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Giustificazione caricata correttamente");

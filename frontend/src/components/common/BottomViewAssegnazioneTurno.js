@@ -237,10 +237,24 @@ export default function TemporaryDrawer(props) {
           let bodyResponse = response.json()
           let assegnazioneTurnoId = bodyResponse.turno
           let utente_id = 7
+
+          var requestParams = {
+            message : giustificazione,
+            utenteGiustificatoreId : utente_id,
+            giorno : data.$d.getDate(),
+            mese : data.$d.getMonth()+1,
+            anno : data.$d.getFullYear(),
+            turno : turno,
+            utentiAllocati : utentiSelezionatiGuardia,
+            servizio : servizio
+          }
+          console.log("FANFADEBUG: " + turno)
+
+
           let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
 
           try {
-            status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
+            status = await giustificaForzaturaAPI.caricaGiustifica(requestParams);
           } catch (err) {
 
             panic()
@@ -419,7 +433,7 @@ export default function TemporaryDrawer(props) {
 
               <Button variant="contained" size="small" disabled={forced && !giustificato} onClick={assegnaTurno('bottom', false)} >
                 {t("Assign Turn")}
-              </Button> {/* todo shift porcodiiii */}
+              </Button> {/* todo shift */}
             </Stack>
           </div>
         </Drawer>
