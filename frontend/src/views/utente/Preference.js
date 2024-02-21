@@ -1,17 +1,15 @@
-import React, {Component, useState} from "react"
+import React from "react"
 import {
   MDBCard,
   MDBCardBody,
-  MDBCardHeader, MDBCardText, MDBCardTitle,
+  MDBCardTitle,
   MDBCol,
   MDBContainer,
-  MDBRow, MDBTable, MDBTableBody, MDBTableHead,
+  MDBRow,
 } from "mdb-react-ui-kit";
 import PreferencesDatePick from "../../components/common/PreferencesDatePick";
-import IconButton from "@mui/material/IconButton";
 import {DesiderateAPI} from "../../API/DesiderataAPI";
-import {toast, ToastContainer} from "react-toastify";
-import DeleteIcon from "@mui/icons-material/Delete";
+import {toast} from "react-toastify";
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 

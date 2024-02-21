@@ -290,7 +290,7 @@ export default class SingleUserProfileView extends React.Component{
       }else{
         responseStatus = await singleUserProfileAPI.deleteTemporaryCondition(doctorID,conditionID,condition);
       }
-    } catch (err) { 
+    } catch (err) {
       panic()
       return
     }

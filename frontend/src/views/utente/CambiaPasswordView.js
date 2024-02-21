@@ -1,9 +1,8 @@
 import React from "react"
 import {LoginAPI} from "../../API/LoginAPI";
-import {toast, ToastContainer} from "react-toastify";
+import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {
-  MDBBtn,
   MDBCard,
   MDBCardBody,
   MDBCardTitle, MDBCol,
@@ -11,6 +10,15 @@ import {
 } from "mdb-react-ui-kit";
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
+import routes from "../../routes";
+import link from "react-router-dom/Link";
+
+// sleep time expects milliseconds
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+
 
 export default class CambiaPasswordView extends React.Component {
   constructor(props) {
@@ -31,6 +39,8 @@ export default class CambiaPasswordView extends React.Component {
       [e.target.name]: val
     });
   }
+
+
 
   async handleSubmit(e) {
     e.preventDefault();
@@ -64,6 +74,9 @@ export default class CambiaPasswordView extends React.Component {
           draggable: true,
           progress: undefined,
           theme: "colored",
+        });
+        sleep(1000).then(() => {
+          window.location.href = "/pianificazione-globale"
         });
         break;
       default:

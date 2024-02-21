@@ -1,11 +1,8 @@
 import React from "react"
 import ScheduleView from "./ScheduleView.js"
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
-import { UserAPI } from '../../API/UserAPI';
 import TemporaryDrawer from "../../components/common/BottomViewAssegnazioneTurno.js";
 import { Stack } from "@mui/system";
-import {toast} from "react-toastify";
-import { t } from "i18next";
 import {panic} from "../../components/common/Panic";
 
 class GlobalScheduleView extends ScheduleView {

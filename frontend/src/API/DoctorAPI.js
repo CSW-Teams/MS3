@@ -19,7 +19,6 @@ export class DoctorAPI {
       doctor.task="";
       doctors[i] = doctor;
     }
-    console.log("ciao 2 matteo federico")
     return doctors;
   }
 
