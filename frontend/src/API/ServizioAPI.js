@@ -5,7 +5,6 @@ export class ServizioAPI {
     constructor() {
     }
 
-//TODO deprecare?
   async getService() {
     try {
       const response = await fetch('/medical-services/');

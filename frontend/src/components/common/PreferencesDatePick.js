@@ -160,8 +160,8 @@ function DateSelectSlots({props}) {
   });
 
   return (
-    <div style={{float: "none"}}>
-      <div style={{minWidth: 300, height: 500, overflowY: "scroll"}}>
+    <div style={{float: "none"}} >
+      <div style={{minWidth: 300, height: 400, overflowY: "scroll"}}>
         {processedPrefs}
       </div>
       <div>

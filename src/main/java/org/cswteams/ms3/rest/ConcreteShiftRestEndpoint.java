@@ -66,6 +66,8 @@ public class ConcreteShiftRestEndpoint {
                 }
 
                 return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            }else{
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
 
         }
