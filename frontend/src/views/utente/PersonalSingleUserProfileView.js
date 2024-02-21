@@ -491,7 +491,7 @@ export default class PersonalSingleUserProfileView extends React.Component{
                           </MDBCardText>
                         </div>
                         <div style={{marginLeft: "auto"}}>
-                            <Button className="overlay" href={"/modify-single-user-profile"}><i className="fas fa-edit fa-lg"> </i></Button>
+                            <Button className="overlay" href={"/modify-single-user-profile?userID="+this.state.userID}><i className="fas fa-edit fa-lg"> </i></Button>
                         </div>
                       </div>
                     </MDBCardTitle>

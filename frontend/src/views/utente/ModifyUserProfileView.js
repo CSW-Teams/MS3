@@ -42,12 +42,17 @@ export default class ModifyUserProfileView extends React.Component {
 
 
   async componentDidMount() {
-    let id = localStorage.getItem("id");
-    let user
+    let user;
+    let id;
     try {
+      const urlParams = new URLSearchParams(window.location.search);
+      id = urlParams.get('userID');
+      if(id==null){
+        panic()
+        return;
+      }
       user = await(new UserAPI().getSingleUserProfileDetails(id));
     } catch (err) {
-
       panic()
       return
     }
@@ -100,7 +105,6 @@ export default class ModifyUserProfileView extends React.Component {
     })
     console.log(this.state.specializations);
     console.log(this.state.systemActors);
-
 
   }
 
@@ -207,15 +211,11 @@ export default class ModifyUserProfileView extends React.Component {
                     style={{marginBlock:10}}>
                   </TextField>
                   <TextField
-                    required
-                    label={t('Email Address')}
+                    disabled
+                    label={t("Email Address")}
                     fullWidth
                     value={this.state.email}
-                    onChange={(event) => {
-
-                    }}
                     style={{marginBlock:10}}>
-
                   </TextField>
                   <TextField
                     disabled
