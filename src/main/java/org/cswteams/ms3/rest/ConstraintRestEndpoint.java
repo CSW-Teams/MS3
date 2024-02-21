@@ -1,7 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.vincoli.IConstraintController;
-import org.cswteams.ms3.entity.constraint.ConfigVincoli;
+import org.cswteams.ms3.dto.ConfigConstraintDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +28,9 @@ public class ConstraintRestEndpoint {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "configuration")
-    public ResponseEntity<?> updateConstraintsConfiguration(@RequestBody() ConfigVincoli configurazione) {
-        if (configurazione != null) {
-            return new ResponseEntity<>(constraintController.updateConstraints(configurazione), HttpStatus.ACCEPTED);
+    public ResponseEntity<?> updateConstraintsConfiguration(@RequestBody() ConfigConstraintDTO constraintDTO) {
+        if (constraintDTO != null) {
+            return new ResponseEntity<>(constraintController.updateConstraints(constraintDTO), HttpStatus.ACCEPTED);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

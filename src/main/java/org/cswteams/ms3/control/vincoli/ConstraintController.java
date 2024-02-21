@@ -3,10 +3,14 @@ package org.cswteams.ms3.control.vincoli;
 import org.cswteams.ms3.dao.ConfigVincoliDAO;
 import org.cswteams.ms3.dao.ConfigVincoloMaxPeriodoConsecutivoDAO;
 import org.cswteams.ms3.dao.ConstraintDAO;
+import org.cswteams.ms3.dao.PermanentConditionDAO;
+import org.cswteams.ms3.dao.TemporaryConditionDAO;
+import org.cswteams.ms3.dto.ConfigConstraintDTO;
 import org.cswteams.ms3.entity.constraint.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -14,6 +18,12 @@ public class ConstraintController implements IConstraintController {
 
     @Autowired
     ConstraintDAO constraintDAO;
+
+    @Autowired
+    TemporaryConditionDAO temporaryConditionDAO;
+
+    @Autowired
+    PermanentConditionDAO permanentConditionDAO;
 
     @Autowired
     ConfigVincoliDAO configVincoliDao;
@@ -32,11 +42,14 @@ public class ConstraintController implements IConstraintController {
 
     /**
      * This method updates the constraints saved into the database according to the configuration passed as parameter.
-     * @param configuration Constraints configurations determining how the constraints have to be updated
+     * @param constraintDTO Constraints configurations determining how the constraints have to be updated
      * @return Updated ConfigVincoli instance
      */
     @Override
-    public ConfigVincoli updateConstraints(ConfigVincoli configuration) {
+    public ConfigVincoli updateConstraints(ConfigConstraintDTO constraintDTO) {
+        //mapping DTO --> Entity
+        ConfigVincoli configuration = this.constraintDTOtoEntity(constraintDTO);
+
         for(ConfigVincMaxPerCons config: configuration.getConfigVincMaxPerConsPerCategoria()){
             ConfigVincMaxPerCons configVincMaxPerCons = configVincoloMaxPeriodoConsecutivoDao.findAllByConstrainedConditionType(config.getConstrainedCondition().getType()).get(0);
             config.setId(configVincMaxPerCons.getId());
@@ -84,5 +97,19 @@ public class ConstraintController implements IConstraintController {
         return configVincoliDao.findAll().get(0);
     }
 
+
+    private ConfigVincoli constraintDTOtoEntity(ConfigConstraintDTO constraintDTO) {
+        ConfigVincMaxPerCons confOver62 = new ConfigVincMaxPerCons(permanentConditionDAO.findByType("OVER 62"), constraintDTO.getMaxConsecutiveTimeForOver62());
+        ConfigVincMaxPerCons confIncinta = new ConfigVincMaxPerCons(temporaryConditionDAO.findByType("INCINTA"), constraintDTO.getMaxConsecutiveTimeForPregnant());
+
+        return new ConfigVincoli(
+                constraintDTO.getPeriodDaysNo(),
+                constraintDTO.getPeriodMaxTime(),
+                constraintDTO.getHorizonNightShift(),
+                constraintDTO.getMaxConsecutiveTimeForEveryone(),
+                Arrays.asList(confOver62, confIncinta)
+        );
+
+    }
 
 }
