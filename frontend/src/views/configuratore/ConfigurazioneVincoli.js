@@ -46,14 +46,14 @@ export default class ConfigurazioneVincoli extends React.Component{
       return
     }
     this.setState({
-      numGiorniPeriodo: conf.numGiorniPeriodo,
-      maxOrePeriodo: conf.maxOrePeriodo,
-      horizonTurnoNotturno: conf.horizonTurnoNotturno,
-      numMaxOreConsecutivePerTutti: conf.numMaxOreConsecutivePerTutti,
-      numMaxOreConsecutiveOver62: conf.configVincoloMaxPeriodoConsecutivoPerCategoria[0].numMaxOreConsecutive,
-      numMaxOreConsecutiveDonneIncinta: conf.configVincoloMaxPeriodoConsecutivoPerCategoria[1].numMaxOreConsecutive,
-      categoriaOver62:conf.configVincoloMaxPeriodoConsecutivoPerCategoria[0].categoriaVincolata,
-      categoriaDonneIncinta:conf.configVincoloMaxPeriodoConsecutivoPerCategoria[1].categoriaVincolata,
+      numGiorniPeriodo: conf.periodDaysNo,
+      maxOrePeriodo: conf.periodMaxTime,
+      horizonTurnoNotturno: conf.horizonNightShift,
+      numMaxOreConsecutivePerTutti: conf.maxConsecutiveTimeForEveryone,
+      numMaxOreConsecutiveOver62: conf.configVincMaxPerConsPerCategoria[0].numMaxOreConsecutive,
+      numMaxOreConsecutiveDonneIncinta: conf.configVincMaxPerConsPerCategoria[1].numMaxOreConsecutive,
+      categoriaOver62:conf.configVincMaxPerConsPerCategoria[0].constrainedCondition,
+      categoriaDonneIncinta:conf.configVincMaxPerConsPerCategoria[1].constrainedCondition,
     })
   }
 

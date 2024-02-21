@@ -3,7 +3,7 @@ package org.cswteams.ms3.dto;
 import lombok.Getter;
 
 @Getter
-public class ConstraintDTO {
+public class ConfigConstraintDTO {
 
     private int periodDaysNo;
 
@@ -25,12 +25,12 @@ public class ConstraintDTO {
 
     private int maxConsecutiveTimeForPregnant;
 
-    public ConstraintDTO() {
+    public ConfigConstraintDTO() {
 
     }
 
-    public ConstraintDTO(int periodDaysNo, int periodMaxTime, int horizonNightShift, int maxConsecutiveTimeForEveryone,
-                         int maxConsecutiveTimeForOver62, int maxConsecutiveTimeForPregnant) {
+    public ConfigConstraintDTO(int periodDaysNo, int periodMaxTime, int horizonNightShift, int maxConsecutiveTimeForEveryone,
+                               int maxConsecutiveTimeForOver62, int maxConsecutiveTimeForPregnant) {
 
         this.periodDaysNo = periodDaysNo;
         this.periodMaxTime = periodMaxTime;
