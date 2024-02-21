@@ -60,7 +60,8 @@ export default class SingleUserProfileView extends React.Component{
       isPlanner :false,
       specializationList:[],
       conditionsList:[],
-      allSystemActors:[]
+      allSystemActors:[],
+      userToView:-1
     }
 
   }
@@ -278,7 +279,9 @@ export default class SingleUserProfileView extends React.Component{
     }
   }
 
-
+  funcToSetUserToView(){
+    console.log(this.state.userID)
+  }
 
   async handleDeleteCondition(doctorID, conditionID,condition,startDate) {
     let singleUserProfileAPI = new SingleUserProfileAPI();
@@ -290,7 +293,7 @@ export default class SingleUserProfileView extends React.Component{
       }else{
         responseStatus = await singleUserProfileAPI.deleteTemporaryCondition(doctorID,conditionID,condition);
       }
-    } catch (err) { 
+    } catch (err) {
       panic()
       return
     }
@@ -494,7 +497,7 @@ export default class SingleUserProfileView extends React.Component{
         </MDBRow>);
     }
 
-
+    console.log(this.state.isPlanner)
     return (
         <section style={{backgroundColor: '#eee'}}>
           <MDBContainer className="py-5">
@@ -523,9 +526,11 @@ export default class SingleUserProfileView extends React.Component{
                             {t('User Information')}
                           </MDBCardText>
                         </div>
-                        <div style={{marginLeft: "auto"}}>
-                            <Button className="overlay" href={"/modify-single-user-profile"}><i className="fas fa-edit fa-lg"> </i></Button>
-                        </div>
+                        { this.state.isPlanner && <div style={{marginLeft: "auto"}}>
+                                <Button className="overlay" href={"/modify-single-user-profile?userID="+this.state.userID.toString()}onClick={this.funcToSetUserToView}><i className="fas fa-edit fa-lg">
+                                </i></Button>
+                            </div>
+                        }
                       </div>
                     </MDBCardTitle>
 
