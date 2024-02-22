@@ -48,6 +48,9 @@ def primoGrafico():
 
     # Mostra il plot
     plt.show()
+
+
+
 def secondoGrafico(nameFile,nameFile2):
     # Carica i dati dal file JSON
     with open(nameFile) as file:
@@ -102,12 +105,17 @@ def secondoGrafico(nameFile,nameFile2):
 # Mostra il plot
     plt.show()
 
+
+
+#la funzione primoGrafico() ha lo scopo di graficare la differenza media tra l'uffa priority level di ciascun medico e l'uffa priority level medio
+#(per quanto concerne lo scheduler nuovo) e la differenza media tra gli uffa point di ciacun medico e gli uffa point medi (per quanto concerne lo shceduler vecchio)
 primoGrafico()
 
 #nameFile="statistic/nuovoScheduler2/PerSchedule/mediaDiff.json"
 #nameFile2="statistic/vecchioScheduler/PerSchedule/mediaDiff.json"
-#secondoGrafico(nameFile,nameFile2)
 
 nameFile="statistic/nuovoScheduler2/PerSchedule/media.json"
 nameFile2="statistic/vecchioScheduler/PerSchedule/media.json"
+#la funzione secondoGrafico() ha lo scopo di graficare il numero di turni di ciascuna tipologia (giornaliero, notturno, domenicale, lungo...) a cui ogni
+#medico è stato assegnato, sia per quanto riguarda lo scheduler nuovo, sia per quanto riguarda lo scheduler vecchio
 secondoGrafico(nameFile,nameFile2)
