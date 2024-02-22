@@ -2,6 +2,7 @@ package org.cswteams.ms3.dto;
 
 
 import lombok.Data;
+import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.enums.TimeSlot;
@@ -20,7 +21,7 @@ public class GiustificazioneForzaturaVincoliDTO {
     private int anno;
 
     private TimeSlot timeSlot;
-    private Set<UserDTO> utentiAllocati;
+    private Set<Long> utentiAllocati;
     private MedicalServiceDTO servizio;
 
 
@@ -31,7 +32,7 @@ public class GiustificazioneForzaturaVincoliDTO {
     }
 
     public GiustificazioneForzaturaVincoliDTO(String message, String utenteGiustificatoreId, int giorno, int mese, int anno,
-                                              TimeSlot timeSlot, Set<UserDTO> utentiAllocati, MedicalServiceDTO servizio) {
+                                              TimeSlot timeSlot, Set<Long> utentiAllocati, MedicalServiceDTO servizio) {
 
         this.message = message;
         this.utenteGiustificatoreId = utenteGiustificatoreId;

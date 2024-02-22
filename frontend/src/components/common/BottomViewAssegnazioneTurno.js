@@ -47,7 +47,8 @@ export default function TemporaryDrawer(props) {
   const [giustificato, setGiustificato] = React.useState(false)
   const [allServices, setAllServices] = React.useState([])
   const [timeSlot, setTimeSlot] = React.useState("")
-  let giustificazione = ''
+  const [giustificazioneState, setGiustificazioneState] = React.useState("")
+  let giustificazione = ""
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
@@ -174,6 +175,7 @@ export default function TemporaryDrawer(props) {
   const giustificaCompilata = (anchor, open) => async (event) => {
     if(giustificazione !== ''){
       setGiustificato(true)
+      setGiustificazioneState(giustificazione)
     }else{
       toast.error(t("Justification not compiled"), {
         position: "top-center",
@@ -315,18 +317,23 @@ export default function TemporaryDrawer(props) {
                 });
                 if(forced === true){
                     let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
-                    let bodyResponse = response.json()
-                    let assegnazioneTurnoId = bodyResponse.turno
-                    let utente_id = 7
+                    //TODO: check for deletion //let bodyResponse = response.json()
+                    //TODO: check for deletion //let assegnazioneTurnoId = bodyResponse.turno
+                    let utente_id = localStorage.getItem("id")
+
+                    let utentiAllocatiIDs = utentiSelezionatiGuardia.map((value) => {
+                        return value.value.id
+                    })
 
                     var requestParams = {
-                        message : giustificazione,
+                        message : giustificazioneState,
                         utenteGiustificatoreId : utente_id,
                         giorno : data.$d.getDate(),
                         mese : data.$d.getMonth()+1,
                         anno : data.$d.getFullYear(),
-                        turno : turno,
-                        utentiAllocati : utentiSelezionatiGuardia,
+                        //TODO: check for deletion //turno : turno,
+                        timeSlot : timeSlot,
+                        utentiAllocati : utentiAllocatiIDs,
                         servizio : servizio
                     }
                     console.log("FANFADEBUG: " + turno)
@@ -436,7 +443,7 @@ export default function TemporaryDrawer(props) {
 
   const handleChange = (e) => {
     e.persist()
-    giustificazione = e.target.value;
+    giustificazione = e.target.value
   };
 
   function Giustifica() {
