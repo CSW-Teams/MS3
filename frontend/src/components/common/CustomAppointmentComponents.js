@@ -102,7 +102,6 @@ export const Content = ({
     checkPendingRequest();
   }, [appointmentData.id, checkRequests,actor]);
 
-
   const handleConfirmRetirement = () => {
     closeConfirmationDialog();
     onRetirement(justification, appointmentData.id);
@@ -128,8 +127,6 @@ export const Content = ({
       Ritirati dal turno
     </Button>
   );
-
-
   // contents of tooltip may vary depending on the type of the corresponding schedulable
   switch(appointmentData.schedulableType){
     case SchedulableType.Holiday:
@@ -140,7 +137,7 @@ export const Content = ({
         className={classNames(tooltip_classes.content, className)}
         {...restProps}
        >
-         <h1>{appointmentData.title}! 🥳</h1>
+         <h1>{appointmentData.title}! <span role="img" aria-label="emoji">&#x1F973;</span></h1>
           <li>Festività {appointmentData.category}</li>
           <li>Assegnare turni in questo giorno può generare malcontento. Ricorda di essere equo!</li>
       </StyledDiv>

@@ -29,7 +29,7 @@ public class ConfigVincMaxPerCons {
     /**
      * Maximum consecutive work time for the <code>constrainedCondition</code>, in minutes.
      */
-    @Transient
+    //@Transient
     private int maxConsecutiveMinutes;
 
     /**
