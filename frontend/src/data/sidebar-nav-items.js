@@ -70,11 +70,6 @@ export function configuratore() {
       to: "/pianificazione-globale",
     },
     {
-      title: "My Shifts",
-      htmlBefore: '<i class="material-icons">view_module</i>',
-      to: "/pianificazione-privata",
-    },
-    {
       title: "Users",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/info-utenti",

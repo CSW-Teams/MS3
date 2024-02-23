@@ -646,7 +646,7 @@ class ScheduleView extends React.Component{
                   <AppointmentTooltip
                     header
                     showCloseButton
-                    showOpenButton
+                    //showOpenButton
                     showDeleteButton
                     contentComponent={(props) => (
                       <Content {...props} view={view} actor={this.state.attore} checkRequests={this.pendingRetirementRequestForShiftExist} />
