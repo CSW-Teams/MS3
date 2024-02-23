@@ -70,8 +70,8 @@ const MedicalServiceUpdateDrawer = ({availableTasks, services, updateServicesLis
         // for compliance wrt other modules
         var requestParams = {
             id          : currentServiceInfo.id,
-            nome        : newMedicalServiceName.toUpperCase(),
-            mansioni    : outTaskArray
+            name        : newMedicalServiceName.toUpperCase(),
+            tasks       : outTaskArray
         }
 
         try {
