@@ -153,6 +153,7 @@
   "Server Error": "Server Error",
   "Assignment successfully created": "Assignment successfully created",
   "Assignment modified successfully": "Assignment modified successfully",
+  "Error in creating assignement, incompatible days of week" : "Error in creating assignement, incompatible days of week",
   "Selected Assignment Couldn't Be Removed": "Selected Assignment Couldn't Be Removed",
   "Elimination Successful": "Elimination Successful",
   "Download these turns as CSV": "Download these turns as CSV",
