@@ -47,7 +47,9 @@ export default function TemporaryDrawer(props) {
   const [giustificato, setGiustificato] = React.useState(false)
   const [allServices, setAllServices] = React.useState([])
   const [timeSlot, setTimeSlot] = React.useState("")
-  let giustificazione = ''
+  const [selectedShiftDaysOfWeek, setSelectedShiftDaysOfWeek] = React.useState([]) ;
+  const [giustificazioneState, setGiustificazioneState] = React.useState("")
+  let giustificazione = ""
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
@@ -150,8 +152,10 @@ export default function TemporaryDrawer(props) {
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
   //Viene passata al componente <MultipleSelect>
   const handleTurno = (timeslot) => {
-    if (timeslot.length > 0)
+    if (timeslot.length > 0) {
       setTimeSlot(timeslot[0].value.tipologia)
+      setSelectedShiftDaysOfWeek(timeslot[0].value.daysOfWeek)
+    }
   }
 
   const handleServizio = (servizio) => {
@@ -174,6 +178,7 @@ export default function TemporaryDrawer(props) {
   const giustificaCompilata = (anchor, open) => async (event) => {
     if(giustificazione !== ''){
       setGiustificato(true)
+      setGiustificazioneState(giustificazione)
     }else{
       toast.error(t("Justification not compiled"), {
         position: "top-center",
@@ -228,7 +233,7 @@ export default function TemporaryDrawer(props) {
             progress: undefined,
             theme: "colored",
         });
-    }else if (today.getDay() > startDateAsDate.getDay() || today.getMonth() > startDateAsDate.getMonth() || today.getFullYear() > startDateAsDate.getFullYear()) {
+    }else if (today.getDate() > startDateAsDate.getDate() || today.getMonth() > startDateAsDate.getMonth() || today.getFullYear() > startDateAsDate.getFullYear()) {
         toast.error(t("Start date must be after at least today"), {
             position: "top-center",
             autoClose: 5000,
@@ -284,14 +289,37 @@ export default function TemporaryDrawer(props) {
             theme: "colored",
         });
     }else{
-      /* If all fields are non empty*/
+
+      if(selectedShiftDaysOfWeek) {
+
+        const dateDayOfWeek = startDateAsDate.getDay()
+        const weekday = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+        const result = selectedShiftDaysOfWeek.reduce((result, value) => {
+          return result || (value === weekday[dateDayOfWeek])
+        }, false)
+
+        if(!result) {
+          toast.error(t("Error in creating assignement, incompatible days of week"), {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+          return
+        }
         try {
-            response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced);
+          response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced);
         } catch (err) {
 
-            panic();
-            return
+          panic();
+          return
         }
+      }
+      /* If all fields are non empty*/
 
         //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
         props.onPostAssegnazione()
@@ -315,18 +343,23 @@ export default function TemporaryDrawer(props) {
                 });
                 if(forced === true){
                     let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
-                    let bodyResponse = response.json()
-                    let assegnazioneTurnoId = bodyResponse.turno
-                    let utente_id = 7
+                    //TODO: check for deletion //let bodyResponse = response.json()
+                    //TODO: check for deletion //let assegnazioneTurnoId = bodyResponse.turno
+                    let utente_id = localStorage.getItem("id")
+
+                    let utentiAllocatiIDs = utentiSelezionatiGuardia.map((value) => {
+                        return value.value.id
+                    })
 
                     var requestParams = {
-                        message : giustificazione,
+                        message : giustificazioneState,
                         utenteGiustificatoreId : utente_id,
                         giorno : data.$d.getDate(),
                         mese : data.$d.getMonth()+1,
                         anno : data.$d.getFullYear(),
-                        turno : turno,
-                        utentiAllocati : utentiSelezionatiGuardia,
+                        //TODO: check for deletion //turno : turno,
+                        timeSlot : timeSlot,
+                        utentiAllocati : utentiAllocatiIDs,
                         servizio : servizio
                     }
                     console.log("FANFADEBUG: " + turno)
@@ -436,7 +469,7 @@ export default function TemporaryDrawer(props) {
 
   const handleChange = (e) => {
     e.persist()
-    giustificazione = e.target.value;
+    giustificazione = e.target.value
   };
 
   function Giustifica() {

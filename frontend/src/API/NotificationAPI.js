@@ -16,10 +16,10 @@ export  class NotificationAPI {
           }
           return  notifications;
         }
-        return [];
       } catch (error) {
         console.error('Errore durante il recupero delle notifiche:', error);
       }
+      return [];
   };
   async removeNotification(id,description,idUser) {
         try {

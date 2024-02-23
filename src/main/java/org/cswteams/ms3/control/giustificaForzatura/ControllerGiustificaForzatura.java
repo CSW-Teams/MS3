@@ -4,6 +4,7 @@ import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.GiustificazioneFozaturaDAO;
 import org.cswteams.ms3.dao.LiberatoriaDAO;
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
+import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.entity.Doctor;
@@ -63,7 +64,10 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
     }
 
     public static MedicalService buildServiceDTO(MedicalServiceDTO dto) {
-        return new MedicalService(dto.getTasks(), dto.getName());
+        if(dto.getId() != null)
+            return new MedicalService(dto.getId(), dto.getTasks(), dto.getName()) ;
+        else
+            return new MedicalService(dto.getTasks(), dto.getName());
     }
 
     private Doctor _getDoctor(Long doctorId) throws DatabaseException {
@@ -74,9 +78,9 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
         return doctor.get();
     }
 
-    public Set<Doctor> convertDTOSetToEntitySet(Set<UserDTO> dtoSet) throws DatabaseException {
+    public Set<Doctor> convertDTOSetToEntitySet(Set<Long> dtoSet) throws DatabaseException {
         Set<Doctor> entitySet = new HashSet<>();
-        for (UserDTO dto : dtoSet) {
+        for (Long dto : dtoSet) {
 
             /*
              Get the Doctor entities directly from the db, instead of by using the
@@ -84,7 +88,7 @@ public class ControllerGiustificaForzatura implements IControllerGiustificaForza
              Moreover, DTO does not include the last parameter "roles" of the entity
              so it is not possible to build a Doctor entity
             */
-            entitySet.add(_getDoctor(dto.getId()));
+            entitySet.add(_getDoctor(dto));
 
             // old code temporarily below, for reference
             /*

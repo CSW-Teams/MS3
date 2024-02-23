@@ -153,6 +153,7 @@
   "Request couldn't be forwarded": "Non è stato possibile inoltrare la richiesta",
   "Server Error": "Errore nel server!",
   "Assignment successfully created": "Assegnazione creata con successo",
+  "Error in creating assignement, incompatible days of week" : "Errore nel creare l'assegnazione, giorni della settimana incompatibili",
   "Assignment modified successfully": "Assegnazione modificata con successo",
   "Selected Assignment Couldn't Be Removed": "Non è stato possibile eliminare l'assegnazione selezionata!",
   "Elimination Successful": "Eliminazione avvenuta con successo",
