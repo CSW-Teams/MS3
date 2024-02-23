@@ -11,6 +11,7 @@ import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 import Button from "@mui/material/Button";
 import { t } from "i18next";
+import partyImage from '../../images/party-icon.svg';
 
 import {
   Dialog,
@@ -137,7 +138,7 @@ export const Content = ({
         className={classNames(tooltip_classes.content, className)}
         {...restProps}
        >
-         <h1>{appointmentData.title}! <span role="img" aria-label="emoji">&#x1F973;</span></h1>
+         <h1>{appointmentData.title}! <img src={partyImage} style={{ width: '44px', height: '44px' }}/></h1>
           <li>Festività {appointmentData.category}</li>
           <li>Assegnare turni in questo giorno può generare malcontento. Ricorda di essere equo!</li>
       </StyledDiv>
