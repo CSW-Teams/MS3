@@ -3,14 +3,13 @@ import {AssignedShift} from "./Schedulable";
 import {Doctor} from "../entity/Doctor";
 
 export  class AssegnazioneTurnoAPI {
-
    /**
    * Parses content of query response body to extract a list of shifts
    */
   parseAllocatedShifts(body){
-    let turni = [];
 
-    for (let i = 0; i < body.length; i++) {
+        let turni = [];
+        for (let i = 0; i < body.length; i++) {
         const inizioEpochMilliseconds = body[i].startDateTime*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 

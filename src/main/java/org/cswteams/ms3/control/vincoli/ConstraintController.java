@@ -9,6 +9,7 @@ import org.cswteams.ms3.dto.ConfigConstraintDTO;
 import org.cswteams.ms3.entity.constraint.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,20 +46,24 @@ public class ConstraintController implements IConstraintController {
      * @param constraintDTO Constraints configurations determining how the constraints have to be updated
      * @return Updated ConfigVincoli instance
      */
+    @Transactional
     @Override
     public ConfigVincoli updateConstraints(ConfigConstraintDTO constraintDTO) {
+
+        System.out.println(constraintDTO.getMaxConsecutiveTimeForOver62());
         //mapping DTO --> Entity
         ConfigVincoli configuration = this.constraintDTOtoEntity(constraintDTO);
 
         for(ConfigVincMaxPerCons config: configuration.getConfigVincMaxPerConsPerCategoria()){
             ConfigVincMaxPerCons configVincMaxPerCons = configVincoloMaxPeriodoConsecutivoDao.findAllByConstrainedConditionType(config.getConstrainedCondition().getType()).get(0);
             config.setId(configVincMaxPerCons.getId());
-            configVincoloMaxPeriodoConsecutivoDao.save(config);
+            configVincoloMaxPeriodoConsecutivoDao.saveAndFlush(config);
         }
         //Update configuration
         ConfigVincoli configVincoli = configVincoliDao.findAll().get(0);
         configuration.setId(configVincoli.getId());
-        configVincoliDao.save(configuration);
+        configuration=configVincoliDao.saveAndFlush(configuration);
+
         //Update constraints
         ConstraintTurniContigui vincoloTipologieTurniContigue = (ConstraintTurniContigui) constraintDAO.findByType("ConstraintTurniContigui").get(0);
         vincoloTipologieTurniContigue.setHorizon(configuration.getHorizonNightShift());
@@ -80,11 +85,9 @@ public class ConstraintController implements IConstraintController {
                 }
             }
         }
-
         constraintDAO.saveAndFlush(vincoloTipologieTurniContigue);
         constraintDAO.saveAll(vincoliMaxPeriodoConsecutivo);
         constraintDAO.saveAndFlush(vincoloMaxOrePeriodo);
-
         return configuration;
     }
 
@@ -101,7 +104,7 @@ public class ConstraintController implements IConstraintController {
     private ConfigVincoli constraintDTOtoEntity(ConfigConstraintDTO constraintDTO) {
         ConfigVincMaxPerCons confOver62 = new ConfigVincMaxPerCons(permanentConditionDAO.findByType("OVER 62"), constraintDTO.getMaxConsecutiveTimeForOver62());
         ConfigVincMaxPerCons confIncinta = new ConfigVincMaxPerCons(temporaryConditionDAO.findByType("INCINTA"), constraintDTO.getMaxConsecutiveTimeForPregnant());
-
+        System.out.println(confOver62.getMaxConsecutiveMinutes());
         return new ConfigVincoli(
                 constraintDTO.getPeriodDaysNo(),
                 constraintDTO.getPeriodMaxTime(),

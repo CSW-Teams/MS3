@@ -41,19 +41,29 @@ export default class ConfigurazioneVincoli extends React.Component{
     try {
       conf = await(new VincoloAPI().getConfigurazioneVincoli())
     } catch (err) {
-
       panic()
       return
+    }
+    let over62={};
+    let donnaIncinta={};
+    for(let i=0;i<conf.configVincMaxPerConsPerCategoria.length;i++){
+      if(conf.configVincMaxPerConsPerCategoria[i].constrainedCondition.type=='INCINTA'){
+        donnaIncinta.categoria=conf.configVincMaxPerConsPerCategoria[i].constrainedCondition;
+        donnaIncinta.maxOre=conf.configVincMaxPerConsPerCategoria[i].numMaxOreConsecutive;
+      }else{
+        over62.categoria=conf.configVincMaxPerConsPerCategoria[i].constrainedCondition;
+        over62.maxOre=conf.configVincMaxPerConsPerCategoria[i].numMaxOreConsecutive;
+      }
     }
     this.setState({
       numGiorniPeriodo: conf.periodDaysNo,
       maxOrePeriodo: conf.periodMaxTime,
       horizonTurnoNotturno: conf.horizonNightShift,
       numMaxOreConsecutivePerTutti: conf.maxConsecutiveTimeForEveryone,
-      numMaxOreConsecutiveOver62: conf.configVincMaxPerConsPerCategoria[0].numMaxOreConsecutive,
-      numMaxOreConsecutiveDonneIncinta: conf.configVincMaxPerConsPerCategoria[1].numMaxOreConsecutive,
-      categoriaOver62:conf.configVincMaxPerConsPerCategoria[0].constrainedCondition,
-      categoriaDonneIncinta:conf.configVincMaxPerConsPerCategoria[1].constrainedCondition,
+      numMaxOreConsecutiveOver62: over62.maxOre,
+      numMaxOreConsecutiveDonneIncinta: donnaIncinta.maxOre,
+      categoriaOver62:over62.categoria,
+      categoriaDonneIncinta:donnaIncinta.categoria,
     })
   }
 
@@ -103,7 +113,6 @@ export default class ConfigurazioneVincoli extends React.Component{
     this.setState({
       [name]: value
     });
-    console.log(value)
   }
 
   render() {
