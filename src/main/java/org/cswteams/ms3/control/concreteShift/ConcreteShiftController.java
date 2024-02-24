@@ -32,8 +32,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
     @Override
     public Set<GetAllConcreteShiftDTO> getAllConcreteShifts() {
         List<ConcreteShift> concreteShifts = concreteShiftDAO.findAll();
-        Set<ConcreteShift> turniSet = new HashSet<>();
-        turniSet.addAll(concreteShifts);
+        Set<ConcreteShift> turniSet = new HashSet<>(concreteShifts);
 
         Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
 
@@ -84,7 +83,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
                     doctorsOnCall,
                     new HashSet<>(),//TODO:inserire dottori eliminati e non un hash vuoto
                     concreteShift.getShift().getMedicalService().getLabel(),
-                    "AMBULATORIO", //TODO fare
+                    "", // this concrete shift may contain multiple tasks
                     concreteShift.getShift().getTimeSlot().toString(),
                     isCall
             );
@@ -113,7 +112,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
         Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
         for (ConcreteShift concreteShift : turniAllocatiERiserve) {
             if(!isDoctorOnCall(concreteShift, idPersona)){
-                //TODO converti entity in dto ed aggiungila a turniAllocati
+                //converti entity in dto ed aggiungila a turniAllocati
 
                 // the Epoch Day gets converted to Epoch Second
                 long startTime = concreteShift.getDate()*24*60*60 + concreteShift.getShift().getStartTime().toSecondOfDay();
@@ -122,6 +121,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
                 Set<MedicalDoctorInfoDTO> onDutyDoctors = new HashSet<>();
                 Set<MedicalDoctorInfoDTO> onCallDoctors = new HashSet<>();
                 Set<MedicalDoctorInfoDTO> onRemovedDoctors = new HashSet<>();
+                String doctorTask = "";
                 for(DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
                     if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY) {
                         Doctor doctor = assignment.getDoctor();
@@ -132,6 +132,9 @@ public class ConcreteShiftController implements IConcreteShiftController {
                     } else{
                         Doctor doctor = assignment.getDoctor();
                         onRemovedDoctors.add(new MedicalDoctorInfoDTO(doctor.getId(), doctor.getName(), doctor.getLastname(), doctor.getSeniority(), assignment.getTask().getTaskType().toString()));
+                    }
+                    if(Objects.equals(assignment.getDoctor().getId(), idPersona)){
+                        doctorTask = assignment.getTask().getTaskType().toString();
                     }
                 }
 
@@ -146,7 +149,7 @@ public class ConcreteShiftController implements IConcreteShiftController {
                         onCallDoctors,
                         onRemovedDoctors,
                         concreteShift.getShift().getMedicalService().getLabel(),
-                        "AMBULATORIO",//TODO: va RIVISTA ASSOLUTAMENTE
+                        doctorTask, // the doctor's task in the concrete shift
                         concreteShift.getShift().getTimeSlot().toString(),
                         isCall
                 );

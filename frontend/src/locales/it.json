@@ -292,5 +292,13 @@
   "MORNING" : "Mattina",
   "AFTERNOON" : "Pomeriggio",
   "NIGHT" : "Notte",
-  "Generate a new planning before adding a concrete shift" : "Genera una pianificazione prima di aggiungere un nuovo turno concreto"
+  "Generate a new planning before adding a concrete shift" : "Genera una pianificazione prima di aggiungere un nuovo turno concreto",
+
+  "On Guard:" : "Reperibili:",
+  "On Duty:" : "Allocati:",
+
+  "CLINIC": "Clinica",
+  "EMERGENCY": "Pronto Soccorso",
+  "WARD": "Ambulatorio",
+  "OPERATING_ROOM": "Sala Operatoria"
 }

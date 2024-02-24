@@ -292,5 +292,13 @@
   "MORNING" : "Morning",
   "AFTERNOON" : "Afternoon",
   "NIGHT" : "Night",
-  "Generate a new planning before adding a concrete shift" : "Generate a new planning before adding a concrete shift"
+  "Generate a new planning before adding a concrete shift" : "Generate a new planning before adding a concrete shift",
+
+  "On Guard:" : "On Guard:",
+  "On Duty:" : "On Duty:",
+
+  "CLINIC": "Clinic",
+  "EMERGENCY": "Emergency",
+  "WARD": "Ward",
+  "OPERATING_ROOM": "Operating Room"
 }
