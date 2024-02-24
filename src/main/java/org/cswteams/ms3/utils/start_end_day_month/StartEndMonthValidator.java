@@ -43,7 +43,7 @@ public class StartEndMonthValidator implements ConstraintValidator<StartEndDayMo
             fourthField.setAccessible(true) ;
             endMonth = (Integer) fourthField.get(o) ;
 
-            if(endMonth > startMonth) return false ;
+            if(endMonth < startMonth) return false ;
             if(endMonth.equals(startMonth)) {
                 return endDay >= startDay;
             }
