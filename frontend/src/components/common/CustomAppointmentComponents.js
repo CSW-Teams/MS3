@@ -383,15 +383,15 @@ export class AppointmentContent extends React.Component{
 
             {this.state.utenti_allocati.length > 0 &&
             <div style = {{color: 'black'}}>
-              Allocati:
-            <ul>
+              {t('On Duty:')}
+              <ul>
               {this.state.utenti_allocati.map((user) => <li> {user.lastname} </li>) }
             </ul>
             </div>}
 
             {((this.state.data.reperibilitaAttiva === true) && (this.state.utenti_reperibili.length > 0)) &&
               <div style = {{color: 'black'}}>
-                Reperibili:
+                {t('On Guard:')}
                 <ul>
                   {this.state.utenti_reperibili.map((user) => <li> {user.lastname} </li>)}
                 </ul>

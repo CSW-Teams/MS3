@@ -1,6 +1,7 @@
 import {teal} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
 import {Doctor} from "../entity/Doctor";
+import {t} from "i18next";
 
 export  class AssegnazioneTurnoAPI {
    /**
@@ -16,11 +17,20 @@ export  class AssegnazioneTurnoAPI {
         const fineEpochMilliseconds = body[i].endDateTime*1000
         const fineDate = new Date(fineEpochMilliseconds);
 
+        var task;
+        var service = body[i].medicalServiceLabel.charAt(0).toUpperCase() + body[i].medicalServiceLabel.slice(1).toLowerCase();
+        if(body[i].medicalServiceTask.length === 0){
+          task = "";
+        } else{
+          task = t(body[i].medicalServiceTask) + " in ";
+        }
+
         let turno = new AssignedShift(
-          body[i].medicalServiceTask + " in " + body[i].medicalServiceLabel,
+          task + service,
           inizioDate,
           fineDate,
           teal);
+
         turno.id = body[i].id;
         turno.type ="Assigned"
 
