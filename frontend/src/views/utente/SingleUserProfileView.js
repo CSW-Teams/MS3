@@ -58,6 +58,7 @@ export default class SingleUserProfileView extends React.Component{
       specializations: [],
       conditions:[],
       isPlanner :false,
+      isDoctor:false,
       specializationList:[],
       conditionsList:[],
       allSystemActors:[],
@@ -67,17 +68,18 @@ export default class SingleUserProfileView extends React.Component{
   }
 
   async componentDidMount() {
-    let id
-    let loggedID
-    let loggedUser
-    let user
-    let singleUserProfileAPI
-    let specializations
-    let conditionsToShow
-    let isPlanner
-    let allSavedSystemActors
-    let allSavedSystemActorsInItalian
-    let allSavedConditions
+    let id;
+    let loggedID;
+    let loggedUser;
+    let user;
+    let singleUserProfileAPI;
+    let specializations;
+    let conditionsToShow;
+    let isPlanner;
+    let isDoctor;
+    let allSavedSystemActors;
+    let allSavedSystemActorsInItalian;
+    let allSavedConditions;
     try {
       id = this.props.match.params.idUser*1;
       loggedID = localStorage.getItem("id");
@@ -87,6 +89,7 @@ export default class SingleUserProfileView extends React.Component{
       specializations = await singleUserProfileAPI.getSpecializations();
       conditionsToShow = [];
       isPlanner = false;
+      isDoctor = false;
       allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
       allSavedConditions = await singleUserProfileAPI.getAllConditionSaved();
     } catch (err) {
@@ -104,6 +107,12 @@ export default class SingleUserProfileView extends React.Component{
     for(var i = 0;i < loggedUser.systemActors.length;i++){
       if(loggedUser.systemActors[i] === "PLANNER"){
         isPlanner = true;
+      }
+    }
+
+    for(var i = 0;i < loggedUser.systemActors.length;i++){
+      if(user.systemActors[i] === "DOCTOR"){
+        isDoctor = true;
       }
     }
 
@@ -133,11 +142,12 @@ export default class SingleUserProfileView extends React.Component{
       specializations : user.specializations,
       conditions: conditionsToShow,
       isPlanner: isPlanner,
+      isDoctor:isDoctor,
       specializationList: specializations,
       conditionsList: allSavedConditions,
       allSystemActors:allSavedSystemActors
     });
-
+    console.log(this.state.isDoctor);
 
   }
 
@@ -572,15 +582,15 @@ export default class SingleUserProfileView extends React.Component{
                           className="text-muted">{this.state.birthday}</MDBCardText>
                       </MDBCol>
                     </MDBRow>
-                    <MDBRow>
+                    {this.state.isDoctor &&<MDBRow>
                       <MDBCol sm="3">
                         <MDBCardText>{t('Seniority')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
-                        <MDBCardText
+                            <MDBCardText
                           className="text-muted">{t(this.state.seniority)}</MDBCardText>
                       </MDBCol>
-                    </MDBRow>
+                    </MDBRow>}
                     {(this.state.seniority==="STRUCTURED") && showSpecializations(this.state.specializations)}
                     <MDBRow>
                       <MDBCol sm="3">
@@ -603,19 +613,23 @@ export default class SingleUserProfileView extends React.Component{
             </MDBRow>
             {this.state.isPlanner &&
               <MDBRow>
+                {this.state.isDoctor && (this.state.seniority==="STRUCTURED") &&
                 <MDBCol>
                   {renderDoctorSpecializations.call(this)}
-                </MDBCol>
+                </MDBCol>}
                 <MDBCol>
                   {renderSystemActor.call(this)}
                 </MDBCol>
               </MDBRow>
             }
-            <MDBRow style={{marginTop:"1%"}}>
-              <MDBCol>
-                {renderDoctorCondition.call(this)}
-              </MDBCol>
-            </MDBRow>
+            {this.state.isDoctor &&
+                <MDBRow style={{marginTop:"1%"}}>
+                  <MDBCol>
+                    {renderDoctorCondition.call(this)}
+                  </MDBCol>
+                </MDBRow>
+            }
+
           </MDBContainer>
         </section>
       );
