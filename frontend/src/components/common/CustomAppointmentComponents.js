@@ -10,6 +10,8 @@ import PropTypes from "prop-types";
 import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 import Button from "@mui/material/Button";
+import { t } from "i18next";
+import partyImage from '../../images/party-icon.svg';
 
 import {
   Dialog,
@@ -21,6 +23,8 @@ import {
 import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
+import {toast} from "react-toastify";
+import {panic} from "./Panic";
 
 
 // AppointmentContent di SingleScheduleView
@@ -99,7 +103,6 @@ export const Content = ({
     checkPendingRequest();
   }, [appointmentData.id, checkRequests,actor]);
 
-
   const handleConfirmRetirement = () => {
     closeConfirmationDialog();
     onRetirement(justification, appointmentData.id);
@@ -125,8 +128,6 @@ export const Content = ({
       Ritirati dal turno
     </Button>
   );
-
-
   // contents of tooltip may vary depending on the type of the corresponding schedulable
   switch(appointmentData.schedulableType){
     case SchedulableType.Holiday:
@@ -137,7 +138,7 @@ export const Content = ({
         className={classNames(tooltip_classes.content, className)}
         {...restProps}
        >
-         <h1>{appointmentData.title}! 🥳</h1>
+         <h1>{appointmentData.title}! <img src={partyImage} style={{ width: '44px', height: '44px' }}/></h1>
           <li>Festività {appointmentData.category}</li>
           <li>Assegnare turni in questo giorno può generare malcontento. Ricorda di essere equo!</li>
       </StyledDiv>
@@ -338,7 +339,14 @@ export class AppointmentContent extends React.Component{
     }
 
     let api = new RichiestaRimozioneDaTurnoAPI();
-    let array = await api.getAllPendingRequests();
+    let array
+    try {
+      array = await api.getAllPendingRequests();
+    } catch (err) {
+
+      panic()
+      return
+    }
     this.setState({ requests: array })
   }
 

@@ -13,6 +13,7 @@ import {Button} from "@mui/material";
 import {UserAPI} from "../../API/UserAPI";
 import {ConditionsToShow} from "./SingleUserProfileView";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
 
 
 export default class ModifyUserProfileView extends React.Component {
@@ -41,8 +42,20 @@ export default class ModifyUserProfileView extends React.Component {
 
 
   async componentDidMount() {
-    let id = localStorage.getItem("id");
-    let user = await(new UserAPI().getSingleUserProfileDetails(id));
+    let user;
+    let id;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      id = urlParams.get('userID');
+      if(id==null){
+        panic()
+        return;
+      }
+      user = await(new UserAPI().getSingleUserProfileDetails(id));
+    } catch (err) {
+      panic()
+      return
+    }
     let systemActorsUser = user.systemActors;
     let conditionsToShow = [];
     let formattedSpecialization = [];
@@ -93,7 +106,6 @@ export default class ModifyUserProfileView extends React.Component {
     console.log(this.state.specializations);
     console.log(this.state.systemActors);
 
-
   }
 
 
@@ -114,8 +126,14 @@ export default class ModifyUserProfileView extends React.Component {
       delete this.state.seniority;
     }
 
-    let httpResponse = await loginAPI.postRegistration(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postRegistration(this.state);
+    } catch (err) {
 
+      panic()
+      return
+    }
 
 
     let responseStatusClass = Math.floor(httpResponse.status / 100) // Grazie Fede
@@ -193,15 +211,11 @@ export default class ModifyUserProfileView extends React.Component {
                     style={{marginBlock:10}}>
                   </TextField>
                   <TextField
-                    required
-                    label={t('Email Address')}
+                    disabled
+                    label={t("Email Address")}
                     fullWidth
                     value={this.state.email}
-                    onChange={(event) => {
-
-                    }}
                     style={{marginBlock:10}}>
-
                   </TextField>
                   <TextField
                     disabled
@@ -244,7 +258,6 @@ export default class ModifyUserProfileView extends React.Component {
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer/>
       </section>
     )
   }

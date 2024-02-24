@@ -4,6 +4,7 @@ import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { withRouter } from 'react-router-dom';
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class LoginView extends React.Component {
 
@@ -65,7 +66,14 @@ export default class LoginView extends React.Component {
       delete this.state.seniority;
     }
 
-    let httpResponse = await loginAPI.postRegistration(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postRegistration(this.state);
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     /* Se la registrazione del nuovo utente ha esito positivo, viene
            mostrato un toast... altrimenti viene mostrato
@@ -256,18 +264,6 @@ export default class LoginView extends React.Component {
             </div>
           </div>
         </form>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </div>
     )
   }

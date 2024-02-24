@@ -5,9 +5,20 @@ import datetime
 import calendar
 import json
 import time
+
+#VARIABILI GLOBALI
 numeroMesi=48
-user="kobero"
-psw="kobero"
+user="sprintfloyd"
+psw="sprintfloyd"
+#ALTRE VARIABILI FONDAMENTALI
+# 1) Numero di medici strutturati
+# 2) Numero di medici specializzandi senior
+# 3) Numero di medici specializzandi junior
+# 4) Numero di medici strutturati richiesti per ciascun turno
+# 5) Numero di medici specializzandi senior richiesti per ciascun turno
+# 6) Numero di medici specializzandi junior richiesti per ciascun turno
+# 7) Upper bound dei livelli di priorità (solo per l'algoritmo nuovo)
+# 8) Condizione di ciascun medico (per semplicità si è scelto il default per tutti i medici)
 
 def funcMedia(dizionario,keys):
     # Conta il numero totale di elementi nel dizionario
@@ -29,18 +40,19 @@ def funcMax(dizionario,keys):
     max={}
     for k in keys:
         max[k]=0
-    # Somma i valori di "g", "p", e "n" su tutti gli elementi
+    # Trova il massimo tra "g", "p", e "n" su tutti gli elementi
     for item in dizionario.values():
         for k in keys:
             if max[k] < item[k] :
                 max[k]=float(item[k])
     return max
+
 def funcMin(dizionario,keys):
     idCasuale = list(dizionario.keys())[0]	#per avere la certezza di inizializzare le variabili di minimo con un valore non minore del minimo effettivo, si prende il valore relativo a uno dei medici scelto (pseudo-)casualmente.
     min={}
     for k in keys:
-        min[k]=float(dizionario.get(idCasuale)[k]);
-    # Somma i valori di "g", "p", e "n" su tutti gli elementi
+        min[k]=float(dizionario.get(idCasuale)[k])
+    # Trova il minimo tra "g", "p", e "n" su tutti gli elementi
     for item in dizionario.values():
         for k in keys:
             if min[k] > item[k] :
@@ -59,23 +71,24 @@ def computazioneTotale(name):
     keys=["giornaliero","pomeridiano","notturno","domeniche","lunga","general_priority","night_priority","long_shift_priority"]
     allUser = pd.read_sql("SELECT ms3_system_user_id FROM Doctor", con=conn)	#tutti gli utenti del sistema
     oggettoDaSalvare=computazione(allUser,keys)
-    filesalv=open("./statistic/"+name+"/ToTSchedule/result_totale.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 143->148)
+    filesalv=open("./statistic/"+name+"/ToTSchedule/result_totale.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 155->160)
     json.dump(oggettoDaSalvare, filesalv, indent=2)
 
     allUser=pd.read_sql("SELECT ms3_system_user_id FROM Doctor WHERE seniority=0", con=conn)
     oggettoDaSalvare=computazione(allUser,keys)
-    filesalv=open("./statistic/"+name+"/ToTSchedule/result_totalePerSeniority0.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 143->148)
+    filesalv=open("./statistic/"+name+"/ToTSchedule/result_totalePerSeniority0.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 155->160)
     json.dump(oggettoDaSalvare, filesalv, indent=2)
 
     allUser=pd.read_sql("SELECT ms3_system_user_id FROM Doctor WHERE seniority=1", con=conn)
     oggettoDaSalvare=computazione(allUser,keys)
-    filesalv=open("./statistic/"+name+"/ToTSchedule/result_totalePerSeniority1.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 143->148)
+    filesalv=open("./statistic/"+name+"/ToTSchedule/result_totalePerSeniority1.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 155->160)
     json.dump(oggettoDaSalvare, filesalv, indent=2)
 
     allUser=pd.read_sql("SELECT ms3_system_user_id FROM Doctor WHERE seniority=2", con=conn)
     oggettoDaSalvare=computazione(allUser,keys)
-    filesalv=open("./statistic/"+name+"/ToTSchedule/result_totalePerSeniority2.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 143->148)
+    filesalv=open("./statistic/"+name+"/ToTSchedule/result_totalePerSeniority2.json","w+")	#per le statistiche globali si crea un unico file json che riassume tutto (vedere commenti righe 155->160)
     json.dump(oggettoDaSalvare, filesalv, indent=2)
+
 def computazione(AllUser,keys):
     # Configura la connessione al database
     conn = pg8000.connect(
@@ -139,15 +152,15 @@ def computazionePerSchedule(name):
         database="ms3"
     )
     #crea i file in cui memorizzare le statistiche per schedule
-    mediaFile=open("./statistic/"+name+"/PerSchedule/media.json","w+")		#media == numero medio di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo (e.g. turno notturno)
+    mediaFile=open("./statistic/"+name+"/PerSchedule/media.json","w+")		    #media == numero medio di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo (e.g. turno notturno)
     mediaDiffFile=open("./statistic/"+name+"/PerSchedule/mediaDiff.json","w+")	#mediaDiff == media delle differenze tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
-    maxFile=open("./statistic/"+name+"/PerSchedule/max.json","w+")			#max == numero massimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
+    maxFile=open("./statistic/"+name+"/PerSchedule/max.json","w+")			    #max == numero massimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
     maxDiffFile=open("./statistic/"+name+"/PerSchedule/maxDiff.json","w+")		#maxDiff == differenza massima tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
-    minFile=open("./statistic/"+name+"/PerSchedule/min.json","w+")			#min == numero minimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
+    minFile=open("./statistic/"+name+"/PerSchedule/min.json","w+")			    #min == numero minimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
     minDiffFile=open("./statistic/"+name+"/PerSchedule/minDiff.json","w+")		#minDiff == differenza minima tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
 
     AllUser = pd.read_sql("SELECT ms3_system_user_id,name,lastname FROM Doctor", con=conn)	#tutti gli utenti del sistema
-    AllSchedule = pd.read_sql("SELECT Schedule_id FROM Schedule", con=conn)			#tutti gli schedule che sono stati messi in piedi con generaSchedulazioni()
+    AllSchedule = pd.read_sql("SELECT Schedule_id FROM Schedule", con=conn) #tutti gli schedule che sono stati messi in piedi con generaSchedulazioni()
     #dizionari da cui verranno creati i json che popoleranno i file appena creati
     dictFinMedia={}
     dictFinDiffMedia={}
@@ -168,7 +181,7 @@ def computazionePerSchedule(name):
 
             count3 = pd.read_sql(querySunday, con=conn)	#quanti turni domenicali
 
-            queryDouble="SELECT count(*) as c from (SELECT count(*) as ctemp FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE scs.schedule_schedule_id="+str(schedule_id)+" and ds.doctor_ms3_system_user_id="+str(ms3_id)+" and ds.concrete_shift_doctor_status=0 group by date having count(*)>=2) as  temporary";
+            queryDouble="SELECT count(*) as c from (SELECT count(*) as ctemp FROM doctor_assignment as ds join concrete_shift as cs on ds.concrete_shift_id=cs.concrete_shift_id join shift on cs.shift_shift_id=shift.shift_id join schedule_concrete_shifts as scs on scs.concrete_shifts_concrete_shift_id=cs.concrete_shift_id WHERE scs.schedule_schedule_id="+str(schedule_id)+" and ds.doctor_ms3_system_user_id="+str(ms3_id)+" and ds.concrete_shift_doctor_status=0 group by date having count(*)>=2) as  temporary"
 
             count4 = pd.read_sql(queryDouble, con=conn)	#quanti turni lunghi
 
@@ -186,7 +199,7 @@ def computazionePerSchedule(name):
         #calcolo differenza
         for item in dictApp.values():
             for k in keys:
-                item[k] = abs(item[k]-dictFinMedia[schedule_id][k]);
+                item[k] = abs(item[k]-dictFinMedia[schedule_id][k])
         #calcolo media differenza
         dictFinDiffMedia[schedule_id]=funcMedia(dictApp,keys)
         dictFinDiffMax[schedule_id]=funcMax(dictApp,keys)
@@ -234,16 +247,16 @@ def generaSchedulazioni(name,alg):
 
     fileTmp=open(name+"tmp.txt","w+")
 
-    #vengono generate tutte schedulazioni di durata pari a un mese
+    #vengono generate tutte schedulazioni di durata pari a un mese [VARIABILE: durata di ciascuna schedulazione = 1 mese]
     data_attuale = datetime.datetime.now()
     deltaDay=calendar.monthrange(data_attuale.year,data_attuale.month)[1]
     mese_successivo = data_attuale.replace(day=1) + datetime.timedelta(days=deltaDay)
 
-    mediaFile=open("./statistic/"+name+"/PerSchedule/mediaLevel.json","w+")		#media == numero medio di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo (e.g. turno notturno)
+    mediaFile=open("./statistic/"+name+"/PerSchedule/mediaLevel.json","w+")		    #media == numero medio di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo (e.g. turno notturno)
     mediaDiffFile=open("./statistic/"+name+"/PerSchedule/mediaDiffLevel.json","w+")	#mediaDiff == media delle differenze tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
-    maxFile=open("./statistic/"+name+"/PerSchedule/maxLevel.json","w+")			#max == numero massimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
+    maxFile=open("./statistic/"+name+"/PerSchedule/maxLevel.json","w+")			    #max == numero massimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
     maxDiffFile=open("./statistic/"+name+"/PerSchedule/maxDiffLevel.json","w+")		#maxDiff == differenza massima tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
-    minFile=open("./statistic/"+name+"/PerSchedule/minLevel.json","w+")			#min == numero minimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
+    minFile=open("./statistic/"+name+"/PerSchedule/minLevel.json","w+")			    #min == numero minimo di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo
     minDiffFile=open("./statistic/"+name+"/PerSchedule/minDiffLevel.json","w+")		#minDiff == differenza minima tra il numero di volte in cui ciascun dottore è stato assegnato a un turno di un particolare tipo e @media
 
     dictFinMedia={}
@@ -258,7 +271,7 @@ def generaSchedulazioni(name,alg):
     for i in range(numeroMesi):
         data_inizio = mese_successivo
         data_fine = mese_successivo.replace(day=(calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]))
-        tempo_inizio = time.time()
+        tempo_inizio = time.time()  #stiamo misurando i tempi di generazione dello schedulo
         # Chiamata alla funzione del backend che si occupa di generare ciascuna schedulazione
         esegui_richiesta_post(data_inizio, data_fine,alg)
         tempo_fine = time.time()
@@ -273,7 +286,7 @@ def generaSchedulazioni(name,alg):
                 "long_shift_priority":result5["long_shift_priority"].values[0]
             }
         tempo_trascorso = tempo_fine - tempo_inizio
-        fileTmp.write(f"Tempo di esecuzione: {tempo_trascorso} secondi\n")
+        fileTmp.write(f"Tempo di esecuzione: {tempo_trascorso} secondi\n")  #scrittura dei tempi di generazione dello schedulo
         fileTmp.flush()
         # Passa al mese successivo
         deltaDay=calendar.monthrange(mese_successivo.year,mese_successivo.month)[1]
@@ -285,7 +298,7 @@ def generaSchedulazioni(name,alg):
         #calcolo differenza
         for item in dictApp.values():
             for k in keys:
-                item[k] = abs(item[k]-dictFinMedia[i][k]);
+                item[k] = abs(item[k]-dictFinMedia[i][k])
         #calcolo media differenza
         dictFinDiffMedia[i]=funcMedia(dictApp,keys)
         dictFinDiffMax[i]=funcMax(dictApp,keys)
@@ -296,6 +309,7 @@ def generaSchedulazioni(name,alg):
     json.dump(dictFindMax, maxFile, indent=2)
     json.dump(dictFindMin, minFile, indent=2)
     json.dump(dictFinDiffMin, minDiffFile, indent=2)
+
 def func_delete():
     results = pd.read_sql("SELECT schedule_id as id FROM schedule", con=conn)	#tutti gli utenti del sistema
     url = "http://localhost:3000/api/schedule/id="
@@ -312,10 +326,12 @@ def func_delete():
             print(f"Errore nella connessione al server: {e}")
 
 if __name__ == "__main__":
-    generaSchedulazioni("nuovoScheduler",2)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
-    computazionePerSchedule("nuovoScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
-    computazioneTotale("nuovoScheduler")	#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
+    #INVOCAZIONE DELLE FUNZIONI PER IL NUOVO SCHEDULER
+    generaSchedulazioni("nuovoScheduler2",2)    #funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    computazionePerSchedule("nuovoScheduler2")  #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    computazioneTotale("nuovoScheduler2")       #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso
 
-    #generaSchedulazioni("vecchioScheduler",1)		#funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
-    #computazionePerSchedule("vecchioScheduler") #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
-    #computazioneTotale("vecchioScheduler")
+    #INVOCAZIONE DELLE FUNZIONI PER IL VECCHIO SCHEDULER
+    #generaSchedulazioni("vecchioScheduler",1)  #funzione che chiama il server dell'applicazione per generare le schedulazioni dei turni
+    #computazionePerSchedule("vecchioScheduler")#funzione che calcola le statistiche di performance dell'algoritmo di scheduler per ciascuna schedulazione
+    #computazioneTotale("vecchioScheduler")     #funzione che calcola le statistiche di performance dell'algoritmo di scheduler per tutte le schedulazioni nel complesso

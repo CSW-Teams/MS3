@@ -13,6 +13,7 @@ import {
 import {toast, ToastContainer} from "react-toastify";
 import {VincoloAPI} from "../../API/VincoliAPI";
 import { t } from "i18next";
+import {panic} from "../../components/common/Panic";
 
 export default class ConfigurazioneVincoli extends React.Component{
 
@@ -36,16 +37,33 @@ export default class ConfigurazioneVincoli extends React.Component{
   }
 
   async componentDidMount() {
-    let conf = await(new VincoloAPI().getConfigurazioneVincoli())
+    let conf
+    try {
+      conf = await(new VincoloAPI().getConfigurazioneVincoli())
+    } catch (err) {
+      panic()
+      return
+    }
+    let over62={};
+    let donnaIncinta={};
+    for(let i=0;i<conf.configVincMaxPerConsPerCategoria.length;i++){
+      if(conf.configVincMaxPerConsPerCategoria[i].constrainedCondition.type=='INCINTA'){
+        donnaIncinta.categoria=conf.configVincMaxPerConsPerCategoria[i].constrainedCondition;
+        donnaIncinta.maxOre=conf.configVincMaxPerConsPerCategoria[i].numMaxOreConsecutive;
+      }else{
+        over62.categoria=conf.configVincMaxPerConsPerCategoria[i].constrainedCondition;
+        over62.maxOre=conf.configVincMaxPerConsPerCategoria[i].numMaxOreConsecutive;
+      }
+    }
     this.setState({
-      numGiorniPeriodo: conf.numGiorniPeriodo,
-      maxOrePeriodo: conf.maxOrePeriodo,
-      horizonTurnoNotturno: conf.horizonTurnoNotturno,
-      numMaxOreConsecutivePerTutti: conf.numMaxOreConsecutivePerTutti,
-      numMaxOreConsecutiveOver62: conf.configVincoloMaxPeriodoConsecutivoPerCategoria[0].numMaxOreConsecutive,
-      numMaxOreConsecutiveDonneIncinta: conf.configVincoloMaxPeriodoConsecutivoPerCategoria[1].numMaxOreConsecutive,
-      categoriaOver62:conf.configVincoloMaxPeriodoConsecutivoPerCategoria[0].categoriaVincolata,
-      categoriaDonneIncinta:conf.configVincoloMaxPeriodoConsecutivoPerCategoria[1].categoriaVincolata,
+      numGiorniPeriodo: conf.periodDaysNo,
+      maxOrePeriodo: conf.periodMaxTime,
+      horizonTurnoNotturno: conf.horizonNightShift,
+      numMaxOreConsecutivePerTutti: conf.maxConsecutiveTimeForEveryone,
+      numMaxOreConsecutiveOver62: over62.maxOre,
+      numMaxOreConsecutiveDonneIncinta: donnaIncinta.maxOre,
+      categoriaOver62:over62.categoria,
+      categoriaDonneIncinta:donnaIncinta.categoria,
     })
   }
 
@@ -54,7 +72,14 @@ export default class ConfigurazioneVincoli extends React.Component{
     let conf = {}
     conf = this.state
 
-    let response = await vincoliApi.setConfigurazioneVincoli(conf)
+    let response
+    try {
+      response = await vincoliApi.setConfigurazioneVincoli(conf)
+    } catch (err) {
+
+      panic()
+      return
+    }
     if (response.status === 202) {
       toast.success(t("Configuration saved successfully"), {
         position: "top-center",
@@ -88,7 +113,6 @@ export default class ConfigurazioneVincoli extends React.Component{
     this.setState({
       [name]: value
     });
-    console.log(value)
   }
 
   render() {
@@ -199,18 +223,6 @@ export default class ConfigurazioneVincoli extends React.Component{
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
 
       </section>
     )

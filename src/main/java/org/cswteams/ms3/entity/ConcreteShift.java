@@ -1,6 +1,7 @@
 package org.cswteams.ms3.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 
 import javax.persistence.*;
@@ -17,6 +18,7 @@ import java.util.List;
  */
 @Entity
 @Getter
+@Setter
 public class ConcreteShift {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

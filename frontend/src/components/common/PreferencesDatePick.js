@@ -6,6 +6,7 @@ import {DesiderateAPI} from "../../API/DesiderataAPI"
 import {toast, ToastContainer} from "react-toastify";
 import {MDBCard} from "mdb-react-ui-kit";
 import {t} from "i18next";
+import {panic} from "./Panic";
 
 const months =   [t("January"),
   t("February"),
@@ -52,7 +53,14 @@ function DateSelectSlots({props}) {
     }
   }
   async function saveDesiderate() {
-    let response = await(desiderataApi.editDesiderate(preferences, toDelPreferences,id))
+    let response
+    try {
+      response = await(desiderataApi.editDesiderate(preferences, toDelPreferences,id))
+    } catch (err) {
+
+      panic()
+      return
+    }
     let responseStatus  = response.status
 
     if (responseStatus === 202) {
@@ -152,8 +160,8 @@ function DateSelectSlots({props}) {
   });
 
   return (
-    <div style={{float: "none"}}>
-      <div style={{minWidth: 300, height: 500, overflowY: "scroll"}}>
+    <div style={{float: "none"}} >
+      <div style={{minWidth: 300, height: 400, overflowY: "scroll"}}>
         {processedPrefs}
       </div>
       <div>

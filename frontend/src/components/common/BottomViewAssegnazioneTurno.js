@@ -21,6 +21,7 @@ import FilesUpload from './FilesUpload'
 import {GiustificaForzaturaAPI} from "../../API/GiustificaForzaturaAPI";
 import {MDBTextArea} from "mdb-react-ui-kit";
 import { t } from "i18next";
+import {panic} from "./Panic";
 
 function ViolationLog(props){
 
@@ -46,14 +47,23 @@ export default function TemporaryDrawer(props) {
   const [giustificato, setGiustificato] = React.useState(false)
   const [allServices, setAllServices] = React.useState([])
   const [timeSlot, setTimeSlot] = React.useState("")
-  let giustificazione = ''
+  const [selectedShiftDaysOfWeek, setSelectedShiftDaysOfWeek] = React.useState([]) ;
+  const [giustificazioneState, setGiustificazioneState] = React.useState("")
+  let giustificazione = ""
 
 
   //Sono costretto a dichiarare questa funzione per poterla invocare in modo asincrono.
   async function getUser() {
     let doctorApi = new DoctorAPI();
-    let doctors = await doctorApi.getAllDoctorsInfo()
+    let doctors
 
+    try {
+      doctors = await doctorApi.getAllDoctorsInfo()
+    } catch (err) {
+
+      panic()
+      return
+    }
     const d = []
     for(let i=0; i<doctors.length; i++) {
       d.push({label: doctors[i].name + " " + doctors[i].lastname + " - " + doctors[i].seniority, value: doctors[i]})
@@ -64,7 +74,14 @@ export default function TemporaryDrawer(props) {
 
     async function getService() {
       let servizioAPI = new ServizioAPI();
-      let services = await servizioAPI.getAllServices()
+      let services
+      try {
+        services = await servizioAPI.getAllServices()
+      } catch (err) {
+
+        panic()
+        return
+      }
 
       const d = []
       for(let i=0; i<services.length; i++) {
@@ -76,20 +93,37 @@ export default function TemporaryDrawer(props) {
     }
 
 
+    function formatDaysOfWeek(daysOfWeek) {
+      let showDaysOfWeek = "";
+      for(var i =0;i<daysOfWeek.length;i++){
+          showDaysOfWeek = showDaysOfWeek.substring(0,showDaysOfWeek.length) + t(daysOfWeek[i]) + ",";
+      }
+
+      return showDaysOfWeek.substring(0,showDaysOfWeek.length-1);
+    }
 
     async function getShift(servizio) {
         if(servizio.length > 0) {
-          console.log(servizio[0].label)
 
           let turnoApi = new TurnoAPI();
-          let shifts = await turnoApi.getTurniByServizio(servizio[0].label)
+          let shifts
+
+          try {
+            shifts = await turnoApi.getTurniByServizio(servizio[0].label)
+          } catch (err) {
+
+            panic()
+            return
+          }
 
           const d = []
           for(let i=0; i<shifts.length; i++) {
             if(shifts[i].daysOfWeek.length == 7) {
-              d.push({label: shifts[i].tipologia + " - everyday", value: shifts[i]});
+              d.push({label: t("Everyday") + " - "  + t(shifts[i].tipologia), value: shifts[i]});
             } else {
-              d.push({label: shifts[i].tipologia + " - " + shifts[i].daysOfWeek, value: shifts[i]});
+              console.log(shifts[i].daysOfWeek);
+              let showDaysOfWeek = formatDaysOfWeek(shifts[i].daysOfWeek);
+              d.push({label: showDaysOfWeek + " - " + t(shifts[i].tipologia), value: shifts[i]});
             }
           }
 
@@ -118,8 +152,10 @@ export default function TemporaryDrawer(props) {
   //Funzione che implementa l'inversione di controllo. Verrà invocata dal componente figlio che permette di selezionare il turno.
   //Viene passata al componente <MultipleSelect>
   const handleTurno = (timeslot) => {
-    if (timeslot.length > 0)
+    if (timeslot.length > 0) {
       setTimeSlot(timeslot[0].value.tipologia)
+      setSelectedShiftDaysOfWeek(timeslot[0].value.daysOfWeek)
+    }
   }
 
   const handleServizio = (servizio) => {
@@ -142,6 +178,7 @@ export default function TemporaryDrawer(props) {
   const giustificaCompilata = (anchor, open) => async (event) => {
     if(giustificazione !== ''){
       setGiustificato(true)
+      setGiustificazioneState(giustificazione)
     }else{
       toast.error(t("Justification not compiled"), {
         position: "top-center",
@@ -177,92 +214,92 @@ export default function TemporaryDrawer(props) {
      */
     {/*const mansione = turno.toString().substring(turno.toString().lastIndexOf(" ")+1, turno.toString().length)
     const tipologiaTurno = turno.toString().substring(0,turno.toString().indexOf(" "))*/}
-    const mansione = turno
-    const tipologiaTurno = timeSlot
-    console.log("Servizio: ", servizio)
-    response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced)
+    const mansione = turno;
+    const tipologiaTurno = timeSlot;
+    console.log("Servizio: ", servizio);
+    console.log(mansione);
 
-    //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
-    props.onPostAssegnazione()
+    let today = new Date();
+    let startDateAsDate = new Date(data);
 
-    //Verifico la risposta del server analizzando il codice di risposta http
-    let responseStatusClass = Math.floor(response.status / 100)
-    switch(responseStatusClass){
-
-      // 200 family, success
-      case 2:
-        // Informa l'utente che l'assegnazione turno è stata registrata con successo
-        toast.success(t("Assignment successfully created"), {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-        if(forced === true){
-          let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
-          let bodyResponse = response.json()
-          let assegnazioneTurnoId = bodyResponse.turno
-          let utente_id = 7
-          let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
-          status = await giustificaForzaturaAPI.caricaGiustifica(giustificazione,utente_id, turno, utentiSelezionatiGuardia, data, servizio);
-          if(status === 202){
-            toast.success(t("Justification saved"), {
-              position: "top-center",
-              autoClose: 5000,
-              hideProgressBar: true,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-            });
-          }else{
-            // TODO: Bisogna cancellare l'assegnazione turno inserita
-            toast.error(t("An error occurred while trying to save the justification"), {
-              position: "top-center",
-              autoClose: 5000,
-              hideProgressBar: true,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-            });
-          }}
-          break;
-      // 400 family, malformed request
-      case 4:
-        if (response.status === 406) {
-
-          /**
-           * L'assegnazione è fallita a causa di una violazione dei vincoli.
-           * Mostriamo a schermo quali vincoli sono stati violati.
-           */
-          let responseBody = await response.json();
-          /**
-           * FIXME: non sono riuscito a passare al toast il componente del ViolationLog usando la sintassi JSX
-           * perché non riuscivo a passargli i messaggi da stampare come props. Questo è un workaround che aggira il problema
-           * simulando il passaggio delle props invocando il componente direttamente come funzione. Se qualcuno riesce a sistemarlo
-           * passandolo direttamente nella forma <ViolationLog log={responseBody.messagges}/> sarebbe meglio.
-           */
-          toast.error(ViolationLog({log : responseBody.messagges}), {
+    if(data === ""){
+        toast.error(t("Date must be selected"), {
             position: "top-center",
-            hideProgressBar: false,
+            autoClose: 5000,
+            hideProgressBar: true,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
             theme: "colored",
-            autoClose: false,
-          });
-        } else {
-          // malformed request
+        });
+    }else if (today.getDate() > startDateAsDate.getDate() || today.getMonth() > startDateAsDate.getMonth() || today.getFullYear() > startDateAsDate.getFullYear()) {
+        toast.error(t("Start date must be after at least today"), {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }else if(servizio === ""){
+        toast.error(t("Choose a medical service from the ones offered by the hospital"), {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }else if(tipologiaTurno === ""){
+        toast.error(t("Select a timeslot for the new concrete shift"), {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }else if(utentiSelezionatiGuardia.length === 0){
+        toast.error(t("Select doctors on duty"), {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }else if(utentiSelezionatiReperibilità.length === 0){
+        toast.error(t("Select doctors on call"), {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        });
+    }else{
 
-          toast.error(t("Parameters Error"), {
+      if(selectedShiftDaysOfWeek) {
+
+        const dateDayOfWeek = startDateAsDate.getDay()
+        const weekday = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+        const result = selectedShiftDaysOfWeek.reduce((result, value) => {
+          return result || (value === weekday[dateDayOfWeek])
+        }, false)
+
+        if(!result) {
+          toast.error(t("Error in creating assignement, incompatible days of week"), {
             position: "top-center",
             autoClose: 5000,
             hideProgressBar: true,
@@ -272,30 +309,167 @@ export default function TemporaryDrawer(props) {
             progress: undefined,
             theme: "colored",
           });
+          return
         }
-        break;
-      // 500 family, server error
-      case 5:
-      // TODO: Dovremmo gestire i casi in cui il server si inceppa, e informare l'utente riguardo
-      // le cause del problema e consigliargli di contattare un amministratore o un tecnico (noi!)
-      default:
-        // If you get here, something went really wrong. For real. :/
-        console.log("Unexpected response status: " + response.status);
-        break;
+        try {
+          response = await assegnazioneTurnoAPI.postAssegnazioneTurno(data,tipologiaTurno,utentiSelezionatiGuardia,utentiSelezionatiReperibilità, servizio,mansione,forced);
+        } catch (err) {
 
+          panic();
+          return
+        }
+      }
+      /* If all fields are non empty*/
+
+        //Chiamo la callback che aggiorna i turni visibili sullo scheduler.
+        props.onPostAssegnazione()
+
+        //Verifico la risposta del server analizzando il codice di risposta http
+        let responseStatusClass = Math.floor(response.status / 100)
+        switch(responseStatusClass){
+
+            // 200 family, success
+            case 2:
+                // Informa l'utente che l'assegnazione turno è stata registrata con successo
+                toast.success(t("Assignment successfully created"), {
+                    position: "top-center",
+                    autoClose: 5000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                });
+                if(forced === true){
+                    let giustificaForzaturaAPI = new GiustificaForzaturaAPI()
+                    //TODO: check for deletion //let bodyResponse = response.json()
+                    //TODO: check for deletion //let assegnazioneTurnoId = bodyResponse.turno
+                    let utente_id = localStorage.getItem("id")
+
+                    let utentiAllocatiIDs = utentiSelezionatiGuardia.map((value) => {
+                        return value.value.id
+                    })
+
+                    var requestParams = {
+                        message : giustificazioneState,
+                        utenteGiustificatoreId : utente_id,
+                        giorno : data.$d.getDate(),
+                        mese : data.$d.getMonth()+1,
+                        anno : data.$d.getFullYear(),
+                        //TODO: check for deletion //turno : turno,
+                        timeSlot : timeSlot,
+                        utentiAllocati : utentiAllocatiIDs,
+                        servizio : servizio
+                    }
+                    console.log("FANFADEBUG: " + turno)
+
+
+                    let status; //Codice di risposta http del server. In base al suo valore è possibile capire se si sono verificati errori
+
+                    try {
+                        status = await giustificaForzaturaAPI.caricaGiustifica(requestParams);
+                    } catch (err) {
+
+                        panic()
+                        return
+                    }
+                    if(status === 202){
+                        toast.success(t("Justification saved"), {
+                            position: "top-center",
+                            autoClose: 5000,
+                            hideProgressBar: true,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "colored",
+                        });
+                    }else{
+                        // TODO: Bisogna cancellare l'assegnazione turno inserita
+                        toast.error(t("An error occurred while trying to save the justification"), {
+                            position: "top-center",
+                            autoClose: 5000,
+                            hideProgressBar: true,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "colored",
+                        });
+                    }}
+                break;
+            // 400 family, malformed request
+            case 4:
+                if (response.status === 406) {
+
+                    /**
+                     * L'assegnazione è fallita a causa di una violazione dei vincoli.
+                     * Mostriamo a schermo quali vincoli sono stati violati.
+                     */
+                    let responseBody = await response.json();
+                    /**
+                     * FIXME: non sono riuscito a passare al toast il componente del ViolationLog usando la sintassi JSX
+                     * perché non riuscivo a passargli i messaggi da stampare come props. Questo è un workaround che aggira il problema
+                     * simulando il passaggio delle props invocando il componente direttamente come funzione. Se qualcuno riesce a sistemarlo
+                     * passandolo direttamente nella forma <ViolationLog log={responseBody.messagges}/> sarebbe meglio.
+                     */
+                    toast.error(ViolationLog({log : responseBody.messagges}), {
+                        position: "top-center",
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        autoClose: false,
+                    });
+                }else if(response.status === 404){
+                    toast.error(t("Generate a new planning before adding a concrete shift"), {
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                    });
+                } else {
+                    // malformed request
+
+                    toast.error(t("Parameters Error"), {
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                    });
+                }
+                break;
+            // 500 family, server error
+            case 5:
+            // TODO: Dovremmo gestire i casi in cui il server si inceppa, e informare l'utente riguardo
+            // le cause del problema e consigliargli di contattare un amministratore o un tecnico (noi!)
+            default:
+                // If you get here, something went really wrong. For real. :/
+                console.log("Unexpected response status: " + response.status);
+                break;
+
+        }
+        // chiudiamo il cassetto dell'assegnazione turno solo se l'assegnazione è andata a buon fine
+        setState({ ...state, [anchor]: (responseStatusClass === 2)? open : !open });
+        setForced(false);
+        setGiustificato(false);
     }
-
-    // chiudiamo il cassetto dell'assegnazione turno solo se l'assegnazione è andata a buon fine
-    setState({ ...state, [anchor]: (responseStatusClass === 2)? open : !open });
-    setForced(false)
-    setGiustificato(false)
-
-
   }
 
   const handleChange = (e) => {
     e.persist()
-    giustificazione = e.target.value;
+    giustificazione = e.target.value
   };
 
   function Giustifica() {
@@ -332,7 +506,7 @@ export default function TemporaryDrawer(props) {
           'margin-right': 'auto',
           'margin-top':'1%',
           'margin-bottom':'-1%'
-        }} >{t("Add Assignment")}</Button>
+        }} >{t("Add Concrete Shift")}</Button>
         <Drawer anchor='bottom' open={state['bottom']} onClose={toggleDrawer('bottom', false)}>
           <div style={{
             display: 'flex',
@@ -381,24 +555,12 @@ export default function TemporaryDrawer(props) {
               { (forced && giustificato && <MDBCard><MDBCardBody>{t("Compiled Justification")}</MDBCardBody></MDBCard>)}
 
               <Button variant="contained" size="small" disabled={forced && !giustificato} onClick={assegnaTurno('bottom', false)} >
-                {t("Assign Turn")}
-              </Button> {/* todo shift porcodiiii */}
+                {t("Assign Concrete Shift")}
+              </Button> {/* todo shift */}
             </Stack>
           </div>
         </Drawer>
       </React.Fragment>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </div>
 
   );

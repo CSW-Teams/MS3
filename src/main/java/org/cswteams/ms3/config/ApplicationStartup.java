@@ -741,6 +741,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         allDaysOfWeek.add(DayOfWeek.SATURDAY);
         allDaysOfWeek.add(DayOfWeek.SUNDAY);
 
+        Set<DayOfWeek> mondayAndTuesday = new HashSet<>();
+        mondayAndTuesday.add(DayOfWeek.MONDAY);
+        mondayAndTuesday.add(DayOfWeek.TUESDAY);
+
         Shift shift1 = new Shift(LocalTime.of(1, 0),
                 Duration.ofHours(6),
                 ambulatorioCardiologia,
@@ -755,7 +759,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 ambulatorioCardiologia,
                 TimeSlot.MORNING,
                 quantityShiftSeniorityList2,
-                allDaysOfWeek,
+                mondayAndTuesday,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift2);
 

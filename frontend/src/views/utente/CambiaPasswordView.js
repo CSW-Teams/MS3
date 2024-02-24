@@ -1,15 +1,24 @@
 import React from "react"
 import {LoginAPI} from "../../API/LoginAPI";
-import {toast, ToastContainer} from "react-toastify";
+import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {
-  MDBBtn,
   MDBCard,
   MDBCardBody,
   MDBCardTitle, MDBCol,
   MDBContainer, MDBInput, MDBRow, MDBTypography
 } from "mdb-react-ui-kit";
 import {t} from "i18next";
+import {panic} from "../../components/common/Panic";
+import routes from "../../routes";
+import link from "react-router-dom/Link";
+
+// sleep time expects milliseconds
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+
 
 export default class CambiaPasswordView extends React.Component {
   constructor(props) {
@@ -31,12 +40,21 @@ export default class CambiaPasswordView extends React.Component {
     });
   }
 
+
+
   async handleSubmit(e) {
     e.preventDefault();
 
     // Manda una HTTP Post su api/password/
     let loginAPI = new LoginAPI();
-    let httpResponse = await loginAPI.postPassword(this.state);
+    let httpResponse
+    try {
+      httpResponse = await loginAPI.postPassword(this.state);
+    } catch (err) {
+
+      panic()
+      return
+    }
 
     /* Se la modifica della password ha esito positivo, viene
        mostrato un toast... altrimenti viene mostrato
@@ -56,6 +74,9 @@ export default class CambiaPasswordView extends React.Component {
           draggable: true,
           progress: undefined,
           theme: "colored",
+        });
+        sleep(1000).then(() => {
+          window.location.href = "/pianificazione-globale"
         });
         break;
       default:
@@ -123,18 +144,6 @@ export default class CambiaPasswordView extends React.Component {
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={true}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </section>
     )
   }

@@ -3,14 +3,13 @@ import {AssignedShift} from "./Schedulable";
 import {Doctor} from "../entity/Doctor";
 
 export  class AssegnazioneTurnoAPI {
-
    /**
    * Parses content of query response body to extract a list of shifts
    */
   parseAllocatedShifts(body){
-    let turni = [];
 
-    for (let i = 0; i < body.length; i++) {
+        let turni = [];
+        for (let i = 0; i < body.length; i++) {
         const inizioEpochMilliseconds = body[i].startDateTime*1000
         const inizioDate = new Date(inizioEpochMilliseconds);
 
@@ -205,10 +204,15 @@ export  class AssegnazioneTurnoAPI {
   async aggiornaAssegnazioneTurno(appointmentChanged,changes,idLoggato) {
 
     let assegnazioneModificata = {};
-    assegnazioneModificata.idAssegnazione = appointmentChanged.id;
-    assegnazioneModificata.utenti_guardia = changes.utenti_guardia_id
-    assegnazioneModificata.utenti_reperibili = changes.utenti_reperibili_id
-    assegnazioneModificata.utenteModificatoreId = idLoggato;
+    assegnazioneModificata.concreteShiftId = appointmentChanged.id;
+    assegnazioneModificata.onDutyDoctors = changes.utenti_guardia_id
+    assegnazioneModificata.onCallDoctors = changes.utenti_reperibili_id
+    assegnazioneModificata.modifyingDoctorId = idLoggato;
+
+    console.log("FANFADEBUG :" + appointmentChanged.id)
+    console.log("FANFADEBUG :" + changes.utenti_guardia_id)
+    console.log("FANFADEBUG :" + changes.utenti_reperibili_id)
+    console.log("FANFADEBUG :" + idLoggato)
 
     const requestOptions = {
       method: 'PUT',
@@ -246,7 +250,7 @@ async eliminaAssegnazioneTurno(idDaEliminare) {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  const response = await fetch('/api/concrete_shifts/'+idDaEliminare,requestOptions);
+  const response = await fetch('/api/concrete-shifts/'+idDaEliminare,requestOptions);
   return response;
 
 }

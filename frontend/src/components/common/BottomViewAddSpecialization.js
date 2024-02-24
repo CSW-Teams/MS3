@@ -10,6 +10,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import {SingleUserProfileAPI} from "../../API/SingleUserProfileAPI";
 import {toast} from "react-toastify";
 import {t} from "i18next";
+import {panic} from "./Panic";
 
 
 
@@ -37,8 +38,13 @@ export default function DoctorSpecializationAdditionDrawer(props){
       specializations.push(checkedSpecializationsCheckBoxes[i]);
     }
 
-    let responseStatus = singleUserProfileAPI.addSpecializations(doctorID,  specializations);
+    try {
+      let responseStatus = singleUserProfileAPI.addSpecializations(doctorID, specializations);
+    } catch (err) {
 
+      panic()
+      return
+    }
     setOpen(false);
     updateFunction(specializations);
     setCheckedSpecializationsCheckBoxes(prev => []);

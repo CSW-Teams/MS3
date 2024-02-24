@@ -282,7 +282,7 @@ public class HolidayController implements IHolidayController {
         if(dto.getIsRecurrent()) {
             RecurrentHoliday recurrentHoliday = recurrentHolidayDAO.getOne(dto.getId()) ;
             holidayDAO.deleteHolidaysFromRecurrent(recurrentHoliday.getName(), recurrentHoliday.getCategory(),
-                    recurrentHoliday.getLocation(), LocalDate.now().toEpochDay());
+                    recurrentHoliday.getLocation(), LocalDate.now().minusYears(2).toEpochDay());//TODO: correzzione momentanea del problema
             recurrentHolidayDAO.deleteById(dto.getId());
         }
         else holidayDAO.deleteById(dto.getId());
