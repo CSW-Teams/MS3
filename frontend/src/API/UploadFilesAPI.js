@@ -9,7 +9,7 @@ export class UploadFilesAPI {
     let formData = new FormData();
 
     formData.append("file",file)
-    return await fetch('/api/giustifica/caricaFile', {
+    return await fetch('/api/justify/uploadJustification', {
       // content-type header should not be specified!
       method: 'POST',
       body: formData,

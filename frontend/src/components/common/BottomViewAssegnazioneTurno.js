@@ -233,7 +233,7 @@ export default function TemporaryDrawer(props) {
             progress: undefined,
             theme: "colored",
         });
-    }else if (today.getDate() > startDateAsDate.getDate() || today.getMonth() > startDateAsDate.getMonth() || today.getFullYear() > startDateAsDate.getFullYear()) {
+    }else if (today.getTime() > startDateAsDate.getTime()) {
         toast.error(t("Start date must be after at least today"), {
             position: "top-center",
             autoClose: 5000,
