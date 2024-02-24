@@ -57,6 +57,7 @@ export default class PersonalSingleUserProfileView extends React.Component{
       specializations: [],
       conditions:[],
       isPlanner :false,
+      isDoctor: false,
       specializationList:[],
       conditionsList:[],
       allSystemActors:[]
@@ -80,6 +81,7 @@ export default class PersonalSingleUserProfileView extends React.Component{
     let specializations = await singleUserProfileAPI.getSpecializations();
     let conditionsToShow = [];
     let isPlanner = false;
+    let isDoctor = false;
     let allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
     let allSavedConditions = await singleUserProfileAPI.getAllConditionSaved();
     //console.log(user);
@@ -88,6 +90,12 @@ export default class PersonalSingleUserProfileView extends React.Component{
     for(var i = 0;i < loggedUser.systemActors.length;i++){
       if(loggedUser.systemActors[i] === "PLANNER"){
         isPlanner = true;
+      }
+    }
+
+    for(var i = 0;i < loggedUser.systemActors.length;i++){
+      if(user.systemActors[i] === "DOCTOR"){
+        isDoctor = true;
       }
     }
 
@@ -117,6 +125,7 @@ export default class PersonalSingleUserProfileView extends React.Component{
       specializations : user.specializations,
       conditions: conditionsToShow,
       isPlanner: isPlanner,
+      isDoctor:isDoctor,
       specializationList: specializations,
       conditionsList: allSavedConditions,
       allSystemActors:allSavedSystemActors
@@ -564,20 +573,23 @@ export default class PersonalSingleUserProfileView extends React.Component{
               </MDBCol>
             </MDBRow>
             {this.state.isPlanner &&
-              <MDBRow>
-                <MDBCol>
-                  {renderDoctorSpecializations.call(this)}
-                </MDBCol>
-                <MDBCol>
-                  {renderSystemActor.call(this)}
-                </MDBCol>
-              </MDBRow>
+                <MDBRow>
+                  {this.state.isDoctor && (this.state.seniority==="STRUCTURED") &&
+                      <MDBCol>
+                        {renderDoctorSpecializations.call(this)}
+                      </MDBCol>}
+                  <MDBCol>
+                    {renderSystemActor.call(this)}
+                  </MDBCol>
+                </MDBRow>
             }
-            <MDBRow style={{marginTop:"1%"}}>
-              <MDBCol>
-                {renderDoctorCondition.call(this)}
-              </MDBCol>
-            </MDBRow>
+            {this.state.isDoctor &&
+                <MDBRow style={{marginTop:"1%"}}>
+                  <MDBCol>
+                    {renderDoctorCondition.call(this)}
+                  </MDBCol>
+                </MDBRow>
+            }
           </MDBContainer>
         </section>
       );

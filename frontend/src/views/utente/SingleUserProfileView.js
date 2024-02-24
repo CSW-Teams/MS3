@@ -57,6 +57,7 @@ export default class SingleUserProfileView extends React.Component{
       specializations: [],
       conditions:[],
       isPlanner :false,
+      isDoctor:false,
       specializationList:[],
       conditionsList:[],
       allSystemActors:[]
@@ -80,6 +81,7 @@ export default class SingleUserProfileView extends React.Component{
     let specializations = await singleUserProfileAPI.getSpecializations();
     let conditionsToShow = [];
     let isPlanner = false;
+    let isDoctor = false;
     let allSavedSystemActors = await singleUserProfileAPI.getSystemActors();
     let allSavedConditions = await singleUserProfileAPI.getAllConditionSaved();
     //console.log(user);
@@ -88,6 +90,12 @@ export default class SingleUserProfileView extends React.Component{
     for(var i = 0;i < loggedUser.systemActors.length;i++){
       if(loggedUser.systemActors[i] === "PLANNER"){
         isPlanner = true;
+      }
+    }
+
+    for(var i = 0;i < loggedUser.systemActors.length;i++){
+      if(user.systemActors[i] === "DOCTOR"){
+        isDoctor = true;
       }
     }
 
@@ -117,11 +125,12 @@ export default class SingleUserProfileView extends React.Component{
       specializations : user.specializations,
       conditions: conditionsToShow,
       isPlanner: isPlanner,
+      isDoctor:isDoctor,
       specializationList: specializations,
       conditionsList: allSavedConditions,
       allSystemActors:allSavedSystemActors
     });
-
+    console.log(this.state.isDoctor);
 
   }
 
@@ -533,15 +542,15 @@ export default class SingleUserProfileView extends React.Component{
                           className="text-muted">{this.state.birthday}</MDBCardText>
                       </MDBCol>
                     </MDBRow>
-                    <MDBRow>
+                    {this.state.isDoctor &&<MDBRow>
                       <MDBCol sm="3">
                         <MDBCardText>{t('Seniority')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
-                        <MDBCardText
+                            <MDBCardText
                           className="text-muted">{t(this.state.seniority)}</MDBCardText>
                       </MDBCol>
-                    </MDBRow>
+                    </MDBRow>}
                     {(this.state.seniority==="STRUCTURED") && showSpecializations(this.state.specializations)}
                     <MDBRow>
                       <MDBCol sm="3">
@@ -564,19 +573,23 @@ export default class SingleUserProfileView extends React.Component{
             </MDBRow>
             {this.state.isPlanner &&
               <MDBRow>
+                {this.state.isDoctor && (this.state.seniority==="STRUCTURED") &&
                 <MDBCol>
                   {renderDoctorSpecializations.call(this)}
-                </MDBCol>
+                </MDBCol>}
                 <MDBCol>
                   {renderSystemActor.call(this)}
                 </MDBCol>
               </MDBRow>
             }
-            <MDBRow style={{marginTop:"1%"}}>
-              <MDBCol>
-                {renderDoctorCondition.call(this)}
-              </MDBCol>
-            </MDBRow>
+            {this.state.isDoctor &&
+                <MDBRow style={{marginTop:"1%"}}>
+                  <MDBCol>
+                    {renderDoctorCondition.call(this)}
+                  </MDBCol>
+                </MDBRow>
+            }
+
           </MDBContainer>
         </section>
       );
