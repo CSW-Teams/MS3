@@ -59,6 +59,8 @@ public abstract class ControllerSchedulerTest {
 
     protected LocalDate end ;
 
+    protected Schedule schedule ;
+
     @Autowired
     private ISchedulerController controller ;
 
@@ -116,7 +118,7 @@ public abstract class ControllerSchedulerTest {
     @Transactional
     public void testScheduler() {
 
-        Schedule schedule = controller.createSchedule(start, end) ;
+        this.schedule = controller.createSchedule(start, end) ;
 
         if(isPossible) {
             assertNull(schedule.getCauseIllegal());
