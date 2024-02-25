@@ -4,7 +4,7 @@ import numpy as np
 
 def primoGrafico():
     # Carica i dati dal file JSON
-    with open("statistic/nuovoScheduler2/PerSchedule/mediaDiffLevel.json") as file:
+    with open("statistic/nuovoScheduler/PerSchedule/mediaDiffLevel.json") as file:
         dati = json.load(file)
     # Estrai i valori delle colonne
     general_priority = [dati[str(i)]['general_priority'] for i in range(len(dati))]
@@ -114,7 +114,7 @@ primoGrafico()
 #nameFile="statistic/nuovoScheduler2/PerSchedule/mediaDiff.json"
 #nameFile2="statistic/vecchioScheduler/PerSchedule/mediaDiff.json"
 
-nameFile="statistic/nuovoScheduler2/PerSchedule/media.json"
+nameFile="statistic/nuovoScheduler/PerSchedule/media.json"
 nameFile2="statistic/vecchioScheduler/PerSchedule/media.json"
 #la funzione secondoGrafico() ha lo scopo di graficare il numero di turni di ciascuna tipologia (giornaliero, notturno, domenicale, lungo...) a cui ogni
 #medico è stato assegnato, sia per quanto riguarda lo scheduler nuovo, sia per quanto riguarda lo scheduler vecchio
