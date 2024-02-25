@@ -80,11 +80,6 @@ export function configuratore() {
       to: "/configurazione-vincoli",
     },
     {
-      title: "Shift Exchange",
-      htmlBefore: '<i class="material-icons">view_module</i>',
-      to: "/scambio-turni",
-    },
-    {
       title: "Services",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/servizi",
