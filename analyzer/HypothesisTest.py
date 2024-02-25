@@ -6,7 +6,7 @@ from scipy.stats import chisquare
 
 #il t-test sfrutta una Student per confrontare le medie di due v.a. supponendo però che siano v.a. gaussiane
 def func_test_t():
-    dfNuovo = pd.read_json("statistic/nuovoScheduler2/PerSchedule/mediaDiffLevel.json").T
+    dfNuovo = pd.read_json("statistic/nuovoScheduler/PerSchedule/mediaDiffLevel.json").T
     dfVecchio = pd.read_json("statistic/vecchioScheduler/PerSchedule/mediaDiff.json").T
     t_confronto={}
     for k in dfNuovo.columns:
@@ -17,7 +17,7 @@ def func_test_t():
 
 #il KS test confronta le medie di due v.a. supponendo che siano v.a. con la stessa varianza
 def func_test_KS():
-    dfNuovo = pd.read_json("statistic/nuovoScheduler2/PerSchedule/mediaDiffLevel.json").T
+    dfNuovo = pd.read_json("statistic/nuovoScheduler/PerSchedule/mediaDiffLevel.json").T
     dfVecchio = pd.read_json("statistic/vecchioScheduler/PerSchedule/mediaDiff.json").T
     t_confronto={}
     for k in dfNuovo.columns:
@@ -28,7 +28,7 @@ def func_test_KS():
 
 #il SW test stabilisce la natura di una variabile aleatoria (confrontandola e.g. con la gaussiana)
 def func_test_sw():
-    dfNuovo = pd.read_json("statistic/nuovoScheduler2/PerSchedule/mediaDiffLevel.json").T
+    dfNuovo = pd.read_json("statistic/nuovoScheduler/PerSchedule/mediaDiffLevel.json").T
     dfVecchio = pd.read_json("statistic/vecchioScheduler/PerSchedule/mediaDiff.json").T
     statistica_sw, p_valore = shapiro(dfVecchio["uffaPoint"])
     print("\nTest di SW sugli uffa point")
@@ -54,7 +54,7 @@ def func_test_sw():
 
 #il SW test stabilisce la natura di una variabile aleatoria (confrontandola e.g. con l'uniforme)
 def func_test_q2():
-    dfNuovo = pd.read_json("statistic/nuovoScheduler2/PerSchedule/mediaDiffLevel.json").T
+    dfNuovo = pd.read_json("statistic/nuovoScheduler/PerSchedule/mediaDiffLevel.json").T
     dfVecchio = pd.read_json("statistic/vecchioScheduler/PerSchedule/mediaDiff.json").T
     statistica_sw, p_valore = chisquare(dfVecchio["uffaPoint"])
     print("\nTest di SW sugli uffa point")
