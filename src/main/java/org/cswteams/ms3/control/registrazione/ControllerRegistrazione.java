@@ -108,7 +108,8 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
             throw new RegistrationException("Email address already registered.");
         if (registrationDTO.getSystemActors().contains(SystemActor.DOCTOR) &&
                 (!registrationDTO.getSeniority().toString().equals("STRUCTURED") &&
-                        !registrationDTO.getSeniority().toString().equals("SPECIALIZED")
+                        !registrationDTO.getSeniority().toString().equals("SPECIALIST_JUNIOR") &&
+                        !registrationDTO.getSeniority().toString().equals("SPECIALIST_SENIOR")
                 )
         ) {
             throw new RegistrationException("Seniority not specified.");
