@@ -111,7 +111,7 @@ export default class LoginView extends React.Component {
                 type="email"
                 className="form-control mt-1"
                 placeholder={t('Enter email address')}
-                value={this.state.username}
+                value={this.state.email}
                 onChange={e => this.handleChange(e)}
               />
             </div>
@@ -188,7 +188,6 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({username: "giuliacantone@gmail.com"});
                       this.setState({email: "giuliacantone@gmail.com"});
                       this.setState({password: "passw"});
                       this.setState({systemActor: "DOCTOR"});
@@ -209,7 +208,6 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({username: "domenicoverde@gmail.com"});
                       this.setState({email: "domenicoverde@gmail.com"});
                       this.setState({password: "passw"});
                       this.setState({systemActor: "DOCTOR"});
@@ -229,7 +227,6 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({username: "giovannicantone@gmail.com"});
                       this.setState({email: "giovannicantone@gmail.com"});
                       this.setState({password: "passw"});
                       this.setState({systemActor: "DOCTOR"});
@@ -249,7 +246,6 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({username: "giovannicantone@gmail.com"});
                       this.setState({email: "giovannicantone@gmail.com"});
                       this.setState({password: "passw"});
                       this.setState({systemActor: "PLANNER"});
@@ -271,7 +267,6 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({username: "salvatimartina97@gmail.com"});
                       this.setState({email: "salvatimartina97@gmail.com"});
                       this.setState({password: "passw"});
                       this.setState({systemActor: "CONFIGURATOR"});
