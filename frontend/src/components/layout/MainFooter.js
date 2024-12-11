@@ -41,7 +41,7 @@ MainFooter.propTypes = {
 
 MainFooter.defaultProps = {
   contained: false,
-  copyright: "Copyright © 2022 SprintFloyd - © 2023 Scrumtastic",
+  copyright: "Copyright © 2022 SprintFloyd - © 2023 Scrumtastic - © 2024 Shifts happen ",
 };
 
 export default MainFooter;
