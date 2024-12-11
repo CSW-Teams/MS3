@@ -13,7 +13,7 @@ export default class LoginView extends React.Component {
       password: "",
       systemActor: "DOCTOR"
     }
-    this.handleSubmit= this.handleSubmit.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleChange(e) {
@@ -107,7 +107,7 @@ export default class LoginView extends React.Component {
             <div className="form-group mt-3">
               <label>{t('Email Address')}</label>
               <input
-                name = "email"
+                name="email"
                 type="email"
                 className="form-control mt-1"
                 placeholder={t('Enter email address')}
@@ -156,6 +156,135 @@ export default class LoginView extends React.Component {
             </p>
           </div>
         </form>
+
+        {/* Shortcut on login page for the development team
+          * This table is shown only in development environment
+        */}
+        {process.env.NODE_ENV === "development" && (
+          <div
+            className="Auth-form-content">
+            <h3 className="Auth-form-title">Development shortcut</h3>
+
+            <table style={{width: '100%', borderCollapse: 'collapse'}}>
+              {/* TITLE */}
+              <thead>
+              <tr>
+                <th style={{padding: '10px', textAlign: 'center'}}>Role</th>
+                <th style={{padding: '10px', textAlign: 'center'}}>Mail</th>
+                <th style={{padding: '10px', textAlign: 'center'}}>Seniority
+                </th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
+                <td style={{
+                  padding: '10px',
+                  textAlign: 'center'
+                }}>giuliacantone@gmail.com
+                </td>
+                <td>Specialista Junior</td>
+                <td style={{padding: '10px', textAlign: 'center'}}>
+                  <button
+                    style={{border: '1px solid black'}}
+                    onClick={() => {
+                      this.setState({username: "giuliacantone@gmail.com"});
+                      this.setState({email: "giuliacantone@gmail.com"});
+                      this.setState({password: "passw"});
+                      this.setState({systemActor: "DOCTOR"});
+                    }}>
+                    Insert
+                  </button>
+                </td>
+              </tr>
+              <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
+                <td style={{
+                  padding: '10px',
+                  textAlign: 'center'
+                }}>domenicoverde@gmail.com
+                </td>
+                <td>Specialista Senior</td>
+                <td style={{padding: '10px', textAlign: 'center'}}>
+                  <button
+                    style={{border: '1px solid black'}}
+                    onClick={() => {
+                      this.setState({username: "domenicoverde@gmail.com"});
+                      this.setState({email: "domenicoverde@gmail.com"});
+                      this.setState({password: "passw"});
+                      this.setState({systemActor: "DOCTOR"});
+                    }}>Insert
+                  </button>
+                </td>
+              </tr>
+              <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
+                <td style={{
+                  padding: '10px',
+                  textAlign: 'center'
+                }}>giovannicantone@gmail.com
+                </td>
+                <td>Strutturato</td>
+                <td style={{padding: '10px', textAlign: 'center'}}>
+                  <button
+                    style={{border: '1px solid black'}}
+                    onClick={() => {
+                      this.setState({username: "giovannicantone@gmail.com"});
+                      this.setState({email: "giovannicantone@gmail.com"});
+                      this.setState({password: "passw"});
+                      this.setState({systemActor: "DOCTOR"});
+                    }}>Insert
+                  </button>
+                </td>
+              </tr>
+              <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{padding: '10px', textAlign: 'center'}}>Planner</td>
+                <td style={{
+                  padding: '10px',
+                  textAlign: 'center'
+                }}>giovannicantone@gmail.com
+                </td>
+                <td>Strutturato</td>
+                <td style={{padding: '10px', textAlign: 'center'}}>
+                  <button
+                    style={{border: '1px solid black'}}
+                    onClick={() => {
+                      this.setState({username: "giovannicantone@gmail.com"});
+                      this.setState({email: "giovannicantone@gmail.com"});
+                      this.setState({password: "passw"});
+                      this.setState({systemActor: "PLANNER"});
+                    }}>Insert
+                  </button>
+                </td>
+              </tr>
+              <tr style={{borderBottom: '1px solid black'}}>
+                <td
+                  style={{padding: '10px', textAlign: 'center'}}>Configuratore
+                </td>
+                <td style={{
+                  padding: '10px',
+                  textAlign: 'center'
+                }}>salvatimartina97@gmail.com
+                </td>
+                <td>Specialista Serior</td>
+                <td style={{padding: '10px', textAlign: 'center'}}>
+                  <button
+                    style={{border: '1px solid black'}}
+                    onClick={() => {
+                      this.setState({username: "salvatimartina97@gmail.com"});
+                      this.setState({email: "salvatimartina97@gmail.com"});
+                      this.setState({password: "passw"});
+                      this.setState({systemActor: "CONFIGURATOR"});
+                    }}>Insert
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+
+
       </div>
     )
   }
