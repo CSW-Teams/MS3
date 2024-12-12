@@ -2,6 +2,13 @@
 
 # USAGE: .\DockerTasks.ps1 -Task <function_name in COMMANDS>
 
+# Main execution logic
+param (
+    [Parameter(Mandatory=$true)]
+    [ValidateSet("docker_gen", "docker_clean_images", "docker_clean_volumes")]
+    $Task
+)
+
 # COMMANDS
 function docker_gen {
     # Start Docker Compose in detached mode
@@ -27,13 +34,6 @@ function docker_clean_volumes {
         docker volume rm $_
     }
 }
-
-# Main execution logic
-param (
-    [Parameter(Mandatory=$true)]
-    [ValidateSet("docker_gen", "docker_clean_images", "docker_clean_volumes")]
-    $Task
-)
 
 switch ($Task) {
     "docker_gen" { docker_gen }
