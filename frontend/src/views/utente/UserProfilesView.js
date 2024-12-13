@@ -35,12 +35,6 @@ export default class UserProfilesView extends React.Component{
    * Cambia la proprietà degli utenti per cui si vuole ordinare,
    * usando un comparatore di default
    */
-  // setOrderBy(userProp){
-  //   this.setState({
-  //     orderBy: userProp,
-  //     comparator: defaultComparator
-  //   })
-  // }
   setOrderBy(userProp) {
     const { orderBy, orderDirection } = this.state;
 
@@ -165,19 +159,6 @@ export default class UserProfilesView extends React.Component{
                   )}
                 </tr>
               ))}
-              {/*{this.state.utenti.map((data, key) => {*/}
-              {/*  return (*/}
-              {/*    <tr key={key}>*/}
-              {/*      <td>{data.name}</td>*/}
-              {/*      <td>{data.lastname}</td>*/}
-              {/*      <td>{data.birthday}</td>*/}
-              {/*      <td>{data.systemActors.map(actor => t(actor)).join(", ")}</td>*/}
-              {/*      {this.state.attore === "UTENTE" &&*/}
-              {/*        <td><Button className="overlay" variant="primary" href={`/single-user-profile/${data.id}`}><i className="fa fa-id-card"> </i></Button></td>}*/}
-              {/*      {this.state.attore!=="UTENTE" && <td><Button className="overlay" variant="primary" href={`/single-user-profile/${data.id}`}><i className="fas fa-edit fa-lg"> </i></Button></td>}*/}
-              {/*    </tr>*/}
-              {/*  )*/}
-              {/*})}*/}
             </MDBTableBody>
           </MDBTable>
         </MDBCardBody>
