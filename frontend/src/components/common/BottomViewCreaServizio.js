@@ -1,190 +1,220 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import {useState} from "react";
-import Typography from "@mui/material/Typography";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import {AppBar, Checkbox, Toolbar} from "@mui/material";
-import { ToastContainer, toast } from 'react-toastify';
+import {useState} from 'react';
+import {
+  AppBar,
+  Autocomplete,
+  Box,
+  Button,
+  Drawer,
+  IconButton,
+  Toolbar,
+  Typography
+} from '@mui/material'
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import {ServizioAPI} from "../../API/ServizioAPI";
 import {MedicalService} from "../../entity/MedicalService";
 import {Task} from "../../entity/Task";
-import { t } from "i18next";
+import {t} from "i18next";
 import {panic} from "./Panic";
+import CheckboxGroup from "./CheckboxGroup";
+import TextField from "@mui/material/TextField";
 
 toast.configure();
 
-const MedicalServiceCreationDrawer = ({tasks, services, updateServicesList}) => {
-    const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-    const [checkedTasksStringArray, setCheckedTasksStringArray] = useState([]);
-    const [newMedicalServiceName, setNewMedicalServiceName] = useState("");
+const MedicalServiceCreationDrawer = ({
+                                        tasks,
+                                        services,
+                                        updateServicesList
+                                      }) => {
+  /* Handle toast state */
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
-    const serviceAPI = new ServizioAPI();
-    const names = Object.values(tasks);
+  /* Handle checkbox */
+  const serviceAPI = new ServizioAPI();
+  const names = Object.values(tasks).flat();
+  const [checkedTasksStringArray, setCheckedTasksStringArray] = useState([]);
+  const handleCheckboxChange = (newTask) => {
+    if (!checkedTasksStringArray.includes(newTask))
+      setCheckedTasksStringArray(prev => [...prev, newTask]);
+    else
+      setCheckedTasksStringArray(checkedTasksStringArray.filter(item => item !== newTask));
+  };
 
-    const handleCheckboxChange = (newTask) => {
-        if (!checkedTasksStringArray.includes(newTask)) {
-            setCheckedTasksStringArray(prev => [...prev, newTask]);
-        } else {
-            setCheckedTasksStringArray(checkedTasksStringArray.filter(item => item !== newTask));
-        }
-    };
+  /* Handle text field on new service creation */
+  const [medicalServiceName, setMedicalServiceName] = useState("");
+  // This loading by default is Lazy. To speedup application loading, { returnObjects: true } must be removed and lazy loading must be managed
+  const servicesOptions = t("HospitalServices", { returnObjects: true })
+  const hint = React.useRef('');
+  const updateHint = (value) => {
+    // Get only the options that begins with typed keys
 
-    function alphaSort(array) {
-        return array.sort((a, b) => a.localeCompare(b));
+    const matchingOption = servicesOptions.find((option) => option.toLowerCase().startsWith(value.toLowerCase()));
+    // Set hint value; use "" if matchingOption is undefined or null
+    hint.current = matchingOption || "";
+
+  };
+
+  function alphaSort(array) {
+    return array.sort((a, b) => a.localeCompare(b));
+  }
+
+  const postNewRequest = () => {
+    //check if exists
+    const servicesNames = services.map(services => services.name)
+    const matches = servicesNames.filter(service => service.toUpperCase() === (medicalServiceName.toUpperCase()))
+    if (matches.length === 0) {
+      handleClose();
+      alphaSort(checkedTasksStringArray);
+
+      // API request params built differently (e.g. not as a MedicalService object)
+      // for compliance wrt other modules
+      var requestParams = {
+        name: medicalServiceName.toUpperCase(),
+        taskTypes: checkedTasksStringArray
+      }
+
+      try {
+        serviceAPI.createMedicalService(requestParams);
+      } catch (err) {
+
+        panic()
+        return
+      }
+
+      // build params for view update
+      const outTaskArray = [];
+      for (let i = 0; i < checkedTasksStringArray.length; i++) {
+        outTaskArray.push(new Task(null, checkedTasksStringArray[i], false));
+      }
+
+      // build service infos for view update
+      var viewUpdateServiceInfo = new MedicalService(null, medicalServiceName.toUpperCase(), outTaskArray);
+      updateServicesList(viewUpdateServiceInfo);
+
+      // reset fields
+      setMedicalServiceName("");
+      setCheckedTasksStringArray([]);
+
+      toast.success(t('Service Created Successfully'));
+    } else {
+      toast.error(t("Service already exists"));
     }
+  };
 
-    const postNewRequest = () => {
-        //check if exists
-        const servicesNames = services.map(services => services.name)
-        const matches = servicesNames.filter(service => service.toUpperCase() === (newMedicalServiceName.toUpperCase()))
-        if(matches.length==0) {
-            handleClose();
-            alphaSort(checkedTasksStringArray);
+  return (<>
+    <Button
+      onClick={handleOpen}
+      style={{
+        'display': 'block',
+        'margin-left': 'auto',
+        'margin-right': 'auto',
+        'margin-top': '1%',
+        'margin-bottom': '1%'
+      }}
+    >
+      {t('Create new Service')}
+    </Button>
 
-            // API request params built differently (e.g. not as a MedicalService object)
-            // for compliance wrt other modules
-            var requestParams = {
-                name        : newMedicalServiceName.toUpperCase(),
-                taskTypes   : checkedTasksStringArray
+    <Drawer anchor="bottom" open={open} onClose={handleClose}>
+      <AppBar position="static" color="transparent">
+        <Toolbar>
+          <Box sx={{display: 'flex', flexGrow: 1, justifyContent: 'center'}}>
+            <Typography variant="h5" component="div"
+                        sx={{marginLeft: '20px'}}>
+              {t('Create new Service')}
+            </Typography>
+          </Box>
+          <IconButton color="inherit" onClick={handleClose}>
+            <CloseIcon/>
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: '20px',
+        marginTop: "10px",
+        marginBottom: "10px"
+      }}>
+        <Autocomplete
+          inputValue={medicalServiceName}
+          options={servicesOptions}   // Suggested options in the panel
+          sx={{minWidth: 250, maxWidth: 400, width: 'auto'}}
+          onChange={(event, newValue) => {
+            setMedicalServiceName(newValue ? newValue : '');
+          }}
+          onClose={() => {
+            hint.current = '';
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Tab' && hint.current) {
+              if (hint.current) {
+                setMedicalServiceName(hint.current);
+                event.preventDefault();
+              }
             }
+          }}
+          renderInput={(params) => {
+            return (<Box sx={{position: 'relative', textAlign: 'left'}}>
+              {/* Show hint */}
+              <Typography
+                sx={{
+                  position: 'absolute',
+                  opacity: 0.5,
+                  left: 14,
+                  top: 16,
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  width: 'calc(100% - 75px)', // Adjust based on padding of TextField
+                }}
+              >
+                {hint.current}
+              </Typography>
+              <TextField
+                {...params}
+                label={t('Service Name')}
+                onChange={(event) => {
+                  let input = event.target.value;
+                  if (input) input = input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+                  setMedicalServiceName(input);
+                  updateHint(input);
+                }}
+              />
+            </Box>)
+          }}
+        />
 
-            try {
-              serviceAPI.createMedicalService(requestParams);
-            } catch (err) {
+        {/* Text "Select task:" */}
+        <Typography variant="h6" sx={{marginTop: '24px'}}>
+          {t("Select tasks:")}
+        </Typography>
 
-              panic()
-              return
-            }
+        <CheckboxGroup
+          options={names}
+          onChange={handleCheckboxChange}
+          disabled={false}
+        />
 
-            // build params for view update
-            const outTaskArray = [];
-            for (let i = 0; i < checkedTasksStringArray.length; i++) {
-                outTaskArray.push(new Task(null, checkedTasksStringArray[i], false));
-            }
-
-            // build service infos for view update
-            var viewUpdateServiceInfo = new MedicalService (
-                null,
-                newMedicalServiceName.toUpperCase(),
-                outTaskArray
-                );
-            updateServicesList(viewUpdateServiceInfo);
-
-            // reset fields
-            setNewMedicalServiceName("");
-            setCheckedTasksStringArray([]);
-
-            toast.success(t('Service Created Successfully'));
-            } else {
-            toast.error(t("Service already exists"));
-        }
-    };
-
-    return (
-        <>
+        {/* Save button */}
         <Button
-            onClick = {handleOpen}
-            style   = {{
-                'display'       : 'block',
-                'margin-left'   : 'auto',
-                'margin-right'  : 'auto',
-                'margin-top'    : '1%',
-                'margin-bottom' : '1%'
-            }}
-            >
-          {t('Create new Service')}
+          color="success"
+          variant="contained"
+          sx={{mt: 4}}
+          onClick={postNewRequest}
+          disabled={medicalServiceName === "" || checkedTasksStringArray.length === 0}
+        >
+          {t('Save')}
         </Button>
-        <Drawer anchor="bottom" open={open} onClose={handleClose}>
-            <AppBar position="static" color="transparent">
-                <Toolbar>
-                    <Box sx={{ display: 'flex', flexGrow: 1, justifyContent: 'center' }}>
-                        <Typography variant="h5" component="div" sx={{ marginLeft: '20px' }}>
-                          {t('Create new Service')}
-                        </Typography>
-                    </Box>
-                    <IconButton color="inherit" onClick={handleClose}>
-                        <CloseIcon/>
-                    </IconButton>
-                </Toolbar>
-            </AppBar>
-
-            <div style={{textAlign: 'center', padding: '20px'}}>
-                <Box
-                    marginBottom    = {2}
-                    marginTop       = {2}
-                    display         = "flex"
-                    flexDirection   = "column"
-                    justifyContent  = "center"
-                    alignItems      = "center"
-                    >
-                    <TextField
-                        id        = "outlined-basic"
-                        autoFocus = "true"
-                        label     ={t('Service Name')}
-                        required  = "true"
-                        variant   = "outlined"
-                        onChange  = {
-                            (event) => {
-                                setNewMedicalServiceName(event.target.value);
-                                event.target.value = (event.target.value).toUpperCase();
-                            }
-                        }
-                    />
-                    <p>
-                    </p>
-                    <Typography variant="h6">
-                      {t("Select tasks:")}
-                    </Typography>
-                    {
-                    (names && names[0]) ?
-                        Object.values(names[0]).map((item) => (
-                            <FormControlLabel
-                                key={item}
-                                control={
-                                    <Checkbox
-                                        onChange={() => handleCheckboxChange(item)}
-                                    />
-                                }
-                                label={`${item}`}
-                            />
-                            ))
-                        :
-                            (
-                            // Without this, names[0] would be undefined!
-                            {names}
-                            )
-                    }
-                </Box>
-                <Box
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    >
-                </Box>
-                <Box
-                    mt={4}
-                    >
-                    <Button
-                        variant="contained"
-                        color="success"
-                        disabled={newMedicalServiceName==="" || checkedTasksStringArray.length===0}
-                        onClick={postNewRequest}
-                        >
-                      {t('Save')}
-                    </Button>
-                </Box>
-            </div>
-        </Drawer>
-        </>
-    );
+      </div>
+    </Drawer>
+  </>);
 };
+
 export default MedicalServiceCreationDrawer;
