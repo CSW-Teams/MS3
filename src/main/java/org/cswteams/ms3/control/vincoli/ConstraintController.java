@@ -50,6 +50,7 @@ public class ConstraintController implements IConstraintController {
     @Override
     public ConfigVincoli updateConstraints(ConfigConstraintDTO constraintDTO) {
 
+        // todo: Can we remove system outs?
         System.out.println(constraintDTO.getMaxConsecutiveTimeForOver62());
         //mapping DTO --> Entity
         ConfigVincoli configuration = this.constraintDTOtoEntity(constraintDTO);

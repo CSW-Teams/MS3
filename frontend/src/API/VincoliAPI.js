@@ -17,12 +17,12 @@ export  class VincoloAPI {
     async setConfigurazioneVincoli(conf){
       let configurazione = {}
 
-      configurazione.periodDaysNo = conf.numGiorniPeriodo
-      configurazione.periodMaxTime = conf.maxOrePeriodo*60
-      configurazione.horizonNightShift = conf.horizonTurnoNotturno
-      configurazione.maxConsecutiveTimeForEveryone = conf.numMaxOreConsecutivePerTutti*60
-      configurazione.maxConsecutiveTimeForOver62 = conf.numMaxOreConsecutiveOver62*60
-      configurazione.maxConsecutiveTimeForPregnant = conf.numMaxOreConsecutiveDonneIncinta*60
+      configurazione.periodDaysNo = conf.periodDaysNo
+      configurazione.periodMaxTime = conf.periodMaxTime
+      configurazione.horizonNightShift = conf.horizonNightShift
+      configurazione.maxConsecutiveTimeForEveryone = conf.maxConsecutiveTimeForEveryone
+      configurazione.maxConsecutiveTimeForOver62 = conf.maxConsecutiveTimeForOver62
+      configurazione.maxConsecutiveTimeForPregnant = conf.maxConsecutiveTimeForPregnant*60
 
       const requestOptions = {
         method: 'POST',

@@ -20,14 +20,14 @@ export default class ConfigurazioneVincoli extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      numGiorniPeriodo:"",
-      maxOrePeriodo:"",
-      horizonTurnoNotturno:"",
-      numMaxOreConsecutivePerTutti:"",
+      horizonNightShift:"",
+      periodDaysNo:"",
+      periodMaxTime:"",
+      maxConsecutiveTimeForEveryone:"",
+      maxConsecutiveTimeForOver62:"",
+      maxConsecutiveTimeForPregnant:"",
       categoriaOver62:"",
       categoriaDonneIncinta:"",
-      numMaxOreConsecutiveOver62:"",
-      numMaxOreConsecutiveDonneIncinta:"",
 
     }
 
@@ -56,18 +56,18 @@ export default class ConfigurazioneVincoli extends React.Component{
       }
     }
     this.setState({
-      numGiorniPeriodo: conf.periodDaysNo,
-      maxOrePeriodo: conf.periodMaxTime,
-      horizonTurnoNotturno: conf.horizonNightShift,
-      numMaxOreConsecutivePerTutti: conf.maxConsecutiveTimeForEveryone,
-      numMaxOreConsecutiveOver62: over62.maxOre,
-      numMaxOreConsecutiveDonneIncinta: donnaIncinta.maxOre,
+      horizonNightShift: conf.horizonNightShift,
+      periodDaysNo: conf.periodDaysNo,
+      periodMaxTime: conf.periodMaxTime,
+      maxConsecutiveTimeForEveryone: conf.maxConsecutiveTimeForEveryone,
+      maxConsecutiveTimeForOver62: over62.maxOre,
+      maxConsecutiveTimeForPregnant: donnaIncinta.maxOre,
       categoriaOver62:over62.categoria,
       categoriaDonneIncinta:donnaIncinta.categoria,
     })
   }
 
-  async handleSalvataggio(){
+  async handleSalvataggio() {
     let vincoliApi = new VincoloAPI()
     let conf = {}
     conf = this.state
@@ -93,6 +93,18 @@ export default class ConfigurazioneVincoli extends React.Component{
       });
     } else if (response.status === 400) {
       toast.error(t("Error saving the configuration"), {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } else {
+      // todo: how to behave in case the response status is not 200?
+      toast.error("STILL TO DECIDE FAILURE MESSAGE", {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -135,8 +147,8 @@ export default class ConfigurazioneVincoli extends React.Component{
                 <MDBCol size="6">
                   <MDBInput
                     type="text"
-                    name="horizonTurnoNotturno"
-                    value={this.state.horizonTurnoNotturno}
+                    name="horizonNightShift"
+                    value={this.state.horizonNightShift}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
@@ -157,15 +169,15 @@ export default class ConfigurazioneVincoli extends React.Component{
                   <MDBInput
                     type="text"
                     label={t("Period in days")}
-                    name="numGiorniPeriodo"
-                    value={this.state.numGiorniPeriodo}
+                    name="handleInputChange"
+                    value={this.state.handleInputChange}
                     onChange={this.handleInputChange}
                   />
                   <MDBInput
                     type="text"
                     label={t("Max number of hours in the period")}
-                    name="maxOrePeriodo"
-                    value={this.state.maxOrePeriodo}
+                    name="periodMaxTime"
+                    value={this.state.periodMaxTime}
                     onChange={this.handleInputChange}
                     style={{marginTop: '10px'}} // Spaziatura tra i campi
                   />
@@ -186,8 +198,8 @@ export default class ConfigurazioneVincoli extends React.Component{
                 <MDBCol size="6">
                   <MDBInput
                     type="text"
-                    name="numMaxOreConsecutivePerTutti"
-                    value={this.state.numMaxOreConsecutivePerTutti}
+                    name="maxConsecutiveTimeForEveryone"
+                    value={this.state.maxConsecutiveTimeForEveryone}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
@@ -207,8 +219,8 @@ export default class ConfigurazioneVincoli extends React.Component{
                 <MDBCol size="6">
                   <MDBInput
                     type="text"
-                    name="numMaxOreConsecutiveOver62"
-                    value={this.state.numMaxOreConsecutiveOver62}
+                    name="maxConsecutiveTimeForOver62"
+                    value={this.state.maxConsecutiveTimeForOver62}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
@@ -228,8 +240,8 @@ export default class ConfigurazioneVincoli extends React.Component{
                 <MDBCol size="6">
                   <MDBInput
                     type="text"
-                    name="numMaxOreConsecutiveDonneIncinta"
-                    value={this.state.numMaxOreConsecutiveDonneIncinta}
+                    name="maxConsecutiveTimeForPregnant"
+                    value={this.state.maxConsecutiveTimeForPregnant}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
