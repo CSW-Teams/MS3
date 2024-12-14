@@ -20,14 +20,14 @@ export default class ConfigurazioneVincoli extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      numGiorniPeriodo:"",                  //2
-      maxOrePeriodo:"",                     //3
-      horizonTurnoNotturno:"",              //1
-      numMaxOreConsecutivePerTutti:"",      //4
+      horizonNightShift:"",
+      periodDaysNo:"",
+      periodMaxTime:"",
+      maxConsecutiveTimeForEveryone:"",
+      maxConsecutiveTimeForOver62:"",
+      maxConsecutiveTimeForPregnant:"",
       categoriaOver62:"",
       categoriaDonneIncinta:"",
-      numMaxOreConsecutiveOver62:"",        //5
-      numMaxOreConsecutiveDonneIncinta:"",  //6
 
     }
 
@@ -56,18 +56,18 @@ export default class ConfigurazioneVincoli extends React.Component{
       }
     }
     this.setState({
-      numGiorniPeriodo: conf.periodDaysNo,
-      maxOrePeriodo: conf.periodMaxTime,
-      horizonTurnoNotturno: conf.horizonNightShift,
-      numMaxOreConsecutivePerTutti: conf.maxConsecutiveTimeForEveryone,
-      numMaxOreConsecutiveOver62: over62.maxOre,
-      numMaxOreConsecutiveDonneIncinta: donnaIncinta.maxOre,
+      horizonNightShift: conf.horizonNightShift,
+      periodDaysNo: conf.periodDaysNo,
+      periodMaxTime: conf.periodMaxTime,
+      maxConsecutiveTimeForEveryone: conf.maxConsecutiveTimeForEveryone,
+      maxConsecutiveTimeForOver62: over62.maxOre,
+      maxConsecutiveTimeForPregnant: donnaIncinta.maxOre,
       categoriaOver62:over62.categoria,
       categoriaDonneIncinta:donnaIncinta.categoria,
     })
   }
 
-  async handleSalvataggio(){
+  async handleSalvataggio() {
     let vincoliApi = new VincoloAPI()
     let conf = {}
     conf = this.state
@@ -93,6 +93,18 @@ export default class ConfigurazioneVincoli extends React.Component{
       });
     } else if (response.status === 400) {
       toast.error(t("Error saving the configuration"), {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } else {
+      // todo: how to behave in case the response status is not 200?
+      toast.error("STILL TO DECIDE FAILURE MESSAGE", {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
@@ -129,11 +141,11 @@ export default class ConfigurazioneVincoli extends React.Component{
                 <MDBInput
                   wrapperClass='col-auto'
                   type='text'
-                  name='horizonTurnoNotturno'
+                  name='horizonNightShift'
                   label={t("Number of non-assignable hours before and after the night shift")}
                   id='formTextExample2'
                   aria-describedby='textExample2'
-                  value={this.state.horizonTurnoNotturno}
+                  value={this.state.horizonNightShift}
                   onChange={this.handleInputChange}
                 />
                 </MDBCol>
@@ -146,10 +158,10 @@ export default class ConfigurazioneVincoli extends React.Component{
                     wrapperClass='col-auto'
                     type='text'
                     label={t("Period in days")}
-                    name='numGiorniPeriodo'
+                    name='periodDaysNo'
                     id='formTextExample2'
                     aria-describedby='textExample2'
-                    value={this.state.numGiorniPeriodo}
+                    value={this.state.periodDaysNo}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
@@ -159,9 +171,9 @@ export default class ConfigurazioneVincoli extends React.Component{
                     type='text'
                     label={t("Max number of hours in the period")}
                     id='formTextExample2'
-                    name='maxOrePeriodo'
+                    name='periodMaxTime'
                     aria-describedby='textExample2'
-                    value={this.state.maxOrePeriodo}
+                    value={this.state.periodMaxTime}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
@@ -175,9 +187,9 @@ export default class ConfigurazioneVincoli extends React.Component{
                     type='text'
                     label={t("Number of consecutive hours")}
                     id='formTextExample2'
-                    name='numMaxOreConsecutivePerTutti'
+                    name='maxConsecutiveTimeForEveryone'
                     aria-describedby='textExample2'
-                    value={this.state.numMaxOreConsecutivePerTutti}
+                    value={this.state.maxConsecutiveTimeForEveryone}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
@@ -190,10 +202,10 @@ export default class ConfigurazioneVincoli extends React.Component{
                     wrapperClass='col-auto'
                     type='text'
                     label={t("Number of consecutive hours")}
-                    name='numMaxOreConsecutiveOver62'
+                    name='maxConsecutiveTimeForOver62'
                     id='formTextExample2'
                     aria-describedby='textExample2'
-                    value={this.state.numMaxOreConsecutiveOver62}
+                    value={this.state.maxConsecutiveTimeForOver62}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
@@ -206,10 +218,10 @@ export default class ConfigurazioneVincoli extends React.Component{
                     wrapperClass='col-auto'
                     type='text'
                     label={t("Number of consecutive hours")}
-                    name='numMaxOreConsecutiveDonneIncinta'
+                    name='maxConsecutiveTimeForPregnant'
                     id='formTextExample2'
                     aria-describedby='textExample2'
-                    value={this.state.numMaxOreConsecutiveDonneIncinta}
+                    value={this.state.maxConsecutiveTimeForPregnant}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>

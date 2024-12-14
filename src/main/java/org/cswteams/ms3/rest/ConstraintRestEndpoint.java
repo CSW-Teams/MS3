@@ -5,10 +5,13 @@ import org.cswteams.ms3.dto.ConfigConstraintDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 
 @RestController
@@ -28,7 +31,7 @@ public class ConstraintRestEndpoint {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "configuration")
-    public ResponseEntity<?> updateConstraintsConfiguration(@RequestBody() ConfigConstraintDTO constraintDTO) {
+    public ResponseEntity<?> updateConstraintsConfiguration(@RequestBody() @Valid @Validated ConfigConstraintDTO constraintDTO) {
         if (constraintDTO != null) {
             return new ResponseEntity<>(constraintController.updateConstraints(constraintDTO), HttpStatus.ACCEPTED);
         }
