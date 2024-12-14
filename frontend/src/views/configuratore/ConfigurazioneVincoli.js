@@ -20,14 +20,14 @@ export default class ConfigurazioneVincoli extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      numGiorniPeriodo:"",
-      maxOrePeriodo:"",
-      horizonTurnoNotturno:"",
-      numMaxOreConsecutivePerTutti:"",
+      numGiorniPeriodo:"",                  //2
+      maxOrePeriodo:"",                     //3
+      horizonTurnoNotturno:"",              //1
+      numMaxOreConsecutivePerTutti:"",      //4
       categoriaOver62:"",
       categoriaDonneIncinta:"",
-      numMaxOreConsecutiveOver62:"",
-      numMaxOreConsecutiveDonneIncinta:"",
+      numMaxOreConsecutiveOver62:"",        //5
+      numMaxOreConsecutiveDonneIncinta:"",  //6
 
     }
 
