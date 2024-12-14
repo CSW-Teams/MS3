@@ -31,7 +31,7 @@ public class LoginRestEndpoint {
             return new ResponseEntity<>(u, HttpStatus.ACCEPTED);
         }
 
-        return new ResponseEntity<>("Username o password errati",HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("Invalid Credentials", HttpStatus.BAD_REQUEST);
     }
 
 }

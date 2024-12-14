@@ -28,6 +28,8 @@
 
   "Authentication Failed. Server not online": "Autenticazione Fallita. I server non sono attualmente in servizio, riprova più tardi.",
   "Authentication Failed": "Autenticazione Fallita: ",
+  "Invalid Credentials": "Credenziali di accesso non valide. Verifica i dati inseriti e riprova",
+  "Invalid Email Format": "Formato dell'indirizzo e-mail non valido",
   "Email Address": "Indirizzo Email",
   "Enter email address": "Inserisci l'indirizzo email",
   "Password": "Password",

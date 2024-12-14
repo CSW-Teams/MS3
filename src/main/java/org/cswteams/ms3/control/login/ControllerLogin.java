@@ -38,14 +38,14 @@ public class ControllerLogin implements IControllerLogin {
 
         /* check email address */
         if (!isEmailValid) {
-            throw new InvalidEmailAddressException("Invalid e-mail address format.");
+            throw new InvalidEmailAddressException("Invalid Email Format");
         }
 
         User user = userDAO.findByEmailAndPassword(loginDTO.getEmail(), loginDTO.getPassword());
         LoggedUserDTO dto = null;
         if (user != null){
             if (!user.getSystemActors().contains(loginDTO.getSystemActor())) {
-                throw new InvalidRoleException("Invalid role.");
+                throw new InvalidRoleException("Invalid Credentials");
             }
             dto = new LoggedUserDTO(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getSystemActors());
         }

@@ -84,7 +84,7 @@ export default class LoginView extends React.Component {
         break;
       default:
         const errorMessage = await httpResponse.text();
-        toast.error(`${t('Authentication Failed')} ${errorMessage}.`, {
+        toast.error(`${t('Authentication Failed')} ${t(errorMessage)}.`, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
