@@ -1,4 +1,6 @@
-.PHONY: docker_gen docker_clean_images docker_clean_volumes local_backend_gen local_frontend_gen local_stop_postgres
+.PHONY: docker_gen docker_clean_images docker_clean_volumes
+.PHONY: local_backend_gen local_frontend_gen
+.PHONY: local_start_postgres local_stop_postgres
 
 # USAGE: make <command in COMMANDS>
 
