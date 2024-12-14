@@ -7,18 +7,18 @@ import MainSidebar from "../components/layout/MainSidebar/MainSidebar";
 import MainFooter from "../components/layout/MainFooter";
 
 const DefaultLayout = ({ children, noNavbar, noFooter }) => (
-  <Container fluid>
-    <Row>
+  <Container fluid className="d-flex flex-column min-vh-100">
+    <Row className="flex-grow-1">
       <MainSidebar />
       <Col
-        className="main-content p-0"
+        className="main-content p-0 d-flex flex-column"
         lg={{ size: 10, offset: 2 }}
         md={{ size: 9, offset: 3 }}
         sm="12"
         tag="main"
       >
         {!noNavbar && <MainNavbar />}
-        {children}
+        <div className="flex-grow-1">{children}</div>
         {!noFooter && <MainFooter />}
       </Col>
     </Row>

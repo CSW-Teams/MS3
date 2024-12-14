@@ -7,10 +7,10 @@ const MainFooter = ({ contained, copyright }) => (
   <footer className="main-footer d-flex p-2 px-3 bg-white border-top" >
     <style>
       {`
-
         .main-footer {
           position: sticky;
           bottom: 0;
+          z-index: 9998;
           width: 100%;
         }
           `}
