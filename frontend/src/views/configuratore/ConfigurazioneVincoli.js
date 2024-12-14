@@ -119,114 +119,133 @@ export default class ConfigurazioneVincoli extends React.Component{
     return (
       <section>
         <MDBContainer className="py-5">
-          <MDBCard alignment='center'>
+          <MDBCard alignment="center">
             <MDBCardBody style={{height: '80vh'}}>
-              <MDBCardTitle>{t("Constraint parameters management")}</MDBCardTitle>
-              <MDBRow className='g-3' style={{paddingTop: '10px'}}>
-                <MDBCol>{t("Continuous shifts horizon")}
+              <MDBCardTitle style={{
+                marginBottom: '30px'}}>
+                {t("Constraint parameters management")}
+              </MDBCardTitle>
+
+              {/* Continuous shifts horizon */}
+              <MDBRow className="align-items-center"
+                      style={{paddingBottom: '10px'}}>
+                <MDBCol size="6" className="text-start">
+                  {t("Number of non-assignable hours before and after the night shift")}
                 </MDBCol>
-                <MDBCol size='sm'>
-                <MDBInput
-                  wrapperClass='col-auto'
-                  type='text'
-                  name='horizonTurnoNotturno'
-                  label={t("Number of non-assignable hours before and after the night shift")}
-                  id='formTextExample2'
-                  aria-describedby='textExample2'
-                  value={this.state.horizonTurnoNotturno}
-                  onChange={this.handleInputChange}
-                />
+                <MDBCol size="6">
+                  <MDBInput
+                    type="text"
+                    name="horizonTurnoNotturno"
+                    value={this.state.horizonTurnoNotturno}
+                    onChange={this.handleInputChange}
+                  />
                 </MDBCol>
               </MDBRow>
-              <MDBRow style={{paddingTop: '10px'}}>
-                <MDBCol>{t("Max number of hours in a period")}
+              <hr style={{
+                borderTop: '3px solid #000',
+                marginTop: '5px',
+                marginBottom: '13px'
+              }}/>
+
+              {/* Max number of hours in a period */}
+              <MDBRow className="align-items-center"
+                      style={{paddingBottom: '10px'}}>
+                <MDBCol size="6" className="text-start">
+                  {t("Max number of hours in a period")}
                 </MDBCol>
-                <MDBCol>
+                <MDBCol size="6">
                   <MDBInput
-                    wrapperClass='col-auto'
-                    type='text'
+                    type="text"
                     label={t("Period in days")}
-                    name='numGiorniPeriodo'
-                    id='formTextExample2'
-                    aria-describedby='textExample2'
+                    name="numGiorniPeriodo"
                     value={this.state.numGiorniPeriodo}
                     onChange={this.handleInputChange}
                   />
-                </MDBCol>
-                <MDBCol>
                   <MDBInput
-                    wrapperClass='col-auto'
-                    type='text'
+                    type="text"
                     label={t("Max number of hours in the period")}
-                    id='formTextExample2'
-                    name='maxOrePeriodo'
-                    aria-describedby='textExample2'
+                    name="maxOrePeriodo"
                     value={this.state.maxOrePeriodo}
                     onChange={this.handleInputChange}
+                    style={{marginTop: '10px'}} // Spaziatura tra i campi
                   />
                 </MDBCol>
               </MDBRow>
-              <MDBRow style={{paddingTop: '10px'}}>
-                <MDBCol>{t("Max consecutive hours")}
+              <hr style={{
+                borderTop: '3px solid #000',
+                marginTop: '5px',
+                marginBottom: '13px'
+              }}/>
+
+              {/* Max consecutive hours */}
+              <MDBRow className="align-items-center"
+                      style={{paddingBottom: '10px'}}>
+                <MDBCol size="6" className="text-start">
+                  {t("Max consecutive hours")}
                 </MDBCol>
-                <MDBCol>
+                <MDBCol size="6">
                   <MDBInput
-                    wrapperClass='col-auto'
-                    type='text'
-                    label={t("Number of consecutive hours")}
-                    id='formTextExample2'
-                    name='numMaxOreConsecutivePerTutti'
-                    aria-describedby='textExample2'
+                    type="text"
+                    name="numMaxOreConsecutivePerTutti"
                     value={this.state.numMaxOreConsecutivePerTutti}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
               </MDBRow>
-              <MDBRow style={{paddingTop: '10px'}}>
-                <MDBCol>{t("Max hours for Over 62")}
+              <hr style={{
+                borderTop: '3px solid #000',
+                marginTop: '5px',
+                marginBottom: '13px'
+              }}/>
+
+              {/* Max hours for Over 62 */}
+              <MDBRow className="align-items-center"
+                      style={{paddingBottom: '10px'}}>
+                <MDBCol size="6" className="text-start">
+                  {t("Max hours for Over 62")}
                 </MDBCol>
-                <MDBCol>
+                <MDBCol size="6">
                   <MDBInput
-                    wrapperClass='col-auto'
-                    type='text'
-                    label={t("Number of consecutive hours")}
-                    name='numMaxOreConsecutiveOver62'
-                    id='formTextExample2'
-                    aria-describedby='textExample2'
+                    type="text"
+                    name="numMaxOreConsecutiveOver62"
                     value={this.state.numMaxOreConsecutiveOver62}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
               </MDBRow>
-              <MDBRow style={{paddingTop: '10px'}}>
-                <MDBCol>{t("Max hours for pregnant women")}
+              <hr style={{
+                borderTop: '3px solid #000',
+                marginTop: '5px',
+                marginBottom: '13px'
+              }}/>
+
+              {/* Max hours for pregnant women */}
+              <MDBRow className="align-items-center"
+                      style={{paddingBottom: '10px'}}>
+                <MDBCol size="6" className="text-start">
+                  {t("Max hours for pregnant women")}
                 </MDBCol>
-                <MDBCol>
+                <MDBCol size="6">
                   <MDBInput
-                    wrapperClass='col-auto'
-                    type='text'
-                    label={t("Number of consecutive hours")}
-                    name='numMaxOreConsecutiveDonneIncinta'
-                    id='formTextExample2'
-                    aria-describedby='textExample2'
+                    type="text"
+                    name="numMaxOreConsecutiveDonneIncinta"
                     value={this.state.numMaxOreConsecutiveDonneIncinta}
                     onChange={this.handleInputChange}
                   />
                 </MDBCol>
               </MDBRow>
+
+              {/* Save Button */}
               <MDBRow>
-                <MDBCol style={{paddingTop: '10px'}}>
+                <MDBCol className="text-end" style={{paddingTop: '20px'}}>
                   <MDBBtn onClick={this.handleSalvataggio}>{t("Save")}</MDBBtn>
                 </MDBCol>
               </MDBRow>
-
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-
       </section>
-    )
+    );
   }
-
 
 }
