@@ -679,6 +679,7 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
+                {/*todo: issue #584 maybe*/}
                 {view === "global" && (this.state.attore === "PLANNER" || this.state.attore  ===  "CONFIGURATOR") ?
                   <AppointmentForm
                     overlayComponent = {Overlay}
@@ -699,8 +700,6 @@ class ScheduleView extends React.Component{
                     readOnly
                 />
                 }
-
-
 
               </Scheduler>
 
