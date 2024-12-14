@@ -13,7 +13,7 @@ import FestivitaInseriteList from "../../components/common/FestivitaInseriteList
 import {HolidaysAPI} from "../../API/HolidaysAPI";
 import {panic} from "../../components/common/Panic";
 
-export default function InserisciFestivita() {
+export default function () {
 
   let [normalHolidays, setNormalHolidays] = useState([])
   let [recurrentHolidays, setRecurrentHolidays] = useState([])
@@ -45,7 +45,7 @@ export default function InserisciFestivita() {
 
   return (
     <section style={{backgroundColor: '#eee'}}>
-      <MDBContainer className="py-5" style={{height: '85vh',}}>
+      <MDBContainer className="py-5" style={{height: '100vh',}}>
         <MDBCard alignment='center'>
           <MDBCardBody>
             <MDBCardTitle>{t("Manage custom holidays")}</MDBCardTitle>
