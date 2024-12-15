@@ -1,7 +1,6 @@
-package org.cswteams.ms3.utils.date_parts;
+package org.cswteams.ms3.utils.validators.date_parts;
 
-import org.cswteams.ms3.utils.day_and_month.DayAndMonthValidator;
-import org.cswteams.ms3.utils.day_and_month.DaysAndMonths;
+import org.cswteams.ms3.utils.validators.day_and_month.DayAndMonthValidator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

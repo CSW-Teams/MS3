@@ -1,5 +1,6 @@
 package org.cswteams.ms3.control.user;
 
+import org.cswteams.ms3.dto.user.UpdateUserProfileDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.dto.user.UserDetailsDTO;
@@ -29,4 +30,6 @@ public interface IUserController {
     void deleteUserSystemActor(Long userID, String systemActor);
 
     void addSystemActor(Long userID, Set<String> systemActors);
+
+    void updateUserProfile(UpdateUserProfileDTO updateUserProfileDTO);
 }

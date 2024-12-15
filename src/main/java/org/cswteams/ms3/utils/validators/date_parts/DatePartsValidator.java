@@ -1,4 +1,4 @@
-package org.cswteams.ms3.utils.date_parts;
+package org.cswteams.ms3.utils.validators.date_parts;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

@@ -1,4 +1,4 @@
-package org.cswteams.ms3.utils.temporal_consistency;
+package org.cswteams.ms3.utils.validators.temporal_consistency;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

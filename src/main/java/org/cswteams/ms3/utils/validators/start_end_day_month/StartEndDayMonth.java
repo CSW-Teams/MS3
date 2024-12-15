@@ -1,4 +1,4 @@
-package org.cswteams.ms3.utils.start_end_day_month;
+package org.cswteams.ms3.utils.validators.start_end_day_month;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

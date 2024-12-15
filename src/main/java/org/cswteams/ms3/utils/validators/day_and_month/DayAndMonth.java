@@ -1,4 +1,4 @@
-package org.cswteams.ms3.utils.day_and_month;
+package org.cswteams.ms3.utils.validators.day_and_month;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

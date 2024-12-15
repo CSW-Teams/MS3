@@ -1,4 +1,4 @@
-package org.cswteams.ms3.utils.must_be_different;
+package org.cswteams.ms3.utils.validators.must_be_different;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

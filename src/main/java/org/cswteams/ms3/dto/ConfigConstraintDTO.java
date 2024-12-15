@@ -1,7 +1,7 @@
 package org.cswteams.ms3.dto;
 
 import lombok.Getter;
-import org.cswteams.ms3.utils.input_integer.IntegerValue;
+import org.cswteams.ms3.utils.validators.input_integer.IntegerValue;
 
 import javax.validation.constraints.Min;
 

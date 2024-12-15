@@ -2,11 +2,11 @@ package org.cswteams.ms3.dto.holidays;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.cswteams.ms3.utils.admissible_values.AdmissibleValues;
-import org.cswteams.ms3.utils.day_and_month.DayAndMonth;
-import org.cswteams.ms3.utils.start_end_day_month.StartEndDayMonth;
-import org.cswteams.ms3.utils.temporal_consistency.BeforeInTime;
-import org.cswteams.ms3.utils.temporal_consistency.EpochDayComparator;
+import org.cswteams.ms3.utils.validators.admissible_values.AdmissibleValues;
+import org.cswteams.ms3.utils.validators.day_and_month.DayAndMonth;
+import org.cswteams.ms3.utils.validators.start_end_day_month.StartEndDayMonth;
+import org.cswteams.ms3.utils.validators.temporal_consistency.BeforeInTime;
+import org.cswteams.ms3.utils.validators.temporal_consistency.EpochDayComparator;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;

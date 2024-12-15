@@ -1,4 +1,4 @@
-package org.cswteams.ms3.utils.admissible_values;
+package org.cswteams.ms3.utils.validators.admissible_values;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

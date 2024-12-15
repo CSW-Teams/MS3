@@ -14,6 +14,7 @@ import {UserAPI} from "../../API/UserAPI";
 import {ConditionsToShow} from "./SingleUserProfileView";
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
+import {ModifyUserProfileAPI} from "../../API/ModifyUserProfileAPI";
 
 
 export default class ModifyUserProfileView extends React.Component {
@@ -36,10 +37,11 @@ export default class ModifyUserProfileView extends React.Component {
       password: "",
       systemActors: [],
       errorState: false,
+      id: localStorage.getItem("id"),
     }
     this.handleSubmit= this.handleSubmit.bind(this);
+    this.saveProfileUpdates = this.saveProfileUpdates.bind(this);
   }
-
 
   async componentDidMount() {
     let user;
@@ -108,9 +110,6 @@ export default class ModifyUserProfileView extends React.Component {
 
   }
 
-
-
-
   async handleSubmit(e) {
 
     e.preventDefault();
@@ -169,6 +168,55 @@ export default class ModifyUserProfileView extends React.Component {
     }
   }
 
+  async saveProfileUpdates() {
+    let modifyUserProfileAPI = new ModifyUserProfileAPI()
+    let conf = {}
+    conf = this.state
+
+    let response
+    try {
+      response = await modifyUserProfileAPI.setUpdatedProfileInfos(conf)
+    } catch (err) {
+      panic()
+      return
+    }
+    if (response.status === 202) {
+      toast.success(t("Configuration saved successfully"), {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } else if (response.status === 400) {
+      toast.error(t("Error saving the configuration"), {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } else {
+      // todo: how to behave in case the response status is not 200?
+      toast.error("STILL TO DECIDE FAILURE MESSAGE", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+  }
+
   render() {
     let conditionButton;
     if (typeof this.state.specializations != "undefined") {
@@ -197,39 +245,40 @@ export default class ModifyUserProfileView extends React.Component {
                   paddingTop: 20
                 }}>
                   <TextField
-                    disabled
                     label={t('Name')}
                     fullWidth
                     value={this.state.name}
-                    style={{marginBlock:10}}>
+                    style={{marginBlock:10}}
+                    onChange={(e) => this.setState({ name: e.target.value })}>
                   </TextField>
                   <TextField
-                    disabled
                     label={t('Surname')}
                     value={this.state.lastname}
                     fullWidth
-                    style={{marginBlock:10}}>
+                    style={{marginBlock:10}}
+                    onChange={(e) => this.setState({ lastname: e.target.value })}>
                   </TextField>
                   <TextField
-                    disabled
                     label={t("Email Address")}
                     fullWidth
                     value={this.state.email}
-                    style={{marginBlock:10}}>
+                    style={{marginBlock:10}}
+                    onChange={(e) => this.setState({ email: e.target.value })}>
                   </TextField>
                   <TextField
-                    disabled
                     label={t('Birthdate')}
                     fullWidth
                     value={this.state.birthday}
-                    style={{marginBlock:10}}>
+                    style={{marginBlock:10}}
+                    onChange={(e) => this.setState({ birthday: e.target.value })}>
                   </TextField>
                   <TextField
                     disabled
                     label={t('Seniority')}
                     fullWidth
                     value={this.state.seniority}
-                    style={{marginBlock:10}}>
+                    style={{marginBlock:10}}
+                    onChange={(e) => this.setState({ seniority: e.target.value })}>
                   </TextField>
                   {/*<TextField
                     disabled
@@ -249,7 +298,7 @@ export default class ModifyUserProfileView extends React.Component {
                 <div style={{paddingBottom: "20px", alignSelf:"center"}}>
                   <Button
                     variant="contained"
-                    disabled={false}
+                    onClick={this.saveProfileUpdates}
                   >
                     {t('Save Changes')}
                   </Button>

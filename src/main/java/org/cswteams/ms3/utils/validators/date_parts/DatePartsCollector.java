@@ -1,4 +1,4 @@
-package org.cswteams.ms3.utils.must_be_different;
+package org.cswteams.ms3.utils.validators.date_parts;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MustBeDifferents {
+public @interface DatePartsCollector {
 
-    MustBeDifferent[] value() ;
+    DateParts[] value() ;
 }

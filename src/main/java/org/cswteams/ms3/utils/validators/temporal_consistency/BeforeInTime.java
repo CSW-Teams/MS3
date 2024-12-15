@@ -1,4 +1,4 @@
-package org.cswteams.ms3.utils.admissible_values;
+package org.cswteams.ms3.utils.validators.temporal_consistency;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -7,17 +7,23 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD, ElementType.TYPE_USE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = AdmissibleValuesValidator.class)
-public @interface AdmissibleValues {
+@Constraint(validatedBy = BeforeInTimeValidator.class)
+public @interface BeforeInTime {
 
-    String message() default "{org.cswteams.ms3.jpa_constraints.admissible_values.AdmissibleValues" +
+    String message() default "{org.cswteams.ms3.jpa_constraints.temporal_consistency.BeforeInTime" +
             "message}";
 
     Class<?>[] groups() default { };
 
     Class<? extends Payload>[] payload() default { };
 
-    String[] values() ;
+
+    String firstParam() ;
+
+    String secondParam() ;
+
+
+    Class<? extends Comparator> comparator() ;
 }

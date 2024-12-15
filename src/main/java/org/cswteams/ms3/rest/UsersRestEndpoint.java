@@ -3,6 +3,7 @@ package org.cswteams.ms3.rest;
 import org.cswteams.ms3.control.user.IUserController;
 import org.cswteams.ms3.dto.systemactor.UserSystemActorsDTO;
 import org.cswteams.ms3.dto.systemactor.UserSystemActorDTO;
+import org.cswteams.ms3.dto.user.UpdateUserProfileDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.dto.user.UserDetailsDTO;
@@ -91,5 +92,15 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
+    @RequestMapping(method = RequestMethod.POST, path = "user-profile/update-profile-info")
+    public ResponseEntity<?> updateProfileInfos(@RequestBody UpdateUserProfileDTO userDetailsDTO) {
+        try {
+            userController.updateUserProfile(userDetailsDTO);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Profile updated successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
+        }
+    }
 }

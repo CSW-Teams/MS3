@@ -1,8 +1,7 @@
-package org.cswteams.ms3.utils.input_integer;
+package org.cswteams.ms3.utils.validators.input_integer;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.util.List;
 
 public class IntegerValueValidator implements ConstraintValidator<IntegerValue, String> {
 

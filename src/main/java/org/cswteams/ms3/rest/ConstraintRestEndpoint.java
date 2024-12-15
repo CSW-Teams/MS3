@@ -37,5 +37,4 @@ public class ConstraintRestEndpoint {
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-
 }

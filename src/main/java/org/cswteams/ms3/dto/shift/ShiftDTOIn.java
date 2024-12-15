@@ -2,7 +2,7 @@ package org.cswteams.ms3.dto.shift;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import org.cswteams.ms3.utils.admissible_values.AdmissibleValues;
+import org.cswteams.ms3.utils.validators.admissible_values.AdmissibleValues;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.Valid;

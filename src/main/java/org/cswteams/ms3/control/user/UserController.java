@@ -6,6 +6,7 @@ import org.cswteams.ms3.dto.condition.PermanentConditionDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
 import org.cswteams.ms3.dto.user.UserDetailsDTO;
+import org.cswteams.ms3.dto.user.UpdateUserProfileDTO;
 import org.cswteams.ms3.dto.userprofile.SingleUserProfileDTO;
 import org.cswteams.ms3.dto.userprofile.TemporaryConditionDTO;
 import org.cswteams.ms3.entity.Doctor;
@@ -74,7 +75,7 @@ public class UserController implements IUserController {
     @Override
     public UserDetailsDTO getSingleUser(long userId) {
         Doctor doctor = doctorDAO.findById(userId);
-        return new UserDetailsDTO(doctor.getName(), doctor.getLastname(), doctor.getEmail(), doctor.getBirthday(), doctor.getSeniority().toString());
+        return new UserDetailsDTO(doctor.getName(), doctor.getLastname(), doctor.getEmail(), doctor.getBirthday().toString(), doctor.getSeniority().toString());
     }
 
     /**
@@ -207,6 +208,24 @@ public class UserController implements IUserController {
             user.getSystemActors().add(SystemActor.valueOf(stringSystemActor));
         }
         userDAO.saveAndFlush(user);
+    }
+
+    @Override
+    public void updateUserProfile(UpdateUserProfileDTO userDetailsDTO) {
+        // Fetch the user by email or another unique identifier
+        User user = userDAO.findById(userDetailsDTO.getId());
+
+        if (user != null) {
+            user.setName(userDetailsDTO.getName());
+            user.setLastname(userDetailsDTO.getLastname());
+            user.setEmail(userDetailsDTO.getEmail());
+            user.setBirthday(userDetailsDTO.getBirthday());
+
+            // Save the updated user
+            userDAO.saveAndFlush(user);
+        } else {
+            throw new IllegalArgumentException("User with ID " + userDetailsDTO.getId() + " not found.");
+        }
     }
 
 

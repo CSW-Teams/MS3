@@ -1,7 +1,4 @@
-package org.cswteams.ms3.utils.must_be_different;
-
-import org.cswteams.ms3.utils.day_and_month.DayAndMonthValidator;
-import org.cswteams.ms3.utils.day_and_month.DaysAndMonths;
+package org.cswteams.ms3.utils.validators.must_be_different;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
