@@ -13,7 +13,7 @@ import FestivitaInseriteList from "../../components/common/FestivitaInseriteList
 import {HolidaysAPI} from "../../API/HolidaysAPI";
 import {panic} from "../../components/common/Panic";
 
-export default function () {
+export default function InserisciFestivita() {
 
   let [normalHolidays, setNormalHolidays] = useState([])
   let [recurrentHolidays, setRecurrentHolidays] = useState([])

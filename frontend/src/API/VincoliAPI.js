@@ -15,19 +15,10 @@ export  class VincoloAPI {
     }
 
     async setConfigurazioneVincoli(conf){
-      let configurazione = {}
-
-      configurazione.periodDaysNo = conf.periodDaysNo
-      configurazione.periodMaxTime = conf.periodMaxTime
-      configurazione.horizonNightShift = conf.horizonNightShift
-      configurazione.maxConsecutiveTimeForEveryone = conf.maxConsecutiveTimeForEveryone
-      configurazione.maxConsecutiveTimeForOver62 = conf.maxConsecutiveTimeForOver62
-      configurazione.maxConsecutiveTimeForPregnant = conf.maxConsecutiveTimeForPregnant*60
-
       const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(configurazione)
+        body: JSON.stringify(conf)
       };
 
       const response = await fetch('/api/constraints/configuration',requestOptions);

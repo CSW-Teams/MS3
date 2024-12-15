@@ -14,7 +14,8 @@ public class IntegerValueValidator implements ConstraintValidator<IntegerValue, 
 
     @Override
     public boolean isValid(String o, ConstraintValidatorContext constraintValidatorContext) {
-        if (o == null || o.isEmpty()) return false;
+        if (o == null) return false;
+        if (o.isEmpty()) return false;
         try {
             Integer.parseInt(o);
         } catch(NumberFormatException e) {

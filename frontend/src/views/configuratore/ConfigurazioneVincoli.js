@@ -169,8 +169,8 @@ export default class ConfigurazioneVincoli extends React.Component{
                   <MDBInput
                     type="text"
                     label={t("Period in days")}
-                    name="handleInputChange"
-                    value={this.state.handleInputChange}
+                    name="periodDaysNo"
+                    value={this.state.periodDaysNo}
                     onChange={this.handleInputChange}
                   />
                   <MDBInput
