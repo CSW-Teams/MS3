@@ -389,7 +389,6 @@ class ScheduleView extends React.Component{
       });
     }
 
-
   async componentDidMount(turni) {
 
       let api = new RichiestaRimozioneDaTurnoAPI();
@@ -679,8 +678,7 @@ class ScheduleView extends React.Component{
                   updateInterval={60000}
                 />
 
-                {/*todo: issue #584 maybe*/}
-                {view === "global" && (this.state.attore === "PLANNER" || this.state.attore  ===  "CONFIGURATOR") ?
+                {view === "global" && (this.state.attore === "PLANNER") ? (
                   <AppointmentForm
                     overlayComponent = {Overlay}
                     textEditorComponent={Nullcomponent}
@@ -689,7 +687,7 @@ class ScheduleView extends React.Component{
                     dateEditorComponent ={Nullcomponent}
                     basicLayoutComponent={BasicLayout}
                   />
-                  :
+                  ) : view === "global" && this.state.attore === "CONFIGURATOR" ? null : (
                   <AppointmentForm
                     overlayComponent = {OverlaySingle}
                     textEditorComponent={Nullcomponent}
@@ -698,9 +696,8 @@ class ScheduleView extends React.Component{
                     dateEditorComponent ={Nullcomponent}
                     basicLayoutComponent={SingleLayout.bind(this)}
                     readOnly
-                />
-                }
-
+                  />
+                )}
               </Scheduler>
 
             </Paper>
