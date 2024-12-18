@@ -55,7 +55,6 @@ class MainSidebar extends React.Component {
         className={classes}
         lg={{ size: 2 }}
         md={{ size: 3 }}
-        style={{ zIndex: 9999}}  // Add your desired z-index here
       >
         <SidebarMainNavbar />
         <SidebarSearch />

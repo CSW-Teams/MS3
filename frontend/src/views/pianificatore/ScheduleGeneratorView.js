@@ -159,11 +159,13 @@ export class SchedulerGeneratorView extends React.Component{
   render() {
     return (
       <Container fluid className="main-content-container px-4 pb-4">
-        <TemporaryDrawerSchedule onPostGeneration={this.componentDidMount}></TemporaryDrawerSchedule>
         <MDBContainer className="py-5">
-          <MDBCard alignment='center' style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-            <MDBCardBody style={{ height: '64vh' }}>
+          <MDBCard alignment='center'>
+            <MDBCardBody >
               <MDBCardTitle>{t("Schedule management")}</MDBCardTitle>
+              <MDBRow className="mt-3 mb-3 mx-3">
+                <TemporaryDrawerSchedule onPostGeneration={this.componentDidMount}></TemporaryDrawerSchedule>
+              </MDBRow>
               <MDBRow>
                 <MDBTable align="middle" bordered small hover>
                   <MDBTableHead color='tempting-azure-gradient' textwhite>
