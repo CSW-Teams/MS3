@@ -115,7 +115,9 @@ export default function TemporaryDrawerSchedulo(props) {
           'margin-top':'3%',
         }} variant="contained" size="small" > {t("Create schedule")} </Button>
 
-        <Drawer anchor='bottom' open={open} onClose={toggleDrawer(false)}>
+        <Drawer anchor='bottom'
+                open={open}
+                onClose={toggleDrawer(false)}>
           <div style={{
             display: 'flex',
             'padding-top': '20px',
