@@ -44,8 +44,7 @@ export default function InserisciFestivita() {
 
 
   return (
-    <section style={{backgroundColor: '#eee'}}>
-      <MDBContainer className="py-5" style={{height: '100vh',}}>
+    <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
         <MDBCard alignment='center'>
           <MDBCardBody>
             <MDBCardTitle>{t("Manage custom holidays")}</MDBCardTitle>
@@ -60,6 +59,5 @@ export default function InserisciFestivita() {
           </MDBCardBody>
         </MDBCard>
       </MDBContainer>
-    </section>
   )
 }

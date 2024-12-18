@@ -1,20 +1,18 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Container, Row, Nav, NavItem, NavLink } from "shards-react";
+import { Container, Row } from "shards-react";
 import { Link } from "react-router-dom";
 
 const MainFooter = ({ contained, copyright }) => (
   <footer className="main-footer d-flex p-2 px-3 bg-white border-top" >
-    <style>
-      {`
-        .main-footer {
-          position: sticky;
-          bottom: 0;
-          z-index: 9998;
-          width: 100%;
-        }
-          `}
-    </style>
+    {/*<style>*/}
+    {/*  {`*/}
+    {/*    .main-footer {*/}
+    {/*      bottom: 0;*/}
+    {/*      width: 100%;*/}
+    {/*    }*/}
+    {/*      `}*/}
+    {/*</style>*/}
     <Container fluid={contained}>
       <Row>
         <span className="copyright ml-auto my-auto mr-2">{copyright}</span>

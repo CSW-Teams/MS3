@@ -129,10 +129,9 @@ export default class ConfigurazioneVincoli extends React.Component{
 
   render() {
     return (
-      <section>
-        <MDBContainer className="py-5">
+        <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
           <MDBCard alignment="center">
-            <MDBCardBody style={{height: '80vh'}}>
+            <MDBCardBody >
               <MDBCardTitle style={{
                 marginBottom: '30px'}}>
                 {t("Constraint parameters management")}
@@ -261,7 +260,6 @@ export default class ConfigurazioneVincoli extends React.Component{
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-      </section>
     );
   }
 

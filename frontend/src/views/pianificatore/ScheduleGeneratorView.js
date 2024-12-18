@@ -16,6 +16,7 @@ import TemporaryDrawerSchedule from "../../components/common/BottomViewAggiungiS
 import {ScheduleAPI} from "../../API/ScheduleAPI";
 import { t } from "i18next";
 import {panic} from "../../components/common/Panic";
+import {Container} from "shards-react";
 
 /*
 * Schermata che permette di generare un nuovo schedule
@@ -157,15 +158,12 @@ export class SchedulerGeneratorView extends React.Component{
 
   render() {
     return (
-      <section>
+      <Container fluid className="main-content-container px-4 pb-4">
         <TemporaryDrawerSchedule onPostGeneration={this.componentDidMount}></TemporaryDrawerSchedule>
         <MDBContainer className="py-5">
           <MDBCard alignment='center' style={{ maxHeight: '70vh', overflowY: 'auto' }}>
             <MDBCardBody style={{ height: '64vh' }}>
               <MDBCardTitle>{t("Schedule management")}</MDBCardTitle>
-              <MDBRow>
-                <MDBCol></MDBCol>
-              </MDBRow>
               <MDBRow>
                 <MDBTable align="middle" bordered small hover>
                   <MDBTableHead color='tempting-azure-gradient' textwhite>
@@ -226,7 +224,7 @@ export class SchedulerGeneratorView extends React.Component{
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
-      </section>
+      </Container>
     )
   }
 

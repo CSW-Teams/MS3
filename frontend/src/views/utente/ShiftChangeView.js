@@ -5,6 +5,7 @@ import { ShiftChangeRequestAPI } from "../../API/ShiftChangeRequestAPI";
 import { Button } from "@mui/material";
 import { useTranslation } from 'react-i18next';
 import {panic} from "../../components/common/Panic";
+import {Container} from "shards-react";
 
 export default function ShiftChangeView() {
   const { t } = useTranslation();
@@ -125,19 +126,22 @@ export default function ShiftChangeView() {
   };
 
   return (
-    <div className="Table-page-container" style={{ padding: '20px' }}>
-      <style>
-        {`
-          .h2-padding {
-            margin-top: 20px;
-            margin-bottom: 20px;
-          }
-        `}
-      </style>
+    <Container fluid className="main-content-container px-4 pb-4">
+      {/*<div className="Table-page-container" style={{padding: '20px'}}>*/}
+      {/*  <style>*/}
+      {/*    {`*/}
+      {/*    .h2-padding {*/}
+      {/*      margin-top: 20px;*/}
+      {/*      margin-bottom: 20px;*/}
+      {/*    }*/}
+      {/*  `}*/}
+      {/*  </style>*/}
+      <div style={{marginTop: '10px'}}></div>
+      {renderTable(state.turnChangeRequestsToSender, t('Requests Received'), 0)}
+      <div style={{marginTop: '10px'}}></div>
+      {renderTable(state.turnChangeRequestsBySender, t('Requests Sent'), 1)}
+      {/*</div>*/}
+    </Container>
 
-      {renderTable(state.turnChangeRequestsToSender, t('Requests Received'),0)}
-      {renderTable(state.turnChangeRequestsBySender, t('Requests Sent'),1)}
-      <div style={{ marginTop: 'auto' }}></div>
-    </div>
   );
 }

@@ -1,12 +1,12 @@
 import React from "react";
 import {
-    MDBCard,
-    MDBCardBody,
-    MDBCardTitle,
-    MDBTable,
-    MDBTableBody,
-    MDBTableHead
-    } from "mdb-react-ui-kit";
+  MDBCard,
+  MDBCardBody,
+  MDBCardTitle, MDBContainer,
+  MDBTable,
+  MDBTableBody,
+  MDBTableHead
+} from "mdb-react-ui-kit";
 import {ServizioAPI} from "../../API/ServizioAPI";
 import Button from '@mui/material/Button';
 import Typography from "@mui/material/Typography";
@@ -112,7 +112,7 @@ export default class MedicalServicesView extends React.Component {
             })
 
         return(
-            <React.Fragment>
+            <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
                 <MedicalServiceCreationDrawer tasks={this.state.availableTaskTypes} services={this.state.services} updateServicesList={this.updateServicesListAfterCreation}/>
                 <MDBCard>
                     <MDBCardBody className="text-center">
@@ -163,7 +163,7 @@ export default class MedicalServicesView extends React.Component {
                         </MDBTable>
                     </MDBCardBody>
                 </MDBCard>
-            </React.Fragment>
+            </MDBContainer>
         );
     }
 }
