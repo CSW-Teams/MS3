@@ -3,7 +3,7 @@ import {UserAPI} from "../../API/UserAPI";
 import {
   MDBCard,
   MDBCardBody,
-  MDBCardTitle,
+  MDBCardTitle, MDBContainer,
   MDBTable, MDBTableBody,
   MDBTableHead
 } from "mdb-react-ui-kit";
@@ -103,66 +103,68 @@ export default class UserProfilesView extends React.Component{
     });
 
     return(
-      <MDBCard>
-        <MDBCardBody className="text-center">
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                      <MDBCardTitle style={{ marginLeft: "auto", marginBottom: 10 }}>{t("User Information")}</MDBCardTitle>
-                      {this.state.attore === "CONFIGURATOR" && (
-                        <Button variant="contained" color="primary" href="/nuovo-utente" style={{ marginLeft: 450, marginBottom: 10 }}>
-                          {t("Register New User")}
-                        </Button>
-                      )}
-                    </div>
-          <MDBTable align="middle"
-                    bordered
-                    small
-                    hover >
-            <MDBTableHead color='tempting-azure-gradient' textwhite>
-              <tr>
-                <th scope='col' onClick={() => this.setOrderBy("name")} >{t("Name")} {this.getSortIcon("name")}</th>
-                <th scope='col' onClick={() => this.setOrderBy("lastname")} >{t("Surname")} {this.getSortIcon("lastname")}</th>
-                <th scope='col' onClick={() => this.setOrderBy("birthday")} >{t("Birthdate")} {this.getSortIcon("birthday")}</th>
-                <th scope='col' onClick={() => this.setOrderBy("systemActors")} >{t("Actor")} {this.getSortIcon("systemActors")}</th>
-                {this.state.attore!=="PLANNER" && <th scope='col'>{t("Info")}</th>}
-                {this.state.attore==="PLANNER" && <th scope='col'>{t("Modify")}</th>}
+      <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
+        <MDBCard alignment="center">
+          <MDBCardBody className="text-center">
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <MDBCardTitle style={{ marginBottom: 10 }}>{t("User Information")}</MDBCardTitle>
+              {this.state.attore === "CONFIGURATOR" && (
+                <Button variant="contained" color="primary" href="/nuovo-utente" style={{ marginLeft: 450, marginBottom: 10 }}>
+                  {t("Register New User")}
+                </Button>
+              )}
+            </div>
+            <MDBTable align="middle"
+                      bordered
+                      small
+                      hover >
+              <MDBTableHead color='tempting-azure-gradient' textwhite>
+                <tr>
+                  <th scope='col' onClick={() => this.setOrderBy("name")} >{t("Name")} {this.getSortIcon("name")}</th>
+                  <th scope='col' onClick={() => this.setOrderBy("lastname")} >{t("Surname")} {this.getSortIcon("lastname")}</th>
+                  <th scope='col' onClick={() => this.setOrderBy("birthday")} >{t("Birthdate")} {this.getSortIcon("birthday")}</th>
+                  <th scope='col' onClick={() => this.setOrderBy("systemActors")} >{t("Actor")} {this.getSortIcon("systemActors")}</th>
+                  {this.state.attore!=="PLANNER" && <th scope='col'>{t("Info")}</th>}
+                  {this.state.attore==="PLANNER" && <th scope='col'>{t("Modify")}</th>}
 
-              </tr>
-            </MDBTableHead>
-            <MDBTableBody>
-              {sortedData.map((data, key) => (
-                <tr key={key}>
-                  <td>{data.name}</td>
-                  <td>{data.lastname}</td>
-                  <td>{data.birthday}</td>
-                  <td>{data.systemActors.map((actor) => t(actor)).join(", ")}</td>
-                  {this.state.attore === "UTENTE" && (
-                    <td>
-                      <Button
-                        className="overlay"
-                        variant="primary"
-                        href={`/single-user-profile/${data.id}`}
-                      >
-                        <i className="fa fa-id-card"> </i>
-                      </Button>
-                    </td>
-                  )}
-                  {this.state.attore !== "UTENTE" && (
-                    <td>
-                      <Button
-                        className="overlay"
-                        variant="primary"
-                        href={`/single-user-profile/${data.id}`}
-                      >
-                        <i className="fas fa-edit fa-lg"> </i>
-                      </Button>
-                    </td>
-                  )}
                 </tr>
-              ))}
-            </MDBTableBody>
-          </MDBTable>
-        </MDBCardBody>
-      </MDBCard>
+              </MDBTableHead>
+              <MDBTableBody>
+                {sortedData.map((data, key) => (
+                  <tr key={key}>
+                    <td>{data.name}</td>
+                    <td>{data.lastname}</td>
+                    <td>{data.birthday}</td>
+                    <td>{data.systemActors.map((actor) => t(actor)).join(", ")}</td>
+                    {this.state.attore === "UTENTE" && (
+                      <td>
+                        <Button
+                          className="overlay"
+                          variant="primary"
+                          href={`/single-user-profile/${data.id}`}
+                        >
+                          <i className="fa fa-id-card"> </i>
+                        </Button>
+                      </td>
+                    )}
+                    {this.state.attore !== "UTENTE" && (
+                      <td>
+                        <Button
+                          className="overlay"
+                          variant="primary"
+                          href={`/single-user-profile/${data.id}`}
+                        >
+                          <i className="fas fa-edit fa-lg"> </i>
+                        </Button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </MDBTableBody>
+            </MDBTable>
+          </MDBCardBody>
+        </MDBCard>
+      </MDBContainer>
     );
   }
-  }
+}
