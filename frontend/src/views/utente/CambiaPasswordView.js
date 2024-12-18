@@ -5,28 +5,28 @@ import 'react-toastify/dist/ReactToastify.css';
 import {
   MDBCard,
   MDBCardBody,
-  MDBCardTitle, MDBCol,
-  MDBContainer, MDBInput, MDBRow, MDBTypography
+  MDBCardTitle,
+  MDBCol,
+  MDBContainer,
+  MDBInput,
+  MDBRow,
+  MDBTypography
 } from "mdb-react-ui-kit";
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
-import routes from "../../routes";
-import link from "react-router-dom/Link";
+import Button from "@mui/material/Button";
 
 // sleep time expects milliseconds
-function sleep (time) {
+function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
-
 
 
 export default class CambiaPasswordView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      userId: localStorage.getItem("id"),
-      oldPassword: "",
-      newPassword: "",
+      userId: localStorage.getItem("id"), oldPassword: "", newPassword: "",
     }
     this.handleSubmit = this.handleSubmit.bind(this);
   }
@@ -39,7 +39,6 @@ export default class CambiaPasswordView extends React.Component {
       [e.target.name]: val
     });
   }
-
 
 
   async handleSubmit(e) {
@@ -97,54 +96,58 @@ export default class CambiaPasswordView extends React.Component {
 
   render() {
     return (
-      <section>
-        <MDBContainer className="py-5">
-          <MDBCard alignment='center'>
-            <MDBCardBody style={{height: '70vh'}}>
-              <MDBCardTitle>{t('Change your password')}</MDBCardTitle>
-              <MDBRow className='g-3' style={{paddingTop: '10px'}}>
-                <MDBCol>{t('Current Password')}
-                </MDBCol>
-                <MDBCol size='sm'>
-                  <MDBInput
-                    wrapperClass='col-auto'
-                    type='password'
-                    name='oldPassword'
-                    placeholder={t('Insert your password here')}
-                    value={this.state.oldPassword}
-                    onChange={e => this.handleChange(e)}
-                  />
-                </MDBCol>
-              </MDBRow>
-              <MDBRow className='g-3' style={{paddingTop: '10px'}}>
-                <MDBCol>Nuova Password:
-                </MDBCol>
-                <MDBCol size='sm'>
-                  <MDBInput
-                    wrapperClass='col-auto'
-                    type='password'
-                    name='newPassword'
-                    placeholder={t('Insert your new password here')}
-                    value={this.state.newPassword}
-                    onChange={e => this.handleChange(e)}
-                  />
-                </MDBCol>
-              </MDBRow>
-              <MDBRow>
-                <MDBCol style={{paddingTop: '10px'}}>
-                  <MDBTypography>{
-                    t('Remember to use lowercase, uppercase characters, numbers and special characters')}</MDBTypography>
-                </MDBCol>
-              </MDBRow>
-              <MDBRow>
-                <MDBCol style={{paddingTop: '0px'}}>
-                  <button onClick={this.handleSubmit} type="submit" className="btn btn-primary">{t('Save')}</button>
-                </MDBCol>
-              </MDBRow>
-            </MDBCardBody>
-          </MDBCard>
-        </MDBContainer>
-      </section>
+      <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
+        <MDBCard alignment='center'>
+          <MDBCardBody>
+            <MDBCardTitle>{t('Change your password')}</MDBCardTitle>
+            <MDBRow className='g-3' style={{paddingTop: '10px'}}>
+              <MDBCol>
+                {t('Current Password')}
+              </MDBCol>
+              <MDBCol size='sm'>
+                <MDBInput
+                  wrapperClass='col-auto'
+                  type='password'
+                  name='oldPassword'
+                  placeholder={t('Insert your password here')}
+                  value={this.state.oldPassword}
+                  onChange={e => this.handleChange(e)}
+                />
+              </MDBCol>
+            </MDBRow>
+            <MDBRow className='g-3' style={{paddingTop: '10px'}}>
+              <MDBCol>Nuova Password:
+              </MDBCol>
+              <MDBCol size='sm'>
+                <MDBInput
+                  wrapperClass='col-auto'
+                  type='password'
+                  name='newPassword'
+                  placeholder={t('Insert your new password here')}
+                  value={this.state.newPassword}
+                  onChange={e => this.handleChange(e)}
+                />
+              </MDBCol>
+            </MDBRow>
+            <MDBRow>
+              <MDBCol style={{paddingTop: '10px'}}>
+                <MDBTypography>{t('Remember to use lowercase, uppercase characters, numbers and special characters')}</MDBTypography>
+              </MDBCol>
+            </MDBRow>
+            <MDBRow>
+              <MDBCol style={{paddingTop: '0px'}}>
+                <Button
+                  variant="contained"
+                  style={{marginBottom: "16px"}}
+                  onClick={this.handleSubmit}
+                >
+                  {t('Save')}
+                </Button>
+              </MDBCol>
+            </MDBRow>
+          </MDBCardBody>
+        </MDBCard>
+      </MDBContainer>
     )
   }
 }
