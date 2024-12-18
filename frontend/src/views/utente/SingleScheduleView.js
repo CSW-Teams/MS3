@@ -1,12 +1,11 @@
-import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
-import { UserAPI } from '../../API/UserAPI';
-import ScheduleView  from "./ScheduleView.js"
-import {AppointmentSingleContent} from "../../components/common/CustomAppointmentComponents.js"
+import {AssegnazioneTurnoAPI} from '../../API/AssegnazioneTurnoAPI';
+import ScheduleView from "./ScheduleView.js"
+import {
+  AppointmentSingleContent
+} from "../../components/common/CustomAppointmentComponents.js"
 import React from "react";
-import { ToastContainer, toast } from 'react-toastify';
-import {Button} from "@mui/material";
-import { t } from "i18next";
 import {panic} from "../../components/common/Panic";
+import {MDBCard, MDBCardBody, MDBContainer} from "mdb-react-ui-kit";
 
 
 /**
@@ -28,7 +27,7 @@ export default class SingleScheduleView extends ScheduleView {
     }
 
     this.setState(
-      {appointmentContentComponent:AppointmentSingleContent},
+      {appointmentContentComponent: AppointmentSingleContent},
     )
     super.componentDidMount(turni);
 
@@ -38,12 +37,14 @@ export default class SingleScheduleView extends ScheduleView {
 
 
     return (
-      <div>
-      { super.render()}
-    </div>
-
+      <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
+        <MDBCard alignment='center'>
+          <MDBCardBody>
+            {super.render()}
+          </MDBCardBody>
+        </MDBCard>
+      </MDBContainer>
     )
-
   }
 }
 
