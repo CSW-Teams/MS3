@@ -3,13 +3,12 @@ import {UserAPI} from "../../API/UserAPI";
 import {
   MDBCard,
   MDBCardBody,
-  MDBCardTitle, MDBContainer,
+  MDBCardTitle, MDBContainer, MDBRow,
   MDBTable, MDBTableBody,
   MDBTableHead
 } from "mdb-react-ui-kit";
-import {Button, Link} from "@material-ui/core";
+import {Button} from "@mui/material";
 import { t } from "i18next";
-import {toast} from "react-toastify";
 import {panic} from "../../components/common/Panic";
 
 function defaultComparator(prop1, prop2){
@@ -106,14 +105,15 @@ export default class UserProfilesView extends React.Component{
       <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
         <MDBCard alignment="center">
           <MDBCardBody className="text-center">
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
               <MDBCardTitle style={{ marginBottom: 10 }}>{t("User Information")}</MDBCardTitle>
-              {this.state.attore === "CONFIGURATOR" && (
-                <Button variant="contained" color="primary" href="/nuovo-utente" style={{ marginLeft: 450, marginBottom: 10 }}>
-                  {t("Register New User")}
-                </Button>
-              )}
-            </div>
+              <MDBRow className={"mt-3 mb-3 mx-3 justify-content-center"}>
+                {this.state.attore === "CONFIGURATOR" && (
+                  <Button variant="contained" href="/nuovo-utente" size="small"
+                          style={{display: "inline-block", width: "auto"}}>
+                    {t("Register New User")}
+                  </Button>
+                )}
+              </MDBRow>
             <MDBTable align="middle"
                       bordered
                       small
