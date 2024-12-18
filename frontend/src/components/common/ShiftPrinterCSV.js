@@ -1,5 +1,6 @@
 import React from 'react';
-import { CSVLink } from 'react-csv';
+import {CSVLink} from 'react-csv';
+import {Button} from "@mui/material";
 
 /**FIXME: non sono riuscito a scrivere questo componente come classe.
  * Il problema sta nel fatto che per qualche motivo i rawShifts nelle props sono sempre vuoti,
@@ -9,29 +10,40 @@ import { CSVLink } from 'react-csv';
  * se qualcuno riesce a capire il perché di questo comportamento
  * e a correggerlo, sarebbe molto apprezzato.
  */
-export function ShiftPrinterCSV(props){
+export function ShiftPrinterCSV(props) {
 
-    /**
-     * Dobbiamo trasformare i turni grezzi in oggetti che possiamo stampare come CSV
-     */
-    let printableShifts = props.rawShifts.map((rawShift) => {
-        return {
-            "Turno": rawShift.title,    // Si assume che indichi anche mansione e seervizio
-            "Data e ora inizio": rawShift.startDate,
-            "Data e ora fine": rawShift.endDate,
-            "Utenti allocati": rawShift.utenti_guardia.map(buildNameFromUser),
-            // stampiamo gli utenti in reperibilità solo se il turno la prevede
-            "Utenti reperibili": rawShift.reperibilitaAttiva? rawShift.utenti_reperibili.map(buildNameFromUser) : [],
-        }
-    });
+  /**
+   * Dobbiamo trasformare i turni grezzi in oggetti che possiamo stampare come CSV
+   */
+  let printableShifts = props.rawShifts.map((rawShift) => {
+    return {
+      "Turno": rawShift.title,    // Si assume che indichi anche mansione e seervizio
+      "Data e ora inizio": rawShift.startDate,
+      "Data e ora fine": rawShift.endDate,
+      "Utenti allocati": rawShift.utenti_guardia.map(buildNameFromUser),
+      // stampiamo gli utenti in reperibilità solo se il turno la prevede
+      "Utenti reperibili": rawShift.reperibilitaAttiva ? rawShift.utenti_reperibili.map(buildNameFromUser) : [],
+    }
+  });
 
-    return(
-        <CSVLink data={printableShifts} onClick={() => {return props.enable}}>
-            {props.textLink}
-        </CSVLink>
-    )
+  return (
+    <Button
+      variant="contained"
+      style={props.style}
+    >
+      <CSVLink
+        data={printableShifts}
+        style={{ color: 'inherit', textDecoration: 'none' }}  // Rimuove la stilizzazione del link per mantenerla in linea con il bottone
+        onClick={() => {
+          return props.enable;
+        }}
+      >
+        {props.textLink}
+      </CSVLink>
+    </Button>
+  )
 }
 
-function buildNameFromUser(user){
-    return user.name + " " + user.lastname;
+function buildNameFromUser(user) {
+  return user.name + " " + user.lastname;
 }

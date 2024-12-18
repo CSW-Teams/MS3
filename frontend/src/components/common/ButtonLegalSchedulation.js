@@ -1,10 +1,9 @@
-import CheckCircleOutlineSharpIcon from '@mui/icons-material/CheckCircleOutlineSharp';import Button from "@mui/material/Button";
+import CheckCircleOutlineSharpIcon from '@mui/icons-material/CheckCircleOutlineSharp';
 import WarningAmberSharpIcon from '@mui/icons-material/WarningAmberSharp';
-import React, { useState} from "react";
+import React from "react";
 import { ScheduleAPI } from "../../API/ScheduleAPI";
 import Tooltip from '@mui/material/Tooltip';
 import { t } from "i18next";
-import {toast} from "react-toastify";
 import {panic} from "./Panic";
 
 
@@ -47,7 +46,6 @@ export default function ButtonLegalSchedulation() {
 
 
   return (
-
     <Tooltip title={title}>
       {AllLegal?
                 <CheckCircleOutlineSharpIcon style={{color: "rgb(0, 128, 55)",'margin-left': '96%','margin-right': 'auto','display': 'block', 'margin-top':'-3%'}} />

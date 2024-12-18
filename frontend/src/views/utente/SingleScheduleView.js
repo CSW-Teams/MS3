@@ -11,7 +11,6 @@ import {MDBCard, MDBCardBody, MDBContainer} from "mdb-react-ui-kit";
 /**
  * A view showing shift scheduling of a single user
  */
-
 export default class SingleScheduleView extends ScheduleView {
 
   async componentDidMount() {
@@ -34,8 +33,6 @@ export default class SingleScheduleView extends ScheduleView {
   }
 
   render() {
-
-
     return (
       <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
         <MDBCard alignment='center'>
@@ -47,4 +44,3 @@ export default class SingleScheduleView extends ScheduleView {
     )
   }
 }
-
