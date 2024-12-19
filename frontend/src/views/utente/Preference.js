@@ -3,9 +3,7 @@ import {
   MDBCard,
   MDBCardBody,
   MDBCardTitle,
-  MDBCol,
   MDBContainer,
-  MDBRow,
 } from "mdb-react-ui-kit";
 import PreferencesDatePick from "../../components/common/PreferencesDatePick";
 import {DesiderateAPI} from "../../API/DesiderataAPI";
@@ -13,7 +11,7 @@ import {toast} from "react-toastify";
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 
-function defaultComparator(prop1, prop2){
+function defaultComparator(prop1, prop2) {
   if (prop1 < prop2)
     return -1;
   if (prop1 > prop2)
@@ -23,19 +21,19 @@ function defaultComparator(prop1, prop2){
 
 export default class Preference extends React.Component {
 
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
-      desiderate:[],
+      desiderate: [],
       toDeletePreferences: [],
       orderBy: "data",
       comparator: defaultComparator
     }
     this.setOrderBy = this.setOrderBy.bind(this);
-    this.updatePreferences = this.updatePreferences.bind(this) ;
+    this.updatePreferences = this.updatePreferences.bind(this);
   }
 
-  setOrderBy(userProp){
+  setOrderBy(userProp) {
     this.setState({
       orderBy: userProp,
       comparator: defaultComparator
@@ -44,8 +42,8 @@ export default class Preference extends React.Component {
 
   updatePreferences(prefs, toDelPrefs) {
     this.setState({
-      desiderate : prefs,
-      toDeletePreferences : toDelPrefs,
+      desiderate: prefs,
+      toDeletePreferences: toDelPrefs,
     })
   }
 
@@ -53,14 +51,14 @@ export default class Preference extends React.Component {
     let id = localStorage.getItem("id");
     let desiderate
     try {
-      desiderate = await(new DesiderateAPI().getDesiderate(id));
+      desiderate = await (new DesiderateAPI().getDesiderate(id));
     } catch (err) {
 
       panic()
       return
     }
     this.setState({
-      desiderate : desiderate,
+      desiderate: desiderate,
     })
 
   }
@@ -70,7 +68,7 @@ export default class Preference extends React.Component {
     let desiderata = new DesiderateAPI();
     let responseStatus;
     try {
-      responseStatus = await desiderata.deleteDesiderate(idDesiderata,id);
+      responseStatus = await desiderata.deleteDesiderate(idDesiderata, id);
     } catch (err) {
 
       panic()
@@ -108,33 +106,26 @@ export default class Preference extends React.Component {
   render() {
 
     this.state.desiderate.sort((u1, u2) => {
-
       let p1 = u1[this.state.orderBy];
       let p2 = u2[this.state.orderBy];
 
       return this.state.comparator(p1, p2);
-
     })
 
     return (
-      <section style={{backgroundColor: '#eee'}}>
-        <MDBContainer className="py-5" style={{height: '85vh',}}>
-          <MDBCard alignment='center'>
-            <MDBCardBody>
-              <MDBCardTitle>{t('Add your preferences')}</MDBCardTitle>
-              <MDBRow>
-                <MDBCol>
-                  <PreferencesDatePick onSelectdate={() => this.componentDidMount()} desiderate={this.state.desiderate} toDelPrefs = {this.state.toDeletePreferences} setDesiderate={this.updatePreferences}/>
-                </MDBCol>
-              </MDBRow>
-            </MDBCardBody>
-          </MDBCard>
-        </MDBContainer>
-      </section>
+      <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
+        <MDBCard alignment="center">
+          <MDBCardBody className="text-center">
+            <MDBCardTitle>{t('Add your preferences')}</MDBCardTitle>
+            <PreferencesDatePick onSelectdate={() => this.componentDidMount()}
+                                 desiderate={this.state.desiderate}
+                                 toDelPrefs={this.state.toDeletePreferences}
+                                 setDesiderate={this.updatePreferences}/>
+          </MDBCardBody>
+        </MDBCard>
+      </MDBContainer>
     )
   }
-
-
 }
 
 

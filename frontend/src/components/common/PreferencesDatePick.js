@@ -1,14 +1,14 @@
 import {Calendar, DateObject} from "react-multi-date-picker";
 import ToolBar from "react-multi-date-picker/plugins/toolbar";
 import Button from "@mui/material/Button";
-import React, {useRef, useState} from "react";
+import React, {useRef} from "react";
 import {DesiderateAPI} from "../../API/DesiderataAPI"
-import {toast, ToastContainer} from "react-toastify";
-import {MDBCard} from "mdb-react-ui-kit";
+import {toast} from "react-toastify";
+import {MDBCard, MDBCol, MDBRow} from "mdb-react-ui-kit";
 import {t} from "i18next";
 import {panic} from "./Panic";
 
-const months =   [t("January"),
+const months = [t("January"),
   t("February"),
   t("March"),
   t("April"),
@@ -20,7 +20,7 @@ const months =   [t("January"),
   t("October"),
   t("November"),
   t("December")]
-const weeksName= [  t("Sun"),
+const weeksName = [t("Sun"),
   t("Mon"),
   t("Tue"),
   t("Wed"),
@@ -33,38 +33,39 @@ function DateSelectSlots({props}) {
   let id = localStorage.getItem("id");
   let desiderataApi = new DesiderateAPI();
 
-  let preferences = props.preferences ;
-  let toDelPreferences = props.toDelPreferences ;
-  const setPreferences = props.updatePrefs ;
+  let preferences = props.preferences;
+  let toDelPreferences = props.toDelPreferences;
+  const setPreferences = props.updatePrefs;
 
   async function checkMayBeSent() {
     const canSend = preferences.reduce((total, value) => {
-      return total && value.turnKinds.length !== 0 ;
-    }, true) ;
+      return total && value.turnKinds.length !== 0;
+    }, true);
 
-    if(canSend) {
-      await saveDesiderate() ;
+    if (canSend) {
+      await saveDesiderate();
     } else {
       toast(t('Select at least a turn for each date'), {
         position: 'top-center',
         autoClose: 1500,
-        style : {background : "red", color : "white"}
+        style: {background: "red", color: "white"}
       })
     }
   }
+
   async function saveDesiderate() {
     let response
     try {
-      response = await(desiderataApi.editDesiderate(preferences, toDelPreferences,id))
+      response = await (desiderataApi.editDesiderate(preferences, toDelPreferences, id))
     } catch (err) {
 
       panic()
       return
     }
-    let responseStatus  = response.status
+    let responseStatus = response.status
 
     if (responseStatus === 202) {
-      setPreferences(response, []) ;
+      setPreferences(response, []);
       toast.success(t('Preferences added successfully'), {
         position: "top-center",
         autoClose: 5000,
@@ -92,36 +93,58 @@ function DateSelectSlots({props}) {
   function checkBoxValue(singlePref, label) {
     return singlePref.turnKinds.reduce((total, value) => {
       return total || value === label
-    }, false) ;
+    }, false);
   }
 
   function checkBoxChange(singlePref, label) {
-    const lastValue = checkBoxValue(singlePref, label) ;
+    const lastValue = checkBoxValue(singlePref, label);
 
-    if(lastValue) /*This means it is now being set to false*/{
-      singlePref.turnKinds = singlePref.turnKinds.filter((value) => {return value !== label}) ;
+    if (lastValue) /*This means it is now being set to false*/{
+      singlePref.turnKinds = singlePref.turnKinds.filter((value) => {
+        return value !== label
+      });
     } else /*This means it is now set to true*/{
-      singlePref.turnKinds = singlePref.turnKinds.concat([label]) ;
+      singlePref.turnKinds = singlePref.turnKinds.concat([label]);
     }
 
-    preferences = preferences.slice(0) ;
-    setPreferences(preferences, toDelPreferences) ;
+    preferences = preferences.slice(0);
+    setPreferences(preferences, toDelPreferences);
   }
 
-  const sortedPrefs = preferences.sort((a,b) => {return a.data.getTime() - b.data.getTime()}) ;
+  const sortedPrefs = preferences.sort((a, b) => {
+    return a.data.getTime() - b.data.getTime()
+  });
   const processedPrefs = sortedPrefs.map(singlePref => {
-    return (<div style={{paddingRight : 10, paddingLeft : 10, paddingTop : 5, paddingBottom : 5}}>
-        <div style={{display: 'flex',  justifyContent:'space-between', alignItems:'center'}}>
+    return (<div style={{
+        paddingRight: 10,
+        paddingLeft: 10,
+        paddingTop: 5,
+        paddingBottom: 5
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
           {new DateObject(singlePref.data).format("DD/MM/YYYY")}
           <Button onClick={() => {
-            preferences = preferences.filter((value) => {return value !== singlePref})
-            toDelPreferences = toDelPreferences.concat([singlePref]) ;
-            setPreferences(preferences, toDelPreferences) ;
+            preferences = preferences.filter((value) => {
+              return value !== singlePref
+            })
+            toDelPreferences = toDelPreferences.concat([singlePref]);
+            setPreferences(preferences, toDelPreferences);
           }}>{t('Delete')}</Button>
         </div>
-        <div style={{paddingRight : 40, paddingLeft : 40, display : "flex", alignItems : "center"}}>
+        <div style={{
+          paddingRight: 40,
+          paddingLeft: 40,
+          display: "flex",
+          alignItems: "center"
+        }}>
           <div style={{paddingLeft: 30, paddingRight: 10, paddingTop: 5}}>
-            <input type={"checkbox"} name={"morning"} checked={checkBoxValue(singlePref, "MORNING")} onChange={e => {
+            <input type={"checkbox"} name={"morning"}
+                   checked={checkBoxValue(singlePref, "MORNING")}
+                   onChange={e => {
                      checkBoxChange(singlePref, "MORNING")
                      return !(e.target.checked)
                    }}/>
@@ -130,7 +153,12 @@ function DateSelectSlots({props}) {
             {t('Morning Shift')}
           </div>
         </div>
-        <div style={{paddingRight: 40, paddingLeft: 40,  display : "flex", alignItems : "center"}}>
+        <div style={{
+          paddingRight: 40,
+          paddingLeft: 40,
+          display: "flex",
+          alignItems: "center"
+        }}>
           <div style={{paddingLeft: 30, paddingRight: 10, paddingTop: 5}}>
             <input type={"checkbox"} name={"afternoon"}
                    checked={checkBoxValue(singlePref, "AFTERNOON")}
@@ -143,7 +171,12 @@ function DateSelectSlots({props}) {
             {t('Afternoon Shift')}
           </div>
         </div>
-        <div style={{paddingRight: 40, paddingLeft: 40, display : "flex", alignItems : "center"}}>
+        <div style={{
+          paddingRight: 40,
+          paddingLeft: 40,
+          display: "flex",
+          alignItems: "center"
+        }}>
           <div style={{paddingLeft: 30, paddingRight: 10, paddingTop: 5}}>
             <input type={"checkbox"} name={"night"}
                    checked={checkBoxValue(singlePref, "NIGHT")} onChange={e => {
@@ -151,7 +184,7 @@ function DateSelectSlots({props}) {
               return !(e.target.checked)
             }}/>
           </div>
-          <div style={{paddingTop : 5}}>
+          <div style={{paddingTop: 5}}>
             {t('Night Shift')}
           </div>
         </div>
@@ -160,12 +193,17 @@ function DateSelectSlots({props}) {
   });
 
   return (
-    <div style={{float: "none"}} >
-      <div style={{minWidth: 300, height: 400, overflowY: "scroll"}}>
+    <div style={{
+      minWidth: 300,float: "none"}}>
+      <div style={{
+        minHeight: 200,
+        maxHeight: 350,
+        overflowY: "scroll"
+      }}>
         {processedPrefs}
       </div>
       <div>
-        <Button position="bottom" onClick={checkMayBeSent} >{t('Save')}</Button>
+        <Button position="bottom" onClick={checkMayBeSent}>{t('Save')}</Button>
       </div>
     </div>
   )
@@ -173,65 +211,66 @@ function DateSelectSlots({props}) {
 
 export default function PreferencesDatePick(props) {
 
-  const datePickerRef = useRef() ;
-  let preferences = props.desiderate ;
-  let toDelPreferences = props.toDelPrefs ;
-  const setPreferences = props.setDesiderate ;
+  const datePickerRef = useRef();
+  let preferences = props.desiderate;
+  let toDelPreferences = props.toDelPrefs;
+  const setPreferences = props.setDesiderate;
 
-  let newProps = {} ;
-  newProps.datePickerRef = datePickerRef ;
-  newProps.preferences = preferences ;
-  newProps.toDelPreferences = toDelPreferences ;
-  newProps.updatePrefs = setPreferences ;
+  let newProps = {};
+  newProps.datePickerRef = datePickerRef;
+  newProps.preferences = preferences;
+  newProps.toDelPreferences = toDelPreferences;
+  newProps.updatePrefs = setPreferences;
 
 
   function updateSelectedDates(date) {
 
-    for (let i = 0 ; i < date.length ; i ++) {
+    for (let i = 0; i < date.length; i++) {
 
       const toRestorePref = toDelPreferences.find((value) => {
-        return value.data.toDateString() === date[i].toDate().toDateString()  ;
-      }) ;
+        return value.data.toDateString() === date[i].toDate().toDateString();
+      });
 
       const condition = preferences.reduce((total, value) => {
-        return total && !(value.data.toDateString()  === date[i].toDate().toDateString() ) }, true) ;
+        return total && !(value.data.toDateString() === date[i].toDate().toDateString())
+      }, true);
 
-      if(toRestorePref !== undefined) {
+      if (toRestorePref !== undefined) {
 
         toDelPreferences = toDelPreferences.filter((value) => {
-          return value.data.toDateString()  !== date[i].toDate().toDateString()  ;
-        }) ;
+          return value.data.toDateString() !== date[i].toDate().toDateString();
+        });
 
-        preferences = preferences.concat([toRestorePref]) ;
+        preferences = preferences.concat([toRestorePref]);
 
       } else if (condition) {
         const preference = {
-          data : date[i].toDate(),
-          turnKinds : []
+          data: date[i].toDate(),
+          turnKinds: []
         }
-        preferences = preferences.concat([preference]) ;
+        preferences = preferences.concat([preference]);
       }
     }
 
     preferences.forEach((value) => {
       const condition = date.reduce((total, value1) => {
-        return total || (value.data.toDateString() === value1.toDate().toDateString()) }, false) ;
+        return total || (value.data.toDateString() === value1.toDate().toDateString())
+      }, false);
 
-      if(!condition) {
-        toDelPreferences = toDelPreferences.concat([value]) ;
+      if (!condition) {
+        toDelPreferences = toDelPreferences.concat([value]);
         preferences = preferences.filter((value1) => {
           return value1 !== value
-        }) ;
+        });
       }
-    }) ;
+    });
 
-    setPreferences(preferences, toDelPreferences) ;
+    setPreferences(preferences, toDelPreferences);
   }
 
   return (
-
-    <div style={{display : "flex", justifyContent : "center"}}>
-      <div style={{float: "left", paddingTop : 120, paddingBottom : 120}}>
+    <MDBRow style={{ display: 'flex', justifyContent: 'center', alignItems: 'top' }}>
+      <MDBCol className="col-auto">
         <Calendar
           mapDays={({date}) => {
             let desiderataPresente = false
@@ -269,7 +308,7 @@ export default function PreferencesDatePick(props) {
           multiple
           containerStyle={{width: "100%", height: "100%"}}
           style={{
-            width: "100%",
+            width: "25%",
             height: "100%",
             boxSizing: "border-box"
           }}
@@ -278,21 +317,19 @@ export default function PreferencesDatePick(props) {
           currentDate={true}
           numberOfMonths={1}
           minDate={new Date()}
-          //maxDate={} TO DO : massima data per lo scheduler
+          //maxDate={} TODO : massima data per lo scheduler
           onChange={updateSelectedDates}
           value={preferences.map((value) => {
             return value.data
           })}
           calendarPosition="top-right"
         />
-      </div>
-      <div style={{float: "left", paddingLeft : 10}}>
-        <MDBCard>
+      </MDBCol>
+      <MDBCol className="col-auto">
+        <MDBCard style={{marginLeft: '20px', flex: 1}}>
           <DateSelectSlots props={newProps}/>
         </MDBCard>
-      </div>
-
-    </div>
-
+      </MDBCol>
+    </MDBRow>
   )
 }
