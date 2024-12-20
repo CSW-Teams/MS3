@@ -122,6 +122,11 @@ export default class ConfigurazioneVincoli extends React.Component{
     const value = target.value;
     const name = target.name;
 
+    // allow only numeric inputs
+    if (!/^\d*$/.test(value)) {
+      return;
+    }
+
     this.setState({
       [name]: value
     });
@@ -145,7 +150,7 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
                 <MDBCol size="6">
                   <MDBInput
-                    type="text"
+                    type="number"
                     name="horizonNightShift"
                     value={this.state.horizonNightShift}
                     onChange={this.handleInputChange}
@@ -166,14 +171,14 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
                 <MDBCol size="6">
                   <MDBInput
-                    type="text"
+                    type="number"
                     label={t("Period in days")}
                     name="periodDaysNo"
                     value={this.state.periodDaysNo}
                     onChange={this.handleInputChange}
                   />
                   <MDBInput
-                    type="text"
+                    type="number"
                     label={t("Max number of hours in the period")}
                     name="periodMaxTime"
                     value={this.state.periodMaxTime}
@@ -196,7 +201,7 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
                 <MDBCol size="6">
                   <MDBInput
-                    type="text"
+                    type="number"
                     name="maxConsecutiveTimeForEveryone"
                     value={this.state.maxConsecutiveTimeForEveryone}
                     onChange={this.handleInputChange}
@@ -217,7 +222,7 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
                 <MDBCol size="6">
                   <MDBInput
-                    type="text"
+                    type="number"
                     name="maxConsecutiveTimeForOver62"
                     value={this.state.maxConsecutiveTimeForOver62}
                     onChange={this.handleInputChange}
@@ -238,7 +243,7 @@ export default class ConfigurazioneVincoli extends React.Component{
                 </MDBCol>
                 <MDBCol size="6">
                   <MDBInput
-                    type="text"
+                    type="number"
                     name="maxConsecutiveTimeForPregnant"
                     value={this.state.maxConsecutiveTimeForPregnant}
                     onChange={this.handleInputChange}
