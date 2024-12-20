@@ -57,7 +57,7 @@ public class User {
      * @see SystemActor
      */
     @Enumerated
-    @ElementCollection(targetClass = SystemActor.class)
+    @ElementCollection(targetClass = SystemActor.class, fetch = FetchType.EAGER)
     private Set<SystemActor> systemActors;
 
 
