@@ -98,7 +98,9 @@ public class ConstraintController implements IConstraintController {
      */
     @Override
     public ConfigVincoli readConfigConstraints() {
-        return configVincoliDao.findAll().get(0);
+        ConfigVincoli vincoli = configVincoliDao.findAll().get(0);
+
+        return vincoli;
     }
 
 

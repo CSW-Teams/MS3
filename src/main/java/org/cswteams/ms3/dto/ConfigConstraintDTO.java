@@ -9,35 +9,31 @@ import javax.validation.constraints.Min;
 public class ConfigConstraintDTO {
 
     @Min(value = 0, message = "not negative")
-    private Integer periodDaysNo;
+    private final Integer periodDaysNo;
 
     /**
      * in minutes
      */
     @Min(value = 0, message = "not negative")
-    private Integer periodMaxTime;
+    private final Integer periodMaxTime;
 
     //Parametro ConstraintTurniContigui
 
     @Min(value = 0, message = "not negative")
-    private Integer horizonNightShift;
+    private final Integer horizonNightShift;
 
     //Parametri ConstraintMaxPeriodoConsecutivo
     /**
      * in minutes
      */
     @Min(value = 0, message = "not negative")
-    private Integer maxConsecutiveTimeForEveryone;
+    private final Integer maxConsecutiveTimeForEveryone;
 
     @Min(value = 0, message = "not negative")
-    private Integer maxConsecutiveTimeForOver62;
+    private final Integer maxConsecutiveTimeForOver62;
 
     @Min(value = 0, message = "not negative")
-    private Integer maxConsecutiveTimeForPregnant;
-
-    public ConfigConstraintDTO() {
-
-    }
+    private final Integer maxConsecutiveTimeForPregnant;
 
     public ConfigConstraintDTO(@IntegerValue String periodDaysNo, @IntegerValue String periodMaxTime,
                                @IntegerValue String horizonNightShift, @IntegerValue String maxConsecutiveTimeForEveryone,
@@ -45,10 +41,10 @@ public class ConfigConstraintDTO {
 
         this.horizonNightShift = Integer.parseInt(horizonNightShift);
         this.periodDaysNo = Integer.parseInt(periodDaysNo);
-        this.periodMaxTime = Integer.parseInt(periodMaxTime)*60;
-        this.maxConsecutiveTimeForEveryone = Integer.parseInt(maxConsecutiveTimeForEveryone)*60;
-        this.maxConsecutiveTimeForOver62 = Integer.parseInt(maxConsecutiveTimeForOver62)*60;
-        this.maxConsecutiveTimeForPregnant = Integer.parseInt(maxConsecutiveTimeForPregnant)*60;
+        this.periodMaxTime = Integer.parseInt(periodMaxTime);
+        this.maxConsecutiveTimeForEveryone = Integer.parseInt(maxConsecutiveTimeForEveryone);
+        this.maxConsecutiveTimeForOver62 = Integer.parseInt(maxConsecutiveTimeForOver62);
+        this.maxConsecutiveTimeForPregnant = Integer.parseInt(maxConsecutiveTimeForPregnant);
 
     }
 

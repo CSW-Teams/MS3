@@ -50,7 +50,7 @@ export default class ConfigurazioneVincoli extends React.Component{
       if(conf.configVincMaxPerConsPerCategoria[i].constrainedCondition.type=='INCINTA'){
         donnaIncinta.categoria=conf.configVincMaxPerConsPerCategoria[i].constrainedCondition;
         donnaIncinta.maxOre=conf.configVincMaxPerConsPerCategoria[i].numMaxOreConsecutive;
-      }else{
+      }else if(conf.configVincMaxPerConsPerCategoria[i].constrainedCondition.type=='OVER 62'){
         over62.categoria=conf.configVincMaxPerConsPerCategoria[i].constrainedCondition;
         over62.maxOre=conf.configVincMaxPerConsPerCategoria[i].numMaxOreConsecutive;
       }
