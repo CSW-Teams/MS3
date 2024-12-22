@@ -1,7 +1,7 @@
 package org.cswteams.ms3.filters;
 
-import org.cswteams.ms3.entity.CustomUserDetails;
-import org.cswteams.ms3.services.UserDetailsService;
+import org.cswteams.ms3.control.login.LoginController;
+import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +24,7 @@ public class JwtRequestFilters extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private LoginController loginController;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -41,10 +41,10 @@ public class JwtRequestFilters extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            CustomUserDetails userDetails;
+            CustomUserDetails loggedUserDTO;
 
             try {
-                userDetails = this.userDetailsService.loadUserByUsernameAndRole(username, role);
+                loggedUserDTO = this.loginController.loadUserByUsernameAndRole(username, role);
             } catch (UsernameNotFoundException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("User not found");
@@ -55,8 +55,9 @@ public class JwtRequestFilters extends OncePerRequestFilter {
                 return;
             }
 
-            if (jwtUtil.validateToken(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            if (jwtUtil.validateToken(jwt, loggedUserDTO)) {
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                        new UsernamePasswordAuthenticationToken(loggedUserDTO, null, loggedUserDTO.getAuthorities());
 
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

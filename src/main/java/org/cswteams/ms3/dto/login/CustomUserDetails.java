@@ -1,4 +1,4 @@
-package org.cswteams.ms3.entity;
+package org.cswteams.ms3.dto.login;
 
 import lombok.Getter;
 import org.cswteams.ms3.enums.SystemActor;
@@ -10,62 +10,25 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Custom implementation of the {@link UserDetails} interface for integrating
- * the application-specific User entity with Spring Security.
- *
- * <p>
- * This class acts as a wrapper around the {@link User} entity and provides
- * the necessary methods required by Spring Security to handle authentication
- * and authorization processes. It includes the user's credentials, role,
- * and basic information needed by Spring Security.
- *
- * <p>
- * The role of the user is determined by the {@link SystemActor} enum, which is
- * mapped to a {@link SimpleGrantedAuthority} for Spring Security's authorization
- * framework.
- *
- * <p>
- * This class also provides default implementations for account expiration,
- * account locking, credentials expiration, and user enabling statuses,
- * which can be customized according to the system's logic.
- *
- * @author Ralisin
+ * DTO used in the Login use case (from Service to REST Controller)
  */
 @Getter
 public class CustomUserDetails implements UserDetails {
-    /**
-     * The user entity containing the user's information.
-     */
-    private final User user;
-
-    /**
-     * The system actor associated with the user.
-     * Represents the role of the user within the application which will be mapped to roles in Spring Security.
-     */
+    private final Long id;
+    private final String name;
+    private final String lastname;
+    private final String email;
+    private final String password;
     private final SystemActor systemActor;
 
-    /**
-     * Constructs a new CustomUserDetails object wrapping the provided {@link User} entity.
-     *
-     * @param user The User entity to be wrapped.
-     */
-    public CustomUserDetails(User user) {
-        this.user = user;
 
-        this.systemActor = null;
-    }
-
-    /**
-     * Constructs a new CustomUserDetails object wrapping the provided {@link User} entity
-     * and associates it with a specified {@link SystemActor}.
-     *
-     * @param user The User entity to be wrapped.
-     * @param systemActor The system actor (role) of the user.
-     */
-    public CustomUserDetails(User user, String systemActor) {
-        this.user = user;
-
-        this.systemActor = SystemActor.valueOf(systemActor);
+    public CustomUserDetails(Long id, String name, String lastname, String email, String password, SystemActor systemActor) {
+        this.id = id;
+        this.name = name;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+        this.systemActor = systemActor;
     }
 
     /**
@@ -75,7 +38,7 @@ public class CustomUserDetails implements UserDetails {
      *
      * <p>
      * If the system actor is not null, a single authority is returned,
-     * representing the user's role in the system, prefixed with "ROLE_".
+     * representing the user's role in the system.
      * If no system actor is assigned, null is returned, meaning the user has
      * no role granted in Spring Security.
      *
@@ -84,7 +47,6 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (systemActor != null) {
-//            return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + this.systemActor));
             return Collections.singleton(new SimpleGrantedAuthority(this.systemActor.toString()));
         }
 
@@ -93,12 +55,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return email;
     }
 
     /**

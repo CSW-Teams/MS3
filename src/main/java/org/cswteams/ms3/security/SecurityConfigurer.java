@@ -1,6 +1,5 @@
 package org.cswteams.ms3.security;
 
-import org.cswteams.ms3.services.UserDetailsService;
 import org.cswteams.ms3.filters.JwtRequestFilters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Autowired
-    private UserDetailsService userDetailsService;
+    private CustomAuthenticationProvider customAuthenticationProvider;
 
     @Autowired
     private JwtRequestFilters jwtRequestFilters;
@@ -33,7 +32,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService);
+        auth.authenticationProvider(customAuthenticationProvider);
     }
 
     @Override
@@ -41,9 +40,12 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         // Disable CSRF protection as the application relies on token-based authentication (e.g., JWT).
         // CSRF protection is primarily used for session-based authentication and is not required in this context.
         http.csrf().disable()
+                .authorizeRequests()
+
                 // Allow public access to the "/authenticate" endpoint.
                 // This is necessary because users need to access this endpoint to obtain their authentication token.
-                .authorizeRequests().antMatchers(HttpMethod.POST, "/authenticate").permitAll()
+                .antMatchers(HttpMethod.POST, "/login/").permitAll()
+                .antMatchers(HttpMethod.GET, "/login/").permitAll()
 
                 // Require authentication for all other endpoints.
                 // This ensures that all other resources are secured and can only be accessed by authenticated users with valid credentials.
@@ -51,6 +53,9 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
                 .and().formLogin()
                 .loginPage("/login").permitAll()
+
+                .and().formLogin()
+                .loginPage("/login/").permitAll()
 
                 // Configure the session management policy.
                 // Set the session creation policy to "STATELESS" as the application does not use sessions;
