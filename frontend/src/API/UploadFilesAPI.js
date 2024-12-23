@@ -1,3 +1,4 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export class UploadFilesAPI {
 
@@ -9,7 +10,7 @@ export class UploadFilesAPI {
     let formData = new FormData();
 
     formData.append("file",file)
-    return await fetch('/api/justify/uploadJustification', {
+    return await fetchWithAuth('/api/justify/uploadJustification', {
       // content-type header should not be specified!
       method: 'POST',
       body: formData,
@@ -21,7 +22,7 @@ export class UploadFilesAPI {
     let formData = new FormData();
 
     formData.append("attachment", file)
-    return await fetch(`/api/concrete-shifts/retirement-request/${idRequest}/uploadFile`, {
+    return await fetchWithAuth(`/api/concrete-shifts/retirement-request/${idRequest}/uploadFile`, {
     method: 'POST',
     body: formData,
     onUploadProgress,

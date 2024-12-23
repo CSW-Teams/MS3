@@ -61,12 +61,15 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 // Set the session creation policy to "STATELESS" as the application does not use sessions;
                 // it relies solely on stateless JWT tokens for authentication and authorization.
                 .and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
+                .and().logout().permitAll();
 
         // This ensures that the JWT token is validated and the authentication context is set
         // before the standard UsernamePasswordAuthenticationFilter processes the request.
         // The filter intercepts each HTTP request to extract and verify the JWT token (if present).
         http.addFilterBefore(jwtRequestFilters, UsernamePasswordAuthenticationFilter.class);
+
     }
 
     @Bean

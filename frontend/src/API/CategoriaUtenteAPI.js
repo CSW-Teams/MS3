@@ -1,21 +1,23 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
+
 /**
  * Deprecated class
  */
 export class CategoriaUtenteAPI {
 
   async deleteRotazione(idRotazione, idUtente){
-    const response = await fetch('/api/categorie/rotazione_id='+idRotazione+'/utente_id='+idUtente, { method: 'DELETE' });
+    const response = await fetchWithAuth('/api/categorie/rotazione_id='+idRotazione+'/utente_id='+idUtente, { method: 'DELETE' });
     return response.status;
   }
 
   async deleteStato(idRotazione, idUtente){
-    const response = await fetch('/api/categorie/stato_id='+idRotazione+'/utente_id='+idUtente, { method: 'DELETE' });
+    const response = await fetchWithAuth('/api/categorie/stato_id='+idRotazione+'/utente_id='+idUtente, { method: 'DELETE' });
     return response.status;
   }
 
 
   async getCategoriaUtente(idUtente) {
-    const response = await fetch('/api/categorie/stato/utente_id='+idUtente);
+    const response = await fetchWithAuth('/api/categorie/stato/utente_id='+idUtente);
     const body = await response.json();
     const categorie = [];
 
@@ -33,7 +35,7 @@ export class CategoriaUtenteAPI {
   }
 
   async getSpecializzazioniUtente(idUtente) {
-    const response = await fetch('/api/categorie/specializzazioni/utente_id='+idUtente);
+    const response = await fetchWithAuth('/api/categorie/specializzazioni/utente_id='+idUtente);
     const body = await response.json();
     const categorie = [];
 
@@ -50,7 +52,7 @@ export class CategoriaUtenteAPI {
   }
 
   async getTurnazioniUtente(idUtente) {
-    const response = await fetch('/api/categorie/turnazioni/utente_id='+idUtente);
+    const response = await fetchWithAuth('/api/categorie/turnazioni/utente_id='+idUtente);
     const body = await response.json();
     const categorie = [];
 
@@ -86,7 +88,7 @@ export class CategoriaUtenteAPI {
       body: JSON.stringify(turnazione)
     };
     const url = "/api/categorie/turnazioni/utente_id=" + utente_id;
-    const response = await fetch(url , requestOptions);
+    const response = await fetchWithAuth(url , requestOptions);
     return response.status;
 
   }
@@ -110,7 +112,7 @@ export class CategoriaUtenteAPI {
       body: JSON.stringify(stato)
     };
     const url = "/api/categorie/stato/utente_id=" + utente_id;
-    const response = await fetch(url , requestOptions);
+    const response = await fetchWithAuth(url , requestOptions);
     return response.status;
 
   }

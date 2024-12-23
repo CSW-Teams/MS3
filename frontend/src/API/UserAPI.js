@@ -1,11 +1,12 @@
-import {teal, red} from '@mui/material/colors';
+import {teal} from '@mui/material/colors';
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export  class UserAPI {
   constructor() {
   }
 
   async getAllUser() {
-    const response = await fetch('/api/users/');
+    const response = await fetchWithAuth('/api/users/');
     const body = await response.json();
 
     const userList = [];
@@ -23,7 +24,7 @@ export  class UserAPI {
   }
 
   async getUserDetails(id){
-    const response = await fetch('/api/users/user_id=' + id);
+    const response = await fetchWithAuth('/api/users/user_id=' + id);
     const body = await response.json();
 
     const user = {};
@@ -36,7 +37,7 @@ export  class UserAPI {
   }
 
   async getAllUsersInfo() {
-    const response = await fetch('/api/users/');
+    const response = await fetchWithAuth('/api/users/');
     const body = await response.json();
 
     const userList = [];
@@ -62,7 +63,7 @@ export  class UserAPI {
    * @returns {Promise<{}>} The informations contained in the JSON (DTO class in backend) obtained from API call
    */
   async getSingleUserProfileDetails(id){
-    const response = await fetch('/api/users/user-profile/user_id=' + id);
+    const response = await fetchWithAuth('/api/users/user-profile/user_id=' + id);
     const body = await response.json();
 
     const user = {};
@@ -84,7 +85,7 @@ export  class UserAPI {
     return user;
   }
   async getAllDoctorsInfo() {
-    const response = await fetch('/api/doctors/');
+    const response = await fetchWithAuth('/api/doctors/');
     const body = await response.json();
 
     const dctorList = [];

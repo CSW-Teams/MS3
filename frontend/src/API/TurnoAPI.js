@@ -1,5 +1,6 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
-export  class TurnoAPI {
+export class TurnoAPI {
   constructor() {
   }
 
@@ -9,7 +10,7 @@ export  class TurnoAPI {
    * @returns {Promise<*[]>} A Promise containing the shift's details
    */
   async getTurniByServizio(servizio) {
-    const response = await fetch('/api/shifts/service='+servizio);
+    const response = await fetchWithAuth('/api/shifts/service=' + servizio);
     const body = await response.json();
 
     const turni = [];
@@ -32,13 +33,13 @@ export  class TurnoAPI {
    * @param tipologia The timeslot to select
    * @returns {Promise<*[]>} A Promise containing the shift's details
    */
-  async getTurnoByServizioTipologia(servizio,tipologia) {
-    const response = await fetch('/api/shifts/service='+servizio);
+  async getTurnoByServizioTipologia(servizio, tipologia) {
+    const response = await fetchWithAuth('/api/shifts/service=' + servizio);
     const body = await response.json();
 
     for (let i = 0; i < body.length; i++) {
-        if( body[i].timeslot === tipologia)
-          return body[i];
+      if (body[i].timeslot === tipologia)
+        return body[i];
     }
 
     return {};

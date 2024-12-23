@@ -1,4 +1,5 @@
 import {ShiftChangeRequest} from "./ShiftChangeRequest";
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export class ShiftChangeRequestAPI{
 
@@ -25,14 +26,14 @@ export class ShiftChangeRequestAPI{
   }
 
   async getTurnChangeRequestsByIdUser(id) {
-    const response = await fetch('/api/change-shift-request/by/user_id=' + id);
+    const response = await fetchWithAuth('/api/change-shift-request/by/user_id=' + id);
     const body = await response.json();
 
     return this.parseRequests(body);
   }
 
   async getTurnChangeRequestsToIdUser(id) {
-    const response = await fetch('/api/change-shift-request/to/user_id=' + id);
+    const response = await fetchWithAuth('/api/change-shift-request/to/user_id=' + id);
     const body = await response.json();
 
     return this.parseRequests(body);
@@ -50,7 +51,7 @@ export class ShiftChangeRequestAPI{
       body: JSON.stringify(dto)
     };
 
-    return fetch('/api/change-shift-request/answer', requestOptions);
+    return fetchWithAuth('/api/change-shift-request/answer', requestOptions);
   }
 
 }

@@ -1,6 +1,6 @@
-import React, {useContext} from "react"
+import React from "react"
 import {LoginAPI} from "../../API/LoginAPI";
-import {toast, ToastContainer} from "react-toastify";
+import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {t} from "i18next";
 import {panic, PanicContext} from "../../components/common/Panic";
@@ -61,6 +61,7 @@ export default class LoginView extends React.Component {
         localStorage.setItem("name", user.name)
         localStorage.setItem("lastname", user.lastname)
         localStorage.setItem("actor", this.state.systemActor)
+        localStorage.setItem("jwt", user.jwt)
 
         this.props.history.push({
           pathname: '/pianificazione-globale',

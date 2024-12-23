@@ -72,6 +72,6 @@ public class LoginRestEndpoint {
 
         // TODO send a ResponseCookie instead of a Response Entity, cause this way the jwt could be stored in a cookie HTTP-Only
 
-        return ResponseEntity.ok(new LoginResponseDTO(jwt));
+        return ResponseEntity.ok(new LoginResponseDTO(customUserDetails, jwt));
     }
 }

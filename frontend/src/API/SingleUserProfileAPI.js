@@ -1,3 +1,5 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
+
 export class SingleUserProfileAPI {
   async deleteSpecialization(doctorID, specialization){
     let jsonString = "{" + "\"doctorID\":" + doctorID + ",\"specialization\":\"" + specialization + "\"}";
@@ -8,7 +10,7 @@ export class SingleUserProfileAPI {
       body: jsonString
     };
 
-    const response = await fetch('/api/doctors/user-profile/delete-specialization',requestOptions);
+    const response = await fetchWithAuth('/api/doctors/user-profile/delete-specialization',requestOptions);
     return response.status;
   }
 
@@ -20,12 +22,12 @@ export class SingleUserProfileAPI {
       body: JSON.stringify({doctorID,specializations})
     };
 
-    const response = await fetch('/api/doctors/user-profile/add-specialization',requestOptions);
+    const response = await fetchWithAuth('/api/doctors/user-profile/add-specialization',requestOptions);
     return response.status;
   }
 
   async getSpecializations(){
-    const response = await fetch('/api/specializations');
+    const response = await fetchWithAuth('/api/specializations');
     const body = await response.json();
 
     let specializationList = [];
@@ -47,7 +49,7 @@ export class SingleUserProfileAPI {
       body: jsonString
     };
 
-    const response = await fetch('/api/users/user-profile/delete-system-actor',requestOptions);
+    const response = await fetchWithAuth('/api/users/user-profile/delete-system-actor',requestOptions);
     return response.status;
   }
 
@@ -57,12 +59,12 @@ export class SingleUserProfileAPI {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({userID,systemActors})
       };
-      const response = await fetch('/api/users/user-profile/add-system-actors',requestOptions);
+      const response = await fetchWithAuth('/api/users/user-profile/add-system-actors',requestOptions);
       return response.status;
     }
 
   async getSystemActors() {
-    const response = await fetch('/api/system-actors');
+    const response = await fetchWithAuth('/api/system-actors');
     const body = await response.json();
 
     let systemActorList = [];
@@ -83,7 +85,7 @@ export class SingleUserProfileAPI {
       body: jsonString
     };
 
-    const response = await fetch('/api/doctors/user-profile/delete-permanent-condition',requestOptions);
+    const response = await fetchWithAuth('/api/doctors/user-profile/delete-permanent-condition',requestOptions);
     return response.status;
   }
 
@@ -96,7 +98,7 @@ export class SingleUserProfileAPI {
       body: jsonString
     };
 
-    const response = await fetch('/api/doctors/user-profile/delete-temporary-condition',requestOptions);
+    const response = await fetchWithAuth('/api/doctors/user-profile/delete-temporary-condition',requestOptions);
     return response.status;
   }
 
@@ -106,7 +108,7 @@ export class SingleUserProfileAPI {
      * @returns {Promise<void>}
      */
     async getAllConditionSaved() {
-      const response = await fetch('/api/conditions');
+      const response = await fetchWithAuth('/api/conditions');
       const body = await response.json();
 
       let conditionList = [];
@@ -138,7 +140,7 @@ export class SingleUserProfileAPI {
       body: JSON.stringify({doctorID,condition})
     };
 
-    const response = await fetch('/api/doctors/user-profile/add-condition',requestOptions);
+    const response = await fetchWithAuth('/api/doctors/user-profile/add-condition',requestOptions);
     const json = await response.json();
     const id = json.conditionID;
     return id;

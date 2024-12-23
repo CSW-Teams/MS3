@@ -34,13 +34,22 @@ public class JwtRequestFilters extends OncePerRequestFilter {
         String role = null;
         String jwt = null;
 
+        System.out.println("Authorization header: " + authorizationHeader);
+
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             username = jwtUtil.extractUsername(jwt);
             role = jwtUtil.extractRole(jwt);
+
+            System.out.println("JWT: " + jwt);
+        } else {
+            // Log missing or invalid token header and allow unauthenticated endpoints to bypass
+            System.out.println("Missing or invalid Authorization header for request: " + request.getRequestURI());
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            System.out.println("User: " + username);
+
             CustomUserDetails loggedUserDTO;
 
             try {

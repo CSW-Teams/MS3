@@ -1,9 +1,10 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export  class NotificationAPI {
 
  async getNotification(id) {
       try {
-        const response = await fetch('/api/notification/id='+id);
+        const response = await fetchWithAuth('/api/notification/id='+id);
         if(response.status== 200){
           const body = await response.json();
           const notifications = [];

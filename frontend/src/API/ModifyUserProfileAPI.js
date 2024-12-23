@@ -1,3 +1,5 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
+
 export class ModifyUserProfileAPI {
   constructor() {}
 
@@ -8,6 +10,6 @@ export class ModifyUserProfileAPI {
       body: JSON.stringify(conf)
     };
 
-    return await fetch('/api/users/user-profile/update-profile-info/',requestOptions);
+    return await fetchWithAuth('/api/users/user-profile/update-profile-info/',requestOptions);
   }
 }
