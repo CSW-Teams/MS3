@@ -16,6 +16,7 @@ import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -25,6 +26,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/concrete-shifts/")
+@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class ConcreteShiftRestEndpoint {
 
     @Autowired
@@ -36,6 +38,7 @@ public class ConcreteShiftRestEndpoint {
     @Autowired
     private IControllerScambioTurno controllerScambioTurno;
 
+    @PreAuthorize("hasAuthority('planner:post')")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> createNewConcreteShift(@RequestBody RegisterConcreteShiftDTO assegnazione) {
 
@@ -74,6 +77,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @PreAuthorize("hasAnyAuthority('doctor:get', 'planner:get')")
     @RequestMapping(method = RequestMethod.GET, path = "/user_id={userID}")
     public ResponseEntity<?> getSingleDoctorConcreteShift(@PathVariable Long userID) throws ParseException {
         if (userID != null) {
@@ -91,18 +95,19 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllConcreteShifts() throws ParseException {
         Set<GetAllConcreteShiftDTO> allConcreteShifts = concreteShiftController.getAllConcreteShifts();
         return new ResponseEntity<>(allConcreteShifts, HttpStatus.FOUND);
     }
 
-
     /**
      * Permette la modifica di un assegnazione turno già esistente.
      * @param modifyConcreteShiftDTO
      * @return
      */
+    @PreAuthorize("hasAuthority('planner:put')")
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<?> modifyConcreteShift(@RequestBody ModifyConcreteShiftDTO modifyConcreteShiftDTO)  {
 
@@ -132,7 +137,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(schedule, HttpStatus.ACCEPTED);
     }
 
-
+    @PreAuthorize("hasAuthority('planner:delete')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/{idAssegnazione}")
     public ResponseEntity<?> deleteConcreteShift(@PathVariable Long idAssegnazione)  {
         if (idAssegnazione != null) {
@@ -143,6 +148,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @PreAuthorize("hasAnyAuthority('doctor:post', 'planner:post')")
     @RequestMapping(method = RequestMethod.POST, path = "/available-users-for-replacement/")
     public ResponseEntity<?> getAvailableUsersForReplacement(@RequestBody GetAvailableUsersForReplacementDTO dto) {
         List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUsersForReplacement(dto);

@@ -3,21 +3,18 @@ package org.cswteams.ms3.control.login;
 import org.cswteams.ms3.dao.UserDAO;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.entity.User;
-import org.cswteams.ms3.enums.SystemActor;
-import org.cswteams.ms3.exception.login.InvalidEmailAddressException;
-import org.cswteams.ms3.exception.login.InvalidRoleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.management.relation.RoleNotFoundException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 @Service
-public class LoginController implements UserDetailsService, ILoginController {
+public class LoginController implements UserDetailsService {
+    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+
     @Autowired
     private UserDAO userDAO;
 
@@ -29,54 +26,31 @@ public class LoginController implements UserDetailsService, ILoginController {
      */
     private boolean checkEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-        Pattern pattern = Pattern.compile(emailRegex);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
+
+        return email != null && email.matches(emailRegex);
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userDAO.findByEmail(email);
+        if (email == null || email.trim().isEmpty()) {
+            logger.error("Email is null or empty");
+            throw new UsernameNotFoundException("Invalid email format");
+        }
 
+        // Check if the email format is valid
+        boolean isEmailValid = checkEmail(email);
+        if (!isEmailValid) {
+            logger.error("Invalid email format: {}", email);
+            throw new UsernameNotFoundException("Invalid email format");
+        }
+
+        // Retrieve the user from the database
+        User user = userDAO.findByEmail(email);
         if (user == null) {
+            logger.error("User not found with email: {}", email);
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
 
-        return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), null);
-//        throw new UsernameNotFoundException("The loadUserByUsername method is not supported in this application");
-    }
-
-    public CustomUserDetails loadUserByUsernameAndRole(String username, String role) throws UsernameNotFoundException, RoleNotFoundException {
-        User user = userDAO.findByEmail(username);
-
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found with email: " + username);
-        }
-
-        if (!user.getSystemActors().contains(SystemActor.valueOf(role))) {
-            throw new RoleNotFoundException("User not found with email: " + username + " and role: " + role);
-        }
-
-        return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), SystemActor.valueOf(role));
-    }
-
-    @Override
-    public CustomUserDetails authenticateUser(String email, String password, SystemActor systemActor) throws InvalidEmailAddressException, InvalidRoleException {
-        boolean isEmailValid = checkEmail(email);
-
-        /* check email address */
-        if (!isEmailValid) {
-            throw new InvalidEmailAddressException("Invalid Email Format");
-        }
-
-        User user = userDAO.findByEmailAndPassword(email, password);
-        CustomUserDetails dto = null;
-        if (user != null) {
-            if (!user.getSystemActors().contains(systemActor)) {
-                throw new InvalidRoleException("Invalid Credentials");
-            }
-            dto = new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), systemActor);
-        }
-        return dto;
+        return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getSystemActors());
     }
 }

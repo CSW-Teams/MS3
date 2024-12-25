@@ -9,6 +9,7 @@ import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/schedule/")
+@PreAuthorize("hasRole('PLANNER')")
 public class ScheduleRestEndpoint {
 
     @Autowired
@@ -25,6 +27,7 @@ public class ScheduleRestEndpoint {
      * This method is invoked by the frontend to request a new shift schedule in the range of
      * dates passed as parameters.
      */
+    @PreAuthorize("hasAnyAuthority('planner:post')")
     @RequestMapping(method = RequestMethod.POST, path = "generation")
     public ResponseEntity<?> createSchedule(@RequestBody() ScheduleGenerationDTO gs) {
         if (gs != null) {
@@ -47,6 +50,7 @@ public class ScheduleRestEndpoint {
     /*
      * This method is invoked by the frontend to request a regeneration of an existing shift schedule.
      */
+    @PreAuthorize("hasAnyAuthority('planner:post')")
     @RequestMapping(method = RequestMethod.POST, path = "regeneration/id={id}")
     public ResponseEntity<?> recreateSchedule(@PathVariable Long id) {
         if (id != null) {

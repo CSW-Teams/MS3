@@ -8,6 +8,7 @@ import org.cswteams.ms3.exception.changePassword.WrongOldPasswordException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,12 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/change_password/")
+@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class    ChangePasswordRestEndpoint {
 
     @Autowired
     private IPasswordChange controllerPassword;
 
 
+    @PreAuthorize("hasAnyAuthority('configurator:post', 'doctor:post', 'planner:post')")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO dto) {
         try {

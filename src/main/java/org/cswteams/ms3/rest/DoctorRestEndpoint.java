@@ -14,12 +14,14 @@ import org.cswteams.ms3.entity.condition.PermanentCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
 @RestController
 @RequestMapping("/doctors/")
+@PreAuthorize("hasRole('DOCTOR')")
 public class DoctorRestEndpoint {
     @Autowired
     private IDoctorController doctorController;
@@ -123,3 +125,4 @@ public class DoctorRestEndpoint {
     }
 
 }
+

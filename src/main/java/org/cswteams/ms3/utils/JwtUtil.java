@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -14,17 +15,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtUtil {
+    // TODO move secret key to system environment!
     private final String SECRET_KEY = Base64.getEncoder().encodeToString("your-secure-key-with-min-32-characters".getBytes());
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
-    }
-
-    public String extractRole(String token) {
-        return extractClaim(token, claims -> claims.get("rol", String.class));
     }
 
     public Date extractExpiration(String token) {
@@ -33,7 +32,11 @@ public class JwtUtil {
 
     public String generateToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername(), userDetails.getSystemActor().toString());
+        claims.put("role", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+
+        return createToken(claims, userDetails.getUsername());
     }
 
     public Boolean validateToken(String token, CustomUserDetails userDetails) {
@@ -59,10 +62,7 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    private String createToken(Map<String, Object> claims, String subject, String role) {
-        // Add user role to the claims
-        claims.put("rol", role);
-
+    private String createToken(Map<String, Object> claims, String subject) {
         long expirationTime = 1000 * 60 * 60; // 1 hour in milliseconds
         Date expirationDate = new Date(System.currentTimeMillis() + expirationTime);
 

@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * DTO used in the Login use case (from Service to REST Controller)
@@ -19,16 +21,16 @@ public class CustomUserDetails implements UserDetails {
     private final String lastname;
     private final String email;
     private final String password;
-    private final SystemActor systemActor;
+    private final Set<SystemActor> systemActors;
 
 
-    public CustomUserDetails(Long id, String name, String lastname, String email, String password, SystemActor systemActor) {
+    public CustomUserDetails(Long id, String name, String lastname, String email, String password, Set<SystemActor> systemActors) {
         this.id = id;
         this.name = name;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
-        this.systemActor = systemActor;
+        this.systemActors = systemActors;
     }
 
     /**
@@ -37,20 +39,23 @@ public class CustomUserDetails implements UserDetails {
      * {@link SimpleGrantedAuthority}.
      *
      * <p>
-     * If the system actor is not null, a single authority is returned,
-     * representing the user's role in the system.
-     * If no system actor is assigned, null is returned, meaning the user has
-     * no role granted in Spring Security.
+     * If the system actor set is not null or empty, a collection of authorities
+     * is returned, each representing a role in the system.
+     * If the set is null or empty, an empty collection is returned, meaning the
+     * user has no roles granted in Spring Security.
      *
-     * @return A collection of {@link GrantedAuthority} objects representing the user's role.
+     * @return A collection of {@link GrantedAuthority} objects representing the user's roles.
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (systemActor != null) {
-            return Collections.singleton(new SimpleGrantedAuthority(this.systemActor.toString()));
+        if (systemActors != null && !systemActors.isEmpty()) {
+            return systemActors.stream()
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name().toUpperCase()))
+                    .collect(Collectors.toSet());
         }
 
-        return null;
+        // Return an empty collection instead of null for better compatibility
+        return Collections.emptySet();
     }
 
     @Override
