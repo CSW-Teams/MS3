@@ -6,6 +6,7 @@ import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ValidationException;
@@ -16,6 +17,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/preferences/")
+@PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
 public class PreferencesRestEndpoint {
 
     @Autowired
@@ -27,6 +29,7 @@ public class PreferencesRestEndpoint {
      * @param doctorId The id of the interested doctor
      * @return the doctor's preferences as {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} in the response body
      */
+    @PreAuthorize("hasAnyAuthority('doctor:get', 'planner:get')")
     @RequestMapping(method = RequestMethod.GET, path = "/doctor_id={doctorId}")
     public ResponseEntity<?> readDoctorPreferences(@PathVariable Long doctorId){
         if (doctorId != null) {
@@ -46,6 +49,7 @@ public class PreferencesRestEndpoint {
      * @param doctorId the id of the doctor to delete
      * @return A positive response in case of success, a negative one otherwise
      */
+    @PreAuthorize("hasAnyAuthority('doctor:delete', 'planner:delete')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/preference_id={preferenceId}/doctor_id={doctorId}")
     public ResponseEntity<?> deleteDoctorPreference(@PathVariable Long preferenceId, @PathVariable Long doctorId){
         if (preferenceId != null && doctorId != null) {
@@ -66,6 +70,7 @@ public class PreferencesRestEndpoint {
      * @param doctorId the id representing the doctor to whom the preferences shall be added
      * @return A List of {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} of the newly added preferences, with their own id, in the body of the response
      */
+    @PreAuthorize("hasAnyAuthority('doctor:post', 'planner:post')")
     @RequestMapping(method = RequestMethod.POST, path = "/doctor_id={doctorId}")
     public ResponseEntity<?> addPreferences(@RequestBody() List<PreferenceDTOIn> preferenceDTOInList, @PathVariable Long doctorId) {
         if (preferenceDTOInList != null) {
@@ -88,6 +93,7 @@ public class PreferencesRestEndpoint {
      * @return A response containing the list of {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} representing the edited (and remaining) preferences,
      *             giving the newly added ones their own id, too
      */
+    @PreAuthorize("hasAnyAuthority('doctor:post', 'planner:post')")
     @RequestMapping(method = RequestMethod.POST, path = "/edit")
     public ResponseEntity<?> editPreferences(@RequestBody() EditedPreferencesDTOIn dto) {
         if(dto != null) {

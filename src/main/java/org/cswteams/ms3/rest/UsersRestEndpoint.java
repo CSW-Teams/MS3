@@ -18,7 +18,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/users/")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
+@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class UsersRestEndpoint {
 
     @Autowired
@@ -34,7 +34,7 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'planner:get')")
+    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllUsers() {
         Set<UserDTO> utenti = userController.getAllUsers();

@@ -9,17 +9,20 @@ import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
 @RestController
 @RequestMapping("/medical-services/")
+@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class MedicalServicesRestEndpoint {
 
     @Autowired
     IMedicalServiceController medicalServiceController;
 
+    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllMedicalServices() {
         Set<MedicalServiceWithTaskAssignmentsDTO> medicalServices = medicalServiceController.getAllMedicalServices();
@@ -29,18 +32,21 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(medicalServices, HttpStatus.FOUND);
     }
 
+    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
     @RequestMapping(method = RequestMethod.GET, path = "name/{serviceName}")
     public ResponseEntity<?> leggiServizio(@PathVariable String serviceName) {
         MedicalServiceDTO service = medicalServiceController.getServiceByName(serviceName);
         return new ResponseEntity<>(service, HttpStatus.FOUND);
     }
 
+    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
     @RequestMapping(method = RequestMethod.GET, path = "available-task-types")
     public ResponseEntity<?> getAvailableTaskTypes() {
         AvailableTasksTypesDTO taskTypes = medicalServiceController.getAvailableTaskTypes();
         return new ResponseEntity<>(taskTypes, HttpStatus.FOUND);
     }
 
+    @PreAuthorize("hasAnyAuthority('configurator:post', 'planner:post')")
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceCreationDTO service) {
         if (service != null) {
@@ -49,6 +55,7 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @PreAuthorize("hasAnyAuthority('configurator:post', 'planner:post')")
     @RequestMapping(method = RequestMethod.POST, path = "update")
     public ResponseEntity<?> updateService(@RequestBody(required = true) MedicalServiceDTO service) {
         if (service != null) {
@@ -63,6 +70,7 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @PreAuthorize("hasAnyAuthority('configurator:get', 'planner:get')")
     @RequestMapping(method = RequestMethod.POST, path = "delete")
     public ResponseEntity<?> deleteService(@RequestBody(required = true) Long serviceId) {
         if (serviceId != null) {
