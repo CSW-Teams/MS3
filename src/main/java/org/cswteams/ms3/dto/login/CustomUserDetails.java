@@ -48,18 +48,11 @@ public class CustomUserDetails implements UserDetails {
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-//        if (systemActors != null && !systemActors.isEmpty()) {
-//            return systemActors.stream()
-//                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name().toUpperCase()))
-//                    .collect(Collectors.toSet());
-//        }
-
         if (systemActors != null && !systemActors.isEmpty()) {
             return systemActors.stream()
                     .flatMap(role -> role.getAuthorities().stream())
                     .collect(Collectors.toSet());
         }
-
 
         // Return an empty collection instead of null for better compatibility
         return Collections.emptySet();
