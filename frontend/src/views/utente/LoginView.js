@@ -60,7 +60,7 @@ export default class LoginView extends React.Component {
         localStorage.setItem("id", user.id)
         localStorage.setItem("name", user.name)
         localStorage.setItem("lastname", user.lastname)
-        localStorage.setItem("actor", this.state.systemActor)
+        localStorage.setItem("actor", user.systemActor)
         localStorage.setItem("jwt", user.jwt)
 
         this.props.history.push({
@@ -141,7 +141,7 @@ export default class LoginView extends React.Component {
                 value={this.state.systemActor}
                 onChange={e => this.handleChange(e)}
               >
-                {/* Placeholder. It should be a call on the backend */}
+                {/* TODO Placeholder. It should be a call on the backend */}
                 <option value="DOCTOR">{t('Doctor')}</option>
                 <option value="CONFIGURATOR">{t('Configurator')}</option>
                 <option value="PLANNER">{t('Planner')}</option>

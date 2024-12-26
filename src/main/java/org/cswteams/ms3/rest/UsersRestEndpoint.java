@@ -18,13 +18,12 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/users/")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class UsersRestEndpoint {
 
     @Autowired
     private IUserController userController;
 
-    @PreAuthorize("hasAnyAuthority('configurator:post', 'doctor:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> createUser(@RequestBody() UserCreationDTO doctor) {
         if (doctor != null) {
@@ -34,21 +33,21 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllUsers() {
         Set<UserDTO> utenti = userController.getAllUsers();
         return new ResponseEntity<>(utenti, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/user_id={userId}")
     public ResponseEntity<?> getSingleUser(@PathVariable Long userId) {
         UserDetailsDTO u = userController.getSingleUser(userId);
         return new ResponseEntity<>(u, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/user-profile/user_id={userId}")
     public ResponseEntity<?> getSingleUserProfileInfos(@PathVariable Long userId) {
         if(userId < 0){
@@ -64,7 +63,7 @@ public class UsersRestEndpoint {
         }
     }
 
-    @PreAuthorize("hasAuthority('configurator:delete')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/user-profile/delete-system-actor")
     public ResponseEntity<?> deleteUserSystemActor(@RequestBody() UserSystemActorDTO userSystemActorDTO) {
         if(userSystemActorDTO.getUserID() < 0){
@@ -79,7 +78,7 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('configurator:post')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-system-actors")
     public ResponseEntity<?> addUserSystemActor(@RequestBody() UserSystemActorsDTO userSystemActorsDTO) {
         if(userSystemActorsDTO.getUserID() < 0){
@@ -95,7 +94,7 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:post', 'doctor:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "user-profile/update-profile-info")
     public ResponseEntity<?> updateProfileInfos(@RequestBody UpdateUserProfileDTO userDetailsDTO) {
         try {

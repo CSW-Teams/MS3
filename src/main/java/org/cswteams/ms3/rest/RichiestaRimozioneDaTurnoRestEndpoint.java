@@ -16,13 +16,12 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/concrete-shifts/retirement-request/")
-@PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
 public class RichiestaRimozioneDaTurnoRestEndpoint {
 
     @Autowired
     private IRequestRemovalFromConcreteShiftController controller;
 
-    @PreAuthorize("hasAnyAuthority('doctor:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> creaRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {
         if (requestDTO == null) {
@@ -36,28 +35,28 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurno() {
         Set<RequestRemovalFromConcreteShiftDTO> requests = controller.getAllRequests();
         return new ResponseEntity<>(requests, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyAuthority('doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/pending")
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPendenti() {
         Set<RequestRemovalFromConcreteShiftDTO> richiesteRimozioneDaTurnoPendenti = controller.getPendingRequests();
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyAuthority('doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/user/{idUtente}")
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPerUtente(@PathVariable Long idUtente) {
         Set<RequestRemovalFromConcreteShiftDTO> richiesteRimozioneDaTurnoPendenti = controller.getRequestsByRequestingDoctorId(idUtente);
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyAuthority('doctor:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/resolve")
     public ResponseEntity<?> risolviRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {
         RequestRemovalFromConcreteShiftDTO ret = null;
@@ -74,7 +73,7 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
     }
 
-    @PreAuthorize("hasAuthority('doctor:post')")
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.POST, path = "/{idRequest}/uploadFile")
     public ResponseEntity<?> uploadFile(@PathVariable Long idRequest, @RequestParam("attachment") MultipartFile attachment) {
         RequestRemovalFromConcreteShiftDTO ret;

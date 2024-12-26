@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/conditions")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class AllSavedConditionsRestEndPoint {
     @Autowired
     private IConditionController conditionController;
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllSavedConditions() {
         AllSavedConditionDTO allSavedConditionDTO;

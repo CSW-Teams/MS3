@@ -17,7 +17,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/holidays")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class HolidayRestEndpoint {
     private static final Logger log = Logger.getLogger(HolidayRestEndpoint.class);
 
@@ -31,7 +30,7 @@ public class HolidayRestEndpoint {
     /**
      * @return all registered holidays
      */
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/year={currentYear}/country={currentCountry}")
     public ResponseEntity<List<HolidayDTO>> getHolidays(@PathVariable Integer currentYear, @PathVariable String currentCountry) {
 
@@ -45,7 +44,7 @@ public class HolidayRestEndpoint {
         }
     }
 
-    @PreAuthorize("hasAuthority('configurator:post')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.POST, path = "/new-holiday")
     public ResponseEntity<?> insertCustomHoliday(@RequestBody CustomHolidayDTOIn dto) {
 
@@ -61,7 +60,7 @@ public class HolidayRestEndpoint {
         } else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAuthority('configurator:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET, path = "/custom-holidays")
     public ResponseEntity<?> getCustomHolidays() {
         try {
@@ -71,7 +70,7 @@ public class HolidayRestEndpoint {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:delete')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/delete-custom")
     public ResponseEntity<?> deleteCustomHoliday(@RequestBody CustomHolidayIdDTO dto) {
 

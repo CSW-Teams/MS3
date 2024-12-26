@@ -17,7 +17,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/shifts/")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class ShiftRestEndpoint {
 
     @Autowired
@@ -28,7 +27,7 @@ public class ShiftRestEndpoint {
      * Reached from <b> GET api/shifts</b>
      * @return A response containing a list of {@link org.cswteams.ms3.dto.shift.ShiftDTOOut}
      */
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> readAllShifts() {
         List<ShiftDTOOut> allShifts = shiftController.getAllShifts();
@@ -41,7 +40,7 @@ public class ShiftRestEndpoint {
      * @param serviceName A string describing the service to use
      * @return The shift definitions relative to the specified service
      */
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/service={serviceName}")
     public ResponseEntity<?> readShiftsByServiceName(@PathVariable String serviceName) {
         if (serviceName != null) {
@@ -58,7 +57,7 @@ public class ShiftRestEndpoint {
      * @param shift A DTO containing all the shift's information, in request body
      * @return A response containing a {@link org.cswteams.ms3.dto.shift.ShiftDTOOut}
      */
-    @PreAuthorize("hasAnyAuthority('doctor:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> createShift(@RequestBody() ShiftDTOIn shift) {
 

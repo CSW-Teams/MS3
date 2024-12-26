@@ -16,13 +16,12 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/medical-services/")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class MedicalServicesRestEndpoint {
 
     @Autowired
     IMedicalServiceController medicalServiceController;
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllMedicalServices() {
         Set<MedicalServiceWithTaskAssignmentsDTO> medicalServices = medicalServiceController.getAllMedicalServices();
@@ -32,21 +31,21 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(medicalServices, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "name/{serviceName}")
     public ResponseEntity<?> leggiServizio(@PathVariable String serviceName) {
         MedicalServiceDTO service = medicalServiceController.getServiceByName(serviceName);
         return new ResponseEntity<>(service, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "available-task-types")
     public ResponseEntity<?> getAvailableTaskTypes() {
         AvailableTasksTypesDTO taskTypes = medicalServiceController.getAvailableTaskTypes();
         return new ResponseEntity<>(taskTypes, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceCreationDTO service) {
         if (service != null) {
@@ -55,7 +54,7 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "update")
     public ResponseEntity<?> updateService(@RequestBody(required = true) MedicalServiceDTO service) {
         if (service != null) {
@@ -70,7 +69,7 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "delete")
     public ResponseEntity<?> deleteService(@RequestBody(required = true) Long serviceId) {
         if (serviceId != null) {

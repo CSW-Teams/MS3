@@ -12,13 +12,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/justify")
-@PreAuthorize("hasRole('PLANNER')")
 public class GiustificazioneForzaturaEndpoint {
 
     @Autowired
     private IControllerGiustificaForzatura iControllerGiustificaForzatura;
 
-    @PreAuthorize("hasAuthority('planner:post')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/uploadJustification")
     public ResponseEntity<String> caricaGiustificazione(@RequestBody(required = true) GiustificazioneForzaturaVincoliDTO giustificazione) {
         try {
@@ -29,7 +28,7 @@ public class GiustificazioneForzaturaEndpoint {
         }
     }
 
-    @PreAuthorize("hasAuthority('planner:post')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/uploadFile")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         String message = "";

@@ -26,7 +26,6 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/concrete-shifts/")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class ConcreteShiftRestEndpoint {
 
     @Autowired
@@ -38,7 +37,7 @@ public class ConcreteShiftRestEndpoint {
     @Autowired
     private IControllerScambioTurno controllerScambioTurno;
 
-    @PreAuthorize("hasAuthority('planner:post')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> createNewConcreteShift(@RequestBody RegisterConcreteShiftDTO assegnazione) {
 
@@ -77,7 +76,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/user_id={userID}")
     public ResponseEntity<?> getSingleDoctorConcreteShift(@PathVariable Long userID) throws ParseException {
         if (userID != null) {
@@ -95,7 +94,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllConcreteShifts() throws ParseException {
         Set<GetAllConcreteShiftDTO> allConcreteShifts = concreteShiftController.getAllConcreteShifts();
@@ -107,7 +106,7 @@ public class ConcreteShiftRestEndpoint {
      * @param modifyConcreteShiftDTO
      * @return
      */
-    @PreAuthorize("hasAuthority('planner:put')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<?> modifyConcreteShift(@RequestBody ModifyConcreteShiftDTO modifyConcreteShiftDTO)  {
 
@@ -137,7 +136,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(schedule, HttpStatus.ACCEPTED);
     }
 
-    @PreAuthorize("hasAuthority('planner:delete')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/{idAssegnazione}")
     public ResponseEntity<?> deleteConcreteShift(@PathVariable Long idAssegnazione)  {
         if (idAssegnazione != null) {
@@ -148,7 +147,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('doctor:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/available-users-for-replacement/")
     public ResponseEntity<?> getAvailableUsersForReplacement(@RequestBody GetAvailableUsersForReplacementDTO dto) {
         List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUsersForReplacement(dto);

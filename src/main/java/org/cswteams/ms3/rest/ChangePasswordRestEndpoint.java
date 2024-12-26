@@ -16,14 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/change_password/")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class    ChangePasswordRestEndpoint {
 
     @Autowired
     private IPasswordChange controllerPassword;
 
 
-    @PreAuthorize("hasAnyAuthority('configurator:post', 'doctor:post', 'planner:post')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO dto) {
         try {

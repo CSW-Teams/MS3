@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/country")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class CountryRestEndpoint {
-	@PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+	@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 	@RequestMapping(method = RequestMethod.GET, path = "/country={countryName}")
     public ResponseEntity<String> getCountryCode(@PathVariable String country){
 		String code = Country.nameToCode(country);

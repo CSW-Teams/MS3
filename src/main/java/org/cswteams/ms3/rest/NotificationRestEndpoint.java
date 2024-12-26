@@ -13,13 +13,12 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/notification/")
-@PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
 public class NotificationRestEndpoint {
 
     @Autowired
     INotificationSystemController notificationSystemController;
 
-    @PreAuthorize("hasAnyAuthority('configurator:get', 'doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET,path = "id={userId}")
     public ResponseEntity<?> getAllMedicalServices(@PathVariable long userId) {
         Set<NotificationDTO> notificationDTOS = notificationSystemController.getAllNotificationByUser(userId);
@@ -35,7 +34,7 @@ public class NotificationRestEndpoint {
     /*
     da fare il check su eventuali eccezioni sollevate
      */
-    @PreAuthorize("hasAnyAuthority('configurator:put', 'doctor:put', 'planner:put')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.PUT, path = "updateStatus")
     public ResponseEntity<?> updateStatusNotification(@RequestBody @NotNull NotificationDTO notificationDTOS) {
         try {

@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/change-shift-request/")
-@PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
 public class ShiftChangeRequestRestEndpoint {
 
     @Autowired
@@ -25,7 +24,7 @@ public class ShiftChangeRequestRestEndpoint {
      * Permette la modifica di un assegnazione turno già esistente.
      * @param requestTurnChangeDto
      */
-    @PreAuthorize("hasAnyAuthority('doctor:put', 'planner:put')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<?> requestShiftChange(@RequestBody RequestTurnChangeDto requestTurnChangeDto)  {
         try {
@@ -41,7 +40,7 @@ public class ShiftChangeRequestRestEndpoint {
      * Ritorna le richieste iniziate dall'id indicato
      * @param idUtente
      */
-    @PreAuthorize("hasAnyAuthority('doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/by/user_id={idUtente}")
     public ResponseEntity<?> getRequestsBySender(@PathVariable Long idUtente)  {
 
@@ -55,7 +54,7 @@ public class ShiftChangeRequestRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('doctor:get', 'planner:get')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/to/user_id={idUtente}")
     public ResponseEntity<?> getRequestsToSender(@PathVariable Long idUtente)  {
 
@@ -69,7 +68,7 @@ public class ShiftChangeRequestRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyAuthority('doctor:put', 'planner:put')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.PUT, path = "/answer")
     public ResponseEntity<?> answerRequest(@RequestBody AnswerTurnChangeRequestDTO answerTurnChangeRequestDTO)  {
         try{
