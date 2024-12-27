@@ -3,18 +3,48 @@ import {LoginAPI} from "../../API/LoginAPI";
 import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {t} from "i18next";
-import {panic, PanicContext} from "../../components/common/Panic";
+import {panic} from "../../components/common/Panic";
+import RoleSelectionDialog from "../../components/common/RolePickerDialog";
 
 export default class LoginView extends React.Component {
-  constructor(props){
+  constructor(props) {
     super(props);
+
     this.state = {
       email: "",
       password: "",
-      systemActor: "DOCTOR"
+
+      open: false,
+      systemActorsAvailable: []
     }
+
     this.handleSubmit = this.handleSubmit.bind(this);
   }
+
+  handleDialogClose = (role) => {
+    this.setState({open: false});
+
+    if (role === undefined) {
+      localStorage.removeItem("id")
+      localStorage.removeItem("name")
+      localStorage.removeItem("lastname")
+      localStorage.removeItem("jwt")
+
+      return
+    }
+
+    localStorage.setItem("actors", role);
+
+    this.props.history.push({
+      pathname: '/pianificazione-globale',
+    });
+
+    window.location.reload();
+  };
+
+  handleDialogOpen = () => {
+    this.setState({open: true});
+  };
 
   handleChange(e) {
     const val = e.target.value;
@@ -41,8 +71,8 @@ export default class LoginView extends React.Component {
     try {
       httpResponse = await loginAPI.postLogin(this.state);
     } catch (err) {
-
       panic()
+
       return
     }
 
@@ -60,15 +90,11 @@ export default class LoginView extends React.Component {
         localStorage.setItem("id", user.id)
         localStorage.setItem("name", user.name)
         localStorage.setItem("lastname", user.lastname)
-        localStorage.setItem("actor", user.systemActor)
+        // localStorage.setItem("actors", user.systemActors) //todo: move to dialog
         localStorage.setItem("jwt", user.jwt)
 
-        this.props.history.push({
-          pathname: '/pianificazione-globale',
-          state: user,
-        })
-
-        window.location.reload();
+        this.setState({systemActorsAvailable: user.systemActors})
+        this.handleDialogOpen()
 
         break;
       case 5:
@@ -96,15 +122,23 @@ export default class LoginView extends React.Component {
           theme: "colored",
         });
         break;
+
     }
   }
+
 
   render() {
     return (
       <div className="Auth-form-container">
+
+        <RoleSelectionDialog open={this.state.open}
+                             onClose={this.handleDialogClose}
+                             systemActors={this.state.systemActorsAvailable}/>
+
         <form className="Auth-form">
           <div className="Auth-form-content">
             <h3 className="Auth-form-title">Login</h3>
+
             <div className="form-group mt-3">
               <label>{t('Email Address')}</label>
               <input
@@ -116,6 +150,7 @@ export default class LoginView extends React.Component {
                 onChange={e => this.handleChange(e)}
               />
             </div>
+
             <div className="form-group mt-3">
               <label>{t('Password')}</label>
               <input
@@ -127,26 +162,14 @@ export default class LoginView extends React.Component {
                 onChange={e => this.handleChange(e)}
               />
             </div>
+
             <div className="d-grid gap-2 mt-3">
               <button onClick={this.handleSubmit} type="submit"
                       className="btn btn-primary">
                 {t('Login')}
               </button>
             </div>
-            <div className="d-grid gap-2 mt-3">
-              <label>{t('Login as:')}</label>
-              <select
-                name="systemActor"
-                className="form-select mt-1"
-                value={this.state.systemActor}
-                onChange={e => this.handleChange(e)}
-              >
-                {/* TODO Placeholder. It should be a call on the backend */}
-                <option value="DOCTOR">{t('Doctor')}</option>
-                <option value="CONFIGURATOR">{t('Configurator')}</option>
-                <option value="PLANNER">{t('Planner')}</option>
-              </select>
-            </div>
+
             <div className="form-check gap-2 mt-3">
               <input className="form-check-input" type="checkbox"
                      value=""></input>
@@ -191,7 +214,6 @@ export default class LoginView extends React.Component {
                     onClick={() => {
                       this.setState({email: "giuliacantone@gmail.com"});
                       this.setState({password: "passw"});
-                      this.setState({systemActor: "DOCTOR"});
                     }}>
                     Insert
                   </button>
@@ -211,13 +233,14 @@ export default class LoginView extends React.Component {
                     onClick={() => {
                       this.setState({email: "domenicoverde@gmail.com"});
                       this.setState({password: "passw"});
-                      this.setState({systemActor: "DOCTOR"});
                     }}>Insert
                   </button>
                 </td>
               </tr>
               <tr style={{borderBottom: '1px solid black'}}>
-                <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
+                <td style={{padding: '10px', textAlign: 'center'}}>Dottore,
+                  Planner
+                </td>
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
@@ -230,26 +253,6 @@ export default class LoginView extends React.Component {
                     onClick={() => {
                       this.setState({email: "giovannicantone@gmail.com"});
                       this.setState({password: "passw"});
-                      this.setState({systemActor: "DOCTOR"});
-                    }}>Insert
-                  </button>
-                </td>
-              </tr>
-              <tr style={{borderBottom: '1px solid black'}}>
-                <td style={{padding: '10px', textAlign: 'center'}}>Planner</td>
-                <td style={{
-                  padding: '10px',
-                  textAlign: 'center'
-                }}>giovannicantone@gmail.com
-                </td>
-                <td>Strutturato</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>
-                  <button
-                    style={{border: '1px solid black'}}
-                    onClick={() => {
-                      this.setState({email: "giovannicantone@gmail.com"});
-                      this.setState({password: "passw"});
-                      this.setState({systemActor: "PLANNER"});
                     }}>Insert
                   </button>
                 </td>
@@ -270,7 +273,6 @@ export default class LoginView extends React.Component {
                     onClick={() => {
                       this.setState({email: "salvatimartina97@gmail.com"});
                       this.setState({password: "passw"});
-                      this.setState({systemActor: "CONFIGURATOR"});
                     }}>Insert
                   </button>
                 </td>
