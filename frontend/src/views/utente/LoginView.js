@@ -93,6 +93,12 @@ export default class LoginView extends React.Component {
         // localStorage.setItem("actors", user.systemActors) //todo: move to dialog
         localStorage.setItem("jwt", user.jwt)
 
+        if(user.systemActors.length === 1) {
+          this.handleDialogClose(user.systemActors[0]);
+
+          break;
+        }
+
         this.setState({systemActorsAvailable: user.systemActors})
         this.handleDialogOpen()
 
@@ -258,6 +264,25 @@ export default class LoginView extends React.Component {
                 </td>
               </tr>
               <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{padding: '10px', textAlign: 'center'}}>Planner
+                </td>
+                <td style={{
+                  padding: '10px',
+                  textAlign: 'center'
+                }}>giuliofarnasini@gmail.com
+                </td>
+                <td>Specialista Senior</td>
+                <td style={{padding: '10px', textAlign: 'center'}}>
+                  <button
+                    style={{border: '1px solid black'}}
+                    onClick={() => {
+                      this.setState({email: "giuliofarnasini@gmail.com"});
+                      this.setState({password: "passw"});
+                    }}>Insert
+                  </button>
+                </td>
+              </tr>
+              <tr style={{borderBottom: '1px solid black'}}>
                 <td
                   style={{padding: '10px', textAlign: 'center'}}>Configuratore
                 </td>
@@ -272,6 +297,26 @@ export default class LoginView extends React.Component {
                     style={{border: '1px solid black'}}
                     onClick={() => {
                       this.setState({email: "salvatimartina97@gmail.com"});
+                      this.setState({password: "passw"});
+                    }}>Insert
+                  </button>
+                </td>
+              </tr>
+              <tr style={{borderBottom: '1px solid black'}}>
+                <td
+                  style={{padding: '10px', textAlign: 'center'}}>Dottore, Configuratore, Planner
+                </td>
+                <td style={{
+                  padding: '10px',
+                  textAlign: 'center'
+                }}>fullpermessi@gmail.com
+                </td>
+                <td>Strutturato</td>
+                <td style={{padding: '10px', textAlign: 'center'}}>
+                  <button
+                    style={{border: '1px solid black'}}
+                    onClick={() => {
+                      this.setState({email: "fullpermessi@gmail.com"});
                       this.setState({password: "passw"});
                     }}>Insert
                   </button>

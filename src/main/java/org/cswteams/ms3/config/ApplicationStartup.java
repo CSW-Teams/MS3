@@ -658,6 +658,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         User u42 = new User("Fabio", "Armani", "RMNFBA50M12G156E", LocalDate.of(1950, 8, 12), "fabioarmani@gmail.com", encoder.encode("passw"), Set.of(SystemActor.CONFIGURATOR));
 
         Doctor u43 = new Doctor("Sara","Da Canal","PLMVLR93B12H501U",LocalDate.of(1999,6,19),"saradacanal@gmail.com",encoder.encode("passw"),Seniority.SPECIALIST_SENIOR,Set.of(SystemActor.DOCTOR));
+        Doctor u44 = new Doctor("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini@gmail.com",encoder.encode("passw"),Seniority.SPECIALIST_SENIOR,Set.of(SystemActor.PLANNER));
+        Doctor u45 = new Doctor("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi@gmail.com",encoder.encode("passw"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
+
         u1 = doctorDAO.saveAndFlush(u1);
         u2 = doctorDAO.saveAndFlush(u2);
         u3 = doctorDAO.saveAndFlush(u3);
@@ -703,6 +706,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u42 = userDAO.saveAndFlush(u42);
 
         u43 = doctorDAO.saveAndFlush(u43);
+        u44 = doctorDAO.saveAndFlush(u44);
+        u45 = doctorDAO.saveAndFlush(u45);
         /* HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
         doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
         doctorsNumberBySeniority.put(Seniority.SPECIALIST_SENIOR, 1);
