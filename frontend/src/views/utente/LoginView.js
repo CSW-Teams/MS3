@@ -6,130 +6,145 @@ import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 import RoleSelectionDialog from "../../components/common/RolePickerDialog";
 
+// Toast notification options for error/success messages
+const TOAST_OPTIONS = {
+  position: "top-center",
+  autoClose: 5000,
+  hideProgressBar: true,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
+  theme: "colored",
+};
+
+// Define a LoginView component using React class-based component
 export default class LoginView extends React.Component {
   constructor(props) {
     super(props);
 
+    // Initial state with empty fields for email and password
     this.state = {
       email: "",
       password: "",
 
-      open: false,
-      systemActorsAvailable: []
+      open: false, // Dialog box open/close state
+      systemActorsAvailable: [] // Available system actors for the user
     }
 
+    // Binding the handleSubmit method to the class instance
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
+  // Opens the dialog box
+  handleDialogOpen = () => {
+    this.setState({open: true});
+  };
+
+  // Closes the dialog box and handles user role selection
   handleDialogClose = (role) => {
     this.setState({open: false});
 
+    // If no role is passed, clear the stored user data
+    // User clicked out of the dialogue
     if (role === undefined) {
       localStorage.removeItem("id")
       localStorage.removeItem("name")
       localStorage.removeItem("lastname")
       localStorage.removeItem("jwt")
 
+      toast.error(`${t('Login Failed:')} ${t("No role selected for the login")}.`, TOAST_OPTIONS);
+
       return
     }
 
+    // Store the selected role in localStorage and navigate to another page
     localStorage.setItem("actor", role);
 
+    // Navigate to the 'pianificazione-globale' page
     this.props.history.push({
       pathname: '/pianificazione-globale',
     });
 
+    // Reload the page after navigation
     window.location.reload();
   };
 
-  handleDialogOpen = () => {
-    this.setState({open: true});
-  };
-
-  handleChange(e) {
+  // Handles input changes for email and password fields
+  handleInputChange(e) {
     const val = e.target.value;
     const name = e.target.name;
 
-    // Verifica se l'evento è scatenato da un input di testo o da un elemento select
-    if (name === "systemActor") {
-      this.setState({
-        systemActor: val
-      });
-    } else {
-      this.setState({
-        [name]: val
-      });
-    }
+    // Updates the state with the changed value
+    this.setState({
+      [name]: val
+    });
   }
 
+  /*
+   * Handles the form submission for authentication.
+   * If authentication is successful, the user is redirected to their profile,
+   * otherwise an error message is shown.
+   */
   async handleSubmit(e) {
     e.preventDefault();
 
-    // Manda una HTTP Post al backend
+    // Function to handle successful login response
+    const handleSuccess = async (response) => {
+      const user = await response.json();
+
+      // Store user data in localStorage
+      localStorage.setItem("id", user.id);
+      localStorage.setItem("name", user.name);
+      localStorage.setItem("lastname", user.lastname);
+      localStorage.setItem("jwt", user.jwt);
+
+      // If only one system actor is available, close the dialog and proceed
+      if (user.systemActors.length === 1) {
+        this.handleDialogClose(user.systemActors[0]);
+        return;
+      }
+
+      // If multiple system actors are available, display the dialog for role selection
+      this.setState({ systemActorsAvailable: user.systemActors });
+      this.handleDialogOpen();
+    };
+
+    // Function to handle server errors (5xx responses)
+    const handleServerError = () => {
+      toast.error(`${t('Authentication Failed. Server not online')}`, TOAST_OPTIONS);
+    };
+
+    // Mapping HTTP status classes to appropriate handler functions
+    const HTTP_STATUS_HANDLERS = {
+      2: handleSuccess,  // Handles success responses (2xx)
+      5: handleServerError,  // Handles server error responses (5xx)
+    };
+
+    // Default function to handle errors
+    const handleDefaultError = async (response) => {
+      const errorMessage = await response.text();
+      toast.error(`${t('Authentication Failed')} ${t(errorMessage)}.`, TOAST_OPTIONS);
+    };
+
     let loginAPI = new LoginAPI();
-    let httpResponse
+    let httpResponse;
+
     try {
+      // Attempt to perform login
       httpResponse = await loginAPI.postLogin(this.state);
     } catch (err) {
-      panic()
-
-      return
+      // If an error occurs during the login request, handle it (panic state)
+      panic();
+      return;
     }
 
-    /* Se l'autenticazione ha esito positivo, l'utente viene
-       reindirizzato sul suo profilo, altrimenti viene mostrato
-       un messaggio di errore.
-     */
-    let responseStatusClass = Math.floor(httpResponse.status / 100) // Grazie Fede
+    // Calculate the HTTP status class (e.g., 2xx, 5xx)
+    const statusClass = Math.floor(httpResponse.status / 100);
 
-    switch (responseStatusClass) {
-      case 2:
-        // Success - Redirect e salvataggio dati di sessione
-        const user = await httpResponse.json();
-
-        localStorage.setItem("id", user.id)
-        localStorage.setItem("name", user.name)
-        localStorage.setItem("lastname", user.lastname)
-        // localStorage.setItem("actors", user.systemActors) //todo: move to dialog
-        localStorage.setItem("jwt", user.jwt)
-
-        if(user.systemActors.length === 1) {
-          this.handleDialogClose(user.systemActors[0]);
-
-          break;
-        }
-
-        this.setState({systemActorsAvailable: user.systemActors})
-        this.handleDialogOpen()
-
-        break;
-      case 5:
-        toast.error(`${t('Authentication Failed. Server not online')}`, {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-        break;
-      default:
-        const errorMessage = await httpResponse.text();
-        toast.error(`${t('Authentication Failed')} ${t(errorMessage)}.`, {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-        break;
-
-    }
+    // If the status class has an associated handler, call it, otherwise use the default error handler
+    const handler = HTTP_STATUS_HANDLERS[statusClass] || handleDefaultError;
+    await handler(httpResponse);
   }
 
 
@@ -153,7 +168,7 @@ export default class LoginView extends React.Component {
                 className="form-control mt-1"
                 placeholder={t('Enter email address')}
                 value={this.state.email}
-                onChange={e => this.handleChange(e)}
+                onChange={e => this.handleInputChange(e)}
               />
             </div>
 
@@ -165,7 +180,7 @@ export default class LoginView extends React.Component {
                 className="form-control mt-1"
                 placeholder={t('Enter password')}
                 value={this.state.password}
-                onChange={e => this.handleChange(e)}
+                onChange={e => this.handleInputChange(e)}
               />
             </div>
 
@@ -304,7 +319,8 @@ export default class LoginView extends React.Component {
               </tr>
               <tr style={{borderBottom: '1px solid black'}}>
                 <td
-                  style={{padding: '10px', textAlign: 'center'}}>Dottore, Configuratore, Planner
+                  style={{padding: '10px', textAlign: 'center'}}>Dottore,
+                  Configuratore, Planner
                 </td>
                 <td style={{
                   padding: '10px',
