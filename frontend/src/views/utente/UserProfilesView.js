@@ -25,7 +25,7 @@ export default class UserProfilesView extends React.Component{
       orderBy: "lastname",
       orderDirection: "asc",
       comparator: defaultComparator,
-      attore : localStorage.getItem("actor"),
+      attore : localStorage.getItem("actors"),
     }
     this.setOrderBy = this.setOrderBy.bind(this);
   }
