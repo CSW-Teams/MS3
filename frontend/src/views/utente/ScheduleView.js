@@ -116,7 +116,7 @@ class ScheduleView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      attore: localStorage.getItem("actors"),
+      attore: localStorage.getItem("actor"),
       data: [],   // list of shifts to display in schedule (not filtered yet)
       mainResourceName: 'utenti_guardia',
       resources: [{

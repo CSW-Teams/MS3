@@ -28,8 +28,8 @@ class GlobalScheduleView extends ScheduleView {
       <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
         <MDBCard alignment='center'>
           <MDBCardBody>
-            {localStorage.getItem("actors") !== "DOCTOR" &&
-              localStorage.getItem("actors") !== "CONFIGURATOR" &&
+            {localStorage.getItem("actor") !== "DOCTOR" &&
+              localStorage.getItem("actor") !== "CONFIGURATOR" &&
               <TemporaryDrawer onPostAssegnazione={() => {this.componentDidMount();}}></TemporaryDrawer>}
             {super.render("global")}
           </MDBCardBody>
