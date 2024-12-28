@@ -38,7 +38,8 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
      * @param delta   max number of tolerable temporal units in order to consider cShift1 and cShift2 contiguous
      * @return Boolean that represents if the check succeeded
      */
-    protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift cShift1, ConcreteShift cShift2, TemporalUnit tu, long delta) {
+    protected boolean verificaContiguitàAssegnazioneTurni(ConcreteShift cShift1, ConcreteShift cShift2,
+                                                          TemporalUnit tu, long delta) {
 
         LocalDate cShift1Date = LocalDate.ofEpochDay(cShift1.getDate());   //conversion Epoch -> LocalDate of cShift1.getDate()
         LocalDateTime cShift1Start = cShift1Date.atTime(cShift1.getShift().getStartTime());
@@ -49,9 +50,9 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
         LocalDateTime cShift2End = cShift2Start.plus(cShift2.getShift().getDuration());
 
         if (cShift1Start.isBefore(cShift2Start)) {
-            return Math.abs(cShift1End.until(cShift2Start, tu)) <= delta;
+            return Math.abs(cShift1End.until(cShift2Start, tu)) < delta;
         } else {
-            return Math.abs(cShift2End.until(cShift1Start, tu)) <= delta;
+            return Math.abs(cShift2End.until(cShift1Start, tu)) < delta;
         }
 
     }

@@ -68,7 +68,7 @@ public class ConstraintTurniContigui extends ConstraintAssegnazioneTurnoTurno {
                 
         // We check if the shift to be allocated is of the type that must be excluded the constraint
         if (forbiddenTimeSlots.contains(context.getConcreteShift().getShift().getTimeSlot())){
-            
+
             // We search for another allocated shift of the same user in the horizon
             List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
             for (ConcreteShift concreteShift : concreteShiftList) {
@@ -78,7 +78,17 @@ public class ConstraintTurniContigui extends ConstraintAssegnazioneTurnoTurno {
                 }
             }
         }
-        
+
+        if (forbiddenTimeSlots.contains(context.getConcreteShift().getShift().getTimeSlot()) &&
+                context.getConcreteShift().getShift().getTimeSlot() == timeSlot){
+            List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
+            for (ConcreteShift concreteShift : concreteShiftList) {
+                if (verificaContiguitàAssegnazioneTurni(concreteShift, context.getConcreteShift(), tUnit, horizon)) {
+                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(concreteShift,
+                            context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor());
+                }
+            }
+        }
     }
 
 }
