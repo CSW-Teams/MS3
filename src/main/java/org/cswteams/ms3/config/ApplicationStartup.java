@@ -765,7 +765,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         Shift shift3 = new Shift(LocalTime.of(15, 0),
                 Duration.ofHours(6),
-                ambulatorioCardiologia,
+                ambulatorioOncologia,
                 TimeSlot.AFTERNOON,
                 quantityShiftSeniorityList3,
                 allDaysOfWeek,
