@@ -15,7 +15,7 @@ export default function RoleSelectionDialog({open, onClose, systemActors}) {
   const roles = []
   systemActors.forEach((systemActor) => {
     roles.push({
-      name: t(systemActor),
+      name: systemActor,
       imgPath: `/images/${systemActor.toLowerCase()}.svg`
     })
   })
@@ -79,7 +79,7 @@ export default function RoleSelectionDialog({open, onClose, systemActors}) {
                     <Typography variant="body2" color="textSecondary">
                       {t("Login as:")}
                     </Typography>
-                    <Typography variant="h6">{role.name}</Typography>
+                    <Typography variant="h6">{t(role.name)}</Typography>
                   </CardContent>
                 </CardActionArea>
               </Card>
