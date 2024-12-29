@@ -65,27 +65,27 @@ public class ConstraintTurniContigui extends ConstraintAssegnazioneTurnoTurno {
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
-                
+
         // We check if the shift to be allocated is of the type that must be excluded the constraint
         if (forbiddenTimeSlots.contains(context.getConcreteShift().getShift().getTimeSlot())){
-
-            // We search for another allocated shift of the same user in the horizon
+            // Get already assigned shift of the user in the current schedule which is getting generated
             List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
+
+            // Check if there is a shift with the timeSlot constrained too near to the actual considering shift
             for (ConcreteShift concreteShift : concreteShiftList) {
                 if (concreteShift.getShift().getTimeSlot() == timeSlot
                         && verificaContiguitàAssegnazioneTurni(concreteShift, context.getConcreteShift(), tUnit, horizon)) {
                     throw new ViolatedVincoloAssegnazioneTurnoTurnoException(concreteShift, context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor());
                 }
             }
-        }
 
-        if (forbiddenTimeSlots.contains(context.getConcreteShift().getShift().getTimeSlot()) &&
-                context.getConcreteShift().getShift().getTimeSlot() == timeSlot){
-            List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
-            for (ConcreteShift concreteShift : concreteShiftList) {
-                if (verificaContiguitàAssegnazioneTurni(concreteShift, context.getConcreteShift(), tUnit, horizon)) {
-                    throw new ViolatedVincoloAssegnazioneTurnoTurnoException(concreteShift,
-                            context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor());
+            // Check if the considering shift has a timeslot such that it must respect the constraints
+            if(context.getConcreteShift().getShift().getTimeSlot() == timeSlot){
+                for (ConcreteShift concreteShift : concreteShiftList) {
+                    if (verificaContiguitàAssegnazioneTurni(concreteShift, context.getConcreteShift(), tUnit, horizon)) {
+                        throw new ViolatedVincoloAssegnazioneTurnoTurnoException(concreteShift,
+                                context.getConcreteShift(), context.getDoctorUffaPriority().getDoctor());
+                    }
                 }
             }
         }
