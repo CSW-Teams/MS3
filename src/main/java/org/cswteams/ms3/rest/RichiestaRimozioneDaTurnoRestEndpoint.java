@@ -21,7 +21,7 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
     @Autowired
     private IRequestRemovalFromConcreteShiftController controller;
 
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> creaRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {
         if (requestDTO == null) {
@@ -35,28 +35,28 @@ public class RichiestaRimozioneDaTurnoRestEndpoint {
         }
     }
 
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurno() {
         Set<RequestRemovalFromConcreteShiftDTO> requests = controller.getAllRequests();
         return new ResponseEntity<>(requests, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER', 'CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET, path = "/pending")
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPendenti() {
         Set<RequestRemovalFromConcreteShiftDTO> richiesteRimozioneDaTurnoPendenti = controller.getPendingRequests();
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.GET, path = "/user/{idUtente}")
     public ResponseEntity<?> leggiRichiesteRimozioneDaTurnoPerUtente(@PathVariable Long idUtente) {
         Set<RequestRemovalFromConcreteShiftDTO> richiesteRimozioneDaTurnoPendenti = controller.getRequestsByRequestingDoctorId(idUtente);
         return new ResponseEntity<>(richiesteRimozioneDaTurnoPendenti, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/resolve")
     public ResponseEntity<?> risolviRichiestaRimozioneDaTurno(@RequestBody RequestRemovalFromConcreteShiftDTO requestDTO) {
         RequestRemovalFromConcreteShiftDTO ret = null;

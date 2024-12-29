@@ -38,14 +38,14 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(service, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET, path = "available-task-types")
     public ResponseEntity<?> getAvailableTaskTypes() {
         AvailableTasksTypesDTO taskTypes = medicalServiceController.getAvailableTaskTypes();
         return new ResponseEntity<>(taskTypes, HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceCreationDTO service) {
         if (service != null) {
@@ -54,7 +54,7 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.POST, path = "update")
     public ResponseEntity<?> updateService(@RequestBody(required = true) MedicalServiceDTO service) {
         if (service != null) {
@@ -69,7 +69,7 @@ public class MedicalServicesRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.POST, path = "delete")
     public ResponseEntity<?> deleteService(@RequestBody(required = true) Long serviceId) {
         if (serviceId != null) {

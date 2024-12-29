@@ -71,7 +71,7 @@ public class ScheduleRestEndpoint {
     /*
      * This method is invoked to retrieve all the existing shift schedules.
      */
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> readSchedules()  {
 
@@ -108,7 +108,7 @@ public class ScheduleRestEndpoint {
     /*
      * This method is invoked to retrieve the illegal shift schedules.
      */
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER', 'CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET,path = "illegals")
     public ResponseEntity<?> readIllegalSchedules()  {
 

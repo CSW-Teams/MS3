@@ -40,7 +40,7 @@ public class ShiftRestEndpoint {
      * @param serviceName A string describing the service to use
      * @return The shift definitions relative to the specified service
      */
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/service={serviceName}")
     public ResponseEntity<?> readShiftsByServiceName(@PathVariable String serviceName) {
         if (serviceName != null) {

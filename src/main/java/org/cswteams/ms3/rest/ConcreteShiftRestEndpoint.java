@@ -76,7 +76,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.GET, path = "/user_id={userID}")
     public ResponseEntity<?> getSingleDoctorConcreteShift(@PathVariable Long userID) throws ParseException {
         if (userID != null) {
@@ -147,7 +147,7 @@ public class ConcreteShiftRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.POST, path = "/available-users-for-replacement/")
     public ResponseEntity<?> getAvailableUsersForReplacement(@RequestBody GetAvailableUsersForReplacementDTO dto) {
         List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUsersForReplacement(dto);

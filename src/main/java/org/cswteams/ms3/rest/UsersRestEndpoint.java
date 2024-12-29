@@ -63,7 +63,7 @@ public class UsersRestEndpoint {
         }
     }
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/user-profile/delete-system-actor")
     public ResponseEntity<?> deleteUserSystemActor(@RequestBody() UserSystemActorDTO userSystemActorDTO) {
         if(userSystemActorDTO.getUserID() < 0){
@@ -78,7 +78,7 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-system-actors")
     public ResponseEntity<?> addUserSystemActor(@RequestBody() UserSystemActorsDTO userSystemActorsDTO) {
         if(userSystemActorsDTO.getUserID() < 0){

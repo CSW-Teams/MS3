@@ -21,19 +21,19 @@ public class ConstraintRestEndpoint {
     @Autowired
     IConstraintController constraintController;
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> readConstraints()  {
         return new ResponseEntity<>(constraintController.readConstraints(), HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET, path = "configuration")
     public ResponseEntity<?> readConstraintsConfiguration()  {
         return new ResponseEntity<>(constraintController.readConfigConstraints(), HttpStatus.FOUND);
     }
 
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.POST, path = "configuration")
     public ResponseEntity<?> updateConstraintsConfiguration(@RequestBody() @Valid @Validated ConfigConstraintDTO constraintDTO) {
         if (constraintDTO != null) {

@@ -28,7 +28,7 @@ public class PreferencesRestEndpoint {
      * @param doctorId The id of the interested doctor
      * @return the doctor's preferences as {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} in the response body
      */
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.GET, path = "/doctor_id={doctorId}")
     public ResponseEntity<?> readDoctorPreferences(@PathVariable Long doctorId){
         if (doctorId != null) {
@@ -92,7 +92,7 @@ public class PreferencesRestEndpoint {
      * @return A response containing the list of {@link org.cswteams.ms3.dto.preferences.PreferenceDTOOut} representing the edited (and remaining) preferences,
      *             giving the newly added ones their own id, too
      */
-    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.POST, path = "/edit")
     public ResponseEntity<?> editPreferences(@RequestBody() EditedPreferencesDTOIn dto) {
         if(dto != null) {
