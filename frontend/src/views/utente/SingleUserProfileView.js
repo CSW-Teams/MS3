@@ -556,7 +556,7 @@ export default class SingleUserProfileView extends React.Component{
                     </MDBRow>
                     <MDBRow>
                       <MDBCol sm="3">
-                        <MDBCardText>{t('Lastname')}</MDBCardText>
+                        <MDBCardText>{t('Surname')}</MDBCardText>
                       </MDBCol>
                       <MDBCol sm="9">
                         <MDBCardText
