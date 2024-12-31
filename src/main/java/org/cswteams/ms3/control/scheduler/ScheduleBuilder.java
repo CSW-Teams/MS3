@@ -206,9 +206,6 @@ public class ScheduleBuilder {
         for(ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
             // First step: define doctors on duty in the concrete shift.
             try {
-
-                //TODO:Revisionare questo if
-                //Questa linea va rivalutata in seguito
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
                         for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
@@ -262,12 +259,14 @@ public class ScheduleBuilder {
      * @throws NotEnoughFeasibleUsersException Exception thrown if the number of doctors having the possibility to be
      * added to the concrete shift is less than numDoctors
      */
-    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList, ConcreteShiftDoctorStatus status, Task task) throws NotEnoughFeasibleUsersException{
+    private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList,
+                            ConcreteShiftDoctorStatus status, Task task) throws NotEnoughFeasibleUsersException{
 
         int selectedUsers=0;
 
-        /* If the concrete shift we are populating is in the afternoon, we get the eventual concrete shift allocated in the morning of the same day.
-         * It is important to check if there is someone who can be allocated in a long shift (shift in the morning + shift in the afternoon of the same day).
+        /* If the concrete shift we are populating is in the afternoon, we get the eventual concrete shift
+        allocated in the morning of the same day. It is important to check if there is someone who can be
+        allocated in a long shift (shift in the morning + shift in the afternoon of the same day).
          */
         ConcreteShift prevConcreteShift = null;
         List<DoctorUffaPriority> prevConcreteShiftDup = null;
@@ -279,6 +278,7 @@ public class ScheduleBuilder {
 
         }
 
+        // todo: refactor this condition, if it is null throw exception otherwise continue
         if(controllerScocciatura != null) {
             //general queue has always to be updated
             controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueueEnum.GENERAL);

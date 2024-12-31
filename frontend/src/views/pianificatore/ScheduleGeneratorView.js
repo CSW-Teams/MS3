@@ -104,7 +104,6 @@ export class SchedulerGeneratorView extends React.Component{
       this.setState({loading: false});
     }
 
-
     async handleRegeneration(idSchedule) {
       let scheduleAPI = new ScheduleAPI();
       let responseStatus;
