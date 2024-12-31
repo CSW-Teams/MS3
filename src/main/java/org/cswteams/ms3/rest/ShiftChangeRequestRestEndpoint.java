@@ -8,6 +8,7 @@ import org.cswteams.ms3.dto.AnswerTurnChangeRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class ShiftChangeRequestRestEndpoint {
      * Permette la modifica di un assegnazione turno già esistente.
      * @param requestTurnChangeDto
      */
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<?> requestShiftChange(@RequestBody RequestTurnChangeDto requestTurnChangeDto)  {
         try {
@@ -38,6 +40,7 @@ public class ShiftChangeRequestRestEndpoint {
      * Ritorna le richieste iniziate dall'id indicato
      * @param idUtente
      */
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.GET, path = "/by/user_id={idUtente}")
     public ResponseEntity<?> getRequestsBySender(@PathVariable Long idUtente)  {
 
@@ -51,6 +54,7 @@ public class ShiftChangeRequestRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.GET, path = "/to/user_id={idUtente}")
     public ResponseEntity<?> getRequestsToSender(@PathVariable Long idUtente)  {
 
@@ -63,6 +67,8 @@ public class ShiftChangeRequestRestEndpoint {
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.PUT, path = "/answer")
     public ResponseEntity<?> answerRequest(@RequestBody AnswerTurnChangeRequestDTO answerTurnChangeRequestDTO)  {
         try{

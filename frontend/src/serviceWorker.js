@@ -10,6 +10,8 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read http://bit.ly/CRA-PWA
 
+import {fetchWithAuth} from "./utils/fetchWithAuth";
+
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
     // [::1] is the IPv6 localhost address.
@@ -100,7 +102,7 @@ function registerValidSW(swUrl, config) {
 
 function checkValidServiceWorker(swUrl, config) {
   // Check if the service worker can be found. If it can't reload the page.
-  fetch(swUrl)
+  fetchWithAuth(swUrl)
     .then(response => {
       // Ensure service worker exists, and that we really are getting a JS file.
       const contentType = response.headers.get('content-type');

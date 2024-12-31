@@ -6,6 +6,7 @@ import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +17,7 @@ public class GiustificazioneForzaturaEndpoint {
     @Autowired
     private IControllerGiustificaForzatura iControllerGiustificaForzatura;
 
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/uploadJustification")
     public ResponseEntity<String> caricaGiustificazione(@RequestBody(required = true) GiustificazioneForzaturaVincoliDTO giustificazione) {
         try {
@@ -26,6 +28,7 @@ public class GiustificazioneForzaturaEndpoint {
         }
     }
 
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/uploadFile")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         String message = "";

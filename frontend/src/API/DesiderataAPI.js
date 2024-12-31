@@ -1,3 +1,5 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
+
 export  class DesiderateAPI {
 
   extractDesiderate(body) {
@@ -40,7 +42,7 @@ export  class DesiderateAPI {
       body: JSON.stringify(desiderate)
     };
 
-    return await fetch('/api/preferences/doctor_id=' + id, requestOptions);
+    return await fetchWithAuth('/api/preferences/doctor_id=' + id, requestOptions);
   }
 
   /**
@@ -49,7 +51,7 @@ export  class DesiderateAPI {
    * @returns {Promise<*[]>} A Promise containing the doctor's preferences
    */
   async getDesiderate(id) {
-    const response = await fetch('/api/preferences/doctor_id='+id);
+    const response = await fetchWithAuth('/api/preferences/doctor_id='+id);
     const body = await response.json();
 
     return this.extractDesiderate(body) ;
@@ -77,7 +79,7 @@ export  class DesiderateAPI {
    * @returns {Promise<number>} A Promise containing the deletion result
    */
   async deleteDesiderate(idDesiderata, idUtente){
-    const response = await fetch('/api/preferences/preference_id='+idDesiderata+'/doctor_id='+idUtente,
+    const response = await fetchWithAuth('/api/preferences/preference_id='+idDesiderata+'/doctor_id='+idUtente,
       { method: 'DELETE' });
     return response.status;
   }
@@ -122,7 +124,7 @@ export  class DesiderateAPI {
       }
     }) ;
 
-    const response = await fetch('/api/preferences/edit',
+    const response = await fetchWithAuth('/api/preferences/edit',
       {method : "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify(reqBody)});
 
     const body = await response.json();

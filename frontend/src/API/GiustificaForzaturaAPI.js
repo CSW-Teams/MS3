@@ -1,3 +1,5 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
+
 export class GiustificaForzaturaAPI {
 
   async caricaGiustifica(params) {
@@ -7,7 +9,7 @@ export class GiustificaForzaturaAPI {
       body: JSON.stringify(params)
     };
     const url = "/api/justify/uploadJustification";
-    const response = await fetch(url, requestOptions);
+    const response = await fetchWithAuth(url, requestOptions);
     return response.status;
   }
 }

@@ -9,6 +9,7 @@ import org.cswteams.ms3.exception.UnableToBuildScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class ScheduleRestEndpoint {
      * This method is invoked by the frontend to request a new shift schedule in the range of
      * dates passed as parameters.
      */
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "generation")
     public ResponseEntity<?> createSchedule(@RequestBody() ScheduleGenerationDTO gs) {
         if (gs != null) {
@@ -47,6 +49,7 @@ public class ScheduleRestEndpoint {
     /*
      * This method is invoked by the frontend to request a regeneration of an existing shift schedule.
      */
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "regeneration/id={id}")
     public ResponseEntity<?> recreateSchedule(@PathVariable Long id) {
         if (id != null) {
@@ -68,6 +71,7 @@ public class ScheduleRestEndpoint {
     /*
      * This method is invoked to retrieve all the existing shift schedules.
      */
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> readSchedules()  {
 
@@ -81,6 +85,7 @@ public class ScheduleRestEndpoint {
      * Request send by the client when we want to show only the schedules to the planner
      * @return FOUND if the query had success, NOT FOUND if the query returned 0, ERROR if something went wrong
      */
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET,path = "/dates/")
     public ResponseEntity<?> getAllSchedulesWithDates()  {
         Set<ShowScheduleToPlannerDTO> showScheduleToPlannerDTOSet;
@@ -103,6 +108,7 @@ public class ScheduleRestEndpoint {
     /*
      * This method is invoked to retrieve the illegal shift schedules.
      */
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER', 'CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET,path = "illegals")
     public ResponseEntity<?> readIllegalSchedules()  {
 
@@ -114,6 +120,7 @@ public class ScheduleRestEndpoint {
     /*
      * This method is invoked to delete an existing shift schedule.
      */
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.DELETE, path = "id={id}")
     public ResponseEntity<?> deleteSchedule(@PathVariable Long id)  {
 

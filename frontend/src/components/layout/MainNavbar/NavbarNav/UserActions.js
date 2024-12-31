@@ -35,6 +35,14 @@ export default function UserActions() {
     });
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("id");
+    localStorage.removeItem("name");
+    localStorage.removeItem("lastname");
+    localStorage.removeItem("actor");
+    localStorage.removeItem("jwt");
+  };
+
   return (
     <NavItem tag={Dropdown} caret toggle={toggleUserActions}>
       <DropdownToggle caret tag={NavLink} className="text-nowrap px-3" style={{ cursor: "pointer" }}>
@@ -50,7 +58,7 @@ export default function UserActions() {
         <DropdownItem tag={Link} to="/preference">
           <i className="material-icons">&#xE8B8;</i> {t('Manage Preferences')}
         </DropdownItem>
-        <DropdownItem tag={Link} to="/" className="text-danger">
+        <DropdownItem tag={Link} to="/" className="text-danger" onClick={handleLogout}>
           <i className="material-icons text-danger">&#xE879;</i> {t('Logout')}
         </DropdownItem>
       </Collapse>

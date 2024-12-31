@@ -1,9 +1,11 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
+
 export  class VincoloAPI {
     constructor() {
     }
 
     async getVincoli() {
-        const response = await fetch('/api/constraints/');
+        const response = await fetchWithAuth('/api/constraints/');
         const body = await response.json();
         const vincoli = [];
         for (let i = 0; i < body.length; i++) {
@@ -30,13 +32,13 @@ export  class VincoloAPI {
         body: JSON.stringify(configurazione)
       };
 
-      const response = await fetch('/api/constraints/configuration',requestOptions);
+      const response = await fetchWithAuth('/api/constraints/configuration',requestOptions);
 
       return response;
     }
 
     async getConfigurazioneVincoli(){
-      const response = await fetch('/api/constraints/configuration');
+      const response = await fetchWithAuth('/api/constraints/configuration');
       const body = await response.json();
       const conf = {}
       conf.horizonNightShift = body.horizonNightShift

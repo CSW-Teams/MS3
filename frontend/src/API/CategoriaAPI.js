@@ -1,3 +1,5 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
+
 /**
  * Deprecated class
  */
@@ -5,7 +7,7 @@ export class CategoriaAPI {
 
   async getTurnazioni() {
 
-    const response = await fetch('/api/categorie/turnazioni/');
+    const response = await fetchWithAuth('/api/categorie/turnazioni/');
     const body = await response.json();
 
     const categorie = [];
@@ -20,7 +22,7 @@ export class CategoriaAPI {
 
   async getStati() {
 
-    const response = await fetch('/api/categorie/stato/');
+    const response = await fetchWithAuth('/api/categorie/stato/');
     const body = await response.json();
 
     const categorie = [];

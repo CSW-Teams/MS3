@@ -5,6 +5,7 @@ import org.cswteams.ms3.dto.NotificationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ public class NotificationRestEndpoint {
     @Autowired
     INotificationSystemController notificationSystemController;
 
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET,path = "id={userId}")
     public ResponseEntity<?> getAllMedicalServices(@PathVariable long userId) {
         Set<NotificationDTO> notificationDTOS = notificationSystemController.getAllNotificationByUser(userId);
@@ -32,6 +34,7 @@ public class NotificationRestEndpoint {
     /*
     da fare il check su eventuali eccezioni sollevate
      */
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.PUT, path = "updateStatus")
     public ResponseEntity<?> updateStatusNotification(@RequestBody @NotNull NotificationDTO notificationDTOS) {
         try {

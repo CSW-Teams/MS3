@@ -1,5 +1,3 @@
-
-
 export  class LoginAPI {
 
   /**
@@ -10,10 +8,15 @@ export  class LoginAPI {
    */
   async postLogin(credenziali) {
 
+    const userDetails = {
+      email: credenziali.email,
+      password: credenziali.password,
+    }
+
     const requestOptions = {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(credenziali)
+      body: JSON.stringify(userDetails)
     };
 
     return await fetch('/api/login/', requestOptions);

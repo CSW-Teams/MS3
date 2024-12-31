@@ -1,3 +1,4 @@
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 
 export class RichiestaRimozioneDaTurnoAPI {
@@ -32,7 +33,7 @@ export class RichiestaRimozioneDaTurnoAPI {
       body: JSON.stringify(params)
     };
 
-    const response = await fetch('/api/concrete-shifts/retirement-request/', requestOptions);
+    const response = await fetchWithAuth('/api/concrete-shifts/retirement-request/', requestOptions);
 
     return response;
   }
@@ -44,24 +45,24 @@ export class RichiestaRimozioneDaTurnoAPI {
       body: JSON.stringify(params)
     };
 
-    const response = await fetch('/api/concrete-shifts/retirement-request/resolve', requestOptions);
+    const response = await fetchWithAuth('/api/concrete-shifts/retirement-request/resolve', requestOptions);
     return response;
   }
 
   async getAllRequests() {
-    const response = await fetch('/api/concrete-shifts/retirement-request/')
+    const response = await fetchWithAuth('/api/concrete-shifts/retirement-request/')
     const body = await response.json();
     return this.parse(body);
   }
 
   async getAllPendingRequests() {
-    const response = await fetch('/api/concrete-shifts/retirement-request/pending')
+    const response = await fetchWithAuth('/api/concrete-shifts/retirement-request/pending')
     const body = await response.json();
     return this.parse(body);
   }
 
   async getAllRequestsForUser(idUser) {
-    const response = await fetch(`/api/concrete-shifts/retirement-request/user/${idUser}`)
+    const response = await fetchWithAuth(`/api/concrete-shifts/retirement-request/user/${idUser}`)
     const body = await response.json();
     return this.parse(body);
   }

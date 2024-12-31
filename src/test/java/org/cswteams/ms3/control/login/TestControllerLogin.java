@@ -34,11 +34,11 @@ public class TestControllerLogin {
     @ParameterizedTest
     @MethodSource("autenticaUtenteParams")
     public void testAutenticaUtente(InstanceValidity validity, boolean exceptionExpected) {
-        LoginDTO loginDTO;
+        LoginRequestDTO loginDTO;
         if (validity == InstanceValidity.VALID) {
-            loginDTO = new LoginDTO("**@gmail.com", "passw");
+            loginDTO = new LoginRequestDTO("**@gmail.com", "passw");
         } else if (validity == InstanceValidity.INVALID) {
-            loginDTO = new LoginDTO("email", "password");
+            loginDTO = new LoginRequestDTO("email", "password");
         } else {
             loginDTO = null;
         }

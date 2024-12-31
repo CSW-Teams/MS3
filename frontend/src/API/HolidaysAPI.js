@@ -1,6 +1,6 @@
 import { Holiday, SchedulableType } from "./Schedulable";
 import {red} from "@mui/material/colors";
-import {toast} from "react-toastify";
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export class HolidaysAPI {
 
@@ -11,7 +11,7 @@ export class HolidaysAPI {
         let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         let county = await this.searchCountry(timeZone);
 
-        let response = await fetch('/api/holidays/year='+year+'/country='+county, {method: 'GET'});
+        let response = await fetchWithAuth('/api/holidays/year='+year+'/country='+county, {method: 'GET'});
 
         let serializedHolidays = await response.json();
         let holidays = [];
@@ -60,7 +60,7 @@ export class HolidaysAPI {
 
     async saveCustomHoliday(holiday) {
 
-      let response = await fetch('/api/holidays/new-holiday', {
+      let response = await fetchWithAuth('/api/holidays/new-holiday', {
         method : 'POST',
         headers : {
           "Content-Type": "application/json"
@@ -74,7 +74,7 @@ export class HolidaysAPI {
     }
 
     async getCustomHolidays() {
-      let response = await fetch('/api/holidays/custom-holidays')
+      let response = await fetchWithAuth('/api/holidays/custom-holidays')
 
       let content = await response.json()
 
@@ -82,7 +82,7 @@ export class HolidaysAPI {
     }
 
     async deleteCustomHoliday(holidayID) {
-      let response = await fetch('/api/holidays/delete-custom', {
+      let response = await fetchWithAuth('/api/holidays/delete-custom', {
         method : 'DELETE',
         headers : {
           "Content-Type": "application/json"

@@ -11,6 +11,7 @@ import org.cswteams.ms3.dto.userprofile.SingleUserProfileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -22,6 +23,7 @@ public class UsersRestEndpoint {
     @Autowired
     private IUserController userController;
 
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "")
     public ResponseEntity<?> createUser(@RequestBody() UserCreationDTO doctor) {
         if (doctor != null) {
@@ -31,21 +33,21 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllUsers() {
         Set<UserDTO> utenti = userController.getAllUsers();
         return new ResponseEntity<>(utenti, HttpStatus.FOUND);
     }
 
-
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/user_id={userId}")
     public ResponseEntity<?> getSingleUser(@PathVariable Long userId) {
         UserDetailsDTO u = userController.getSingleUser(userId);
         return new ResponseEntity<>(u, HttpStatus.FOUND);
     }
 
-
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/user-profile/user_id={userId}")
     public ResponseEntity<?> getSingleUserProfileInfos(@PathVariable Long userId) {
         if(userId < 0){
@@ -61,7 +63,7 @@ public class UsersRestEndpoint {
         }
     }
 
-
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/user-profile/delete-system-actor")
     public ResponseEntity<?> deleteUserSystemActor(@RequestBody() UserSystemActorDTO userSystemActorDTO) {
         if(userSystemActorDTO.getUserID() < 0){
@@ -76,7 +78,7 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-system-actors")
     public ResponseEntity<?> addUserSystemActor(@RequestBody() UserSystemActorsDTO userSystemActorsDTO) {
         if(userSystemActorsDTO.getUserID() < 0){
@@ -92,6 +94,7 @@ public class UsersRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "user-profile/update-profile-info")
     public ResponseEntity<?> updateProfileInfos(@RequestBody UpdateUserProfileDTO userDetailsDTO) {
         try {

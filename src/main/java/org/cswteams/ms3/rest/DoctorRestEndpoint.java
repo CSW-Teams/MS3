@@ -10,10 +10,10 @@ import org.cswteams.ms3.dto.condition.UpdateConditionsDTO;
 import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.dto.specialization.DoctorSpecializationDTO;
 import org.cswteams.ms3.dto.specialization.SingleDoctorSpecializationDTO;
-import org.cswteams.ms3.entity.condition.PermanentCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -25,12 +25,14 @@ public class DoctorRestEndpoint {
     private IDoctorController doctorController;
     private static final ObjectMapper jsonMapper = new ObjectMapper();
 
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllDoctors() {
         Set<MedicalDoctorInfoDTO> medicalDoctorInfoDTOSet = doctorController.getAllDoctors();
         return new ResponseEntity<>(medicalDoctorInfoDTOSet, HttpStatus.FOUND);
     }
 
+    @PreAuthorize("hasAnyRole('DOCTOR')")
     @RequestMapping(method = RequestMethod.GET, path = "/{doctorId}")
     public ResponseEntity<?> getDoctorById(@PathVariable Long doctorId) {
         MedicalDoctorInfoDTO medicalDoctorInfoDTO = doctorController.getDoctorById(doctorId);
@@ -40,7 +42,7 @@ public class DoctorRestEndpoint {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/user-profile/delete-specialization")
     public ResponseEntity<?> deleteDoctorSpecialization(@RequestBody() SingleDoctorSpecializationDTO doctorSpecializationDTO) {
         if(doctorSpecializationDTO.getDoctorID() < 0){
@@ -55,6 +57,7 @@ public class DoctorRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-specialization")
     public ResponseEntity<?> addDoctorSpecialization(@RequestBody() DoctorSpecializationDTO doctorSpecializationDTO) {
         if(doctorSpecializationDTO.getDoctorID() < 0){
@@ -69,7 +72,7 @@ public class DoctorRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/user-profile/delete-permanent-condition")
     public ResponseEntity<?> deleteDoctorPermanentCondition(@RequestBody() PermanentConditionDTO permanentConditionDTO) {
         if(permanentConditionDTO.getDoctorID() < 0){
@@ -84,7 +87,7 @@ public class DoctorRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.DELETE, path = "/user-profile/delete-temporary-condition")
     public ResponseEntity<?> deleteDoctorTemporaryCondition(@RequestBody() TemporaryConditionDTO temporaryConditionDTO) {
         if(temporaryConditionDTO.getDoctorID() < 0){
@@ -101,6 +104,7 @@ public class DoctorRestEndpoint {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "/user-profile/add-condition")
     public ResponseEntity<?> addDoctorConditions(@RequestBody() UpdateConditionsDTO updateConditionsDTO) throws JsonProcessingException {
         NewConditionIDReturnDTO newConditionIDReturnDTO;
@@ -123,3 +127,4 @@ public class DoctorRestEndpoint {
     }
 
 }
+

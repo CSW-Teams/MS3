@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import GoogleAnalytics from "react-ga";
 
+// TODO capire cosa fa e come viene utilizzata
 GoogleAnalytics.initialize(process.env.REACT_APP_GAID || "IL_TUO_ID_DI_TRACCIAMENTO");
 
 const withTracker = (WrappedComponent, options = {}) => {

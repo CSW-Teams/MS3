@@ -1,5 +1,6 @@
 import {MedicalService} from "../entity/MedicalService";
 import {Task} from "../entity/Task";
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export class ServizioAPI {
     constructor() {
@@ -7,10 +8,10 @@ export class ServizioAPI {
 
   async getService() {
     try {
-      const response = await fetch('/medical-services/');
+      const response = await fetchWithAuth('/medical-services/');
 
       if (!response.ok) {
-        throw new Error('Failed to fetch data');
+        throw new Error('Failed to fetchWithAuth data');
       }
 
       const body = await response.json();
@@ -27,7 +28,7 @@ export class ServizioAPI {
     }
 
     async getAllServices() {
-        const response = await fetch('/api/medical-services/');
+        const response = await fetchWithAuth('/api/medical-services/');
         const body = await response.json();
 
         const services = [];
@@ -50,7 +51,7 @@ export class ServizioAPI {
     }
 
     async getAvailableTaskTypes() {
-        const response = await fetch('/api/medical-services/available-task-types');
+        const response = await fetchWithAuth('/api/medical-services/available-task-types');
         const body = await response.json();
         return body;
     }
@@ -62,7 +63,7 @@ export class ServizioAPI {
             body: JSON.stringify(params)
         };
 
-        const response = await fetch('/api/medical-services/', requestOptions);
+        const response = await fetchWithAuth('/api/medical-services/', requestOptions);
         return response;
     }
 
@@ -73,7 +74,7 @@ export class ServizioAPI {
             body: JSON.stringify(params)
         };
 
-        const response = await fetch('/api/medical-services/update', requestOptions);
+        const response = await fetchWithAuth('/api/medical-services/update', requestOptions);
         return response;
     }
 
@@ -84,7 +85,7 @@ export class ServizioAPI {
             body: JSON.stringify(params)
         };
 
-        const response = await fetch('/api/medical-services/delete', requestOptions);
+        const response = await fetchWithAuth('/api/medical-services/delete', requestOptions);
         return response;
     }
 }
