@@ -1,10 +1,8 @@
 package org.cswteams.ms3.control.passwordChange;
 
 
-import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.UserDAO;
 import org.cswteams.ms3.dto.changePassword.ChangePasswordDTO;
-import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.User;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.cswteams.ms3.exception.changePassword.WrongOldPasswordException;
