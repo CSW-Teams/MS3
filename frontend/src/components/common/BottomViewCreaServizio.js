@@ -198,6 +198,7 @@ const MedicalServiceCreationDrawer = ({
 
         <CheckboxGroup
           options={names}
+          selectedOptions={checkedTasksStringArray}
           onChange={handleCheckboxChange}
           disabled={false}
         />

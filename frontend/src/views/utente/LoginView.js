@@ -4,7 +4,7 @@ import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
-import RoleSelectionDialog from "../../components/common/RolePickerDialog";
+import RoleSelectionDialog from "../../components/common/DialogRolePicker";
 
 // Toast notification options for error/success messages
 const TOAST_OPTIONS = {

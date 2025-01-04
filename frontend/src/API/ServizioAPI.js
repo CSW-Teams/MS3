@@ -3,8 +3,8 @@ import {Task} from "../entity/Task";
 import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export class ServizioAPI {
-    constructor() {
-    }
+  constructor() {
+  }
 
   async getService() {
     try {
@@ -23,69 +23,69 @@ export class ServizioAPI {
     }
   }
 
-    alphaSort(array) {
-        return array.sort((a, b) => a.taskType.localeCompare(b.taskType));
+  alphaSort(array) {
+    return array.sort((a, b) => a.taskType.localeCompare(b.taskType));
+  }
+
+  async getAllServices() {
+    const response = await fetchWithAuth('/api/medical-services/');
+    const body = await response.json();
+
+    const services = [];
+
+    for (let i = 0; i < body.length; i++) {
+      var receivedTaskList = body[i].mansioni;
+      this.alphaSort(receivedTaskList);
+      var taskList = [];
+      for (let j = 0; j < receivedTaskList.length; j++) {
+        taskList.push(new Task(receivedTaskList[j].id, receivedTaskList[j].taskType, receivedTaskList[j].assigned));
+      }
+      var service = new MedicalService(
+        body[i].id,
+        body[i].nome,
+        taskList
+      );
+      services[i] = service;
     }
+    return services;
+  }
 
-    async getAllServices() {
-        const response = await fetchWithAuth('/api/medical-services/');
-        const body = await response.json();
+  async getAvailableTaskTypes() {
+    const response = await fetchWithAuth('/api/medical-services/available-task-types');
+    const body = await response.json();
+    return body;
+  }
 
-        const services = [];
+  async createMedicalService(params) {
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(params)
+    };
 
-        for (let i = 0; i < body.length; i++) {
-            var receivedTaskList = body[i].mansioni;
-            this.alphaSort(receivedTaskList);
-            var taskList = [];
-            for (let j = 0; j < receivedTaskList.length; j++) {
-                taskList.push(new Task(receivedTaskList[j].id, receivedTaskList[j].taskType, receivedTaskList[j].assigned));
-            }
-            var service = new MedicalService (
-                body[i].id,
-                body[i].nome,
-                taskList
-                );
-            services[i] = service;
-        }
-        return services;
-    }
+    const response = await fetchWithAuth('/api/medical-services/', requestOptions);
+    return response;
+  }
 
-    async getAvailableTaskTypes() {
-        const response = await fetchWithAuth('/api/medical-services/available-task-types');
-        const body = await response.json();
-        return body;
-    }
+  async updateMedicalService(params) {
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(params)
+    };
 
-    async createMedicalService(params) {
-        const requestOptions = {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(params)
-        };
+    const response = await fetchWithAuth('/api/medical-services/update', requestOptions);
+    return response;
+  }
 
-        const response = await fetchWithAuth('/api/medical-services/', requestOptions);
-        return response;
-    }
+  async deleteMedicalService(params) {
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(params)
+    };
 
-    async updateMedicalService(params) {
-        const requestOptions = {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(params)
-        };
-
-        const response = await fetchWithAuth('/api/medical-services/update', requestOptions);
-        return response;
-    }
-
-    async deleteMedicalService(params) {
-        const requestOptions = {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(params)
-        };
-
-        const response = await fetchWithAuth('/api/medical-services/delete', requestOptions);
-        return response;
-    }
+    const response = await fetchWithAuth('/api/medical-services/delete', requestOptions);
+    return response;
+  }
 }

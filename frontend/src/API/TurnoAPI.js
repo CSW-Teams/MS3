@@ -43,8 +43,14 @@ export class TurnoAPI {
     }
 
     return {};
-
   }
 
-
+  /**
+   * API to retrieve shift constraints as list of seniority, days of week and time slots
+   * @return {Promise<*[]>} A Promise containing list of seniority, days of week and time slots
+   * */
+  async getShiftContraints() {
+    const response = await fetchWithAuth('/api/shifts/constants');
+    return await response.json();
+  }
 }
