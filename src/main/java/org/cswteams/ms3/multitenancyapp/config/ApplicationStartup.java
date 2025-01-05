@@ -50,174 +50,38 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
          */
          // if (userDAO.count() == 0) {
 
-        // Creare schemi specifici per i tenant
-            //createSchemaForTenant("tenant_a");
-            //createSchemaForTenant("tenant_b");
-            //createTables();
-
             populateDB();
 
-            // Ripristina lo schema di default
-            //switchToTenantSchema("public");
+            // Ripristina lo schema di default ("public" per PostgreSQL)
+            TenantContext.setCurrentTenant("public");
          // }
 
     }
 
-    /*private void createTables() {
-        // Step 1: Crea le tabelle comuni nello schema 'public'
-        createTablesInPublicSchema();
+    private void addUserToTenantsSelective(SystemUser user) {
 
-        // Step 2: Crea la tabella TenantUser in ciascun schema dei tenant (tenant_a, tenant_b)
-        createTenantUserTableForTenant("tenant_a");
-        createTenantUserTableForTenant("tenant_b");
-    }
+        // Clona l'utente con solo l'ospedale specifico di questo tenant
+        TenantUser tenantSpecificUser = new TenantUser(
+                user.getName(),
+                user.getLastname(),
+                user.getTaxCode(),
+                user.getBirthday(),
+                user.getEmail(),
+                user.getPassword()
+        );
 
-    private void createTablesInPublicSchema() {
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement()) {
-
-            // Comando SQL per creare la tabella ms3_system_users
-            String sqlSystemUser = "CREATE TABLE IF NOT EXISTS ms3_system_users (" +
-                    "id SERIAL PRIMARY KEY, " +
-                    "name VARCHAR(255) NOT NULL, " +
-                    "lastname VARCHAR(255) NOT NULL, " +
-                    "birthday DATE NOT NULL, " +
-                    "tax_code VARCHAR(20) UNIQUE NOT NULL, " +
-                    "email VARCHAR(255) UNIQUE NOT NULL, " +
-                    "password VARCHAR(255) NOT NULL);";
-
-            // Comando SQL per creare la tabella ms3_hospitals
-            String sqlHospital = "CREATE TABLE IF NOT EXISTS ms3_hospitals (" +
-                    "id SERIAL PRIMARY KEY, " +
-                    "name VARCHAR(255) NOT NULL, " +
-                    "address VARCHAR(255) NOT NULL);";
-
-            // Comando SQL per creare la tabella di relazione tra ms3_system_users e ms3_hospitals
-            String sqlSystemUserHospital = "CREATE TABLE IF NOT EXISTS ms3_user_hospital_mapping (" +
-                    "user_id BIGINT NOT NULL, " +
-                    "hospital_id BIGINT NOT NULL, " +
-                    "PRIMARY KEY (user_id, hospital_id), " +
-                    "FOREIGN KEY (user_id) REFERENCES ms3_system_users(id) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (hospital_id) REFERENCES ms3_hospitals(id) ON DELETE CASCADE" +
-                    ");";
-
-            // Esegui le query per creare le tabelle
-            statement.executeUpdate(sqlSystemUser);
-            statement.executeUpdate(sqlHospital);
-            statement.executeUpdate(sqlSystemUserHospital);
-
-            System.out.println("Tabelle ms3_system_users, ms3_hospitals e system_user_hospital create nello schema 'public'");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Errore nella creazione delle tabelle nello schema public", e);
-        }
-    }
-
-    private void createTenantUserTableForTenant(String tenantName) {
-        switchToTenantSchema(tenantName);
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement()) {
-
-            // Passa allo schema del tenant
-            statement.execute("SET search_path TO "+ tenantName);
-
-            // Crea la tabella tenantUser
-            String sqlTenantUser = "CREATE TABLE IF NOT EXISTS ms3_tenant_users (" +
-                    "id SERIAL PRIMARY KEY, " +
-                    "name VARCHAR(255) NOT NULL, " +
-                    "lastname VARCHAR(255) NOT NULL, " +
-                    "birthday DATE NOT NULL, " +
-                    "tax_code VARCHAR(20) UNIQUE NOT NULL, " +
-                    "email VARCHAR(255) UNIQUE NOT NULL, " +
-                    "password VARCHAR(255) NOT NULL);";
-
-            // Esegui la query per creare la tabella
-            statement.executeUpdate(sqlTenantUser);
-
-            System.out.println("Tabella ms3_tenant_users creata nello schema " + tenantName);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Errore nella creazione della tabella ms3_tenant_users per il tenant " + tenantName, e);
-        }
-    }
-
-    /**
-     * Crea uno schema per il tenant specificato.
-     *
-     * @param tenantName Il nome del tenant (schema da creare).
-     */
-    // Crea lo schema per il tenant specificato
-    /*private void createSchemaForTenant(String tenantName) {
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement()) {
-
-            // Comando SQL per creare il nuovo schema
-            String sql = "CREATE SCHEMA IF NOT EXISTS " + tenantName;
-            statement.executeUpdate(sql);
-
-            System.out.println("Schema " + tenantName + " created successfully.");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error creating schema: " + tenantName, e);
-        }
-    }*/
-
-    /*/**
-     * Esegui il cambio dello schema per il tenant tramite Hibernate
-     *
-     * @param tenantSchema Il nome del tenant (schema da selezionare)
-     */
-    /*private void switchToTenantSchema(String tenantSchema) {
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement()) {
-
-            // Passa allo schema del tenant
-            statement.execute("SET search_path TO " + tenantSchema);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error connecting to schema: " + tenantSchema, e);
-        }
-    }*/
-
-    private void addUserToTenantsSelective(Map<String, Hospital> tenantHospitalMap, SystemUser user) {
-        for (Map.Entry<String, Hospital> entry : tenantHospitalMap.entrySet()) {
-            String tenantSchema = entry.getKey();
-
+        user.getHospitals().stream().forEach(item -> {
+            String tenantName = item.getName().toLowerCase();
             try {
-                // Passa allo schema specifico del tenant
-                //switchToTenantSchema(tenantSchema);
-                //printCurrentSchema();
-
-                // Clona l'utente con solo l'ospedale specifico di questo tenant
-                TenantUser tenantSpecificUser = new TenantUser(
-                        user.getName(),
-                        user.getLastname(),
-                        user.getTaxCode(),
-                        user.getBirthday(),
-                        user.getEmail(),
-                        user.getPassword()
-                );
-
                 // Salva l'utente nello schema del tenant
-                TenantContext.setCurrentTenant(tenantSchema);
+                TenantContext.setCurrentTenant("tenant_" + tenantName);
                 tenantUserDAO.saveAndFlush(tenantSpecificUser);
             } catch (Exception e) {
-                System.err.println("Errore nell'inserimento utente nello schema " + tenantSchema + ": " + e.getMessage());
+                System.err.println("Errore nell'inserimento utente nello schema " + tenantName + ": " + e.getMessage());
             }
-        }
-    }
+        });
 
-    /*private void printCurrentSchema() {
-        try {
-            String currentSchema = jdbcTemplate.queryForObject("SELECT current_schema()", String.class);
-            System.out.println("Current schema: " + currentSchema); // Stampa lo schema corrente
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }*/
+    }
 
     private void populateDB() {
 
@@ -258,25 +122,19 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u44 = systemUserDAO.saveAndFlush(u44);
         u45 = systemUserDAO.saveAndFlush(u45);
 
-        // Mappa tenant -> ospedale relativo
-        Map<String, Hospital> tenantHospitalMap = Map.of(
-                "tenant_a", h1,
-                "tenant_b", h2
-        );
-
         // Inserire utenti negli schemi tenant
-        addUserToTenantsSelective(tenantHospitalMap, u1);
-        addUserToTenantsSelective(tenantHospitalMap, u2);
-        addUserToTenantsSelective(tenantHospitalMap, u3);
-        addUserToTenantsSelective(tenantHospitalMap, u4);
-        addUserToTenantsSelective(tenantHospitalMap, u5);
-        addUserToTenantsSelective(tenantHospitalMap, u6);
-        addUserToTenantsSelective(tenantHospitalMap, u7);
-        addUserToTenantsSelective(tenantHospitalMap, u8);
-        addUserToTenantsSelective(tenantHospitalMap, u9);
-        addUserToTenantsSelective(tenantHospitalMap, u10);
-        addUserToTenantsSelective(tenantHospitalMap, u44);
-        addUserToTenantsSelective(tenantHospitalMap, u45);
+        addUserToTenantsSelective(u1);
+        addUserToTenantsSelective(u2);
+        addUserToTenantsSelective(u3);
+        addUserToTenantsSelective(u4);
+        addUserToTenantsSelective(u5);
+        addUserToTenantsSelective(u6);
+        addUserToTenantsSelective(u7);
+        addUserToTenantsSelective(u8);
+        addUserToTenantsSelective(u9);
+        addUserToTenantsSelective(u10);
+        addUserToTenantsSelective(u44);
+        addUserToTenantsSelective(u45);
 
     }
 
