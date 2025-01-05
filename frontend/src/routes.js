@@ -2,7 +2,7 @@ import React from "react";
 import { Redirect } from "react-router-dom";
 
 // Layout Types
-import { DefaultLayout } from "./layouts";
+import { DefaultLayout } from "./multitenancyapp/layouts";
 
 // Route Views
 import GlobalScheduleView from "./views/utente/GlobalScheduleView";
@@ -12,7 +12,7 @@ import Preference from "./views/utente/Preference"
 import UserProfilesView from "./views/utente/UserProfilesView"
 import LoginView from "./views/utente/LoginView"
 import CambiaPasswordView from "./views/utente/CambiaPasswordView"
-import EmptyLayout from "./layouts/LoginLayout/Empty";
+import EmptyLayout from "./multitenancyapp/layouts/LoginLayout/Empty";
 import ConfigurazioneVincoli from "./views/configuratore/ConfigurazioneVincoli";
 import RegistraUtenteView from "./views/configuratore/RegistraUtenteView";
 import RichiesteRitiroView from "./views/utente/RichiesteRitiroView";
@@ -23,14 +23,22 @@ import ModifyUserProfileView from "./views/utente/ModifyUserProfileView";
 import SingleUserProfileView from "./views/utente/SingleUserProfileView";
 import PersonalSingleUserProfileView
   from "./views/utente/PersonalSingleUserProfileView";
+import MultiTenancyLoginView from "./multitenancyapp/views/MultiTenancyLoginView";
+import TenantUsersView from "./multitenancyapp/views/TenantUsersView";
 
 
 export default [
   {
+    // For multi-tenancy test
     path: "/",
     exact: true,
     layout: DefaultLayout,
-    component: () => <Redirect to="/login/" />
+    component: () => <Redirect to="/multitenancy/login/" />
+
+    /*path: "/",
+    exact: true,
+    layout: DefaultLayout,
+    component: () => <Redirect to="/login/" />*/
   },
   {
     path: "/pianificazione-privata",
@@ -68,9 +76,21 @@ export default [
     component: UserProfilesView
   },
   {
+    // For multi-tenancy test
+    path: "/multitenancy/info-utenti",
+    layout: DefaultLayout,
+    component: TenantUsersView
+  },
+  {
     path: "/login/",
     layout: EmptyLayout,
     component: LoginView
+  },
+  {
+    // For multi-tenancy test
+    path: "/multitenancy/login/",
+    layout: EmptyLayout,
+    component: MultiTenancyLoginView
   },
   {
     path: "/preference/",
