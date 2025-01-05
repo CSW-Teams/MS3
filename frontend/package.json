@@ -31,7 +31,6 @@
     "gulp-sass": "^5.1.0",
     "http-proxy-middleware": "^2.0.6",
     "i18next": "^23.7.20",
-    "lodash": "^4.17.21",
     "lodash.find": "^4.6.0",
     "mdb-react-ui-kit": "^5.1.0",
     "mdbreact": "^4.6.1",

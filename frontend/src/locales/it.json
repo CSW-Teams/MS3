@@ -345,5 +345,9 @@
     "Unità di Trapianto",
     "Medicina Palliativa",
     "Tossicologia"
-  ]
+  ],
+
+  "Duration": "Durata",
+  "hours": "ore",
+  "minutes": "minuti"
 }

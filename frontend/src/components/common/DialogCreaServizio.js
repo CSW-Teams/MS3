@@ -4,16 +4,11 @@ import {
   Autocomplete,
   Box,
   Button,
-  Checkbox,
-  Collapse,
   Dialog,
   DialogContent,
   Fab,
-  Grid,
   IconButton,
   MobileStepper,
-  Radio,
-  RadioGroup,
   TextField,
   Toolbar,
   Typography
@@ -25,9 +20,9 @@ import {panic} from "./Panic";
 import {KeyboardArrowLeft, KeyboardArrowRight} from "@material-ui/icons";
 import {TurnoAPI} from "../../API/TurnoAPI";
 import AddIcon from '@mui/icons-material/Add';
-import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import _ from 'lodash';
+import RemoveIcon from '@mui/icons-material/Remove';
+import NewShiftForm from "./NewShiftForm";
+import ShiftItemBox from "./ShiftItemBox";
 
 const defaultServiceValues = {
   step: 0,
@@ -36,24 +31,6 @@ const defaultServiceValues = {
 
   shiftList: []
 }
-
-const defaultNewShiftFormValues = {
-  timeSlot: "",
-  startTime: "08:00",
-  shiftDuration: "06:00",
-  seniorityValues: {},
-  selectedDays: []
-}
-
-const shift = {
-  "timeSlot": "",
-  "startHour": 0,
-  "startMinute": 0,
-  "durationMinutes": 0,
-  "daysOfWeek": [],
-  "medicalService": {"label": ""},
-  "quantityshiftseniority": []
-};
 
 const MultiStepDialog = ({
                            tasks, services, updateServicesList
@@ -68,12 +45,6 @@ const MultiStepDialog = ({
     setSelectedMansions(defaultServiceValues.selectedMansions);
 
     setShiftList(defaultServiceValues.shiftList);
-
-    setTimeSlot(defaultNewShiftFormValues.timeSlot);
-    setStartTime(defaultNewShiftFormValues.startTime);
-    setShiftDuration(defaultNewShiftFormValues.shiftDuration);
-    setSeniorityValues(defaultNewShiftFormValues.seniorityValues);
-    setSelectedDays(defaultNewShiftFormValues.selectedDays);
 
     setOpenDialog(false);
   }
@@ -115,8 +86,6 @@ const MultiStepDialog = ({
     hint.current = matchingOption || "";
   };
 
-  /* Handle Collapse NewForm box */
-
   /* Handle dialog checkbox */
   const names = Object.values(tasks).flat();
   const [selectedMansions, setSelectedMansions] = useState([]);
@@ -138,8 +107,6 @@ const MultiStepDialog = ({
   *         "MONDAY",
   *         "THURSDAY",
   *         "SUNDAY",
-  *         "TUESDAY",
-  *         "FRIDAY",
   *         "SATURDAY"
   *     ],
   *   "medicalService": {
@@ -165,81 +132,56 @@ const MultiStepDialog = ({
   * }
   * */
   const [shiftList, setShiftList] = useState([]);
+  const filteredShiftList = shiftList.filter(shift =>
+    shift.quantityshiftseniority.some(item => item.task === selectedMansions[step - 1])
+  );
 
-  /* Form data input management */
-  const [timeSlot, setTimeSlot] = useState("");
-  const [startTime, setStartTime] = useState("08:00");
-  const [shiftDuration, setShiftDuration] = useState("06:00");
-  const [seniorityValues, setSeniorityValues] = useState({});
-  const handleSeniorityChange = (e, seniorityName) => {
-    const value = e.target.value;
-    setSeniorityValues((prev) => ({
-      ...prev,
-      [seniorityName]: value,
-    }));
-  };
-  const [selectedDays, setSelectedDays] = useState([]);
-  const handleDayChange = (day) => {
-    setSelectedDays((prevSelectedDays) => {
-      if (prevSelectedDays.includes(day)) {
-        return prevSelectedDays.filter((d) => d !== day);
-      } else {
-        return [...prevSelectedDays, day];
-      }
+  const handleDeleteShift = (shiftToDelete: {
+    timeSlot: string;
+    startHour: number;
+    startMinute: number;
+    durationMinutes: number;
+    daysOfWeek: string[];
+    medicalService: { label: string };
+    quantityshiftseniority: {
+      task: string;
+      seniority: string;
+      quantity: number;
+    }[];
+  }) => {
+    const updatedShiftList = shiftList.filter(shift => {
+      const quantityShiftsMatch = shift.quantityshiftseniority.length === shiftToDelete.quantityshiftseniority.length &&
+        shift.quantityshiftseniority.every((shiftItem, index) =>
+          shiftItem.task === shiftToDelete.quantityshiftseniority[index].task &&
+          shiftItem.seniority === shiftToDelete.quantityshiftseniority[index].seniority &&
+          shiftItem.quantity === shiftToDelete.quantityshiftseniority[index].quantity
+        );
+
+      return !(shift.timeSlot === shiftToDelete.timeSlot &&
+        shift.startHour === shiftToDelete.startHour &&
+        shift.startMinute === shiftToDelete.startMinute &&
+        shift.durationMinutes === shiftToDelete.durationMinutes &&
+        shift.daysOfWeek.length === shiftToDelete.daysOfWeek.length &&
+        quantityShiftsMatch
+      );
     });
+
+    setShiftList(updatedShiftList);
   };
 
+  /* Handle Collapse NewForm box */
   const [openCollapseShiftForm, setOpenCollapseShiftForm] = useState(false);
   const handleCollapseShiftFormToggle = () => {
     setOpenCollapseShiftForm(!openCollapseShiftForm);
   };
 
-  // TEMP:
-
+  // TEMP
   const handleFormFinish = () => {
     // TODO: manage post operation
 
+    console.log(shiftList)
+
     handleCloseDialog();
-  }
-
-  const handleAddNewShift = () => {
-    // TEMP: to delete
-    const data = {
-      timeSlot,
-      startTime,
-      shiftDuration,
-      selectedDays,
-    };
-
-    let shiftCopy = _.cloneDeep(shift);
-
-    shiftCopy.timeSlot = timeSlot;
-
-    shiftCopy.daysOfWeek = selectedDays.slice();
-
-    let [hour, minute] = startTime.split(":");
-    shiftCopy.startHour = hour;
-    shiftCopy.startMinute = minute;
-
-    [hour, minute] = shiftDuration.split(":");
-    shiftCopy.durationMinutes = parseInt(hour) * 60 + parseInt(minute);
-
-    shiftCopy.medicalService.label = medicalServiceName;
-
-    shiftCopy.quantityshiftseniority = Object.entries(seniorityValues).map(([seniority, quantity]) => ({
-      task: selectedMansions[step - 1],
-      seniority: seniority,
-      quantity: quantity
-    }));
-
-    setShiftList(prevShiftList => [...prevShiftList, shiftCopy]);
-
-    // Close NewShiftForms
-    handleCollapseShiftFormToggle();
-
-    // TODO; remove this console.log
-    console.log("Saved data:", data);
-    console.log("Saved data in shiftCopy:", shiftCopy);
   }
 
   return (<>
@@ -259,7 +201,6 @@ const MultiStepDialog = ({
 
     <Dialog
       open={openDialog}
-      // onClose={() => setOpen(false)} // TODO! Implement this logic? Or leave dialog on screen until end?
       fullWidth
       maxWidth="md"
       scroll={"paper"}
@@ -289,7 +230,7 @@ const MultiStepDialog = ({
         }}>
           <Autocomplete
             inputValue={medicalServiceName}
-            options={servicesOptions}   // Suggested options in the panel
+            options={servicesOptions}
             sx={{minWidth: 250, maxWidth: 450, width: 'auto'}}
             onChange={(event, newValue) => {
               setMedicalServiceName(newValue ? newValue : '');
@@ -316,7 +257,7 @@ const MultiStepDialog = ({
                     top: 16,
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
-                    width: 'calc(100% - 75px)', // Adjust based on padding of TextField
+                    width: 'calc(100% - 75px)',
                     pointerEvents: 'none',
                   }}
                 >
@@ -361,117 +302,27 @@ const MultiStepDialog = ({
             Add a new shift for {selectedMansions[step - 1]}
           </Typography>
 
-          <Collapse in={openCollapseShiftForm}>
-          <Box
-            sx={{
-              padding: "20px",
-              backgroundColor: "rgba(237,237,237,0.5)",
-              borderRadius: "10px",
-              maxWidth: "500px",
-              margin: "0 auto",
-            }}
-          >
-            <Box display="flex" alignItems="center" sx={{gap: 2, marginBottom: '20px'}}>
-              <Typography variant="h7" gutterBottom style={{marginBottom: 0}}>
-                Time Slot:
-              </Typography>
-              <FormControl component="fieldset">
-                <RadioGroup
-                  row
-                  value={timeSlot}
-                  onChange={(e) => setTimeSlot(e.target.value)}
-                >
-                  {timeSlotList.map((slot, _) => (
-                    <FormControlLabel
-                      key={slot}
-                      value={slot}
-                      control={<Radio />}
-                      label={slot}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            </Box>
+          {filteredShiftList.map((shift, index) => (
+            <ShiftItemBox key={index} shiftData={shift} onDelete={handleDeleteShift}/>
+          ))}
 
-            <Box display="flex" alignItems="center"
-                 sx={{marginTop: "20px", gap: 2}}>
-              <Typography variant="h7" gutterBottom>
-                Shift start time:
-              </Typography>
-              <TextField
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
-            </Box>
-
-            <Box display="flex" alignItems="center" sx={{ marginTop: "10px", gap: 2}}>
-              <Typography variant="h7" gutterBottom>
-                Shift duration:
-              </Typography>
-              <TextField
-                type="time"
-                value={shiftDuration}
-                onChange={(e) => setShiftDuration(e.target.value)}
-              />
-            </Box>
-
-            <Box>
-              {seniorityNameList.map((seniorityName) => (
-                <Box key={seniorityName} display="flex" alignItems="center" sx={{ marginTop: "10px", gap: 2 }}>
-                  <Typography variant="h7" gutterBottom style={{ marginBottom: 0 }}>
-                    {seniorityName}:
-                  </Typography>
-                  <TextField
-                    type="number"
-                    value={seniorityValues[seniorityName] || 0} // Imposta il valore associato, default a 0
-                    onChange={(e) => handleSeniorityChange(e, seniorityName)} // Gestione del cambio di valore
-                    inputProps={{ min: 0 }}
-                    sx={{
-                      width: 100, // Imposta una larghezza fissa
-                    }}
-                  />
-                </Box>
-              ))}
-            </Box>
-
-            <Typography variant="h7" gutterBottom sx={{marginTop: "25px"}}>
-              Days of the week:
-            </Typography>
-            <Grid container spacing={1}>
-              {daysOfWeek.map((day) => (
-                <Grid item xs={6} key={day}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={selectedDays.includes(day)}
-                        onChange={() => handleDayChange(day)}
-                      />
-                    }
-                    label={day}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleAddNewShift}
-              sx={{marginTop: "20px"}}
-            >
-              Add shift
-            </Button>
-          </Box>
-          </Collapse>
+          <NewShiftForm
+            openCollapseShiftForm={openCollapseShiftForm}
+            handleCollapseShiftFormToggle={handleCollapseShiftFormToggle}
+            handleSubmitShiftForm={(newShift) => {setShiftList((prev) => [...prev, newShift])}}
+            medicalServiceName={medicalServiceName}
+            task={selectedMansions[step - 1]}
+            timeSlotList={timeSlotList}
+            seniorityNameList={seniorityNameList}
+            daysOfWeek={daysOfWeek}
+          />
 
           <Fab
             color="primary"
             aria-label="add"
             onClick={() => handleCollapseShiftFormToggle()}
           >
-            <AddIcon/>
+            {openCollapseShiftForm ? <RemoveIcon /> : <AddIcon />}
           </Fab>
 
         </div>)}

@@ -344,6 +344,9 @@
     "Transplant Unit",
     "Palliative Medicine",
     "Toxicology"
-  ]
+  ],
 
+  "Duration": "Duration",
+  "hours": "hours",
+  "minutes": "minutes"
 }
