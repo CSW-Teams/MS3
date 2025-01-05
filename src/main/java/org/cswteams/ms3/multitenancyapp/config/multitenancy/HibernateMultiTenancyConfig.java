@@ -5,6 +5,7 @@ import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -45,10 +46,10 @@ public class HibernateMultiTenancyConfig {
 
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT, MultiTenancyStrategy.SCHEMA);
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver());
+        factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "create");
+        factoryBean.getJpaPropertyMap().put("hibernate.temp.use_jdbc_metadata_defaults", "false");
         factoryBean.getJpaPropertyMap().put("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
         factoryBean.getJpaPropertyMap().put("hibernate.multi_tenant_connection_provider", schemaSwitchingConnectionProvider());
-
-        factoryBean.getJpaPropertyMap().put("hibernate.default_schema", "public");  // Assicurati che venga usato 'public' per le entità di sistema
 
         return factoryBean;
     }
