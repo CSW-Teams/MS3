@@ -21,24 +21,19 @@ public class SchemaSwitchingConnectionProvider implements MultiTenantConnectionP
 
     @Override
     public void releaseAnyConnection(Connection connection) throws SQLException {
-
+        connection.close();
     }
 
     @Override
     public Connection getConnection(String tenantIdentifier) throws SQLException {
         Connection connection = dataSource.getConnection();
-        // Per le entità tenant, seleziona lo schema appropriato
-        if (tenantIdentifier.equals("public")) {
-            connection.createStatement().execute("SET search_path TO public");  // Per le tabelle di sistema
-        } else {
-            connection.createStatement().execute("SET search_path TO " + tenantIdentifier);  // Per i tenant specifici
-        }
+        connection.createStatement().execute("SET search_path TO " + tenantIdentifier);
         return connection;
     }
 
     @Override
     public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException {
-        // Niente di speciale in questa configurazione, dobbiamo solo rilasciare la connessione.
+        connection.createStatement().execute("RESET search_path");
         connection.close();
     }
 

@@ -45,6 +45,11 @@ public class SystemUser {
     private String password;
 
     @ManyToMany
+    @JoinTable(
+            name = "ms3_user_hospital_mapping", // Nome della tabella di relazione
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), // Colonna per SystemUser
+            inverseJoinColumns = @JoinColumn(name = "hospital_id", referencedColumnName = "id") // Colonna per Hospital
+    )
     private Set<Hospital> hospitals;
 
     // Costruttore con parametri
