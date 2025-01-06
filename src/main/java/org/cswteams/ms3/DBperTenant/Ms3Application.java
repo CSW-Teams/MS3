@@ -1,4 +1,4 @@
-package org.cswteams.ms3;
+package org.cswteams.ms3.DBperTenant;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

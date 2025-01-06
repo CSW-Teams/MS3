@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>11</java.version>
-		<spring.datasource.url>jdbc:postgresql://localhost:5432/ms3</spring.datasource.url>
+		<spring.datasource.url>jdbc:postgresql://localhost:5432/tenant_mapper</spring.datasource.url>
 		<spring.datasource.driverClassName>org.postgresql.Driver</spring.datasource.driverClassName>
 		<spring.jpa.database-platform>org.hibernate.dialect.PostgreSQLDialect</spring.jpa.database-platform>
 	</properties>
@@ -95,7 +95,16 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>5.4.2.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+			<version>6.5.7</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
