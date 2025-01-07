@@ -50,6 +50,6 @@ public class LoginController implements UserDetailsService {
             throw new UsernameNotFoundException("SystemUser not found with email: " + email);
         }
 
-        return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getHospitals());
+        return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getTenant());
     }
 }

@@ -4,7 +4,6 @@ import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {t} from "i18next";
 import {panic} from "../components/common/Panic";
-import HospitalSelectionDialog from "../components/common/TenantPickerDialog";
 
 // Toast notification options for error/success messages
 const TOAST_OPTIONS = {
@@ -26,65 +25,12 @@ export default class MultiTenancyLoginView extends React.Component {
     // Initial state with empty fields for email and password
     this.state = {
       email: "",
-      password: "",
-
-      open: false, // Dialog box open/close state
-      systemHospitalsAvailable: [] // Available system hospitals for the user
+      password: ""
     }
 
     // Binding the handleSubmit method to the class instance
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-
-  // Opens the dialog box
-  handleDialogOpen = () => {
-    this.setState({open: true});
-  };
-
-  // Closes the dialog box and handles user hospital selection
-  handleDialogClose = async (hospital) => {
-    this.setState({open: false});
-
-    // If no hospital is passed, clear the stored user data
-    // User clicked out of the dialogue
-    if (hospital === undefined) {
-      localStorage.removeItem("id")
-      localStorage.removeItem("name")
-      localStorage.removeItem("lastname")
-      localStorage.removeItem("jwt")
-
-      toast.error(`${t('Login Failed:')} ${"No hospital selected for the login"}.`, TOAST_OPTIONS);
-
-      return
-    }
-
-    try {
-      // Retrieving user jwt from localStorage
-      const jwt = localStorage.getItem("jwt");
-
-      const api = new MultiTenancyLoginAPI();
-
-      // Post tenant selection with username, password, and selected hospital
-      const response = await api.postTenantSelection(hospital, jwt);
-
-      if (!response.ok) {
-        toast.error(`${t('Error:')} ${"Failed to set tenant."}`, TOAST_OPTIONS);
-      }
-
-      const updateJwt = await response.json(); // Get the updated JWT
-
-      // Store the updated JWT and hospital info
-      localStorage.setItem("jwt", updateJwt.jwt);
-      localStorage.setItem("tenant", hospital);
-
-      // Navigate to another page after successful tenant selection
-      this.props.history.push({pathname: '/multitenancy/info-utenti'});
-      window.location.reload();
-    } catch (error) {
-      toast.error(`${t('Error:')} ${"Failed to set tenant."}`, TOAST_OPTIONS);
-    }
-
-  };
 
   // Handles input changes for email and password fields
   handleInputChange(e) {
@@ -113,17 +59,12 @@ export default class MultiTenancyLoginView extends React.Component {
       localStorage.setItem("id", user.id);
       localStorage.setItem("name", user.name);
       localStorage.setItem("lastname", user.lastname);
+      localStorage.setItem("tenant", user.tenant);
       localStorage.setItem("jwt", user.jwt);
 
-      // If only one system hospital is available, close the dialog and proceed
-      if (user.systemHospitals.length === 1) {
-        await this.handleDialogClose(user.systemHospitals[0].name);
-        return;
-      }
-
-      // If multiple system actors are available, display the dialog for role selection
-      this.setState({ systemHospitalsAvailable: user.systemHospitals });
-      this.handleDialogOpen();
+      // Navigate to another page after successful
+      this.props.history.push({pathname: '/multitenancy/info-utenti'});
+      window.location.reload();
     };
 
     // Function to handle server errors (5xx responses)
@@ -167,10 +108,6 @@ export default class MultiTenancyLoginView extends React.Component {
   render() {
     return (
       <div className="Auth-form-container">
-
-        <HospitalSelectionDialog open={this.state.open}
-                                 onClose={this.handleDialogClose}
-                                 hospitals={this.state.systemHospitalsAvailable}/>
 
         <form className="Auth-form">
           <div className="Auth-form-content">
@@ -240,7 +177,7 @@ export default class MultiTenancyLoginView extends React.Component {
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>giuliacantone@gmail.com
+                }}>giuliacantone_tenant_a@gmail.com
                 </td>
                 <td style={{
                   textAlign: 'center'
@@ -250,7 +187,7 @@ export default class MultiTenancyLoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "giuliacantone@gmail.com"});
+                      this.setState({email: "giuliacantone_tenant_a@gmail.com"});
                       this.setState({password: "passw"});
                     }}>
                     Insert
@@ -261,7 +198,7 @@ export default class MultiTenancyLoginView extends React.Component {
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>domenicoverde@gmail.com
+                }}>domenicoverde_tenant_b@gmail.com
                 </td>
                 <td style={{
                   textAlign: 'center'
@@ -271,7 +208,7 @@ export default class MultiTenancyLoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "domenicoverde@gmail.com"});
+                      this.setState({email: "domenicoverde_tenant_b@gmail.com"});
                       this.setState({password: "passw"});
                     }}>Insert
                   </button>
@@ -281,18 +218,38 @@ export default class MultiTenancyLoginView extends React.Component {
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>giovannicantone@gmail.com
+                }}>giovannicantone_tenant_a@gmail.com
                 </td>
                 <td style={{
                   textAlign: 'center'
-                }}>A, B
+                }}>A
                 </td>
                 <td style={{padding: '10px', textAlign: 'center'}}>
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "giovannicantone@gmail.com"});
+                      this.setState({email: "giovannicantone_tenant_a@gmail.com"});
                       this.setState({password: "passw"});
+                    }}>Insert
+                  </button>
+                </td>
+              </tr>
+              <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{
+                  padding: '10px',
+                  textAlign: 'center'
+                }}>giovannicantone_tenant_b@gmail.com
+                </td>
+                <td style={{
+                  textAlign: 'center'
+                }}>B
+                </td>
+                <td style={{padding: '10px', textAlign: 'center'}}>
+                  <button
+                    style={{border: '1px solid black'}}
+                    onClick={() => {
+                      this.setState({email: "giovannicantone_tenant_b@gmail.com"});
+                      this.setState({password: "passw2"});
                     }}>Insert
                   </button>
                 </td>
