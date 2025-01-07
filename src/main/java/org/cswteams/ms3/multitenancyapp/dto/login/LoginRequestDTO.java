@@ -10,9 +10,11 @@ public class LoginRequestDTO {
 
     private String email;
     private String password;
+    private String tenant;
 
-    public LoginRequestDTO(String email, String password) {
+    public LoginRequestDTO(String email, String password, String tenant) {
         this.email = email;
         this.password = password;
+        this.tenant = tenant;
     }
 }

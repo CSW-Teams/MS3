@@ -15,9 +15,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/multitenancy/")
 public class LoginRestEndpoint {
@@ -63,34 +60,6 @@ public class LoginRestEndpoint {
         // TODO send a ResponseCookie instead of a Response Entity, cause this way the jwt could be stored in a cookie HTTP-Only
 
         return ResponseEntity.ok(new LoginResponseDTO(customUserDetails, jwt));
-    }
-
-    @RequestMapping(method = RequestMethod.POST, path = "/tenant/select/")
-    public ResponseEntity<?> setTenant(@RequestHeader("Authorization") String tokenHeader,
-                                       @RequestBody Map<String, String> request) {
-
-        String jwtToken = tokenHeader.replace("Bearer ", "");
-        String tenant = request.get("tenant").toLowerCase();
-
-        if (tenant.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tenant is required");
-        }
-
-        String userDetails = jwtTokenUtil.extractUsername(jwtToken);
-
-        final CustomUserDetails customUserDetails;
-        try {
-            customUserDetails = (CustomUserDetails) loginController.loadUserByUsername(userDetails);
-        } catch (Exception e) {
-            // TODO understand what to do with message
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
-
-        // Crea un nuovo token col tenant selezionato
-        String updatedJwt = jwtTokenUtil.generateTokenWithTenant(customUserDetails, tenant);
-
-        return ResponseEntity.ok(Collections.singletonMap("jwt", updatedJwt));
     }
 
 }

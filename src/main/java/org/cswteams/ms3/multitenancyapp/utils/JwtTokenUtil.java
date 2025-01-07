@@ -6,13 +6,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.cswteams.ms3.multitenancyapp.dto.login.CustomUserDetails;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class JwtTokenUtil {
@@ -28,20 +26,7 @@ public class JwtTokenUtil {
 
     public String generateToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("list_of_tenants", userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-
-        return createToken(claims, userDetails.getUsername());
-    }
-
-    // Generate a token with a specified tenant
-    public String generateTokenWithTenant(CustomUserDetails userDetails, String tenant) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("list_of_tenants", userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-        claims.put("current_tenant", tenant);
+        claims.put("current_tenant", userDetails.getTenant().toLowerCase());
 
         return createToken(claims, userDetails.getUsername());
     }

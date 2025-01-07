@@ -60,21 +60,21 @@ public class SchemasInitializer {
     }
 
     private void createTables() {
-        // Step 1: Crea le tabelle comuni nello schema 'public'
-        createTablesInPublicSchema();
+        // Step 1: Crea la tabella comune nello schema 'public'
+        createTableInPublicSchema();
 
         // Step 2: Crea la tabella TenantUser in ciascun schema dei tenant
         for (String schema : tenantSchemas) {
             try (Connection connection = dataSource.getConnection()) {
-                changeSchemaToTenant(connection, schema);
-                createTenantUserTableForTenant(connection, schema);
+                changeSchemaToTenant(connection, schema.toLowerCase());
+                createTenantUserTableForTenant(connection, schema.toLowerCase());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void createTablesInPublicSchema() {
+    private void createTableInPublicSchema() {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
 
@@ -84,35 +84,18 @@ public class SchemasInitializer {
                     "name VARCHAR(255) NOT NULL, " +
                     "lastname VARCHAR(255) NOT NULL, " +
                     "birthday DATE NOT NULL, " +
-                    "tax_code VARCHAR(20) UNIQUE NOT NULL, " +
+                    "tax_code VARCHAR(20) NOT NULL, " +
                     "email VARCHAR(255) UNIQUE NOT NULL, " +
-                    "password VARCHAR(255) NOT NULL);";
+                    "password VARCHAR(255) NOT NULL, " +
+                    "tenant VARCHAR(255) NOT NULL);";
 
-            // Comando SQL per creare la tabella ms3_hospitals
-            String sqlHospital = "CREATE TABLE IF NOT EXISTS ms3_hospitals (" +
-                    "id SERIAL PRIMARY KEY, " +
-                    "name VARCHAR(255) NOT NULL, " +
-                    "address VARCHAR(255) NOT NULL);";
-
-            // Comando SQL per creare la tabella di relazione tra ms3_system_users e ms3_hospitals
-            String sqlSystemUserHospital = "CREATE TABLE IF NOT EXISTS ms3_user_hospital_mapping (" +
-                    "user_id BIGINT NOT NULL, " +
-                    "hospital_id BIGINT NOT NULL, " +
-                    "PRIMARY KEY (user_id, hospital_id), " +
-                    "FOREIGN KEY (user_id) REFERENCES ms3_system_users(id) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (hospital_id) REFERENCES ms3_hospitals(id) ON DELETE CASCADE" +
-                    ");";
-
-            // Esegui le query per creare le tabelle
             statement.executeUpdate(sqlSystemUser);
-            statement.executeUpdate(sqlHospital);
-            statement.executeUpdate(sqlSystemUserHospital);
 
-            System.out.println("Tabelle ms3_system_users, ms3_hospitals e system_user_hospital create nello schema 'public'");
+            System.out.println("Tabella ms3_system_users creata nello schema 'public'");
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Errore nella creazione delle tabelle nello schema public", e);
+            throw new RuntimeException("Errore nella creazione della tabella nello schema public", e);
         }
     }
 
