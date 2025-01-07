@@ -40,7 +40,7 @@ const MainNavbar = ({ layout, stickyTop }) => {
             alignItems: 'center',
             justifyContent: 'center',
           }} >
-            <NavbarBrand className="mr-auto" href="/pianificazione-globale">
+            <NavbarBrand className="mr-auto" href="/multitenancy/info-utenti">
               <font style={{ fontWeight: 800 , fontstyle: FormatItalic ,textAlign: AlignHorizontalCenterRounded} } >
                 MEDICAL STAFF SHIFT SCHEDULER - {hospitalName}
               </font>

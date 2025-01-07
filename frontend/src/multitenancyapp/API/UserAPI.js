@@ -1,5 +1,5 @@
 import {teal} from '@mui/material/colors';
-import {fetchWithAuth} from "../../utils/fetchWithAuth";
+import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export  class UserAPI {
   constructor() {

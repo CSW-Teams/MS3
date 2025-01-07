@@ -1,8 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import enTranslation from './locales/en.json';
-import itTranslation from './locales/it.json';
+import enTranslation from './multitenancyapp/locales/en.json';
+import itTranslation from './multitenancyapp/locales/it.json';
 
 const userLanguage = navigator.language;
 const defaultLanguage = userLanguage.split('-')[0]; // Extract the language code

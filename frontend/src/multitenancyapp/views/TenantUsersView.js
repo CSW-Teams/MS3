@@ -8,7 +8,7 @@ import {
   MDBTableHead
 } from "mdb-react-ui-kit";
 import { t } from "i18next";
-import {panic} from "../../components/common/Panic";
+import {panic} from "../components/common/Panic";
 
 function defaultComparator(prop1, prop2){
   if (prop1 < prop2) return -1;

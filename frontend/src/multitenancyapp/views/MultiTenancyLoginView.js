@@ -3,7 +3,7 @@ import {MultiTenancyLoginAPI} from "../API/MultiTenancyLoginAPI";
 import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {t} from "i18next";
-import {panic} from "../../components/common/Panic";
+import {panic} from "../components/common/Panic";
 import HospitalSelectionDialog from "../components/common/TenantPickerDialog";
 
 // Toast notification options for error/success messages
