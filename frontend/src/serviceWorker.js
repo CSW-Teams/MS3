@@ -10,7 +10,7 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read http://bit.ly/CRA-PWA
 
-import {fetchWithAuth} from "./utils/fetchWithAuth";
+import {fetchWithAuth} from "./multitenancyapp/utils/fetchWithAuth";
 
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||

@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 import Dispatcher from "./dispatcher";
 import Constants from "./constants";
 import {attore, configuratore, pianificatore} from "../data/sidebar-nav-items";
-import i18n from '../i18n';
+import i18n from '../../i18n';
 
 function translateSidebarItems(items, translateFn) {
   return items.map(item => ({

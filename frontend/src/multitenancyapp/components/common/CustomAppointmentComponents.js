@@ -11,7 +11,7 @@ import {classes,StyledDiv} from "./style"
 import { SchedulableType } from "../../API/Schedulable";
 import Button from "@mui/material/Button";
 import { t } from "i18next";
-import partyImage from '../../images/party-icon.svg';
+import partyImage from '../../multitenancyapp/images/party-icon.svg';
 
 import {
   Dialog,

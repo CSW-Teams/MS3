@@ -7,7 +7,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
 import { t } from "i18next";
-import "./../../style/LoadingOverlay.css"
+import "../../multitenancyapp/style/LoadingOverlay.css"
 import {panic} from "./Panic";
 
 

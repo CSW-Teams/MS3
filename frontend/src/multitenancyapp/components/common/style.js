@@ -1,5 +1,5 @@
 import {styled} from "@mui/material/styles";
-import {getAppointmentColor, getResourceColor} from "../../utils/utils";
+import {getAppointmentColor, getResourceColor} from "../../multitenancyapp/utils/utils";
 import {Appointments} from "@devexpress/dx-react-scheduler-material-ui";
 import {lightBlue, red} from "@mui/material/colors";
 import {blue, teal} from "@material-ui/core/colors";
