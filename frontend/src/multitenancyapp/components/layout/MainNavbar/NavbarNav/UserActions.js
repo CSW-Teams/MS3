@@ -39,7 +39,6 @@ export default function UserActions() {
     localStorage.removeItem("id");
     localStorage.removeItem("name");
     localStorage.removeItem("lastname");
-    localStorage.removeItem("actor");
     localStorage.removeItem("tenant");
     localStorage.removeItem("jwt");
   };
