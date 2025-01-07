@@ -15,9 +15,10 @@ public class FallbackDataSourceConfig {
     public DataSource fallbackDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/tenant_mapping"); // Imposta l'URL
-        dataSource.setUsername("postgres");
-        dataSource.setPassword("postgres");
+        dataSource.setUrl("jdbc:postgresql://localhost:5432/tenant_mapper"); // Imposta l'URL
+        dataSource.setUsername("sprintfloyd");
+        dataSource.setPassword("sprintfloyd");
+        TenantContext.setCurrentTenant("tenant1");
         return dataSource;
     }
 }
