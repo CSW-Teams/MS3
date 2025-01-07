@@ -2,16 +2,15 @@ package org.cswteams.ms3.control.preferenze;
 
 import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dto.HolidayDTO;
+import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.enums.HolidayCategory;
+import org.cswteams.ms3.exception.CalendarServiceException;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.LocalDate;
@@ -20,13 +19,8 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@ActiveProfiles(value = "test")
+@SpringBootTest
 public class TestHolidayControllerMisc {
-    /*
-
     @Autowired
     private IHolidayController controller ;
 
@@ -75,43 +69,49 @@ public class TestHolidayControllerMisc {
     @Test
     public void testRegisterHolidayPeriod0YearsIndifferent() {
 
-        HolidayDTO dto = new HolidayDTO() ;
+        try {
+            HolidayDTO holidayDTO = new HolidayDTO(
+                    "NataleSantoStefano",
+                    HolidayCategory.RELIGIOUS,
+                    LocalDate.of(2023, 12, 25).toEpochDay(),
+                    LocalDate.of(2023, 12, 26).toEpochDay(),
+                    "Lapponia"
+                    ) ;
 
-        dto.setName("NataleSantoStefano");
-        dto.setCategory(HolidayCategory.RELIGIOUS) ;
-        dto.setLocation("Lapponia") ;
-        dto.setStartDateEpochDay(LocalDate.of(2023, 12, 25).toEpochDay());
-        dto.setEndDateEpochDay(LocalDate.of(2023, 12, 26).toEpochDay()) ;
+            controller.registerHolidayPeriod(holidayDTO, 0) ;
 
-        controller.registerHolidayPeriod(dto, 0) ;
+            RetrieveHolidaysDTOIn retrieveHolidaysDTOIn = new RetrieveHolidaysDTOIn(2023, "Lapponia") ;
 
-        List<Holiday> holidays = controller.readHolidays() ;
+            List<HolidayDTO> holidays1 = controller.readHolidays(retrieveHolidaysDTOIn);
 
-        assertEquals(1, holidays.size());
+            assertEquals(1, holidays1.size());
 
-        dao.deleteAll() ;
+            dao.deleteAll() ;
 
-        controller.registerHolidayPeriod(dto) ;
+            controller.registerHolidayPeriod(holidayDTO) ;
 
-        List<Holiday> holidays2 = controller.readHolidays() ;
+            List<HolidayDTO> holidays2 = controller.readHolidays(retrieveHolidaysDTOIn) ;
 
-        assertEquals(1, holidays2.size());
+            assertEquals(1, holidays2.size());
 
-        Holiday holiday1, holiday2 ;
+            HolidayDTO holiday1, holiday2 ;
 
-        holiday1 = holidays.get(0) ;
-        holiday2 = holidays2.get(0) ;
+            holiday1 = holidays1.get(0) ;
+            holiday2 = holidays2.get(0) ;
 
-        assertEquals(holiday1.getName(), holiday2.getName());
-        assertEquals(holiday1.getCategory(), holiday2.getCategory());
-        assertEquals(holiday1.getLocation(), holiday2.getLocation());
-        assertEquals(holiday1.getStartDateEpochDay(), holiday2.getStartDateEpochDay());
-        assertEquals(holiday1.getEndDateEpochDay(), holiday2.getEndDateEpochDay());
+            assertEquals(holiday1.getName(), holiday2.getName());
+            assertEquals(holiday1.getCategory(), holiday2.getCategory());
+            assertEquals(holiday1.getLocation(), holiday2.getLocation());
+            assertEquals(holiday1.getStartDateEpochDay(), holiday2.getStartDateEpochDay());
+            assertEquals(holiday1.getEndDateEpochDay(), holiday2.getEndDateEpochDay());
+        } catch (CalendarServiceException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @After
     public void cleanUp() {
         dao.deleteAll() ;
     }
-     */
+
 }

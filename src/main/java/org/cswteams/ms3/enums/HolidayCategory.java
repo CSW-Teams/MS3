@@ -43,7 +43,7 @@ public enum HolidayCategory {
      * @param nameCategory category name string
      * @return <code>HolidayCategory</code> enum object corresponding to <code>nameCategory</code>
      */
-    public HolidayCategory toCategory(String nameCategory){
+    public static HolidayCategory toCategory(String nameCategory){
         for(HolidayCategory h: values()){
             if(h.toString().equals(nameCategory)){
                 return  h;
