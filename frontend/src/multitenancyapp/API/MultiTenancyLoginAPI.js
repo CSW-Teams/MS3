@@ -22,4 +22,17 @@ export  class MultiTenancyLoginAPI {
     return await fetch('/api/multitenancy/login/', requestOptions);
   }
 
+  async postTenantSelection(hospital, jwt) {
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`
+      },
+      body: JSON.stringify({ tenant: hospital })
+    };
+
+    return await fetch('/api/multitenancy/tenant/select/', requestOptions);
+  }
+
 }
