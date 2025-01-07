@@ -38,7 +38,7 @@ public class CustomUserDetails implements UserDetails {
         if (systemHospitals != null && !systemHospitals.isEmpty()) {
             // If needed, you could derive some authorities based on the hospitals a user is associated with.
             return systemHospitals.stream()
-                    .map(hospital -> new SimpleGrantedAuthority("TENANT_" + hospital.getId())) // Add authorities based on hospital ID.
+                    .map(hospital -> new SimpleGrantedAuthority("tenant_" + hospital.getName().toLowerCase())) // Add authorities based on hospital ID.
                     .collect(Collectors.toSet());
         }
 

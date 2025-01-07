@@ -70,11 +70,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 user.getPassword()
         );
 
-        user.getHospitals().stream().forEach(item -> {
+        user.getHospitals().forEach(item -> {
             String tenantName = item.getName().toLowerCase();
             try {
                 // Salva l'utente nello schema del tenant
-                TenantContext.setCurrentTenant("tenant_" + tenantName);
+                TenantContext.setCurrentTenant(tenantName);
                 tenantUserDAO.saveAndFlush(tenantSpecificUser);
             } catch (Exception e) {
                 System.err.println("Errore nell'inserimento utente nello schema " + tenantName + ": " + e.getMessage());

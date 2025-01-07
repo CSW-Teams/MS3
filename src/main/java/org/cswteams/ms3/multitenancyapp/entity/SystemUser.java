@@ -44,7 +44,7 @@ public class SystemUser {
     @Column(name = "password")
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "ms3_user_hospital_mapping", // Nome della tabella di relazione
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), // Colonna per SystemUser

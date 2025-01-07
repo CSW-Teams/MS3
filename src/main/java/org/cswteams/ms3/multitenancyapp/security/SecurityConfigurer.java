@@ -47,18 +47,15 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
                 // Allow public access to the "/authenticate" endpoint.
                 // This is necessary because users need to access this endpoint to obtain their authentication token.
-                .antMatchers(HttpMethod.POST, "/login/").permitAll()
-                .antMatchers(HttpMethod.GET, "/login/").permitAll()
+                .antMatchers(HttpMethod.POST, "/multitenancy/login/").permitAll()
+                .antMatchers(HttpMethod.GET, "/multitenancy/login/").permitAll()
 
                 // Require authentication for all other endpoints.
                 // This ensures that all other resources are secured and can only be accessed by authenticated users with valid credentials.
                 .anyRequest().authenticated()
 
                 .and().formLogin()
-                .loginPage("/login").permitAll()
-
-                .and().formLogin()
-                .loginPage("/login/").permitAll()
+                .loginPage("/multitenancy/login").permitAll()
 
                 // Configure the session management policy.
                 // Set the session creation policy to "STATELESS" as the application does not use sessions;
