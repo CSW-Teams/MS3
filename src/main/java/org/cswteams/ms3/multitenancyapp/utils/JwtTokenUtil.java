@@ -10,10 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -31,9 +28,20 @@ public class JwtTokenUtil {
 
     public String generateToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("tenant", userDetails.getAuthorities().stream()
+        claims.put("list_of_tenants", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
+
+        return createToken(claims, userDetails.getUsername());
+    }
+
+    // Generate a token with a specified tenant
+    public String generateTokenWithTenant(CustomUserDetails userDetails, String tenant) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("list_of_tenants", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+        claims.put("current_tenant", tenant);
 
         return createToken(claims, userDetails.getUsername());
     }
@@ -74,11 +82,6 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    /**
-     * Estrai l'ID del tenant dal JWT.
-     * @param token Il token JWT
-     * @return Il tenantId estratto
-     */
     public String parseTenantFromJwt(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(getSigningKey())
@@ -86,7 +89,6 @@ public class JwtTokenUtil {
                 .parseClaimsJws(token)
                 .getBody();
 
-        // Recupera il tenantId dal claim, assumendo che il nome del claim sia "tenantId"
-        return claims.get("tenantId", String.class);  // Restituisce il valore del claim 'tenantId'
+        return claims.get("current_tenant", String.class);
     }
 }

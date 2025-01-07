@@ -58,11 +58,11 @@ export default function HospitalSelectionDialog({ open, onClose, hospitals }) {
                 display: 'flex',
                 flexDirection: 'column'
               }}>
-                <CardActionArea onClick={() => onSelectHospital(hospital.id)}>
+                <CardActionArea onClick={() => onSelectHospital(hospital.name)}>
                   <CardMedia
                     component="img"
                     height="140"
-                    image={hospital.imgPath || '/images/default_hospital.svg'}
+                    image={"/hospital-solid.svg"}
                     alt="Hospital Icon"
                     style={{ objectFit: 'contain', padding: 16 }}
                   />

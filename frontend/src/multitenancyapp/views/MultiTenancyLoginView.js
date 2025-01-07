@@ -42,7 +42,7 @@ export default class MultiTenancyLoginView extends React.Component {
   };
 
   // Closes the dialog box and handles user hospital selection
-  handleDialogClose = (hospital) => {
+  handleDialogClose = async (hospital) => {
     this.setState({open: false});
 
     // If no hospital is passed, clear the stored user data
@@ -58,16 +58,32 @@ export default class MultiTenancyLoginView extends React.Component {
       return
     }
 
-    // Store the selected hospital in localStorage and navigate to another page
-    localStorage.setItem("tenant", hospital);
+    try {
+      // Retrieving user jwt from localStorage
+      const jwt = localStorage.getItem("jwt");
 
-    // Navigate to the 'utenti-tenant' page
-    this.props.history.push({
-      pathname: '/multitenancy/info-utenti',
-    });
+      const api = new MultiTenancyLoginAPI();
 
-    // Reload the page after navigation
-    window.location.reload();
+      // Post tenant selection with username, password, and selected hospital
+      const response = await api.postTenantSelection(hospital, jwt);
+
+      if (!response.ok) {
+        toast.error(`${t('Error:')} ${"Failed to set tenant."}`, TOAST_OPTIONS);
+      }
+
+      const updateJwt = await response.json(); // Get the updated JWT
+
+      // Store the updated JWT and hospital info
+      localStorage.setItem("jwt", updateJwt.jwt);
+      localStorage.setItem("tenant", hospital);
+
+      // Navigate to another page after successful tenant selection
+      this.props.history.push({pathname: '/multitenancy/info-utenti'});
+      window.location.reload();
+    } catch (error) {
+      toast.error(`${t('Error:')} ${"Failed to set tenant."}`, TOAST_OPTIONS);
+    }
+
   };
 
   // Handles input changes for email and password fields
@@ -101,7 +117,7 @@ export default class MultiTenancyLoginView extends React.Component {
 
       // If only one system hospital is available, close the dialog and proceed
       if (user.systemHospitals.length === 1) {
-        this.handleDialogClose(user.systemHospitals[0]);
+        await this.handleDialogClose(user.systemHospitals[0].name);
         return;
       }
 
@@ -153,8 +169,8 @@ export default class MultiTenancyLoginView extends React.Component {
       <div className="Auth-form-container">
 
         <HospitalSelectionDialog open={this.state.open}
-                             onClose={this.handleDialogClose}
-                             hospitals={this.state.systemHospitalsAvailable}/>
+                                 onClose={this.handleDialogClose}
+                                 hospitals={this.state.systemHospitalsAvailable}/>
 
         <form className="Auth-form">
           <div className="Auth-form-content">
