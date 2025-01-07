@@ -60,6 +60,8 @@ const NewShiftForm = ({
   const handleAddNewShift = () => {
     let shiftCopy = {};
 
+    shiftCopy.id = "shiftId-" + Date.now();
+
     shiftCopy.timeSlot = timeSlot;
 
     shiftCopy.daysOfWeek = selectedDays.slice();
@@ -80,10 +82,10 @@ const NewShiftForm = ({
       quantity: quantity
     }));
 
-    // Close NewShiftForms
-    handleCollapseShiftFormToggle();
+    let res = handleSubmitShiftForm(shiftCopy);
 
-    handleSubmitShiftForm(shiftCopy);
+    // Close NewShiftForms
+    if (!res) handleCollapseShiftFormToggle();
   }
 
   const handleResetShiftForm = () => {

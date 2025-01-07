@@ -14,6 +14,7 @@ import IconButton from "@mui/material/IconButton";
 
 const ShiftItemBox: React.FC<{
   shiftData: {
+    id: string;
     timeSlot: string;
     startHour: number;
     startMinute: number;
@@ -26,19 +27,7 @@ const ShiftItemBox: React.FC<{
       quantity: number
     }[];
   };
-  onDelete: (shift: {
-    timeSlot: string;
-    startHour: number;
-    startMinute: number;
-    durationMinutes: number;
-    daysOfWeek: string[];
-    medicalService: { label: string };
-    quantityshiftseniority: {
-      task: string;
-      seniority: string;
-      quantity: number
-    }[];
-  }) => void;
+  onDelete: (shift: number) => void;
 }> = ({shiftData, onDelete}) => {
   const [open, setOpen] = useState(false);
 
@@ -65,7 +54,7 @@ const ShiftItemBox: React.FC<{
 
       {/* Bottone per cancellare */}
       <IconButton
-        onClick={() => onDelete(shiftData)}
+        onClick={() => onDelete(shiftData.id)}
         color="error"
         sx={{
           position: 'absolute',

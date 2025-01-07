@@ -13,11 +13,12 @@ import {
   Toolbar,
   Typography
 } from "@mui/material";
-import {t} from "i18next";
 import CloseIcon from "@mui/icons-material/Close";
-import CheckboxGroup from "./CheckboxGroup";
-import {panic} from "./Panic";
 import {KeyboardArrowLeft, KeyboardArrowRight} from "@material-ui/icons";
+import {t} from "i18next";
+import CheckboxGroup from "./CheckboxGroup";
+import { toast } from 'react-toastify';
+import {panic} from "./Panic";
 import {TurnoAPI} from "../../API/TurnoAPI";
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -31,6 +32,19 @@ const defaultServiceValues = {
 
   shiftList: []
 }
+
+const showToast = (message, type = 'success') => {
+  toast[type](message, {
+    position: "top-center",
+    autoClose: 5000,
+    hideProgressBar: true,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored",
+  });
+};
 
 const MultiStepDialog = ({
                            tasks, services, updateServicesList
@@ -136,34 +150,9 @@ const MultiStepDialog = ({
     shift.quantityshiftseniority.some(item => item.task === selectedMansions[step - 1])
   );
 
-  const handleDeleteShift = (shiftToDelete: {
-    timeSlot: string;
-    startHour: number;
-    startMinute: number;
-    durationMinutes: number;
-    daysOfWeek: string[];
-    medicalService: { label: string };
-    quantityshiftseniority: {
-      task: string;
-      seniority: string;
-      quantity: number;
-    }[];
-  }) => {
+  const handleDeleteShift = (shiftToDelete: number) => {
     const updatedShiftList = shiftList.filter(shift => {
-      const quantityShiftsMatch = shift.quantityshiftseniority.length === shiftToDelete.quantityshiftseniority.length &&
-        shift.quantityshiftseniority.every((shiftItem, index) =>
-          shiftItem.task === shiftToDelete.quantityshiftseniority[index].task &&
-          shiftItem.seniority === shiftToDelete.quantityshiftseniority[index].seniority &&
-          shiftItem.quantity === shiftToDelete.quantityshiftseniority[index].quantity
-        );
-
-      return !(shift.timeSlot === shiftToDelete.timeSlot &&
-        shift.startHour === shiftToDelete.startHour &&
-        shift.startMinute === shiftToDelete.startMinute &&
-        shift.durationMinutes === shiftToDelete.durationMinutes &&
-        shift.daysOfWeek.length === shiftToDelete.daysOfWeek.length &&
-        quantityShiftsMatch
-      );
+      return !(shift.id === shiftToDelete)
     });
 
     setShiftList(updatedShiftList);
@@ -176,7 +165,71 @@ const MultiStepDialog = ({
   };
 
   // TEMP
-  const handleFormFinish = () => {
+  const handleSubmitShiftForm = (newShift) => {
+    const { timeSlot, startHour, startMinute, durationMinutes, daysOfWeek: newShiftDaysOfWeek } = newShift;
+
+    // Funzione per convertire il giorno e l'orario in un indice di minuto
+    function getMinuteIndex(day, hour, minute) {
+      const dayIndex = daysOfWeek.indexOf(day); // Trova il giorno della settimana
+      return (dayIndex * 24 * 60) + (+hour * 60) + +minute; // Restituisce l'indice minuto della settimana
+    }
+
+    let weekArray = Array(24 * 7 * 60).fill(0);
+    newShiftDaysOfWeek.forEach((day) => {
+      const arrayStart = getMinuteIndex(day, startHour, startMinute);
+      const arrayEnd = arrayStart + durationMinutes;
+
+      // Controlliamo se l'indice finale è all'interno del limite
+      for (let i = arrayStart; i < arrayEnd; i++) weekArray[i % (7 * 24 * 60)] = 1; // Segna il periodo come occupato
+    });
+
+    // Funzione di verifica per la sovrapposizione temporale e conflitti di timeSlot
+    const hasConflict = filteredShiftList.some(shift => {
+      // Controlla se ci sono giorni in comune tra il nuovo turno e il turno esistente
+      const commonDays = shift.daysOfWeek.filter(day => newShiftDaysOfWeek.includes(day));
+      if (commonDays.length > 0 && shift.timeSlot === timeSlot) {
+        console.error(`Conflitto di timeSlot (${timeSlot}) nei giorni: ${commonDays.join(", ")}`);
+        return true; // Stesso timeSlot nei giorni in comune: conflitto
+      }
+
+      let retValue = false;
+
+      shift.daysOfWeek.forEach(day => {
+        const arrayStart = getMinuteIndex(day, shift.startHour, shift.startMinute);
+        const arrayEnd = arrayStart + shift.durationMinutes;
+
+        // Controlla se ci sono turni che si sovrappongono
+        for (let i = arrayStart; i < arrayEnd; i++) {
+          if (weekArray[i % (7 * 24 * 60)] === 1) {
+            console.error("Conflitto di orari con il turno esistente.");
+
+            retValue = true;
+            break;
+          }
+        }
+
+      })
+
+      return retValue;
+    });
+
+    // Se c'è un conflitto, avvisa l'utente e interrompi
+    if (hasConflict) {
+      showToast(
+        "Il nuovo turno si sovrappone o utilizza lo stesso timeSlot di un turno esistente. Modifica i dettagli e riprova.",
+        "error"
+      );
+    } else {
+      // Se non ci sono conflitti, aggiungi il turno alla lista
+      setShiftList(prevList => [...prevList, newShift]);
+      showToast("Turno aggiunto con successo!");
+    }
+
+    return hasConflict;
+  };
+
+
+  const handleServiceCreationFinish = () => {
     // TODO: manage post operation
 
     console.log(shiftList)
@@ -309,7 +362,7 @@ const MultiStepDialog = ({
           <NewShiftForm
             openCollapseShiftForm={openCollapseShiftForm}
             handleCollapseShiftFormToggle={handleCollapseShiftFormToggle}
-            handleSubmitShiftForm={(newShift) => {setShiftList((prev) => [...prev, newShift])}}
+            handleSubmitShiftForm={handleSubmitShiftForm}
             medicalServiceName={medicalServiceName}
             task={selectedMansions[step - 1]}
             timeSlotList={timeSlotList}
@@ -335,7 +388,7 @@ const MultiStepDialog = ({
         activeStep={step}
         sx={{width: '100%'}}
         nextButton={(step === selectedMansions.length && selectedMansions.length !== 0) ? (
-          <Button size="small" onClick={handleFormFinish}>
+          <Button size="small" onClick={handleServiceCreationFinish}>
             Finish
           </Button>) : (<Button size="small" onClick={nextStep}
                                 disabled={step === selectedMansions.length || medicalServiceName === ""}>
