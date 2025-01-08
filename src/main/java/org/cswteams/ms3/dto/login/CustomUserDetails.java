@@ -22,15 +22,17 @@ public class CustomUserDetails implements UserDetails {
     private final String email;
     private final String password;
     private final Set<SystemActor> systemActors;
+    private final String tenant;
 
 
-    public CustomUserDetails(Long id, String name, String lastname, String email, String password, Set<SystemActor> systemActors) {
+    public CustomUserDetails(Long id, String name, String lastname, String email, String password, Set<SystemActor> systemActors, String tenant) {
         this.id = id;
         this.name = name;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
         this.systemActors = systemActors;
+        this.tenant = tenant;
     }
 
     /**

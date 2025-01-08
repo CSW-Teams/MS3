@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity;
 
 import lombok.Getter;
 import org.cswteams.ms3.entity.condition.*;
+import org.cswteams.ms3.multitenancyapp.entity.TenantUser;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 
@@ -16,12 +17,12 @@ import java.util.Set;
  * A <i>Doctor</i> in the system.
  *
  * @see <a href="https://github.com/CSW-Teams/MS3/wiki#medici">Glossary</a>.
- * @see User
+ * @see TenantUser
  * @see SystemActor
  */
 @Getter
 @Entity
-public class Doctor extends User{
+public class Doctor extends TenantUser {
     /*TODO : Check if it is necessary Setter for password on password change
      *  Should be added a Factory to set protected access to doctor (So that no one can change his credentials
      * as he pleases) */

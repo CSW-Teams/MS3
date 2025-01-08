@@ -20,8 +20,7 @@ import java.util.Set;
 @Data
 @Entity
 @Table(name = "ms3_system_user")
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class User {
+public class SystemUser {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "ms3_system_user_id", nullable = false)
@@ -34,13 +33,13 @@ public class User {
     private String lastname;
 
     /**
-     * User's DOB.
+     * SystemUser's DOB.
      */
     @NotNull
     private LocalDate birthday;
 
     /**
-     * User's tax code (i.e., in Italy, "Codice Fiscale")
+     * SystemUser's tax code (i.e., in Italy, "Codice Fiscale")
      */
     @NotNull
     private String taxCode;
@@ -60,6 +59,9 @@ public class User {
     @ElementCollection(targetClass = SystemActor.class, fetch = FetchType.EAGER)
     private Set<SystemActor> systemActors;
 
+    @NotNull
+    private String tenant;
+
 
     /**
      * Create a new system <i>user</i> with the specified parameters.
@@ -72,8 +74,8 @@ public class User {
      * @param password     Password of the user
      * @param systemActors Set of roles of the user in the system (configurator/planner/doctor/user)
      */
-    public User(String name, String lastname, String taxCode,
-                LocalDate birthday, String email, String password, Set<SystemActor> systemActors) {
+    public SystemUser(String name, String lastname, String taxCode,
+                      LocalDate birthday, String email, String password, Set<SystemActor> systemActors, String tenant) {
         this.name = name;
         this.lastname = lastname;
         this.taxCode = taxCode;
@@ -81,12 +83,13 @@ public class User {
         this.email = email;
         this.password = password;
         this.systemActors = systemActors;
+        this.tenant = tenant;
     }
 
     /**
      * Default constructor needed for lombok @Data annotation on Doctor entity
      */
-    protected User() {
+    protected SystemUser() {
 
     }
 

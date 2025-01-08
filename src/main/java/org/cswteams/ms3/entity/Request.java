@@ -29,14 +29,14 @@ public class Request extends Notificable {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
-    private User sender;
+    private SystemUser sender;
 
     /**
      * Recipient user.
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
-    private User receiver;
+    private SystemUser receiver;
 
     /**
      * <i>Concrete shift</i> to be updated
@@ -61,7 +61,7 @@ public class Request extends Notificable {
      */
     @Override
     public Notification getNotification() {
-        User user= null;
+        SystemUser user= null;
         String msg= "";
         switch (this.status){
             case ACCEPTED:
@@ -81,7 +81,7 @@ public class Request extends Notificable {
         return notification;
     }
 
-    public Request(User sender, User receiver, ConcreteShift turn, Observer observer) {
+    public Request(SystemUser sender, SystemUser receiver, ConcreteShift turn, Observer observer) {
         super(observer);
         this.sender = sender;
         this.receiver = receiver;

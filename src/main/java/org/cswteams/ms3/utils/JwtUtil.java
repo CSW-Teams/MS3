@@ -35,6 +35,7 @@ public class JwtUtil {
         claims.put("role", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
+        claims.put("current_tenant", userDetails.getTenant().toLowerCase());
 
         return createToken(claims, userDetails.getUsername());
     }
@@ -73,5 +74,15 @@ public class JwtUtil {
                 .setExpiration(expirationDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String parseTenantFromJwt(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("current_tenant", String.class);
     }
 }
