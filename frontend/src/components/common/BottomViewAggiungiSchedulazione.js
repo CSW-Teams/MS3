@@ -76,7 +76,7 @@ export default function TemporaryDrawerSchedulo(props) {
         theme: "colored",
       });
     }
-    else if (status == 406){
+    else if (status == 406){ //NOT ACCEPTABLE HTTP ERROR
       toast.error(t("Error: Schedule already exists"), {
         position: "top-center",
         autoClose: 5000,

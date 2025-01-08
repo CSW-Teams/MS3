@@ -179,7 +179,7 @@ public class ScheduleBuilder {
     }
 
 
-    public Schedule build(){
+    public Schedule build() throws IllegalScheduleException {
         // At this point there are no concrete shifts in the schedule yet
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
@@ -216,8 +216,7 @@ public class ScheduleBuilder {
                                         .stream()
                                         .filter(da->da.getDoctor().getSeniority() == Seniority.STRUCTURED)
                                         .collect(Collectors.toList());
-                                //todo: AGISCI QUI ALE! AGISCI QUI
-                                if(listDa.isEmpty()) continue;
+                                if(listDa.isEmpty()) throw new IllegalScheduleException("There aren't structured meds for this shift");
                             }
 
                             // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
