@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.*;
+import java.util.Optional;
 
 @Component()
 @Profile("!test")
@@ -41,31 +42,43 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             populateDB();
 
             // Ripristina lo schema di default ("public" per PostgreSQL)
-            TenantContext.setCurrentTenant("public");
+            // TenantContext.setCurrentTenant("public");
          // }
 
     }
 
     private void addUserToTenantsSelective(SystemUser user) {
-
-        TenantUser tenantSpecificUser = new TenantUser(
-                user.getName(),
-                user.getLastname(),
-                user.getTaxCode(),
-                user.getBirthday(),
-                user.getEmail(),
-                user.getPassword()
-        );
+        String originalTenant = TenantContext.getCurrentTenant(); // Salva il contesto corrente
 
         try {
-            // Salva l'utente nello schema del tenant
-            TenantContext.setCurrentTenant(user.getTenant().toLowerCase());
-            tenantUserDAO.saveAndFlush(tenantSpecificUser);
+            TenantContext.setCurrentTenant(user.getTenant().toLowerCase()); // Cambia il contesto al tenant specifico
+
+            // Verifica se l'utente esiste già
+            Optional<TenantUser> existingUser = tenantUserDAO.findByTaxCode(user.getTaxCode());
+            if (existingUser.isPresent()) {
+                System.out.println("Utente con codice fiscale " + user.getTaxCode() + " già presente nello schema " + user.getTenant());
+                return;
+            }
+
+            // Inserisci il nuovo utente
+            TenantUser tenantSpecificUser = new TenantUser(
+                    user.getName(),
+                    user.getLastname(),
+                    user.getTaxCode(),
+                    user.getBirthday(),
+                    user.getEmail(),
+                    user.getPassword()
+            );
+            tenantUserDAO.saveAndFlush(tenantSpecificUser); // Salva nel database del tenant
+            System.out.println("Utente " + user.getTaxCode() + " aggiunto nello schema " + user.getTenant());
         } catch (Exception e) {
             System.err.println("Errore nell'inserimento utente nello schema " + user.getTenant() + ": " + e.getMessage());
-        };
-
+        } finally {
+            TenantContext.setCurrentTenant(originalTenant); // Ripristina il contesto originale
+        }
     }
+
+
 
     private void populateDB() {
 
@@ -90,24 +103,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         SystemUser u45_1 = new SystemUser("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi_tenant_a@gmail.com",encoder.encode("passw"), "A");
         SystemUser u45_2 = new SystemUser("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi_tenant_b@gmail.com",encoder.encode("passw2"), "B");
 
-        u1_1 = systemUserDAO.saveAndFlush(u1_1);
-        u1_2 = systemUserDAO.saveAndFlush(u1_2);
-        u2 = systemUserDAO.saveAndFlush(u2);
-        u3 = systemUserDAO.saveAndFlush(u3);
-        u4 = systemUserDAO.saveAndFlush(u4);
-        u5 = systemUserDAO.saveAndFlush(u5);
-        u6_1 = systemUserDAO.saveAndFlush(u6_1);
-        u6_2 = systemUserDAO.saveAndFlush(u6_2);
-        u7 = systemUserDAO.saveAndFlush(u7);
-        u8_1 = systemUserDAO.saveAndFlush(u8_1);
-        u8_2 = systemUserDAO.saveAndFlush(u8_2);
-        u9 = systemUserDAO.saveAndFlush(u9);
-        u10_1 = systemUserDAO.saveAndFlush(u10_1);
-        u10_2 = systemUserDAO.saveAndFlush(u10_2);
-        u44_1 = systemUserDAO.saveAndFlush(u44_1);
-        u45_1 = systemUserDAO.saveAndFlush(u45_1);
-        u44_2 = systemUserDAO.saveAndFlush(u44_2);
-        u45_2 = systemUserDAO.saveAndFlush(u45_2);
 
         // Inserire utenti negli schemi tenant
         addUserToTenantsSelective(u1_1);
