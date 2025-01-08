@@ -3,7 +3,7 @@ package org.cswteams.ms3.control.passwordChange;
 
 import org.cswteams.ms3.dao.SystemUserDAO;
 import org.cswteams.ms3.dto.changePassword.ChangePasswordDTO;
-import org.cswteams.ms3.entity.SystemUser;
+import org.cswteams.ms3.entity.TenantUser;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.cswteams.ms3.exception.changePassword.WrongOldPasswordException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +19,11 @@ public class PasswordChange implements IPasswordChange {
 
     @Override
     public ChangePasswordDTO changePassword(@NotNull ChangePasswordDTO dto) throws DatabaseException, WrongOldPasswordException {
-        Optional<SystemUser> u = userDAO.findById(dto.getUserId());
+        Optional<TenantUser> u = userDAO.findById(dto.getUserId());
         if (u.isEmpty()) {
-            throw new DatabaseException("SystemUser not found.");
+            throw new DatabaseException("TenantUser not found.");
         } else {
-            SystemUser user = u.get();
+            TenantUser user = u.get();
             if (user.getPassword().equals(dto.getOldPassword())) {
                 user.setPassword(dto.getNewPassword());
                 userDAO.saveAndFlush(user);

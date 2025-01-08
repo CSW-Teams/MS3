@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.user;
 
 import org.cswteams.ms3.dao.DoctorDAO;
-import org.cswteams.ms3.dao.SystemUserDAO;
+import org.cswteams.ms3.dao.TenantUserDAO;
 import org.cswteams.ms3.dto.condition.PermanentConditionDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.dto.user.UserDTO;
@@ -12,7 +12,7 @@ import org.cswteams.ms3.dto.userprofile.TemporaryConditionDTO;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.Preference;
 import org.cswteams.ms3.entity.Specialization;
-import org.cswteams.ms3.entity.SystemUser;
+import org.cswteams.ms3.entity.TenantUser;
 import org.cswteams.ms3.entity.condition.Condition;
 import org.cswteams.ms3.entity.condition.PermanentCondition;
 import org.cswteams.ms3.entity.condition.TemporaryCondition;
@@ -33,14 +33,14 @@ public class UserController implements IUserController {
     private DoctorDAO doctorDAO;
 
     @Autowired
-    private SystemUserDAO userDAO;
+    private TenantUserDAO userDAO;
 
     @Override
     public Set<UserDTO> getAllUsers() {
-        List<SystemUser> users = userDAO.findAll();
+        List<TenantUser> users = userDAO.findAll();
         Set<UserDTO> doctorsSet = new HashSet<>();
 
-        for (SystemUser u: users){
+        for (TenantUser u: users){
             List<String> systemActors = new ArrayList<>();
             for(SystemActor a : u.getSystemActors()){
                 systemActors.add(a.toString());
@@ -67,7 +67,7 @@ public class UserController implements IUserController {
             }
         }
 
-        SystemUser newUser = new SystemUser(s.getName(), s.getLastname(), s.getTaxCode(),
+        TenantUser newUser = new TenantUser(s.getName(), s.getLastname(), s.getTaxCode(),
                 s.getBirthday(), s.getEmail(), s.getPassword(), enumSet);
         userDAO.save(newUser);
     }
@@ -106,7 +106,7 @@ public class UserController implements IUserController {
             if(doctor == null){
 
                 // The user isn't a doctor
-                SystemUser user = userDAO.getOne((long)userId);
+                TenantUser user = userDAO.getOne((long)userId);
 
                 // Convert systemActor entity in string for the frontend
                 for(SystemActor systemActor : user.getSystemActors()){
@@ -196,14 +196,14 @@ public class UserController implements IUserController {
 
     @Override
     public void deleteUserSystemActor(Long userID, String systemActor) {
-        SystemUser user = userDAO.findById((long) userID);
+        TenantUser user = userDAO.findById((long) userID);
         user.getSystemActors().remove(SystemActor.valueOf(systemActor));
         userDAO.saveAndFlush(user);
     }
 
     @Override
     public void addSystemActor(Long userID, Set<String> systemActors) {
-        SystemUser user = userDAO.findById((long) userID);
+        TenantUser user = userDAO.findById((long) userID);
         for(String stringSystemActor: systemActors){
             user.getSystemActors().add(SystemActor.valueOf(stringSystemActor));
         }
@@ -213,7 +213,7 @@ public class UserController implements IUserController {
     @Override
     public void updateUserProfile(UpdateUserProfileDTO userDetailsDTO) {
         // Fetch the user by email or another unique identifier
-        SystemUser user = userDAO.findById(userDetailsDTO.getId());
+        TenantUser user = userDAO.findById(userDetailsDTO.getId());
 
         if (user != null) {
             user.setName(userDetailsDTO.getName());
@@ -224,7 +224,7 @@ public class UserController implements IUserController {
             // Save the updated user
             userDAO.saveAndFlush(user);
         } else {
-            throw new IllegalArgumentException("SystemUser with ID " + userDetailsDTO.getId() + " not found.");
+            throw new IllegalArgumentException("TenantUser with ID " + userDetailsDTO.getId() + " not found.");
         }
     }
 

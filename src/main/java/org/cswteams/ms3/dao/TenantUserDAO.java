@@ -1,7 +1,7 @@
 package org.cswteams.ms3.dao;
 
-import org.cswteams.ms3.multitenancyapp.entity.TenantUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.cswteams.ms3.entity.TenantUser;
 import org.springframework.stereotype.Repository;
 
 @Repository

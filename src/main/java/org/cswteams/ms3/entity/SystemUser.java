@@ -19,8 +19,9 @@ import java.util.Set;
  */
 @Data
 @Entity
-@Table(name = "ms3_system_user")
+@Table(name = "ms3_system_users")
 public class SystemUser {
+
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "ms3_system_user_id", nullable = false)
@@ -62,7 +63,6 @@ public class SystemUser {
     @NotNull
     private String tenant;
 
-
     /**
      * Create a new system <i>user</i> with the specified parameters.
      *
@@ -73,24 +73,22 @@ public class SystemUser {
      * @param email        E-mail of the user
      * @param password     Password of the user
      * @param systemActors Set of roles of the user in the system (configurator/planner/doctor/user)
+     * @param tenant       Tenant of the user
      */
-    public SystemUser(String name, String lastname, String taxCode,
-                      LocalDate birthday, String email, String password, Set<SystemActor> systemActors, String tenant) {
+    // Costruttore con parametri
+    public SystemUser(String name, String lastname, String taxCode, LocalDate birthday,
+                      String email, String password, Set<SystemActor> systemActors, String tenant) {
         this.name = name;
         this.lastname = lastname;
-        this.taxCode = taxCode;
         this.birthday = birthday;
+        this.taxCode = taxCode;
         this.email = email;
         this.password = password;
         this.systemActors = systemActors;
         this.tenant = tenant;
     }
 
-    /**
-     * Default constructor needed for lombok @Data annotation on Doctor entity
-     */
+    // Costruttore di default richiesto da JPA
     protected SystemUser() {
-
     }
-
 }

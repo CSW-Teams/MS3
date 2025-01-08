@@ -3,6 +3,7 @@ package org.cswteams.ms3.control.login;
 import org.cswteams.ms3.dao.SystemUserDAO;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.entity.SystemUser;
+import org.cswteams.ms3.entity.TenantUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,8 @@ public class LoginController implements UserDetailsService {
         // Retrieve the user from the database
         SystemUser user = userDAO.findByEmail(email);
         if (user == null) {
-            logger.error("SystemUser not found with email: {}", email);
-            throw new UsernameNotFoundException("SystemUser not found with email: " + email);
+            logger.error("TenantUser not found with email: {}", email);
+            throw new UsernameNotFoundException("TenantUser not found with email: " + email);
         }
 
         return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getSystemActors(), user.getTenant());

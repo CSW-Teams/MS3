@@ -599,7 +599,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 //        Doctor u39 = new Doctor("Matteo", "Kobero", "FDRMTT98S20H501D", LocalDate.of(1998, 11, 20), "matteokobero@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
 //        Doctor u40 = new Doctor("Sebastian", "Opriscan", "PRSSST00D12H501L", LocalDate.of(2000, 4, 12), "sebastianopriscan@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
 //        Doctor u41 = new Doctor("Simone", "Festa", "FSTSMN98E26H501N", LocalDate.of(1998, 5, 26), "simonefesta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
-//        SystemUser u42 = new SystemUser("Fabio", "Armani", "RMNFBA50M12G156E", LocalDate.of(1950, 8, 12), "fabioarmani@gmail.com", encoder.encode("passw"), Set.of(SystemActor.CONFIGURATOR));
+//        TenantUser u42 = new TenantUser("Fabio", "Armani", "RMNFBA50M12G156E", LocalDate.of(1950, 8, 12), "fabioarmani@gmail.com", encoder.encode("passw"), Set.of(SystemActor.CONFIGURATOR));
 //        Doctor u43 = new Doctor("Sara","Da Canal","PLMVLR93B12H501U",LocalDate.of(1999,6,19),"saradacanal@gmail.com",encoder.encode("passw"),Seniority.SPECIALIST_SENIOR,Set.of(SystemActor.DOCTOR));
 
 

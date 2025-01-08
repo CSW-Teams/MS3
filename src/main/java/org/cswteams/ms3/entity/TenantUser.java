@@ -1,7 +1,6 @@
-package org.cswteams.ms3.multitenancyapp.entity;
+package org.cswteams.ms3.entity;
 
 import lombok.Data;
-import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.enums.SystemActor;
 
 import javax.persistence.*;
@@ -20,10 +19,9 @@ import java.util.Set;
  */
 @Data
 @Entity
-@Table(name = "ms3_tenant_users")
+@Table(name = "ms3_tenant_user")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class TenantUser {
-
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "ms3_tenant_user_id", nullable = false)
@@ -71,21 +69,24 @@ public class TenantUser {
      * @param birthday     Date of birth
      * @param email        E-mail of the user
      * @param password     Password of the user
-     * @param systemActors Set of roles of the user in the tenant (configurator/planner/doctor/user)
+     * @param systemActors Set of roles of the user in the system (configurator/planner/doctor/user)
      */
-    // Costruttore con parametri
-    public TenantUser(String name, String lastname, String taxCode, LocalDate birthday,
-                      String email, String password, Set<SystemActor> systemActors) {
+    public TenantUser(String name, String lastname, String taxCode,
+                      LocalDate birthday, String email, String password, Set<SystemActor> systemActors) {
         this.name = name;
         this.lastname = lastname;
-        this.birthday = birthday;
         this.taxCode = taxCode;
+        this.birthday = birthday;
         this.email = email;
         this.password = password;
         this.systemActors = systemActors;
     }
 
-    // Costruttore di default richiesto da JPA
+    /**
+     * Default constructor needed for lombok @Data annotation on Doctor entity
+     */
     protected TenantUser() {
+
     }
+
 }

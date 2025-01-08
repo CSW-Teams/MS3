@@ -20,7 +20,7 @@ public class Notification {
 
     @ManyToOne
     @NotNull
-    private SystemUser user;
+    private TenantUser user;
 
     @NotNull
     private String message;
@@ -35,12 +35,12 @@ public class Notification {
     }
 
     /**
-     * Create a new notification for the specific <i>SystemUser</i>, with a specific text.
+     * Create a new notification for the specific <i>TenantUser</i>, with a specific text.
      *
-     * @param user    <i>SystemUser</i> to be notified
+     * @param user    <i>TenantUser</i> to be notified
      * @param message message to be delivered
      */
-    public Notification(SystemUser user, String message) {
+    public Notification(TenantUser user, String message) {
         this.user=user;
         this.message=message;
     }

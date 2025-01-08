@@ -57,7 +57,7 @@ public class JwtRequestFilters extends OncePerRequestFilter {
                 loggedUserDTO = (CustomUserDetails) this.loginController.loadUserByUsername(username);
             } catch (UsernameNotFoundException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("SystemUser not found");
+                response.getWriter().write("TenantUser not found");
                 return;
             }
 

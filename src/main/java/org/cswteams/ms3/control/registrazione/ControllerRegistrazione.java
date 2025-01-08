@@ -5,7 +5,7 @@ import org.cswteams.ms3.dao.SystemUserDAO;
 import org.cswteams.ms3.dto.registration.RegisteredUserDTO;
 import org.cswteams.ms3.dto.registration.RegistrationDTO;
 import org.cswteams.ms3.entity.Doctor;
-import org.cswteams.ms3.entity.SystemUser;
+import org.cswteams.ms3.entity.TenantUser;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.exception.registration.RegistrationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +87,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
     }
 
     private boolean checkEmail(String email) {
-        SystemUser user = userDAO.findByEmail(email);
+        TenantUser user = userDAO.findByEmail(email);
         return user == null;
     }
 
@@ -141,7 +141,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
             );
         }
 
-        SystemUser u = new SystemUser(registrationDTO.getName(),
+        TenantUser u = new TenantUser(registrationDTO.getName(),
                 registrationDTO.getLastname(),
                 registrationDTO.getTaxCode(),
                 registrationDTO.getBirthday(),

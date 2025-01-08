@@ -31,7 +31,7 @@ public class ScheduleBuilder {
 
     private final Logger logger = Logger.getLogger(ScheduleBuilder.class.getName());
 
-    /** List of constraints to be applied to each couple (ConcreteShift, SystemUser) */
+    /** List of constraints to be applied to each couple (ConcreteShift, TenantUser) */
     @NotNull
     private List<Constraint> allConstraints;
 

@@ -4,7 +4,7 @@ import org.cswteams.ms3.dao.NotificationDAO;
 import org.cswteams.ms3.dao.SystemUserDAO;
 import org.cswteams.ms3.dto.NotificationDTO;
 import org.cswteams.ms3.entity.Notification;
-import org.cswteams.ms3.entity.SystemUser;
+import org.cswteams.ms3.entity.TenantUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +38,7 @@ public class NotificationSystemController implements INotificationSystemControll
     @Transactional //forse non server
     @Override
     public Set<NotificationDTO> getAllNotificationByUser(long userId) {
-        SystemUser user= userDAO.getOne(userId);
+        TenantUser user= userDAO.getOne(userId);
         if(user== null){
             return null;
         }
