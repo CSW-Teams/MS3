@@ -758,32 +758,32 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift3);
 
-        Shift shift4 = new Shift(LocalTime.of(1, 0),
-                Duration.ofHours(6),
-                ambulatorioOncologia,
-                TimeSlot.NIGHT,
-                quantityShiftSeniorityListOncologia1,
-                allDaysOfWeek,
-                Collections.emptyList());
-        shiftDAO.saveAndFlush(shift4);
-
-        Shift shift5 = new Shift(LocalTime.of(8, 0),
-                Duration.ofHours(6),
-                ambulatorioOncologia,
-                TimeSlot.MORNING,
-                quantityShiftSeniorityListOncologia2,
-                allDaysOfWeek,
-                Collections.emptyList());
-        shiftDAO.saveAndFlush(shift5);
-
-        Shift shift6 = new Shift(LocalTime.of(15, 0),
-                Duration.ofHours(6),
-                ambulatorioOncologia,
-                TimeSlot.AFTERNOON,
-                quantityShiftSeniorityListOncologia3,
-                allDaysOfWeek,
-                Collections.emptyList());
-        shiftDAO.saveAndFlush(shift6);
+//        Shift shift4 = new Shift(LocalTime.of(1, 0),
+//                Duration.ofHours(6),
+//                ambulatorioOncologia,
+//                TimeSlot.NIGHT,
+//                quantityShiftSeniorityListOncologia1,
+//                allDaysOfWeek,
+//                Collections.emptyList());
+//        shiftDAO.saveAndFlush(shift4);
+//
+//        Shift shift5 = new Shift(LocalTime.of(8, 0),
+//                Duration.ofHours(6),
+//                ambulatorioOncologia,
+//                TimeSlot.MORNING,
+//                quantityShiftSeniorityListOncologia2,
+//                allDaysOfWeek,
+//                Collections.emptyList());
+//        shiftDAO.saveAndFlush(shift5);
+//
+//        Shift shift6 = new Shift(LocalTime.of(15, 0),
+//                Duration.ofHours(6),
+//                ambulatorioOncologia,
+//                TimeSlot.AFTERNOON,
+//                quantityShiftSeniorityListOncologia3,
+//                allDaysOfWeek,
+//                Collections.emptyList());
+//        shiftDAO.saveAndFlush(shift6);
 
         //creation of the DoctorHolidays instances
         List<Doctor> allDoctors = doctorDAO.findAll();

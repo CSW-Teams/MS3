@@ -61,7 +61,7 @@ public class ScheduleBuilder {
      * @throws IllegalScheduleException An exception highlighting the incoherent state of the passed parameters
      */
     private void validateDates(LocalDate startDate, LocalDate endDate) throws IllegalScheduleException {
-        if(startDate.isAfter(endDate) || startDate.isEqual(endDate))
+        if(startDate.isAfter(endDate))
             throw new IllegalScheduleException();
         else if(startDate.isBefore(LocalDate.now()))
             throw new IllegalScheduleException("[ERROR] Cannot create a schedule from a date previous than today!");

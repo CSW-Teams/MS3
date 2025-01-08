@@ -1,7 +1,6 @@
 package org.cswteams.ms3.control.scheduler;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -16,16 +15,12 @@ import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
-import org.cswteams.ms3.enums.Seniority;
-import org.cswteams.ms3.enums.SystemActor;
-import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.utils.DateConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.print.Doc;
 import javax.transaction.Transactional;
 
 // TODO: Generate concrete shift controller from this class
@@ -103,7 +98,7 @@ public class SchedulerController implements ISchedulerController {
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot)  {
 
         //Check if there already exists a shift schedule for the dates we want to plan.
-        if(!check(startDate,endDate))
+        if(!alreadyExistsAnotherSchedule(startDate,endDate))
             return null;
 
         //currentDay = date used to iterate on the dates interval (start date -> end date)
@@ -440,7 +435,7 @@ public class SchedulerController implements ISchedulerController {
      * @param endNewSchedule Last date to be planned for a shift schedule
      * @return False if there already exists a shift schedule for the dates we want to plan, true otherwise
      */
-    public boolean check(LocalDate startNewSchedule, LocalDate endNewSchedule){
+    public boolean alreadyExistsAnotherSchedule(LocalDate startNewSchedule, LocalDate endNewSchedule){
         List<Schedule> allSchedule = scheduleDAO.findAll();
 
         for (Schedule schedule : allSchedule) {
