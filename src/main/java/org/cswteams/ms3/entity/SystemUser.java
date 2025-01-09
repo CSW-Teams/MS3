@@ -59,6 +59,9 @@ public class SystemUser {
      */
     @Enumerated
     @ElementCollection(targetClass = SystemActor.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "system_user_system_actors",
+            joinColumns = @JoinColumn(name = "ms3_system_user_id"))
+    @Column(name = "role")
     private Set<SystemActor> systemActors;
 
     @NotNull

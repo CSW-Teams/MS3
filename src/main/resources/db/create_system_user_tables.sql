@@ -9,9 +9,9 @@ CREATE TABLE ms3_system_user (
     tenant VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE systemuser_systemactors (
-    systemuser_ms3_system_user_id BIGINT NOT NULL,
-    systemactors VARCHAR(50) NOT NULL,
-    PRIMARY KEY (systemuser_ms3_system_user_id, systemactors),
-    FOREIGN KEY (systemuser_ms3_system_user_id) REFERENCES ms3_system_user(ms3_system_user_id) ON DELETE CASCADE
+CREATE TABLE system_user_system_actors (
+    ms3_system_user_id BIGINT NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    PRIMARY KEY (ms3_system_user_id, role),
+    FOREIGN KEY (ms3_system_user_id) REFERENCES ms3_system_user(ms3_system_user_id) ON DELETE CASCADE
 );
