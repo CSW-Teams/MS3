@@ -1,2 +1,4 @@
-DROP SCHEMA IF EXISTS public CASCADE;
-CREATE SCHEMA public;
+drop schema if exists public cascade;
+create schema public;
+
+alter schema public owner to sprintfloyd;

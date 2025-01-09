@@ -76,23 +76,26 @@ public class SchemasInitializer {
     private void createTablesInPublicSchema(Connection connection) {
         ClassPathResource tableScript;
         try {
-            tableScript = new ClassPathResource("db/create_system_user_tables.sql");
+            tableScript = new ClassPathResource("db/create_system_user_table.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
-            System.out.println("Tabella ms3_system_users creata nello schema 'public'");
+            tableScript = new ClassPathResource("db/shared/create_shared_info.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            System.out.println("Tabelle create nello schema 'public'");
         } catch (ScriptException e) {
             e.printStackTrace();
-            throw new RuntimeException("Errore nella creazione della tabella nello schema public", e);
+            throw new RuntimeException("Errore nella creazione delle tabelle nello schema public", e);
         }
     }
 
     private void createTablesForTenant(Connection connection, String tenantName) {
         ClassPathResource tableScript;
         try {
-            tableScript = new ClassPathResource("db/tenant/create_user_tables.sql");
+            /*tableScript = new ClassPathResource("db/tenant/create_user_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
-            /*tableScript = new ClassPathResource("db/tenant/create_condition_tables.sql");
+            tableScript = new ClassPathResource("db/tenant/create_condition_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
             tableScript = new ClassPathResource("db/tenant/create_constraint_tables.sql");
@@ -101,69 +104,6 @@ public class SchemasInitializer {
             tableScript = new ClassPathResource("db/tenant/create_scocciature_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);*/
 
-
-            List<String> tableCreationQueries = List.of(
-                    "CREATE TABLE IF NOT EXISTS ms3_tenant_users (" +
-                    "id SERIAL PRIMARY KEY, " +
-                    "name VARCHAR(255) NOT NULL, " +
-                    "lastname VARCHAR(255) NOT NULL, " +
-                    "birthday DATE NOT NULL, " +
-                    "tax_code VARCHAR(20) UNIQUE NOT NULL, " +
-                    "email VARCHAR(255) UNIQUE NOT NULL, " +
-                    "password VARCHAR(255) NOT NULL);",
-
-                    "CREATE TABLE IF NOT EXISTS task (" +
-                            "task_id SERIAL PRIMARY KEY, " +
-                            "task_type VARCHAR(255) NOT NULL);",
-
-                    "CREATE TABLE IF NOT EXISTS medical_service (" +
-                            "medical_service_id SERIAL PRIMARY KEY, " +
-                            "label VARCHAR(255) NOT NULL);",
-
-                    "CREATE TABLE IF NOT EXISTS medical_service_tasks (" +
-                            "medical_service_id BIGINT NOT NULL REFERENCES medical_service(medical_service_id) ON DELETE CASCADE, " +
-                            "task_id BIGINT NOT NULL REFERENCES task(task_id) ON DELETE CASCADE, " +
-                            "PRIMARY KEY (medical_service_id, task_id));",
-
-                    "CREATE TABLE IF NOT EXISTS quantity_shift_seniority (" +
-                            "id SERIAL PRIMARY KEY, " +
-                            "seniority_map BYTEA, " +
-                            "task_id BIGINT REFERENCES task(task_id) ON DELETE CASCADE);",
-
-                    "CREATE TABLE IF NOT EXISTS ms3_shift (" +
-                            "shift_id SERIAL PRIMARY KEY, " +
-                            "time_slot VARCHAR(255) NOT NULL, " +
-                            "start_time TIME NOT NULL, " +
-                            "duration INTERVAL NOT NULL, " +
-                            "days_of_week TEXT[], " +
-                            "medical_service_id BIGINT, " +
-                            "CONSTRAINT fk_medical_service FOREIGN KEY (medical_service_id) REFERENCES ms3_medical_service(medical_service_id));",
-
-                    "CREATE TABLE IF NOT EXISTS ms3_shift_quantity_seniority (" +
-                            "shift_id BIGINT NOT NULL, " +
-                            "quantity_shift_seniority_id BIGINT NOT NULL, " +
-                            "PRIMARY KEY (shift_id, quantity_shift_seniority_id), " +
-                            "CONSTRAINT fk_shift FOREIGN KEY (shift_id) REFERENCES ms3_shift(shift_id), " +
-                            "CONSTRAINT fk_quantity_shift_seniority FOREIGN KEY (quantity_shift_seniority_id) REFERENCES ms3_quantity_shift_seniority(id));",
-
-                    "CREATE TABLE IF NOT EXISTS ms3_shift_additional_constraint (" +
-                            "shift_id BIGINT NOT NULL, " +
-                            "additional_constraint_id BIGINT NOT NULL, " +
-                            "PRIMARY KEY (shift_id, additional_constraint_id), " +
-                            "CONSTRAINT fk_shift_constraint FOREIGN KEY (shift_id) REFERENCES ms3_shift(shift_id), " +
-                            "CONSTRAINT fk_additional_constraint FOREIGN KEY (additional_constraint_id) REFERENCES ms3_constraint(constraint_id));",
-
-                    "CREATE TABLE IF NOT EXISTS violated_constraint_log_entry (" +
-                            "id SERIAL PRIMARY KEY, " +
-                            "violation BYTEA);",
-
-                    "CREATE TABLE IF NOT EXISTS waiver (" +
-                            "waiver_id SERIAL PRIMARY KEY, " +
-                            "name VARCHAR(255), " +
-                            "type VARCHAR(255), " +
-                            "data BYTEA);"
-
-            );
         } catch (ScriptException e) {
             System.out.println("Errore nella creazione delle tabelle nello schema " + tenantName);
             throw new RuntimeException("Errore nella creazione delle tabelle per il tenant " + tenantName, e);

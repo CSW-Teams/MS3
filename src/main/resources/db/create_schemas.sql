@@ -1,5 +1,9 @@
-DROP SCHEMA IF EXISTS a CASCADE;
-CREATE SCHEMA IF NOT EXISTS a;
+drop schema if exists a cascade;
+create schema if not exists a;
 
-DROP SCHEMA IF EXISTS b CASCADE;
-CREATE SCHEMA IF NOT EXISTS b;
+alter schema a owner to sprintfloyd;
+
+drop schema if exists b cascade;
+create schema if not exists b;
+
+alter schema b owner to sprintfloyd;

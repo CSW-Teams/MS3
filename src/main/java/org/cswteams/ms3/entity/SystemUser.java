@@ -10,11 +10,10 @@ import java.time.LocalDate;
 import java.util.Set;
 
 /**
- * Entity that represents the user of the system.
+ * Entity that represents the user of the global system.
  * May be a doctor or not (configurator may be another person in the hospital)
  *
  * @see <a href="https://github.com/CSW-Teams/MS3/wiki#attori">Glossary</a>.
- * @see Doctor
  * @see SystemActor
  */
 @Data
@@ -23,7 +22,7 @@ import java.util.Set;
 public class SystemUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "ms3_system_user_id", nullable = false)
     protected Long id;
 
@@ -59,8 +58,10 @@ public class SystemUser {
      */
     @Enumerated
     @ElementCollection(targetClass = SystemActor.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "system_user_system_actors",
-            joinColumns = @JoinColumn(name = "ms3_system_user_id"))
+    @CollectionTable(
+            name = "systemuser_systemactors",
+            joinColumns = @JoinColumn(name = "ms3_system_user_id")
+    )
     @Column(name = "role")
     private Set<SystemActor> systemActors;
 
