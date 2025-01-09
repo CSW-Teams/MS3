@@ -19,11 +19,11 @@ import java.util.Set;
  */
 @Data
 @Entity
-@Table(name = "ms3_system_users")
+@Table(name = "ms3_system_user")
 public class SystemUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ms3_system_user_id", nullable = false)
     protected Long id;
 
@@ -43,6 +43,7 @@ public class SystemUser {
      * SystemUser's tax code (i.e., in Italy, "Codice Fiscale")
      */
     @NotNull
+    @Column(name = "tax_code")
     private String taxCode;
 
     @Email

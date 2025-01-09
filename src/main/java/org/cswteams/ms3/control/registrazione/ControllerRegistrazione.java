@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.registrazione;
 
 import org.cswteams.ms3.dao.DoctorDAO;
-import org.cswteams.ms3.dao.SystemUserDAO;
+import org.cswteams.ms3.dao.TenantUserDAO;
 import org.cswteams.ms3.dto.registration.RegisteredUserDTO;
 import org.cswteams.ms3.dto.registration.RegistrationDTO;
 import org.cswteams.ms3.entity.Doctor;
@@ -19,7 +19,7 @@ public class ControllerRegistrazione implements IControllerRegistrazione {
 
 
     @Autowired
-    private SystemUserDAO userDAO;
+    private TenantUserDAO userDAO;
     @Autowired
     private DoctorDAO doctorDAO;
 

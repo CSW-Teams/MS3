@@ -42,7 +42,7 @@ public class HibernateMultiTenancyConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setDataSource(dataSource);
-        factoryBean.setPackagesToScan("org.cswteams.ms3.multitenancyapp.entity");
+        factoryBean.setPackagesToScan("org.cswteams.ms3.entity");
 
         JpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
         factoryBean.setJpaVendorAdapter(jpaVendorAdapter);

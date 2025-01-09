@@ -237,7 +237,7 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "giuliacantone@gmail.com"});
+                      this.setState({email: "giuliacantone.tenanta@gmail.com"});
                       this.setState({password: "passw"});
                     }}>
                     Insert
@@ -257,7 +257,7 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "domenicoverde@gmail.com"});
+                      this.setState({email: "domenicoverde.tenantb@gmail.com"});
                       this.setState({password: "passw"});
                     }}>Insert
                   </button>
@@ -278,7 +278,7 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "giovannicantone@gmail.com"});
+                      this.setState({email: "giovannicantone.tenanta@gmail.com"});
                       this.setState({password: "passw"});
                     }}>Insert
                   </button>
@@ -298,8 +298,8 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "giuliofarnasini@gmail.com"});
-                      this.setState({password: "passw"});
+                      this.setState({email: "giuliofarnasini.tenantb@gmail.com"});
+                      this.setState({password: "passw2"});
                     }}>Insert
                   </button>
                 </td>
@@ -319,7 +319,7 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "salvatimartina97@gmail.com"});
+                      this.setState({email: "salvatimartina97tenanta@gmail.com"});
                       this.setState({password: "passw"});
                     }}>Insert
                   </button>
@@ -341,8 +341,8 @@ export default class LoginView extends React.Component {
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "fullpermessi@gmail.com"});
-                      this.setState({password: "passw"});
+                      this.setState({email: "fullpermessi.tenantb@gmail.com"});
+                      this.setState({password: "passw2"});
                     }}>Insert
                   </button>
                 </td>

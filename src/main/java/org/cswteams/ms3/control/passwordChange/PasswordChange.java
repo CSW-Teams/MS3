@@ -1,7 +1,7 @@
 package org.cswteams.ms3.control.passwordChange;
 
 
-import org.cswteams.ms3.dao.SystemUserDAO;
+import org.cswteams.ms3.dao.TenantUserDAO;
 import org.cswteams.ms3.dto.changePassword.ChangePasswordDTO;
 import org.cswteams.ms3.entity.TenantUser;
 import org.cswteams.ms3.exception.DatabaseException;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @Service
 public class PasswordChange implements IPasswordChange {
     @Autowired
-    private SystemUserDAO userDAO;
+    private TenantUserDAO userDAO;
 
     @Override
     public ChangePasswordDTO changePassword(@NotNull ChangePasswordDTO dto) throws DatabaseException, WrongOldPasswordException {

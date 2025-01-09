@@ -43,6 +43,7 @@ public class TenantUser {
      * TenantUser's tax code (i.e., in Italy, "Codice Fiscale")
      */
     @NotNull
+    @Column(name = "tax_code")
     private String taxCode;
 
     @Email
