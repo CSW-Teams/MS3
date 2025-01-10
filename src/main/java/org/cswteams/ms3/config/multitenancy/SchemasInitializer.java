@@ -92,6 +92,9 @@ public class SchemasInitializer {
     private void createTablesForTenant(Connection connection, String tenantName) {
         ClassPathResource tableScript;
         try {
+            tableScript = new ClassPathResource("db/shared/create_shared_info.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
             tableScript = new ClassPathResource("db/tenant/tables/create_tenant_user_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
@@ -140,7 +143,7 @@ public class SchemasInitializer {
             tableScript = new ClassPathResource("db/tenant/tables/create_giustificazione_forzatura_vincoli_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
-            tableScript = new ClassPathResource("db/tenant/tables/create_holiday_table.sql");
+            tableScript = new ClassPathResource("db/tenant/tables/create_holiday_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
             tableScript = new ClassPathResource("db/tenant/tables/create_notification_table.sql");
@@ -155,7 +158,7 @@ public class SchemasInitializer {
             tableScript = new ClassPathResource("db/tenant/tables/create_waiver_table.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
-            tableScript = new ClassPathResource("db/tenant/sequences/create_sequences.sql");
+            tableScript = new ClassPathResource("db/tenant/sequences/create_sequence.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
             System.out.println("Tabelle create nello schema " + tenantName);

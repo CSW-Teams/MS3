@@ -29,6 +29,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -121,8 +124,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
          */
       //  if (doctorDAO.count() == 0) {
 
-            //registerHolidays();
+            List<String> tenantSchemas;
+            tenantSchemas = List.of("A", "B");
+            for (String tenant : tenantSchemas) {
+                changeSchema(tenant.toLowerCase());
+                registerHolidays();
+            }
 
+            changeSchema("public");
             try {
                 populateDB();
             } catch (ShiftException e) {
@@ -133,10 +142,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             //registerScocciature();
 
           // Ripristina lo schema di default ("public" per PostgreSQL)
-          TenantContext.setCurrentTenant("public");
+            changeSchema("public");
 
      //   }
 
+    }
+
+    private void changeSchema(String tenant) {
+        TenantContext.setCurrentTenant(tenant);
     }
 
 
