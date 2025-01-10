@@ -67,14 +67,12 @@ public class Holiday implements Serializable {
      * holiday start date, in epoch days
      */
     @NotNull
-    @Column(name = "start_date_epoch_day")
     private long startDateEpochDay;
 
     /**
      * holiday end date, in epoch days
      */
     @NotNull
-    @Column(name = "end_date_epoch_day")
     private long endDateEpochDay;
 
     /**

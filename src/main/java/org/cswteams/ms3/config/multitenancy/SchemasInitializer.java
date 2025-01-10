@@ -76,7 +76,7 @@ public class SchemasInitializer {
     private void createTablesInPublicSchema(Connection connection) {
         ClassPathResource tableScript;
         try {
-            tableScript = new ClassPathResource("db/create_system_user_table.sql");
+            tableScript = new ClassPathResource("db/create_system_user_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
             tableScript = new ClassPathResource("db/shared/create_shared_info.sql");
@@ -92,18 +92,73 @@ public class SchemasInitializer {
     private void createTablesForTenant(Connection connection, String tenantName) {
         ClassPathResource tableScript;
         try {
-            /*tableScript = new ClassPathResource("db/tenant/create_user_tables.sql");
+            tableScript = new ClassPathResource("db/tenant/tables/create_tenant_user_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
-            tableScript = new ClassPathResource("db/tenant/create_condition_tables.sql");
+            tableScript = new ClassPathResource("db/tenant/tables/create_doctor_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
-            tableScript = new ClassPathResource("db/tenant/create_constraint_tables.sql");
+            tableScript = new ClassPathResource("db/tenant/tables/create_task_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
-            tableScript = new ClassPathResource("db/tenant/create_scocciature_tables.sql");
-            ScriptUtils.executeSqlScript(connection, tableScript);*/
+            tableScript = new ClassPathResource("db/tenant/tables/create_medical_service_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
 
+            tableScript = new ClassPathResource("db/tenant/tables/create_condition_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_constraint_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_quantity_shift_seniority_table.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_shift_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_preference_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_specialization_table.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_concrete_shift_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_schedule_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_other_doctor_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_doctor_assignment_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_config_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_giustificazione_forzatura_vincoli_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_holiday_table.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_notification_table.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_request_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_scocciatura_table.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/tables/create_waiver_table.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            tableScript = new ClassPathResource("db/tenant/sequences/create_sequences.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
+            System.out.println("Tabelle create nello schema " + tenantName);
         } catch (ScriptException e) {
             System.out.println("Errore nella creazione delle tabelle nello schema " + tenantName);
             throw new RuntimeException("Errore nella creazione delle tabelle per il tenant " + tenantName, e);

@@ -59,6 +59,11 @@ public class TenantUser {
      */
     @Enumerated
     @ElementCollection(targetClass = SystemActor.class, fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "tenantuser_systemactors",
+            joinColumns = @JoinColumn(name = "ms3_tenant_user_id")
+    )
+    @Column(name = "role")
     private Set<SystemActor> systemActors;
 
     /**
