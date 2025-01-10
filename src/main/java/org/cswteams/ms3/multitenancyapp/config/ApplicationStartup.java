@@ -103,6 +103,24 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         SystemUser u45_1 = new SystemUser("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi_tenant_a@gmail.com",encoder.encode("passw"), "A");
         SystemUser u45_2 = new SystemUser("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi_tenant_b@gmail.com",encoder.encode("passw2"), "B");
 
+        systemUserDAO.saveAndFlush(u1_1);
+        systemUserDAO.saveAndFlush(u1_2);
+        systemUserDAO.saveAndFlush(u2);
+        systemUserDAO.saveAndFlush(u3);
+        systemUserDAO.saveAndFlush(u4);
+        systemUserDAO.saveAndFlush(u5);
+        systemUserDAO.saveAndFlush(u6_1);
+        systemUserDAO.saveAndFlush(u6_2);
+        systemUserDAO.saveAndFlush(u7);
+        systemUserDAO.saveAndFlush(u8_1);
+        systemUserDAO.saveAndFlush(u8_2);
+        systemUserDAO.saveAndFlush(u9);
+        systemUserDAO.saveAndFlush(u10_1);
+        systemUserDAO.saveAndFlush(u10_2);
+        systemUserDAO.saveAndFlush(u44_1);
+        systemUserDAO.saveAndFlush(u44_2);
+        systemUserDAO.saveAndFlush(u45_1);
+        systemUserDAO.saveAndFlush(u45_2);
 
         // Inserire utenti negli schemi tenant
         addUserToTenantsSelective(u1_1);
