@@ -12,6 +12,8 @@ import {
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import React, {useState} from "react";
+import {t} from "i18next";
+import {toast} from "react-toastify";
 
 const defaultNewShiftFormValues = {
   timeSlot: "",
@@ -19,6 +21,19 @@ const defaultNewShiftFormValues = {
   shiftDuration: "06:00",
   selectedDays: []
 }
+
+const showToast = (message, type = 'success') => {
+  toast[type](message, {
+    position: "top-center",
+    autoClose: 5000,
+    hideProgressBar: true,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored",
+  });
+};
 
 const NewShiftForm = ({
                         openCollapseShiftForm,
@@ -60,10 +75,26 @@ const NewShiftForm = ({
   const handleAddNewShift = () => {
     let shiftCopy = {};
 
-    shiftCopy.id = "shiftId-" + Date.now();
+    shiftCopy.id = Date.now();
 
+    if (timeSlot === defaultNewShiftFormValues.timeSlot) {
+      showToast(
+        t("No time slot selected"),
+        "error"
+      );
+
+      return;
+    }
     shiftCopy.timeSlot = timeSlot;
 
+    if (selectedDays.length === 0) {
+      showToast(
+        t("No day of the week selected"),
+        "error"
+      );
+
+      return;
+    }
     shiftCopy.daysOfWeek = selectedDays.slice();
 
     let [hour, minute] = startTime.split(":");
@@ -73,16 +104,20 @@ const NewShiftForm = ({
     [hour, minute] = shiftDuration.split(":");
     shiftCopy.durationMinutes = parseInt(hour) * 60 + parseInt(minute);
 
-    shiftCopy.medicalService = {};
-    shiftCopy.medicalService.label = medicalServiceName;
+    shiftCopy.medicalServices = {};
+    shiftCopy.medicalServices.label = medicalServiceName;
 
-    shiftCopy.quantityshiftseniority = Object.entries(seniorityValues).map(([seniority, quantity]) => ({
-      task: task,
+    shiftCopy.quantityShiftSeniority = Object.entries(seniorityValues).map(([seniority, quantity]) => ({
+      taskName: task,
       seniority: seniority,
       quantity: quantity
     }));
 
+    shiftCopy.additionalConstraints = [];
+
     let res = handleSubmitShiftForm(shiftCopy);
+
+    handleResetShiftForm()
 
     // Close NewShiftForms
     if (!res) handleCollapseShiftFormToggle();
@@ -117,7 +152,7 @@ const NewShiftForm = ({
       >
         {/* Title for the Shift Creation Form */}
         <Typography variant="h5" gutterBottom sx={{ marginBottom: '20px', textAlign: 'center' }}>
-          Create New Shift
+          {t("Create new shift")}
         </Typography>
 
         {/* Time Slot Section */}
@@ -125,7 +160,7 @@ const NewShiftForm = ({
           <Grid container alignItems="center" spacing={2}>
             <Grid item>
               <Typography variant="h7" gutterBottom sx={{ marginBottom: 0 }}>
-                Time Slot:
+                {t("Time Slot")}:
               </Typography>
             </Grid>
             <Grid item>
@@ -140,7 +175,7 @@ const NewShiftForm = ({
                       key={slot}
                       value={slot}
                       control={<Radio />}
-                      label={slot}
+                      label={t(slot)}
                     />
                   ))}
                 </RadioGroup>
@@ -153,7 +188,7 @@ const NewShiftForm = ({
         <Grid container spacing={3} sx={{ marginBottom: '20px' }}>
           <Grid item xs={12} sm={6} md={4}>
             <Typography variant="h7" gutterBottom>
-              Shift start time:
+              {t("Shift start time")}:
             </Typography>
             <TextField
               type="time"
@@ -165,7 +200,7 @@ const NewShiftForm = ({
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
             <Typography variant="h7" gutterBottom>
-              Shift duration:
+              {t("Shift duration")}:
             </Typography>
             <TextField
               type="time"
@@ -182,19 +217,23 @@ const NewShiftForm = ({
           <Grid container spacing={2}>
             {seniorityNameList.map((seniorityName) => (
               <Grid item xs={12} sm={4} key={seniorityName}>
-                <Grid container alignItems="center" spacing={1}>
+                <Grid container direction="column" alignItems="flex-start" spacing={1}>
                   <Grid item>
                     <Typography variant="h7" sx={{ marginBottom: 0 }}>
-                      {seniorityName}:
+                      {t(seniorityName)}:
                     </Typography>
                   </Grid>
-                  <Grid item xs>
+                  <Grid item>
                     <TextField
                       type="number"
                       value={seniorityValues[seniorityName] || 1}
-                      onChange={(e) => handleSeniorityChange(e, seniorityName)}
-                      inputProps={{ min: 1 }}
-                      sx={{ width: 75 }} // Allineato a destra
+                      onChange={(e) => {
+                        if (seniorityName === "STRUCTURED" && e.target.value < 1) e.target.value = 1;
+
+                        handleSeniorityChange(e, seniorityName)
+                      }}
+                      inputProps={{ min: seniorityName === "STRUCTURED" ? 1 : 0 }}
+                      sx={{ width: 75, alignSelf: 'flex-start' }}
                     />
                   </Grid>
                 </Grid>
@@ -206,9 +245,9 @@ const NewShiftForm = ({
         {/* Days of the Week Section */}
         <Box sx={{ marginBottom: '20px' }}>
           <Typography variant="h7" gutterBottom>
-            Days of the week:
+            {t("Days of the week")}:
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={1}>
             {daysOfWeek.map((day) => (
               <Grid item xs={6} sm={3} key={day}>  {/* 2 colonne su schermi piccoli, 4 su schermi più grandi */}
                 <FormControlLabel
@@ -218,7 +257,7 @@ const NewShiftForm = ({
                       onChange={() => handleDayChange(day)}
                     />
                   }
-                  label={day}
+                  label={t(day)}
                 />
               </Grid>
             ))}
@@ -234,7 +273,7 @@ const NewShiftForm = ({
               fullWidth
               onClick={handleResetShiftForm}
             >
-              Cancel
+              {t("Cancel")}
             </Button>
           </Grid>
           <Grid item xs={6}>
@@ -244,7 +283,7 @@ const NewShiftForm = ({
               fullWidth
               onClick={handleAddNewShift}
             >
-              Add shift
+              {t("Add shift")}
             </Button>
           </Grid>
         </Grid>

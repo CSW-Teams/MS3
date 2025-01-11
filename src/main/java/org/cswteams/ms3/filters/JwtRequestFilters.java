@@ -36,14 +36,14 @@ public class JwtRequestFilters extends OncePerRequestFilter {
         String username;
         String jwt;
 
-        logger.info("Authorization header: {}", authorizationHeader);
+        logger.debug("Authorization header: {}", authorizationHeader);
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             username = jwtUtil.extractUsername(jwt);
         } else {
             // Log missing or invalid token header and allow unauthenticated endpoints to bypass
-            logger.info("Missing or invalid Authorization header for request: {}", request.getRequestURI());
+            logger.debug("Missing or invalid Authorization header for request: {}", request.getRequestURI());
 
             filterChain.doFilter(request, response);
             return;
@@ -64,7 +64,7 @@ public class JwtRequestFilters extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                         new UsernamePasswordAuthenticationToken(loggedUserDTO, null, loggedUserDTO.getAuthorities());
 
-                logger.info("UsernamePasswordAuthToken: {}", usernamePasswordAuthenticationToken);
+                logger.debug("UsernamePasswordAuthToken: {}", usernamePasswordAuthenticationToken);
 
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

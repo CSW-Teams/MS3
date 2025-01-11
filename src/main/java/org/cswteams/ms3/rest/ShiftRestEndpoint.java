@@ -1,10 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.shift.IShiftController;
-import org.cswteams.ms3.dto.shift.ShiftConstantsDTO;
-import org.cswteams.ms3.dto.shift.ShiftDTOIn;
-import org.cswteams.ms3.dto.shift.ShiftDTOOut;
-import org.cswteams.ms3.dto.shift.ShiftServiceNameDTOIn;
+import org.cswteams.ms3.dto.shift.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

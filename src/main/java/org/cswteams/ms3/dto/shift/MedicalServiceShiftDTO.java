@@ -1,17 +1,17 @@
 package org.cswteams.ms3.dto.shift;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.Setter;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @Getter
 public class MedicalServiceShiftDTO {
-
+    @Setter
     private Long id ;
 
-    @NotNull
-    @NotEmpty
+    @NotBlank
     private final String label ;
     //TODO : Evaluate if this DTO needs to show the Tasks too
 
@@ -19,7 +19,7 @@ public class MedicalServiceShiftDTO {
      *
      * @param label The label describing the service
      */
-    public MedicalServiceShiftDTO(String label) {
+    public MedicalServiceShiftDTO(@JsonProperty("label") String label) {
         this.label = label ;
     }
 
@@ -28,8 +28,16 @@ public class MedicalServiceShiftDTO {
      * @param id The id of the service, if it exists
      * @param label The label describing the service
      */
-    public MedicalServiceShiftDTO(Long id, String label) {
+    public MedicalServiceShiftDTO(@JsonProperty("id") Long id, @JsonProperty("label") String label) {
         this.id = id;
         this.label = label;
+    }
+
+    @Override
+    public String toString() {
+        return "MedicalServiceShiftDTO{" +
+                "id=" + id +
+                ", label='" + label +
+                "'}";
     }
 }

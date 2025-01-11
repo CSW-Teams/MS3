@@ -7,7 +7,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import {AssegnazioneTurnoAPI} from '../../API/AssegnazioneTurnoAPI';
 import {DoctorAPI} from '../../API/DoctorAPI';
-import {ServizioAPI} from '../../API/ServizioAPI';
+import {ServiceAPI} from '../../API/ServiceAPI';
 import {TurnoAPI} from '../../API/TurnoAPI';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -78,7 +78,7 @@ export default function TemporaryDrawer(props) {
   }
 
   async function getService() {
-    let servizioAPI = new ServizioAPI();
+    let servizioAPI = new ServiceAPI();
     let services
     try {
       services = await servizioAPI.getAllServices()

@@ -17,13 +17,16 @@ import CloseIcon from "@mui/icons-material/Close";
 import {KeyboardArrowLeft, KeyboardArrowRight} from "@material-ui/icons";
 import {t} from "i18next";
 import CheckboxGroup from "./CheckboxGroup";
-import { toast } from 'react-toastify';
+import {toast} from 'react-toastify';
 import {panic} from "./Panic";
 import {TurnoAPI} from "../../API/TurnoAPI";
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import NewShiftForm from "./NewShiftForm";
 import ShiftItemBox from "./ShiftItemBox";
+import {ServiceAPI} from "../../API/ServiceAPI";
+import {MedicalService} from "../../entity/MedicalService";
+import {Task} from "../../entity/Task";
 
 const defaultServiceValues = {
   step: 0,
@@ -46,9 +49,9 @@ const showToast = (message, type = 'success') => {
   });
 };
 
-const MultiStepDialog = ({
-                           tasks, services, updateServicesList
-                         }) => {
+const DialogCreateNewService = ({
+                                  tasks, services, updateServicesList
+                                }) => {
   /* Handle dialog state */
   const [openDialog, setOpenDialog] = useState(false);
   const handleOpenDialog = () => setOpenDialog(true);
@@ -64,7 +67,7 @@ const MultiStepDialog = ({
   }
 
   /* Retrieve useful constants from API */
-  const [seniorityNameList, setseniorityNameList] = useState([]);
+  const [seniorityNameList, setSeniorityNameList] = useState([]);
   const [daysOfWeek, setDaysOfWeek] = useState([]);
   const [timeSlotList, setTimeSlotList] = useState([]);
   useEffect(() => {
@@ -72,7 +75,7 @@ const MultiStepDialog = ({
 
     shiftAPI.getShiftContraints()
       .then(response => {
-        setseniorityNameList(response.seniority);
+        setSeniorityNameList(response.seniority);
         setDaysOfWeek(response.daysOfWeek);
         setTimeSlotList(response.timeSlot);
       })
@@ -84,17 +87,31 @@ const MultiStepDialog = ({
 
   /* Manage dialog navigation */
   const [step, setStep] = useState(0);
-  const nextStep = () => setStep((prev) => prev + 1);
-  const prevStep = () => setStep((prev) => prev - 1);
+  const nextStep = () => {
+    setStep((prev) => {
+      if (prev !== 0 && openCollapseShiftForm) handleCollapseShiftFormToggle();
+
+      return prev + 1;
+    });
+  }
+  const prevStep = () => {
+    setStep((prev) => {
+      if (prev !== 0 && openCollapseShiftForm) handleCollapseShiftFormToggle();
+
+      return prev - 1;
+    });
+  }
 
   /* Handle text field on new service creation */
   const [medicalServiceName, setMedicalServiceName] = useState("");
   // This loading by default is Lazy. To speedup application loading, { returnObjects: true } must be removed and lazy loading must be managed
-  const servicesOptions = t("HospitalServices", {returnObjects: true})
+  let serviceOptions = t("HospitalServices", {returnObjects: true})
+  // Remove from serviceOptions all services that already exist
+  serviceOptions = (serviceOptions || []).filter(option => option && !services.map(service => service.name).includes(option.toUpperCase()));
   const hint = React.useRef('');
   const updateHint = (value) => {
     // Get only the options that begins with typed keys
-    const matchingOption = servicesOptions.find((option) => option.toLowerCase().startsWith(value.toLowerCase()));
+    const matchingOption = serviceOptions.find((option) => option.toLowerCase().startsWith(value.toLowerCase()));
 
     // Set hint value; use "" if matchingOption is undefined or null
     hint.current = matchingOption || "";
@@ -112,6 +129,7 @@ const MultiStepDialog = ({
 
   /* Single shift composition:
   * {
+  *   "id": Date.now()
   *   "timeSlot": "NIGHT",
   *   "startHour": 1,
   *   "startMinute": 0,
@@ -128,28 +146,28 @@ const MultiStepDialog = ({
   *   },
   *   "quantityshiftseniority": [
   *     {
-  *       "task": "CLINIC",
+  *       "taskName": "CLINIC",
   *       "seniority": "STRUCTURED",
   *       "quantity": 1
   *     },
   *     {
-  *       "task": "CLINIC",
+  *       "taskName": "CLINIC",
   *       "seniority": "SPECIALIST_JUNIOR",
   *       "quantity": 1
   *     },
   *     {
-  *       "task": "CLINIC",
+  *       "taskName": "CLINIC",
   *       "seniority": "SPECIALIST_SENIOR",
   *       "quantity": 1
   *     }
-  *   ]
+  *   ],
+  *   "additionalConstraints": []
   * }
   * */
   const [shiftList, setShiftList] = useState([]);
-  const filteredShiftList = shiftList.filter(shift =>
-    shift.quantityshiftseniority.some(item => item.task === selectedMansions[step - 1])
-  );
+  const filteredShiftList = shiftList.filter(shift => shift.quantityShiftSeniority.some(item => item.taskName === selectedMansions[step - 1]));
 
+  /* Handle delete of a shift into dialog */
   const handleDeleteShift = (shiftToDelete: number) => {
     const updatedShiftList = shiftList.filter(shift => {
       return !(shift.id === shiftToDelete)
@@ -164,11 +182,17 @@ const MultiStepDialog = ({
     setOpenCollapseShiftForm(!openCollapseShiftForm);
   };
 
-  // TEMP
+  /* Handle add shift for a mansion */
   const handleSubmitShiftForm = (newShift) => {
-    const { timeSlot, startHour, startMinute, durationMinutes, daysOfWeek: newShiftDaysOfWeek } = newShift;
+    const {
+      timeSlot,
+      startHour,
+      startMinute,
+      durationMinutes,
+      daysOfWeek: newShiftDaysOfWeek
+    } = newShift;
 
-    // Funzione per convertire il giorno e l'orario in un indice di minuto
+    // Function for converting the day and time into a minute index
     function getMinuteIndex(day, hour, minute) {
       const dayIndex = daysOfWeek.indexOf(day); // Trova il giorno della settimana
       return (dayIndex * 24 * 60) + (+hour * 60) + +minute; // Restituisce l'indice minuto della settimana
@@ -183,7 +207,7 @@ const MultiStepDialog = ({
       for (let i = arrayStart; i < arrayEnd; i++) weekArray[i % (7 * 24 * 60)] = 1; // Segna il periodo come occupato
     });
 
-    // Funzione di verifica per la sovrapposizione temporale e conflitti di timeSlot
+    // Verification function for time overlap and timeSlot conflicts
     const hasConflict = filteredShiftList.some(shift => {
       // Controlla se ci sono giorni in comune tra il nuovo turno e il turno esistente
       const commonDays = shift.daysOfWeek.filter(day => newShiftDaysOfWeek.includes(day));
@@ -207,20 +231,19 @@ const MultiStepDialog = ({
             break;
           }
         }
-
       })
 
       return retValue;
     });
 
-    // Se c'è un conflitto, avvisa l'utente e interrompi
+    // If there is a conflict, warn the user and abort
     if (hasConflict) {
       showToast(
         "Il nuovo turno si sovrappone o utilizza lo stesso timeSlot di un turno esistente. Modifica i dettagli e riprova.",
         "error"
       );
     } else {
-      // Se non ci sono conflitti, aggiungi il turno alla lista
+      // If there are no conflicts, add the turn to the list
       setShiftList(prevList => [...prevList, newShift]);
       showToast("Turno aggiunto con successo!");
     }
@@ -228,28 +251,70 @@ const MultiStepDialog = ({
     return hasConflict;
   };
 
+  /* Handle upload of the new service */
+  const handleServiceCreationFinish = async () => {
+    //check if exists
+    const servicesNames = services.map(services => services.name)
+    const matches = servicesNames.filter(service => service.toUpperCase() === (medicalServiceName.toUpperCase()))
+    if (matches.length !== 0) {
+      toast.error(t("Service already exists"));
 
-  const handleServiceCreationFinish = () => {
-    // TODO: manage post operation
+      return;
+    }
 
-    console.log(shiftList)
+    const shiftListNoId = shiftList.map(({id, ...rest}) => rest)
+
+    let requestParam = {
+      name: medicalServiceName,
+      taskTypes: selectedMansions,
+      shifts: shiftListNoId
+    };
+
+    const serviceAPI = new ServiceAPI();
+    // serviceAPI.alphaSort(selectedMansions)
+
+    try {
+      let response = serviceAPI.createMedicalService(requestParam).then(response => {
+        console.log(response);
+
+        return response;
+      });
+
+      if (response.ok) return;
+    } catch (err) {
+
+      panic()
+      return
+    }
+
+    // build params for view update
+    const outTaskArray = [];
+    for (let i = 0; i < selectedMansions.length; i++) {
+      outTaskArray.push(new Task(null, selectedMansions[i], false));
+    }
+
+    // build service infos for view update
+    let viewUpdateServiceInfo = new MedicalService(null, medicalServiceName.toUpperCase(), outTaskArray);
+    updateServicesList(viewUpdateServiceInfo);
+
+    toast.success(t('Service Created Successfully'));
 
     handleCloseDialog();
   }
 
   return (<>
-    {/* TODO: change button style */}
     <Button
+      variant="contained"
       onClick={handleOpenDialog}
       style={{
         'display': 'block',
         'margin-left': 'auto',
         'margin-right': 'auto',
         'margin-top': '1%',
-        'margin-bottom': '1%'
+        'margin-bottom': '2%'
       }}
     >
-      {t('Create new Service') + " (Rali Edit)"}
+      {t('Create new Service')}
     </Button>
 
     <Dialog
@@ -264,7 +329,7 @@ const MultiStepDialog = ({
             sx={{display: 'flex', flexGrow: 1, justifyContent: 'center'}}>
             <Typography variant="h5" component="div"
                         sx={{marginLeft: '20px'}}>
-              {step === 0 ? t('Create new Service') : selectedMansions[step - 1]}
+              {step === 0 ? t('Create new Service') : t(selectedMansions[step - 1])}
             </Typography>
           </Box>
           <IconButton color="inherit" onClick={handleCloseDialog}>
@@ -283,7 +348,7 @@ const MultiStepDialog = ({
         }}>
           <Autocomplete
             inputValue={medicalServiceName}
-            options={servicesOptions}
+            options={serviceOptions}
             sx={{minWidth: 250, maxWidth: 450, width: 'auto'}}
             onChange={(event, newValue) => {
               setMedicalServiceName(newValue ? newValue : '');
@@ -331,7 +396,6 @@ const MultiStepDialog = ({
             }}
           />
 
-          {/* Text "Select task:" */}
           <Typography variant="h6" sx={{marginTop: '24px'}}>
             {t("Select tasks:")}
           </Typography>
@@ -351,12 +415,16 @@ const MultiStepDialog = ({
           justifyContent: "center",
           padding: '10px',
         }}>
-          <Typography variant="h6">
-            Add a new shift for {selectedMansions[step - 1]}
+          <Typography variant="h6"
+                      visibility={filteredShiftList.length === 0 ? 'visible' : 'hidden'}
+                      sx={{ marginBottom: '12px' }}
+          >
+            {t("Add a new shift for the task")} {t(selectedMansions[step - 1])}
           </Typography>
 
           {filteredShiftList.map((shift, index) => (
-            <ShiftItemBox key={index} shiftData={shift} onDelete={handleDeleteShift}/>
+            <ShiftItemBox key={index} shiftData={shift}
+                          onDelete={handleDeleteShift}/>
           ))}
 
           <NewShiftForm
@@ -375,7 +443,7 @@ const MultiStepDialog = ({
             aria-label="add"
             onClick={() => handleCollapseShiftFormToggle()}
           >
-            {openCollapseShiftForm ? <RemoveIcon /> : <AddIcon />}
+            {openCollapseShiftForm ? <RemoveIcon/> : <AddIcon/>}
           </Fab>
 
         </div>)}
@@ -387,24 +455,44 @@ const MultiStepDialog = ({
         position="static"
         activeStep={step}
         sx={{width: '100%'}}
-        nextButton={(step === selectedMansions.length && selectedMansions.length !== 0) ? (
-          <Button size="small" onClick={handleServiceCreationFinish}>
-            Finish
-          </Button>) : (<Button size="small" onClick={nextStep}
-                                disabled={step === selectedMansions.length || medicalServiceName === ""}>
-          Next <KeyboardArrowRight/>
-        </Button>)}
-        backButton={<Button
-          size="small"
-          onClick={prevStep}
-          disabled={step === 0}
-          sx={{visibility: step === 0 ? 'hidden' : 'visible'}}
-        >
-          <KeyboardArrowLeft/> Back
-        </Button>}
+        nextButton={
+          (step === selectedMansions.length && selectedMansions.length !== 0) ?
+            (
+              <Button
+                variant="contained"
+                size="small"
+                disabled={filteredShiftList.length === 0}
+                onClick={handleServiceCreationFinish}
+              >
+                {t("Create")}
+              </Button>
+            ) : (
+              <Button
+                size="small"
+                disabled={
+                  step === selectedMansions.length ||
+                  medicalServiceName === "" ||
+                  (filteredShiftList.length === 0 && step !== 0)
+                }
+                onClick={nextStep}
+              >
+                {t("Next")} <KeyboardArrowRight/>
+              </Button>
+            )
+        }
+        backButton={
+          <Button
+            size="small"
+            sx={{visibility: step === 0 ? 'hidden' : 'visible'}}
+            disabled={step === 0}
+            onClick={prevStep}
+          >
+            <KeyboardArrowLeft/> {t("Back")}
+          </Button>
+        }
       />
     </Dialog>
   </>);
 };
 
-export default MultiStepDialog;
+export default DialogCreateNewService;

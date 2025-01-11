@@ -15,7 +15,7 @@ import java.util.Set;
 @Getter
 public class ShiftDTOIn {
 
-    private Long id ;
+    private Long id;
 
     @NotNull
     @AdmissibleValues(values = {"MORNING", "AFTERNOON", "NIGHT"})
@@ -36,8 +36,8 @@ public class ShiftDTOIn {
     @NotEmpty
     private final Set<@AdmissibleValues(values = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"}) String> daysOfWeek ;
 
-    @NotEmpty
-    private final @Valid MedicalServiceShiftDTO medicalService ;
+    @Valid
+    private final MedicalServiceShiftDTO medicalService ;
 
     @NotEmpty
     private final List<QuantityShiftSeniorityDTO> quantityShiftSeniority;
@@ -103,5 +103,20 @@ public class ShiftDTOIn {
         this.medicalService = medicalService;
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraintShiftDTO ;
+    }
+
+    @Override
+    public String toString() {
+        return "ShiftDTOIn{" +
+                "id=" + id +
+                ", timeSlot='" + timeSlot + '\'' +
+                ", startHour=" + startHour +
+                ", startMinute=" + startMinute +
+                ", durationMinutes=" + durationMinutes +
+                ", daysOfWeek=" + daysOfWeek +
+                ", medicalService=" + medicalService +
+                ", quantityShiftSeniority=" + quantityShiftSeniority +
+                ", additionalConstraints=" + additionalConstraints +
+                '}';
     }
 }

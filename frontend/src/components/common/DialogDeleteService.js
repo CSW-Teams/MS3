@@ -8,16 +8,15 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { ToastContainer, toast } from 'react-toastify';
-import {ServizioAPI} from "../../API/ServizioAPI";
-import { t } from "i18next";
+import { toast } from 'react-toastify';
+import {ServiceAPI} from "../../API/ServiceAPI";
 import {panic} from "./Panic";
 
 toast.configure();
 
-export default function DialogEliminaServizio({currentServiceInfo, updateServicesList, disabled}) {
+export default function DialogDeleteService({currentServiceInfo, updateServicesList, disabled}) {
   const [open, setOpen] = React.useState(false);
-  const serviceAPI = new ServizioAPI();
+  const serviceAPI = new ServiceAPI();
 
   const handleClickOpen = () => {
     setOpen(true);

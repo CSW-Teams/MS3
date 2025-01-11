@@ -6,7 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import { TurnoAPI } from '../../API/TurnoAPI';
-import { ServizioAPI } from '../../API/ServizioAPI';
+import { ServiceAPI } from '../../API/ServiceAPI';
 import {toast} from "react-toastify";
 import { t } from "i18next";
 import {panic} from "./Panic";
@@ -50,7 +50,7 @@ export default function ConcreteShiftMultipleSelect(props) {
   }
 
   async function getServizi() {
-    let serviceAPI = new ServizioAPI();
+    let serviceAPI = new ServiceAPI();
     let servizi
     try {
       servizi = await serviceAPI.getService()

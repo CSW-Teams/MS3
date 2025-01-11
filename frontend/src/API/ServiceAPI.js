@@ -2,7 +2,7 @@ import {MedicalService} from "../entity/MedicalService";
 import {Task} from "../entity/Task";
 import {fetchWithAuth} from "../utils/fetchWithAuth";
 
-export class ServizioAPI {
+export class ServiceAPI {
   constructor() {
   }
 

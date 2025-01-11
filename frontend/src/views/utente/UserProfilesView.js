@@ -3,21 +3,24 @@ import {UserAPI} from "../../API/UserAPI";
 import {
   MDBCard,
   MDBCardBody,
-  MDBCardTitle, MDBContainer, MDBRow,
-  MDBTable, MDBTableBody,
+  MDBCardTitle,
+  MDBContainer,
+  MDBRow,
+  MDBTable,
+  MDBTableBody,
   MDBTableHead
 } from "mdb-react-ui-kit";
 import {Button} from "@mui/material";
-import { t } from "i18next";
+import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 
-function defaultComparator(prop1, prop2){
+function defaultComparator(prop1, prop2) {
   if (prop1 < prop2) return -1;
   if (prop1 > prop2) return 1;
   return 0;
 }
 
-export default class UserProfilesView extends React.Component{
+export default class UserProfilesView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -25,7 +28,7 @@ export default class UserProfilesView extends React.Component{
       orderBy: "lastname",
       orderDirection: "asc",
       comparator: defaultComparator,
-      attore : localStorage.getItem("actor"),
+      attore: localStorage.getItem("actor"),
     }
     this.setOrderBy = this.setOrderBy.bind(this);
   }
@@ -35,7 +38,7 @@ export default class UserProfilesView extends React.Component{
    * usando un comparatore di default
    */
   setOrderBy(userProp) {
-    const { orderBy, orderDirection } = this.state;
+    const {orderBy, orderDirection} = this.state;
 
     // Cambia direzione di ordinamento se la colonna è la stessa
     const newOrderDirection = orderBy === userProp
@@ -48,25 +51,26 @@ export default class UserProfilesView extends React.Component{
       comparator: defaultComparator,
     });
   }
-    /**
+
+  /**
    * Cambia la proprietà degli utenti per cui si vuole ordinare,
    * specificando un comparatore custom
    */
-    setOrderByAndComparator(userProp, comparator){
-      this.setState({
-        orderBy: userProp,
-        comparator: comparator
-      })
-    }
+  setOrderByAndComparator(userProp, comparator) {
+    this.setState({
+      orderBy: userProp,
+      comparator: comparator
+    })
+  }
 
 
   async componentDidMount() {
     try {
 
-      let utenti = await(new UserAPI().getAllUsersInfo());
+      let utenti = await (new UserAPI().getAllUsersInfo());
 
       this.setState({
-        utenti : utenti,
+        utenti: utenti,
       })
     } catch (err) {
 
@@ -101,31 +105,41 @@ export default class UserProfilesView extends React.Component{
       return direction * this.state.comparator(p1, p2);
     });
 
-    return(
+    return (
       <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
         <MDBCard alignment="center">
           <MDBCardBody className="text-center">
-              <MDBCardTitle style={{ marginBottom: 10 }}>{t("User Information")}</MDBCardTitle>
-              <MDBRow className={"mt-3 mb-3 mx-3 justify-content-center"}>
-                {this.state.attore === "CONFIGURATOR" && (
-                  <Button variant="contained" href="/nuovo-utente" size="small"
-                          style={{display: "inline-block", width: "auto"}}>
-                    {t("Register New User")}
-                  </Button>
-                )}
-              </MDBRow>
+            <MDBCardTitle
+              style={{marginBottom: 10}}>{t("User Information")}</MDBCardTitle>
+            <MDBRow className={"mt-3 mb-3 mx-3 justify-content-center"}>
+              {this.state.attore === "CONFIGURATOR" && (
+                <Button
+                  variant="contained"
+                  style={{display: "inline-block", width: "auto"}}
+                  href="/nuovo-utente"
+                >
+                  {t("Register New User")}
+                </Button>
+              )}
+            </MDBRow>
             <MDBTable align="middle"
                       bordered
                       small
-                      hover >
+                      hover>
               <MDBTableHead color='tempting-azure-gradient' textwhite>
                 <tr>
-                  <th scope='col' onClick={() => this.setOrderBy("name")} >{t("Name")} {this.getSortIcon("name")}</th>
-                  <th scope='col' onClick={() => this.setOrderBy("lastname")} >{t("Surname")} {this.getSortIcon("lastname")}</th>
-                  <th scope='col' onClick={() => this.setOrderBy("birthday")} >{t("Birthdate")} {this.getSortIcon("birthday")}</th>
-                  <th scope='col' onClick={() => this.setOrderBy("systemActors")} >{t("Actor")} {this.getSortIcon("systemActors")}</th>
-                  {this.state.attore!=="PLANNER" && <th scope='col'>{t("Info")}</th>}
-                  {this.state.attore==="PLANNER" && <th scope='col'>{t("Modify")}</th>}
+                  <th scope='col'
+                      onClick={() => this.setOrderBy("name")}>{t("Name")} {this.getSortIcon("name")}</th>
+                  <th scope='col'
+                      onClick={() => this.setOrderBy("lastname")}>{t("Surname")} {this.getSortIcon("lastname")}</th>
+                  <th scope='col'
+                      onClick={() => this.setOrderBy("birthday")}>{t("Birthdate")} {this.getSortIcon("birthday")}</th>
+                  <th scope='col'
+                      onClick={() => this.setOrderBy("systemActors")}>{t("Actor")} {this.getSortIcon("systemActors")}</th>
+                  {this.state.attore !== "PLANNER" &&
+                    <th scope='col'>{t("Info")}</th>}
+                  {this.state.attore === "PLANNER" &&
+                    <th scope='col'>{t("Modify")}</th>}
 
                 </tr>
               </MDBTableHead>

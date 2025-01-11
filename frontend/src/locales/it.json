@@ -140,7 +140,7 @@
   "Task": "Mansione",
   "Operations": "Operazioni",
   "Services Informations": "Informazioni Servizi",
-  "Create new Service": "Crea nuovo servizio",
+  "Create new Service": "Crea un nuovo servizio",
   "Service Created Successfully": "Servizio creato con successo.",
   "Service already exists": "Il servizio è già esistente. Riprovare.",
   "Service Name": "Nome del Servizio",
@@ -288,7 +288,7 @@
   "Everyday" : "Ogni giorno",
   "MONDAY" : "Lunedì",
   "TUESDAY" : "Martedì",
-  "WEDNSDAY" : "Mercoledì",
+  "WEDNESDAY" : "Mercoledì",
   "THURSDAY" : "Giovedì",
   "FRIDAY" : "Venerdì",
   "SATURDAY" : "Sabato",
@@ -349,5 +349,28 @@
 
   "Duration": "Durata",
   "hours": "ore",
-  "minutes": "minuti"
+  "minutes": "minuti",
+
+  "Add a new shift for the task": "Aggiungi un nuovo turno per la mansione",
+  "Shift details": "Dettagli turno",
+  "Time Slot": "Fascia oraria",
+  "Start hour": "Ora di inizio",
+  "Shift duration": "Durata del turno",
+  "Days of the week": "Giorni della settimana",
+  "Medical service": "Servizio medico",
+  "Quantity per Seniority": "Quantità per Anzianità",
+  "Quantity": "Quantità",
+
+  "Next": "Avanti",
+  "Back": "Indietro",
+  "Create": "Crea",
+
+  "Create new shift": "Crea un nuovo turno",
+  "Shift start time": "Orario di inizio del turno",
+
+  "Cancel": "Cancella",
+  "Add shift": "Aggiungi turno",
+
+  "No time slot selected": "Nessuna fascia oraria selezionata",
+  "No day of the week selected": "Nessuna giorno della settimana selezionato"
 }

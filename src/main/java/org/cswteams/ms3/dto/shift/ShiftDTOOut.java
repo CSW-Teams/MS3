@@ -44,4 +44,18 @@ public class ShiftDTOOut {
         this.medicalService = medicalService;
         this.quantityshiftseniority = quantityshiftseniority;
     }
+
+    @Override
+    public String toString() {
+        return "ShiftDTOIn{" +
+                "id=" + id +
+                ", timeSlot='" + timeslot + '\'' +
+                ", startHour=" + startHour +
+                ", startMinute=" + startMinute +
+                ", durationMinutes=" + durationMinutes +
+                ", daysOfWeek=" + daysOfWeek +
+                ", medicalService=" + medicalService +
+                ", quantityShiftSeniority=" + quantityshiftseniority +
+                '}';
+    }
 }

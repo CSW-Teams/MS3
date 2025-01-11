@@ -8,17 +8,13 @@ import {
   MDBTableBody,
   MDBTableHead
 } from "mdb-react-ui-kit";
-import {ServizioAPI} from "../../API/ServizioAPI";
+import {ServiceAPI} from "../../API/ServiceAPI";
 import Typography from "@mui/material/Typography";
-import DialogEliminaServizio
-  from '../../components/common/DialogEliminaServizio';
-import MedicalServiceCreationDrawer
-  from "../../components/common/BottomViewCreaServizio";
-import MedicalServiceUpdateDrawer
-  from "../../components/common/BottomViewModificaServizio";
-import {t} from "i18next";
+import MedicalServiceUpdateDrawer from "../../components/common/BottomViewModificaServizio";
+import DialogDeleteService from '../../components/common/DialogDeleteService';
+import DialogCreateNewService from "../../components/common/DialogCreateNewService";
 import {panic} from "../../components/common/Panic";
-import MultiStepDialog from "../../components/common/DialogCreaServizio";
+import {t} from "i18next";
 
 function defaultComparator(prop1, prop2) {
   if (prop1 < prop2) return -1;
@@ -65,7 +61,7 @@ export default class MedicalServicesView extends React.Component {
   }
 
   async getServiceLists() {
-    let serviceAPI = new ServizioAPI();
+    let serviceAPI = new ServiceAPI();
     let retrievedServices
     let retrievedAvailableTaskTypes
     try {
@@ -117,11 +113,9 @@ export default class MedicalServicesView extends React.Component {
     return (
       <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
 
-        <MultiStepDialog tasks={this.state.availableTaskTypes}/>
-
-        <MedicalServiceCreationDrawer tasks={this.state.availableTaskTypes}
-                                      services={this.state.services}
-                                      updateServicesList={this.updateServicesListAfterCreation}/>
+        <DialogCreateNewService tasks={this.state.availableTaskTypes}
+                                services={this.state.services}
+                                updateServicesList={this.updateServicesListAfterCreation}/>
 
         <MDBCard>
           <MDBCardBody className="text-center">
@@ -176,7 +170,7 @@ export default class MedicalServicesView extends React.Component {
                               services={this.state.services}
                               updateServicesList={this.updateServicesListAfterUpdate}
                               currentServiceInfo={service}/>
-                            <DialogEliminaServizio
+                            <DialogDeleteService
                               updateServicesList={this.updateServicesListAfterRemoval}
                               currentServiceInfo={service}
                               disabled={service.assigned}/>

@@ -22,7 +22,7 @@ import {
   ViewSwitcher,
   WeekView
 } from '@devexpress/dx-react-scheduler-material-ui';
-import {ServizioAPI} from '../../API/ServizioAPI';
+import {ServiceAPI} from '../../API/ServiceAPI';
 import Stack from '@mui/material/Stack';
 import {
   AppointmentContent,
@@ -443,7 +443,7 @@ class ScheduleView extends React.Component {
 
       requestsArray = await api.getAllPendingRequests();
 
-      allServices = await new ServizioAPI().getService();
+      allServices = await new ServiceAPI().getService();
       allDoctors = await new UserAPI().getAllDoctorsInfo();
 
       allHolidays = await holiApi.getHolidays(new Date().getFullYear());
