@@ -11,6 +11,7 @@ import java.util.List;
  * Parameters for <i>constraint</i> management.
  */
 @Entity
+@Table(name = "config_vincoli")
 @Getter
 @Setter
 public class ConfigVincoli {
@@ -22,16 +23,19 @@ public class ConfigVincoli {
 
     //Parametri ConstraintMaxOrePeriodo
     @NotNull
+    @Column(name = "period_days_no")
     private int periodDaysNo;
 
     /**
      * in minutes
      */
     @NotNull
+    @Column(name = "period_max_time")
     private int periodMaxTime;
 
     //Parametro ConstraintTurniContigui
     @NotNull
+    @Column(name = "horizon_night_shift")
     private int horizonNightShift;
 
     //Parametri ConstraintMaxPeriodoConsecutivo
@@ -39,10 +43,16 @@ public class ConfigVincoli {
      * in minutes
      */
     @NotNull
+    @Column(name = "max_consecutive_time_for_everyone")
     private int maxConsecutiveTimeForEveryone;
 
     @OneToMany
     @NotNull
+    @JoinTable(
+            name = "config_vincoli_config_vinc_max_per_cons_per_categoria",
+            joinColumns = @JoinColumn(name = "config_vincoli_config_vincoli_id"),
+            inverseJoinColumns = @JoinColumn(name = "config_vinc_max_per_cons_per_categoria_max_periodo_id")
+    )
     private List<ConfigVincMaxPerCons> configVincMaxPerConsPerCategoria;
 
     /**

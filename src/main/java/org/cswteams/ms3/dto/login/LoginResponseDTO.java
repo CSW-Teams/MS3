@@ -12,6 +12,7 @@ public class LoginResponseDTO {
     private final String lastname;
     private final String email;
     private final Set<SystemActor> systemActors;
+    private final String tenant;
 
     private final String jwt;
 
@@ -21,6 +22,7 @@ public class LoginResponseDTO {
         this.lastname = customUserDetails.getLastname();
         this.email = customUserDetails.getEmail();
         this.systemActors = customUserDetails.getSystemActors();
+        this.tenant = customUserDetails.getTenant();
 
         this.jwt = jwt;
     }

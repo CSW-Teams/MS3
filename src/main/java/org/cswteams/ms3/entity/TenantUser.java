@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 /**
- * Entity that represents the user of the system.
+ * Entity that represents the user of the tenant.
  * May be a doctor or not (configurator may be another person in the hospital)
  *
  * @see <a href="https://github.com/CSW-Teams/MS3/wiki#attori">Glossary</a>.
@@ -19,12 +19,12 @@ import java.util.Set;
  */
 @Data
 @Entity
-@Table(name = "ms3_system_user")
+@Table(name = "ms3_tenant_user")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class User {
+public class TenantUser {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    @Column(name = "ms3_system_user_id", nullable = false)
+    @Column(name = "ms3_tenant_user_id", nullable = false)
     protected Long id;
 
     @NotNull
@@ -34,15 +34,16 @@ public class User {
     private String lastname;
 
     /**
-     * User's DOB.
+     * TenantUser's DOB.
      */
     @NotNull
     private LocalDate birthday;
 
     /**
-     * User's tax code (i.e., in Italy, "Codice Fiscale")
+     * TenantUser's tax code (i.e., in Italy, "Codice Fiscale")
      */
     @NotNull
+    @Column(name = "tax_code")
     private String taxCode;
 
     @Email
@@ -53,16 +54,20 @@ public class User {
     private String password;
 
     /**
-     * The "roles" that the <i>user</i> can have into the system.
+     * The "roles" that the <i>user</i> can have into the tenant.
      * @see SystemActor
      */
     @Enumerated
     @ElementCollection(targetClass = SystemActor.class, fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "tenantuser_systemactors",
+            joinColumns = @JoinColumn(name = "ms3_tenant_user_id")
+    )
+    @Column(name = "role")
     private Set<SystemActor> systemActors;
 
-
     /**
-     * Create a new system <i>user</i> with the specified parameters.
+     * Create a new tenant <i>user</i> with the specified parameters.
      *
      * @param name         The name of the user
      * @param lastname     The surname of the user
@@ -72,8 +77,8 @@ public class User {
      * @param password     Password of the user
      * @param systemActors Set of roles of the user in the system (configurator/planner/doctor/user)
      */
-    public User(String name, String lastname, String taxCode,
-                LocalDate birthday, String email, String password, Set<SystemActor> systemActors) {
+    public TenantUser(String name, String lastname, String taxCode,
+                      LocalDate birthday, String email, String password, Set<SystemActor> systemActors) {
         this.name = name;
         this.lastname = lastname;
         this.taxCode = taxCode;
@@ -86,7 +91,7 @@ public class User {
     /**
      * Default constructor needed for lombok @Data annotation on Doctor entity
      */
-    protected User() {
+    protected TenantUser() {
 
     }
 

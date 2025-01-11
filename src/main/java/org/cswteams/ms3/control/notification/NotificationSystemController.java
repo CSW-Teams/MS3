@@ -1,10 +1,10 @@
 package org.cswteams.ms3.control.notification;
 
 import org.cswteams.ms3.dao.NotificationDAO;
-import org.cswteams.ms3.dao.UserDAO;
+import org.cswteams.ms3.dao.TenantUserDAO;
 import org.cswteams.ms3.dto.NotificationDTO;
 import org.cswteams.ms3.entity.Notification;
-import org.cswteams.ms3.entity.User;
+import org.cswteams.ms3.entity.TenantUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ public class NotificationSystemController implements INotificationSystemControll
     @Autowired
     NotificationDAO notificationDAO;
     @Autowired
-    UserDAO userDAO;
+    TenantUserDAO userDAO;
     /*
     Metodo override per estendere l'observer si occupa infatti di ricevere
     aggiornamenti  entiti di cui lui é osservatore
@@ -38,7 +38,7 @@ public class NotificationSystemController implements INotificationSystemControll
     @Transactional //forse non server
     @Override
     public Set<NotificationDTO> getAllNotificationByUser(long userId) {
-        User user= userDAO.getOne(userId);
+        TenantUser user= userDAO.getOne(userId);
         if(user== null){
             return null;
         }

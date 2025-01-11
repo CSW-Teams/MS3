@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Data
+@Table(name = "config_vinc_max_per_cons")
 public class ConfigVincMaxPerCons {
 
     @Id
@@ -24,12 +25,14 @@ public class ConfigVincMaxPerCons {
 
     @ManyToOne
     @NotNull
+    @JoinColumn(name = "constrained_condition_id")
     private Condition constrainedCondition;
 
     /**
      * Maximum consecutive work time for the <code>constrainedCondition</code>, in minutes.
      */
     //@Transient
+    @Column(name = "max_consecutive_minutes")
     private int maxConsecutiveMinutes;
 
     /**

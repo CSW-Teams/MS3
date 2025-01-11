@@ -51,6 +51,7 @@ export default class LoginView extends React.Component {
       localStorage.removeItem("id")
       localStorage.removeItem("name")
       localStorage.removeItem("lastname")
+      localStorage.removeItem("tenant")
       localStorage.removeItem("jwt")
 
       toast.error(`${t('Login Failed:')} ${t("No role selected for the login")}.`, TOAST_OPTIONS);
@@ -97,6 +98,7 @@ export default class LoginView extends React.Component {
       localStorage.setItem("id", user.id);
       localStorage.setItem("name", user.name);
       localStorage.setItem("lastname", user.lastname);
+      localStorage.setItem("tenant", user.tenant);
       localStorage.setItem("jwt", user.jwt);
 
       // If only one system actor is available, close the dialog and proceed
@@ -214,6 +216,7 @@ export default class LoginView extends React.Component {
               {/* TITLE */}
               <thead>
               <tr>
+                <th style={{padding: '10px', textAlign: 'center'}}>Tenant</th>
                 <th style={{padding: '10px', textAlign: 'center'}}>Role</th>
                 <th style={{padding: '10px', textAlign: 'center'}}>Mail</th>
                 <th style={{padding: '10px', textAlign: 'center'}}>Seniority
@@ -222,18 +225,19 @@ export default class LoginView extends React.Component {
               </thead>
               <tbody>
               <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{textAlign: 'center'}}>A</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>giuliacantone@gmail.com
+                }}>giuliacantone.tenanta@gmail.com
                 </td>
                 <td>Specialista Junior</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "giuliacantone@gmail.com"});
+                      this.setState({email: "giuliacantone.tenanta@gmail.com"});
                       this.setState({password: "passw"});
                     }}>
                     Insert
@@ -241,83 +245,88 @@ export default class LoginView extends React.Component {
                 </td>
               </tr>
               <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{textAlign: 'center'}}>B</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>domenicoverde@gmail.com
+                }}>domenicoverde.tenantb@gmail.com
                 </td>
                 <td>Specialista Senior</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "domenicoverde@gmail.com"});
+                      this.setState({email: "domenicoverde.tenantb@gmail.com"});
                       this.setState({password: "passw"});
                     }}>Insert
                   </button>
                 </td>
               </tr>
               <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{textAlign: 'center'}}>A</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>Dottore,
                   Planner
                 </td>
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>giovannicantone@gmail.com
+                }}>giovannicantone.tenanta@gmail.com
                 </td>
                 <td>Strutturato</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "giovannicantone@gmail.com"});
+                      this.setState({email: "giovannicantone.tenanta@gmail.com"});
                       this.setState({password: "passw"});
                     }}>Insert
                   </button>
                 </td>
               </tr>
               <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{textAlign: 'center'}}>B</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>Planner
                 </td>
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>giuliofarnasini@gmail.com
+                }}>giuliofarnasini.tenantb@gmail.com
                 </td>
                 <td>Specialista Senior</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "giuliofarnasini@gmail.com"});
-                      this.setState({password: "passw"});
+                      this.setState({email: "giuliofarnasini.tenantb@gmail.com"});
+                      this.setState({password: "passw2"});
                     }}>Insert
                   </button>
                 </td>
               </tr>
               <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{textAlign: 'center'}}>A</td>
                 <td
                   style={{padding: '10px', textAlign: 'center'}}>Configuratore
                 </td>
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>salvatimartina97@gmail.com
+                }}>salvatimartina97.tenanta@gmail.com
                 </td>
                 <td>Specialista Serior</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "salvatimartina97@gmail.com"});
+                      this.setState({email: "salvatimartina97tenanta@gmail.com"});
                       this.setState({password: "passw"});
                     }}>Insert
                   </button>
                 </td>
               </tr>
               <tr style={{borderBottom: '1px solid black'}}>
+                <td style={{textAlign: 'center'}}>B</td>
                 <td
                   style={{padding: '10px', textAlign: 'center'}}>Dottore,
                   Configuratore, Planner
@@ -325,15 +334,15 @@ export default class LoginView extends React.Component {
                 <td style={{
                   padding: '10px',
                   textAlign: 'center'
-                }}>fullpermessi@gmail.com
+                }}>fullpermessi.tenantb@gmail.com
                 </td>
                 <td>Strutturato</td>
                 <td style={{padding: '10px', textAlign: 'center'}}>
                   <button
                     style={{border: '1px solid black'}}
                     onClick={() => {
-                      this.setState({email: "fullpermessi@gmail.com"});
-                      this.setState({password: "passw"});
+                      this.setState({email: "fullpermessi.tenantb@gmail.com"});
+                      this.setState({password: "passw2"});
                     }}>Insert
                   </button>
                 </td>

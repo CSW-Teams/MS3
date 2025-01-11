@@ -3,6 +3,7 @@ package org.cswteams.ms3.entity;
 import lombok.Getter;
 import org.cswteams.ms3.enums.HolidayCategory;
 
+import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
  * i.e. an holiday that is repeated each year on the same day(s).
  */
 @Entity
+@Table(name = "recurrent_holiday")
 @Getter
 public class RecurrentHoliday {
 
@@ -36,15 +38,19 @@ public class RecurrentHoliday {
     private HolidayCategory category;
 
     @NotNull
+    @Column(name = "start_day")
     private Integer startDay ;
 
     @NotNull
+    @Column(name = "start_month")
     private Integer startMonth ;
 
     @NotNull
+    @Column(name = "end_day")
     private Integer endDay ;
 
     @NotNull
+    @Column(name = "end_month")
     private Integer endMonth;
 
     /**

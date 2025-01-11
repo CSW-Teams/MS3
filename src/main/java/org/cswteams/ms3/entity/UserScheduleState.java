@@ -22,9 +22,9 @@ public class UserScheduleState {
     @GeneratedValue
     private Long id;
     
-    /** User to whom this status belongs */
+    /** TenantUser to whom this status belongs */
     @ManyToOne
-    private User utente;
+    private TenantUser utente;
 
     /** Planning to which this state belongs */
     @OneToOne
@@ -83,7 +83,7 @@ public class UserScheduleState {
     public UserScheduleState() {
     }
     
-    public UserScheduleState(User utente, Schedule schedule) {
+    public UserScheduleState(TenantUser utente, Schedule schedule) {
         this.utente = utente;
         this.schedule = schedule;
     }

@@ -2,6 +2,7 @@ package org.cswteams.ms3.filters;
 
 import org.cswteams.ms3.control.login.LoginController;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
+import org.cswteams.ms3.tenant.TenantContext;
 import org.cswteams.ms3.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class JwtRequestFilters extends OncePerRequestFilter {
                 loggedUserDTO = (CustomUserDetails) this.loginController.loadUserByUsername(username);
             } catch (UsernameNotFoundException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("User not found");
+                response.getWriter().write("TenantUser not found");
                 return;
             }
 
@@ -69,6 +70,9 @@ public class JwtRequestFilters extends OncePerRequestFilter {
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+                String tenantId = jwtUtil.parseTenantFromJwt(jwt);
+                TenantContext.setCurrentTenant(tenantId);
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Invalid token");

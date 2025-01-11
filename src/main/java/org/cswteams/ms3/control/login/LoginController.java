@@ -1,8 +1,9 @@
 package org.cswteams.ms3.control.login;
 
-import org.cswteams.ms3.dao.UserDAO;
+import org.cswteams.ms3.dao.SystemUserDAO;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
-import org.cswteams.ms3.entity.User;
+import org.cswteams.ms3.entity.SystemUser;
+import org.cswteams.ms3.entity.TenantUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ public class LoginController implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @Autowired
-    private UserDAO userDAO;
+    private SystemUserDAO userDAO;
 
     /**
      * Check if the provided email address is valid, according to a standard regex.
@@ -45,12 +46,12 @@ public class LoginController implements UserDetailsService {
         }
 
         // Retrieve the user from the database
-        User user = userDAO.findByEmail(email);
+        SystemUser user = userDAO.findByEmail(email);
         if (user == null) {
-            logger.error("User not found with email: {}", email);
-            throw new UsernameNotFoundException("User not found with email: " + email);
+            logger.error("TenantUser not found with email: {}", email);
+            throw new UsernameNotFoundException("TenantUser not found with email: " + email);
         }
 
-        return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getSystemActors());
+        return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getSystemActors(), user.getTenant());
     }
 }

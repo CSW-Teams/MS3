@@ -8,10 +8,7 @@ import org.cswteams.ms3.enums.TimeSlot;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 /**
  * Calcola quanto pesa ad un utente essere messo di turno in una vacanza
@@ -26,6 +23,8 @@ public class ScocciaturaVacanza extends Scocciatura {
     @JoinColumn(name = "vacanza_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Holiday holiday;
+
+    @Column(name = "time_slot")
     private TimeSlot timeSlot;
 
     /**
