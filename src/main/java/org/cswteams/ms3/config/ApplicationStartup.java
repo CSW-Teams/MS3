@@ -44,7 +44,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
      * the application is ready to service requests.
      */
 
-    private static final String DEFAULT_SCHEMA = "public";
+    private static final String DEFAULT_DATABASE = "ms3_public";
 
     @Autowired
     private IHolidayController holidayController;
@@ -126,19 +126,19 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
             ObjectMapper objectMapper = new ObjectMapper();
             TenantConfig tenantConfig = objectMapper.readValue(new File("src/main/resources/tenants_config.json"), TenantConfig.class);
-            List<String> tenantSchemas = tenantConfig.getTenants();
+            List<String> tenantDatabases = tenantConfig.getTenants();
 
-            for (String tenant : tenantSchemas) {
-                changeSchema(tenant);
+            for (String tenant : tenantDatabases) {
+                changeDatabase(tenant);
                 registerHolidays();
             }
 
-            changeSchema(DEFAULT_SCHEMA);
+            changeDatabase(DEFAULT_DATABASE);
             populatePublicDB();
 
             try {
-                for (String tenant : tenantSchemas) {
-                    changeSchema(tenant);
+                for (String tenant : tenantDatabases) {
+                    changeDatabase(tenant);
                     populateTenantDB(tenant);
                     registerConstraints();
                     registerScocciature();
@@ -148,13 +148,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             }
 
           // Ripristina lo schema di default ("public" per PostgreSQL)
-            changeSchema(DEFAULT_SCHEMA);
+            changeDatabase(DEFAULT_DATABASE);
 
      //   }
 
     }
 
-    private void changeSchema(String tenant) {
+    private void changeDatabase(String tenant) {
         TenantContext.setCurrentTenant(tenant);
     }
 
@@ -613,7 +613,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
-        if (tenant == "a") {
+        if (Objects.equals(tenant, "a")) {
             Doctor u3 = new Doctor("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
             Doctor u5 = new Doctor("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
             Doctor u8_1 = new Doctor("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
@@ -720,7 +720,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 //        u42 = userDAO.saveAndFlush(u42);
 //        u43 = doctorDAO.saveAndFlush(u43);
 
-        if (tenant == "a") {
+        if (Objects.equals(tenant, "a")) {
             Doctor u9 = new Doctor("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
             Doctor u1_1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.CONFIGURATOR));
             Doctor u6_1 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenana@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
