@@ -7,6 +7,7 @@ import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -23,12 +24,14 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
      * Period duration, in days
      */
     @NotNull
+    @Column(name = "period_duration")
     private int periodDuration;
 
     /**
      * Maximum work time, in minutes
      */
     @NotNull
+    @Column(name = "period_max_time")
     private long periodMaxTime;
 
     /**

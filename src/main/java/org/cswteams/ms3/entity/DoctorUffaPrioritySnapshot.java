@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Getter
 @Setter
+@Table(name = "doctor_uffa_priority_snapshot")
 public class DoctorUffaPrioritySnapshot {
 
     @Id
@@ -25,8 +26,13 @@ public class DoctorUffaPrioritySnapshot {
     @OneToOne
     private Schedule schedule;
 
+    @Column(name = "long_shift_priority")
     private int longShiftPriority = 0;
+
+    @Column(name = "night_priority")
     private int nightPriority = 0;
+
+    @Column(name = "general_priority")
     private int generalPriority = 0;
 
     public DoctorUffaPrioritySnapshot() {}

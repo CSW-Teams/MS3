@@ -1,6 +1,8 @@
 package org.cswteams.ms3.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import org.cswteams.ms3.config.multitenancy.TenantConfig;
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
 import org.cswteams.ms3.control.preferenze.CalendarSetting;
 import org.cswteams.ms3.control.preferenze.CalendarSettingBuilder;
@@ -29,9 +31,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -44,6 +43,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
      * This event is executed as late as conceivably possible to indicate that
      * the application is ready to service requests.
      */
+
+    private static final String DEFAULT_SCHEMA = "public";
 
     @Autowired
     private IHolidayController holidayController;
@@ -114,7 +115,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private SystemUserDAO systemUserDAO;
 
 
-
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
@@ -124,25 +124,31 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
          */
       //  if (doctorDAO.count() == 0) {
 
-            List<String> tenantSchemas;
-            tenantSchemas = List.of("A", "B");
+            ObjectMapper objectMapper = new ObjectMapper();
+            TenantConfig tenantConfig = objectMapper.readValue(new File("src/main/resources/tenants_config.json"), TenantConfig.class);
+            List<String> tenantSchemas = tenantConfig.getTenants();
+
             for (String tenant : tenantSchemas) {
-                changeSchema(tenant.toLowerCase());
+                changeSchema(tenant);
                 registerHolidays();
             }
 
-            changeSchema("public");
+            changeSchema(DEFAULT_SCHEMA);
+            populatePublicDB();
+
             try {
-                populateDB();
+                for (String tenant : tenantSchemas) {
+                    changeSchema(tenant);
+                    populateTenantDB();
+                    registerConstraints();
+                    registerScocciature();
+                }
             } catch (ShiftException e) {
                 e.printStackTrace();
             }
 
-            //registerConstraints();
-            //registerScocciature();
-
           // Ripristina lo schema di default ("public" per PostgreSQL)
-            changeSchema("public");
+            changeSchema(DEFAULT_SCHEMA);
 
      //   }
 
@@ -516,11 +522,56 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     }
 
 
-    private void populateDB() throws ShiftException {
+    private void populatePublicDB() {
+
+        //Creo utenti
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        SystemUser u3 = new SystemUser("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
+        SystemUser u4 = new SystemUser("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "B");
+        SystemUser u5 = new SystemUser("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
+        SystemUser u7 = new SystemUser("Luca", "Fiscariello", "FSCLCU99D15A783Z", LocalDate.of(1998, 8, 12), "lucafiscariello.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "B");
+        SystemUser u8_1 = new SystemUser("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
+        SystemUser u8_2 = new SystemUser("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.PLANNER), "B");
+        SystemUser u10_1 = new SystemUser("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
+        SystemUser u10_2 = new SystemUser("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR), "B");
+        SystemUser u9 = new SystemUser("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
+        SystemUser u1_1 = new SystemUser("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.CONFIGURATOR), "A");
+        SystemUser u1_2 = new SystemUser("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.CONFIGURATOR), "B");
+        SystemUser u2 = new SystemUser("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "B");
+        SystemUser u6_1 = new SystemUser("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.PLANNER, SystemActor.DOCTOR), "A");
+        SystemUser u6_2 = new SystemUser("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.CONFIGURATOR), "B");
+        SystemUser u44_1 = new SystemUser("Giulio", "Farnasini", "GLIFNS94M07G224O", LocalDate.of(1994, 8, 7), "giuliofarnasini.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.PLANNER), "A");
+        SystemUser u44_2 = new SystemUser("Giulio", "Farnasini", "GLIFNS94M07G224O", LocalDate.of(1994, 8, 7), "giuliofarnasini.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR), "B");
+        SystemUser u45_1 = new SystemUser("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR), "A");
+        SystemUser u45_2 = new SystemUser("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR), "B");
+
+        u1_1 = systemUserDAO.saveAndFlush(u1_1);
+        u1_2 = systemUserDAO.saveAndFlush(u1_2);
+        u2 = systemUserDAO.saveAndFlush(u2);
+        u3 = systemUserDAO.saveAndFlush(u3);
+        u4 = systemUserDAO.saveAndFlush(u4);
+        u5 = systemUserDAO.saveAndFlush(u5);
+        u6_1 = systemUserDAO.saveAndFlush(u6_1);
+        u6_2 = systemUserDAO.saveAndFlush(u6_2);
+        u7 = systemUserDAO.saveAndFlush(u7);
+        u8_1 = systemUserDAO.saveAndFlush(u8_1);
+        u8_2 = systemUserDAO.saveAndFlush(u8_2);
+        u9 = systemUserDAO.saveAndFlush(u9);
+        u10_1 = systemUserDAO.saveAndFlush(u10_1);
+        u10_2 = systemUserDAO.saveAndFlush(u10_2);
+        u44_1 = systemUserDAO.saveAndFlush(u44_1);
+        u45_1 = systemUserDAO.saveAndFlush(u45_1);
+        u44_2 = systemUserDAO.saveAndFlush(u44_2);
+        u45_2 = systemUserDAO.saveAndFlush(u45_2);
+    }
+
+
+    private void populateTenantDB() throws ShiftException {
 
         //CREA LE CATEGORIE DI TIPO STATO (ESCLUSIVE PER I TURNI)
         // Condition may be structure specific TODO: Ask if it is needed a configuration file for that
-        /*PermanentCondition over62 = new PermanentCondition("OVER 62");
+        PermanentCondition over62 = new PermanentCondition("OVER 62");
         TemporaryCondition pregnant = new TemporaryCondition("INCINTA", LocalDate.now().toEpochDay(), LocalDate.now().plusMonths(9).toEpochDay());
         TemporaryCondition maternity = new TemporaryCondition("IN MATERNITA'", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(60).toEpochDay());
         TemporaryCondition vacation = new TemporaryCondition("IN FERIE", LocalDate.now().toEpochDay(), LocalDate.now().plusDays(7).toEpochDay());
@@ -555,51 +606,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         MedicalService guardiaCardiologia = medicalServiceController.createService(Collections.singletonList(emergency), "CARDIOLOGIA");
         MedicalService salaOperatoriaCardiologia = medicalServiceController.createService(Collections.singletonList(operatingRoom), "CARDIOLOGIA");
         MedicalService ambulatorioOncologia = medicalServiceController.createService(Collections.singletonList(clinic), "ONCOLOGIA");
-*/
+
         //Creo utenti
         UserController userController = new UserController();
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        SystemUser u3 = new SystemUser("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR),"A");
-        SystemUser u4 = new SystemUser("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR),"B");
-        SystemUser u5 = new SystemUser("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR),"A");
-        SystemUser u7 = new SystemUser("Luca", "Fiscariello", "FSCLCU99D15A783Z", LocalDate.of(1998, 8, 12), "lucafiscariello.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR),"B");
-        SystemUser u8_1 = new SystemUser("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR),"A");
-        SystemUser u8_2 = new SystemUser("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.PLANNER),"B");
-        SystemUser u10_1 = new SystemUser("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR),"A");
-        SystemUser u10_2 = new SystemUser("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR),"B");
-        SystemUser u9 = new SystemUser("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR),"A");
-        SystemUser u1_1 = new SystemUser("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.CONFIGURATOR),"A");
-        SystemUser u1_2 = new SystemUser("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.CONFIGURATOR),"B");
-        SystemUser u2 = new SystemUser("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR),"B");
-        SystemUser u6_1 = new SystemUser("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.PLANNER, SystemActor.DOCTOR),"A");
-        SystemUser u6_2 = new SystemUser("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.CONFIGURATOR),"B");
-        SystemUser u44_1 = new SystemUser("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini.tenanta@gmail.com",encoder.encode("passw"), Set.of(SystemActor.PLANNER),"A");
-        SystemUser u44_2 = new SystemUser("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini.tenantb@gmail.com",encoder.encode("passw2"), Set.of(SystemActor.DOCTOR),"B");
-        SystemUser u45_1 = new SystemUser("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi.tenanta@gmail.com",encoder.encode("passw"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR),"A");
-        SystemUser u45_2 = new SystemUser("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi.tenantb@gmail.com",encoder.encode("passw2"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR),"B");
-
-        u1_1 = systemUserDAO.saveAndFlush(u1_1);
-        u1_2 = systemUserDAO.saveAndFlush(u1_2);
-        u2 = systemUserDAO.saveAndFlush(u2);
-        u3 = systemUserDAO.saveAndFlush(u3);
-        u4 = systemUserDAO.saveAndFlush(u4);
-        u5 = systemUserDAO.saveAndFlush(u5);
-        u6_1 = systemUserDAO.saveAndFlush(u6_1);
-        u6_2 = systemUserDAO.saveAndFlush(u6_2);
-        u7 = systemUserDAO.saveAndFlush(u7);
-        u8_1 = systemUserDAO.saveAndFlush(u8_1);
-        u8_2 = systemUserDAO.saveAndFlush(u8_2);
-        u9 = systemUserDAO.saveAndFlush(u9);
-        u10_1 = systemUserDAO.saveAndFlush(u10_1);
-        u10_2 = systemUserDAO.saveAndFlush(u10_2);
-        u44_1 = systemUserDAO.saveAndFlush(u44_1);
-        u45_1 = systemUserDAO.saveAndFlush(u45_1);
-        u44_2 = systemUserDAO.saveAndFlush(u44_2);
-        u45_2 = systemUserDAO.saveAndFlush(u45_2);
-
-        /*Doctor u3 = new Doctor("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+        Doctor u3 = new Doctor("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         Doctor u4 = new Doctor("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         Doctor u5 = new Doctor("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
         Doctor u7 = new Doctor("Luca", "Fiscariello", "FSCLCU99D15A783Z", LocalDate.of(1998, 8, 12), "lucafiscariello@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
@@ -710,14 +723,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         u6 = doctorDAO.saveAndFlush(u6);
         u9 = doctorDAO.saveAndFlush(u9);
         u44 = doctorDAO.saveAndFlush(u44);
-        u45 = doctorDAO.saveAndFlush(u45);*/
+        u45 = doctorDAO.saveAndFlush(u45);
 
         /* HashMap<Seniority, Integer> doctorsNumberBySeniority = new HashMap<>();
         doctorsNumberBySeniority.put(Seniority.STRUCTURED, 1);
         doctorsNumberBySeniority.put(Seniority.SPECIALIST_SENIOR, 1);
         doctorsNumberBySeniority.put(Seniority.SPECIALIST_JUNIOR, 1); */
 
-        /*List<QuantityShiftSeniority> quantityShiftSeniorityList1 = new ArrayList<>();
+        List<QuantityShiftSeniority> quantityShiftSeniorityList1 = new ArrayList<>();
         for(Task t:ambulatorioCardiologia.getTasks()) {
             Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
             mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
@@ -861,7 +874,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             doctorHolidaysDAO.save(dh);
             doctorUffaPrioritySnapshotDAO.save(doctorUffaPrioritySnapshot);
 
-        }*/
+        }
 
         //TODO: Eliminare in seguito
         /*List<ConcreteShift> lc= new ArrayList<>();

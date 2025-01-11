@@ -12,6 +12,7 @@ import java.util.Map;
  * For example, on the night shift in the department there must be 1 resident and 1 specialist among the allocated users. */
 @Entity
 @Data
+@Table(name = "quantity_shift_seniority")
 public class QuantityShiftSeniority {
 
     @Id
@@ -23,6 +24,7 @@ public class QuantityShiftSeniority {
      * The integer value represents the number of <i>Users</i> of a specific <i>Seniority</i> to be allocated to a specific <i>Shift</i>.
      */
     @Lob
+    @Column(name = "seniority_map")
     private HashMap<Seniority,Integer> seniorityMap;
 
     @ManyToOne

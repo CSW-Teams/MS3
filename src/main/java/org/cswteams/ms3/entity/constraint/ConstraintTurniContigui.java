@@ -38,17 +38,24 @@ public class ConstraintTurniContigui extends ConstraintAssegnazioneTurnoTurno {
     /** Horizon temporal unit */
     @Enumerated(EnumType.STRING)
     @NotNull
+    @Column(name = "t_unit")
     private ChronoUnit tUnit;
     
     /** Time slot which causes the constraint */
     @Enumerated(EnumType.STRING)
     @NotNull
+    @Column(name = "time_slot")
     private TimeSlot timeSlot;
 
     /** Time slots forbidden by the constraint */
     @ElementCollection
     @Enumerated(EnumType.STRING)
+    @CollectionTable(
+            name = "constraint_turni_contigui_forbidden_time_slots",
+            joinColumns = @JoinColumn(name = "constraint_turni_contigui_constraint_id")
+    )
     @NotNull
+    @Column(name = "forbidden_time_slots")
     private Set<TimeSlot> forbiddenTimeSlots;
 
     public ConstraintTurniContigui(int horizon, ChronoUnit hours, TimeSlot notturno, HashSet<TimeSlot> hashSet) {

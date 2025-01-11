@@ -1,6 +1,6 @@
 create table doctor_permanent_conditions
 (
-    doctor_ms3_system_user_id bigint not null
+    doctor_ms3_tenant_user_id bigint not null
         constraint fk1qa08xedirepqn7v573whdh2d
             references doctor,
     permanent_conditions_id   bigint not null
@@ -14,7 +14,7 @@ alter table doctor_permanent_conditions
 
 create table doctor_preference_list
 (
-    doctor_ms3_system_user_id bigint not null
+    doctor_ms3_tenant_user_id bigint not null
         constraint fkrftrnnnu2e47wgdk4dkcoqgia
             references doctor,
     preference_list_id        bigint not null
@@ -28,7 +28,7 @@ alter table doctor_preference_list
 
 create table doctor_specializations
 (
-    doctor_ms3_system_user_id         bigint not null
+    doctor_ms3_tenant_user_id         bigint not null
         constraint fkrp1pvfw6amwvi3xdd176lc2tk
             references doctor,
     specializations_specialization_id bigint not null
@@ -42,7 +42,7 @@ alter table doctor_specializations
 
 create table doctor_temporary_conditions
 (
-    doctor_ms3_system_user_id bigint not null
+    doctor_ms3_tenant_user_id bigint not null
         constraint fk2r8hut52kv1k65vjxn4732nyl
             references doctor,
     temporary_conditions_id   bigint not null
@@ -64,7 +64,7 @@ create table doctor_uffa_priority
     partial_general_priority    integer not null,
     partial_long_shift_priority integer not null,
     partial_night_priority      integer not null,
-    doctor_ms3_system_user_id   bigint  not null
+    doctor_ms3_tenant_user_id   bigint  not null
         constraint fk4nankuxa09wc9qh4grgaig502
             references doctor,
     schedule_schedule_id        bigint
@@ -83,7 +83,7 @@ create table doctor_uffa_priority_snapshot
     general_priority          integer not null,
     long_shift_priority       integer not null,
     night_priority            integer not null,
-    doctor_ms3_system_user_id bigint  not null
+    doctor_ms3_tenant_user_id bigint  not null
         constraint fkbcsgo0mtncu0vwgxvo5s731eh
             references doctor,
     schedule_schedule_id      bigint

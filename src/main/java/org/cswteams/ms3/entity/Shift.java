@@ -33,12 +33,14 @@ public class Shift {
      * The time slot for which this <i>shift</i> is associated.
      */
     @NotNull
+    @Column(name = "time_slot")
     private TimeSlot timeSlot;
 
     /**
      * <i>Shift</i> start time.
      */
     @NotNull
+    @Column(name = "start_time")
     private LocalTime startTime;
 
     /**
@@ -53,18 +55,29 @@ public class Shift {
      */
     @Enumerated
     @ElementCollection(targetClass = DayOfWeek.class)
+    @CollectionTable(
+            name = "shift_days_of_week",
+            joinColumns = @JoinColumn(name = "shift_shift_id")
+    )
+    @Column(name = "days_of_week")
     private Set<DayOfWeek> daysOfWeek;
 
     /**
      * <i>Medical Service</i> for the <i>shift</i>.
      */
     @ManyToOne
+    @JoinColumn(name = "medical_service_medical_service_id")
     private MedicalService medicalService;
 
     /**
      * <i>Doctors</i> required for this shift, grouped by <i>seniority</i>.
      */
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "shift_quantity_shift_seniority",
+            joinColumns = @JoinColumn(name = "shift_shift_id"),
+            inverseJoinColumns = @JoinColumn(name = "quantity_shift_seniority_id")
+    )
     private List<QuantityShiftSeniority> quantityShiftSeniority;
 
     /**

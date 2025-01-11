@@ -1,6 +1,6 @@
 create table doctor
 (
-    ms3_system_user_id bigint       not null
+    ms3_tenant_user_id bigint       not null
         primary key,
     birthday           date         not null,
     email              varchar(255) not null,
@@ -20,7 +20,7 @@ create table doctor_holidays
     doctor_holidays_id        bigint not null
         primary key,
     holiday_map               oid    not null,
-    doctor_ms3_system_user_id bigint not null
+    doctor_ms3_tenant_user_id bigint not null
         constraint fkfvgbw7dtyh2udi5gt75bbkmtl
             references doctor
 );
