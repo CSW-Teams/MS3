@@ -3,7 +3,6 @@ package org.cswteams.ms3.control.login;
 import org.cswteams.ms3.dao.SystemUserDAO;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.entity.SystemUser;
-import org.cswteams.ms3.entity.TenantUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -48,6 +48,8 @@ public class JwtRequestFilters extends OncePerRequestFilter {
             // Log missing or invalid token header and allow unauthenticated endpoints to bypass
             logger.info("Missing or invalid Authorization header for request: {}", request.getRequestURI());
 
+            TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
+
             filterChain.doFilter(request, response);
             return;
         }
