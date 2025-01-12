@@ -129,7 +129,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             List<String> tenantSchemas = tenantConfig.getTenants();
 
             for (String tenant : tenantSchemas) {
-                changeSchema(tenant);
+                changeSchema(tenant.toLowerCase());
                 registerHolidays();
             }
 
@@ -138,7 +138,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
             try {
                 for (String tenant : tenantSchemas) {
-                    changeSchema(tenant);
+                    changeSchema(tenant.toLowerCase());
                     populateTenantDB(tenant);
                     registerConstraints();
                     registerScocciature();
@@ -613,7 +613,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
-        if (tenant == "a") {
+        if (tenant.equals("A")) {
             Doctor u3 = new Doctor("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
             Doctor u5 = new Doctor("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
             Doctor u8_1 = new Doctor("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
@@ -720,10 +720,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 //        u42 = userDAO.saveAndFlush(u42);
 //        u43 = doctorDAO.saveAndFlush(u43);
 
-        if (tenant == "a") {
+        if (tenant.equals("A")) {
             Doctor u9 = new Doctor("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
             Doctor u1_1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.CONFIGURATOR));
-            Doctor u6_1 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenana@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
+            Doctor u6_1 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
             Doctor u44_1 = new Doctor("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini.tenanta@gmail.com",encoder.encode("passw"),Seniority.STRUCTURED,Set.of(SystemActor.PLANNER));
             Doctor u45_1 = new Doctor("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi.tenanta@gmail.com",encoder.encode("passw"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
 
@@ -735,7 +735,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } else {
             Doctor u1_2 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenantb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.CONFIGURATOR));
             Doctor u2 = new Doctor("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde.tenantb@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
-            Doctor u6_2 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
+            Doctor u6_2 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenantb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
             Doctor u44_2 = new Doctor("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini.tenantb@gmail.com",encoder.encode("passw2"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR));
             Doctor u45_2 = new Doctor("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi.tenantb@gmail.com",encoder.encode("passw2"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
 

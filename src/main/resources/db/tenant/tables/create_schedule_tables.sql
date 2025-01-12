@@ -49,7 +49,7 @@ create table user_schedule_state
     schedule_schedule_id      bigint
         constraint fkrw089fxqcwklfx8g9tetvt4jd
             references schedule,
-    utente_ms3_system_user_id bigint
+    utente_ms3_tenant_user_id bigint
 );
 
 alter table user_schedule_state

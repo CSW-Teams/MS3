@@ -26,6 +26,7 @@ public class DoctorHolidays {
      */
     @OneToOne
     @NotNull
+    @JoinColumn(name = "doctor_ms3_tenant_user_id", referencedColumnName = "ms3_tenant_user_id")
     private Doctor doctor;
 
     @Lob

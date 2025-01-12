@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Getter
 @Setter
+@Table(name = "request_removal_from_concrete_shift")
 public class RequestRemovalFromConcreteShift {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,12 +30,14 @@ public class RequestRemovalFromConcreteShift {
      */
     @NotNull
     @OneToOne
+    @JoinColumn(name = "requesting_doctor_ms3_tenant_user_id", referencedColumnName = "ms3_tenant_user_id")
     private Doctor requestingDoctor;
 
     /**
      * Doctor that the <i>Planner</i> will put as substitute for <code>requestingDoctor</code>, if the request will be accepted.
      */
     @OneToOne
+    @JoinColumn(name = "substitute_doctor_ms3_tenant_user_id", referencedColumnName = "ms3_tenant_user_id")
     private Doctor substituteDoctor;
 
     /**
@@ -49,6 +52,7 @@ public class RequestRemovalFromConcreteShift {
      * will review the request.
      */
     @NotNull
+    @Column(name = "is_reviewed")
     private boolean isReviewed;
 
     /**
@@ -57,6 +61,7 @@ public class RequestRemovalFromConcreteShift {
      * This value is only to be considered if <code>isReviewed</code> is set to <code>true</code>.
      */
     @NotNull
+    @Column(name = "is_accepted")
     private boolean isAccepted;
 
     /**

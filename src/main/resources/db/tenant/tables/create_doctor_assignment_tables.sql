@@ -6,7 +6,7 @@ create table doctor_assignment
     concrete_shift_id            bigint  not null
         constraint fk92t3gqc4i1ycs4f95wytawixv
             references concrete_shift,
-    doctor_ms3_system_user_id    bigint  not null
+    doctor_ms3_tenant_user_id    bigint  not null
         constraint fkt0f5xuaw09r6ex1ertjogv718
             references doctor,
     task_task_id                 bigint  not null

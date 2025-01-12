@@ -28,6 +28,7 @@ public class QuantityShiftSeniority {
     private HashMap<Seniority,Integer> seniorityMap;
 
     @ManyToOne
+    @JoinColumn(name = "task_task_id")
     private Task task;
 
     /**

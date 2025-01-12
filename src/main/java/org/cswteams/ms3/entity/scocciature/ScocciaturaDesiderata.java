@@ -6,6 +6,7 @@ import org.cswteams.ms3.entity.Preference;
 import org.cswteams.ms3.enums.TimeSlot;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.LocalDate;
 import java.util.List;
 

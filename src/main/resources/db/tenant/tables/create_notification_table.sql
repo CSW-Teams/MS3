@@ -4,7 +4,7 @@ create table notification
         primary key,
     message                 varchar(255) not null,
     status                  boolean      not null,
-    user_ms3_system_user_id bigint       not null
+    user_ms3_tenant_user_id bigint       not null
 );
 
 alter table notification

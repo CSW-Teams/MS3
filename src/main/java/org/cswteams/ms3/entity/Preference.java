@@ -32,15 +32,24 @@ public class Preference {
     /**
      * The shift time slots relative to the preference day
      */
-    @Column
     @Enumerated
     @ElementCollection(targetClass = TimeSlot.class)
+    @CollectionTable(
+            name = "preference_time_slots",
+            joinColumns = @JoinColumn(name = "preference_id")
+    )
+    @Column(name = "time_slots")
     private Set<TimeSlot> timeSlots;
 
     /**
      * A list of doctors that have such preference
      */
     @ManyToMany
+    @JoinTable(
+            name = "preference_doctors",
+            joinColumns = @JoinColumn(name = "preference_id"),
+            inverseJoinColumns = @JoinColumn(name = "doctors_ms3_tenant_user_id")
+    )
     private List<Doctor> doctors;
 
     /**

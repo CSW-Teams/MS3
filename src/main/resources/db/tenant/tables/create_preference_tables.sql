@@ -14,7 +14,7 @@ create table preference_doctors
     preference_id              bigint not null
         constraint fkhrgatrsccsp0kry9kb9ft8sh0
             references preference,
-    doctors_ms3_system_user_id bigint not null
+    doctors_ms3_tenant_user_id bigint not null
         constraint fkyqbccg77ndmev6jov5awru6t
             references doctor
 );

@@ -1,8 +1,6 @@
 package org.cswteams.ms3.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 
@@ -17,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Entity
 @NoArgsConstructor(force = true)
 @RequiredArgsConstructor
+@Table(name = "violated_constraint_log_entry")
 public class ViolatedConstraintLogEntry {
 
     @Id
@@ -26,6 +25,7 @@ public class ViolatedConstraintLogEntry {
     /**
      * Each constraint violation is modeled by the corresponding Exception
      */
+    @Column(name = "violated_constraint_exception")
     private final ViolatedConstraintException violation;
 
     /** Is the violation corresponding to a strict constraint? */

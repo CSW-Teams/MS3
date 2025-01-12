@@ -7,6 +7,7 @@ import java.time.temporal.TemporalUnit;
 import org.cswteams.ms3.entity.ConcreteShift;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 
 import java.util.List;
 

@@ -20,6 +20,7 @@ public class Notification {
 
     @ManyToOne
     @NotNull
+    @JoinColumn(name = "user_ms3_tenant_user_id")
     private TenantUser user;
 
     @NotNull

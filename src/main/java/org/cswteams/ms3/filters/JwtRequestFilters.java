@@ -24,6 +24,8 @@ import java.io.IOException;
 public class JwtRequestFilters extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilters.class);
 
+    private static final String DEFAULT_SCHEMA = "public";
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -54,6 +56,7 @@ public class JwtRequestFilters extends OncePerRequestFilter {
             CustomUserDetails loggedUserDTO;
 
             try {
+                TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
                 loggedUserDTO = (CustomUserDetails) this.loginController.loadUserByUsername(username);
             } catch (UsernameNotFoundException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
