@@ -97,6 +97,16 @@ public class UserController implements IUserController {
     public void addSpecialization(Doctor doctor, Specialization specialization) throws Exception {
         doctor.addSpecialization(specialization);
     }
+    
+    @Override
+    public Long getTenantUserId(String email) {
+        try {
+            Doctor doctor = doctorDAO.findByEmail(email);
+            return doctor.getId();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     @Override
     public SingleUserProfileDTO getSingleUserProfileInfos(Long userId){

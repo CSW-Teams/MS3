@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 import RoleSelectionDialog from "../../components/common/RolePickerDialog";
+import {UserAPI} from "../../API/UserAPI";
 
 // Toast notification options for error/success messages
 const TOAST_OPTIONS = {
@@ -42,13 +43,12 @@ export default class LoginView extends React.Component {
   };
 
   // Closes the dialog box and handles user role selection
-  handleDialogClose = (role) => {
+  handleDialogClose = async (role) => {
     this.setState({open: false});
 
     // If no role is passed, clear the stored user data
     // User clicked out of the dialogue
     if (role === undefined) {
-      localStorage.removeItem("id")
       localStorage.removeItem("name")
       localStorage.removeItem("lastname")
       localStorage.removeItem("tenant")
@@ -62,13 +62,24 @@ export default class LoginView extends React.Component {
     // Store the selected role in localStorage and navigate to another page
     localStorage.setItem("actor", role);
 
-    // Navigate to the 'pianificazione-globale' page
-    this.props.history.push({
-      pathname: '/pianificazione-globale',
-    });
+    let id;
 
-    // Reload the page after navigation
-    window.location.reload();
+    try {
+      id = await(new UserAPI().getSingleUserTenantId(this.state.email));
+
+      // Store user tenant id in localStorage
+      localStorage.setItem("id", id);
+
+      // Navigate to the 'pianificazione-globale' page
+      this.props.history.push({
+        pathname: '/pianificazione-globale',
+      });
+
+      // Reload the page after navigation
+      window.location.reload();
+    } catch (err) {
+      panic()
+    }
   };
 
   // Handles input changes for email and password fields
@@ -95,7 +106,6 @@ export default class LoginView extends React.Component {
       const user = await response.json();
 
       // Store user data in localStorage
-      localStorage.setItem("id", user.id);
       localStorage.setItem("name", user.name);
       localStorage.setItem("lastname", user.lastname);
       localStorage.setItem("tenant", user.tenant);
@@ -168,7 +178,7 @@ export default class LoginView extends React.Component {
           justifyContent: 'center', // Centrare verticalmente
           gap: '20px', // Spazio tra i due blocchi
         }}>
-          <form className="Auth-form" style={{ width: '100%', maxWidth: '400px' }}>
+          <form className="Auth-form" style={{ width: '100%', maxWidth: '440px' }}>
             <div className="Auth-form-content">
               <h3 className="Auth-form-title">Login</h3>
 
@@ -329,7 +339,7 @@ export default class LoginView extends React.Component {
                     <button
                       style={{border: '1px solid black'}}
                       onClick={() => {
-                        this.setState({email: "salvatimartina97tenanta@gmail.com"});
+                        this.setState({email: "salvatimartina97.tenanta@gmail.com"});
                         this.setState({password: "passw"});
                       }}>Insert
                     </button>

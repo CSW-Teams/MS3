@@ -48,6 +48,16 @@ public class UsersRestEndpoint {
     }
 
     @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
+    @RequestMapping(method = RequestMethod.GET, path = "/user-id/user_email={userEmail}")
+    public ResponseEntity<?> getSingleUserTenantId(@PathVariable String userEmail) {
+        Long userId = userController.getTenantUserId(userEmail);
+        if (userId == null) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(userId, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET, path = "/user-profile/user_id={userId}")
     public ResponseEntity<?> getSingleUserProfileInfos(@PathVariable Long userId) {
         if(userId < 0){
