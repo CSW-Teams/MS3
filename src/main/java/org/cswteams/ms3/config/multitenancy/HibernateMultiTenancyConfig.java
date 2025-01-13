@@ -50,7 +50,7 @@ public class HibernateMultiTenancyConfig {
         // Copiare tutte le proprietà JPA
         factoryBean.setJpaPropertyMap(jpaProperties.getProperties());
 
-        factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT, MultiTenancyStrategy.SCHEMA);
+        factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider());
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver());
         factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "create");
