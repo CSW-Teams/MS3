@@ -41,6 +41,10 @@ public class Schedule {
     /** Reason for which the shift schedule results illegal */
     private Exception causeIllegal;
 
+    public void setCauseIllegal(Exception causeIllegal){
+
+    }
+
     /** List of priority levels on all the queues of the doctors after the schedule generation */
     @Transient
     private List<DoctorUffaPriority> doctorUffaPriorityList;

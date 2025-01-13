@@ -61,6 +61,7 @@ public class PreferenceController implements IPreferenceController {
         if(!doctor.get().getPreferenceList().contains(newPreference))
             doctor.get().getPreferenceList().add(newPreference);
         doctorDao.save(doctor.get());
+        preferenceDao.save(newPreference);
         return newPreference;
     }
 

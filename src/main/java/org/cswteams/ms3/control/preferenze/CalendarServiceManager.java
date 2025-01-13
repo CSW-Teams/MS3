@@ -16,9 +16,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -31,9 +31,11 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 
 	public CalendarServiceManager() {
 	}
+
 	public void init(CalendarSetting setting) {
 		this.setting = setting;
 	}
+
 	public List<HolidayDTO> getHolidays() throws CalendarServiceException {
 		HttpRequest request = HttpRequest.newBuilder(URI.create(this.setting.getURLHoliday())).header("accept", "application/json").build();
 		HttpClient client = HttpClient.newHttpClient();
@@ -66,5 +68,4 @@ public class CalendarServiceManager implements ICalendarServiceManager {
 			throw new CalendarServiceException("Calendar data not found: data searched in '" + this.setting.getURLHoliday() + "'");
 		}
 	}
-
 }

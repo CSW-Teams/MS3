@@ -2,8 +2,10 @@ package org.cswteams.ms3.control.giustificaForzatura;
 
 import org.cswteams.ms3.dto.GiustificazioneForzaturaVincoliDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
-import org.cswteams.ms3.dto.user.UserDetailsDTO;
 import org.cswteams.ms3.entity.Schedule;
+import org.cswteams.ms3.entity.User;
+import org.cswteams.ms3.enums.SystemActor;
+import org.cswteams.ms3.enums.TimeSlot;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,11 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /***********************************************************************************
  * This class has the responsibility of testing the saveGiustificazione method of  *
@@ -46,7 +51,6 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
         scheduleMock = mock(Schedule.class);
 
         log.info("[DEBUG] [TEST] Set-up going on....");
-        //when(scheduleMock.isIllegal()).thenReturn(true);
     }
 
     @AfterAll
@@ -61,21 +65,26 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
 
 
     private static GiustificazioneForzaturaVincoliDTO constructorGiustificazioneForzaturaVincoliDTOPartition(
-            Set<UserDetailsDTO> setUtenti,
-            LocalDate day,
+            Set<User> setUtenti,
+            int day,
             MedicalServiceDTO service,
-            String justificationID
-            //TipologiaTurno turnType
+            String justificationID,
+            TimeSlot turnType
     ){
         GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoliDTO = new GiustificazioneForzaturaVincoliDTO();
 
+        Set<Long> utentiAllocatiIDs = new HashSet<>();
+        for(User user : setUtenti){
+            utentiAllocatiIDs.add(user.getId());
+        }
+        
 
         //Populate justification
-        /*giustificazioneForzaturaVincoliDTO.setUtentiAllocati(setUtenti);
+        giustificazioneForzaturaVincoliDTO.setUtentiAllocati(utentiAllocatiIDs);
         giustificazioneForzaturaVincoliDTO.setGiorno(day);
         giustificazioneForzaturaVincoliDTO.setServizio(service);
         giustificazioneForzaturaVincoliDTO.setUtenteGiustificatoreId(justificationID);
-        giustificazioneForzaturaVincoliDTO.setTipologiaTurno(turnType);*/
+        giustificazioneForzaturaVincoliDTO.setTimeSlot(turnType);
 
         return giustificazioneForzaturaVincoliDTO;
     }
@@ -87,129 +96,131 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
      *************************************************************************************/
     private static GiustificazioneForzaturaVincoliDTO generateGiustifica(int caseNumber) {
         GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoliDTO;
-/*
-        // Initialize the system having only one user
-        Set<UtenteDTO> setUtenti = new HashSet<>();
-        List<CategoriaUtente> categorie = new ArrayList<>();
-        List<CategoriaUtente> specializzazioni = new ArrayList<>();
-        categorie.add(new CategoriaUtente());
-        specializzazioni.add(new CategoriaUtente());
 
-        UtenteDTO user = new UtenteDTO(
-                (long) 1,
+        // Initialize the system having only one user
+        Set<User> setUtenti = new HashSet<>();
+
+        User user = new User(
                 "Simone",
                 "Staccone",
-                LocalDate.of(2020, 1, 8),
-                "STCSMN0016D0O",
-                RuoloEnum.SPECIALIZZANDO,
                 "simone.staccone@virgilio.it",
+                LocalDate.of(2020, 1,8),
+                "SPECIALIST_SENIOR",
                 "psw",
-                categorie,
-                specializzazioni,
-                AttoreEnum.UTENTE
+                Collections.singleton(SystemActor.DOCTOR)
         );
 
-        UtenteDTO emptyUser = new UtenteDTO();
-
-
+        User emptyUser = mock(User.class);
+        when(emptyUser.getId()).thenReturn(null);
+        when(emptyUser.getName()).thenReturn(null);
+        when(emptyUser.getLastname()).thenReturn(null);
+        when(emptyUser.getTaxCode()).thenReturn(null);
+        when(emptyUser.getBirthday()).thenReturn(null);
+        when(emptyUser.getEmail()).thenReturn(null);
+        when(emptyUser.getPassword()).thenReturn(null);
+        when(emptyUser.getSystemActors()).thenReturn(null);
 
         switch (caseNumber) {
             case 1:
                 setUtenti.add(user);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1) ,new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1 ,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 2:
                 setUtenti.add(user);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2023, 8, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 3:
                 setUtenti.add(user);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 10, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 4:
                 setUtenti.add(user);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 3),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,3,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 5:
                 setUtenti.add(user);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("radiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("radiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 6:
                 setUtenti.add(user);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("cardiologia"),"2",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"2", TimeSlot.NIGHT);
                 break;
             case 7:
                 setUtenti.add(user);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.NOTTURNO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 8:
                 setUtenti.add(emptyUser);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 9:
                 setUtenti.add(emptyUser);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2023, 8, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 10:
                 setUtenti.add(emptyUser);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 10, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 11:
                 setUtenti.add(emptyUser);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 3),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,3,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 12:
                 setUtenti.add(emptyUser);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("radiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("radiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 13:
                 setUtenti.add(emptyUser);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("cardiologia"),"2",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"2", TimeSlot.NIGHT);
                 break;
             case 14:
                 setUtenti.add(emptyUser);
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.NOTTURNO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(
+                        setUtenti,
+                        1,
+                        new MedicalServiceDTO("cardiologia"),
+                        "1",
+                        TimeSlot.NIGHT);
                 break;
             case 15:
                 setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 16:
                 setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2023, 8, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 17:
                 setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 10, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 18:
                 setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 3),new ServizioDTO("cardiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,3,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 19:
                 setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("radiologia"),"1",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("radiologia"),"1", TimeSlot.NIGHT);
                 break;
             case 20:
                 setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("cardiologia"),"2",TipologiaTurno.MATTUTINO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"2", TimeSlot.NIGHT);
                 break;
             case 21:
                 setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,LocalDate.of(2020, 8, 1),new ServizioDTO("cardiologia"),"1",TipologiaTurno.NOTTURNO);
+                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
                 break;
             default:
                 throw new IllegalAccessError();
         }
-        return giustificazioneForzaturaVincoliDTO;*/
-        return null;
+        return giustificazioneForzaturaVincoliDTO;
     }
 
 
 
 
 
-    /* *********************************************************************
+    /** *********************************************************************
     * DOMAIN PARTITIONING FOR PARTITION1
     * () -> (setUsers, year, day, month, service, justificationID, turnType)
     * (valid instance)

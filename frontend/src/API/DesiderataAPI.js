@@ -71,7 +71,6 @@ export  class DesiderateAPI {
     return desiderateDate
   }
 
-
   /**
    * Deletes a doctor's preference
    * @param idDesiderata The preference id

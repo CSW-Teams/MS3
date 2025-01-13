@@ -35,7 +35,7 @@ public class ConstraintControllerTest {
         VincoloTipologieTurniContigue vincoloTurniContigui = new VincoloTipologieTurniContigue(
                 20,
                 ChronoUnit.HOURS,
-                TipologiaTurno.NOTTURNO,
+                TimeSlot.NIGHT,
                 new HashSet<>(Arrays.asList(TipologiaTurno.values()))
         );
 
@@ -111,5 +111,4 @@ public class ConstraintControllerTest {
         Assert.assertNull(vincoloMaxPeriodoConsecutivoAggiornato3.getCategoriaVincolata());
 
     }*/
-
 }
