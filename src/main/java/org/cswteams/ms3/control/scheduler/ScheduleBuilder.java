@@ -223,7 +223,7 @@ public class ScheduleBuilder {
                             logger.log(Level.SEVERE, e.getMessage(), e);
                             schedule.setCauseIllegal(e);
                             if(schedule.getCauseIllegal() != null) logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
-                            logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
+
                             for (Constraint constraint : schedule.getViolatedConstraints()){
                                 logger.log(Level.SEVERE, constraint.toString());
                             }
