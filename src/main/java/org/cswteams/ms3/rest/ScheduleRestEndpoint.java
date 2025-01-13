@@ -31,7 +31,7 @@ public class ScheduleRestEndpoint {
     public ResponseEntity<?> createSchedule(@RequestBody() ScheduleGenerationDTO gs) {
         if (gs != null) {
             //Only the requests with admissible dates will be considered.
-            if(gs.getStartDate().isBefore(gs.getEndDate())){
+            if(!gs.getEndDate().isBefore(gs.getStartDate())){
 
                 //The request is passed to the controller.
                 Schedule schedule = schedulerController.createSchedule(gs.getStartDate(),gs.getEndDate());

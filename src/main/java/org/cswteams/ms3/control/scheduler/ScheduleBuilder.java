@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -60,7 +61,7 @@ public class ScheduleBuilder {
      * @throws IllegalScheduleException An exception highlighting the incoherent state of the passed parameters
      */
     private void validateDates(LocalDate startDate, LocalDate endDate) throws IllegalScheduleException {
-        if(startDate.isAfter(endDate) || startDate.isEqual(endDate))
+        if(startDate.isAfter(endDate))
             throw new IllegalScheduleException();
         else if(startDate.isBefore(LocalDate.now()))
             throw new IllegalScheduleException("[ERROR] Cannot create a schedule from a date previous than today!");
@@ -178,13 +179,12 @@ public class ScheduleBuilder {
     }
 
 
-
-    public Schedule build(){
+    public Schedule build() throws IllegalScheduleException {
+        // At this point there are no concrete shifts in the schedule yet
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
 
         /* update snapshot of all priorities, the following loop is needed to perform a copy by value */
-
         for (DoctorUffaPriority dup : this.allDoctorUffaPriority) {
             for (DoctorUffaPrioritySnapshot dupSnapshot : snapshot) {
                 if (dup.getDoctor() == dupSnapshot.getDoctor()) {
@@ -205,44 +205,45 @@ public class ScheduleBuilder {
 
         for(ConcreteShift concreteShift : this.schedule.getConcreteShifts()){
             // First step: define doctors on duty in the concrete shift.
-            try {
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
-                        for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
-                            this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
-                        }
-                }
-                /*
-                if(concreteShift.getShift().getMedicalService().getTasks().size()>count){
-
-                    throw new NotEnoughFeasibleUsersException(concreteShift.getShift().getMedicalService().getTasks().size(),count);
-                }
-               */
-            } catch (NotEnoughFeasibleUsersException e) {
-                // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
-                logger.log(Level.SEVERE, e.getMessage(), e);
-                schedule.setCauseIllegal(e);
-
-                logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
-                for (Constraint constraint : schedule.getViolatedConstraints()){
-                    logger.log(Level.SEVERE, constraint.toString());
-                }
-
-            }
-
-            // Second step: define doctors on call in the concrete shift.
-            try {
-
-                List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
-                for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
                     for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
-                        this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_CALL, qss.getTask());
+                        try {
+                            this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
+                        } catch (NotEnoughFeasibleUsersException e) {
+                            if(entry.getKey() == Seniority.STRUCTURED){
+                                List<DoctorAssignment> listDa = concreteShift.getDoctorAssignmentList()
+                                        .stream()
+                                        .filter(da->da.getDoctor().getSeniority() == Seniority.STRUCTURED)
+                                        .collect(Collectors.toList());
+                                if(listDa.isEmpty()) throw new IllegalScheduleException("There aren't structured meds for this shift");
+                            }
+
+                            // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
+                            logger.log(Level.SEVERE, e.getMessage(), e);
+                            schedule.setCauseIllegal(e);
+
+                            logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
+                            for (Constraint constraint : schedule.getViolatedConstraints()){
+                                logger.log(Level.SEVERE, constraint.toString());
+                            }
+                        }
                     }
                 }
-            } catch (NotEnoughFeasibleUsersException e){
-                // Here we define the violation of constraints but do not stop the schedule generation.
-                logger.log(Level.SEVERE, e.getMessage(), e);
+
+            // Second step: define doctors on call in the concrete shift.
+            List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
+            for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
+                for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
+                    try {
+                        this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_CALL, qss.getTask());
+                    } catch (NotEnoughFeasibleUsersException e){
+                        // Here we define the violation of constraints but do not stop the schedule generation.
+                        logger.log(Level.SEVERE, e.getMessage(), e);
+                    }
+                }
             }
+
 
         }
         this.schedule.setDoctorUffaPriorityList(allDoctorUffaPriority); //set of all the DoctorUffaPriority instances so that they can be saved in persistence
@@ -278,7 +279,6 @@ public class ScheduleBuilder {
 
         }
 
-        // todo: refactor this condition, if it is null throw exception otherwise continue
         if(controllerScocciatura != null) {
             //general queue has always to be updated
             controllerScocciatura.updatePriorityDoctors(allDoctorUffaPriority, concreteShift, PriorityQueueEnum.GENERAL);
