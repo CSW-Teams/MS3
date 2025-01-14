@@ -1102,6 +1102,92 @@ BEGIN
                               on delete cascade
               )'
         );
+        PERFORM dblink_exec(
+              'host=localhost dbname=ms3_a user=sprintfloyd password=sprintfloyd',
+              'CREATE TABLE IF NOT EXISTS notification(
+                  notification_id         bigint       not null
+                          primary key,
+                      message                 varchar(255) not null,
+                      status                  boolean      not null,
+                      user_ms3_tenant_user_id bigint       not null
+              )'
+        );
+        PERFORM dblink_exec(
+              'host=localhost dbname=ms3_b user=sprintfloyd password=sprintfloyd',
+              'CREATE TABLE IF NOT EXISTS notification(
+                  notification_id         bigint       not null
+                          primary key,
+                      message                 varchar(255) not null,
+                      status                  boolean      not null,
+                      user_ms3_tenant_user_id bigint       not null
+              )'
+        );
+        PERFORM dblink_exec(
+              'host=localhost dbname=ms3_a user=sprintfloyd password=sprintfloyd',
+              'CREATE TABLE IF NOT EXISTS request(
+                  id                          bigint not null
+                          primary key,
+                      status                      integer,
+                      receiver_ms3_tenant_user_id bigint not null,
+                      sender_ms3_tenant_user_id   bigint not null,
+                      turn_concrete_shift_id      bigint not null
+                          constraint fkt6xetpaexs3090h0gpfhk2joh
+                              references concrete_shift
+              )'
+        );
+        PERFORM dblink_exec(
+              'host=localhost dbname=ms3_b user=sprintfloyd password=sprintfloyd',
+              'CREATE TABLE IF NOT EXISTS request(
+                  id                          bigint not null
+                          primary key,
+                      status                      integer,
+                      receiver_ms3_tenant_user_id bigint not null,
+                      sender_ms3_tenant_user_id   bigint not null,
+                      turn_concrete_shift_id      bigint not null
+                          constraint fkt6xetpaexs3090h0gpfhk2joh
+                              references concrete_shift
+              )'
+        );
+        PERFORM dblink_exec(
+              'host=localhost dbname=ms3_a user=sprintfloyd password=sprintfloyd',
+              'CREATE TABLE IF NOT EXISTS request_removal_from_concrete_shift(
+                  request_removal_from_concrete_shift_id bigint       not null
+                          primary key,
+                      file                                   oid,
+                      is_accepted                            boolean      not null,
+                      is_reviewed                            boolean      not null,
+                      reason                                 varchar(255) not null,
+                      concrete_shift_id                      bigint       not null
+                          constraint fklhfoqtrp3m12wpqu9hikc307h
+                              references concrete_shift,
+                      requesting_doctor_ms3_tenant_user_id   bigint       not null
+                          constraint fk2hai5b9f0lhlxod5va89o7kui
+                              references doctor,
+                      substitute_doctor_ms3_tenant_user_id   bigint
+                          constraint fksaco8qurl42be85an4go2drro
+                              references doctor
+              )'
+        );
+        PERFORM dblink_exec(
+              'host=localhost dbname=ms3_b user=sprintfloyd password=sprintfloyd',
+              'CREATE TABLE IF NOT EXISTS request_removal_from_concrete_shift(
+                  request_removal_from_concrete_shift_id bigint       not null
+                          primary key,
+                      file                                   oid,
+                      is_accepted                            boolean      not null,
+                      is_reviewed                            boolean      not null,
+                      reason                                 varchar(255) not null,
+                      concrete_shift_id                      bigint       not null
+                          constraint fklhfoqtrp3m12wpqu9hikc307h
+                              references concrete_shift,
+                      requesting_doctor_ms3_tenant_user_id   bigint       not null
+                          constraint fk2hai5b9f0lhlxod5va89o7kui
+                              references doctor,
+                      substitute_doctor_ms3_tenant_user_id   bigint
+                          constraint fksaco8qurl42be85an4go2drro
+                              references doctor
+              )'
+        );
 
 
 

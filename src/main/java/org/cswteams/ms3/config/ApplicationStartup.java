@@ -135,6 +135,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             }
 
             changeDatabase(DEFAULT_DATABASE);
+            System.out.println(DEFAULT_DATABASE);
             populatePublicDB();
 
             try {

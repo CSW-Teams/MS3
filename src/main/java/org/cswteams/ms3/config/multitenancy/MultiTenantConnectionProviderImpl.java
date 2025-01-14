@@ -20,8 +20,8 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
     public MultiTenantConnectionProviderImpl() {
         // Configura i DataSource per ciascun tenant
         tenantDataSources.put("ms3_public", createDataSource("jdbc:postgresql://localhost:5432/ms3_public"));
-        tenantDataSources.put("A", createDataSource("jdbc:postgresql://localhost:5432/ms3_a"));
-        tenantDataSources.put("B", createDataSource("jdbc:postgresql://localhost:5432/ms3_b"));
+        tenantDataSources.put("a", createDataSource("jdbc:postgresql://localhost:5432/ms3_a"));
+        tenantDataSources.put("b", createDataSource("jdbc:postgresql://localhost:5432/ms3_b"));
 
         System.out.println("Initialized DataSources:");
         tenantDataSources.forEach((key, value) -> System.out.println("Tenant: " + key));

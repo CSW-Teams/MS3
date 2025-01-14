@@ -17,6 +17,7 @@ import java.util.List;
  * @see <a href="https://github.com/CSW-Teams/MS3/wiki#assegnazione-turno">Glossary</a>.
  */
 @Entity
+@Table(name = "concrete_shift")
 @Getter
 @Setter
 public class ConcreteShift {
