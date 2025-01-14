@@ -287,7 +287,7 @@
   "Everyday" : "Everyday",
   "MONDAY" : "Monday",
   "TUESDAY" : "Tuesday",
-  "WEDNESDAY" : "Wednesday",
+  "WEDNSDAY" : "Wednesday",
   "THURSDAY" : "Thursday",
   "FRIDAY" : "Friday",
   "SATURDAY" : "Saturday",
@@ -344,32 +344,6 @@
     "Transplant Unit",
     "Palliative Medicine",
     "Toxicology"
-  ],
+  ]
 
-  "Duration": "Duration",
-  "hours": "hours",
-  "minutes": "minutes",
-
-  "Add a new shift for the task": "Add a new shift for the task",
-  "Shift details": "Shift details",
-  "Time Slot": "Time Slot",
-  "Start hour": "Start hour",
-  "Shift duration": "Shift duration",
-  "Days of the week": "Days of the week",
-  "Medical service": "Medical service",
-  "Quantity per Seniority": "Quantity per Seniority",
-  "Quantity": "Quantity",
-
-  "Next": "Next",
-  "Back": "Back",
-  "Create": "Create",
-
-  "Create new shift": "Create new shift",
-  "Shift start time": "Shift start time",
-
-  "Cancel": "Cancel",
-  "Add shift": "Add shift",
-
-  "No time slot selected": "No time slot selected",
-  "No day of the week selected": "No day of the week selected"
 }

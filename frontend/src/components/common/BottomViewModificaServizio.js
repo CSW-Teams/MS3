@@ -13,7 +13,7 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from '@mui/icons-material/Edit';
 import Tooltip from '@mui/material/Tooltip';
 import CloseIcon from "@mui/icons-material/Close";
-import {ServiceAPI} from "../../API/ServiceAPI";
+import {ServizioAPI} from "../../API/ServizioAPI";
 import {MedicalService} from "../../entity/MedicalService";
 import {Task} from "../../entity/Task";
 import { t } from "i18next";
@@ -32,7 +32,7 @@ const MedicalServiceUpdateDrawer = ({availableTasks, services, updateServicesLis
     const [checkedTasksStringArray, setCheckedTasksStringArray] = useState(currentServiceInfo.getTasksAsString().split(", "));
     const [newMedicalServiceName, setNewMedicalServiceName] = useState(currentServiceInfo.name);
 
-    const serviceAPI = new ServiceAPI();
+    const serviceAPI = new ServizioAPI();
     const names = Object.values(availableTasks);
 
     const handleCheckboxChange = (newTask) => {

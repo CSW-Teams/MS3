@@ -56,6 +56,11 @@ export  class UserAPI {
     return userList;
   }
 
+  async getSingleUserTenantId(email){
+    const response = await fetchWithAuth('/api/users/user-id/user_email=' + email);
+    return await response.json();
+  }
+
   /**
    * This function calls the rest end point in which we obtain the information needed to be shown
    * in the frontend SingleUserProfileView

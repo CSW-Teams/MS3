@@ -4,7 +4,8 @@ import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
-import RoleSelectionDialog from "../../components/common/DialogRolePicker";
+import RoleSelectionDialog from "../../components/common/RolePickerDialog";
+import {UserAPI} from "../../API/UserAPI";
 
 // Toast notification options for error/success messages
 const TOAST_OPTIONS = {
@@ -42,13 +43,12 @@ export default class LoginView extends React.Component {
   };
 
   // Closes the dialog box and handles user role selection
-  handleDialogClose = (role) => {
+  handleDialogClose = async (role) => {
     this.setState({open: false});
 
     // If no role is passed, clear the stored user data
     // User clicked out of the dialogue
     if (role === undefined) {
-      localStorage.removeItem("id")
       localStorage.removeItem("name")
       localStorage.removeItem("lastname")
       localStorage.removeItem("tenant")
@@ -62,13 +62,24 @@ export default class LoginView extends React.Component {
     // Store the selected role in localStorage and navigate to another page
     localStorage.setItem("actor", role);
 
-    // Navigate to the 'pianificazione-globale' page
-    this.props.history.push({
-      pathname: '/pianificazione-globale',
-    });
+    let id;
 
-    // Reload the page after navigation
-    window.location.reload();
+    try {
+      id = await(new UserAPI().getSingleUserTenantId(this.state.email));
+
+      // Store user tenant id in localStorage
+      localStorage.setItem("id", id);
+
+      // Navigate to the 'pianificazione-globale' page
+      this.props.history.push({
+        pathname: '/pianificazione-globale',
+      });
+
+      // Reload the page after navigation
+      window.location.reload();
+    } catch (err) {
+      panic()
+    }
   };
 
   // Handles input changes for email and password fields
@@ -95,7 +106,6 @@ export default class LoginView extends React.Component {
       const user = await response.json();
 
       // Store user data in localStorage
-      localStorage.setItem("id", user.id);
       localStorage.setItem("name", user.name);
       localStorage.setItem("lastname", user.lastname);
       localStorage.setItem("tenant", user.tenant);
@@ -158,201 +168,210 @@ export default class LoginView extends React.Component {
                              onClose={this.handleDialogClose}
                              systemActors={this.state.systemActorsAvailable}/>
 
-        <form className="Auth-form">
-          <div className="Auth-form-content">
-            <h3 className="Auth-form-title">Login</h3>
+        {/* Contenitore con layout flessibile */}
+        <div className="Auth-page-content" style={{
+          width: '100vw',       // Occupa tutta la larghezza dello schermo
+          height: '100vh',      // Occupa tutta l'altezza dello schermo
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center', // Centrare orizzontalmente
+          justifyContent: 'center', // Centrare verticalmente
+          gap: '20px', // Spazio tra i due blocchi
+        }}>
+          <form className="Auth-form" style={{ width: '100%', maxWidth: '440px' }}>
+            <div className="Auth-form-content">
+              <h3 className="Auth-form-title">Login</h3>
 
-            <div className="form-group mt-3">
-              <label>{t('Email Address')}</label>
-              <input
-                name="email"
-                type="email"
-                className="form-control mt-1"
-                placeholder={t('Enter email address')}
-                value={this.state.email}
-                onChange={e => this.handleInputChange(e)}
-              />
+              <div className="form-group mt-3">
+                <label>{t('Email Address')}</label>
+                <input
+                  name="email"
+                  type="email"
+                  className="form-control mt-1"
+                  placeholder={t('Enter email address')}
+                  value={this.state.email}
+                  onChange={e => this.handleInputChange(e)}
+                />
+              </div>
+
+              <div className="form-group mt-3">
+                <label>{t('Password')}</label>
+                <input
+                  name="password"
+                  type="password"
+                  className="form-control mt-1"
+                  placeholder={t('Enter password')}
+                  value={this.state.password}
+                  onChange={e => this.handleInputChange(e)}
+                />
+              </div>
+
+              <div className="d-grid gap-2 mt-3">
+                <button onClick={this.handleSubmit} type="submit"
+                        className="btn btn-primary">
+                  {t('Login')}
+                </button>
+              </div>
+
+              <div className="form-check gap-2 mt-3">
+                <input className="form-check-input" type="checkbox"
+                       value=""></input>
+                {t('Remember me')}
+              </div>
+              <p className="forgot-password text-center mt-2">
+                <a href="">{t('Forgot Password?')}</a>
+              </p>
             </div>
+          </form>
 
-            <div className="form-group mt-3">
-              <label>{t('Password')}</label>
-              <input
-                name="password"
-                type="password"
-                className="form-control mt-1"
-                placeholder={t('Enter password')}
-                value={this.state.password}
-                onChange={e => this.handleInputChange(e)}
-              />
-            </div>
-
-            <div className="d-grid gap-2 mt-3">
-              <button onClick={this.handleSubmit} type="submit"
-                      className="btn btn-primary">
-                {t('Login')}
-              </button>
-            </div>
-
-            <div className="form-check gap-2 mt-3">
-              <input className="form-check-input" type="checkbox"
-                     value=""></input>
-              {t('Remember me')}
-            </div>
-            <p className="forgot-password text-center mt-2">
-              <a href="">{t('Forgot Password?')}</a>
-            </p>
-          </div>
-        </form>
-
-        {/* Shortcut on login page for the development team
+          {/* Shortcut on login page for the development team
           * This table is shown only in development environment
         */}
-        {process.env.NODE_ENV === "development" && (
-          <div
-            className="Auth-form-content">
-            <h3 className="Auth-form-title">Development shortcut</h3>
+          {process.env.NODE_ENV === "development" && (
+            <div
+              className="Auth-form-content" style={{ width: '100%', maxWidth: '800px' }}>
+              <h3 className="Auth-form-title">Development shortcut</h3>
 
-            <table style={{width: '100%', borderCollapse: 'collapse'}}>
-              {/* TITLE */}
-              <thead>
-              <tr>
-                <th style={{padding: '10px', textAlign: 'center'}}>Tenant</th>
-                <th style={{padding: '10px', textAlign: 'center'}}>Role</th>
-                <th style={{padding: '10px', textAlign: 'center'}}>Mail</th>
-                <th style={{padding: '10px', textAlign: 'center'}}>Seniority
-                </th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr style={{borderBottom: '1px solid black'}}>
-                <td style={{textAlign: 'center'}}>A</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
-                <td style={{
-                  padding: '10px',
-                  textAlign: 'center'
-                }}>giuliacantone.tenanta@gmail.com
-                </td>
-                <td>Specialista Junior</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>
-                  <button
-                    style={{border: '1px solid black'}}
-                    onClick={() => {
-                      this.setState({email: "giuliacantone.tenanta@gmail.com"});
-                      this.setState({password: "passw"});
-                    }}>
-                    Insert
-                  </button>
-                </td>
-              </tr>
-              <tr style={{borderBottom: '1px solid black'}}>
-                <td style={{textAlign: 'center'}}>B</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
-                <td style={{
-                  padding: '10px',
-                  textAlign: 'center'
-                }}>domenicoverde.tenantb@gmail.com
-                </td>
-                <td>Specialista Senior</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>
-                  <button
-                    style={{border: '1px solid black'}}
-                    onClick={() => {
-                      this.setState({email: "domenicoverde.tenantb@gmail.com"});
-                      this.setState({password: "passw"});
-                    }}>Insert
-                  </button>
-                </td>
-              </tr>
-              <tr style={{borderBottom: '1px solid black'}}>
-                <td style={{textAlign: 'center'}}>A</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>Dottore,
-                  Planner
-                </td>
-                <td style={{
-                  padding: '10px',
-                  textAlign: 'center'
-                }}>giovannicantone.tenanta@gmail.com
-                </td>
-                <td>Strutturato</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>
-                  <button
-                    style={{border: '1px solid black'}}
-                    onClick={() => {
-                      this.setState({email: "giovannicantone.tenanta@gmail.com"});
-                      this.setState({password: "passw"});
-                    }}>Insert
-                  </button>
-                </td>
-              </tr>
-              <tr style={{borderBottom: '1px solid black'}}>
-                <td style={{textAlign: 'center'}}>B</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>Planner
-                </td>
-                <td style={{
-                  padding: '10px',
-                  textAlign: 'center'
-                }}>giuliofarnasini.tenantb@gmail.com
-                </td>
-                <td>Specialista Senior</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>
-                  <button
-                    style={{border: '1px solid black'}}
-                    onClick={() => {
-                      this.setState({email: "giuliofarnasini.tenantb@gmail.com"});
-                      this.setState({password: "passw2"});
-                    }}>Insert
-                  </button>
-                </td>
-              </tr>
-              <tr style={{borderBottom: '1px solid black'}}>
-                <td style={{textAlign: 'center'}}>A</td>
-                <td
-                  style={{padding: '10px', textAlign: 'center'}}>Configuratore
-                </td>
-                <td style={{
-                  padding: '10px',
-                  textAlign: 'center'
-                }}>salvatimartina97.tenanta@gmail.com
-                </td>
-                <td>Specialista Serior</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>
-                  <button
-                    style={{border: '1px solid black'}}
-                    onClick={() => {
-                      this.setState({email: "salvatimartina97tenanta@gmail.com"});
-                      this.setState({password: "passw"});
-                    }}>Insert
-                  </button>
-                </td>
-              </tr>
-              <tr style={{borderBottom: '1px solid black'}}>
-                <td style={{textAlign: 'center'}}>B</td>
-                <td
-                  style={{padding: '10px', textAlign: 'center'}}>Dottore,
-                  Configuratore, Planner
-                </td>
-                <td style={{
-                  padding: '10px',
-                  textAlign: 'center'
-                }}>fullpermessi.tenantb@gmail.com
-                </td>
-                <td>Strutturato</td>
-                <td style={{padding: '10px', textAlign: 'center'}}>
-                  <button
-                    style={{border: '1px solid black'}}
-                    onClick={() => {
-                      this.setState({email: "fullpermessi.tenantb@gmail.com"});
-                      this.setState({password: "passw2"});
-                    }}>Insert
-                  </button>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
-
-
+              <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                {/* TITLE */}
+                <thead>
+                <tr>
+                  <th style={{padding: '10px', textAlign: 'center'}}>Tenant</th>
+                  <th style={{padding: '10px', textAlign: 'center'}}>Role</th>
+                  <th style={{padding: '10px', textAlign: 'center'}}>Mail</th>
+                  <th style={{padding: '10px', textAlign: 'center'}}>Seniority
+                  </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr style={{borderBottom: '1px solid black'}}>
+                  <td style={{textAlign: 'center'}}>A</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
+                  <td style={{
+                    padding: '10px',
+                    textAlign: 'center'
+                  }}>giuliacantone.tenanta@gmail.com
+                  </td>
+                  <td>Specialista Junior</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>
+                    <button
+                      style={{border: '1px solid black'}}
+                      onClick={() => {
+                        this.setState({email: "giuliacantone.tenanta@gmail.com"});
+                        this.setState({password: "passw"});
+                      }}>
+                      Insert
+                    </button>
+                  </td>
+                </tr>
+                <tr style={{borderBottom: '1px solid black'}}>
+                  <td style={{textAlign: 'center'}}>B</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
+                  <td style={{
+                    padding: '10px',
+                    textAlign: 'center'
+                  }}>domenicoverde.tenantb@gmail.com
+                  </td>
+                  <td>Specialista Senior</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>
+                    <button
+                      style={{border: '1px solid black'}}
+                      onClick={() => {
+                        this.setState({email: "domenicoverde.tenantb@gmail.com"});
+                        this.setState({password: "passw"});
+                      }}>Insert
+                    </button>
+                  </td>
+                </tr>
+                <tr style={{borderBottom: '1px solid black'}}>
+                  <td style={{textAlign: 'center'}}>A</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>Dottore,
+                    Planner
+                  </td>
+                  <td style={{
+                    padding: '10px',
+                    textAlign: 'center'
+                  }}>giovannicantone.tenanta@gmail.com
+                  </td>
+                  <td>Specialista Senior</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>
+                    <button
+                      style={{border: '1px solid black'}}
+                      onClick={() => {
+                        this.setState({email: "giovannicantone.tenanta@gmail.com"});
+                        this.setState({password: "passw"});
+                      }}>Insert
+                    </button>
+                  </td>
+                </tr>
+                <tr style={{borderBottom: '1px solid black'}}>
+                  <td style={{textAlign: 'center'}}>B</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>Dottore
+                  </td>
+                  <td style={{
+                    padding: '10px',
+                    textAlign: 'center'
+                  }}>giuliofarnasini.tenantb@gmail.com
+                  </td>
+                  <td>Strutturato</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>
+                    <button
+                      style={{border: '1px solid black'}}
+                      onClick={() => {
+                        this.setState({email: "giuliofarnasini.tenantb@gmail.com"});
+                        this.setState({password: "passw2"});
+                      }}>Insert
+                    </button>
+                  </td>
+                </tr>
+                <tr style={{borderBottom: '1px solid black'}}>
+                  <td style={{textAlign: 'center'}}>A</td>
+                  <td
+                    style={{padding: '10px', textAlign: 'center'}}>Configuratore
+                  </td>
+                  <td style={{
+                    padding: '10px',
+                    textAlign: 'center'
+                  }}>salvatimartina97.tenanta@gmail.com
+                  </td>
+                  <td>Specialista Junior</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>
+                    <button
+                      style={{border: '1px solid black'}}
+                      onClick={() => {
+                        this.setState({email: "salvatimartina97.tenanta@gmail.com"});
+                        this.setState({password: "passw"});
+                      }}>Insert
+                    </button>
+                  </td>
+                </tr>
+                <tr style={{borderBottom: '1px solid black'}}>
+                  <td style={{textAlign: 'center'}}>B</td>
+                  <td
+                    style={{padding: '10px', textAlign: 'center'}}>Dottore,
+                    Configuratore, Planner
+                  </td>
+                  <td style={{
+                    padding: '10px',
+                    textAlign: 'center'
+                  }}>fullpermessi.tenantb@gmail.com
+                  </td>
+                  <td>Strutturato</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>
+                    <button
+                      style={{border: '1px solid black'}}
+                      onClick={() => {
+                        this.setState({email: "fullpermessi.tenantb@gmail.com"});
+                        this.setState({password: "passw2"});
+                      }}>Insert
+                    </button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     )
   }

@@ -3,7 +3,7 @@ import { FormControlLabel, Checkbox, Box, Typography } from '@mui/material';
 
 import {t} from "i18next";
 
-const CheckboxGroup = ({ options = [], selectedOptions = [], onChange, disabled = false }) => {
+const CheckboxGroup = ({ options = [], onChange, disabled = false }) => {
   if (!Array.isArray(options) || options.length === 0) {
     return <Typography>{'No options available'}</Typography>;
   }
@@ -15,7 +15,6 @@ const CheckboxGroup = ({ options = [], selectedOptions = [], onChange, disabled 
           key={option}
           control={
             <Checkbox
-              checked={selectedOptions.includes(option)}
               onChange={() => onChange(option)}
               disabled={disabled}
             />
