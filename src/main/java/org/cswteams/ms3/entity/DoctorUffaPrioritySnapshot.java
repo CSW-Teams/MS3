@@ -20,10 +20,12 @@ public class DoctorUffaPrioritySnapshot {
     /** Doctor which the Uffa priority refers to */
     @OneToOne
     @NotNull
+    @JoinColumn(name = "doctor_ms3_tenant_user_id", referencedColumnName = "ms3_tenant_user_id")
     private Doctor doctor;
 
     /** Current schedule */
     @OneToOne
+    @JoinColumn(name = "schedule_schedule_id", referencedColumnName = "schedule_id")
     private Schedule schedule;
 
     @Column(name = "long_shift_priority")

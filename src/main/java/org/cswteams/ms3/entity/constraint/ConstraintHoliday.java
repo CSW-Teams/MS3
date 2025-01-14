@@ -7,6 +7,7 @@ import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedConstraintHolidayException;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * This <i>constraint</i> is to make sure that a doctor who worked on a certain holiday

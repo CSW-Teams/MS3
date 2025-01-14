@@ -51,8 +51,6 @@ public class LoginController implements UserDetailsService {
             logger.error("TenantUser not found with email: {}", email);
             throw new UsernameNotFoundException("TenantUser not found with email: " + email);
         }
-        System.out.println(user);
-
         return new CustomUserDetails(user.getId(), user.getName(), user.getLastname(), user.getEmail(), user.getPassword(), user.getSystemActors(), user.getTenant());
     }
 }

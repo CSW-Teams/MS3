@@ -10,6 +10,7 @@ import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloRuoloNumeroException;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

@@ -38,6 +38,7 @@ public class ConcreteShift {
      */
     @ManyToOne
     @NotNull
+    @JoinColumn(name = "shift_shift_id")
     private Shift shift;
 
     /**
@@ -45,6 +46,11 @@ public class ConcreteShift {
      */
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @NotNull
+    @JoinTable(
+            name = "concrete_shift_doctor_assignment_list",
+            joinColumns = @JoinColumn(name = "concrete_shift_concrete_shift_id"),
+            inverseJoinColumns = @JoinColumn(name = "doctor_assignment_list_task_id")
+    )
     private List<DoctorAssignment> doctorAssignmentList = new ArrayList<>(); //TODO: check that the doctors involved in this list are all different
     // maybe make it a Set<>?
 

@@ -6,6 +6,7 @@ import org.cswteams.ms3.enums.TimeSlot;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 

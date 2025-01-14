@@ -33,14 +33,35 @@ public class Doctor extends TenantUser {
     private Seniority seniority; // TODO: See if seniority is a class instead of an enum
 
     @ManyToMany
+    @JoinTable(
+            name = "doctor_permanent_conditions",
+            joinColumns = @JoinColumn(name = "doctor_ms3_tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "permanent_conditions_id")
+    )
     private final List<PermanentCondition> permanentConditions = new ArrayList<>();
+
     @ManyToMany
+    @JoinTable(
+            name = "doctor_temporary_conditions",
+            joinColumns = @JoinColumn(name = "doctor_ms3_tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "temporary_conditions_id")
+    )
     private final List<TemporaryCondition> temporaryConditions = new ArrayList<>();
 
     @ManyToMany
+    @JoinTable(
+            name = "doctor_preference_list",
+            joinColumns = @JoinColumn(name = "doctor_ms3_tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "preference_list_id")
+    )
     private final List<Preference> preferenceList = new ArrayList<>();
 
     @ManyToMany
+    @JoinTable(
+            name = "doctor_specializations",
+            joinColumns = @JoinColumn(name = "doctor_ms3_tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "specializations_specialization_id")
+    )
     private final List<Specialization> specializations = new ArrayList<>();
 
 

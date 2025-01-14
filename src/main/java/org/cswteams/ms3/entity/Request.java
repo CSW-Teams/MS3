@@ -29,6 +29,7 @@ public class Request extends Notificable {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
+    @JoinColumn(name = "sender_ms3_tenant_user_id")
     private TenantUser sender;
 
     /**
@@ -36,6 +37,7 @@ public class Request extends Notificable {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
+    @JoinColumn(name = "receiver_ms3_tenant_user_id")
     private TenantUser receiver;
 
     /**
@@ -43,6 +45,7 @@ public class Request extends Notificable {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
+    @JoinColumn(name = "turn_concrete_shift_id")
     private ConcreteShift turn;
 
     private RequestStatus status = RequestStatus.PENDING;

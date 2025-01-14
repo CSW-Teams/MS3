@@ -12,6 +12,7 @@ import java.util.Set;
  */
 @Data
 @Entity
+@Table(name = "giustificazione_forzatura_vincoli")
 public class GiustificazioneForzaturaVincoli {
 
     @Id
@@ -22,14 +23,21 @@ public class GiustificazioneForzaturaVincoli {
   /*  @OneToMany(cascade = CascadeType.ALL)
     private Set<Waiver> liberatorie;*/
 
+    @Column(name = "violating_shift")
     private TimeSlot violatingShift;
 
     private LocalDate date;
 
     @ManyToMany
+    @JoinTable(
+            name = "giustificazione_forzatura_vincoli_assigned_doctors",
+            joinColumns = @JoinColumn(name = "giustificazione_forzatura_vincoli_id"),
+            inverseJoinColumns = @JoinColumn(name = "assigned_doctors_ms3_tenant_user_id")
+    )
     private Set<Doctor> assignedDoctors;
 
     @ManyToOne
+    @JoinColumn(name = "service_medical_service_id")
     private MedicalService service;
 
     /*@ManyToMany
@@ -37,6 +45,7 @@ public class GiustificazioneForzaturaVincoli {
     private String reason;
 
     @ManyToOne
+    @JoinColumn(name = "justifying_doctor_ms3_tenant_user_id")
     private Doctor justifyingDoctor;
 
     /**

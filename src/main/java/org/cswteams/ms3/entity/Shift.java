@@ -84,6 +84,11 @@ public class Shift {
      * Additional <i>constraints</i> for the shift, if required.
      */
     @ManyToMany
+    @JoinTable(
+            name = "shift_additional_constraints",
+            joinColumns = @JoinColumn(name = "shift_shift_id"),
+            inverseJoinColumns = @JoinColumn(name = "additional_constraints_constraint_id")
+    )
     private List<AdditionalConstraint> additionalConstraints;
 
     /**
