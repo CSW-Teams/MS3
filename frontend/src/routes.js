@@ -23,6 +23,7 @@ import ModifyUserProfileView from "./views/utente/ModifyUserProfileView";
 import SingleUserProfileView from "./views/utente/SingleUserProfileView";
 import PersonalSingleUserProfileView
   from "./views/utente/PersonalSingleUserProfileView";
+import ShiftManagementView from "./views/configuratore/ShiftManagementView";
 
 
 export default [
@@ -107,7 +108,11 @@ export default [
     layout: DefaultLayout,
     component:  MedicalServicesView
   },
-
+  {
+    path: "/turni",
+    layout: DefaultLayout,
+    component:  ShiftManagementView
+  },
   {
     path: "/gestione-festivita",
     layout: DefaultLayout,

@@ -61,7 +61,7 @@ public class ShiftDTOIn {
                       @JsonProperty("startHour") Integer startHour,
                       @JsonProperty("startMinute") Integer startMinute,
                       @JsonProperty("durationMinutes") Integer durationMinutes,@JsonProperty("daysOfWeek") Set<String> daysOfWeek,
-                      @JsonProperty("medicalServices") MedicalServiceShiftDTO medicalService,
+                      @JsonProperty("medicalService") MedicalServiceShiftDTO medicalService,
                       @JsonProperty("quantityShiftSeniority") List<QuantityShiftSeniorityDTO> quantityShiftSeniority,
                       @JsonProperty("additionalConstraints") List<AdditionalConstraintShiftDTO> additionalConstraints) {
         this.timeSlot = timeSlot;
@@ -87,11 +87,12 @@ public class ShiftDTOIn {
      *                               <br/>it represents how many doctors of every seniority are needed to cover the shift
      * @param additionalConstraintShiftDTO A list of DTOs representing the additional constraints related to the shift
      */
-    public ShiftDTOIn(@JsonProperty("id") Long id, @JsonProperty("timeSlot") String timeSlot,
+    public ShiftDTOIn(@JsonProperty("id") Long id,
+                      @JsonProperty("timeSlot") String timeSlot,
                       @JsonProperty("startHour") Integer startHour,
                       @JsonProperty("startMinute") Integer startMinute,
                       @JsonProperty("durationMinutes") Integer durationMinutes, @JsonProperty("daysOfWeek") Set<String> daysOfWeek,
-                      @JsonProperty("medicalServices") MedicalServiceShiftDTO medicalService,
+                      @JsonProperty("medicalService") MedicalServiceShiftDTO medicalService,
                       @JsonProperty("quantityShiftSeniority") List<QuantityShiftSeniorityDTO> quantityShiftSeniority,
                       @JsonProperty("additionalConstraints") List<AdditionalConstraintShiftDTO> additionalConstraintShiftDTO) {
         this.id = id;

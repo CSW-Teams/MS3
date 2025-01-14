@@ -1,7 +1,13 @@
 import {fetchWithAuth} from "../utils/fetchWithAuth";
 
 export class TurnoAPI {
-  constructor() {
+  constructor() {}
+
+  async getShifts() {
+    const response = await fetchWithAuth('api/shifts/');
+    const body = await response.json();
+
+    return body;
   }
 
   /**

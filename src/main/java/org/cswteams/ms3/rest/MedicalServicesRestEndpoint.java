@@ -53,7 +53,7 @@ public class MedicalServicesRestEndpoint {
 
     @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceCreationDTO newService) {
+    public ResponseEntity<?> createService(@RequestBody(required = true) MedicalServiceCreationDTO newService) {
         if (newService != null) {
             MedicalService medicalService = medicalServiceController.createService(newService);
 
@@ -62,11 +62,9 @@ public class MedicalServicesRestEndpoint {
 
                 shiftDTO.getMedicalService().setId(medicalServiceId);
 
-                shiftDTO.getQuantityShiftSeniority().forEach(quantityShiftSeniorityDTO -> {
-                    medicalService.getTasks().stream()
-                            .filter(task -> Objects.equals(quantityShiftSeniorityDTO.getTaskName(), task.getTaskType().name()))
-                            .forEach(task -> quantityShiftSeniorityDTO.setTask(task.getId()));
-                });
+                shiftDTO.getQuantityShiftSeniority().forEach(quantityShiftSeniorityDTO -> medicalService.getTasks().stream()
+                        .filter(task -> Objects.equals(quantityShiftSeniorityDTO.getTaskName(), task.getTaskType().name()))
+                        .forEach(task -> quantityShiftSeniorityDTO.setTask(task.getId())));
 
                 ShiftDTOOut shiftDTOOut = shiftController.createShift(shiftDTO);
 

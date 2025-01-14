@@ -73,9 +73,9 @@ const NewShiftForm = ({
   };
 
   const handleAddNewShift = () => {
-    let shiftCopy = {};
+    let shift: Shift = {};
 
-    shiftCopy.id = Date.now();
+    shift.id = Date.now();
 
     if (timeSlot === defaultNewShiftFormValues.timeSlot) {
       showToast(
@@ -85,7 +85,7 @@ const NewShiftForm = ({
 
       return;
     }
-    shiftCopy.timeSlot = timeSlot;
+    shift.timeSlot = timeSlot;
 
     if (selectedDays.length === 0) {
       showToast(
@@ -95,27 +95,27 @@ const NewShiftForm = ({
 
       return;
     }
-    shiftCopy.daysOfWeek = selectedDays.slice();
+    shift.daysOfWeek = selectedDays.slice();
 
     let [hour, minute] = startTime.split(":");
-    shiftCopy.startHour = hour;
-    shiftCopy.startMinute = minute;
+    shift.startHour = hour;
+    shift.startMinute = minute;
 
     [hour, minute] = shiftDuration.split(":");
-    shiftCopy.durationMinutes = parseInt(hour) * 60 + parseInt(minute);
+    shift.durationMinutes = parseInt(hour) * 60 + parseInt(minute);
 
-    shiftCopy.medicalServices = {};
-    shiftCopy.medicalServices.label = medicalServiceName;
+    shift.medicalService = {};
+    shift.medicalService.label = medicalServiceName;
 
-    shiftCopy.quantityShiftSeniority = Object.entries(seniorityValues).map(([seniority, quantity]) => ({
+    shift.quantityShiftSeniority = Object.entries(seniorityValues).map(([seniority, quantity]) => ({
       taskName: task,
       seniority: seniority,
       quantity: quantity
     }));
 
-    shiftCopy.additionalConstraints = [];
+    shift.additionalConstraints = [];
 
-    let res = handleSubmitShiftForm(shiftCopy);
+    let res = handleSubmitShiftForm(shift);
 
     handleResetShiftForm()
 

@@ -85,6 +85,11 @@ export function configuratore() {
       to: "/servizi",
     },
     {
+      title: "Shifts management",
+      htmlBefore: '<i class="material-icons">work_outline</i>',
+      to: "/turni",
+    },
+    {
       title: "Manage custom holidays",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/gestione-festivita"

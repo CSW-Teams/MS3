@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import {
@@ -14,22 +13,9 @@ import IconButton from "@mui/material/IconButton";
 import {t} from "i18next";
 
 const ShiftItemBox: React.FC<{
-  shiftData: {
-    id: string;
-    timeSlot: string;
-    startHour: number;
-    startMinute: number;
-    durationMinutes: number;
-    daysOfWeek: string[];
-    medicalServices: { label: string };
-    quantityShiftSeniority: {
-      taskName: string;
-      seniority: string;
-      quantity: number
-    }[];
-  };
-  onDelete: (shift: number) => void;
-}> = ({shiftData, onDelete}) => {
+  shiftData: Shift;
+  onDelete?: (shift: number) => void;
+}> = ({shiftData, onDelete = null}) => {
   const [open, setOpen] = useState(false);
 
   const toggleExpand = () => {
@@ -55,12 +41,13 @@ const ShiftItemBox: React.FC<{
 
       {/* Button for shift delete */}
       <IconButton
-        onClick={() => onDelete(shiftData.id)}
+        onClick={() => onDelete && onDelete(shiftData.id)}
         color="error"
         sx={{
           position: 'absolute',
           top: 16,
           right: 16,
+          display: onDelete ? 'block' : 'none'
         }}
       >
         <Delete />
@@ -98,11 +85,11 @@ const ShiftItemBox: React.FC<{
 
       {/* Collapsable content */}
       <Collapse in={open}>
-        <Divider sx={{ marginY: 2 }} />
+        {/*<Divider sx={{ marginY: 2 }} />*/}
 
-        <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-          <strong>{t("Medical service")}:</strong> {shiftData.medicalServices.label}
-        </Typography>
+        {/*<Typography variant="subtitle1" sx={{ marginBottom: 1 }}>*/}
+        {/*  <strong>{t("Medical service")}:</strong> {shiftData.medicalService.label}*/}
+        {/*</Typography>*/}
 
         <Divider sx={{ marginY: 2 }} />
 
