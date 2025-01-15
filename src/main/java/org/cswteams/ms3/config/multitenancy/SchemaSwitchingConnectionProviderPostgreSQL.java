@@ -5,18 +5,24 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class SchemaSwitchingConnectionProvider implements MultiTenantConnectionProvider {
+public class SchemaSwitchingConnectionProviderPostgreSQL implements MultiTenantConnectionProvider {
 
-    private DataSource dataSource;
+    private final Map<String, DataSource> tenantDataSources;
 
-    public SchemaSwitchingConnectionProvider(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public SchemaSwitchingConnectionProviderPostgreSQL(Map<String, DataSource> tenantDataSources) {
+        this.tenantDataSources = new ConcurrentHashMap<>(tenantDataSources);
     }
 
     @Override
     public Connection getAnyConnection() throws SQLException {
-        return dataSource.getConnection();
+        // Restituisce una connessione generica (es. per scopi amministrativi)
+        if (tenantDataSources.isEmpty()) {
+            throw new SQLException("No data sources configured for tenants!");
+        }
+        return tenantDataSources.values().iterator().next().getConnection();
     }
 
     @Override
@@ -26,6 +32,12 @@ public class SchemaSwitchingConnectionProvider implements MultiTenantConnectionP
 
     @Override
     public Connection getConnection(String tenantIdentifier) throws SQLException {
+        DataSource dataSource = tenantDataSources.get(tenantIdentifier);
+
+        if (dataSource == null) {
+            throw new SQLException("Tenant not found: " + tenantIdentifier);
+        }
+
         Connection connection = dataSource.getConnection();
         connection.createStatement().execute("SET search_path TO " + tenantIdentifier);
         return connection;
@@ -41,6 +53,7 @@ public class SchemaSwitchingConnectionProvider implements MultiTenantConnectionP
     public boolean supportsAggressiveRelease() {
         return false;
     }
+
 
     @Override
     public boolean isUnwrappableAs(Class aClass) {

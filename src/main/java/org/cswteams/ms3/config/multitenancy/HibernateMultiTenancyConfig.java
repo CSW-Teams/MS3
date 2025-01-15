@@ -17,13 +17,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableTransactionManagement
 public class HibernateMultiTenancyConfig {
-
-    @Autowired
-    private DataSource dataSource;
 
     @Autowired
     private JpaProperties jpaProperties;
@@ -35,7 +34,20 @@ public class HibernateMultiTenancyConfig {
 
     @Bean
     public MultiTenantConnectionProvider schemaSwitchingConnectionProvider() {
-        return new SchemaSwitchingConnectionProvider(dataSource);
+        Map<String, DataSource> tenantDataSources = new HashMap<>();
+
+        // Crea e aggiungi DataSource per ciascun tenant/schema
+        tenantDataSources.put("public", DataSourceConfig.createTenantDataSource(
+                "jdbc:postgresql://localhost:5432/ms3", "public_scheme_user", "password_public"
+        ));
+        tenantDataSources.put("a", DataSourceConfig.createTenantDataSource(
+                "jdbc:postgresql://localhost:5432/ms3", "tenant_a_user", "password_a"
+        ));
+        tenantDataSources.put("b", DataSourceConfig.createTenantDataSource(
+                "jdbc:postgresql://localhost:5432/ms3", "tenant_b_user", "password_b"
+        ));
+
+        return new SchemaSwitchingConnectionProviderPostgreSQL(tenantDataSources);
     }
 
     @Bean
@@ -52,8 +64,8 @@ public class HibernateMultiTenancyConfig {
 
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT, MultiTenancyStrategy.SCHEMA);
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver());
+        factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, schemaSwitchingConnectionProvider());
         factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "create");
-        factoryBean.getJpaPropertyMap().put("hibernate.multi_tenant_connection_provider", schemaSwitchingConnectionProvider());
 
         return factoryBean;
     }

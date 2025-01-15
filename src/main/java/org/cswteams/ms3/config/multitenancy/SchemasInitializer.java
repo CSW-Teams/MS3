@@ -3,6 +3,7 @@ package org.cswteams.ms3.config.multitenancy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.support.EncodedResource;
 import org.springframework.jdbc.datasource.init.ScriptException;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Component;
@@ -40,6 +41,9 @@ public class SchemasInitializer {
         // Carica lo script di creazione degli schemi dal file .sql
         ClassPathResource schemaScript2 = new ClassPathResource("db/create_schemas.sql");
 
+        // Carica lo script di assegnamento dei privilegi dal file .sql
+        ClassPathResource schemaScript3 = new ClassPathResource("db/assign_privileges.sql");
+
         // Usa la connessione dal DataSource
         try (Connection connection = dataSource.getConnection()) {
             // Esegui gli script SQL
@@ -48,6 +52,10 @@ public class SchemasInitializer {
 
             // Crea le tabelle nei vari schemi
             createTables();
+
+            // Assegna tutti i privilegi corretti agli utenti del db
+            ScriptUtils.executeSqlScript(connection, new EncodedResource(schemaScript3, "UTF-8"), false, false, ScriptUtils.DEFAULT_COMMENT_PREFIX, ";;",
+                    ScriptUtils.DEFAULT_BLOCK_COMMENT_START_DELIMITER, ScriptUtils.DEFAULT_BLOCK_COMMENT_END_DELIMITER);
 
             // Ritorna allo schema di default
             changeSchemaToTenant(connection, DEFAULT_SCHEMA);
