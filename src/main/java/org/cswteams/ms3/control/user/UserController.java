@@ -99,6 +99,16 @@ public class UserController implements IUserController {
     }
 
     @Override
+    public Long getTenantUserId(String email) {
+        try {
+            Doctor doctor = doctorDAO.findByEmail(email);
+            return doctor.getId();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
     public SingleUserProfileDTO getSingleUserProfileInfos(Long userId){
         Doctor doctor = doctorDAO.findById((long)userId);
         List<String> systemActors = new ArrayList<>();

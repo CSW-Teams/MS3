@@ -1,13 +1,10 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
-import org.cswteams.ms3.control.shift.IShiftController;
 import org.cswteams.ms3.dto.medicalservice.AvailableTasksTypesDTO;
-import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceDTO;
+import org.cswteams.ms3.dto.medicalservice.MedicalServiceCreationDTO;
 import org.cswteams.ms3.dto.medicalservice.MedicalServiceWithTaskAssignmentsDTO;
-import org.cswteams.ms3.dto.shift.ShiftDTOOut;
-import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,17 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/medical-services/")
 public class MedicalServicesRestEndpoint {
-    @Autowired
-    IMedicalServiceController medicalServiceController;
 
     @Autowired
-    IShiftController shiftController;
+    IMedicalServiceController medicalServiceController;
 
     @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
@@ -53,29 +47,10 @@ public class MedicalServicesRestEndpoint {
 
     @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceCreationDTO newService) {
-        if (newService != null) {
-            MedicalService medicalService = medicalServiceController.createService(newService);
-
-            newService.getShifts().forEach(shiftDTO -> {
-                Long medicalServiceId = medicalService.getId();
-
-                shiftDTO.getMedicalService().setId(medicalServiceId);
-
-                shiftDTO.getQuantityShiftSeniority().forEach(quantityShiftSeniorityDTO -> {
-                    medicalService.getTasks().stream()
-                            .filter(task -> Objects.equals(quantityShiftSeniorityDTO.getTaskName(), task.getTaskType().name()))
-                            .forEach(task -> quantityShiftSeniorityDTO.setTask(task.getId()));
-                });
-
-                ShiftDTOOut shiftDTOOut = shiftController.createShift(shiftDTO);
-
-                System.out.println(shiftDTOOut);
-            });
-
-            return new ResponseEntity<>(medicalService, HttpStatus.ACCEPTED);
+    public ResponseEntity<?> creaServizio(@RequestBody(required = true) MedicalServiceCreationDTO service) {
+        if (service != null) {
+            return new ResponseEntity<>(medicalServiceController.createService(service), HttpStatus.ACCEPTED);
         }
-
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 

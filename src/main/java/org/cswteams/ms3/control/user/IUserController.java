@@ -17,6 +17,8 @@ public interface IUserController {
 
     UserDetailsDTO getSingleUser(long userId);
 
+    Long getTenantUserId(String email);
+
     /**
      * Function that has the responsibility to retrive information about single user profile
      * to be shown in the user profile view. In particular this method converts doctor entity of the backend

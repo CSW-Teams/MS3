@@ -1,7 +1,9 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.shift.IShiftController;
-import org.cswteams.ms3.dto.shift.*;
+import org.cswteams.ms3.dto.shift.ShiftDTOIn;
+import org.cswteams.ms3.dto.shift.ShiftDTOOut;
+import org.cswteams.ms3.dto.shift.ShiftServiceNameDTOIn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,11 +70,5 @@ public class ShiftRestEndpoint {
         }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-
-    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
-    @RequestMapping(method = RequestMethod.GET, path = "constants")
-    public ResponseEntity<?> createShift() {
-        return new ResponseEntity<>(new ShiftConstantsDTO(), HttpStatus.FOUND);
     }
 }
