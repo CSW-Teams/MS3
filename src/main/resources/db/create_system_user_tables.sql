@@ -11,18 +11,12 @@ create table ms3_system_user
     tenant             varchar(255) not null
 );
 
-alter table ms3_system_user
-    owner to sprintfloyd;
-
 
 create table user_system_actors
 (
     user_ms3_system_user_id bigint not null,
     system_actors           integer
 );
-
-alter table user_system_actors
-    owner to sprintfloyd;
 
 
 create table systemuser_systemactors
@@ -31,6 +25,3 @@ create table systemuser_systemactors
     role               varchar(50) not null,
     primary key (ms3_system_user_id, role)
 );
-
-alter table systemuser_systemactors
-    owner to sprintfloyd;

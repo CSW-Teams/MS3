@@ -7,6 +7,3 @@ create table waiver
     type      varchar(255)
 );
 
-alter table waiver
-    owner to sprintfloyd;
-

@@ -7,6 +7,3 @@ create table notification
     user_ms3_tenant_user_id bigint       not null
 );
 
-alter table notification
-    owner to sprintfloyd;
-

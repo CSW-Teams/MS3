@@ -10,9 +10,6 @@ create table holiday
     start_date_epoch_day bigint       not null
 );
 
-alter table holiday
-    owner to sprintfloyd;
-
 
 create table recurrent_holiday
 (
@@ -26,7 +23,4 @@ create table recurrent_holiday
     start_day   integer      not null,
     start_month integer      not null
 );
-
-alter table recurrent_holiday
-    owner to sprintfloyd;
 

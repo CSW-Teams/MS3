@@ -10,9 +10,6 @@ create table request
             references concrete_shift
 );
 
-alter table request
-    owner to sprintfloyd;
-
 
 create table request_removal_from_concrete_shift
 (
@@ -32,7 +29,4 @@ create table request_removal_from_concrete_shift
         constraint fksaco8qurl42be85an4go2drro
             references doctor
 );
-
-alter table request_removal_from_concrete_shift
-    owner to sprintfloyd;
 

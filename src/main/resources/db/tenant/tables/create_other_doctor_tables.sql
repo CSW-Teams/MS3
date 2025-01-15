@@ -8,9 +8,6 @@ create table doctor_permanent_conditions
             references permanent_condition
 );
 
-alter table doctor_permanent_conditions
-    owner to sprintfloyd;
-
 
 create table doctor_preference_list
 (
@@ -21,9 +18,6 @@ create table doctor_preference_list
         constraint fkigigf535imqq5mubfmfjonalu
             references preference
 );
-
-alter table doctor_preference_list
-    owner to sprintfloyd;
 
 
 create table doctor_specializations
@@ -36,9 +30,6 @@ create table doctor_specializations
             references specialization
 );
 
-alter table doctor_specializations
-    owner to sprintfloyd;
-
 
 create table doctor_temporary_conditions
 (
@@ -49,9 +40,6 @@ create table doctor_temporary_conditions
         constraint fkhvhnnfsoeadi43aihyft35wj1
             references temporary_condition
 );
-
-alter table doctor_temporary_conditions
-    owner to sprintfloyd;
 
 
 create table doctor_uffa_priority
@@ -72,9 +60,6 @@ create table doctor_uffa_priority
             references schedule
 );
 
-alter table doctor_uffa_priority
-    owner to sprintfloyd;
-
 
 create table doctor_uffa_priority_snapshot
 (
@@ -90,7 +75,4 @@ create table doctor_uffa_priority_snapshot
         constraint fkex1084c0m80pdp0bsm16lk35b
             references schedule
 );
-
-alter table doctor_uffa_priority_snapshot
-    owner to sprintfloyd;
 

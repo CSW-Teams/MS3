@@ -5,9 +5,6 @@ create table preference
     date date
 );
 
-alter table preference
-    owner to sprintfloyd;
-
 
 create table preference_doctors
 (
@@ -19,9 +16,6 @@ create table preference_doctors
             references doctor
 );
 
-alter table preference_doctors
-    owner to sprintfloyd;
-
 
 create table preference_time_slots
 (
@@ -30,7 +24,4 @@ create table preference_time_slots
             references preference,
     time_slots    integer
 );
-
-alter table preference_time_slots
-    owner to sprintfloyd;
 

@@ -8,5 +8,3 @@ create table concrete_shift
             references shift
 );
 
-alter table concrete_shift
-    owner to sprintfloyd;

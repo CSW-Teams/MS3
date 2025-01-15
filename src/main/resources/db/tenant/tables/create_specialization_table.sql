@@ -5,6 +5,3 @@ create table specialization
     type              varchar(255) not null
 );
 
-alter table specialization
-    owner to sprintfloyd;
-

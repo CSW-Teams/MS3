@@ -11,9 +11,6 @@ create table doctor
     seniority          integer      not null
 );
 
-alter table doctor
-    owner to sprintfloyd;
-
 
 create table doctor_holidays
 (
@@ -24,6 +21,3 @@ create table doctor_holidays
         constraint fkfvgbw7dtyh2udi5gt75bbkmtl
             references doctor
 );
-
-alter table doctor_holidays
-    owner to sprintfloyd;

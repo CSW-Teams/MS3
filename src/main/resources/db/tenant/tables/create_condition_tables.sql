@@ -5,9 +5,6 @@ create table condition
     type varchar(255) not null
 );
 
-alter table condition
-    owner to sprintfloyd;
-
 
 create table permanent_condition
 (
@@ -16,9 +13,6 @@ create table permanent_condition
         constraint fkidbh8f1v99ueewy58lfajs3g3
             references condition
 );
-
-alter table permanent_condition
-    owner to sprintfloyd;
 
 
 create table temporary_condition
@@ -30,7 +24,4 @@ create table temporary_condition
         constraint fkb303kbmim9pt133tyojbnay6m
             references condition
 );
-
-alter table temporary_condition
-    owner to sprintfloyd;
 

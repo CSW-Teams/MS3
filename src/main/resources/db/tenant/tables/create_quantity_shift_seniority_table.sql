@@ -8,6 +8,3 @@ create table quantity_shift_seniority
             references task
 );
 
-alter table quantity_shift_seniority
-    owner to sprintfloyd;
-

@@ -14,9 +14,6 @@ create table doctor_assignment
             references task
 );
 
-alter table doctor_assignment
-    owner to sprintfloyd;
-
 create table concrete_shift_doctor_assignment_list
 (
     concrete_shift_concrete_shift_id bigint not null
@@ -28,6 +25,3 @@ create table concrete_shift_doctor_assignment_list
         constraint fkee3lbf3rqw3qxtg7vem64frs9
             references doctor_assignment
 );
-
-alter table concrete_shift_doctor_assignment_list
-    owner to sprintfloyd;

@@ -12,6 +12,3 @@ create table scocciatura
             on delete cascade
 );
 
-alter table scocciatura
-    owner to sprintfloyd;
-

@@ -5,9 +5,6 @@ create table medical_service
     label              varchar(255) not null
 );
 
-alter table medical_service
-    owner to sprintfloyd;
-
 
 create table medical_service_tasks
 (
@@ -18,7 +15,3 @@ create table medical_service_tasks
         constraint fkavku6paea867say2pcg2diihm
             references task
 );
-
-alter table medical_service_tasks
-    owner to sprintfloyd;
-

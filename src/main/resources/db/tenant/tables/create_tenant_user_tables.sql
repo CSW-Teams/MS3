@@ -10,18 +10,12 @@ create table ms3_tenant_user
     tax_code           varchar(255) not null
 );
 
-alter table ms3_tenant_user
-    owner to sprintfloyd;
-
 
 create table user_tenant_actors
 (
     user_ms3_tenant_user_id bigint not null,
     system_actors           integer
 );
-
-alter table user_tenant_actors
-    owner to sprintfloyd;
 
 
 create table tenantuser_systemactors
@@ -30,6 +24,3 @@ create table tenantuser_systemactors
     role               varchar(50) not null,
     primary key (ms3_tenant_user_id, role)
 );
-
-alter table tenantuser_systemactors
-    owner to sprintfloyd;

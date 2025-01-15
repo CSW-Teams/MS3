@@ -16,9 +16,6 @@ create table ms3_constraint
             references condition
 );
 
-alter table ms3_constraint
-    owner to sprintfloyd;
-
 
 create table constraint_turni_contigui_forbidden_time_slots
 (
@@ -28,17 +25,10 @@ create table constraint_turni_contigui_forbidden_time_slots
     forbidden_time_slots                    varchar(255)
 );
 
-alter table constraint_turni_contigui_forbidden_time_slots
-    owner to sprintfloyd;
-
-
 create table violated_constraint_log_entry
 (
     id        bigint not null
         primary key,
     violation bytea
 );
-
-alter table violated_constraint_log_entry
-    owner to sprintfloyd;
 

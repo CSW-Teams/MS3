@@ -7,9 +7,6 @@ create table schedule
     start_date    bigint not null
 );
 
-alter table schedule
-    owner to sprintfloyd;
-
 
 create table schedule_concrete_shifts
 (
@@ -23,9 +20,6 @@ create table schedule_concrete_shifts
             references concrete_shift
 );
 
-alter table schedule_concrete_shifts
-    owner to sprintfloyd;
-
 
 create table schedule_violated_constraints
 (
@@ -36,9 +30,6 @@ create table schedule_violated_constraints
         constraint fkcrmao7o7l611d63pw7jcgp8dl
             references ms3_constraint
 );
-
-alter table schedule_violated_constraints
-    owner to sprintfloyd;
 
 create table user_schedule_state
 (
@@ -51,7 +42,4 @@ create table user_schedule_state
             references schedule,
     utente_ms3_tenant_user_id bigint
 );
-
-alter table user_schedule_state
-    owner to sprintfloyd;
 

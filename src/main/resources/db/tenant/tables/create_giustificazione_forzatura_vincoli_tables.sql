@@ -13,9 +13,6 @@ create table giustificazione_forzatura_vincoli
             references medical_service
 );
 
-alter table giustificazione_forzatura_vincoli
-    owner to sprintfloyd;
-
 
 create table giustificazione_forzatura_vincoli_assigned_doctors
 (
@@ -27,7 +24,4 @@ create table giustificazione_forzatura_vincoli_assigned_doctors
             references doctor,
     primary key (giustificazione_forzatura_vincoli_id, assigned_doctors_ms3_tenant_user_id)
 );
-
-alter table giustificazione_forzatura_vincoli_assigned_doctors
-    owner to sprintfloyd;
 

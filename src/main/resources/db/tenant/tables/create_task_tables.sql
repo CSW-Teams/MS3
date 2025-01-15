@@ -5,9 +5,6 @@ create table task
     task_type integer
 );
 
-alter table task
-    owner to sprintfloyd;
-
 
 create table task_with_assignmentdto
 (
@@ -16,7 +13,4 @@ create table task_with_assignmentdto
     is_assigned boolean not null,
     task_type   integer
 );
-
-alter table task_with_assignmentdto
-    owner to sprintfloyd;
 

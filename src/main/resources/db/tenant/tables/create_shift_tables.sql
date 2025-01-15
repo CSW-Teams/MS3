@@ -10,9 +10,6 @@ create table shift
             references medical_service
 );
 
-alter table shift
-    owner to sprintfloyd;
-
 
 create table shift_additional_constraints
 (
@@ -24,9 +21,6 @@ create table shift_additional_constraints
             references ms3_constraint
 );
 
-alter table shift_additional_constraints
-    owner to sprintfloyd;
-
 
 create table shift_days_of_week
 (
@@ -35,9 +29,6 @@ create table shift_days_of_week
             references shift,
     days_of_week   integer
 );
-
-alter table shift_days_of_week
-    owner to sprintfloyd;
 
 
 create table shift_quantity_shift_seniority
@@ -51,7 +42,4 @@ create table shift_quantity_shift_seniority
         constraint fkoamnh1j4jcb2vn4r8ftn2ondh
             references quantity_shift_seniority
 );
-
-alter table shift_quantity_shift_seniority
-    owner to sprintfloyd;
 
