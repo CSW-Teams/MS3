@@ -1,4 +1,4 @@
-import {teal} from "@material-ui/core/colors";
+import {teal, yellow, red} from "@material-ui/core/colors";
 import {AssignedShift} from "./Schedulable";
 import {Doctor} from "../entity/Doctor";
 import {t} from "i18next";
@@ -24,6 +24,13 @@ export class AssegnazioneTurnoAPI {
         task = "";
       } else {
         task = t(body[i].medicalServiceTask) + " in ";
+      }
+
+      let color;
+      switch (body[i].shiftState) {
+        case "COMPLETE": color = teal; break;
+        case "INCOMPLETE": color = yellow; break;
+        case "INFEASIBLE": color = red; break;
       }
 
       let turno = new AssignedShift(

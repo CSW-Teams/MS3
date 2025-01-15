@@ -11,6 +11,7 @@ import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
+import org.cswteams.ms3.enums.ShiftState;
 import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,6 @@ public class ConcreteShiftController implements IConcreteShiftController {
         Set<GetAllConcreteShiftDTO> getAllConcreteShiftDTOSet = new HashSet<>();
 
         for (ConcreteShift concreteShift : turniSet) {
-
             long startDateTime = concreteShift.getShift().getStartTime().toEpochSecond(LocalDate.ofEpochDay(concreteShift.getDate()), ZoneOffset.UTC);
             long endDateTime = startDateTime + concreteShift.getShift().getDuration().toSeconds();
 
@@ -74,6 +74,8 @@ public class ConcreteShiftController implements IConcreteShiftController {
 
             boolean isCall = !doctorsOnCall.isEmpty();
 
+            ShiftState shiftState = ShiftState.extractStateFromConcreteShift(concreteShift);
+
             GetAllConcreteShiftDTO getAllConcreteShiftDTO = new GetAllConcreteShiftDTO(
                     concreteShift.getId(),
                     concreteShift.getShift().getId(),
@@ -85,7 +87,8 @@ public class ConcreteShiftController implements IConcreteShiftController {
                     concreteShift.getShift().getMedicalService().getLabel(),
                     "", // this concrete shift may contain multiple tasks
                     concreteShift.getShift().getTimeSlot().toString(),
-                    isCall
+                    isCall,
+                    shiftState
             );
             getAllConcreteShiftDTOSet.add(getAllConcreteShiftDTO);
         }
