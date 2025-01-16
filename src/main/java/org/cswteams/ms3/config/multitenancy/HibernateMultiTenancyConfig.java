@@ -65,7 +65,7 @@ public class HibernateMultiTenancyConfig {
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT, MultiTenancyStrategy.SCHEMA);
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver());
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, schemaSwitchingConnectionProvider());
-        factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "create");
+        factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "none");
 
         return factoryBean;
     }
