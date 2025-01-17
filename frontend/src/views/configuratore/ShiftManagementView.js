@@ -5,6 +5,7 @@ import {
   MDBCardTitle,
   MDBContainer
 } from "mdb-react-ui-kit";
+import DialogDeleteShift from '../../components/common/DialogDeleteShift';
 import {ServiceAPI} from "../../API/ServiceAPI";
 import {TurnoAPI} from "../../API/TurnoAPI";
 import type {MedicalService} from "../../entity/MedicalService";
@@ -43,6 +44,16 @@ export default class ShiftManagementView extends React.Component {
     })
   }
 
+  /**
+   * Funzione per aggiornare la lista dei turni dopo l'eliminazione.
+   */
+  updateShiftsListAfterRemoval = (removedShift) => {
+    const updatedShifts = this.state.shifts.filter(
+      (shift) => shift.id !== removedShift.id
+    );
+    this.setState({ shifts: updatedShifts });
+  };
+
   render() {
     return (
       <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
@@ -57,13 +68,28 @@ export default class ShiftManagementView extends React.Component {
                 {this.state.shifts
                   .filter((shift) => shift.medicalService.label === medicalService.name)
                   .map((shift: Shift) => (
-                    <ShiftItemBox key={shift.id} shiftData={shift}/>
-                ))}
+                    <div
+                      key={shift.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between"
+                      }}
+                    >
+                      <ShiftItemBox key={shift.id} shiftData={shift}/>
+                      <DialogDeleteShift
+                        currentShiftInfo={shift}
+                        updateShiftsList={this.updateShiftsListAfterRemoval}
+                        disabled={false} // Personalizza se il pulsante deve essere disabilitato.
+                      />
+                    </div>
+                  ))}
               </MedicalServiceCollapse>
             ))}
           </MDBCardBody>
         </MDBCard>
       </MDBContainer>
-    );
+    )
+      ;
   }
 }
