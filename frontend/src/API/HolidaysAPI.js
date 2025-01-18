@@ -23,7 +23,6 @@ export class HolidaysAPI {
                 // frontend months are 0-11, backend months are 1-12
                 new Date(sh.startDateEpochDay * 24 * 60 * 60 * 1000),
                 new Date(sh.endDateEpochDay * 24 * 60 * 60 * 1000), // +1 because the scheduler doesn't include the end date
-                red,
             );
 
 

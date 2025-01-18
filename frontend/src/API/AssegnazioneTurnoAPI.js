@@ -38,7 +38,6 @@ export class AssegnazioneTurnoAPI {
         task + service,
         startDate,
         endDate,
-        'yellow',
         shiftState);
 
       turno.id = body[i].id;
