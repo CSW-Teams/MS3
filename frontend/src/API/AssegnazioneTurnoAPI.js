@@ -1,5 +1,5 @@
-import {teal, yellow, red} from "@material-ui/core/colors";
-import {AssignedShift} from "./Schedulable";
+import {teal} from "@material-ui/core/colors";
+import {AssignedShift, ShiftState} from "./Schedulable";
 import {Doctor} from "../entity/Doctor";
 import {t} from "i18next";
 import {fetchWithAuth} from "../utils/fetchWithAuth";
@@ -13,10 +13,10 @@ export class AssegnazioneTurnoAPI {
     let turni = [];
     for (let i = 0; i < body.length; i++) {
       const inizioEpochMilliseconds = body[i].startDateTime * 1000
-      const inizioDate = new Date(inizioEpochMilliseconds);
+      const startDate = new Date(inizioEpochMilliseconds);
 
       const fineEpochMilliseconds = body[i].endDateTime * 1000
-      const fineDate = new Date(fineEpochMilliseconds);
+      const endDate = new Date(fineEpochMilliseconds);
 
       var task;
       var service = body[i].medicalServiceLabel.charAt(0).toUpperCase() + body[i].medicalServiceLabel.slice(1).toLowerCase();
@@ -26,18 +26,20 @@ export class AssegnazioneTurnoAPI {
         task = t(body[i].medicalServiceTask) + " in ";
       }
 
-      let color;
+      let shiftState;
       switch (body[i].shiftState) {
-        case "COMPLETE": color = teal; break;
-        case "INCOMPLETE": color = yellow; break;
-        case "INFEASIBLE": color = red; break;
+        case "COMPLETE": shiftState = ShiftState.Complete; break;
+        case "INCOMPLETE": shiftState = ShiftState.Incomplete; break;
+        case "INFEASIBLE": shiftState = ShiftState.Infeasible; break;
+        default: shiftState = ShiftState.Infeasible
       }
 
       let turno = new AssignedShift(
         task + service,
-        inizioDate,
-        fineDate,
-        teal);
+        startDate,
+        endDate,
+        'yellow',
+        shiftState);
 
       turno.id = body[i].id;
       turno.type = "Assigned"

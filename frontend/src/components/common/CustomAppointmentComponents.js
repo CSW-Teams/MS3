@@ -23,8 +23,8 @@ import {
 import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
-import {toast} from "react-toastify";
 import {panic} from "./Panic";
+import {teal, yellow} from "@material-ui/core/colors";
 
 
 // AppointmentContent di SingleScheduleView
@@ -320,6 +320,7 @@ export class AppointmentContent extends React.Component{
       restProps: {...restProps},
       attore: data.attore,
       requests: [],
+      color: ''
     }
 
   }
@@ -335,6 +336,7 @@ export class AppointmentContent extends React.Component{
         utenti_allocati: this.state.data.utenti_guardia,
         utenti_reperibili: this.state.data.utenti_reperibili,
         utenti_rimossi: this.state.data.utenti_rimossi,
+        color: this.state.data.color,
       })
     }
 
@@ -358,7 +360,7 @@ export class AppointmentContent extends React.Component{
     /* Se esistono richieste di ritiro pendenti per il turno, il rettangolo è di colore rosso, altrimenti è blu
     *  Questa differenza è visibile solo ai pianificatori.
     * */
-    let appointmentStyle = {backgroundColor: '#4db6ac'};
+    let appointmentStyle = {backgroundColor: this.state.color};
 
     if (this.state.attore === "PLANNER") {
       let pendingRequestExists = this.state.requests.some(request => request.idShift === this.state.data.id);

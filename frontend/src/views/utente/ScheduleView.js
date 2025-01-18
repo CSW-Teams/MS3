@@ -56,6 +56,7 @@ import {
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 import {MDBRow} from "mdb-react-ui-kit";
+import {teal, yellow, red} from "@material-ui/core/colors";
 
 
 /**
@@ -455,27 +456,42 @@ class ScheduleView extends React.Component {
       return
     }
 
+    let shiftStateResourceInstances = [
+      {id:'Complete',   text: 'Complete',   color: yellow},
+      {id:'Incomplete', text: 'Incomplete', color: teal},
+      {id:'Infeasible', text: 'Infeasible', color: red}
+    ]
+
     this.setState({
       requests: requestsArray,
       data: turni,
       mainResourceName: 'main_resource_dummy',
-      resources: [{
-        fieldName: 'utenti_guardia_id',
-        title: 'Guardia',
-        allowMultiple: true,
-        instances: allDoctors,
-      }, {
-        fieldName: 'utenti_reperibili_id',
-        title: 'Reperibilità',
-        allowMultiple: true,
-        instances: allDoctors,
-      },],
+      resources: [
+        {
+          fieldName: 'utenti_guardia_id',
+          title: 'Guardia',
+          allowMultiple: true,
+          instances: allDoctors,
+        },
+        {
+          fieldName: 'utenti_reperibili_id',
+          title: 'Reperibilità',
+          allowMultiple: true,
+          instances: allDoctors,
+        },
+        {
+          fieldName: 'shiftState',
+          title: 'Stato',
+          allowMultiple: false,
+          instances: shiftStateResourceInstances
+
+        }
+      ],
       allServices: new Set(allServices),
       allUser: allDoctors,
       holidays: allHolidays,
       shiftQueriedResponse: "GOOD",
     })
-
 
   }
 
