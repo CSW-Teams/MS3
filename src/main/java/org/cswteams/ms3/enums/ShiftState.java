@@ -59,17 +59,20 @@ public enum ShiftState {
             }
         }
         numberOfStructoredAssigned = (int) concreteShift.getDoctorAssignmentList()
-                .stream().filter(da -> da.getDoctor().getSeniority() == Seniority.STRUCTURED).count();
+                .stream().filter(da -> da.getDoctor().getSeniority() == Seniority.STRUCTURED &&
+                        da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY).count();
 
         numberOfSeniorAssigned = (int) concreteShift.getDoctorAssignmentList()
-                .stream().filter(da -> da.getDoctor().getSeniority() == Seniority.SPECIALIST_SENIOR).count();
+                .stream().filter(da -> da.getDoctor().getSeniority() == Seniority.SPECIALIST_SENIOR &&
+                        da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY).count();
 
         numberOfJuniorAssigned = (int) concreteShift.getDoctorAssignmentList()
-                .stream().filter(da -> da.getDoctor().getSeniority() == Seniority.SPECIALIST_JUNIOR).count();
+                .stream().filter(da -> da.getDoctor().getSeniority() == Seniority.SPECIALIST_JUNIOR &&
+                        da.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY).count();
 
         // check status
-        if(numberOfStructoredNeeded*2 == numberOfStructoredAssigned){
-            if(numberOfSeniorNeeded*2 == numberOfSeniorAssigned && numberOfJuniorNeeded*2 == numberOfJuniorAssigned)
+        if(numberOfStructoredNeeded == numberOfStructoredAssigned){
+            if(numberOfSeniorNeeded == numberOfSeniorAssigned && numberOfJuniorNeeded == numberOfJuniorAssigned)
                 return ShiftState.COMPLETE;
             return ShiftState.INCOMPLETE;
         }
