@@ -74,6 +74,12 @@ public class Shift {
     private List<AdditionalConstraint> additionalConstraints;
 
     /**
+     * Soft delete flag to mark shifts as deleted without removing them from the database.
+     */
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    /**
      * Abstract concept of shift, created by the configurator
      *
      * @param StartTime              hh:mm:ss when the shift will start
@@ -95,6 +101,7 @@ public class Shift {
         //TODO:Check correct data value between this and medicalService for more detail conctact me
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraints;
+        this.deleted = false; // Default value for a newly created shift
     }
 
     /**
@@ -122,6 +129,7 @@ public class Shift {
         this.medicalService = medicalService;
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraints;
+        this.deleted = false; // Default value for a newly created shift
         if (!verifyCorrectnessQuantityShiftSeniority()) {
             throw new RuntimeException(); //TODO: inserire un eccezzione più logica
         }

@@ -22,14 +22,31 @@ public class ShiftRestEndpoint {
 
     /**
      * Retrieves all shift definitions <br/>
-     * Reached from <b> GET api/shifts</b>
+     * Reached from <b>GET api/shifts</b>
      * @return A response containing a list of {@link org.cswteams.ms3.dto.shift.ShiftDTOOut}
      */
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> readAllShifts() {
         List<ShiftDTOOut> allShifts = shiftController.getAllShifts();
-        return new ResponseEntity<>(allShifts, HttpStatus.FOUND);
+        return new ResponseEntity<>(allShifts, HttpStatus.OK);
+    }
+
+    /**
+     * Soft delete a shift <br/>
+     * Reached from <b>DELETE api/shifts/{id}</b>
+     * @param id The ID of the shift to soft delete
+     * @return A response indicating the outcome
+     */
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
+    @RequestMapping(method = RequestMethod.DELETE, path = "{id}")
+    public ResponseEntity<?> softDeleteShift(@PathVariable Long id) {
+        try {
+            shiftController.softDeleteShift(id); // Chiama il controller per eseguire la soft delete
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     /**

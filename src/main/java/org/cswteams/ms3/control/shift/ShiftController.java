@@ -125,7 +125,8 @@ public class ShiftController implements IShiftController {
 
     @Override
     public List<ShiftDTOOut> getAllShifts() {
-        List<Shift> shifts = shiftDAO.findAll();
+        // Recupera SOLO gli shift non cancellati
+        List<Shift> shifts = shiftDAO.findByDeletedFalse();
         ArrayList<ShiftDTOOut> retVal = new ArrayList<>();
 
         for (Shift shift : shifts) {
@@ -157,5 +158,20 @@ public class ShiftController implements IShiftController {
         if (shiftEntity.getMedicalService().getId() == null) medicalServiceDAO.save(shiftEntity.getMedicalService());
 
         return convertShiftToDTO(shiftDAO.save(shiftEntity));
+    }
+
+    @Override
+    public void softDeleteShift(Long id) {
+        // Recupera lo shift per ID
+        Optional<Shift> optionalShift = shiftDAO.findById(id);
+
+        if (optionalShift.isPresent()) {
+            Shift shift = optionalShift.get();
+            // Imposta il flag "deleted" a true
+            shift.setDeleted(true);
+            shiftDAO.save(shift); // Persistenza nel database
+        } else {
+            throw new IllegalArgumentException("Shift not found with id: " + id);
+        }
     }
 }

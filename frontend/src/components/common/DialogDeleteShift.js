@@ -23,14 +23,22 @@ export default function DialogDeleteShift({ currentShiftInfo, updateShiftsList, 
   };
 
   const handleRemove = async () => {
+    let responseStatus;
+
     try {
-      await turnoAPI.deleteShift(currentShiftInfo.id);
-      updateShiftsList(currentShiftInfo); // Rimuove il turno dall'elenco.
-      toast.success("Turno eliminato con successo.");
+      responseStatus = await turnoAPI.deleteShift(currentShiftInfo.id);
     } catch (err) {
       panic();
+      return
+    }
+
+    if (responseStatus === 200) {
+      toast.success("Turno eliminato con successo.");
+    } else if (responseStatus === 404) {
       toast.error("Errore durante l'eliminazione del turno.");
     }
+
+    updateShiftsList(currentShiftInfo); // Rimuove il turno dall'elenco.
     setOpen(false);
   };
 

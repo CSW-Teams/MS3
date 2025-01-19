@@ -29,4 +29,10 @@ public interface IShiftController {
      * @return A DTO representing the shift
      */
     ShiftDTOOut createShift(ShiftDTOIn shift) ;
+
+    /**
+     * Soft deletes a shift by marking it as deleted.
+     * @param id The ID of the shift to soft delete.
+     */
+    void softDeleteShift(Long id);
 }

@@ -13,4 +13,7 @@ public interface ShiftDAO extends JpaRepository<Shift,Long> {
     List<Shift> findAllByMedicalServiceLabel(String nomeServizio);
     List<Shift> findAllByMedicalServiceLabelAndTimeSlot(String nomeServizio, TimeSlot timeSlot);
 
+    // Recupera tutti gli shift non cancellati
+    List<Shift> findByDeletedFalse();
+
 }
