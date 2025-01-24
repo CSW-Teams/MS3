@@ -4,8 +4,12 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.cswteams.ms3.config.annotations.SoftDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Aspect to manage the activation and deactivation of the soft delete filter.
@@ -43,29 +47,30 @@ public class SoftDeleteAspect {
 //     */
 //    @Pointcut("execution(* org.cswteams.ms3.dao..*(..))")
 //    public void daoLayer() {}
-
+//
 //    /**
 //     * Advice to enable the soft delete filter before executing methods in the REST, control, or DAO layers,
 //     * unless the method is annotated with {@link org.cswteams.ms3.config.annotations.DisableSoftDelete}.
 //     */
 //    @Before("(restLayer() || controlLayer() || daoLayer()) && !disableSoftDeleteMethods()")
 //    public void enableSoftDeleteFilter(JoinPoint joinPoint) {
-//
-//
-//        Logger logger = Logger.getLogger(this.getClass().getName());
-//
-//        Object[] args = joinPoint.getArgs(); // Ottieni i parametri del metodo
-//
-//        // Verifica se uno dei parametri è un'entità annotata con @SoftDeletable
-//        for (Object arg : args) {
-//            if (arg != null && arg.getClass().isAnnotationPresent(SoftDeletable.class)) {
-//                logger.info("Class annotated with SoftDeletable = " + arg.getClass());
-//            }
-//        }
-//
 //        String filterName = "softDeleteFilter";
 //
-//        Map<String, Object> filterParams = new HashMap<String, Object>();
+//        Map<String, Object> filterParams = new HashMap<>();
+//        filterParams.put("deleted", false);
+//
+//        softDeleteService.enableSoftDeleteFilter(filterName, filterParams);
+//    }
+
+////    @Pointcut("@annotation(org.cswteams.ms3.config.annotations.SoftDeletable)")
+//    @Pointcut("execution(* org.springframework.data.jpa.repository.JpaRepository+.find*(..))")
+//    public void softDeletableAnnotation() {}
+//
+//    @Before("softDeletableAnnotation() && !disableSoftDeleteMethods()")
+//    public void enableSoftDeleteFilter(JoinPoint joinPoint) {
+//        String filterName = "softDeleteFilter";
+//
+//        Map<String, Object> filterParams = new HashMap<>();
 //        filterParams.put("deleted", false);
 //
 //        softDeleteService.enableSoftDeleteFilter(filterName, filterParams);

@@ -12,11 +12,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class SoftDeleteSessionEventListener implements PostLoadEventListener, PreUpdateEventListener  {
+public class SoftDeleteSessionEventListener implements /*PreLoadEventListener,*/ PostLoadEventListener, PreUpdateEventListener  {
     Logger logger = LoggerFactory.getLogger(SoftDeleteSessionEventListener.class);
 
     @Autowired
     private SoftDeleteService softDeleteService;
+
+//    @Override
+    public void onPreLoad(PreLoadEvent event) {
+        // Quando un'entità viene aggiornata, verifica se è annotata con @SoftDeletable
+        if (event.getEntity() == null) return;
+
+        Object entity = event.getEntity();
+
+        if (!entity.getClass().isAnnotationPresent(SoftDeletable.class)) return;
+
+        SoftDeletable annotation = entity.getClass().getAnnotation(SoftDeletable.class);
+
+        enableSoftDeleteFilter(annotation);
+    }
 
     @Override
     public void onPostLoad(PostLoadEvent event) {

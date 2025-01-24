@@ -2,8 +2,6 @@ package org.cswteams.ms3.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.cswteams.ms3.config.annotations.Param;
-import org.cswteams.ms3.config.annotations.SoftDeletable;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
@@ -25,10 +23,11 @@ import java.util.List;
 @FilterDef(name = "softDeleteFilter", parameters = {
         @ParamDef(name = "deleted", type = "boolean")
 })
-@Filter(name = "softDeleteFilter", condition = "deleted = false")
-@SoftDeletable(params = {
-        @Param(key = "deleted", value = false)
-})
+@Filter(name = "softDeleteFilter", condition = "deleted = :deleted")
+//@SoftDeletable(
+//        params = {
+//        @Param(key = "deleted", value = false)
+//})
 public class MedicalService {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

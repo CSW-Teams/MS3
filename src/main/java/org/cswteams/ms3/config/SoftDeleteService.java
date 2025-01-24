@@ -1,11 +1,15 @@
 package org.cswteams.ms3.config;
 
+import org.cswteams.ms3.control.medicalService.MedicalServiceController;
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Map;
 
 /**
@@ -14,7 +18,7 @@ import java.util.Map;
  */
 @Service
 public class SoftDeleteService {
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
 
     /**
@@ -23,16 +27,20 @@ public class SoftDeleteService {
      * @param filterName The name of the filter to enable.
      * @param parameters A map containing parameter names as keys and their corresponding values.
      */
-    @Transactional
+//    @Transactional
     public void enableSoftDeleteFilter(String filterName, Map<String, Object> parameters) {
         Session session = entityManager.unwrap(Session.class);
 
+        Logger logger = LoggerFactory.getLogger(SoftDeleteService.class);
+        logger.info("Session ID: {}", session.hashCode());
+
+        if (session.getEnabledFilter(filterName) != null)
+            logger.info("Session PRE - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter(filterName).toString());
+
         session.enableFilter("softDeleteFilter").setParameter("deleted", false);
 
-//        org.hibernate.Filter filter = session.enableFilter(filterName);
-//        if (parameters != null) {
-//            parameters.forEach(filter::setParameter);
-//        }
+        if (session.getEnabledFilter(filterName) != null)
+            logger.info("Session POST - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter(filterName).toString());
     }
 
     /**
