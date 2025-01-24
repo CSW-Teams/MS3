@@ -93,7 +93,7 @@ public class MedicalServicesRestEndpoint {
     }
 
     @PreAuthorize("hasAnyRole('CONFIGURATOR')")
-    @RequestMapping(method = RequestMethod.POST, path = "delete")
+    @RequestMapping(method = RequestMethod.DELETE, path = "delete")
     public ResponseEntity<?> deleteService(@RequestBody(required = true) Long serviceId) {
         if (serviceId != null) {
             try {

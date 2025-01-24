@@ -125,8 +125,7 @@ public class ShiftController implements IShiftController {
 
     @Override
     public List<ShiftDTOOut> getAllShifts() {
-        // Recupera SOLO gli shift non cancellati
-        List<Shift> shifts = shiftDAO.findByDeletedFalse();
+        List<Shift> shifts = shiftDAO.findAll();
         ArrayList<ShiftDTOOut> retVal = new ArrayList<>();
 
         for (Shift shift : shifts) {

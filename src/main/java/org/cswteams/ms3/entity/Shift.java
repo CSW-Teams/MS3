@@ -5,6 +5,9 @@ import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 
 import javax.persistence.*;
@@ -22,6 +25,10 @@ import java.util.*;
 @Entity
 @Data
 @EqualsAndHashCode
+@Filter(
+        name = "softDeleteFilter",
+        condition = "exists (select 1 from medical_service ms where ms.medical_service_id = medical_service_medical_service_id and ms.deleted = :deleted)"
+)
 public class Shift {
 
     @Id

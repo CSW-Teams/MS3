@@ -5,13 +5,13 @@ import {
   MDBCardTitle,
   MDBContainer
 } from "mdb-react-ui-kit";
-import DialogDeleteShift from '../../components/common/DialogDeleteShift';
 import {ServiceAPI} from "../../API/ServiceAPI";
 import {TurnoAPI} from "../../API/TurnoAPI";
 import type {MedicalService} from "../../entity/MedicalService";
 import MedicalServiceCollapse
   from "../../components/common/MedicalServiceCollapse";
 import ShiftItemBox from "../../components/common/ShiftItemBox";
+import DialogDeleteShift from "../../components/common/DialogDeleteShift";
 
 export default class ShiftManagementView extends React.Component {
   constructor(props) {
@@ -27,21 +27,29 @@ export default class ShiftManagementView extends React.Component {
     let serviceAPI = new ServiceAPI();
     let shiftAPI = new TurnoAPI();
 
-    let retrievedServices: Promise<MedicalService[]> = serviceAPI.getAllServices();
-    retrievedServices.then((retrievedServices) => {
-      const sortedServices = retrievedServices.sort((a, b) => {
-        if (a.name < b.name) return -1;
-        if (a.name > b.name) return 1;
-        return 0;
+    let retrievedServicesPromise: Promise<MedicalService[]> = serviceAPI.getAllServices();
+    let retrievedShiftsPromise: Promise<Shift[]> = shiftAPI.getShifts();
+
+    Promise.all([retrievedServicesPromise, retrievedShiftsPromise])
+      .then(([retrievedServices:MedicalService[], retrievedShifts:Shift[]]) => {
+        const sortedServices = retrievedServices.sort((a, b) => {
+          if (a.name < b.name) return -1;
+          if (a.name > b.name) return 1;
+          return 0;
+        });
+
+        const filteredShifts = retrievedShifts.filter(shift =>
+          retrievedServices.some(service => service.id === shift.medicalService.id)
+        );
+
+        this.setState({
+          medicalServices: sortedServices,
+          shifts: filteredShifts,
+        });
+      })
+      .catch(error => {
+        console.error("Errore durante il caricamento dei dati:", error);
       });
-
-      this.setState({medicalServices: sortedServices});
-    })
-
-    let retrievedShifts = shiftAPI.getShifts();
-    retrievedShifts.then((retrievedShifts) => {
-      this.setState({shifts: retrievedShifts});
-    })
   }
 
   /**
@@ -89,7 +97,6 @@ export default class ShiftManagementView extends React.Component {
           </MDBCardBody>
         </MDBCard>
       </MDBContainer>
-    )
-      ;
+    );
   }
 }
