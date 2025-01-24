@@ -1,38 +1,6 @@
 DO $$
 BEGIN
 
-    -- Cancellare lo schema 'public' nel database ms3_a
-    PERFORM dblink_exec(
-        'host=localhost dbname=ms3_a user=sprintfloyd password=sprintfloyd',
-        'DROP SCHEMA IF EXISTS public CASCADE'
-    );
-
-    PERFORM dblink_exec(
-        'host=localhost dbname=ms3_a user=sprintfloyd password=sprintfloyd',
-        'CREATE SCHEMA public'
-    );
-
-    -- Cancellare lo schema 'public' nel database ms3_b
-    PERFORM dblink_exec(
-        'host=localhost dbname=ms3_b user=sprintfloyd password=sprintfloyd',
-        'DROP SCHEMA IF EXISTS public CASCADE'
-    );
-
-    PERFORM dblink_exec(
-        'host=localhost dbname=ms3_b user=sprintfloyd password=sprintfloyd',
-        'CREATE SCHEMA public'
-    );
-
-    PERFORM dblink_exec(
-            'host=localhost dbname=ms3_public user=sprintfloyd password=sprintfloyd',
-            'DROP SCHEMA IF EXISTS public CASCADE'
-        );
-
-        PERFORM dblink_exec(
-            'host=localhost dbname=ms3_public user=sprintfloyd password=sprintfloyd',
-            'CREATE SCHEMA public'
-        );
-
    -- Creazione della tabella ms3_system_users nel database central_db
    PERFORM dblink_exec(
       'host=localhost dbname=ms3_public user=sprintfloyd password=sprintfloyd',

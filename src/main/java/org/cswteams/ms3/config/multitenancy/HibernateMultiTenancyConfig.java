@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableTransactionManagement
@@ -35,7 +37,23 @@ public class HibernateMultiTenancyConfig {
 
     @Bean
     public MultiTenantConnectionProvider multiTenantConnectionProvider() {
-        return new MultiTenantConnectionProviderImpl();
+        Map<String, DataSource> tenantDataSources = new HashMap<>();
+
+        Map<String, String[]> tenantCredentials = Map.of(
+                "ms3_public", new String[]{"user_ms3_public", "password_public"},
+                "ms3_a", new String[]{"user_ms3_a", "password_a"},
+                "ms3_b", new String[]{"user_ms3_b", "password_b"}
+        );
+
+        // Configura i DataSource per ciascun tenant
+        tenantCredentials.forEach((tenant, credentials) -> {
+            String url = "jdbc:postgresql://localhost:5432/" + tenant;
+            tenantDataSources.put(tenant, DataSourceConfig.createDataSource(url, credentials[0], credentials[1]));
+        });
+
+        System.out.println("Initialized DataSources:");
+        tenantDataSources.forEach((key, value) -> System.out.println("Tenant: " + key));
+        return new MultiTenantConnectionProviderImpl(tenantDataSources);
     }
 
     @Bean
@@ -53,7 +71,7 @@ public class HibernateMultiTenancyConfig {
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider());
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver());
-        factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "create");
+        factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "none");
 
         return factoryBean;
     }

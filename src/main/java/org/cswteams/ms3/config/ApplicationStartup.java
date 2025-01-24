@@ -3,6 +3,7 @@ package org.cswteams.ms3.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.cswteams.ms3.config.multitenancy.TenantConfig;
+import org.cswteams.ms3.config.multitenancy.TenantMapper;
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
 import org.cswteams.ms3.control.preferenze.CalendarSetting;
 import org.cswteams.ms3.control.preferenze.CalendarSettingBuilder;
@@ -119,7 +120,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @SneakyThrows
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-
         /**
          * FIXME: sostiutire count con controllo su entità Config
          */
@@ -130,17 +130,16 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             List<String> tenantDatabases = tenantConfig.getTenants();
 
             for (String tenant : tenantDatabases) {
-                changeDatabase(tenant);
+                changeDatabase(TenantMapper.getTenantMap(tenant));
                 registerHolidays();
             }
 
             changeDatabase(DEFAULT_DATABASE);
-            System.out.println(DEFAULT_DATABASE);
             populatePublicDB();
 
             try {
                 for (String tenant : tenantDatabases) {
-                    changeDatabase(tenant);
+                    changeDatabase(TenantMapper.getTenantMap(tenant));
                     populateTenantDB(tenant);
                     registerConstraints();
                     registerScocciature();
@@ -529,24 +528,24 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         //Creo utenti
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        SystemUser u3 = new SystemUser("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
-        SystemUser u4 = new SystemUser("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "B");
-        SystemUser u5 = new SystemUser("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
-        SystemUser u7 = new SystemUser("Luca", "Fiscariello", "FSCLCU99D15A783Z", LocalDate.of(1998, 8, 12), "lucafiscariello.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "B");
-        SystemUser u8_1 = new SystemUser("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
-        SystemUser u8_2 = new SystemUser("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.PLANNER), "B");
-        SystemUser u10_1 = new SystemUser("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
-        SystemUser u10_2 = new SystemUser("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR), "B");
-        SystemUser u9 = new SystemUser("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "A");
-        SystemUser u1_1 = new SystemUser("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.CONFIGURATOR), "A");
-        SystemUser u1_2 = new SystemUser("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.CONFIGURATOR), "B");
-        SystemUser u2 = new SystemUser("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "B");
-        SystemUser u6_1 = new SystemUser("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.PLANNER, SystemActor.DOCTOR), "A");
-        SystemUser u6_2 = new SystemUser("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.CONFIGURATOR), "B");
-        SystemUser u44_1 = new SystemUser("Giulio", "Farnasini", "GLIFNS94M07G224O", LocalDate.of(1994, 8, 7), "giuliofarnasini.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.PLANNER), "A");
-        SystemUser u44_2 = new SystemUser("Giulio", "Farnasini", "GLIFNS94M07G224O", LocalDate.of(1994, 8, 7), "giuliofarnasini.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR), "B");
-        SystemUser u45_1 = new SystemUser("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR), "A");
-        SystemUser u45_2 = new SystemUser("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR), "B");
+        SystemUser u3 = new SystemUser("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "ms3_a");
+        SystemUser u4 = new SystemUser("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "ms3_b");
+        SystemUser u5 = new SystemUser("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "ms3_a");
+        SystemUser u7 = new SystemUser("Luca", "Fiscariello", "FSCLCU99D15A783Z", LocalDate.of(1998, 8, 12), "lucafiscariello.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "ms3_b");
+        SystemUser u8_1 = new SystemUser("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "ms3_a");
+        SystemUser u8_2 = new SystemUser("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.PLANNER), "ms3_b");
+        SystemUser u10_1 = new SystemUser("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "ms3_a");
+        SystemUser u10_2 = new SystemUser("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR), "ms3_b");
+        SystemUser u9 = new SystemUser("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "ms3_a");
+        SystemUser u1_1 = new SystemUser("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.CONFIGURATOR), "ms3_a");
+        SystemUser u1_2 = new SystemUser("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.CONFIGURATOR), "ms3_b");
+        SystemUser u2 = new SystemUser("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde.tenantb@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR), "ms3_b");
+        SystemUser u6_1 = new SystemUser("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.PLANNER, SystemActor.DOCTOR), "ms3_a");
+        SystemUser u6_2 = new SystemUser("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.CONFIGURATOR), "ms3_b");
+        SystemUser u44_1 = new SystemUser("Giulio", "Farnasini", "GLIFNS94M07G224O", LocalDate.of(1994, 8, 7), "giuliofarnasini.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.PLANNER), "ms3_a");
+        SystemUser u44_2 = new SystemUser("Giulio", "Farnasini", "GLIFNS94M07G224O", LocalDate.of(1994, 8, 7), "giuliofarnasini.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR), "ms3_b");
+        SystemUser u45_1 = new SystemUser("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR), "ms3_a");
+        SystemUser u45_2 = new SystemUser("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR), "ms3_b");
 
         u1_1 = systemUserDAO.saveAndFlush(u1_1);
         u1_2 = systemUserDAO.saveAndFlush(u1_2);
@@ -614,8 +613,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-
-        if (Objects.equals(tenant, "a")) {
+        if (Objects.equals(tenant, "A")) {
             Doctor u3 = new Doctor("Federica", "Villani", "VLLFRC98P43H926Y", LocalDate.of(1998, 9, 3), "federicavillani.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
             Doctor u5 = new Doctor("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
             Doctor u8_1 = new Doctor("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
@@ -721,11 +719,10 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 //        u41 = doctorDAO.saveAndFlush(u41);
 //        u42 = userDAO.saveAndFlush(u42);
 //        u43 = doctorDAO.saveAndFlush(u43);
-
-        if (Objects.equals(tenant, "a")) {
+        if (Objects.equals(tenant, "A")) {
             Doctor u9 = new Doctor("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
             Doctor u1_1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.CONFIGURATOR));
-            Doctor u6_1 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenana@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
+            Doctor u6_1 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
             Doctor u44_1 = new Doctor("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini.tenanta@gmail.com",encoder.encode("passw"),Seniority.STRUCTURED,Set.of(SystemActor.PLANNER));
             Doctor u45_1 = new Doctor("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi.tenanta@gmail.com",encoder.encode("passw"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
 
@@ -737,7 +734,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } else {
             Doctor u1_2 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenantb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.CONFIGURATOR));
             Doctor u2 = new Doctor("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde.tenantb@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
-            Doctor u6_2 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
+            Doctor u6_2 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenantb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
             Doctor u44_2 = new Doctor("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini.tenantb@gmail.com",encoder.encode("passw2"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR));
             Doctor u45_2 = new Doctor("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi.tenantb@gmail.com",encoder.encode("passw2"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
 

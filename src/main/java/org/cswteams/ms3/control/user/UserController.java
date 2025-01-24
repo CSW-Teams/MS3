@@ -49,7 +49,6 @@ public class UserController implements IUserController {
             UserDTO dto = new UserDTO(u.getId(), u.getName(), u.getLastname(), u.getBirthday(), systemActors);
             doctorsSet.add(dto);
         }
-
         return doctorsSet;
     }
 
