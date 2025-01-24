@@ -23,8 +23,8 @@ import {
 import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
-import {toast} from "react-toastify";
 import {panic} from "./Panic";
+import {teal, yellow} from "@material-ui/core/colors";
 
 
 // AppointmentContent di SingleScheduleView
@@ -320,6 +320,7 @@ export class AppointmentContent extends React.Component{
       restProps: {...restProps},
       attore: data.attore,
       requests: [],
+      color: ''
     }
 
   }
@@ -335,6 +336,7 @@ export class AppointmentContent extends React.Component{
         utenti_allocati: this.state.data.utenti_guardia,
         utenti_reperibili: this.state.data.utenti_reperibili,
         utenti_rimossi: this.state.data.utenti_rimossi,
+        color: this.state.data.color,
       })
     }
 
@@ -358,7 +360,7 @@ export class AppointmentContent extends React.Component{
     /* Se esistono richieste di ritiro pendenti per il turno, il rettangolo è di colore rosso, altrimenti è blu
     *  Questa differenza è visibile solo ai pianificatori.
     * */
-    let appointmentStyle = {backgroundColor: '#4db6ac'};
+    let appointmentStyle = {backgroundColor: this.state.color, width: '100%', height: '100%'};
 
     if (this.state.attore === "PLANNER") {
       let pendingRequestExists = this.state.requests.some(request => request.idShift === this.state.data.id);
@@ -375,7 +377,7 @@ export class AppointmentContent extends React.Component{
      */
     return (
       <StyledAppointmentsAppointmentContent {...this.state.restProps} formatDate={this.state.formatDate} data={this.state.data} style={appointmentStyle}>
-        <div className={classes.container}>
+        <div className={classes.container} style={{ backgroundColor: this.state.color }}>
           <div style={{ textAlign: "center", color: "black", "fontFamily": "sans-serif", "font-weight": "bold" }}>
             {this.state.data.title}
           </div>
@@ -385,7 +387,7 @@ export class AppointmentContent extends React.Component{
             <div style = {{color: 'black'}}>
               {t('On Duty:')}
               <ul>
-              {this.state.utenti_allocati.map((user) => <li> {user.lastname} </li>) }
+              {this.state.utenti_allocati.map((user) => <li key={user.lastname}> {user.lastname} </li>) }
             </ul>
             </div>}
 
@@ -393,7 +395,7 @@ export class AppointmentContent extends React.Component{
               <div style = {{color: 'black'}}>
                 {t('On Guard:')}
                 <ul>
-                  {this.state.utenti_reperibili.map((user) => <li> {user.lastname} </li>)}
+                  {this.state.utenti_reperibili.map((user) => <li key={user.lastname}> {user.lastname} </li>)}
                 </ul>
               </div>
             }
@@ -402,7 +404,7 @@ export class AppointmentContent extends React.Component{
             <div>
               <div style={{color:'black'}}>Rimossi:</div>
             <ul>
-              {this.state.utenti_rimossi.map((user) => <li style={{color: 'black'}}> <s>{user.lastname}</s></li>) }
+              {this.state.utenti_rimossi.map((user) => <li key={user.lastname} style={{color: 'black'}}> <s>{user.lastname}</s></li>) }
             </ul>
             </div>
             }
