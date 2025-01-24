@@ -126,6 +126,7 @@ public abstract class ControllerSchedulerTest {
             assertNotNull(schedule.getCauseIllegal());
         }
     }
+
     private void registerHolidays() {
         List<HolidayDTO> holidays;
 

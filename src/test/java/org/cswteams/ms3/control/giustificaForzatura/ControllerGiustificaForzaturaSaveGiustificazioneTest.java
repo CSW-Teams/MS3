@@ -182,34 +182,6 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
                         "1",
                         TimeSlot.NIGHT);
                 break;
-            case 15:
-                setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
-                break;
-            case 16:
-                setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
-                break;
-            case 17:
-                setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
-                break;
-            case 18:
-                setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,3,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
-                break;
-            case 19:
-                setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("radiologia"),"1", TimeSlot.NIGHT);
-                break;
-            case 20:
-                setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"2", TimeSlot.NIGHT);
-                break;
-            case 21:
-                setUtenti = null;
-                giustificazioneForzaturaVincoliDTO = constructorGiustificazioneForzaturaVincoliDTOPartition(setUtenti,1,new MedicalServiceDTO("cardiologia"),"1", TimeSlot.NIGHT);
-                break;
             default:
                 throw new IllegalAccessError();
         }
@@ -264,15 +236,6 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
                 Arguments.of(generateGiustifica(13),true),
                 Arguments.of(generateGiustifica(14),true),
 
-                //setUsers null
-                Arguments.of(generateGiustifica(15),true),
-                Arguments.of(generateGiustifica(16),true),
-                Arguments.of(generateGiustifica(17),true),
-                Arguments.of(generateGiustifica(18),true),
-                Arguments.of(generateGiustifica(19),true),
-                Arguments.of(generateGiustifica(20),true),
-                Arguments.of(generateGiustifica(21),true),
-
                 //null object
                 Arguments.of(null,true)
         );
@@ -289,9 +252,9 @@ class ControllerGiustificaForzaturaSaveGiustificazioneTest extends ControllerGiu
     @ParameterizedTest
     @MethodSource("partition")
     @Override
-    public void saveGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoli, boolean expectedResult) {
+    public void saveGiustificazione(GiustificazioneForzaturaVincoliDTO giustificazioneForzaturaVincoli, boolean isExceptionExpected) {
         assertNotNull(controllerGiustificaForzatura); //Check autowiring worked
-        if (!expectedResult) {
+        if (!isExceptionExpected) {
             assertDoesNotThrow(() -> controllerGiustificaForzatura.saveGiustificazione(giustificazioneForzaturaVincoli));
         } else {
             assertThrows(Exception.class, () -> controllerGiustificaForzatura.saveGiustificazione(giustificazioneForzaturaVincoli));

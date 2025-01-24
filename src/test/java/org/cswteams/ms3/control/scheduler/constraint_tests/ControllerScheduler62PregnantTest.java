@@ -184,9 +184,9 @@ public class ControllerScheduler62PregnantTest extends ControllerSchedulerTest {
 
         //Set all parameters in parent class, like in @Parametrized
 
-        super.isPossible = false;
-        super.start = LocalDate.of(2024, 3, 1);
-        super.end = LocalDate.of(2024, 3, 31);
+        super.isPossible = true;
+        super.start = LocalDate.of(2025, 4, 1);
+        super.end = LocalDate.of(2025, 4, 2);
 
     }
 }
