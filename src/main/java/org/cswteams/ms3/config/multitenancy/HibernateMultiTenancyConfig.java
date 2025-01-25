@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -30,6 +31,9 @@ public class HibernateMultiTenancyConfig {
     @Autowired
     private JpaProperties jpaProperties;
 
+    @Autowired
+    private Environment environment;
+
     @Bean
     public CurrentTenantIdentifierResolver currentTenantIdentifierResolver() {
         return new CurrentTenantIdentifierResolverImpl();
@@ -39,17 +43,23 @@ public class HibernateMultiTenancyConfig {
     public MultiTenantConnectionProvider multiTenantConnectionProvider() {
         Map<String, DataSource> tenantDataSources = new HashMap<>();
 
-        Map<String, String[]> tenantCredentials = Map.of(
-                "ms3_public", new String[]{"user_ms3_public", "password_public"},
-                "ms3_a", new String[]{"user_ms3_a", "password_a"},
-                "ms3_b", new String[]{"user_ms3_b", "password_b"}
-        );
+        // Leggi i tenant e le credenziali da application.properties
+        String[] tenants = environment.getProperty("spring.datasource.databases", "").split(",");
+        String[] users = environment.getProperty("spring.datasource.users", "").split(",");
+        String[] passwords = environment.getProperty("spring.datasource.passwords", "").split(",");
 
-        // Configura i DataSource per ciascun tenant
-        tenantCredentials.forEach((tenant, credentials) -> {
-            String url = "jdbc:postgresql://localhost:5432/" + tenant;
-            tenantDataSources.put(tenant, DataSourceConfig.createDataSource(url, credentials[0], credentials[1]));
-        });
+        if (tenants.length != users.length || tenants.length != passwords.length) {
+            throw new IllegalArgumentException("Il numero di tenant, utenti e password non corrisponde nelle configurazioni.");
+        }
+
+        for (int i = 0; i < tenants.length; i++) {
+            String tenant = tenants[i].trim();
+            String user = users[i].trim();
+            String password = passwords[i].trim();
+
+            String url = String.format("jdbc:postgresql://localhost:5432/%s", tenant);
+            tenantDataSources.put(tenant, DataSourceConfig.createDataSource(url, user, password));
+        }
 
         System.out.println("Initialized DataSources:");
         tenantDataSources.forEach((key, value) -> System.out.println("Tenant: " + key));

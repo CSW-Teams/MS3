@@ -1,5 +1,6 @@
 package org.cswteams.ms3.config.multitenancy;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -13,23 +14,39 @@ import java.util.Objects;
 @Component
 public class DatabaseInitializer {
 
+    @Value("${spring.datasource.url}")
+    private String postgresUrl;
+
+    @Value("${spring.datasource.username}")
+    private String postgresUser;
+
+    @Value("${spring.datasource.password}")
+    private String postgresPassword;
+
+    @Value("${spring.datasource.databases}")
+    private String[] databases;
+
+    @Value("${spring.datasource.users}")
+    private String[] users;
+
+    @Value("${spring.datasource.passwords}")
+    private String[] passwords;
+
+    @Value("${spring.datasource.grant-scripts}")
+    private String[] grantScripts;
+
     @PostConstruct
     public void initializeDatabases() {
-        executeScript("jdbc:postgresql://localhost:5432/postgres", "sprintfloyd", "sprintfloyd", "/db/terminate_connections.sql");
-        executeScript("jdbc:postgresql://localhost:5432/postgres", "sprintfloyd", "sprintfloyd", "/db/drop_and_create_databases.sql");
-        executeScript("jdbc:postgresql://localhost:5432/postgres", "sprintfloyd", "sprintfloyd", "/db/init_databases.sql");
-        executeScript("jdbc:postgresql://localhost:5432/postgres", "sprintfloyd", "sprintfloyd", "/db/create_roles.sql");
-
-        String[] databases = {"ms3_public", "ms3_a", "ms3_b"};
-        String[] users = {"sprintfloyd", "sprintfloyd", "sprintfloyd"}; // Usa sprintfloyd per eseguire gli script
-        String[] passwords = {"sprintfloyd", "sprintfloyd", "sprintfloyd"};
-        String[] grantScripts = {"/db/grant_privileges_ms3_public.sql", "/db/grant_privileges_ms3_a.sql", "/db/grant_privileges_ms3_b.sql"};
+        executeScript(postgresUrl, postgresUser, postgresPassword, "/db/terminate_connections.sql");
+        executeScript(postgresUrl, postgresUser, postgresPassword, "/db/drop_and_create_databases.sql");
+        executeScript(postgresUrl, postgresUser, postgresPassword, "/db/init_databases.sql");
+        executeScript(postgresUrl, postgresUser, postgresPassword, "/db/create_roles.sql");
 
         for (int i = 0; i < databases.length; i++) {
             String dbUrl = "jdbc:postgresql://localhost:5432/" + databases[i];
             System.out.println("Configuring database: " + databases[i]);
 
-            // Esegui script per assegnare privilegi specifici con sprintfloyd
+            // Esegui script per assegnare privilegi specifici
             executeScript(dbUrl, users[i], passwords[i], grantScripts[i]);
             enableDblink(dbUrl, users[i], passwords[i]);
         }
@@ -70,5 +87,4 @@ public class DatabaseInitializer {
             e.printStackTrace();
         }
     }
-
 }
