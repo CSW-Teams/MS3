@@ -31,6 +31,7 @@ public class DatabaseInitializer {
 
             // Esegui script per assegnare privilegi specifici con sprintfloyd
             executeScript(dbUrl, users[i], passwords[i], grantScripts[i]);
+            enableDblink(dbUrl, users[i], passwords[i]);
         }
     }
 
@@ -53,6 +54,19 @@ public class DatabaseInitializer {
 
         } catch (Exception e) {
             System.err.println("Errore nell'esecuzione dello script " + scriptPath + " su " + dbUrl + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void enableDblink(String dbUrl, String user, String password) {
+        try (Connection connection = DriverManager.getConnection(dbUrl, user, password);
+             Statement statement = connection.createStatement()) {
+
+            statement.execute("CREATE EXTENSION IF NOT EXISTS dblink");
+            System.out.println("Estensione dblink abilitata per il database: " + dbUrl);
+
+        } catch (Exception e) {
+            System.err.println("Errore durante l'abilitazione di dblink su " + dbUrl + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
