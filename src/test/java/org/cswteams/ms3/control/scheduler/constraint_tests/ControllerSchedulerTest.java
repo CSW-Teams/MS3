@@ -22,6 +22,7 @@ import org.cswteams.ms3.enums.ServiceDataENUM;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.exception.CalendarServiceException;
+import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -46,6 +47,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -117,13 +119,15 @@ public abstract class ControllerSchedulerTest {
     @Test
     @Transactional
     public void testScheduler() {
+        this.schedule = controller.createSchedule(start, end);
 
-        this.schedule = controller.createSchedule(start, end) ;
-
-        if(isPossible) {
+        if(!isPossible){
+            assertNull(schedule);
+        }
+        else{
+            this.schedule = controller.createSchedule(start, end);
+            assertNotNull(schedule);
             assertNull(schedule.getCauseIllegal());
-        } else {
-            assertNotNull(schedule.getCauseIllegal());
         }
     }
 

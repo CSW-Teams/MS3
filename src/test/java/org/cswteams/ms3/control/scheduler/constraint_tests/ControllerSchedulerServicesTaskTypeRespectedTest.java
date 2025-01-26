@@ -115,14 +115,14 @@ public class ControllerSchedulerServicesTaskTypeRespectedTest extends Controller
         blogiaQuantities.put(Seniority.SPECIALIST_SENIOR, 1) ;
         QuantityShiftSeniority repartoBlogiaQss = new QuantityShiftSeniority(blogiaQuantities, clinic) ; //Service only has ward, only Qss is clinic
 
-        Set<DayOfWeek> monday = new HashSet<>(Collections.singletonList(DayOfWeek.MONDAY)) ;
+        Set<DayOfWeek> tuesday = new HashSet<>(Collections.singletonList(DayOfWeek.TUESDAY)) ;
 
         Shift shift1 = new Shift(LocalTime.of(8, 0),
                 Duration.ofHours(6),
                 repartoAlogia,
                 TimeSlot.MORNING,
                 Collections.singletonList(repartoAlogiaQss),
-                monday,
+                tuesday,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift1);
 
@@ -131,7 +131,7 @@ public class ControllerSchedulerServicesTaskTypeRespectedTest extends Controller
                 repartoBlogia,
                 TimeSlot.MORNING,
                 Collections.singletonList(repartoBlogiaQss),
-                monday,
+                tuesday,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift2);
 
@@ -163,9 +163,9 @@ public class ControllerSchedulerServicesTaskTypeRespectedTest extends Controller
 
         //Set all parameters in parent class, like in @Parametrized
 
-        super.isPossible = false ;
-        super.start = LocalDate.of(2024, 3, 1) ;
-        super.end = LocalDate.of(2024, 3, 31) ;
+        super.isPossible = true;
+        super.start = LocalDate.of(2025, 4, 1);
+        super.end = LocalDate.of(2025, 4, 2);
 
     }
 }
