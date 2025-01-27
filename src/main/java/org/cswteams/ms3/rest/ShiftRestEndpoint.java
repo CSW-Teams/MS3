@@ -2,6 +2,7 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.shift.IShiftController;
 import org.cswteams.ms3.dto.shift.*;
+import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,12 +42,14 @@ public class ShiftRestEndpoint {
     @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.DELETE, path = "{id}")
     public ResponseEntity<?> deleteShift(@PathVariable Long id) {
-        try {
-            shiftController.deleteShift(id); // Chiama il controller per eseguire la soft delete
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (id != null) {
+            try {
+                return new ResponseEntity<>(shiftController.deleteShift(id), HttpStatus.OK);
+            } catch (DatabaseException e) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
         }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     /**
