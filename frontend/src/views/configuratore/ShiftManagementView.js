@@ -11,6 +11,7 @@ import type {MedicalService} from "../../entity/MedicalService";
 import MedicalServiceCollapse
   from "../../components/common/MedicalServiceCollapse";
 import ShiftItemBox from "../../components/common/ShiftItemBox";
+import DialogDeleteShift from "../../components/common/DialogDeleteShift";
 
 export default class ShiftManagementView extends React.Component {
   constructor(props) {
@@ -26,22 +27,40 @@ export default class ShiftManagementView extends React.Component {
     let serviceAPI = new ServiceAPI();
     let shiftAPI = new TurnoAPI();
 
-    let retrievedServices: Promise<MedicalService[]> = serviceAPI.getAllServices();
-    retrievedServices.then((retrievedServices) => {
-      const sortedServices = retrievedServices.sort((a, b) => {
-        if (a.name < b.name) return -1;
-        if (a.name > b.name) return 1;
-        return 0;
+    let retrievedServicesPromise: Promise<MedicalService[]> = serviceAPI.getAllServices();
+    let retrievedShiftsPromise: Promise<Shift[]> = shiftAPI.getShifts();
+
+    Promise.all([retrievedServicesPromise, retrievedShiftsPromise])
+      .then(([retrievedServices:MedicalService[], retrievedShifts:Shift[]]) => {
+        const sortedServices = retrievedServices.sort((a, b) => {
+          if (a.name < b.name) return -1;
+          if (a.name > b.name) return 1;
+          return 0;
+        });
+
+        const filteredShifts = retrievedShifts.filter(shift =>
+          retrievedServices.some(service => service.id === shift.medicalService.id)
+        );
+
+        this.setState({
+          medicalServices: sortedServices,
+          shifts: filteredShifts,
+        });
+      })
+      .catch(error => {
+        console.error("Errore durante il caricamento dei dati:", error);
       });
-
-      this.setState({medicalServices: sortedServices});
-    })
-
-    let retrievedShifts = shiftAPI.getShifts();
-    retrievedShifts.then((retrievedShifts) => {
-      this.setState({shifts: retrievedShifts});
-    })
   }
+
+  /**
+   * Funzione per aggiornare la lista dei turni dopo l'eliminazione.
+   */
+  updateShiftsListAfterRemoval = (removedShift) => {
+    const updatedShifts = this.state.shifts.filter(
+      (shift) => shift.id !== removedShift.id
+    );
+    this.setState({ shifts: updatedShifts });
+  };
 
   render() {
     return (
@@ -57,8 +76,22 @@ export default class ShiftManagementView extends React.Component {
                 {this.state.shifts
                   .filter((shift) => shift.medicalService.label === medicalService.name)
                   .map((shift: Shift) => (
-                    <ShiftItemBox key={shift.id} shiftData={shift}/>
-                ))}
+                    <div
+                      key={shift.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between"
+                      }}
+                    >
+                      <ShiftItemBox key={shift.id} shiftData={shift}/>
+                      <DialogDeleteShift
+                        currentShiftInfo={shift}
+                        updateShiftsList={this.updateShiftsListAfterRemoval}
+                        disabled={false} // Personalizza se il pulsante deve essere disabilitato.
+                      />
+                    </div>
+                  ))}
               </MedicalServiceCollapse>
             ))}
           </MDBCardBody>

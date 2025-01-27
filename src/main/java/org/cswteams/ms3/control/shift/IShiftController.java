@@ -3,7 +3,9 @@ package org.cswteams.ms3.control.shift;
 import org.cswteams.ms3.dto.shift.ShiftDTOIn;
 import org.cswteams.ms3.dto.shift.ShiftDTOOut;
 import org.cswteams.ms3.dto.shift.ShiftServiceNameDTOIn;
+import org.cswteams.ms3.exception.DatabaseException;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -29,4 +31,10 @@ public interface IShiftController {
      * @return A DTO representing the shift
      */
     ShiftDTOOut createShift(ShiftDTOIn shift) ;
+
+    /**
+     * Soft deletes a shift by marking it as deleted.
+     * @param id The ID of the shift to soft delete.
+     */
+    boolean deleteShift(@NotNull Long id) throws DatabaseException;
 }

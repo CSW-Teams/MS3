@@ -3,9 +3,9 @@ package org.cswteams.ms3.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
+import org.cswteams.ms3.entity.soft_delete.SoftDeletableEntity;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
-
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -22,7 +22,7 @@ import java.util.*;
 @Entity
 @Data
 @EqualsAndHashCode
-public class Shift {
+public class Shift extends SoftDeletableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -8,9 +8,14 @@ import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.exception.DatabaseException;
+import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
@@ -25,6 +30,9 @@ public class MedicalServiceController implements IMedicalServiceController {
 
     @Autowired
     ITaskController taskController;
+
+    @Autowired
+    EntityManager entityManager;
 
     /**
      * {@inheritDoc}
@@ -56,8 +64,22 @@ public class MedicalServiceController implements IMedicalServiceController {
     }
 
     @Override
+    @Transactional
     public Set<MedicalServiceWithTaskAssignmentsDTO> getAllMedicalServices() {
+        Session session = entityManager.unwrap(Session.class);
+
+        Logger logger = LoggerFactory.getLogger(MedicalServiceController.class);
+        logger.info("Session ID: " + session.hashCode());
+
+        if (session.getEnabledFilter("softDeleteFilter") != null)
+            logger.info("Session PRE - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter("softDeleteFilter").toString());
+
+
         List<MedicalService> medicalServiceList = medicalServiceDAO.findAll();
+
+        if (session.getEnabledFilter("softDeleteFilter") != null)
+            logger.info("Session POST - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter("softDeleteFilter").toString());
+
         return buildDTOList(medicalServiceList);
     }
 

@@ -5,9 +5,7 @@ export class TurnoAPI {
 
   async getShifts() {
     const response = await fetchWithAuth('api/shifts/');
-    const body = await response.json();
-
-    return body;
+    return await response.json();
   }
 
   /**
@@ -58,5 +56,13 @@ export class TurnoAPI {
   async getShiftContraints() {
     const response = await fetchWithAuth('/api/shifts/constants');
     return await response.json();
+  }
+
+  // Elimina un turno dato il suo ID
+  async deleteShift(id) {
+    const response = await fetchWithAuth(`/api/shifts/` + id, {
+      method: 'DELETE',
+    });
+    return response.status;
   }
 }

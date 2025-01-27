@@ -2,6 +2,7 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.shift.IShiftController;
 import org.cswteams.ms3.dto.shift.*;
+import org.cswteams.ms3.exception.DatabaseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +23,33 @@ public class ShiftRestEndpoint {
 
     /**
      * Retrieves all shift definitions <br/>
-     * Reached from <b> GET api/shifts</b>
+     * Reached from <b>GET api/shifts</b>
      * @return A response containing a list of {@link org.cswteams.ms3.dto.shift.ShiftDTOOut}
      */
-    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> readAllShifts() {
         List<ShiftDTOOut> allShifts = shiftController.getAllShifts();
-        return new ResponseEntity<>(allShifts, HttpStatus.FOUND);
+        return new ResponseEntity<>(allShifts, HttpStatus.OK);
+    }
+
+    /**
+     * Soft delete a shift <br/>
+     * Reached from <b>DELETE api/shifts/{id}</b>
+     * @param id The ID of the shift to soft delete
+     * @return A response indicating the outcome
+     */
+    @PreAuthorize("hasAnyRole('CONFIGURATOR')")
+    @RequestMapping(method = RequestMethod.DELETE, path = "{id}")
+    public ResponseEntity<?> deleteShift(@PathVariable Long id) {
+        if (id != null) {
+            try {
+                return new ResponseEntity<>(shiftController.deleteShift(id), HttpStatus.OK);
+            } catch (DatabaseException e) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     /**
