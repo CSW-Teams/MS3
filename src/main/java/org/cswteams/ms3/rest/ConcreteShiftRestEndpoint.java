@@ -11,6 +11,7 @@ import org.cswteams.ms3.dto.concreteshift.GetAvailableUsersForReplacementDTO;
 import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.constraint.Constraint;
+import org.cswteams.ms3.enums.ShiftState;
 import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/concrete-shifts/")
@@ -99,6 +101,16 @@ public class ConcreteShiftRestEndpoint {
     public ResponseEntity<?> getAllConcreteShifts() throws ParseException {
         Set<GetAllConcreteShiftDTO> allConcreteShifts = concreteShiftController.getAllConcreteShifts();
         return new ResponseEntity<>(allConcreteShifts, HttpStatus.FOUND);
+    }
+
+    @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")
+    @RequestMapping(method = RequestMethod.GET, path = "/incomplete")
+    public ResponseEntity<?> getAllIncompleteConcreteShifts() throws ParseException {
+        Set<GetAllConcreteShiftDTO> allConcreteShifts = concreteShiftController.getAllConcreteShifts();
+        Set<GetAllConcreteShiftDTO> allIncompleteConcreteShifts = allConcreteShifts.stream().filter(
+                concreteShift -> concreteShift.getShiftState() == ShiftState.INCOMPLETE
+        ).collect(Collectors.toSet());
+        return new ResponseEntity<>(allIncompleteConcreteShifts, HttpStatus.FOUND);
     }
 
     /**
