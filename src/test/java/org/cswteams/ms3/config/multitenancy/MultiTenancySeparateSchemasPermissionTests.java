@@ -2,6 +2,7 @@ package org.cswteams.ms3.config.multitenancy;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,18 +22,20 @@ class MultiTenancySeparateSchemasPermissionTests {
 
     private final Map<String, DataSource> tenantDataSources = new HashMap<>();
 
+    @Autowired
+    private TenantProperties tenantProperties; // Usa TenantProperties per caricare le configurazioni
+
     @PostConstruct
     void setUp() {
-        // Crea e aggiungi DataSource per ciascun tenant/schema
-        tenantDataSources.put("public", DataSourceConfig.createTenantDataSource(
-                "jdbc:postgresql://localhost:5432/ms3", "public_scheme_user", "password_public"
-        ));
-        tenantDataSources.put("a", DataSourceConfig.createTenantDataSource(
-                "jdbc:postgresql://localhost:5432/ms3", "tenant_a_user", "password_a"
-        ));
-        tenantDataSources.put("b", DataSourceConfig.createTenantDataSource(
-                "jdbc:postgresql://localhost:5432/ms3", "tenant_b_user", "password_b"
-        ));
+        // Crea e aggiungi DataSource per ciascun tenant/schema usando TenantProperties
+        tenantProperties.getTenants().forEach((tenantIdentifier, config) -> {
+            tenantDataSources.put(tenantIdentifier, DataSourceConfig.createTenantDataSource(
+                    config.getUrl(),
+                    config.getUsername(),
+                    config.getPassword(),
+                    config.getDriver()
+            ));
+        });
     }
 
     private void executeQuery(String schema, String query) {

@@ -27,6 +27,9 @@ public class HibernateMultiTenancyConfig {
     @Autowired
     private JpaProperties jpaProperties;
 
+    @Autowired
+    private TenantProperties tenantProperties;
+
     @Bean
     public CurrentTenantIdentifierResolver currentTenantIdentifierResolver() {
         return new CurrentTenantIdentifierResolverImpl();
@@ -36,16 +39,12 @@ public class HibernateMultiTenancyConfig {
     public MultiTenantConnectionProvider schemaSwitchingConnectionProvider() {
         Map<String, DataSource> tenantDataSources = new HashMap<>();
 
-        // Crea e aggiungi DataSource per ciascun tenant/schema
-        tenantDataSources.put("public", DataSourceConfig.createTenantDataSource(
-                "jdbc:postgresql://localhost:5432/ms3", "public_scheme_user", "password_public"
-        ));
-        tenantDataSources.put("a", DataSourceConfig.createTenantDataSource(
-                "jdbc:postgresql://localhost:5432/ms3", "tenant_a_user", "password_a"
-        ));
-        tenantDataSources.put("b", DataSourceConfig.createTenantDataSource(
-                "jdbc:postgresql://localhost:5432/ms3", "tenant_b_user", "password_b"
-        ));
+        // Crea i DataSource dinamicamente dai TenantProperties
+        tenantProperties.getTenants().forEach((tenantIdentifier, config) -> {
+            tenantDataSources.put(tenantIdentifier, DataSourceConfig.createTenantDataSource(
+                    config.getUrl(), config.getUsername(), config.getPassword(), config.getDriver()
+            ));
+        });
 
         return new SchemaSwitchingConnectionProviderPostgreSQL(tenantDataSources);
     }
