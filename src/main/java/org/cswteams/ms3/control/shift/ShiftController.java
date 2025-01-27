@@ -11,11 +11,13 @@ import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.TimeSlot;
+import org.cswteams.ms3.exception.DatabaseException;
 import org.cswteams.ms3.jpa_constraints.validant.Validant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -160,17 +162,15 @@ public class ShiftController implements IShiftController {
     }
 
     @Override
-    public void softDeleteShift(Long id) {
+    public boolean deleteShift(@NotNull Long id) throws DatabaseException {
         // Recupera lo shift per ID
         Optional<Shift> optionalShift = shiftDAO.findById(id);
 
-        if (optionalShift.isPresent()) {
-            Shift shift = optionalShift.get();
-            // Imposta il flag "deleted" a true
-            shift.setDeleted(true);
-            shiftDAO.save(shift); // Persistenza nel database
-        } else {
-            throw new IllegalArgumentException("Shift not found with id: " + id);
+        if (optionalShift.isEmpty()) {
+            throw new DatabaseException("Shift not found with id: " + id);
         }
+        Shift shift = optionalShift.get();
+        shiftDAO.delete(shift);
+        return true;
     }
 }

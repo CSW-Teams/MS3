@@ -2,11 +2,11 @@ package org.cswteams.ms3.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
+import org.cswteams.ms3.entity.soft_delete.SoftDeletableEntity;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,16 +19,10 @@ import java.util.List;
  */
 @Entity
 @Getter
+@Setter
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@FilterDef(name = "softDeleteFilter", parameters = {
-        @ParamDef(name = "deleted", type = "boolean")
-})
-@Filter(name = "softDeleteFilter", condition = "deleted = :deleted")
-//@SoftDeletable(
-//        params = {
-//        @Param(key = "deleted", value = false)
-//})
-public class MedicalService {
+@Table(name = "medical_service")
+public class MedicalService extends SoftDeletableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "medical_service_id", nullable = false)
@@ -37,9 +31,6 @@ public class MedicalService {
     @NotNull
     @Setter
     private String label;
-
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted;
 
     /**
      * <i>Tasks</i> associated with this <i>Medical Service</i>.

@@ -40,9 +40,9 @@ public class ShiftRestEndpoint {
      */
     @PreAuthorize("hasAnyRole('CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.DELETE, path = "{id}")
-    public ResponseEntity<?> softDeleteShift(@PathVariable Long id) {
+    public ResponseEntity<?> deleteShift(@PathVariable Long id) {
         try {
-            shiftController.softDeleteShift(id); // Chiama il controller per eseguire la soft delete
+            shiftController.deleteShift(id); // Chiama il controller per eseguire la soft delete
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

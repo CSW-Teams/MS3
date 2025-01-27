@@ -3,12 +3,9 @@ package org.cswteams.ms3.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
+import org.cswteams.ms3.entity.soft_delete.SoftDeletableEntity;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -25,11 +22,7 @@ import java.util.*;
 @Entity
 @Data
 @EqualsAndHashCode
-@Filter(
-        name = "softDeleteFilter",
-        condition = "exists (select 1 from medical_service ms where ms.medical_service_id = medical_service_medical_service_id and ms.deleted = :deleted)"
-)
-public class Shift {
+public class Shift extends SoftDeletableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -81,12 +74,6 @@ public class Shift {
     private List<AdditionalConstraint> additionalConstraints;
 
     /**
-     * Soft delete flag to mark shifts as deleted without removing them from the database.
-     */
-    @Column(nullable = false)
-    private boolean deleted = false;
-
-    /**
      * Abstract concept of shift, created by the configurator
      *
      * @param StartTime              hh:mm:ss when the shift will start
@@ -108,7 +95,6 @@ public class Shift {
         //TODO:Check correct data value between this and medicalService for more detail conctact me
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraints;
-        this.deleted = false; // Default value for a newly created shift
     }
 
     /**
@@ -136,7 +122,6 @@ public class Shift {
         this.medicalService = medicalService;
         this.quantityShiftSeniority = quantityShiftSeniority;
         this.additionalConstraints = additionalConstraints;
-        this.deleted = false; // Default value for a newly created shift
         if (!verifyCorrectnessQuantityShiftSeniority()) {
             throw new RuntimeException(); //TODO: inserire un eccezzione più logica
         }
