@@ -25,9 +25,9 @@ class MultiTenancySeparateDatabasesPermissionTests {
 
     @Test
     void testUnauthorizedAccessFails() {
-        String url = "jdbc:postgresql://localhost:5432/ms3_b";
-        String user = "user_ms3_a"; // Utente non autorizzato per ms3_b
-        String password = "password_a";
+        String url = "jdbc:postgresql://localhost:5432/ms3_a";
+        String user = "user_ms3_b"; // Utente non autorizzato per ms3_b
+        String password = "password_b";
 
         Exception exception = assertThrows(SQLException.class, () -> {
             try (Connection connection = createConnection(url, user, password);
@@ -47,9 +47,9 @@ class MultiTenancySeparateDatabasesPermissionTests {
 
     @Test
     void testAuthorizedAccessSucceeds() {
-        String url = "jdbc:postgresql://localhost:5432/ms3_b";
-        String user = "user_ms3_b"; // Utente autorizzato per ms3_b
-        String password = "password_b";
+        String url = "jdbc:postgresql://localhost:5432/ms3_a";
+        String user = "user_ms3_a"; // Utente autorizzato per ms3_b
+        String password = "password_a";
 
         // Verifica che l'accesso avvenga senza eccezioni
         assertDoesNotThrow(() -> {

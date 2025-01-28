@@ -13,7 +13,7 @@ public class DataSourceConfig {
         config.setUsername(username);
         config.setPassword(password);
 
-        config.addDataSourceProperty("connectionInitSql", "SET search_path TO public");
+        //config.addDataSourceProperty("connectionInitSql", "SET search_path TO public");
 
         return new HikariDataSource(config);
     }
