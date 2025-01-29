@@ -15,6 +15,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -24,6 +26,8 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 public class HibernateMultiTenancyConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(HibernateMultiTenancyConfig.class);
 
     @Autowired
     private DataSource dataSource;
@@ -43,26 +47,44 @@ public class HibernateMultiTenancyConfig {
     public MultiTenantConnectionProvider multiTenantConnectionProvider() {
         Map<String, DataSource> tenantDataSources = new HashMap<>();
 
-        // Leggi i tenant e le credenziali da application.properties
-        String[] tenants = environment.getProperty("spring.datasource.databases", "").split(",");
-        String[] users = environment.getProperty("spring.datasource.users", "").split(",");
-        String[] passwords = environment.getProperty("spring.datasource.passwords", "").split(",");
+        // Recupero dinamico dei tenant dai nuovi parametri di application.properties
+        String[] tenantNames = {
+                environment.getProperty("spring.datasource.tenant.public.name"),
+                environment.getProperty("spring.datasource.tenant.a.name"),
+                environment.getProperty("spring.datasource.tenant.b.name")
+        };
 
-        if (tenants.length != users.length || tenants.length != passwords.length) {
-            throw new IllegalArgumentException("Il numero di tenant, utenti e password non corrisponde nelle configurazioni.");
+        String[] users = {
+                environment.getProperty("spring.datasource.roles.public.username"),
+                environment.getProperty("spring.datasource.roles.a.username"),
+                environment.getProperty("spring.datasource.roles.b.username")
+        };
+
+        String[] passwords = {
+                environment.getProperty("spring.datasource.roles.public.password"),
+                environment.getProperty("spring.datasource.roles.a.password"),
+                environment.getProperty("spring.datasource.roles.b.password")
+        };
+
+        String baseUrl = environment.getProperty("spring.datasource.tenant.public.url");
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            throw new IllegalArgumentException("L'URL di connessione al database principale non è definito in application.properties");
         }
 
-        for (int i = 0; i < tenants.length; i++) {
-            String tenant = tenants[i].trim();
-            String user = users[i].trim();
-            String password = passwords[i].trim();
+        for (int i = 0; i < tenantNames.length; i++) {
+            String tenant = tenantNames[i];
+            if (tenant == null) continue;
 
-            String url = String.format("jdbc:postgresql://localhost:5432/%s", tenant);
-            tenantDataSources.put(tenant, DataSourceConfig.createDataSource(url, user, password));
+            String user = users[i];
+            String password = passwords[i];
+
+            String tenantUrl = baseUrl.endsWith("/") ? baseUrl + tenant : baseUrl + "/" + tenant;
+            System.out.println(tenantUrl);
+
+            tenantDataSources.put(tenant, DataSourceConfig.createDataSource(tenantUrl, user, password));
         }
 
-        System.out.println("Initialized DataSources:");
-        tenantDataSources.forEach((key, value) -> System.out.println("Tenant: " + key));
+        logger.info("Initialized DataSources: {}", tenantDataSources.keySet());
         return new MultiTenantConnectionProviderImpl(tenantDataSources);
     }
 
@@ -75,13 +97,13 @@ public class HibernateMultiTenancyConfig {
         JpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
         factoryBean.setJpaVendorAdapter(jpaVendorAdapter);
 
-        // Copiare tutte le proprietà JPA
+        // Imposta le proprietà JPA da application.properties
         factoryBean.setJpaPropertyMap(jpaProperties.getProperties());
 
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider());
         factoryBean.getJpaPropertyMap().put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver());
-        factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "update");
+        factoryBean.getJpaPropertyMap().put("hibernate.ddl-auto", "none");
 
         return factoryBean;
     }

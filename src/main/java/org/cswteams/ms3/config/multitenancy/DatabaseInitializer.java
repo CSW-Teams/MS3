@@ -14,14 +14,11 @@ import java.util.Objects;
 
 @Component
 public class DatabaseInitializer {
-    @Value("${spring.datasource.superuser}")
-    private String superUser;
-
-    @Value("${spring.datasource.superpassword}")
-    private String superPassword;
-
     @Value("${spring.datasource.url}")
     private String postgresUrl;
+
+    @Value("${spring.datasource.tenant.public.url}")
+    private String defaultUrl;
 
     @Value("${spring.datasource.username}")
     private String postgresUser;
@@ -29,50 +26,73 @@ public class DatabaseInitializer {
     @Value("${spring.datasource.password}")
     private String postgresPassword;
 
-    @Value("${spring.datasource.databases}")
-    private List<String> databases;
+    @Value("${spring.datasource.tenant.public.name}")
+    private String publicDatabase;
 
-    @Value("${spring.datasource.users}")
-    private List<String> users;
+    @Value("${spring.datasource.tenant.a.name}")
+    private String tenantADatabase;
 
-    @Value("${spring.datasource.passwords}")
-    private List<String> passwords;
+    @Value("${spring.datasource.tenant.b.name}")
+    private String tenantBDatabase;
 
-    @Value("${spring.datasource.grant-scripts}")
-    private List<String> grantScripts;
+    @Value("${spring.datasource.roles.public.username}")
+    private String publicRoleName;
 
-    @Value("${spring.datasource.init-public-db}")
-    private String initPublicDbScript;
+    @Value("${spring.datasource.roles.a.username}")
+    private String tenantARoleName;
 
-    @Value("${spring.datasource.init-generic-db}")
-    private String initGenericDbScript;
+    @Value("${spring.datasource.roles.b.username}")
+    private String tenantBRoleName;
+
+    @Value("${spring.datasource.roles.public.password}")
+    private String publicPassword;
+
+    @Value("${spring.datasource.roles.a.password}")
+    private String tenantAPassword;
+
+    @Value("${spring.datasource.roles.b.password}")
+    private String tenantBPassword;
+
+    @Value("${spring.datasource.scripts.privileges.public}")
+    private String grantPrivilegesPublic;
+
+    @Value("${spring.datasource.scripts.privileges.a}")
+    private String grantPrivilegesTenantA;
+
+    @Value("${spring.datasource.scripts.privileges.b}")
+    private String grantPrivilegesTenantB;
+
+    @Value("${spring.datasource.scripts.initialize.public}")
+    private String initializePublicDB;
+
+    @Value("${spring.datasource.scripts.initialize.a}")
+    private String initializeTenantA;
+
+    @Value("${spring.datasource.scripts.initialize.b}")
+    private String initializeTenantB;
+
+
 
     @PostConstruct
     public void initializeDatabases() {
+        // Esegui la configurazione per ogni database
+        String dbPublicUrl = defaultUrl + publicDatabase;
+        String dbTenantAUrl = defaultUrl + tenantADatabase;
+        String dbTenantBUrl = defaultUrl + tenantBDatabase;
+
         // Esegui gli script di inizializzazione sul database principale
         executeScript(postgresUrl, postgresUser, postgresPassword, "/db/terminate_connections.sql");
         executeScript(postgresUrl, postgresUser, postgresPassword, "/db/drop_and_create_databases.sql");
-        executeScript(postgresUrl, postgresUser, postgresPassword, "/db/init_public_db.sql");
 
-        // Esegui la configurazione per ogni database
-        for (int i = 0; i < databases.size(); i++) {
-            String dbUrl = "jdbc:postgresql://localhost:5432/" + databases.get(i);
-            System.out.println("Configuring database: " + databases.get(i));
+        // Esegui script di grant per il database
+        executeScript(dbPublicUrl, postgresUser, postgresPassword, grantPrivilegesPublic);
+        executeScript(dbTenantAUrl, postgresUser, postgresPassword, grantPrivilegesTenantA);
+        executeScript(dbTenantBUrl, postgresUser, postgresPassword, grantPrivilegesTenantB);
 
-            // Esegui script di grant per il database
-            executeScript(dbUrl, superUser, superPassword, grantScripts.get(i));
+        executeScript(dbPublicUrl, publicRoleName, publicPassword, initializePublicDB);
+        executeScript(dbTenantAUrl, tenantARoleName, tenantAPassword, initializeTenantA);
+        executeScript(dbTenantBUrl, tenantBRoleName, tenantBPassword, initializeTenantB);
 
-
-            // Inizializza database public
-            if (i == 0) {
-                executeScript(dbUrl, users.get(i), passwords.get(i), initPublicDbScript);
-            }
-
-            // Inizializza database ms3_a e ms3_b con lo script generico
-            else {
-                executeScript(dbUrl, users.get(i), passwords.get(i), initGenericDbScript);
-            }
-        }
     }
 
     private void executeScript(String dbUrl, String user, String password, String scriptPath) {
@@ -90,7 +110,7 @@ public class DatabaseInitializer {
             }
 
             statement.execute(sqlScript.toString());
-            System.out.println("Script " + scriptPath + " eseguito con successo su " + dbUrl);
+            //System.out.println("Script " + scriptPath + " eseguito con successo su " + dbUrl);
 
         } catch (Exception e) {
             System.err.println("Errore nell'esecuzione dello script " + scriptPath + " su " + dbUrl + ": " + e.getMessage());

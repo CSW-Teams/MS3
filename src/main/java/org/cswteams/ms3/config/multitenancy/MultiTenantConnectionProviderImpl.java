@@ -23,12 +23,12 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
 
     @Override
     public Connection getConnection(String tenantIdentifier) throws SQLException {
-        System.out.println("current tenant:" + tenantIdentifier);
+        // System.out.println("current tenant:" + tenantIdentifier);
         DataSource dataSource = tenantDataSources.get(tenantIdentifier);
         if (dataSource == null) {
             throw new HibernateException("No DataSource found for tenant: " + tenantIdentifier);
         }
-        System.out.println("Obtaining connection for tenant: " + tenantIdentifier);
+        // System.out.println("Obtaining connection for tenant: " + tenantIdentifier);
         return dataSource.getConnection();
     }
 

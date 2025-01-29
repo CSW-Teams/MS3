@@ -10,14 +10,14 @@ import java.util.Objects;
 @Component
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 
-    @Value("${spring.datasource.default-tenant:ms3_public}")
-    private String defaultTenant;
+    @Value("${spring.datasource.tenant.public.name}")
+    private String public_db;
 
     @Override
     public String resolveCurrentTenantIdentifier() {
         String tenant = TenantContext.getCurrentTenant();
         // Fallback to default tenant if no tenant is set in context
-        return Objects.requireNonNullElse(tenant, defaultTenant);
+        return Objects.requireNonNullElse(tenant, public_db);
     }
 
     @Override
