@@ -39,6 +39,15 @@ public class DatabaseInitializer {
     public void initializeDatabases() {
         executeScript(postgresUrl, postgresUser, postgresPassword, "/db/terminate_connections.sql");
         executeScript(postgresUrl, postgresUser, postgresPassword, "/db/drop_and_create_databases.sql");
+
+        for (int i = 0; i < databases.length; i++) {
+            String dbUrl = "jdbc:postgresql://localhost:5432/" + databases[i];
+            System.out.println("Enabling dblink for database : " + databases[i]);
+
+            // Esegui script per assegnare privilegi specifici
+            enableDblink(dbUrl, users[i], passwords[i]);
+        }
+
         executeScript(postgresUrl, postgresUser, postgresPassword, "/db/init_databases.sql");
         executeScript(postgresUrl, postgresUser, postgresPassword, "/db/create_roles.sql");
 
@@ -48,7 +57,6 @@ public class DatabaseInitializer {
 
             // Esegui script per assegnare privilegi specifici
             executeScript(dbUrl, users[i], passwords[i], grantScripts[i]);
-            enableDblink(dbUrl, users[i], passwords[i]);
         }
     }
 

@@ -4,6 +4,8 @@
     DROP DATABASE IF EXISTS ms3_public;
 
 -- Crea il database
+    CREATE DATABASE ms3_public;
     CREATE DATABASE ms3_a;
     CREATE DATABASE ms3_b;
-    CREATE DATABASE ms3_public;
+
+
