@@ -1,4 +1,7 @@
 # MS3
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dff94f086a134d558ef884b74da0aea8)](https://app.codacy.com/gh/CSW-Teams/MS3?utm_source=github.com&utm_medium=referral&utm_content=CSW-Teams/MS3&utm_campaign=Badge_Grade)
+
 MS3 - Medical Staff Shift Scheduler is designed to schedule medical shifts of hospital employees.
 
 # Launch in a Container
