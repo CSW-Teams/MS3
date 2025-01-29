@@ -9,10 +9,16 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Objects;
 
 @Component
 public class DatabaseInitializer {
+    @Value("${spring.datasource.superuser}")
+    private String superUser;
+
+    @Value("${spring.datasource.superpassword}")
+    private String superPassword;
 
     @Value("${spring.datasource.url}")
     private String postgresUrl;
@@ -24,39 +30,48 @@ public class DatabaseInitializer {
     private String postgresPassword;
 
     @Value("${spring.datasource.databases}")
-    private String[] databases;
+    private List<String> databases;
 
     @Value("${spring.datasource.users}")
-    private String[] users;
+    private List<String> users;
 
     @Value("${spring.datasource.passwords}")
-    private String[] passwords;
+    private List<String> passwords;
 
     @Value("${spring.datasource.grant-scripts}")
-    private String[] grantScripts;
+    private List<String> grantScripts;
+
+    @Value("${spring.datasource.init-public-db}")
+    private String initPublicDbScript;
+
+    @Value("${spring.datasource.init-generic-db}")
+    private String initGenericDbScript;
 
     @PostConstruct
     public void initializeDatabases() {
+        // Esegui gli script di inizializzazione sul database principale
         executeScript(postgresUrl, postgresUser, postgresPassword, "/db/terminate_connections.sql");
         executeScript(postgresUrl, postgresUser, postgresPassword, "/db/drop_and_create_databases.sql");
+        executeScript(postgresUrl, postgresUser, postgresPassword, "/db/init_public_db.sql");
 
-        for (int i = 0; i < databases.length; i++) {
-            String dbUrl = "jdbc:postgresql://localhost:5432/" + databases[i];
-            System.out.println("Enabling dblink for database : " + databases[i]);
+        // Esegui la configurazione per ogni database
+        for (int i = 0; i < databases.size(); i++) {
+            String dbUrl = "jdbc:postgresql://localhost:5432/" + databases.get(i);
+            System.out.println("Configuring database: " + databases.get(i));
 
-            // Esegui script per assegnare privilegi specifici
-            enableDblink(dbUrl, users[i], passwords[i]);
-        }
+            // Esegui script di grant per il database
+            executeScript(dbUrl, superUser, superPassword, grantScripts.get(i));
 
-        executeScript(postgresUrl, postgresUser, postgresPassword, "/db/init_databases.sql");
-        executeScript(postgresUrl, postgresUser, postgresPassword, "/db/create_roles.sql");
 
-        for (int i = 0; i < databases.length; i++) {
-            String dbUrl = "jdbc:postgresql://localhost:5432/" + databases[i];
-            System.out.println("Configuring database: " + databases[i]);
+            // Inizializza database public
+            if (i == 0) {
+                executeScript(dbUrl, users.get(i), passwords.get(i), initPublicDbScript);
+            }
 
-            // Esegui script per assegnare privilegi specifici
-            executeScript(dbUrl, users[i], passwords[i], grantScripts[i]);
+            // Inizializza database ms3_a e ms3_b con lo script generico
+            else {
+                executeScript(dbUrl, users.get(i), passwords.get(i), initGenericDbScript);
+            }
         }
     }
 
@@ -79,19 +94,6 @@ public class DatabaseInitializer {
 
         } catch (Exception e) {
             System.err.println("Errore nell'esecuzione dello script " + scriptPath + " su " + dbUrl + ": " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void enableDblink(String dbUrl, String user, String password) {
-        try (Connection connection = DriverManager.getConnection(dbUrl, user, password);
-             Statement statement = connection.createStatement()) {
-
-            statement.execute("CREATE EXTENSION IF NOT EXISTS dblink");
-            System.out.println("Estensione dblink abilitata per il database: " + dbUrl);
-
-        } catch (Exception e) {
-            System.err.println("Errore durante l'abilitazione di dblink su " + dbUrl + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
