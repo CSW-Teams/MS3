@@ -40,7 +40,7 @@ public class PreferenceController implements IPreferenceController {
     public Preference addPreference(@Valid PreferenceInWithUIDDTO dto) throws DatabaseException {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         if (doctor.isEmpty()){
-            throw new DatabaseException("User not found");
+            throw new DatabaseException("TenantUser not found");
         }
 
         LocalDate preferenceDay = LocalDate.of(dto.getDto().getYear(), dto.getDto().getMonth(), dto.getDto().getDay()) ;
@@ -71,7 +71,7 @@ public class PreferenceController implements IPreferenceController {
     public List<PreferenceDTOOut> addPreferences(@Valid PreferenceListWithUIDDTO dto) throws DatabaseException {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         if (doctor.isEmpty()){
-            throw new DatabaseException("User not found");
+            throw new DatabaseException("TenantUser not found");
         }
 
         ArrayList<Preference> preferencesToSave = new ArrayList<>() ;
@@ -120,7 +120,7 @@ public class PreferenceController implements IPreferenceController {
         Optional<Doctor> doctor = doctorDao.findById(dto.getDoctorId());
         Optional<Preference> preference = preferenceDao.findById(dto.getPreferenceId()) ;
         if(doctor.isEmpty()){
-            throw new DatabaseException("User not found");
+            throw new DatabaseException("TenantUser not found");
         }
         if(preference.isEmpty()) {
             throw new DatabaseException("Preference not found") ;

@@ -8,6 +8,7 @@ import javax.persistence.*;
 import lombok.Data;
 
 @Entity
+@Table(name = "user_schedule_state")
 @Data
 /*@Table(uniqueConstraints={
     @UniqueConstraint(columnNames={
@@ -22,15 +23,20 @@ public class UserScheduleState {
     @GeneratedValue
     private Long id;
     
-    /** User to whom this status belongs */
+    /** TenantUser to whom this status belongs */
     @ManyToOne
-    private User utente;
+    @JoinColumn(name = "utente_ms3_tenant_user_id")
+    private TenantUser utente;
 
     /** Planning to which this state belongs */
     @OneToOne
+    @JoinColumn(name = "schedule_schedule_id", referencedColumnName = "schedule_id")
     private Schedule schedule;
 
+    @Column(name = "uffa_parziale")
     private int uffaParziale=0;
+
+    @Column(name = "uffa_cumulativo")
     private int uffaCumulativo=0;
 
     /** all shifts assigned to this user in the current schedule */
@@ -83,7 +89,7 @@ public class UserScheduleState {
     public UserScheduleState() {
     }
     
-    public UserScheduleState(User utente, Schedule schedule) {
+    public UserScheduleState(TenantUser utente, Schedule schedule) {
         this.utente = utente;
         this.schedule = schedule;
     }

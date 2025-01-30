@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import {Container, Nav, Navbar, NavbarBrand} from "shards-react";
@@ -21,6 +21,17 @@ const MainNavbar = ({ layout, stickyTop }) => {
     stickyTop && "sticky-top"
   );
 
+  // Usa useState per memorizzare i dati estratti da localStorage
+  const [hospitalName, setHospitalName] = useState(null);
+
+  // Usa useEffect per leggere i dati dal localStorage al caricamento del componente
+  useEffect(() => {
+    const storedHospitalName = localStorage.getItem("tenant"); // Supponiamo di aver memorizzato questo valore prima
+    if (storedHospitalName) {
+      setHospitalName(storedHospitalName); // Imposta il valore letto nel componente
+    }
+  }, []); // L'array vuoto assicura che questo venga eseguito solo una volta, al caricamento del componente.
+
   return (
     <div className={classes}>
       <Container className="p-0">
@@ -32,7 +43,7 @@ const MainNavbar = ({ layout, stickyTop }) => {
           }} >
             <NavbarBrand className="mr-auto" href="/pianificazione-globale">
               <font style={{ fontWeight: 800 , fontstyle: FormatItalic ,textAlign: AlignHorizontalCenterRounded} } >
-                MEDICAL STAFF SHIFT SCHEDULER
+                MEDICAL STAFF SHIFT SCHEDULER - {hospitalName}
               </font>
             </NavbarBrand>
           </MDBContainer>

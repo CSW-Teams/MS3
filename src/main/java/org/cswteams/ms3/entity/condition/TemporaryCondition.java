@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
  * This <i>condition</i> is temporary, e.g. pregnancy and so on.
  */
 @Entity
+@Table(name = "temporary_condition")
 @Getter
 public class TemporaryCondition extends Condition {
 
@@ -16,12 +17,14 @@ public class TemporaryCondition extends Condition {
      * Start date for the <i>condition</i>, in <i>epoch</i> days.
      */
     @NotNull
+    @Column(name = "start_date")
     private long startDate;
 
     /**
      * End date for the <i>condition</i>, in <i>epoch</i> days.
      */
     @NotNull
+    @Column(name = "end_date")
     private long endDate;
 
     /**

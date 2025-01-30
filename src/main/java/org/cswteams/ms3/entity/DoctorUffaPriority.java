@@ -16,6 +16,7 @@ import lombok.Setter;
  * All the information about priority levels on the queues of the doctors.
  */
 @Entity
+@Table(name = "doctor_uffa_priority")
 @Getter
 @Setter
 /*
@@ -36,17 +37,30 @@ public class DoctorUffaPriority {
     /** Doctor which the Uffa priority refers to */
     @OneToOne
     @NotNull
+    @JoinColumn(name = "doctor_ms3_tenant_user_id", referencedColumnName = "ms3_tenant_user_id")
     private Doctor doctor;
 
     /** Current schedule */
     @OneToOne
+    @JoinColumn(name = "schedule_schedule_id", referencedColumnName = "schedule_id")
     private Schedule schedule;
 
+    @Column(name = "partial_general_priority")
     private int partialGeneralPriority = 0;
+
+    @Column(name = "general_priority")
     private int generalPriority = 0;
+
+    @Column(name = "partial_long_shift_priority")
     private int partialLongShiftPriority = 0;
+
+    @Column(name = "long_shift_priority")
     private int longShiftPriority = 0;
+
+    @Column(name = "partial_night_priority")
     private int partialNightPriority = 0;
+
+    @Column(name = "night_priority")
     private int nightPriority = 0;
 
     /** All the concrete shifts assigned to the doctor in the current schedule */

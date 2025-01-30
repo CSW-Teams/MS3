@@ -22,11 +22,13 @@ public class DoctorAssignment {
     @ManyToOne
     @NotNull
     @Setter
+    @JoinColumn(name = "doctor_ms3_tenant_user_id")
     private Doctor doctor;
 
     @Enumerated
     @NotNull
     @Setter
+    @Column(name = "concrete_shift_doctor_status")
     private ConcreteShiftDoctorStatus concreteShiftDoctorStatus;
 
     @ManyToOne
@@ -36,6 +38,7 @@ public class DoctorAssignment {
 
     @ManyToOne
     @NotNull
+    @JoinColumn(name = "task_task_id")
     private Task task;
 
     /**

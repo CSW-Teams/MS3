@@ -4,7 +4,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.cswteams.ms3.enums.TimeSlot;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
@@ -19,7 +21,11 @@ import java.time.LocalDate;
 public class ScocciaturaAssegnazioneUtente extends Scocciatura {
 
     private int peso;
+
+    @Column(name = "giorno_settimana")
     private DayOfWeek giornoSettimana;
+
+    @Column(name = "time_slot")
     private TimeSlot timeSlot;
 
     /**

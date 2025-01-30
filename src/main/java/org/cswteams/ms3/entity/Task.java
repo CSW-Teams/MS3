@@ -22,6 +22,7 @@ public class Task {
 
     @Enumerated
     @Getter
+    @Column(name = "task_type")
     private TaskEnum taskType;
 
     protected Task(){

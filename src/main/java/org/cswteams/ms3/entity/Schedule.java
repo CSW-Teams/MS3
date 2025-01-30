@@ -22,23 +22,36 @@ public class Schedule {
     
     /** Start date of the shift schedule; it is stored as number of days from the start of Epoch. */
     @NotNull
+    @Column(name = "start_date")
     private long startDate; // This date is in epoch format to keep track of the timezone
 
     /** End date of the shift schedule; it is stored as number of days from the start of Epoch. */
     @NotNull
+    @Column(name = "end_date")
     private long endDate; // This date is in epoch format to keep track of the timezone
 
     /** Concrete shifts that compose the schedule. */
     @OneToMany(cascade = {CascadeType.ALL})
     @NotNull
+    @JoinTable(
+            name = "schedule_concrete_shifts",
+            joinColumns = @JoinColumn(name = "schedule_schedule_id"),
+            inverseJoinColumns = @JoinColumn(name = "concrete_shifts_concrete_shift_id")
+    )
     private List<ConcreteShift> concreteShifts;
 
     /** List of constraints violated by the shift schedule. */
     @ManyToMany
     @NotNull
+    @JoinTable(
+            name = "schedule_violated_constraints",
+            joinColumns = @JoinColumn(name = "schedule_schedule_id"),
+            inverseJoinColumns = @JoinColumn(name = "violated_constraints_constraint_id")
+    )
     private List<Constraint> violatedConstraints;
 
     /** Reason for which the shift schedule results illegal */
+    @Column(name = "cause_illegal")
     private Exception causeIllegal;
 
     public void setCauseIllegal(Exception causeIllegal){

@@ -8,8 +8,7 @@ import org.cswteams.ms3.entity.condition.Condition;
 import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.cswteams.ms3.exception.ViolatedVincoloAssegnazioneTurnoTurnoException;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +24,11 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurnoTurno {
     @NotNull
+    @Column(name = "max_consecutive_minutes")
     private long maxConsecutiveMinutes;
+
     @ManyToOne
+    @JoinColumn(name = "constrained_category_id")
     private Condition constrainedCategory;
 
 

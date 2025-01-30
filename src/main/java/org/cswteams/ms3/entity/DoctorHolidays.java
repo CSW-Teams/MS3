@@ -13,6 +13,7 @@ import java.util.HashMap;
 @Entity
 @Data
 @EqualsAndHashCode
+@Table(name = "doctor_holidays")
 public class DoctorHolidays {
 
     @Id
@@ -25,10 +26,12 @@ public class DoctorHolidays {
      */
     @OneToOne
     @NotNull
+    @JoinColumn(name = "doctor_ms3_tenant_user_id", referencedColumnName = "ms3_tenant_user_id")
     private Doctor doctor;
 
     @Lob
     @NotNull
+    @Column(name = "holiday_map")
     private HashMap<Holiday, Boolean> holidayMap;
 
     /**

@@ -1,5 +1,6 @@
 package org.cswteams.ms3.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -21,5 +22,6 @@ public class Config {
     /**
      * Has the application booted before?
      */
+    @Column(name = "first_boot")
     private boolean firstBoot;
 }

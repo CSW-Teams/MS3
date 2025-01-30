@@ -29,20 +29,23 @@ public class Request extends Notificable {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
-    private User sender;
+    @JoinColumn(name = "sender_ms3_tenant_user_id")
+    private TenantUser sender;
 
     /**
      * Recipient user.
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
-    private User receiver;
+    @JoinColumn(name = "receiver_ms3_tenant_user_id")
+    private TenantUser receiver;
 
     /**
      * <i>Concrete shift</i> to be updated
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
+    @JoinColumn(name = "turn_concrete_shift_id")
     private ConcreteShift turn;
 
     private RequestStatus status = RequestStatus.PENDING;
@@ -61,7 +64,7 @@ public class Request extends Notificable {
      */
     @Override
     public Notification getNotification() {
-        User user= null;
+        TenantUser user= null;
         String msg= "";
         switch (this.status){
             case ACCEPTED:
@@ -81,7 +84,7 @@ public class Request extends Notificable {
         return notification;
     }
 
-    public Request(User sender, User receiver, ConcreteShift turn, Observer observer) {
+    public Request(TenantUser sender, TenantUser receiver, ConcreteShift turn, Observer observer) {
         super(observer);
         this.sender = sender;
         this.receiver = receiver;

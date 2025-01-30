@@ -16,12 +16,12 @@ import java.util.Set;
  * A <i>Doctor</i> in the system.
  *
  * @see <a href="https://github.com/CSW-Teams/MS3/wiki#medici">Glossary</a>.
- * @see User
+ * @see TenantUser
  * @see SystemActor
  */
 @Getter
 @Entity
-public class Doctor extends User{
+public class Doctor extends TenantUser {
     /*TODO : Check if it is necessary Setter for password on password change
      *  Should be added a Factory to set protected access to doctor (So that no one can change his credentials
      * as he pleases) */
@@ -33,14 +33,35 @@ public class Doctor extends User{
     private Seniority seniority; // TODO: See if seniority is a class instead of an enum
 
     @ManyToMany
+    @JoinTable(
+            name = "doctor_permanent_conditions",
+            joinColumns = @JoinColumn(name = "doctor_ms3_tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "permanent_conditions_id")
+    )
     private final List<PermanentCondition> permanentConditions = new ArrayList<>();
+
     @ManyToMany
+    @JoinTable(
+            name = "doctor_temporary_conditions",
+            joinColumns = @JoinColumn(name = "doctor_ms3_tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "temporary_conditions_id")
+    )
     private final List<TemporaryCondition> temporaryConditions = new ArrayList<>();
 
     @ManyToMany
+    @JoinTable(
+            name = "doctor_preference_list",
+            joinColumns = @JoinColumn(name = "doctor_ms3_tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "preference_list_id")
+    )
     private final List<Preference> preferenceList = new ArrayList<>();
 
     @ManyToMany
+    @JoinTable(
+            name = "doctor_specializations",
+            joinColumns = @JoinColumn(name = "doctor_ms3_tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "specializations_specialization_id")
+    )
     private final List<Specialization> specializations = new ArrayList<>();
 
 

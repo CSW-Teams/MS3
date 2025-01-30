@@ -21,13 +21,13 @@ public interface RequestRemovalFromConcreteShiftDAO extends JpaRepository<Reques
 
     /**
      * Returns a list of all removal requests from assigned shift
-     * for a specific <code>ConcreteShift</code> and a specific <code>User</code>.
+     * for a specific <code>ConcreteShift</code> and a specific <code>TenantUser</code>.
      * The cardinality of this list should always be 0 or 1 (if the request exists, it is unique).
      *
      * @param shift assignmentId shift assignment id
      * @param UserId user id
      * @return list, possibly empty, of removal requests from the assigned shift for the specification
-     * <code>Shift Assignment</code> and for the specific <code>User</code>
+     * <code>Shift Assignment</code> and for the specific <code>TenantUser</code>
      */
     @Query("SELECT  r " +
             "FROM   RequestRemovalFromConcreteShift r " +
@@ -38,11 +38,11 @@ public interface RequestRemovalFromConcreteShiftDAO extends JpaRepository<Reques
 
     /**
      * Returns a list of all removal requests from assigned shift
-     * for a specific <code>User</code>.
+     * for a specific <code>TenantUser</code>.
      *
      * @param UserId user id
      * @return list, possibly empty, of removal requests from assigned shift
-     * for the specific <code>User</code>.
+     * for the specific <code>TenantUser</code>.
      */
     @Query("SELECT  r " +
             "FROM   RequestRemovalFromConcreteShift r " +

@@ -39,6 +39,11 @@ public class MedicalService extends SoftDeletableEntity {
     @NotNull
     @Getter
     @Setter
+    @JoinTable(
+            name = "medical_service_tasks",
+            joinColumns = @JoinColumn(name = "medical_service_medical_service_id"),
+            inverseJoinColumns = @JoinColumn(name = "tasks_task_id")
+    )
     private List<Task> tasks = new ArrayList<>();
     // TODO: Load this information from a configuration file
 
