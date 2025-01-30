@@ -5,6 +5,7 @@ create table shift
     duration                           bigint  not null,
     start_time                         time    not null,
     time_slot                          integer not null,
+    is_deleted                         boolean not null,
     medical_service_medical_service_id bigint
         constraint fk4vf2jsq4n82b7upj2l6ct8lpt
             references medical_service

@@ -2,7 +2,8 @@ create table medical_service
 (
     medical_service_id bigserial
         primary key,
-    label              varchar(255) not null
+    label              varchar(255) not null,
+    is_deleted         boolean      not null
 );
 
 
