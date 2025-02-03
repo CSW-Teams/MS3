@@ -28,14 +28,23 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+      - DB_TENANT_PUBLIC_USER=${DB_TENANT_PUBLIC_USER}
+      - DB_TENANT_PUBLIC_PASSWORD=${DB_TENANT_PUBLIC_PASSWORD}
+      - DB_TENANT_A_USER=${DB_TENANT_A_USER}
+      - DB_TENANT_A_PASSWORD=${DB_TENANT_A_PASSWORD}
+      - DB_TENANT_B_USER=${DB_TENANT_B_USER}
+      - DB_TENANT_B_PASSWORD=${DB_TENANT_B_PASSWORD}
     expose:
       - 8080
     
   # postgres
   db:
-    image: postgres:15.2-alpine3.17
+    build:
+      context: ./src/main/resources/db
+      dockerfile: Dockerfile.db
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./src/main/resources/db/init-scripts:/docker-entrypoint-initdb.d
     environment:
 
       # NOTE: the following values must be specified in the corresponding
@@ -43,6 +52,13 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
+      
+      DB_TENANT_PUBLIC_USER: ${DB_TENANT_PUBLIC_USER}
+      DB_TENANT_PUBLIC_PASSWORD: ${DB_TENANT_PUBLIC_PASSWORD}
+      DB_TENANT_A_USER: ${DB_TENANT_A_USER}
+      DB_TENANT_A_PASSWORD: ${DB_TENANT_A_PASSWORD}
+      DB_TENANT_B_USER: ${DB_TENANT_B_USER}
+      DB_TENANT_B_PASSWORD: ${DB_TENANT_B_PASSWORD}
       
       PGDATA: /var/lib/postgresql/data
     
