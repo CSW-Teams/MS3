@@ -2,6 +2,11 @@ version: '3.1'
 
 volumes:
   db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/db_data
 
 services:
   # Node server
@@ -15,7 +20,7 @@ services:
       - ${FRONTEND_EXPOSE}:3000
     environment:
       REACT_APP_PROXY: http://backend:8080
-    
+
   # Spring App + Java
   backend:
     depends_on:
@@ -36,14 +41,14 @@ services:
       - DB_TENANT_B_PASSWORD=${DB_TENANT_B_PASSWORD}
     expose:
       - 8080
-    
+
   # postgres
   db:
     build:
       context: ./src/main/resources/db
       dockerfile: Dockerfile.db
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - /mnt/secure-db:/var/lib/postgresql/data
       - ./src/main/resources/db/init-scripts:/docker-entrypoint-initdb.d
     environment:
 
