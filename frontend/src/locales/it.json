@@ -212,7 +212,7 @@
   "Schedule successfully recreated": "Schedulazione ricreata con successo",
   "Old Schedules cannot be regenerated": "Non è possibile rigenerare una vecchia pianificazione!",
   "Regeneration Error": "Errore nella ricreazione",
-  "Schedule Generation Error": "Errore nella generazione dello Schedule",
+  "Schedule Generation Error": "Errore nella generazione dello Schedule, numero strutturati non sufficienti",
   "Schedule management": "Gestione schedulazioni",
   "Warning! Incomplete Schedule": "Attenzione! Generata una pianificazione incompleta!",
   "Error: Schedule already exists": "Nei giorni selezionati è stata già generata una pianificazione!",

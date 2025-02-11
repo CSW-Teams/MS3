@@ -211,7 +211,7 @@
   "Schedule successfully recreated": "Schedule successfully recreated",
   "Old Schedules cannot be regenerated": "Old Schedules cannot be regenerated",
   "Regeneration Error": "Regeneration Error",
-  "Schedule Generation Error": "Schedule Generation Error",
+  "Schedule Generation Error": "Schedule Generation Error, not enough structured",
   "Schedule management": "Schedule management",
   "Warning! Incomplete Schedule": "Warning! Incomplete Schedule",
   "Error: Schedule already exists": "Error: Schedule already exists",
