@@ -9,15 +9,16 @@ import org.cswteams.ms3.control.preferenze.CalendarSettingBuilder;
 import org.cswteams.ms3.control.preferenze.ICalendarServiceManager;
 import org.cswteams.ms3.control.preferenze.IHolidayController;
 import org.cswteams.ms3.control.user.UserController;
+import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.dto.HolidayDTO;
 import org.cswteams.ms3.dto.holidays.RetrieveHolidaysDTOIn;
 import org.cswteams.ms3.entity.*;
-import org.cswteams.ms3.entity.condition.*;
+import org.cswteams.ms3.entity.condition.PermanentCondition;
+import org.cswteams.ms3.entity.condition.TemporaryCondition;
 import org.cswteams.ms3.entity.constraint.*;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
-import org.cswteams.ms3.dao.*;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaVacanza;
 import org.cswteams.ms3.enums.*;
 import org.cswteams.ms3.exception.CalendarServiceException;
@@ -30,8 +31,13 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.time.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -122,35 +128,35 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         /**
          * FIXME: sostiutire count con controllo su entità Config
          */
-      //  if (doctorDAO.count() == 0) {
+        //  if (doctorDAO.count() == 0) {
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            TenantConfig tenantConfig = objectMapper.readValue(new File("src/main/resources/tenants_config.json"), TenantConfig.class);
-            List<String> tenantSchemas = tenantConfig.getTenants();
+        ObjectMapper objectMapper = new ObjectMapper();
+        TenantConfig tenantConfig = objectMapper.readValue(new File("src/main/resources/tenants_config.json"), TenantConfig.class);
+        List<String> tenantSchemas = tenantConfig.getTenants();
 
+        for (String tenant : tenantSchemas) {
+            changeSchema(tenant.toLowerCase());
+            registerHolidays();
+        }
+
+        changeSchema(DEFAULT_SCHEMA);
+        populatePublicDB();
+
+        try {
             for (String tenant : tenantSchemas) {
                 changeSchema(tenant.toLowerCase());
-                registerHolidays();
+                populateTenantDB(tenant);
+                registerConstraints();
+                registerScocciature();
             }
+        } catch (ShiftException e) {
+            e.printStackTrace();
+        }
 
-            changeSchema(DEFAULT_SCHEMA);
-            populatePublicDB();
+        // Ripristina lo schema di default ("public" per PostgreSQL)
+        changeSchema(DEFAULT_SCHEMA);
 
-            try {
-                for (String tenant : tenantSchemas) {
-                    changeSchema(tenant.toLowerCase());
-                    populateTenantDB(tenant);
-                    registerConstraints();
-                    registerScocciature();
-                }
-            } catch (ShiftException e) {
-                e.printStackTrace();
-            }
-
-          // Ripristina lo schema di default ("public" per PostgreSQL)
-            changeSchema(DEFAULT_SCHEMA);
-
-     //   }
+        //   }
 
     }
 
@@ -169,7 +175,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             CalendarSettingBuilder settingBuilder = new CalendarSettingBuilder(ServiceDataENUM.DATANEAGER);
             holidays = holidayController.readHolidays(new RetrieveHolidaysDTOIn(LocalDate.now().getYear(), "IT"));
 
-            if(holidays.isEmpty()) {
+            if (holidays.isEmpty()) {
                 CalendarSetting setting = settingBuilder.create(String.valueOf(LocalDate.now().getYear()), "IT");
                 calendarServiceManager.init(setting);
                 holidays = calendarServiceManager.getHolidays();
@@ -177,8 +183,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             }
 
             //we are about to register Vigilia di Natale and Vigilia di Capodanno too. To do that, we have to retrieve Natale and Capodanno.
-            for(HolidayDTO holidayDTO : holidays) {
-                if(holidayDTO.getName().equals("Natale")) {
+            for (HolidayDTO holidayDTO : holidays) {
+                if (holidayDTO.getName().equals("Natale")) {
                     List<HolidayDTO> newHolidays = getNewHolidayDTOs(holidayDTO);
                     holidayController.registerHolidays(newHolidays);
 
@@ -193,9 +199,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     }
 
 
-
     /**
      * Function which has the responsibility to define the holidays Vigilia di Natale and Vigilia di Capodanno, if necessary.
+     *
      * @param holidayDTO Already defined holiday (normally Natale) from which the new holidays will be defined and created
      * @return List of new holiday DTOs
      */
@@ -205,15 +211,15 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         HolidayDTO vigiliaDiNataleDTO = new HolidayDTO(
                 "Vigilia di Natale",
                 HolidayCategory.RELIGIOUS,
-                holidayDTO.getStartDateEpochDay()-1,
-                holidayDTO.getEndDateEpochDay()-1,
+                holidayDTO.getStartDateEpochDay() - 1,
+                holidayDTO.getEndDateEpochDay() - 1,
                 holidayDTO.getLocation()
         );
         HolidayDTO vigiliaDiCapodannoDTO = new HolidayDTO(
                 "Vigilia di Capodanno",
                 HolidayCategory.CIVIL,
-                holidayDTO.getStartDateEpochDay()+6,
-                holidayDTO.getEndDateEpochDay()+6,
+                holidayDTO.getStartDateEpochDay() + 6,
+                holidayDTO.getEndDateEpochDay() + 6,
                 holidayDTO.getLocation()
         );
 
@@ -221,7 +227,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         newHolidays.add(vigiliaDiCapodannoDTO);
         return newHolidays;
     }
-
 
 
     private void registerScocciature() {
@@ -358,7 +363,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         //retrieve of holiday entities (and not DTOs)
         List<Holiday> holidays = holidayDAO.findAll();
 
-        for(Holiday holiday: holidays) {
+        for (Holiday holiday : holidays) {
             switch (holiday.getName()) {
                 //case of "standard holidays"
                 case "Epifania":
@@ -618,16 +623,102 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             Doctor u5 = new Doctor("Daniele", "La Prova", "LPRDNL98H13H501F", LocalDate.of(1998, 2, 12), "danielelaprova.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
             Doctor u8_1 = new Doctor("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
             Doctor u10_1 = new Doctor("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u14 = new Doctor("Claudia", "Rossi II", "RSSCLD91C52H501A", LocalDate.of(1982, 7, 6), "claudia.rossi@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u15 = new Doctor("Giorgio", "Bianchi", "BNCGRG88E21H501S", LocalDate.of(1993, 2, 12), "giorgio.bianchi@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u16 = new Doctor("Claudio", "Gialli", "GLLCLD89B14H501T", LocalDate.of(1998, 8, 12), "claudia.gialli@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u17 = new Doctor("Filippo", "Neri", "NREFLP92R24H501C", LocalDate.of(1998, 2, 12), "filippo.neru@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u18 = new Doctor("Vincenzo", "Grassi", "GRSVNC60A19H501P", LocalDate.of(1998, 8, 12), "vincenzo.grassi@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u19 = new Doctor("Diana", "Pasquali", "PSQDNI97D62H501U", LocalDate.of(1997, 4, 22), "diana.pasquali@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u20 = new Doctor("Francesco", "Lo Presti", "LPSFRC66T05G071E", LocalDate.of(1998, 8, 12), "francesco.lopresti@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u21 = new Doctor("Andrea", "Pepe", "PPENDR99M05I150J", LocalDate.of(1999, 8, 5), "andrea.pepe@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u22 = new Doctor("Matteo", "Fanfarillo", "FNFMTT99E10A123E", LocalDate.of(1999, 5, 10), "matteo.fanfarillo99@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR, SystemActor.PLANNER));
+            Doctor u23 = new Doctor("Matteo", "Ciccaglione", "CCCMTT99H15C439X", LocalDate.of(1998, 6, 15), "matteo.ciccaglione@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u24 = new Doctor("Vittoria", "De Nitto", "DNTVTT60C59E612D", LocalDate.of(1998, 8, 12), "vittoria.denitto@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+
+            try {
+                userController.addSpecialization(u3, cardiologia);
+                userController.addSpecialization(u5, cardiologia);
+                userController.addSpecialization(u8_1, cardiologia);
+                userController.addSpecialization(u10_1, cardiologia);
+                userController.addSpecialization(u14, cardiologia);
+                userController.addSpecialization(u15, cardiologia);
+                userController.addSpecialization(u16, cardiologia);
+                userController.addSpecialization(u18, cardiologia);
+                userController.addSpecialization(u20, cardiologia);
+                userController.addSpecialization(u21, cardiologia);
+                userController.addSpecialization(u22, cardiologia);
+                userController.addSpecialization(u23, cardiologia);
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
             u3 = doctorDAO.saveAndFlush(u3);
             u5 = doctorDAO.saveAndFlush(u5);
             u8_1 = doctorDAO.saveAndFlush(u8_1);
             u10_1 = doctorDAO.saveAndFlush(u10_1);
+            u14 = doctorDAO.saveAndFlush(u14);
+            u15 = doctorDAO.saveAndFlush(u15);
+            u16 = doctorDAO.saveAndFlush(u16);
+            u17 = doctorDAO.saveAndFlush(u17);
+            u18 = doctorDAO.saveAndFlush(u18);
+            u19 = doctorDAO.saveAndFlush(u19);
+            u20 = doctorDAO.saveAndFlush(u20);
+            u21 = doctorDAO.saveAndFlush(u21);
+            u22 = doctorDAO.saveAndFlush(u22);
+            u23 = doctorDAO.saveAndFlush(u23);
+            u24 = doctorDAO.saveAndFlush(u24);
 
         } else {
             Doctor u4 = new Doctor("Daniele", "Colavecchi", "CLVDNL82C21H501E", LocalDate.of(1982, 7, 6), "danielecolavecchi.tenantb@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
             Doctor u7 = new Doctor("Luca", "Fiscariello", "FSCLCU99D15A783Z", LocalDate.of(1998, 8, 12), "lucafiscariello.tenantb@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
             Doctor u8_2 = new Doctor("Manuel", "Mastrofini", "MSTMNL80M20H501X", LocalDate.of(1988, 5, 4), "manuelmastrofini.tenantb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.PLANNER));
             Doctor u10_2 = new Doctor("Fabio", "Valenzi", "VLZFBA90A03H501U", LocalDate.of(1989, 12, 6), "fabiovalenzi.tenantb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u14 = new Doctor("Claudia", "Rossi II", "RSSCLD91C52H501A", LocalDate.of(1982, 7, 6), "claudia.rossi@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u15 = new Doctor("Giorgio", "Bianchi", "BNCGRG88E21H501S", LocalDate.of(1993, 2, 12), "giorgio.bianchi@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u16 = new Doctor("Claudio", "Gialli", "GLLCLD89B14H501T", LocalDate.of(1998, 8, 12), "claudia.gialli@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u17 = new Doctor("Filippo", "Neri", "NREFLP92R24H501C", LocalDate.of(1998, 2, 12), "filippo.neru@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u18 = new Doctor("Vincenzo", "Grassi", "GRSVNC60A19H501P", LocalDate.of(1998, 8, 12), "vincenzo.grassi@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u19 = new Doctor("Diana", "Pasquali", "PSQDNI97D62H501U", LocalDate.of(1997, 4, 22), "diana.pasquali@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u20 = new Doctor("Francesco", "Lo Presti", "LPSFRC66T05G071E", LocalDate.of(1998, 8, 12), "francesco.lopresti@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u21 = new Doctor("Andrea", "Pepe", "PPENDR99M05I150J", LocalDate.of(1999, 8, 5), "andrea.pepe@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u22 = new Doctor("Matteo", "Fanfarillo", "FNFMTT99E10A123E", LocalDate.of(1999, 5, 10), "matteo.fanfarillo99@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR, SystemActor.PLANNER));
+            Doctor u23 = new Doctor("Matteo", "Ciccaglione", "CCCMTT99H15C439X", LocalDate.of(1998, 6, 15), "matteo.ciccaglione@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
+            Doctor u24 = new Doctor("Vittoria", "De Nitto", "DNTVTT60C59E612D", LocalDate.of(1998, 8, 12), "vittoria.denitto@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+
+            try {
+                userController.addSpecialization(u4, cardiologia);
+                userController.addSpecialization(u7, cardiologia);
+                userController.addSpecialization(u8_2, cardiologia);
+                userController.addSpecialization(u10_2, cardiologia);
+                userController.addSpecialization(u14, cardiologia);
+                userController.addSpecialization(u15, cardiologia);
+                userController.addSpecialization(u16, cardiologia);
+                userController.addSpecialization(u18, cardiologia);
+                userController.addSpecialization(u20, cardiologia);
+                userController.addSpecialization(u21, cardiologia);
+                userController.addSpecialization(u22, cardiologia);
+                userController.addSpecialization(u23, cardiologia);
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            u4 = doctorDAO.saveAndFlush(u4);
+            u7 = doctorDAO.saveAndFlush(u7);
+            u8_2 = doctorDAO.saveAndFlush(u8_2);
+            u10_2 = doctorDAO.saveAndFlush(u10_2);
+            u14 = doctorDAO.saveAndFlush(u14);
+            u15 = doctorDAO.saveAndFlush(u15);
+            u16 = doctorDAO.saveAndFlush(u16);
+            u17 = doctorDAO.saveAndFlush(u17);
+            u18 = doctorDAO.saveAndFlush(u18);
+            u19 = doctorDAO.saveAndFlush(u19);
+            u20 = doctorDAO.saveAndFlush(u20);
+            u21 = doctorDAO.saveAndFlush(u21);
+            u22 = doctorDAO.saveAndFlush(u22);
+            u23 = doctorDAO.saveAndFlush(u23);
+            u24 = doctorDAO.saveAndFlush(u24);
 
             u4 = doctorDAO.saveAndFlush(u4);
             u7 = doctorDAO.saveAndFlush(u7);
@@ -724,8 +815,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             Doctor u9 = new Doctor("Giulia", "Cantone II", "CTNGLI78E44H501Z", LocalDate.of(1991, 2, 12), "giuliacantone.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.DOCTOR));
             Doctor u1_1 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.CONFIGURATOR));
             Doctor u6_1 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenanta@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.PLANNER, SystemActor.DOCTOR));
-            Doctor u44_1 = new Doctor("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini.tenanta@gmail.com",encoder.encode("passw"),Seniority.STRUCTURED,Set.of(SystemActor.PLANNER));
-            Doctor u45_1 = new Doctor("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi.tenanta@gmail.com",encoder.encode("passw"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
+            Doctor u44_1 = new Doctor("Giulio", "Farnasini", "GLIFNS94M07G224O", LocalDate.of(1994, 8, 7), "giuliofarnasini.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.PLANNER));
+            Doctor u45_1 = new Doctor("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenanta@gmail.com", encoder.encode("passw"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
 
             u1_1 = doctorDAO.saveAndFlush(u1_1);
             u6_1 = doctorDAO.saveAndFlush(u6_1);
@@ -736,8 +827,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             Doctor u1_2 = new Doctor("Martina", "Salvati", "SLVMTN97T56H501Y", LocalDate.of(1997, 3, 14), "salvatimartina97.tenantb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_JUNIOR, Set.of(SystemActor.CONFIGURATOR));
             Doctor u2 = new Doctor("Domenico", "Verde", "VRDDMC96H16H501H", LocalDate.of(1997, 5, 23), "domenicoverde.tenantb@gmail.com", encoder.encode("passw"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.DOCTOR));
             Doctor u6_2 = new Doctor("Giovanni", "Cantone", "GVNCTN48M22D429G", LocalDate.of(1960, 3, 7), "giovannicantone.tenantb@gmail.com", encoder.encode("passw2"), Seniority.SPECIALIST_SENIOR, Set.of(SystemActor.CONFIGURATOR));
-            Doctor u44_2 = new Doctor("Giulio","Farnasini","GLIFNS94M07G224O",LocalDate.of(1994,8,7),"giuliofarnasini.tenantb@gmail.com",encoder.encode("passw2"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR));
-            Doctor u45_2 = new Doctor("Full","Permessi","FLLPRM98M24G224O",LocalDate.of(1998,8,24),"fullpermessi.tenantb@gmail.com",encoder.encode("passw2"),Seniority.STRUCTURED,Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
+            Doctor u44_2 = new Doctor("Giulio", "Farnasini", "GLIFNS94M07G224O", LocalDate.of(1994, 8, 7), "giuliofarnasini.tenantb@gmail.com", encoder.encode("passw2"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR));
+            Doctor u45_2 = new Doctor("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenantb@gmail.com", encoder.encode("passw2"), Seniority.STRUCTURED, Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR));
 
             u1_2 = doctorDAO.saveAndFlush(u1_2);
             u2 = doctorDAO.saveAndFlush(u2);
@@ -753,58 +844,58 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         doctorsNumberBySeniority.put(Seniority.SPECIALIST_JUNIOR, 1); */
 
         List<QuantityShiftSeniority> quantityShiftSeniorityList1 = new ArrayList<>();
-        for(Task t:ambulatorioCardiologia.getTasks()) {
-            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
-            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
-            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+        for (Task t : ambulatorioCardiologia.getTasks()) {
+            Map<Seniority, Integer> mapSeniorityQuantity = new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR, 1);
+            mapSeniorityQuantity.put(Seniority.STRUCTURED, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR, 1);
+            QuantityShiftSeniority quantityShiftSeniority = new QuantityShiftSeniority(mapSeniorityQuantity, t);
             quantityShiftSeniorityList1.add(quantityShiftSeniority);
         }
         List<QuantityShiftSeniority> quantityShiftSeniorityList2 = new ArrayList<>();
-        for(Task t:ambulatorioCardiologia.getTasks()) {
-            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
-            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+        for (Task t : ambulatorioCardiologia.getTasks()) {
+            Map<Seniority, Integer> mapSeniorityQuantity = new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.STRUCTURED, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR, 1);
+            QuantityShiftSeniority quantityShiftSeniority = new QuantityShiftSeniority(mapSeniorityQuantity, t);
             quantityShiftSeniorityList2.add(quantityShiftSeniority);
         }
         List<QuantityShiftSeniority> quantityShiftSeniorityList3 = new ArrayList<>();
-        for(Task t:ambulatorioCardiologia.getTasks()) {
-            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
-            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+        for (Task t : ambulatorioCardiologia.getTasks()) {
+            Map<Seniority, Integer> mapSeniorityQuantity = new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.STRUCTURED, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR, 1);
+            QuantityShiftSeniority quantityShiftSeniority = new QuantityShiftSeniority(mapSeniorityQuantity, t);
             quantityShiftSeniorityList3.add(quantityShiftSeniority);
         }
 
         List<QuantityShiftSeniority> quantityShiftSeniorityListOncologia1 = new ArrayList<>();
-        for(Task t:ambulatorioOncologia.getTasks()) {
-            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
-            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
-            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+        for (Task t : ambulatorioOncologia.getTasks()) {
+            Map<Seniority, Integer> mapSeniorityQuantity = new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR, 1);
+            mapSeniorityQuantity.put(Seniority.STRUCTURED, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR, 1);
+            QuantityShiftSeniority quantityShiftSeniority = new QuantityShiftSeniority(mapSeniorityQuantity, t);
             quantityShiftSeniorityListOncologia1.add(quantityShiftSeniority);
         }
         List<QuantityShiftSeniority> quantityShiftSeniorityListOncologia2 = new ArrayList<>();
-        for(Task t:ambulatorioOncologia.getTasks()) {
-            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
-            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+        for (Task t : ambulatorioOncologia.getTasks()) {
+            Map<Seniority, Integer> mapSeniorityQuantity = new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.STRUCTURED, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR, 1);
+            QuantityShiftSeniority quantityShiftSeniority = new QuantityShiftSeniority(mapSeniorityQuantity, t);
             quantityShiftSeniorityListOncologia2.add(quantityShiftSeniority);
         }
         List<QuantityShiftSeniority> quantityShiftSeniorityListOncologia3 = new ArrayList<>();
-        for(Task t:ambulatorioOncologia.getTasks()) {
-            Map<Seniority,Integer> mapSeniorityQuantity=new HashMap<>();
-            mapSeniorityQuantity.put(Seniority.STRUCTURED,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR,1);
-            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR,1);
-            QuantityShiftSeniority quantityShiftSeniority  = new QuantityShiftSeniority(mapSeniorityQuantity,t);
+        for (Task t : ambulatorioOncologia.getTasks()) {
+            Map<Seniority, Integer> mapSeniorityQuantity = new HashMap<>();
+            mapSeniorityQuantity.put(Seniority.STRUCTURED, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_SENIOR, 1);
+            mapSeniorityQuantity.put(Seniority.SPECIALIST_JUNIOR, 1);
+            QuantityShiftSeniority quantityShiftSeniority = new QuantityShiftSeniority(mapSeniorityQuantity, t);
             quantityShiftSeniorityListOncologia3.add(quantityShiftSeniority);
         }
 
@@ -881,13 +972,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //we are assuming that, at the moment of instantiation of DoctorHolidays, the corresponding doctor has worked in no concrete shift in the past.
         HashMap<Holiday, Boolean> holidayMap = new HashMap<>();
-        for(Holiday holiday: holidays) {
-            if(!holiday.getName().equals("Domenica"))   //we do not care about Sundays as holidays
+        for (Holiday holiday : holidays) {
+            if (!holiday.getName().equals("Domenica"))   //we do not care about Sundays as holidays
                 holidayMap.put(holiday, false);
 
         }
 
-        for(Doctor doctor: allDoctors) {
+        for (Doctor doctor : allDoctors) {
             DoctorUffaPriority dup = new DoctorUffaPriority(doctor);
             DoctorUffaPrioritySnapshot doctorUffaPrioritySnapshot = new DoctorUffaPrioritySnapshot(doctor);
             DoctorHolidays dh = new DoctorHolidays(doctor, holidayMap);
