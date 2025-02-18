@@ -2,9 +2,7 @@
 
 import React from 'react';
 import {
-  EditingState,
-  IntegratedEditing,
-  ViewState
+  EditingState, IntegratedEditing, ViewState
 } from '@devexpress/dx-react-scheduler';
 import {
   AllDayPanel,
@@ -25,11 +23,10 @@ import {
 import {ServiceAPI} from '../../API/ServiceAPI';
 import Stack from '@mui/material/Stack';
 import {
-  AppointmentContent,
-  Content
+  AppointmentContent, Content
 } from "../../components/common/CustomAppointmentComponents.js"
 import Collapse from '@mui/material/Collapse';
-import {Button,} from "@mui/material";
+import {Button, ToggleButton, ToggleButtonGroup,} from "@mui/material";
 import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -41,11 +38,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import {HolidaysAPI} from '../../API/HolidaysAPI';
 import {AssegnazioneTurnoAPI} from '../../API/AssegnazioneTurnoAPI';
 import {
-  BasicLayout,
-  Nullcomponent,
-  Overlay,
-  OverlaySingle,
-  SingleLayout
+  BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout
 } from '../../components/common/AssegnazioneTurnoModificaComponent';
 import ButtonLegalSchedulation
   from '../../components/common/ButtonLegalSchedulation';
@@ -56,7 +49,8 @@ import {
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 import {MDBRow} from "mdb-react-ui-kit";
-import {teal, yellow, red} from "@material-ui/core/colors";
+import {red, teal, yellow} from "@material-ui/core/colors";
+import ShiftList from "../../components/common/ShiftList";
 
 
 /**
@@ -80,31 +74,28 @@ function ViolationLog(props) {
 const RetireRequestsButton = ({view, attore}) => {
   if (view === "global" && attore !== "PLANNER") return null;
 
-  return (
-    <Button
-      variant="contained"
-      style={{display: "inline-block", width: "auto"}}
-      onClick={() => {
-        window.location.href = view === "global" ? "/richieste-ritiro" : "/richieste-ritiro?locale=true";
-      }}
-    >
-      {t("View Retire Requests History")}
-    </Button>);
+  return (<Button
+    variant="contained"
+    style={{display: "inline-block", width: "auto"}}
+    onClick={() => {
+      window.location.href = view === "global" ? "/richieste-ritiro" : "/richieste-ritiro?locale=true";
+    }}
+  >
+    {t("View Retire Requests History")}
+  </Button>);
 };
 
 /**
  * Al click, scarica la pianificazione visualizzata in formato CSV, ma solo se siamo riusciti a
  * caricare i turni dal backend.
  */
-const ShiftPrinter = ({rawShifts, textLink, enable}) => (
-  <ShiftPrinterCSV
-    rawShifts={rawShifts}
-    shiftsChanged={true}
-    textLink={textLink}
-    enable={enable}
-    style={{display: "inline-block", width: "auto"}}
-  />
-);
+const ShiftPrinter = ({rawShifts, textLink, enable}) => (<ShiftPrinterCSV
+  rawShifts={rawShifts}
+  shiftsChanged={true}
+  textLink={textLink}
+  enable={enable}
+  style={{display: "inline-block", width: "auto"}}
+/>);
 
 /**
  * This view defines a generic shift schedule view.
@@ -113,7 +104,6 @@ const ShiftPrinter = ({rawShifts, textLink, enable}) => (
  *
  */
 class ScheduleView extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -159,8 +149,10 @@ class ScheduleView extends React.Component {
       shiftQueriedResponse: "ABOUT_TO_ASK",
       idUser: localStorage.getItem("id"),
       requests: [],
-      lastYears: [new Date().getFullYear(), new Date().getFullYear() + 1, new Date().getFullYear() - 1]
+      lastYears: [new Date().getFullYear(), new Date().getFullYear() + 1, new Date().getFullYear() - 1],
+      currView: "scheduler"
     };
+
     /**
      * All filtering functions.
      * Each filter function must take a shift as input
@@ -186,11 +178,19 @@ class ScheduleView extends React.Component {
 
       // add more filters here ...
     ];
+
+    this.handleCurrViewChange = this.handleCurrViewChange.bind(this);
     this.changeMainResource = this.changeMainResource.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.updateFilterCriteria = this.updateFilterCriteria.bind(this);
     this.commitChanges = this.commitChanges.bind(this);
   }
+
+  handleCurrViewChange = (event, newView) => {
+    if (newView) {
+      this.setState({currView: newView});
+    }
+  };
 
   changeMainResource(mainResourceName) {
     this.setState({mainResourceName});
@@ -430,7 +430,6 @@ class ScheduleView extends React.Component {
   }
 
   async componentDidMount(turni) {
-
     let api = new RichiestaRimozioneDaTurnoAPI();
     let requestsArray
 
@@ -456,37 +455,33 @@ class ScheduleView extends React.Component {
       return
     }
 
-    let shiftStateResourceInstances = [
-      {id:'Complete',   text: 'Complete',   color: yellow},
-      {id:'Incomplete', text: 'Incomplete', color: teal},
-      {id:'Infeasible', text: 'Infeasible', color: red}
-    ]
+    let shiftStateResourceInstances = [{
+      id: 'Complete', text: 'Complete', color: yellow
+    }, {id: 'Incomplete', text: 'Incomplete', color: teal}, {
+      id: 'Infeasible', text: 'Infeasible', color: red
+    }]
 
     this.setState({
       requests: requestsArray,
       data: turni,
       mainResourceName: 'main_resource_dummy',
-      resources: [
-        {
-          fieldName: 'utenti_guardia_id',
-          title: 'Guardia',
-          allowMultiple: true,
-          instances: allDoctors,
-        },
-        {
-          fieldName: 'utenti_reperibili_id',
-          title: 'Reperibilità',
-          allowMultiple: true,
-          instances: allDoctors,
-        },
-        {
-          fieldName: 'shiftState',
-          title: 'Stato',
-          allowMultiple: false,
-          instances: shiftStateResourceInstances
+      resources: [{
+        fieldName: 'utenti_guardia_id',
+        title: 'Guardia',
+        allowMultiple: true,
+        instances: allDoctors,
+      }, {
+        fieldName: 'utenti_reperibili_id',
+        title: 'Reperibilità',
+        allowMultiple: true,
+        instances: allDoctors,
+      }, {
+        fieldName: 'shiftState',
+        title: 'Stato',
+        allowMultiple: false,
+        instances: shiftStateResourceInstances
 
-        }
-      ],
+      }],
       allServices: new Set(allServices),
       allUser: allDoctors,
       holidays: allHolidays,
@@ -532,207 +527,216 @@ class ScheduleView extends React.Component {
     data.push(...this.state.holidays);
 
     return (<React.Fragment>
-        <MDBRow className="justify-content-between">
-          <ShiftPrinter
-            rawShifts={shifts}
-            textLink={textLink}
-            enable={this.state.shiftQueriedResponse === "GOOD"}
-          />
+      <MDBRow className="justify-content-between">
+        <ShiftPrinter
+          rawShifts={shifts}
+          textLink={textLink}
+          enable={this.state.shiftQueriedResponse === "GOOD"}
+        />
 
-          <RetireRequestsButton view={view} attore={this.state.attore}/>
-        </MDBRow>
+        <RetireRequestsButton view={view} attore={this.state.attore}/>
+      </MDBRow>
 
-        <hr style={{margin: '20px 0', border: '1px solid #ccc'}}/>
+      <hr style={{margin: '20px 0', border: '1px solid #ccc'}}/>
 
-        <Collapse in={this.state.openOptionFilter}>
-          <Stack spacing={1} style={{
-            display: 'flex',
-            'padding-top': '10px',
-            justifyContent: 'center',
-            'alignItems': 'center'
-          }}>
+      <Collapse in={this.state.openOptionFilter}>
+        <Stack spacing={1} style={{
+          display: 'flex',
+          'padding-top': '10px',
+          justifyContent: 'center',
+          'alignItems': 'center'
+        }}>
 
-            <Autocomplete
-              onChange={(event, value) => {
-                this.updateFilterCriteria(() => value)
-              }}
-              multiple
-              options={this.state.allUser}
-              getOptionLabel={(option) => `${option.name} ${option.lastname}`}
-              sx={{width: 300}}
-              renderInput={(params) => <TextField {...params}
-                                                  label={t('Doctors on Duty')}/>}
-              renderOption={(props, option) => (<li {...props}>
-                {`${option.name} ${option.lastname}`}
-              </li>)}
-            />
-            {/** Service Filter selectors */}
-            <div style={{
-              display: 'flex',
-              'justify-content': 'space-between',
-              'column-gap': '20px'
-            }}>
-              {Array.from(this.state.allServices).map((service, i) => (
-                <ServiceFilterSelectorButton key={i} criterion={service}
-                                             updateFilterCriteriaCallback={this.updateFilterCriteria}/>))}
-            </div>
-
-          </Stack>
-        </Collapse>
-
-        <Button
-          variant="contained"
-          style={{display: "inline-block", width: "auto"}}
-          onClick={() => {
-            this.setState({openOptionFilter: !this.state.openOptionFilter});
-          }}
-        >
-          {this.state.openOptionFilter ? t("Close") : t("Filter")}
-        </Button>
-
-        <ButtonLegalSchedulation></ButtonLegalSchedulation>
-
-        <Scheduler
-          locale={navigator.language}
-          firstDayOfWeek={1}
-          data={data}
-        >
-          <ViewState
-            onCurrentDateChange={async (currentDate) => {
-              if (!this.state.lastYears.includes(currentDate.getFullYear())) {
-                try {
-                  this.setState({
-                    holidays: this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear())),
-                    lastYears: this.state.lastYears.concat([currentDate.getFullYear()])
-                  });
-                } catch (err) {
-
-                  panic()
-                  return
-                }
-              }
-              if (!this.state.lastYears.includes(currentDate.getFullYear() + 1)) {
-                try {
-                  this.setState({
-                    holidays: this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() + 1)),
-                    lastYears: this.state.lastYears.concat(([currentDate.getFullYear() + 1]))
-                  });
-                } catch (err) {
-
-                  panic()
-                  return
-                }
-              }
-              if (!this.state.lastYears.includes(currentDate.getFullYear() - 1)) {
-                try {
-                  this.setState({
-                    holidays: this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() - 1)),
-                    lastYears: this.state.lastYears.concat([currentDate.getFullYear() - 1])
-                  });
-                } catch (err) {
-
-                  panic()
-                }
-              }
+          <Autocomplete
+            onChange={(event, value) => {
+              this.updateFilterCriteria(() => value)
             }}
+            multiple
+            options={this.state.allUser}
+            getOptionLabel={(option) => `${option.name} ${option.lastname}`}
+            sx={{width: 300}}
+            renderInput={(params) => <TextField {...params}
+                                                label={t('Doctors on Duty')}/>}
+            renderOption={(props, option) => (<li {...props}>
+              {`${option.name} ${option.lastname}`}
+            </li>)}
           />
-          <WeekView
-            displayName={t("Weekly")}
-            startDayHour={0}
-            endDayHour={24}
-            cellDuration={60}
-          />
-          <DayView
-            displayName={t("Daily")}
-            startDayHour={0}
-            endDayHour={24}
-            cellDuration={60}
-          />
-          <MonthView displayName={t("Monthly")}/>
-          <Toolbar/>
+          {/** Service Filter selectors */}
+          <div style={{
+            display: 'flex',
+            'justify-content': 'space-between',
+            'column-gap': '20px'
+          }}>
+            {Array.from(this.state.allServices).map((service, i) => (
+              <ServiceFilterSelectorButton key={i} criterion={service}
+                                           updateFilterCriteriaCallback={this.updateFilterCriteria}/>))}
+          </div>
+
+        </Stack>
+      </Collapse>
+
+      <Button
+        variant="contained"
+        style={{display: "inline-block", width: "auto"}}
+        onClick={() => {
+          this.setState({openOptionFilter: !this.state.openOptionFilter});
+        }}
+      >
+        {this.state.openOptionFilter ? t("Close") : t("Filter")}
+      </Button>
+
+      {/* ToggleButton to switch from scheduler view to list view */}
+      <ToggleButtonGroup
+        value={this.state.currView}
+        exclusive
+        onChange={this.handleCurrViewChange}
+      >
+        <ToggleButton value="scheduler">Calendario</ToggleButton>
+        <ToggleButton value="list">Lista Impegni</ToggleButton>
+      </ToggleButtonGroup>
+
+      <ButtonLegalSchedulation></ButtonLegalSchedulation>
+
+      {this.state.currView === "scheduler" ? <Scheduler
+        locale={navigator.language}
+        firstDayOfWeek={1}
+        data={data}
+      >
+        <ViewState
+          onCurrentDateChange={async (currentDate) => {
+            if (!this.state.lastYears.includes(currentDate.getFullYear())) {
+              try {
+                this.setState({
+                  holidays: this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear())),
+                  lastYears: this.state.lastYears.concat([currentDate.getFullYear()])
+                });
+              } catch (err) {
+
+                panic()
+                return
+              }
+            }
+            if (!this.state.lastYears.includes(currentDate.getFullYear() + 1)) {
+              try {
+                this.setState({
+                  holidays: this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() + 1)),
+                  lastYears: this.state.lastYears.concat(([currentDate.getFullYear() + 1]))
+                });
+              } catch (err) {
+
+                panic()
+                return
+              }
+            }
+            if (!this.state.lastYears.includes(currentDate.getFullYear() - 1)) {
+              try {
+                this.setState({
+                  holidays: this.state.holidays.concat(await new HolidaysAPI().getHolidays(currentDate.getFullYear() - 1)),
+                  lastYears: this.state.lastYears.concat([currentDate.getFullYear() - 1])
+                });
+              } catch (err) {
+
+                panic()
+              }
+            }
+          }}
+        />
+        <WeekView
+          displayName={t("Weekly")}
+          startDayHour={0}
+          endDayHour={24}
+          cellDuration={60}
+        />
+        <DayView
+          displayName={t("Daily")}
+          startDayHour={0}
+          endDayHour={24}
+          cellDuration={60}
+        />
+        <MonthView displayName={t("Monthly")}/>
+        <Toolbar/>
 
 
-          <EditingState onCommitChanges={this.commitChanges}/>
-          <IntegratedEditing/>
-          <Appointments
-            appointmentContentComponent={(props) => (
-              <AppointmentContent attore={this.state.attore} {...props} />)}
-          />
-          <AllDayPanel/>
-          <Resources
-            data={resources}
-          />
-          <DateNavigator/>
+        <EditingState onCommitChanges={this.commitChanges}/>
+        <IntegratedEditing/>
+        <Appointments
+          appointmentContentComponent={(props) => (
+            <AppointmentContent attore={this.state.attore} {...props} />)}
+        />
+        <AllDayPanel/>
+        <Resources
+          data={resources}
+        />
+        <DateNavigator/>
 
-          <TodayButton buttonComponent={(props) => {
-            return (<Button onClick={() => props.setCurrentDate(new Date())}>
-                Oggi
-              </Button>
+        <TodayButton buttonComponent={(props) => {
+          return (<Button onClick={() => props.setCurrentDate(new Date())}>
+              Oggi
+            </Button>
 
-            );
-          }}/>
-          <ViewSwitcher/>
+          );
+        }}/>
+        <ViewSwitcher/>
 
 
-          {view === "global" && this.state.attore === "PLANNER" && //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
-            //SOLO IL PIANIFICATORE PUO' MODIFICARE I TURNI
-            <AppointmentTooltip
-              header
-              showCloseButton
-              //showOpenButton
-              showDeleteButton
-              contentComponent={(props) => (
-                <Content {...props} view={view} actor={this.state.attore}
-                         checkRequests={this.pendingRetirementRequestForShiftExist}/>)}
-            />}
+        {view === "global" && this.state.attore === "PLANNER" && //Visualizzo il bottone per eliminare un assegnazione solo se sono sulla schermata globale
+          //SOLO IL PIANIFICATORE PUO' MODIFICARE I TURNI
+          <AppointmentTooltip
+            header
+            showCloseButton
+            //showOpenButton
+            showDeleteButton
+            contentComponent={(props) => (
+              <Content {...props} view={view} actor={this.state.attore}
+                       checkRequests={this.pendingRetirementRequestForShiftExist}/>)}
+          />}
 
-          {view === "global" && (this.state.attore === "DOCTOR" || this.state.attore === "CONFIGURATOR") &&
-            < AppointmentTooltip
-              contentComponent={(props) => (
-                <Content {...props} view={view} actor={this.state.attore}/>)}
-            />}
+        {view === "global" && (this.state.attore === "DOCTOR" || this.state.attore === "CONFIGURATOR") &&
+          < AppointmentTooltip
+            contentComponent={(props) => (
+              <Content {...props} view={view} actor={this.state.attore}/>)}
+          />}
 
-          {view !== "global" && //Se sono sulla schermata "singola" non visualizzo il bottone per eliminare l'assegnazione turno
-            <AppointmentTooltip
-              showCloseButton
-              showOpenButton
-              contentComponent={(props) => (<Content {...props} view={view}
-                                                     onRetirement={this.handleRetirement}
-                                                     actor={this.state.attore}/>)}
-            />}
+        {view !== "global" && //Se sono sulla schermata "singola" non visualizzo il bottone per eliminare l'assegnazione turno
+          <AppointmentTooltip
+            showCloseButton
+            showOpenButton
+            contentComponent={(props) => (<Content {...props} view={view}
+                                                   onRetirement={this.handleRetirement}
+                                                   actor={this.state.attore}/>)}
+          />}
 
-          <CurrentTimeIndicator
-            shadePreviousAppointments={true}
-            shadePreviousCells={true}
-            updateInterval={60000}
-          />
+        <CurrentTimeIndicator
+          shadePreviousAppointments={true}
+          shadePreviousCells={true}
+          updateInterval={60000}
+        />
 
-          {view === "global" && (this.state.attore === "PLANNER") ? (
-            <AppointmentForm
-              overlayComponent={Overlay}
-              textEditorComponent={Nullcomponent}
-              labelComponent={Nullcomponent}
-              booleanEditorComponent={Nullcomponent}
-              dateEditorComponent={Nullcomponent}
-              basicLayoutComponent={BasicLayout}
-            />) : view === "global" && this.state.attore === "CONFIGURATOR" ? null : (
-            <AppointmentForm
-              overlayComponent={OverlaySingle}
-              textEditorComponent={Nullcomponent}
-              labelComponent={Nullcomponent}
-              booleanEditorComponent={Nullcomponent}
-              dateEditorComponent={Nullcomponent}
-              basicLayoutComponent={SingleLayout.bind(this)}
-              readOnly
-            />)}
-        </Scheduler>
+        {view === "global" && (this.state.attore === "PLANNER") ? (
+          <AppointmentForm
+            overlayComponent={Overlay}
+            textEditorComponent={Nullcomponent}
+            labelComponent={Nullcomponent}
+            booleanEditorComponent={Nullcomponent}
+            dateEditorComponent={Nullcomponent}
+            basicLayoutComponent={BasicLayout}
+          />) : view === "global" && this.state.attore === "CONFIGURATOR" ? null : (
+          <AppointmentForm
+            overlayComponent={OverlaySingle}
+            textEditorComponent={Nullcomponent}
+            labelComponent={Nullcomponent}
+            booleanEditorComponent={Nullcomponent}
+            dateEditorComponent={Nullcomponent}
+            basicLayoutComponent={SingleLayout.bind(this)}
+            readOnly
+          />)}
+      </Scheduler> :  <>
+        <ShiftList shifts={shifts} />
+      </>
+    }
 
-      </React.Fragment>
-
-    );
-
+    </React.Fragment>);
   }
-
 }
 
 export default ScheduleView;
