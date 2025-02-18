@@ -158,15 +158,21 @@ const ShiftList = ({shifts}) => {
   }, {});
 
   return (
-    <Box sx={{width: "100%", padding: 2}}>
-      {Object.entries(groupedShifts).map(([date, shiftsForDate], index) => (
-        <Box key={date}>
-          {index > 0 && <Divider sx={{my: 1, borderColor: "#333"}}/>}
-          {shiftsForDate.map((shift) => (
-            <ShiftItem key={shift.id} shift={shift}/>
-          ))}
+    <Box sx={{ width: "100%", padding: 2 }}>
+      {Object.entries(groupedShifts).length === 0 ? (
+        <Box sx={{ textAlign: "center", color: "gray" }}>
+          <p>No shifts available</p>
         </Box>
-      ))}
+      ) : (
+        Object.entries(groupedShifts).map(([date, shiftsForDate], index) => (
+          <Box key={date}>
+            {index > 0 && <Divider sx={{ my: 1, borderColor: "#333" }} />}
+            {shiftsForDate.map((shift) => (
+              <ShiftItem key={shift.id} shift={shift} />
+            ))}
+          </Box>
+        ))
+      )}
     </Box>
   );
 };

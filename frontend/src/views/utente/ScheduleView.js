@@ -2,7 +2,9 @@
 
 import React from 'react';
 import {
-  EditingState, IntegratedEditing, ViewState
+  EditingState,
+  IntegratedEditing,
+  ViewState
 } from '@devexpress/dx-react-scheduler';
 import {
   AllDayPanel,
@@ -23,7 +25,8 @@ import {
 import {ServiceAPI} from '../../API/ServiceAPI';
 import Stack from '@mui/material/Stack';
 import {
-  AppointmentContent, Content
+  AppointmentContent,
+  Content
 } from "../../components/common/CustomAppointmentComponents.js"
 import Collapse from '@mui/material/Collapse';
 import {Button, ToggleButton, ToggleButtonGroup,} from "@mui/material";
@@ -38,7 +41,11 @@ import Autocomplete from '@mui/material/Autocomplete';
 import {HolidaysAPI} from '../../API/HolidaysAPI';
 import {AssegnazioneTurnoAPI} from '../../API/AssegnazioneTurnoAPI';
 import {
-  BasicLayout, Nullcomponent, Overlay, OverlaySingle, SingleLayout
+  BasicLayout,
+  Nullcomponent,
+  Overlay,
+  OverlaySingle,
+  SingleLayout
 } from '../../components/common/AssegnazioneTurnoModificaComponent';
 import ButtonLegalSchedulation
   from '../../components/common/ButtonLegalSchedulation';
@@ -51,6 +58,7 @@ import {panic} from "../../components/common/Panic";
 import {MDBRow} from "mdb-react-ui-kit";
 import {red, teal, yellow} from "@material-ui/core/colors";
 import ShiftList from "../../components/common/ShiftList";
+import Box from "@mui/material/Box";
 
 
 /**
@@ -575,25 +583,57 @@ class ScheduleView extends React.Component {
         </Stack>
       </Collapse>
 
-      <Button
-        variant="contained"
-        style={{display: "inline-block", width: "auto"}}
-        onClick={() => {
-          this.setState({openOptionFilter: !this.state.openOptionFilter});
-        }}
-      >
-        {this.state.openOptionFilter ? t("Close") : t("Filter")}
-      </Button>
+      <Box sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        width: "100%"
+      }}>
+        {/* ToggleButtonGroup spostato a destra */}
+        <Box sx={{flexShrink: 0}}>
+          <ToggleButtonGroup
+            value={this.state.currView}
+            exclusive
+            onChange={this.handleCurrViewChange}
+          >
+            <ToggleButton value="scheduler">Calendario</ToggleButton>
+            <ToggleButton value="list">Lista Impegni</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
 
-      {/* ToggleButton to switch from scheduler view to list view */}
-      <ToggleButtonGroup
-        value={this.state.currView}
-        exclusive
-        onChange={this.handleCurrViewChange}
-      >
-        <ToggleButton value="scheduler">Calendario</ToggleButton>
-        <ToggleButton value="list">Lista Impegni</ToggleButton>
-      </ToggleButtonGroup>
+        {/* Bottone centrato */}
+        <Box sx={{flexGrow: 1, marginBottom: 2}}>
+          <Button
+            variant="contained"
+            style={{width: "auto"}}
+            onClick={() => {
+              this.setState({openOptionFilter: !this.state.openOptionFilter});
+            }}
+          >
+            {this.state.openOptionFilter ? 'Close' : 'Filter'}
+          </Button>
+        </Box>
+      </Box>
+
+      {/*<Button*/}
+      {/*  variant="contained"*/}
+      {/*  style={{display: "inline-block", width: "auto"}}*/}
+      {/*  onClick={() => {*/}
+      {/*    this.setState({openOptionFilter: !this.state.openOptionFilter});*/}
+      {/*  }}*/}
+      {/*>*/}
+      {/*  {this.state.openOptionFilter ? t("Close") : t("Filter")}*/}
+      {/*</Button>*/}
+
+      {/*/!* ToggleButton to switch from scheduler view to list view *!/*/}
+      {/*<ToggleButtonGroup*/}
+      {/*  value={this.state.currView}*/}
+      {/*  exclusive*/}
+      {/*  onChange={this.handleCurrViewChange}*/}
+      {/*>*/}
+      {/*  <ToggleButton value="scheduler">Calendario</ToggleButton>*/}
+      {/*  <ToggleButton value="list">Lista Impegni</ToggleButton>*/}
+      {/*</ToggleButtonGroup>*/}
 
       <ButtonLegalSchedulation></ButtonLegalSchedulation>
 
@@ -730,10 +770,10 @@ class ScheduleView extends React.Component {
             basicLayoutComponent={SingleLayout.bind(this)}
             readOnly
           />)}
-      </Scheduler> :  <>
-        <ShiftList shifts={shifts} />
+      </Scheduler> : <>
+        <ShiftList shifts={shifts}/>
       </>
-    }
+      }
 
     </React.Fragment>);
   }
