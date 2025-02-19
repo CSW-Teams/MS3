@@ -30,15 +30,15 @@ public class SoftDeleteService {
         Session session = entityManager.unwrap(Session.class);
 
         Logger logger = LoggerFactory.getLogger(SoftDeleteService.class);
-        logger.info("Session ID: {}", session.hashCode());
+        logger.debug("Session ID: {}", session.hashCode());
 
         if (session.getEnabledFilter(filterName) != null)
-            logger.info("Session PRE - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter(filterName).toString());
+            logger.debug("Session PRE - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter(filterName).toString());
 
         session.enableFilter("softDeleteFilter").setParameter("isDeleted", false);
 
         if (session.getEnabledFilter(filterName) != null)
-            logger.info("Session POST - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter(filterName).toString());
+            logger.debug("Session POST - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter(filterName).toString());
     }
 
     /**

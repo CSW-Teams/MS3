@@ -615,26 +615,6 @@ class ScheduleView extends React.Component {
         </Box>
       </Box>
 
-      {/*<Button*/}
-      {/*  variant="contained"*/}
-      {/*  style={{display: "inline-block", width: "auto"}}*/}
-      {/*  onClick={() => {*/}
-      {/*    this.setState({openOptionFilter: !this.state.openOptionFilter});*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  {this.state.openOptionFilter ? t("Close") : t("Filter")}*/}
-      {/*</Button>*/}
-
-      {/*/!* ToggleButton to switch from scheduler view to list view *!/*/}
-      {/*<ToggleButtonGroup*/}
-      {/*  value={this.state.currView}*/}
-      {/*  exclusive*/}
-      {/*  onChange={this.handleCurrViewChange}*/}
-      {/*>*/}
-      {/*  <ToggleButton value="scheduler">Calendario</ToggleButton>*/}
-      {/*  <ToggleButton value="list">Lista Impegni</ToggleButton>*/}
-      {/*</ToggleButtonGroup>*/}
-
       <ButtonLegalSchedulation></ButtonLegalSchedulation>
 
       {this.state.currView === "scheduler" ? <Scheduler
