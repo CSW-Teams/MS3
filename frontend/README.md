@@ -4,6 +4,8 @@
 Se alla fine di questa guida il progetto viene lanciato correttemente ma non riesce a contattare il backend tramite API rest, sarebbe opportuno scaricare e attivare l'estensione per browser [ _Allow CORS: Access-Control-Allow-Origin_](https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf).
 
 ## Installazione
+Prima di tutto, installare [Node.js](https://nodejs.org/en) per poter utilizzare il gestore di pacchetti `npm`.
+
 #### <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/Windows_logo_-_2021.svg" alt="Windows Logo" width="12"/> Windows
 Per poter funzionare correttamente su Windows, il modulo richiede l'installazione dei C++ Windows Tools. Pertanto, è necessario eseguire i seguenti comandi:
 ```bash
