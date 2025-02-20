@@ -22,6 +22,12 @@ Installare [PostgreSQL](https://www.postgresql.org/) e creare nel DBMS:
       CONNECTION LIMIT -1
       ```
 
+Per avviare il sistema, lanciare il Backend e il [Frontend](https://github.com/CSW-Teams/MS3/tree/main/frontend) e visitare
+```
+http://localhost:3000
+```
+(3000 è la porta di default)
+
 ## 📦 Running the project with Containers
 Su **Windows**, la prima cosa da fare è convertire tramite il comando `dos2unix` i file di testo `mvnw` e `src/main/resources/db/init-scripts/init-users.sh`.
 
