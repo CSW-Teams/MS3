@@ -1,5 +1,5 @@
 # 🏥 MS3
-MS3 - Medical Staff Shift Scheduler is designed to schedule medical shifts of hospital employees.
+**MS3 - Medical Staff Shift Scheduler** is designed to schedule medical shifts of hospital employees.
 
 ## 🚀 Running the Project Locally
 Installare [PostgreSQL](https://www.postgresql.org/) e creare nel DBMS:
