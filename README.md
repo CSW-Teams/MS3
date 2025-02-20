@@ -22,12 +22,10 @@ Installare [PostgreSQL](https://www.postgresql.org/) e creare nel DBMS:
       CONNECTION LIMIT -1
       ```
 
-# On Linux
+## 📦 Running the project with Containers
+Su **Windows**, la prima cosa da fare è convertire tramite il comando `dos2unix` i file di testo `mvnw` e `src/main/resources/db/init-scripts/init-users.sh`.
 
-## Launch in Containers
-Su **Windows**, la prima cosa da fare è convertire tramite il comando `dos2unix` i file di testo `mvnw` e `src/main/resources/db/init-scripts/init-users.sh`
-
-Per avviare il sistema in container bisogna avere installato sulla macchina host docker e battere il seguente comando:
+Per avviare il sistema in containers, bisogna avere installato sulla macchina host [Docker](https://www.docker.com/) e battere il seguente comando su terminale:
 ```
 docker-compose up -d
 ```
