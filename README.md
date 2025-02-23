@@ -28,7 +28,7 @@ http://localhost:3000
 ```
 
 ## 📦 Running the project with Containers
-Su **Windows**, la prima cosa da fare è convertire tramite il comando `dos2unix` ([vedi qui](https://dos2unix.sourceforge.io/)) i file di testo `mvnw` e `src/main/resources/db/init-scripts/init-users.sh`.
+**Solo su WINDOWS:** Convertire tramite il comando `dos2unix` ([vedi qui](https://dos2unix.sourceforge.io/)) i file di testo `mvnw` e `src/main/resources/db/init-scripts/init-users.sh`.
 
 Per avviare il sistema in containers, bisogna avere installato sulla macchina host [Docker](https://www.docker.com/) e battere il seguente comando su terminale:
 ```
