@@ -1,7 +1,13 @@
 # 🖥️ MS3 Frontend
 
-### ⚠️ Nota bene
+## ⚠️ Nota bene 1
 Se alla fine di questa guida il progetto viene lanciato correttemente ma non riesce a contattare il backend tramite API rest, sarebbe opportuno scaricare e attivare l'estensione per browser [ _Allow CORS: Access-Control-Allow-Origin_](https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf).
+
+## 🤚 Nota bene 2 (Opzionale)
+Dare i permessi da superuser ad npm è pericoloso per via del
+grande numero di dipendenze esterne che esso si porta dietro ogni volta, si consiglia
+quindi di creare un ambiente isolato (es. con conda) per evitare problemi di sicurezza
+interni alla proprio macchina ed usare npm al suo interno.
 
 ## 🛠️ Installazione
 Prima di tutto, installare [Node.js](https://nodejs.org/en) per poter utilizzare il gestore di pacchetti `npm`.
@@ -23,7 +29,8 @@ npm audit fix --force
 ```
 
 ## 🚀 Esecuzione
-Dopo aver installato correttamente il progetto, è sufficiente avviare il progetto su entrambi i sistemi operativi mediante il comando:
+Dopo l'installazione, per avviare il progetto del frontend è sufficiente su entrambi 
+i sistemi operativi usare il comando:
 ```bash
 npm start
 ```
