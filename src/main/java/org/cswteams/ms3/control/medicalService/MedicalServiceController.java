@@ -69,16 +69,16 @@ public class MedicalServiceController implements IMedicalServiceController {
         Session session = entityManager.unwrap(Session.class);
 
         Logger logger = LoggerFactory.getLogger(MedicalServiceController.class);
-        logger.info("Session ID: " + session.hashCode());
+        logger.debug("Session ID: " + session.hashCode());
 
         if (session.getEnabledFilter("softDeleteFilter") != null)
-            logger.info("Session PRE - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter("softDeleteFilter").toString());
+            logger.debug("Session PRE - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter("softDeleteFilter").toString());
 
 
         List<MedicalService> medicalServiceList = medicalServiceDAO.findAll();
 
         if (session.getEnabledFilter("softDeleteFilter") != null)
-            logger.info("Session POST - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter("softDeleteFilter").toString());
+            logger.debug("Session POST - ID: {}, enabledFilter: {}", session.hashCode(), session.getEnabledFilter("softDeleteFilter").toString());
 
         return buildDTOList(medicalServiceList);
     }

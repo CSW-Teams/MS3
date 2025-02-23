@@ -29,7 +29,12 @@ import {
   Content
 } from "../../components/common/CustomAppointmentComponents.js"
 import Collapse from '@mui/material/Collapse';
-import {Button, ToggleButton, ToggleButtonGroup,} from "@mui/material";
+import {
+  Button,
+  Checkbox, FormGroup,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -59,6 +64,7 @@ import {MDBRow} from "mdb-react-ui-kit";
 import {red, teal, yellow} from "@material-ui/core/colors";
 import ShiftList from "../../components/common/ShiftList";
 import Box from "@mui/material/Box";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 
 /**
@@ -137,6 +143,8 @@ class ScheduleView extends React.Component {
         /** what services we want to display? (default: all) */
         services: new Set(), users: [],
 
+        statuses: new Set(["Complete", "Incomplete", "Infeasible"]),
+
         // add more filter criteria here ...
       },
       /** all services registered in the system */
@@ -184,6 +192,11 @@ class ScheduleView extends React.Component {
         return users.length === 0
       }.bind(this),
 
+      function filterByStatus(shift) {
+        let statuses = this.state.filterCriteria.statuses;
+        return statuses.size > 0 && statuses.has(shift.shiftState);
+      }.bind(this),
+
       // add more filters here ...
     ];
 
@@ -198,6 +211,16 @@ class ScheduleView extends React.Component {
     if (newView) {
       this.setState({currView: newView});
     }
+  };
+
+  handleStatusChange = (event, status) => {
+    const isChecked = event.target.checked;
+
+    this.updateFilterCriteria((currentStatuses) => {
+      let newStatuses = new Set(currentStatuses);
+      isChecked ? newStatuses.add(status) : newStatuses.delete(status);
+      return newStatuses;
+    }, "statuses");
   };
 
   changeMainResource(mainResourceName) {
@@ -422,18 +445,28 @@ class ScheduleView extends React.Component {
   }
 
   /**
-   * This function is passed as a callback to the filter selectors components, which
-   * can use it to change the filter criteria in ScheduleView state.
-   * It merely consists of a decorator adding a call to forceUpdate() to the updateLogic function
-   * defined by the filter selector.
-   * the updateLogic() function must take the filterCriteria object as argument and change its properties values.
-   * An example: function updateLogic(filterCriteria) { filterCriteria.myAttribute = myValue; }
+   * Updates the filter criteria in the ScheduleView state based on the provided update logic.
+   *
+   * This function is used as a callback by filter selector components to modify specific
+   * filter criteria dynamically. It applies an update logic function to a specified key
+   * in the `filterCriteria` object and updates the state accordingly.
+   *
+   * @param {Function} updateLogic - A function that takes the current filter value (e.g., a Set or an Array)
+   *                                 and returns an updated version of it.
+   *                                 Example:
+   *                                 function updateLogic(currentFilter) {
+   *                                   let updatedFilter = new Set(currentFilter);
+   *                                   updatedFilter.add(newValue);
+   *                                   return updatedFilter;
+   *                                 }
+   * @param {string} [key="users"] - The key in the `filterCriteria` object to update.
+   *                                 Defaults to "users".
    */
-  updateFilterCriteria(updateLogic) {
+  updateFilterCriteria(updateLogic, key = "users") {
     this.setState(prevState => {
       const newFilterCriteria = {...prevState.filterCriteria};
-      newFilterCriteria.users = updateLogic(newFilterCriteria.users);
-      return {filterCriteria: newFilterCriteria};
+      newFilterCriteria[key] = updateLogic(newFilterCriteria[key]);
+      return { filterCriteria: newFilterCriteria };
     });
   }
 
@@ -569,17 +602,33 @@ class ScheduleView extends React.Component {
               {`${option.name} ${option.lastname}`}
             </li>)}
           />
+
           {/** Service Filter selectors */}
           <div style={{
             display: 'flex',
-            'justify-content': 'space-between',
-            'column-gap': '20px'
+            alignItems: 'center',
+            flexWrap: 'nowrap',
+            gap: '20px'
           }}>
             {Array.from(this.state.allServices).map((service, i) => (
               <ServiceFilterSelectorButton key={i} criterion={service}
                                            updateFilterCriteriaCallback={this.updateFilterCriteria}/>))}
           </div>
 
+          <FormGroup row>
+            {["Complete", "Incomplete", "Infeasible"].map((status) => (
+              <FormControlLabel
+                key={status}
+                control={
+                  <Checkbox
+                    checked={this.state.filterCriteria.statuses.has(status)}
+                    onChange={(event) => this.handleStatusChange(event, status)}
+                  />
+                }
+                label={status.charAt(0).toUpperCase() + status.slice(1)}
+              />
+            ))}
+          </FormGroup>
         </Stack>
       </Collapse>
 
@@ -589,7 +638,6 @@ class ScheduleView extends React.Component {
         justifyContent: "space-between",
         width: "100%"
       }}>
-        {/* ToggleButtonGroup spostato a destra */}
         <Box sx={{flexShrink: 0}}>
           <ToggleButtonGroup
             value={this.state.currView}
@@ -601,7 +649,6 @@ class ScheduleView extends React.Component {
           </ToggleButtonGroup>
         </Box>
 
-        {/* Bottone centrato */}
         <Box sx={{flexGrow: 1, marginBottom: 2}}>
           <Button
             variant="contained"
