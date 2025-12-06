@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.cswteams.ms3.control.logout.JwtBlacklistService;
+
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -32,6 +34,10 @@ public class JwtRequestFilters extends OncePerRequestFilter {
     @Autowired
     private LoginController loginController;
 
+    @Autowired
+    private JwtBlacklistService jwtBlacklistService;
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authorizationHeader = request.getHeader("Authorization");
@@ -43,6 +49,16 @@ public class JwtRequestFilters extends OncePerRequestFilter {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
+            // Check if the JWT has been explicitly invalidated via logout.
+            // Even if the token is still structurally valid and not expired,
+            // a blacklisted token must not be accepted to guarantee a proper logout
+            // in a stateless JWT-based authentication system.
+            if (jwtBlacklistService.isBlacklisted(jwt)) {
+                logger.debug("JWT token is blacklisted");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token is invalidated (logged out)");
+                return;
+            }
             username = jwtUtil.extractUsername(jwt);
         } else {
             // Log missing or invalid token header and allow unauthenticated endpoints to bypass
