@@ -10,6 +10,7 @@ import {
   NavLink
 } from "shards-react";
 import { useTranslation } from 'react-i18next';
+import { LogoutAPI } from "../../../../API/LogoutAPI";
 
 export default function UserActions() {
   const { t } = useTranslation();
@@ -35,13 +36,24 @@ export default function UserActions() {
     });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
+    const token = localStorage.getItem("jwt");
+
+    if (token) {
+      const logoutApi = new LogoutAPI();
+      try {
+        await logoutApi.postLogout(token);
+      } catch (e) {
+        console.error("Logout backend failed", e);
+      }
+    }
     localStorage.removeItem("id");
     localStorage.removeItem("name");
     localStorage.removeItem("lastname");
     localStorage.removeItem("actor");
     localStorage.removeItem("tenant");
     localStorage.removeItem("jwt");
+
   };
 
   return (
