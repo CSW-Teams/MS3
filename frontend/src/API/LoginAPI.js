@@ -11,6 +11,7 @@ export  class LoginAPI {
     const userDetails = {
       email: credenziali.email,
       password: credenziali.password,
+      turnstileToken: credenziali.turnstileToken
     }
 
     const requestOptions = {
