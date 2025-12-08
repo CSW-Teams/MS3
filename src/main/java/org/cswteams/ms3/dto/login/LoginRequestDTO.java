@@ -17,7 +17,7 @@ public class LoginRequestDTO {
         this.turnstileToken = turnstileToken;
     }
 
-    // 3. Costruttore COMPATIBILITÀ (Per i vecchi test che si sono rotti)
+    // 3. Costruttore COMPATIBILITÀ (Per i vecchi test)
     public LoginRequestDTO(String email, String password) {
         this.email = email;
         this.password = password;

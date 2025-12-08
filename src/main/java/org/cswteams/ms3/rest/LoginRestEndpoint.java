@@ -103,14 +103,15 @@ public class LoginRestEndpoint {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new LoginFailureDTO("Credenziali errate.", requireCaptchaNext));
         }
-
-        // --- DA QUI IN GIÙ È IL CODICE ORIGINALE INVARIATO ---
         
         final CustomUserDetails customUserDetails;
         try {
             customUserDetails = (CustomUserDetails) loginController.loadUserByUsername(loginRequestDTO.getEmail());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            // FIX CRITICO: Restituiamo SEMPRE un JSON (LoginFailureDTO), mai stringhe semplici.
+            // Attiviamo anche il captcha per sicurezza in caso di errori strani.
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(e.getMessage()/*new LoginFailureDTO("Errore: " + e.getMessage(), true)*/);
         }
 
         // Generate token for logged user

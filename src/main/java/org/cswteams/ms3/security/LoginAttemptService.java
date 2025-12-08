@@ -18,7 +18,7 @@ public class LoginAttemptService {
     }
 
     public void loginFailed(String key) {
-        attemptsCache.merge(key, 1, Integer::sum);
+        attemptsCache.merge(key, 1, (oldValue, newValue) -> oldValue + newValue);
     }
 
     public boolean isCaptchaRequired(String key) {

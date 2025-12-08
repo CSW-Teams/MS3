@@ -40,6 +40,8 @@
   "Configurator": "Configuratore",
   "Planner": "Pianificatore",
   "Remember me": "Ricordami",
+  "Security check required": "Controllo di sicurezza necessario",
+  "Server responded with non-JSON text": "Il server ha risposto con testo non-JSON",
   "Forgot Password?": "Password Dimenticata?",
 
   "Conditions": "Condizioni",

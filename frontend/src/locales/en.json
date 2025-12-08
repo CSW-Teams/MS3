@@ -40,6 +40,8 @@
   "Configurator": "Configurator",
   "Planner": "Planner",
   "Remember me": "Remember me",
+  "Security check required": "Security check required",
+  "Server responded with non-JSON text": "Server responded with non-JSON text",
   "Forgot Password?": "Forgot Password?",
 
   "Condition deleted successfully": "Condition deleted successfully",

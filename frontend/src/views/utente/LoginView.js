@@ -44,32 +44,56 @@ export default class LoginView extends React.Component {
   }
 
   // --- LOGICA DI RENDER MANUALE DEL CAPTCHA ---
+  // --- SOSTITUISCI QUESTO METODO ---
   componentDidUpdate(prevProps, prevState) {
     // Se il captcha è diventato visibile ora e non lo era prima
     if (this.state.captchaVisible && !prevState.captchaVisible) {
-      this.renderTurnstile();
+      console.log("Tentativo di renderizzare Turnstile...");
+      // Diamo 100ms a React per assicurarsi che il DIV sia nel DOM
+      setTimeout(() => {
+          this.renderTurnstile();
+      }, 100);
     }
   }
 
   renderTurnstile() {
-    // Controlliamo se lo script di Cloudflare è caricato
-    if (window.turnstile) {
-      // Se c'era già un widget, lo rimuoviamo per sicurezza
-      if (this.widgetId) window.turnstile.remove(this.widgetId);
+    // 1. Controllo se lo script è caricato
+    if (!window.turnstile) {
+        console.error("ERRORE: Lo script di Turnstile non è ancora caricato.");
+        toast.error("Errore caricamento sicurezza. Ricarica la pagina.", TOAST_OPTIONS);
+        return;
+    }
 
-      // Renderizziamo il widget dentro il div ref
+    // 2. Controllo se il DIV contenitore esiste
+    if (!this.captchaContainerRef.current) {
+        console.error("ERRORE: Il contenitore del widget non è stato trovato nel DOM.");
+        return;
+    }
+
+    // 3. Pulizia widget precedente (se esiste)
+    if (this.widgetId) {
+        try { window.turnstile.remove(this.widgetId); } catch(e) {}
+    }
+
+    try {
+      // 4. Renderizzazione effettiva
       this.widgetId = window.turnstile.render(this.captchaContainerRef.current, {
-        sitekey: '0x4AAAAAACFNf7-882PLFDWM', // <--- INSERISCI LA TUA SITE KEY QUI
+        sitekey: '0x4AAAAAACFNf7-882PLFDWM', // <--- VERIFICA CHE SIA LA TUA CHIAVE PUBBLICA!
+        theme: 'light',
         callback: (token) => {
-          console.log('Token ricevuto:', token);
+          console.log('Captcha Risolto! Token:', token);
           this.setState({ turnstileToken: token });
         },
         'expired-callback': () => {
+          console.log('Token scaduto');
           this.setState({ turnstileToken: null });
         },
+        'error-callback': (code) => {
+            console.error('Errore Turnstile:', code);
+        }
       });
-    } else {
-      console.error("Turnstile script not loaded yet");
+    } catch (e) {
+      console.error("Eccezione durante il render di Turnstile:", e);
     }
   }
 
@@ -178,55 +202,58 @@ export default class LoginView extends React.Component {
     // Default function to handle errors
     // Modificato per gestire la logica del Captcha
     const handleDefaultError = async (response) => {
-      // Proviamo a leggere il body JSON della risposta di errore
-      try {
-        const errorData = await response.json(); // Legge il JSON (es. LoginFailureDTO)
-         
-        // LOGICA CAPTCHA: Il backend ci chiede il captcha?
-        if (response.status === 401 && errorData.captchaRequired === true) {
-            
-            this.setState({ 
-              captchaVisible: true, // Mostra il widget
-              turnstileToken: null  // Reset del token precedente
-            });
-            
-            toast.warn(`${t('Login Failed')}: ${t("Security check required")}.`, TOAST_OPTIONS);
-            return; // Interrompiamo qui
-        }
-    
-        // Se il backend risponde 400 (Captcha non valido)
-        if (response.status === 400 && errorData.captchaRequired === true) {
-              this.setState({ turnstileToken: null }); // Forziamo l'utente a rifarlo
-              toast.error(t(errorData.message || "Invalid Captcha"), TOAST_OPTIONS);
-              return;
-        }
+      let errorData = {};
 
-        // Fallback per altri errori con messaggio
-        toast.error(`${t('Authentication Failed')} ${t(errorData.message)}.`, TOAST_OPTIONS);
+      /*try {
+        // 1. Leggiamo come testo grezzo per non crashare
+        const text = await response.text();
+        try {
+            // 2. Proviamo a trasformarlo in JSON
+            errorData = JSON.parse(text);
+        } catch {
+            // 3. Se fallisce, usiamo il testo come messaggio
+            console.warn(`${t("Server responded with non-JSON text")}:`, text);
+            errorData = { message: text, captchaRequired: true }; // Assumiamo serva il captcha
+        }
+      } catch (readError) {
+        errorData = { message: "Errore di comunicazione" };
+      }*/
 
-      } catch (jsonError) {
-        // Se la risposta non è JSON (es. errore generico testuale)
-        toast.error(`${t('Authentication Failed')}.`, TOAST_OPTIONS);
+      // Logica attivazione Captcha (su 400 o 401)
+      if ((response.status === 401 || response.status === 400) /*&& errorData.captchaRequired === true*/) {
+          this.setState({
+            captchaVisible: true,
+            turnstileToken: null
+          });
+
+          // Reset visivo del widget
+          if (this.widgetId && window.turnstile) {
+              try { window.turnstile.reset(this.widgetId); } catch(e){}
+          }
+
+          toast.warn(`${t('Authentication Failed')}: ${t("Security check required")}.`, TOAST_OPTIONS);
+          return;
       }
+
+      toast.error(`${t('Authentication Failed')} ${t(errorData.message || "")}.`, TOAST_OPTIONS);
     };
 
     let loginAPI = new LoginAPI();
     let httpResponse;
 
     try {
-      // PREPARIAMO IL PAYLOAD AGGIORNATO
-      // Nota: devi assicurarti che LoginAPI.postLogin accetti tutto l'oggetto state
-      // oppure modificarlo per passare esplicitamente { email, password, turnstileToken }
+      // payload aggiornato
       const payload = {
         email: this.state.email,
         password: this.state.password,
         turnstileToken: this.state.turnstileToken // Invio il token se presente
       };
       // Attempt to perform login
-      httpResponse = await loginAPI.postLogin(this.state);
+      httpResponse = await loginAPI.postLogin(payload);
     } catch (err) {
-      // If an error occurs during the login request, handle it (panic state)
-      panic();
+      // Questo intercetta l'errore di rete (backend:8080 irraggiungibile)
+      console.error("Errore Fetch:", err);
+      toast.error("Errore di connessione al server.", TOAST_OPTIONS);
       return;
     }
 
@@ -285,12 +312,16 @@ export default class LoginView extends React.Component {
                 />
               </div>
 
-              {/* ----- INIZIO MODIFICA: WIDGET TURNSTILE ----- */}
-              {/* Viene renderizzato SOLO se il backend lo ha richiesto (captchaVisible = true) */}
+              {/* ----- CAPTCHA CONTAINER ----- */}
               {this.state.captchaVisible && (
-                <div className="form-group mt-3 d-flex justify-content-center"></div>
+                <div
+                    className="form-group mt-3 d-flex justify-content-center"
+                    ref={this.captchaContainerRef}
+                    style={{ minHeight: "65px" }} // Mantiene lo spazio per evitare salti
+                >
+                    {/* Cloudflare disegnerà qui dentro */}
+                </div>
               )}
-              {/* ----- FINE MODIFICA ----- */}
 
               <div className="d-grid gap-2 mt-3">
                 <button onClick={this.handleSubmit} type="submit"

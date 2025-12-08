@@ -21,7 +21,7 @@ public class TurnstileService {
     private RestTemplate restTemplate;
 
     public boolean validateToken(String token) {
-        // Se non c'è token, falliamo subito
+        // Se non c'è token fallisce
         if (token == null || token.isEmpty()) {
             return false;
         }
@@ -34,7 +34,8 @@ public class TurnstileService {
 
         try {
             // 2. Chiamata POST all'API di Cloudflare
-            Map response = restTemplate.postForObject(verifyUrl, body, Map.class);
+            @SuppressWarnings({ "unchecked", "null" })
+            Map<String, Object> response = restTemplate.postForObject(verifyUrl, body, Map.class);
 
             // 3. Analizziamo la risposta JSON: { "success": true, ... }
             if (response != null && response.containsKey("success")) {
