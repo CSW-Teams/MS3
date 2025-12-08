@@ -2,12 +2,11 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.login.LoginController;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
-import org.cswteams.ms3.dto.login.LoginFailureDTO; // <--- NUOVO DTO
 import org.cswteams.ms3.dto.login.LoginRequestDTO;
 import org.cswteams.ms3.dto.login.LoginResponseDTO;
-import org.cswteams.ms3.security.LoginAttemptService; // <--- NUOVO SERVICE
+import org.cswteams.ms3.security.BlacklistService;
 import org.cswteams.ms3.utils.JwtUtil;
-import org.cswteams.ms3.utils.TurnstileService; // <--- NUOVO SERVICE
+import org.cswteams.ms3.utils.TurnstileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest; // Usa 'jakarta.servlet' se usi Spring Boot 3+
+
+
+import javax.servlet.http.HttpServletRequest; // Usare 'jakarta.servlet' se si usa Spring Boot 3+
 
 @RestController
 @RequestMapping("/login/")
@@ -37,34 +38,32 @@ public class LoginRestEndpoint {
     @Autowired
     private JwtUtil jwtTokenUtil;
 
-    // --- NUOVE DIPENDENZE PER IL CAPTCHA ---
     @Autowired
     private TurnstileService turnstileService;
 
     @Autowired
-    private LoginAttemptService loginAttemptService;
+    private BlacklistService blacklistService;
 
     @Autowired
     private HttpServletRequest request;
-    // ---------------------------------------
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequestDTO loginRequestDTO) {
         logger.debug("We reached createAuthenticationToken! {}", loginRequestDTO.getEmail());
 
-        // 1. Otteniamo l'IP del client per tracciarlo
+        // 1. Otteniamo l'IP del client
         String ip = getClientIP();
 
-        // 2. CONTROLLO PREVENTIVO: Questo IP è "sporco" (ha sbagliato troppo)?
-        if (loginAttemptService.isCaptchaRequired(ip)) {
+        // 2. CONTROLLO PREVENTIVO: Questo IP o l'email sono in blacklist?
+        if (blacklistService.isInBlackList(ip) || blacklistService.isInBlackList(loginRequestDTO.getEmail())) {
             
             // Se serve il captcha, verifichiamo se il token è presente nel DTO
             String token = loginRequestDTO.getTurnstileToken();
 
             if (token == null || token.isEmpty()) {
-                // Manca il token -> Errore 401 + Flag captchaRequired=true
+                // Manca il token -> Errore 401
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new LoginFailureDTO("Verifica di sicurezza richiesta.", true));
+                        .body("Verifica di sicurezza richiesta!");
             }
 
             // Validiamo il token con Cloudflare
@@ -73,7 +72,7 @@ public class LoginRestEndpoint {
             if (!isCaptchaValid) {
                 // Token falso o scaduto -> Errore 400
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new LoginFailureDTO("Captcha non valido o scaduto.", true));
+                        .body("Captcha non valido o scaduto!");
             }
         }
 
@@ -88,30 +87,27 @@ public class LoginRestEndpoint {
             );
             
             // SE SIAMO QUI, IL LOGIN È RIUSCITO:
-            // Resettiamo il contatore dei fallimenti per questo IP
-            loginAttemptService.loginSucceeded(ip);
+            // Resettiamo il contatore dei fallimenti per questo IP ed email
+            blacklistService.remove(ip);
+            blacklistService.remove(loginRequestDTO.getEmail());
 
         } catch (BadCredentialsException e) {
             // LOGIN FALLITO:
             // 1. Incrementiamo il contatore dei fallimenti
-            loginAttemptService.loginFailed(ip);
-            
-            // 2. Controlliamo se ORA serve il captcha per il prossimo tentativo
-            boolean requireCaptchaNext = loginAttemptService.isCaptchaRequired(ip);
+            blacklistService.add(ip);
+            blacklistService.add(loginRequestDTO.getEmail());
 
-            // 3. Restituiamo il DTO strutturato invece della stringa semplice
+            // 2. Restituiamo 401 UNAUTHORIZED
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginFailureDTO("Credenziali errate.", requireCaptchaNext));
+                    .body("Credenziali errate.");
         }
         
         final CustomUserDetails customUserDetails;
         try {
             customUserDetails = (CustomUserDetails) loginController.loadUserByUsername(loginRequestDTO.getEmail());
         } catch (Exception e) {
-            // FIX CRITICO: Restituiamo SEMPRE un JSON (LoginFailureDTO), mai stringhe semplici.
-            // Attiviamo anche il captcha per sicurezza in caso di errori strani.
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(e.getMessage()/*new LoginFailureDTO("Errore: " + e.getMessage(), true)*/);
+                    .body(e.getMessage());
         }
 
         // Generate token for logged user
@@ -120,7 +116,6 @@ public class LoginRestEndpoint {
         return ResponseEntity.ok(new LoginResponseDTO(customUserDetails, jwt));
     }
 
-    // --- NUOVO METODO HELPER ---
     private String getClientIP() {
         String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader == null) {
