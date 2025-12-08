@@ -1,8 +1,0 @@
-create table blacklisted_tokens
-(
-    id             bigint not null
-        primary key,
-    token          varchar(512) not null
-        unique,
-    blacklisted_at timestamp not null
-);
