@@ -39,7 +39,7 @@ public class SchemaSwitchingConnectionProviderPostgreSQL implements MultiTenantC
         }
 
         Connection connection = dataSource.getConnection();
-        connection.createStatement().execute("SET search_path TO " + tenantIdentifier);
+        connection.createStatement().execute("SET search_path TO " + tenantIdentifier + ", public");
         return connection;
     }
 

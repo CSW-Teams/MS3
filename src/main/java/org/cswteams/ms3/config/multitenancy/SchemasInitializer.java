@@ -183,6 +183,6 @@ public class SchemasInitializer {
         Statement statement = connection.createStatement();
 
         // Passa allo schema del tenant
-        statement.execute("SET search_path TO " + tenantName);
+        statement.execute("SET search_path TO " + tenantName + ", public");
     }
 }
