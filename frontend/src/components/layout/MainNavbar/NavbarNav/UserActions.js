@@ -1,19 +1,19 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 import {
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
   Collapse,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
   NavItem,
   NavLink
 } from "shards-react";
-import { useTranslation } from 'react-i18next';
-import { LogoutAPI } from "../../../../API/LogoutAPI";
+import {useTranslation} from 'react-i18next';
+import {LogoutAPI} from "../../../../API/LogoutAPI";
 
 export default function UserActions() {
-  const { t } = useTranslation();
+  const {t} = useTranslation();
 
   const [state, setState] = React.useState({
     visible: false,
@@ -31,12 +31,11 @@ export default function UserActions() {
 
   const toggleUserActions = () => {
     setState({
-      ...state,
-      visible: !state.visible
+      ...state, visible: !state.visible
     });
   };
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     const token = localStorage.getItem("jwt");
 
     if (token) {
@@ -44,7 +43,7 @@ export default function UserActions() {
       try {
         await logoutApi.postLogout(token);
       } catch (e) {
-        console.error("Logout backend failed", e);
+        console.error("Logout failed", e);
       }
     }
     localStorage.removeItem("id");
@@ -53,13 +52,13 @@ export default function UserActions() {
     localStorage.removeItem("actor");
     localStorage.removeItem("tenant");
     localStorage.removeItem("jwt");
-
   };
 
-  return (
-    <NavItem tag={Dropdown} caret toggle={toggleUserActions}>
-      <DropdownToggle caret tag={NavLink} className="text-nowrap px-3" style={{ cursor: "pointer" }}>
-        <span className="d-none d-md-inline-block">{state.nome + " " + state.cognome}</span>
+  return (<NavItem tag={Dropdown} caret toggle={toggleUserActions}>
+      <DropdownToggle caret tag={NavLink} className="text-nowrap px-3"
+                      style={{cursor: "pointer"}}>
+        <span
+          className="d-none d-md-inline-block">{state.nome + " " + state.cognome}</span>
       </DropdownToggle>
       <Collapse tag={DropdownMenu} right small open={state.visible}>
         <DropdownItem tag={Link} to='/personal-single-user-profile/'>
@@ -71,10 +70,10 @@ export default function UserActions() {
         <DropdownItem tag={Link} to="/preference">
           <i className="material-icons">&#xE8B8;</i> {t('Manage Preferences')}
         </DropdownItem>
-        <DropdownItem tag={Link} to="/" className="text-danger" onClick={handleLogout}>
+        <DropdownItem tag={Link} to="/" className="text-danger"
+                      onClick={handleLogout}>
           <i className="material-icons text-danger">&#xE879;</i> {t('Logout')}
         </DropdownItem>
       </Collapse>
-    </NavItem>
-  );
+    </NavItem>);
 }
