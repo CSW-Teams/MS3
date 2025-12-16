@@ -10,12 +10,16 @@ import java.time.LocalDateTime;
 @Service
 public class JwtBlacklistService {
 
-    @Autowired
-    private BlacklistedTokenDAO blacklistedTokenDAO;
+    private final BlacklistedTokenDAO blacklistedTokenDAO;
+
+    public JwtBlacklistService(@Autowired BlacklistedTokenDAO blacklistedTokenDAO) {
+        this.blacklistedTokenDAO = blacklistedTokenDAO;
+    }
 
     /**
      * Inserts the given JWT token into the blacklist.
      * If the token is already blacklisted, it does nothing.
+     *
      * @param token JWT token to be invalidated
      */
     public void blacklist(String token) {

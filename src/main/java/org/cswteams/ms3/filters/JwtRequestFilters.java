@@ -1,6 +1,7 @@
 package org.cswteams.ms3.filters;
 
 import org.cswteams.ms3.control.login.LoginController;
+import org.cswteams.ms3.control.logout.JwtBlacklistService;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.tenant.TenantContext;
 import org.cswteams.ms3.utils.JwtUtil;
@@ -13,8 +14,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.cswteams.ms3.control.logout.JwtBlacklistService;
-
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -28,15 +27,18 @@ public class JwtRequestFilters extends OncePerRequestFilter {
 
     private static final String DEFAULT_SCHEMA = "public";
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+
+    private final LoginController loginController;
+
+    private final JwtBlacklistService jwtBlacklistService;
 
     @Autowired
-    private LoginController loginController;
-
-    @Autowired
-    private JwtBlacklistService jwtBlacklistService;
-
+    public JwtRequestFilters(JwtUtil jwtUtil, LoginController loginController, JwtBlacklistService jwtBlacklistService) {
+        this.jwtUtil = jwtUtil;
+        this.loginController = loginController;
+        this.jwtBlacklistService = jwtBlacklistService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -83,8 +85,7 @@ public class JwtRequestFilters extends OncePerRequestFilter {
             }
 
             if (jwtUtil.validateToken(jwt, loggedUserDTO)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                        new UsernamePasswordAuthenticationToken(loggedUserDTO, null, loggedUserDTO.getAuthorities());
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loggedUserDTO, null, loggedUserDTO.getAuthorities());
 
                 logger.debug("UsernamePasswordAuthToken: {}", usernamePasswordAuthenticationToken);
 

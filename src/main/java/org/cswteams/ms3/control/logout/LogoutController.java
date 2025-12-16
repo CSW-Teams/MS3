@@ -6,8 +6,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class LogoutController implements ILogoutController {
 
-    @Autowired
-    private JwtBlacklistService blacklistService;
+    private final JwtBlacklistService blacklistService;
+
+    public LogoutController(@Autowired JwtBlacklistService blacklistService) {
+        this.blacklistService = blacklistService;
+    }
 
     /**
      * Performs logout by blacklisting the given JWT token.
