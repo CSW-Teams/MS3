@@ -18,9 +18,15 @@ public class BlacklistedToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 512)
+    // Explicit mapping of the 'token' column to avoid ambiguity.
+    @Column(nullable = false, name = "token", unique = true, length = 512)
     private String token;
 
-    @Column(nullable = false)
+    /*
+    Explicit mapping of 'name = "blacklisted_at"' because Hibernate's automatic camelCase -> snake_case
+    conversion might fail or vary depending on the configuration (e.g., looking for 'blacklistedat').
+    Specifying it forces the use of the correct column created by the SQL script.
+     */
+    @Column(nullable = false, name = "blacklisted_at")
     private LocalDateTime blacklistedAt;
 }

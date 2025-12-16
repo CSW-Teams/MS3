@@ -11,10 +11,10 @@ async postLogout(jwtToken) {
     const requestOptions = {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ${jwtToken}'
+        'Authorization': `Bearer ${jwtToken}`
       }
     };
 
-    return await fetch('/api/logout', requestOptions);
+    return await fetch('/api/logout/', requestOptions);
   }
 }
