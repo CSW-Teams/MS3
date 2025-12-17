@@ -1,7 +1,10 @@
 package org.cswteams.ms3.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+import java.time.Clock;
 
 /**
  * Configuration class for enabling Spring AOP and AspectJ auto-proxying.
@@ -52,4 +55,11 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @Configuration
 @EnableAspectJAutoProxy
 public class AppConfig {
+
+    @Bean
+    public Clock clock() {
+        // Production environment uses the system clock in the default zone
+        return Clock.systemDefaultZone();
+    }
+
 }
