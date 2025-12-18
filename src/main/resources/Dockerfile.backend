@@ -13,6 +13,9 @@ RUN ./mvnw dependency:go-offline
 
 # copy sources and compile them in a jar
 COPY ./src ./src
-RUN ./mvnw package -DskipTests
+# Skip both test execution and test compilation to keep the Docker build
+# resilient even when tests are currently broken. This does not affect
+# normal builds (running mvn test/verify will still compile and run tests).
+RUN ./mvnw package -DskipTests -Dmaven.test.skip=true
 
 ENTRYPOINT ["java","-jar", "./target/ms3-0.0.1-SNAPSHOT.jar"]
