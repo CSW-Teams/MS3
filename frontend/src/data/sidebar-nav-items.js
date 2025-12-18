@@ -19,11 +19,16 @@ export function attore() {
           htmlBefore: '<i class="material-icons">view_module</i>',
           to: "/info-utenti",
         },
-         {
-           title: "Shift Exchange",
-           htmlBefore: '<i class="material-icons">view_module</i>',
-           to: "/scambio-turni",
-         },
+        {
+          title: "Shift Exchange",
+          htmlBefore: '<i class="material-icons">view_module</i>',
+          to: "/scambio-turni",
+        },
+        {
+          title: "Two-Factor Security",
+          htmlBefore: '<i class="material-icons">shield</i>',
+          to: "/two-factor",
+        },
       ];
 }
 
@@ -56,6 +61,11 @@ export function pianificatore() {
         title: "Shift Exchange",
         htmlBefore: '<i class="material-icons">view_module</i>',
         to: "/scambio-turni",
+      },
+      {
+        title: "Two-Factor Security",
+        htmlBefore: '<i class="material-icons">shield</i>',
+        to: "/two-factor",
       },
 
 
@@ -93,6 +103,11 @@ export function configuratore() {
       title: "Manage custom holidays",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/gestione-festivita"
+    },
+    {
+      title: "Two-Factor Security",
+      htmlBefore: '<i class="material-icons">shield</i>',
+      to: "/two-factor",
     },
   ];
 }
