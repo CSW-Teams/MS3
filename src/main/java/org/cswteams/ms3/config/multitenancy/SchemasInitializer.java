@@ -69,12 +69,16 @@ public class SchemasInitializer {
     private void createTables() {
         try (Connection connection = dataSource.getConnection()) {
             // Step 1: Crea la tabella comune nello schema 'public'
+            // Sempre riportiamo lo schema corrente a 'public' per eseguire anche gli script incrementali
+            changeSchemaToTenant(connection, DEFAULT_SCHEMA);
             createTablesInPublicSchema(connection);
+            apply2FaColumns(connection, DEFAULT_SCHEMA);
 
             // Step 2: Crea le varie tabelle in ciascun schema dei tenant
             for (String schema : tenantSchemas) {
                 changeSchemaToTenant(connection, schema.toLowerCase());
                 createTablesForTenant(connection, schema.toLowerCase());
+                apply2FaColumns(connection, schema.toLowerCase());
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -94,6 +98,24 @@ public class SchemasInitializer {
         } catch (ScriptException e) {
             e.printStackTrace();
             throw new RuntimeException("Errore nella creazione delle tabelle nello schema public", e);
+        }
+    }
+
+    /**
+     * Applica gli aggiornamenti 2FA per lo schema corrente (public o tenant),
+     * mantenendo l'idempotenza grazie agli IF NOT EXISTS nel file SQL. Questo
+     * metodo viene invocato sia per il public sia per ogni tenant configurato
+     * così che l'aggiunta di nuovi tenant in {@code tenants_config.json}
+     * includa automaticamente le colonne 2FA.
+     */
+    private void apply2FaColumns(Connection connection, String schemaName) {
+        try {
+            ClassPathResource migrationScript = new ClassPathResource("db/migration/V1__add_2fa_state_columns.sql");
+            ScriptUtils.executeSqlScript(connection, migrationScript);
+            System.out.println("Colonne 2FA applicate nello schema " + schemaName);
+        } catch (ScriptException e) {
+            System.out.println("Errore nell'applicazione delle colonne 2FA nello schema " + schemaName);
+            throw new RuntimeException("Errore nell'applicazione delle colonne 2FA per lo schema " + schemaName, e);
         }
     }
 
