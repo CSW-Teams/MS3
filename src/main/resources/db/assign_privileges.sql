@@ -25,6 +25,17 @@ grant all on all tables in schema b to tenant_b_user;
 grant all on all sequences in schema b to tenant_b_user;
 alter schema b owner to tenant_b_user;
 
+-- Grants to the tenant users for the 'blacklisted_tokens' table in the public schema
+grant usage on schema public to tenant_a_user;
+grant usage on schema public to tenant_b_user;
+grant select, insert on public.blacklisted_tokens to tenant_a_user;
+grant select, insert on public.blacklisted_tokens to tenant_b_user;
+
+-- Grants privileges for tenant users to generate new ids in 'blacklisted_tokens' when a banned token is inserted
+grant usage, select on sequence public.blacklisted_tokens_id_seq to tenant_a_user;
+grant usage, select on sequence public.blacklisted_tokens_id_seq to tenant_b_user;
+grant usage, select on sequence public.blacklisted_tokens_id_seq to public_scheme_user;
+
 alter default privileges in schema public revoke all on tables from public;
 alter default privileges in schema public grant all on tables to public_scheme_user;
 alter default privileges in schema public revoke all on sequences from public;
