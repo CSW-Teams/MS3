@@ -27,7 +27,7 @@ export class TwoFactorAPI {
     const requestOptions = {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({code, isRecoveryCode})
+      body: JSON.stringify({code, recoveryCode: isRecoveryCode})
     };
     return await fetchWithAuth('/api/2fa/disable', requestOptions);
   }
