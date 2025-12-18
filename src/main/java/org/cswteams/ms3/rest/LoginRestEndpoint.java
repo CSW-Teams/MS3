@@ -1,10 +1,14 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.login.LoginController;
+import org.cswteams.ms3.dao.SystemUserDAO;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.dto.login.LoginRequestDTO;
 import org.cswteams.ms3.dto.login.LoginResponseDTO;
+import org.cswteams.ms3.entity.SystemUser;
 import org.cswteams.ms3.security.BlacklistService;
+import org.cswteams.ms3.security.TwoFactorAuthenticationService;
+import org.cswteams.ms3.security.TwoFactorResult;
 import org.cswteams.ms3.utils.JwtUtil;
 import org.cswteams.ms3.utils.TurnstileService;
 import org.slf4j.Logger;
@@ -47,6 +51,12 @@ public class LoginRestEndpoint {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private TwoFactorAuthenticationService twoFactorAuthenticationService;
+
+    @Autowired
+    private SystemUserDAO systemUserDAO;
+
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequestDTO loginRequestDTO) {
         logger.debug("We reached createAuthenticationToken! {}", loginRequestDTO.getEmail());
@@ -56,7 +66,7 @@ public class LoginRestEndpoint {
 
         // 2. CONTROLLO PREVENTIVO: Questo IP o l'email sono in blacklist?
         if (blacklistService.isInBlackList(ip) || blacklistService.isInBlackList(loginRequestDTO.getEmail())) {
-            
+
             // Se serve il captcha, verifichiamo se il token è presente nel DTO
             String token = loginRequestDTO.getTurnstileToken();
 
@@ -68,7 +78,7 @@ public class LoginRestEndpoint {
 
             // Validiamo il token con Cloudflare
             boolean isCaptchaValid = turnstileService.validateToken(token);
-            
+
             if (!isCaptchaValid) {
                 // Token falso o scaduto -> Errore 400
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -85,7 +95,7 @@ public class LoginRestEndpoint {
                             loginRequestDTO.getPassword()
                     )
             );
-            
+
             // SE SIAMO QUI, IL LOGIN È RIUSCITO:
             // Resettiamo il contatore dei fallimenti per questo IP ed email
             blacklistService.remove(ip);
@@ -101,13 +111,26 @@ public class LoginRestEndpoint {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Credenziali errate.");
         }
-        
+
         final CustomUserDetails customUserDetails;
+        final SystemUser systemUser;
         try {
             customUserDetails = (CustomUserDetails) loginController.loadUserByUsername(loginRequestDTO.getEmail());
+            systemUser = systemUserDAO.findByEmail(loginRequestDTO.getEmail());
+            if (systemUser == null) {
+                logger.error("System user not found after successful authentication: {}", loginRequestDTO.getEmail());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("User not found.");
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(e.getMessage());
+        }
+
+        TwoFactorResult twoFactorResult = twoFactorAuthenticationService.processTwoFactor(systemUser, loginRequestDTO.getTwoFactorCode());
+        if (!twoFactorResult.isSuccessful()) {
+            return ResponseEntity.status(twoFactorResult.getStatus())
+                    .body(new LoginResponseDTO(customUserDetails, null, twoFactorResult.isRequiresTwoFactor(), twoFactorResult.getMessage()));
         }
 
         // Generate token for logged user
