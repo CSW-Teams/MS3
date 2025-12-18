@@ -7,6 +7,7 @@ public class LoginRequestDTO {
     private String email;
     private String password;
     private String turnstileToken; // Il nostro campo nuovo
+    private String twoFactorCode;
 
     public LoginRequestDTO() {}
 
@@ -15,6 +16,13 @@ public class LoginRequestDTO {
         this.email = email;
         this.password = password;
         this.turnstileToken = turnstileToken;
+    }
+
+    public LoginRequestDTO(String email, String password, String turnstileToken, String twoFactorCode) {
+        this.email = email;
+        this.password = password;
+        this.turnstileToken = turnstileToken;
+        this.twoFactorCode = twoFactorCode;
     }
 
     // 3. Costruttore compatibile con i vecchi test
