@@ -7,6 +7,16 @@ import {panic} from "../../components/common/Panic";
 import RoleSelectionDialog from "../../components/common/DialogRolePicker";
 import {UserAPI} from "../../API/UserAPI";
 import TurnstileWidget from "../../components/common/TurnstileWidget";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography
+} from "@mui/material";
+import Alert from "@mui/material/Alert";
 
 // Toast notification options for error/success messages
 const TOAST_OPTIONS = {
@@ -38,6 +48,15 @@ export default class LoginView extends React.Component {
       // new states for captcha
       turnstileToken: null,    // token from Cloudflare
       captchaVisible: false,   // if true shows widget
+
+      // two factor flow
+      twoFactorDialogOpen: false,
+      twoFactorChallenge: null,
+      twoFactorMessage: "",
+      otpInput: "",
+      isRecoveryCode: false,
+      lockoutInfo: null,
+      otpSubmitting: false,
     }
 
     // Binding the handleSubmit method to the class instance
@@ -106,6 +125,135 @@ export default class LoginView extends React.Component {
     });
   }
 
+  handleCompleteLogin = async (user) => {
+    if (!user || !user.jwt) {
+      toast.error(`${t('Authentication Failed')} ${t('Missing authentication token')}.`, TOAST_OPTIONS);
+      return;
+    }
+
+    localStorage.setItem("name", user.name);
+    localStorage.setItem("lastname", user.lastname);
+    localStorage.setItem("tenant", user.tenant);
+    localStorage.setItem("jwt", user.jwt);
+
+    if (user.systemActors && user.systemActors.length === 1) {
+      this.handleDialogClose(user.systemActors[0]);
+      return;
+    }
+
+    this.setState({systemActorsAvailable: user.systemActors || []});
+    this.handleDialogOpen();
+  }
+
+  handleTwoFactorChallenge = (data, status) => {
+    const challenge = data?.challenge || data?.challengeToken || data?.twoFactorChallenge;
+    const lockoutInfo = status === 429 ? {
+      message: data?.message,
+      retryAfterSeconds: data?.retryAfterSeconds
+    } : null;
+
+    this.setState({
+      twoFactorDialogOpen: true,
+      twoFactorChallenge: challenge || null,
+      twoFactorMessage: data?.message || t('Two-factor authentication required.'),
+      otpInput: "",
+      isRecoveryCode: false,
+      lockoutInfo,
+    });
+
+    if (status === 429) {
+      toast.warn(`${t('Authentication Failed')}: ${t(data?.message || 'Too many attempts. Please wait.')}`, TOAST_OPTIONS);
+      return;
+    }
+
+    toast.info(t('Enter the code from your authenticator app to continue.'), TOAST_OPTIONS);
+  }
+
+  handleOtpDialogClose = () => {
+    this.setState({
+      twoFactorDialogOpen: false,
+      twoFactorChallenge: null,
+      twoFactorMessage: "",
+      otpInput: "",
+      isRecoveryCode: false,
+      lockoutInfo: null,
+    });
+  }
+
+  handleOtpInputChange = (event) => {
+    this.setState({otpInput: event.target.value});
+  }
+
+  handleOtpToggleMode = () => {
+    this.setState((prevState) => ({
+      isRecoveryCode: !prevState.isRecoveryCode,
+      otpInput: ""
+    }));
+  }
+
+  handleOtpSubmit = async () => {
+    if (!this.state.otpInput) {
+      toast.warn(t('Please enter a code to continue.'), TOAST_OPTIONS);
+      return;
+    }
+
+    if (!this.state.twoFactorChallenge) {
+      toast.error(t('Authentication Failed'), TOAST_OPTIONS);
+      return;
+    }
+
+    this.setState({otpSubmitting: true});
+
+    try {
+      const loginAPI = new LoginAPI();
+      const response = await loginAPI.postLoginOtp(
+        this.state.twoFactorChallenge,
+        this.state.otpInput,
+        this.state.isRecoveryCode
+      );
+
+      let data = {};
+      try {
+        data = await response.clone().json();
+      } catch (err) {
+        data = {};
+      }
+
+      if (response.ok && data.jwt) {
+        this.setState({twoFactorDialogOpen: false, lockoutInfo: null});
+        await this.handleCompleteLogin(data);
+        return;
+      }
+
+      if (data?.requiresTwoFactor) {
+        const lockoutInfo = response.status === 429 ? {
+          message: data?.message,
+          retryAfterSeconds: data?.retryAfterSeconds
+        } : null;
+
+        this.setState({
+          twoFactorMessage: data?.message || t('Invalid code. Please try again.'),
+          lockoutInfo
+        });
+
+        const toastMessage = data?.message || t('Invalid two-factor code.');
+        if (response.status === 429) {
+          toast.warn(`${t('Authentication Failed')}: ${t(toastMessage)}`, TOAST_OPTIONS);
+        } else {
+          toast.error(`${t('Authentication Failed')} ${t(toastMessage)}`, TOAST_OPTIONS);
+        }
+        return;
+      }
+
+      toast.error(`${t('Authentication Failed')} ${t(data?.message || '')}`, TOAST_OPTIONS);
+    } catch (err) {
+      console.error("OTP verification error:", err);
+      toast.error(`${t('Authentication Failed. Server not online')}`, TOAST_OPTIONS);
+    } finally {
+      this.setState({otpSubmitting: false});
+    }
+  }
+
   /*
    * Handles the form submission for authentication.
    * If authentication is successful, the user is redirected to their profile,
@@ -119,56 +267,6 @@ export default class LoginView extends React.Component {
       toast.warn(t("Please complete the security check."), TOAST_OPTIONS);
       return;
     }
-
-    // Function to handle successful login response
-    const handleSuccess = async (response) => {
-      const user = await response.json();
-
-      // Store user data in localStorage
-      localStorage.setItem("name", user.name);
-      localStorage.setItem("lastname", user.lastname);
-      localStorage.setItem("tenant", user.tenant);
-      localStorage.setItem("jwt", user.jwt);
-
-      // If only one system actor is available, close the dialog and proceed
-      if (user.systemActors.length === 1) {
-        this.handleDialogClose(user.systemActors[0]);
-        return;
-      }
-
-      // If multiple system actors are available, display the dialog for role selection
-      this.setState({systemActorsAvailable: user.systemActors});
-      this.handleDialogOpen();
-    };
-
-    // Function to handle server errors (5xx responses)
-    const handleServerError = () => {
-      toast.error(`${t('Authentication Failed. Server not online')}`, TOAST_OPTIONS);
-    };
-
-    // Mapping HTTP status classes to appropriate handler functions
-    const HTTP_STATUS_HANDLERS = {
-      2: handleSuccess,  // Handles success responses (2xx)
-      5: handleServerError,  // Handles server error responses (5xx)
-    };
-
-    // Default function to handle errors
-    const handleDefaultError = async (response) => {
-      // Captcha activated on 400 or 401 response code
-      if (response.status === 401 || response.status === 400) {
-        this.setState({
-          captchaVisible: true, turnstileToken: null
-        }, () => {
-          // Reset the widget iff it's already mounted.
-          if (this.turnstileRef.current) {
-            this.turnstileRef.current.resetWidget();
-          }
-        });
-        toast.warn(`${t('Authentication Failed')}: ${t("Security check required")}.`, TOAST_OPTIONS);
-        return;
-      }
-      toast.error(`${t('Authentication Failed')} ${t(errorData.message || "")}.`, TOAST_OPTIONS);
-    };
 
     let loginAPI = new LoginAPI();
     let httpResponse;
@@ -188,12 +286,43 @@ export default class LoginView extends React.Component {
       return;
     }
 
-    // Calculate the HTTP status class (e.g., 2xx, 5xx)
-    const statusClass = Math.floor(httpResponse.status / 100);
+    let responseData = {};
+    try {
+      responseData = await httpResponse.clone().json();
+    } catch (err) {
+      responseData = {};
+    }
 
-    // If the status class has an associated handler, call it, otherwise use the default error handler
-    const handler = HTTP_STATUS_HANDLERS[statusClass] || handleDefaultError;
-    await handler(httpResponse);
+    if (httpResponse.ok) {
+      if (responseData?.requiresTwoFactor && !responseData?.jwt) {
+        this.handleTwoFactorChallenge(responseData, httpResponse.status);
+        return;
+      }
+
+      await this.handleCompleteLogin(responseData);
+      return;
+    }
+
+    if (responseData?.requiresTwoFactor) {
+      this.handleTwoFactorChallenge(responseData, httpResponse.status);
+      return;
+    }
+
+    if (httpResponse.status === 401 || httpResponse.status === 400) {
+      this.setState({
+        captchaVisible: true, turnstileToken: null
+      }, () => {
+        // Reset the widget iff it's already mounted.
+        if (this.turnstileRef.current) {
+          this.turnstileRef.current.resetWidget();
+        }
+      });
+      toast.warn(`${t('Authentication Failed')}: ${t("Security check required")}.`, TOAST_OPTIONS);
+      return;
+    }
+
+    const message = responseData?.message || "";
+    toast.error(`${t('Authentication Failed')} ${t(message)}`, TOAST_OPTIONS);
   }
 
   render() {
@@ -203,6 +332,47 @@ export default class LoginView extends React.Component {
         <RoleSelectionDialog open={this.state.open}
                              onClose={this.handleDialogClose}
                              systemActors={this.state.systemActorsAvailable}/>
+
+        <Dialog open={this.state.twoFactorDialogOpen}
+                onClose={this.handleOtpDialogClose}
+                disableEnforceFocus>
+          <DialogTitle>{t('Two-Factor Authentication')}</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" gutterBottom>
+              {this.state.twoFactorMessage || t('Enter the authentication code to continue.')}
+            </Typography>
+
+            {this.state.lockoutInfo && (
+              <Alert severity="warning" sx={{mb: 2}}>
+                {this.state.lockoutInfo.message || t('Too many failed attempts. Please wait before retrying.')}
+                {this.state.lockoutInfo.retryAfterSeconds ? ` ${t('Try again in')} ${this.state.lockoutInfo.retryAfterSeconds} ${t('seconds')}.` : ''}
+              </Alert>
+            )}
+
+            <TextField
+              fullWidth
+              autoFocus
+              margin="dense"
+              label={this.state.isRecoveryCode ? t('Recovery code') : t('Authenticator code')}
+              type="text"
+              value={this.state.otpInput}
+              onChange={this.handleOtpInputChange}
+              disabled={!!this.state.lockoutInfo}
+            />
+
+            <Button onClick={this.handleOtpToggleMode} size="small" sx={{mt: 1}}>
+              {this.state.isRecoveryCode ? t('Use authenticator code instead') : t('Use a recovery code')}
+            </Button>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleOtpDialogClose}>{t('Cancel')}</Button>
+            <Button onClick={this.handleOtpSubmit}
+                    disabled={this.state.otpSubmitting || !!this.state.lockoutInfo}
+                    variant="contained">
+              {t('Verify')}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Contenitore con layout flessibile */}
         <div className="Auth-page-content" style={{
