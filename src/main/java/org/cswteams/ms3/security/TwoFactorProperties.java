@@ -40,4 +40,14 @@ public class TwoFactorProperties {
      * Duration of OTP lockout after reaching the threshold.
      */
     private Duration lockoutDuration = Duration.ofSeconds(60);
+
+    /**
+     * Number of deterministic recovery codes issued per enrollment/version.
+     */
+    private int recoveryCodeCount = 10;
+
+    /**
+     * Length (in characters) of generated recovery codes.
+     */
+    private int recoveryCodeLength = 10;
 }
