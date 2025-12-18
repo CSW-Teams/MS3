@@ -91,6 +91,9 @@ public class SchemasInitializer {
             tableScript = new ClassPathResource("db/create_system_user_tables.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
+            tableScript = new ClassPathResource("db/create_blacklisted_tokens.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
             tableScript = new ClassPathResource("db/shared/create_shared_info.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 

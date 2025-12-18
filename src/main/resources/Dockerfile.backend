@@ -1,5 +1,8 @@
-# NOTE: you must first generate the jar file with ./mvnw install 
-FROM eclipse-temurin:17-jdk-alpine
+# NOTE: you must first generate the jar file with ./mvnw install
+# Spring Boot 2.1.x and CGLIB-based proxies require Java 11 for reflective access
+# without additional JVM flags. Use a Java 11 base image to keep the runtime
+# compatible with the project's configured toolchain.
+FROM eclipse-temurin:11-jdk-alpine
 VOLUME /tmp
 ENV SPRING_PROFILES_ACTIVE=container
 
