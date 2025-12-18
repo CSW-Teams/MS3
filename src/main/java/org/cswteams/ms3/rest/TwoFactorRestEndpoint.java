@@ -179,7 +179,7 @@ public class TwoFactorRestEndpoint {
 
         if (principal instanceof CustomUserDetails) {
             CustomUserDetails details = (CustomUserDetails) principal;
-            user = systemUserDAO.findById(details.getId());
+            user = systemUserDAO.findById(details.getId()).orElse(null);
             if (user == null) {
                 user = systemUserDAO.findByEmail(details.getEmail());
             }
