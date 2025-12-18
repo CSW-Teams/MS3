@@ -57,6 +57,7 @@ export default class LoginView extends React.Component {
       isRecoveryCode: false,
       lockoutInfo: null,
       otpSubmitting: false,
+      enrollmentRequired: false,
     }
 
     // Binding the handleSubmit method to the class instance
@@ -159,6 +160,7 @@ export default class LoginView extends React.Component {
       otpInput: "",
       isRecoveryCode: false,
       lockoutInfo,
+      enrollmentRequired: !!data?.enrollmentRequired,
     });
 
     if (status === 429) {
@@ -177,6 +179,7 @@ export default class LoginView extends React.Component {
       otpInput: "",
       isRecoveryCode: false,
       lockoutInfo: null,
+      enrollmentRequired: false,
     });
   }
 
@@ -198,7 +201,10 @@ export default class LoginView extends React.Component {
     }
 
     if (!this.state.twoFactorChallenge) {
-      toast.error(t('Authentication Failed'), TOAST_OPTIONS);
+      const message = this.state.enrollmentRequired
+        ? t('Two-factor enrollment is required before login. Please enroll from the Two-Factor Security page once authenticated or contact an administrator for assistance.')
+        : t('Authentication Failed');
+      toast.error(message, TOAST_OPTIONS);
       return;
     }
 
@@ -342,6 +348,12 @@ export default class LoginView extends React.Component {
               {this.state.twoFactorMessage || t('Enter the authentication code to continue.')}
             </Typography>
 
+            {this.state.enrollmentRequired && !this.state.twoFactorChallenge && (
+              <Alert severity="warning" sx={{mb: 2}}>
+                {t('Enrollment is required for your role. After signing in, open the "Two-Factor Security" page to complete enrollment. If you cannot proceed, contact an administrator.')}
+              </Alert>
+            )}
+
             {this.state.lockoutInfo && (
               <Alert severity="warning" sx={{mb: 2}}>
                 {this.state.lockoutInfo.message || t('Too many failed attempts. Please wait before retrying.')}
@@ -367,7 +379,7 @@ export default class LoginView extends React.Component {
           <DialogActions>
             <Button onClick={this.handleOtpDialogClose}>{t('Cancel')}</Button>
             <Button onClick={this.handleOtpSubmit}
-                    disabled={this.state.otpSubmitting || !!this.state.lockoutInfo}
+                    disabled={this.state.otpSubmitting || !!this.state.lockoutInfo || (this.state.enrollmentRequired && !this.state.twoFactorChallenge)}
                     variant="contained">
               {t('Verify')}
             </Button>
