@@ -19,6 +19,18 @@
 - **Challenge TTL**: No time-based expiry for the challenge token. Security relies on OTP freshness (30s step), user-bound challenge markers, and the lockout policy to prevent brute-force or replay.
 - **Recovery Code Semantics**: Recovery codes are deterministically derived; only `lastRecoveryCodeIdUsed` is stored. Codes support jump-ahead semantics and the final code disables 2FA and forces re-enrollment/rotation.
 
+## Configuration & Deployment
+- **Environment variables** (must be present before enabling 2FA in any environment):
+  - `HMAC_MASTER_KEY`: server-wide secret used for deterministic TOTP/recovery derivation; supply via secret manager/injection, never commit or log.
+  - `MAX_OTP_ATTEMPTS`: consecutive OTP failures allowed before lockout is enforced.
+  - `OTP_LOCKOUT_SECONDS`: lockout window applied after exceeding `MAX_OTP_ATTEMPTS`.
+  - `ENFORCED_2FA_ROLES`: comma-separated roles that require 2FA after password verification; enforcement is not leaked before password success.
+  - `RECOVERY_CODE_COUNT`: total recovery codes per enrollment; the final code disables 2FA and rotates the derivation salt/version.
+- **Deployment checks**:
+  - Validate that `HMAC_MASTER_KEY` is injected securely in CI/CD (sealed secrets/secret manager) and never echoed in build logs.
+  - Ensure the configured lockout values align with UX messaging (seconds remaining) and that role enforcement matches RBAC policy.
+  - Coordinate environment updates so backend and frontend agree on lockout messaging and recovery code count.
+
 ## Data Model & Persistence Impact
 - Extend `SystemUser` (or a linked 2FA entity) with fields: `twoFaVersionOrSalt` (HMAC salt/version), `twoFactorEnabled`, `enrollmentConfirmedAt`, `lastRecoveryCodeIdUsed`, and lockout counters/timestamps consistent with the attempt-count policy.
 - Store only derivation inputs (not the TOTP secret itself). Secrets and recovery codes are derived from `HMAC(masterKey, userStableId || ":" || twoFaVersionOrSalt || ":totp")` and `HMAC(masterKey, userStableId || ":" || twoFaVersionOrSalt || ":recovery:" || i)` respectively. Never log secrets or codes.
@@ -49,5 +61,13 @@
 - **Backend**: Unit tests for deterministic HMAC derivation, TOTP verification (valid/invalid, skew), lockout counters, jump-ahead recovery code validation, and disable-on-final-code behavior. Integration tests for two-step login, challenge binding, lockout across challenges, enrollment/disable flows, and tenant propagation in JWT issuance.
 - **Frontend**: Component tests for OTP modal, lockout messaging, enrollment QR display, recovery code rendering, and copy explaining jump-ahead/final-code disablement. Integration tests for login flow ensuring JWT is set only after OTP success and lockout responses are surfaced.
 - **Security Regression**: Tests for brute-force throttling, replayed OTP/recovery code attempts, absence of challenge TTL bypass, and logging/auditing hooks.
+
+## Operational Runbook
+- **Lockout handling**: After `MAX_OTP_ATTEMPTS` failures, block OTP/recovery verification for `OTP_LOCKOUT_SECONDS`. Communicate remaining lockout duration to the user; counters reset on a successful verification. Lockout applies even if a new challenge marker is requested, since no challenge TTL is applied.
+- **Recovery codes**: Accept any recovery code with an id ≥ `lastRecoveryCodeIdUsed + 1`; update the stored id to the submitted code’s id (jump-ahead). Reject codes with lower ids as replays.
+- **Final code behavior**: When the submitted recovery code id equals `RECOVERY_CODE_COUNT`, disable 2FA, rotate `twoFaVersionOrSalt`, and require the user to re-enroll before 2FA is active again. Update UX to surface the need to re-enroll.
+- **Challenge tokens**: Challenges do not expire by TTL. Replay protection relies on OTP freshness, user-bound challenge markers, and the lockout policy; backend should prevent multiple JWT issuances from the same challenge.
+- **Re-enrollment/disablement**: Allow self-service disable via OTP or recovery code. On disablement or final-code usage, rotate the salt/version and provide new recovery codes during re-enrollment.
+- **Secret hygiene**: Treat `HMAC_MASTER_KEY` as a production secret. Validate secret presence post-deploy and rotate via secret manager if compromised; never store it in application logs or persistent config files.
 
 
