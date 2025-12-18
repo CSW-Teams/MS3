@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Base64;
 
 @Component
 public class TwoFactorCodeService {
@@ -28,30 +29,68 @@ public class TwoFactorCodeService {
         this.clock = clock;
     }
 
-    public boolean verifyCode(SystemUser user, String providedCode) {
+    public TwoFactorVerificationOutcome verify(SystemUser user, String providedCode) {
         if (providedCode == null) {
-            return false;
+            return TwoFactorVerificationOutcome.invalid();
         }
         String sanitizedCode = providedCode.trim();
-        long currentWindow = Instant.now(clock).getEpochSecond() / 30L;
-        for (int offset = -properties.getAllowedDriftWindows(); offset <= properties.getAllowedDriftWindows(); offset++) {
-            String expected = generateCode(user, currentWindow + offset);
-            if (expected.equals(sanitizedCode)) {
-                return true;
-            }
+        if (verifyTotp(user, sanitizedCode)) {
+            return TwoFactorVerificationOutcome.successTotp();
         }
+
+        RecoveryVerificationResult recoveryVerificationResult = verifyRecoveryCode(user, sanitizedCode);
+        if (recoveryVerificationResult.isValid()) {
+            user.setLastRecoveryCodeIdUsed(recoveryVerificationResult.getCodeId());
+            return TwoFactorVerificationOutcome.successRecovery(recoveryVerificationResult.isFinalCode());
+        }
+
         logger.warn("2FA code verification failed for user {}", user.getEmail());
-        return false;
+        return TwoFactorVerificationOutcome.invalid();
     }
 
     public String currentCodeForUser(SystemUser user) {
         long currentWindow = Instant.now(clock).getEpochSecond() / 30L;
-        return generateCode(user, currentWindow);
+        return generateTotp(user, currentWindow);
     }
 
-    private String generateCode(SystemUser user, long timeWindow) {
+    public String recoveryCodeForUser(SystemUser user, int codeId) {
         try {
-            byte[] secret = deriveSecret(user);
+            byte[] secret = deriveSecret(user, "recovery:" + codeId);
+            String code = Base64.getUrlEncoder().withoutPadding().encodeToString(secret);
+            return code.length() <= properties.getRecoveryCodeLength()
+                    ? code
+                    : code.substring(0, properties.getRecoveryCodeLength());
+        } catch (GeneralSecurityException e) {
+            logger.error("Failed to generate recovery code", e);
+            return "";
+        }
+    }
+
+    private boolean verifyTotp(SystemUser user, String sanitizedCode) {
+        long currentWindow = Instant.now(clock).getEpochSecond() / 30L;
+        for (int offset = -properties.getAllowedDriftWindows(); offset <= properties.getAllowedDriftWindows(); offset++) {
+            String expected = generateTotp(user, currentWindow + offset);
+            if (expected.equals(sanitizedCode)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private RecoveryVerificationResult verifyRecoveryCode(SystemUser user, String sanitizedCode) {
+        int nextExpectedId = user.getLastRecoveryCodeIdUsed() + 1;
+        for (int i = nextExpectedId; i <= properties.getRecoveryCodeCount(); i++) {
+            if (recoveryCodeForUser(user, i).equals(sanitizedCode)) {
+                boolean finalCode = i == properties.getRecoveryCodeCount();
+                return RecoveryVerificationResult.success(i, finalCode);
+            }
+        }
+        return RecoveryVerificationResult.invalid();
+    }
+
+    private String generateTotp(SystemUser user, long timeWindow) {
+        try {
+            byte[] secret = deriveSecret(user, "totp");
             Mac mac = Mac.getInstance(HMAC_SHA_1);
             mac.init(new SecretKeySpec(secret, HMAC_SHA_1));
             byte[] data = ByteBuffer.allocate(8).putLong(timeWindow).array();
@@ -70,11 +109,43 @@ public class TwoFactorCodeService {
         }
     }
 
-    private byte[] deriveSecret(SystemUser user) throws GeneralSecurityException {
+    private byte[] deriveSecret(SystemUser user, String purpose) throws GeneralSecurityException {
         Mac mac = Mac.getInstance(HMAC_SHA_256);
         mac.init(new SecretKeySpec(properties.getMasterKey().getBytes(StandardCharsets.UTF_8), HMAC_SHA_256));
         String salt = user.getTwoFaVersionOrSalt() == null ? "" : user.getTwoFaVersionOrSalt();
-        String payload = user.getEmail() + ":" + salt + ":totp";
+        String payload = user.getEmail() + ":" + salt + ":" + purpose;
         return mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static class RecoveryVerificationResult {
+        private final boolean valid;
+        private final int codeId;
+        private final boolean finalCode;
+
+        private RecoveryVerificationResult(boolean valid, int codeId, boolean finalCode) {
+            this.valid = valid;
+            this.codeId = codeId;
+            this.finalCode = finalCode;
+        }
+
+        public static RecoveryVerificationResult success(int codeId, boolean finalCode) {
+            return new RecoveryVerificationResult(true, codeId, finalCode);
+        }
+
+        public static RecoveryVerificationResult invalid() {
+            return new RecoveryVerificationResult(false, -1, false);
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public int getCodeId() {
+            return codeId;
+        }
+
+        public boolean isFinalCode() {
+            return finalCode;
+        }
     }
 }

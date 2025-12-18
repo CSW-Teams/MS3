@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class TwoFactorAuthenticationService {
@@ -52,13 +53,18 @@ public class TwoFactorAuthenticationService {
             return TwoFactorResult.challenge("Two-factor code required.");
         }
 
-        boolean valid = codeService.verifyCode(user, providedCode);
-        if (!valid) {
+        TwoFactorVerificationOutcome verificationOutcome = codeService.verify(user, providedCode);
+        if (!verificationOutcome.isValid()) {
             registerFailure(user);
             return TwoFactorResult.failed("Invalid two-factor code.");
         }
 
-        resetFailures(user);
+        if (verificationOutcome.isFinalRecoveryCode()) {
+            applyFinalRecoveryCode(user);
+        } else {
+            resetFailures(user);
+        }
+
         logger.info("2FA verification succeeded for user {}", user.getEmail());
         return TwoFactorResult.successWithTwoFactor();
     }
@@ -106,5 +112,13 @@ public class TwoFactorAuthenticationService {
             return false;
         }
         return roles.stream().anyMatch(properties.getRequiredRoles()::contains);
+    }
+
+    private void applyFinalRecoveryCode(SystemUser user) {
+        user.setTwoFactorEnabled(false);
+        user.setTwoFaVersionOrSalt(UUID.randomUUID().toString());
+        user.setEnrollmentConfirmedAt(null);
+        user.setLastRecoveryCodeIdUsed(0);
+        resetFailures(user);
     }
 }

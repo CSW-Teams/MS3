@@ -11,8 +11,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +31,7 @@ class TwoFactorAuthenticationServiceTest {
     private TwoFactorProperties properties;
     private TwoFactorCodeService codeService;
     private TwoFactorAuthenticationService service;
-    private Clock fixedClock;
+    private MutableClock mutableClock;
 
     @BeforeEach
     void setUp() {
@@ -39,10 +40,12 @@ class TwoFactorAuthenticationServiceTest {
         properties.setMasterKey("unit-test-master-key");
         properties.setAllowedDriftWindows(0);
         properties.setLockoutThreshold(2);
+        properties.setRecoveryCodeCount(5);
+        properties.setRecoveryCodeLength(12);
 
-        fixedClock = Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneOffset.UTC);
-        codeService = new TwoFactorCodeService(properties, fixedClock);
-        service = new TwoFactorAuthenticationService(properties, codeService, systemUserDAO, fixedClock);
+        mutableClock = new MutableClock(Instant.parse("2024-01-01T00:00:00Z"));
+        codeService = new TwoFactorCodeService(properties, mutableClock);
+        service = new TwoFactorAuthenticationService(properties, codeService, systemUserDAO, mutableClock);
     }
 
     @Test
@@ -93,6 +96,22 @@ class TwoFactorAuthenticationServiceTest {
     }
 
     @Test
+    void lockoutShouldReleaseAfterDuration() {
+        SystemUser user = buildUser(Set.of(SystemActor.PLANNER), true);
+
+        service.processTwoFactor(user, "badcode");
+        TwoFactorResult lockout = service.processTwoFactor(user, "badcode");
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, lockout.getStatus());
+
+        mutableClock.advance(Duration.ofSeconds(61));
+        String otp = codeService.currentCodeForUser(user);
+        TwoFactorResult success = service.processTwoFactor(user, otp);
+
+        assertTrue(success.isSuccessful());
+        assertEquals(0, user.getOtpFailedAttempts());
+    }
+
+    @Test
     void enrollmentRequiredForEnforcedRolesWithoutOptIn() {
         SystemUser user = buildUser(Set.of(SystemActor.PLANNER), false);
 
@@ -102,6 +121,37 @@ class TwoFactorAuthenticationServiceTest {
         assertEquals(HttpStatus.FORBIDDEN, result.getStatus());
     }
 
+    @Test
+    void recoveryCodeAllowsJumpAheadAndRejectsStale() {
+        SystemUser user = buildUser(Set.of(SystemActor.PLANNER), true);
+        user.setLastRecoveryCodeIdUsed(1);
+
+        String staleCode = codeService.recoveryCodeForUser(user, 1);
+        TwoFactorResult staleAttempt = service.processTwoFactor(user, staleCode);
+        assertEquals(HttpStatus.UNAUTHORIZED, staleAttempt.getStatus());
+
+        String jumpAheadCode = codeService.recoveryCodeForUser(user, 3);
+        TwoFactorResult jumpAheadResult = service.processTwoFactor(user, jumpAheadCode);
+
+        assertTrue(jumpAheadResult.isSuccessful());
+        assertEquals(3, user.getLastRecoveryCodeIdUsed());
+    }
+
+    @Test
+    void finalRecoveryCodeDisablesTwoFactorAndRotatesSalt() {
+        SystemUser user = buildUser(Set.of(SystemActor.PLANNER), true);
+        String originalSalt = user.getTwoFaVersionOrSalt();
+        user.setLastRecoveryCodeIdUsed(3);
+
+        String finalCode = codeService.recoveryCodeForUser(user, properties.getRecoveryCodeCount());
+        TwoFactorResult result = service.processTwoFactor(user, finalCode);
+
+        assertTrue(result.isSuccessful());
+        assertFalse(user.isTwoFactorEnabled());
+        assertNotEquals(originalSalt, user.getTwoFaVersionOrSalt());
+        assertEquals(0, user.getLastRecoveryCodeIdUsed());
+    }
+
     private SystemUser buildUser(Set<SystemActor> roles, boolean twoFactorEnabled) {
         SystemUser user = new SystemUser();
         user.setEmail("user@example.com");
@@ -109,5 +159,32 @@ class TwoFactorAuthenticationServiceTest {
         user.setTwoFactorEnabled(twoFactorEnabled);
         user.setTwoFaVersionOrSalt("v1");
         return user;
+    }
+
+    private static class MutableClock extends Clock {
+        private Instant instant;
+
+        MutableClock(Instant instant) {
+            this.instant = instant;
+        }
+
+        void advance(Duration duration) {
+            instant = instant.plus(duration);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneId.of("UTC");
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
     }
 }
