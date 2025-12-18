@@ -23,6 +23,22 @@ export  class LoginAPI {
     return await fetch('/api/login/', requestOptions);
   }
 
+  async postLoginOtp(challenge, code, isRecoveryCode = false) {
+    const payload = {
+      challenge,
+      code,
+      isRecoveryCode
+    };
+
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    };
+
+    return await fetch('/api/login/otp', requestOptions);
+  }
+
   /**
    * Richiede al backend la modifca della password di un utente.
    * @param {*} credenziali (id, vecchia e nuova password)
