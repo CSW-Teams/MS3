@@ -1,5 +1,7 @@
 package org.cswteams.ms3.filters;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.cswteams.ms3.control.login.LoginController;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.tenant.TenantContext;
@@ -43,7 +45,21 @@ public class JwtRequestFilters extends OncePerRequestFilter {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
+            try {
+                username = jwtUtil.extractUsername(jwt);
+            } catch (ExpiredJwtException e) {
+                logger.warn("Expired JWT in request to {}", request.getRequestURI());
+                handleUnauthorized(response, "Token expired");
+                TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
+                SecurityContextHolder.clearContext();
+                return;
+            } catch (JwtException | IllegalArgumentException e) {
+                logger.warn("Invalid JWT in request to {}", request.getRequestURI());
+                handleUnauthorized(response, "Invalid token");
+                TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
+                SecurityContextHolder.clearContext();
+                return;
+            }
         } else {
             // Log missing or invalid token header and allow unauthenticated endpoints to bypass
             logger.debug("Missing or invalid Authorization header for request: {}", request.getRequestURI());
@@ -66,25 +82,46 @@ public class JwtRequestFilters extends OncePerRequestFilter {
                 return;
             }
 
-            if (jwtUtil.validateToken(jwt, loggedUserDTO)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                        new UsernamePasswordAuthenticationToken(loggedUserDTO, null, loggedUserDTO.getAuthorities());
+            try {
+                if (jwtUtil.validateToken(jwt, loggedUserDTO)) {
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                            new UsernamePasswordAuthenticationToken(loggedUserDTO, null, loggedUserDTO.getAuthorities());
 
-                logger.debug("UsernamePasswordAuthToken: {}", usernamePasswordAuthenticationToken);
+                    logger.debug("UsernamePasswordAuthToken: {}", usernamePasswordAuthenticationToken);
 
-                usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
-                String tenantId = jwtUtil.parseTenantFromJwt(jwt);
-                TenantContext.setCurrentTenant(tenantId);
-            } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid token");
+                    String tenantId = jwtUtil.parseTenantFromJwt(jwt);
+                    TenantContext.setCurrentTenant(tenantId);
+                } else {
+                    handleUnauthorized(response, "Invalid token");
+                    SecurityContextHolder.clearContext();
+                    return;
+                }
+            } catch (ExpiredJwtException e) {
+                logger.warn("Expired JWT during validation for request to {}", request.getRequestURI());
+                handleUnauthorized(response, "Token expired");
+                SecurityContextHolder.clearContext();
+                TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
+                return;
+            } catch (JwtException | IllegalArgumentException e) {
+                logger.warn("Invalid JWT during validation for request to {}", request.getRequestURI());
+                handleUnauthorized(response, "Invalid token");
+                SecurityContextHolder.clearContext();
+                TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
                 return;
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void handleUnauthorized(HttpServletResponse response, String message) throws IOException {
+        if (!response.isCommitted()) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(message);
+        }
     }
 }
