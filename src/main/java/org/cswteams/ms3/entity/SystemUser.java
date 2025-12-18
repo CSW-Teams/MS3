@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
@@ -51,6 +52,27 @@ public class SystemUser {
 
     @NotNull
     private String password;
+
+    @Column(name = "two_fa_version_or_salt")
+    private String twoFaVersionOrSalt;
+
+    @Column(name = "two_factor_enabled", nullable = false)
+    private boolean twoFactorEnabled = false;
+
+    @Column(name = "enrollment_confirmed_at")
+    private LocalDateTime enrollmentConfirmedAt;
+
+    @Column(name = "last_recovery_code_id_used", nullable = false)
+    private int lastRecoveryCodeIdUsed = 0;
+
+    @Column(name = "otp_failed_attempts", nullable = false)
+    private int otpFailedAttempts = 0;
+
+    @Column(name = "otp_lockout_ends_at")
+    private LocalDateTime otpLockoutEndsAt;
+
+    @Column(name = "otp_last_attempt_at")
+    private LocalDateTime otpLastAttemptAt;
 
     /**
      * The "roles" that the <i>user</i> can have into the system.

@@ -8,6 +8,8 @@ public interface SystemUserDAO extends JpaRepository<SystemUser, Long> {
 
     SystemUser findByEmail(String email);
 
+    SystemUser findByEmailAndTenant(String email, String tenant);
+
     SystemUser findById(long userID);
 
 }
