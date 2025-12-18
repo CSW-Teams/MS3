@@ -22,6 +22,7 @@ docker run --name ms3-test-db \
   -p 5432:5432 -d postgres:14
 ```
 
+The `init-scripts` in `src/main/resources/db` create the tenant roles. `assign_privileges.sql` also grants tenant users access to the shared `public.blacklisted_tokens` table and its sequence so token bans work in every schema. When the Spring context boots, `SchemasInitializer` runs once and applies the 2FA SQL to the `public`, `a`, and `b` schemas (or any schemas declared in `tenants_config.json`).
 The `init-scripts` in `src/main/resources/db` create the tenant roles. When the Spring context boots, `SchemasInitializer` runs once and applies the 2FA SQL to the `public`, `a`, and `b` schemas (or any schemas declared in `tenants_config.json`).
 
 ## Running tests against the initializer
