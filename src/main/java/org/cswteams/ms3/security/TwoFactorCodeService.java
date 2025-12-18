@@ -88,9 +88,13 @@ public class TwoFactorCodeService {
         return RecoveryVerificationResult.invalid();
     }
 
+    public byte[] deriveTotpSecret(SystemUser user) throws GeneralSecurityException {
+        return deriveSecret(user, "totp");
+    }
+
     private String generateTotp(SystemUser user, long timeWindow) {
         try {
-            byte[] secret = deriveSecret(user, "totp");
+            byte[] secret = deriveTotpSecret(user);
             Mac mac = Mac.getInstance(HMAC_SHA_1);
             mac.init(new SecretKeySpec(secret, HMAC_SHA_1));
             byte[] data = ByteBuffer.allocate(8).putLong(timeWindow).array();
