@@ -58,4 +58,17 @@ Per utilizzare l'applicazione, poi, visitare (sostituire FRONTEND_EXPOSE con il 
 http://localhost:FRONTEND_EXPOSE
 ```
 
+### 🗄️ Aggiornare il database con modifiche di schema (es. colonne 2FA)
+L'avvio in container crea i ruoli e i permessi tramite `src/main/resources/db/init-scripts/init-users.sh` prima che lo
+`SchemasInitializer` dell'applicazione applichi gli script SQL per ogni tenant (public, A, B). Assicurarsi che le variabili di
+ambiente `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_TENANT_PUBLIC_USER`, `DB_TENANT_PUBLIC_PASSWORD`, `DB_TENANT_A_USER`,
+`DB_TENANT_A_PASSWORD`, `DB_TENANT_B_USER`, `DB_TENANT_B_PASSWORD` siano impostate in `.env` o nella shell e corrispondano ai
+placeholder in `src/main/resources/application-container.properties`, altrimenti l'initializer non potrà collegarsi per creare o
+aggiornare le tabelle (incluse le colonne 2FA).
+
+Quando vengono introdotte modifiche strutturali (come nuove colonne 2FA), è consigliabile ricreare il volume `db_data` per
+evitare schemi obsoleti:
+1. Fermare i container: `docker-compose down -v` (oppure rimuovere il volume `ms3_db_data`).
+2. Rieseguire `docker-compose up -d` per rieseguire gli script di bootstrap e l'initializer sugli schemi puliti.
+
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/90c0c1712b2141c2a3bfd8e243cd598a)](https://app.codacy.com/gh/CSW-Teams/MS3/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)

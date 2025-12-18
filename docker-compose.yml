@@ -47,8 +47,11 @@ services:
       - ./src/main/resources/db/init-scripts:/docker-entrypoint-initdb.d
     environment:
 
-      # NOTE: the following values must be specified in the corresponding
-      # environment variables before launching this docker compose file.
+      # NOTE: credentials must mirror application-container.properties so the
+      # SchemasInitializer can apply schema updates (including 2FA columns) for
+      # each tenant. Override them via .env or your shell before docker-compose up.
+      # When database structures change, prune the db_data volume (e.g. `docker-compose down -v`)
+      # so init-users.sh and the initializer rerun on a clean Postgres instance.
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
