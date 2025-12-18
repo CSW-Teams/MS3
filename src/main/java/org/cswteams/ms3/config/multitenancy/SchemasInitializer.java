@@ -13,6 +13,8 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -73,12 +75,14 @@ public class SchemasInitializer {
             changeSchemaToTenant(connection, DEFAULT_SCHEMA);
             createTablesInPublicSchema(connection);
             apply2FaColumns(connection, DEFAULT_SCHEMA);
+            logSystemUserTablePresence(connection, DEFAULT_SCHEMA);
 
             // Step 2: Crea le varie tabelle in ciascun schema dei tenant
             for (String schema : tenantSchemas) {
                 changeSchemaToTenant(connection, schema.toLowerCase());
                 createTablesForTenant(connection, schema.toLowerCase());
                 apply2FaColumns(connection, schema.toLowerCase());
+                logSystemUserTablePresence(connection, schema.toLowerCase());
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -205,6 +209,27 @@ public class SchemasInitializer {
         Statement statement = connection.createStatement();
 
         // Passa allo schema del tenant
-        statement.execute("SET search_path TO " + tenantName);
+        statement.execute("SET search_path TO " + tenantName + ", public");
+    }
+
+    private void logSystemUserTablePresence(Connection connection, String schemaName) {
+        final String query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = ? AND table_name = 'ms3_system_user')";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, schemaName);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    boolean present = resultSet.getBoolean(1);
+                    if (present) {
+                        System.out.println("Tabella ms3_system_user trovata nello schema '" + schemaName + "'");
+                    } else if (DEFAULT_SCHEMA.equals(schemaName)) {
+                        throw new RuntimeException("Tabella ms3_system_user non trovata nello schema 'public'.");
+                    } else {
+                        System.out.println("Tabella ms3_system_user non trovata nello schema '" + schemaName + "' (verrà risolta tramite search_path verso 'public').");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Errore nel controllo della tabella ms3_system_user per lo schema " + schemaName, e);
+        }
     }
 }
