@@ -3,6 +3,7 @@
 - **Dependencies**: Later prompts depend on models, endpoints, and UI contracts established in earlier prompts (e.g., lockout state from prompt 1 is required by prompts 5–6; deterministic derivation utilities from prompt 2 are used throughout).
 - **Manual Steps**: Before running implementation prompts, configure the server-wide HMAC master key as an environment/config property consistent with MS3 patterns (e.g., Spring property binding). Do not commit the secret.
 - **Decision Summary**: User-initiated enrollment; two-step login challenge; self-service disable + recovery codes; role-based enforcement (optional by default); deterministic HMAC-derived TOTP and recovery codes; jump-ahead recovery semantics with final-code disable/rotation; no challenge TTL (rely on OTP freshness + lockout); attempt-count lockout after N failures → 60-second block (server-enforced).
+- **Policy Reference**: All prompts must be executed in alignment with `docs/security/2fa_totp_design.md`, which remains the source of truth for policy decisions (no challenge TTL, deterministic HMAC derivation, jump-ahead recovery semantics, and lockout rules).
 
 ## Codex Prompt — DB schema for 2FA state & lockout
 **Context**
