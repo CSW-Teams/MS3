@@ -31,6 +31,14 @@ grant usage on schema public to tenant_b_user;
 grant select, insert on public.blacklisted_tokens to tenant_a_user;
 grant select, insert on public.blacklisted_tokens to tenant_b_user;
 
+-- Allow tenant users to read and manage system users stored in the shared 'public' schema
+grant select, insert, update, delete on public.ms3_system_user to tenant_a_user;
+grant select, insert, update, delete on public.ms3_system_user to tenant_b_user;
+grant select, insert, update, delete on public.systemuser_systemactors to tenant_a_user;
+grant select, insert, update, delete on public.systemuser_systemactors to tenant_b_user;
+grant select, insert, update, delete on public.user_system_actors to tenant_a_user;
+grant select, insert, update, delete on public.user_system_actors to tenant_b_user;
+
 -- Grants privileges for tenant users to generate new ids in 'blacklisted_tokens' when a banned token is inserted
 grant usage, select on sequence public.blacklisted_tokens_id_seq to tenant_a_user;
 grant usage, select on sequence public.blacklisted_tokens_id_seq to tenant_b_user;
