@@ -51,7 +51,6 @@ export default class LoginView extends React.Component {
 
       // two factor flow
       twoFactorDialogOpen: false,
-      twoFactorChallenge: null,
       twoFactorMessage: "",
       otpInput: "",
       isRecoveryCode: false,
@@ -147,7 +146,6 @@ export default class LoginView extends React.Component {
   }
 
   handleTwoFactorChallenge = (data, status) => {
-    const challenge = data?.challenge || data?.challengeToken || data?.twoFactorChallenge;
     const lockoutInfo = status === 429 ? {
       message: data?.message,
       retryAfterSeconds: data?.retryAfterSeconds
@@ -155,7 +153,6 @@ export default class LoginView extends React.Component {
 
     this.setState({
       twoFactorDialogOpen: true,
-      twoFactorChallenge: challenge || null,
       twoFactorMessage: data?.message || t('Two-factor authentication required.'),
       otpInput: "",
       isRecoveryCode: false,
@@ -174,7 +171,6 @@ export default class LoginView extends React.Component {
   handleOtpDialogClose = () => {
     this.setState({
       twoFactorDialogOpen: false,
-      twoFactorChallenge: null,
       twoFactorMessage: "",
       otpInput: "",
       isRecoveryCode: false,
@@ -200,23 +196,17 @@ export default class LoginView extends React.Component {
       return;
     }
 
-    if (!this.state.twoFactorChallenge) {
-      const message = this.state.enrollmentRequired
-        ? t('Two-factor enrollment is required before login. Please enroll from the Two-Factor Security page once authenticated or contact an administrator for assistance.')
-        : t('Authentication Failed');
-      toast.error(message, TOAST_OPTIONS);
-      return;
-    }
-
     this.setState({otpSubmitting: true});
 
     try {
       const loginAPI = new LoginAPI();
-      const response = await loginAPI.postLoginOtp(
-        this.state.twoFactorChallenge,
-        this.state.otpInput,
-        this.state.isRecoveryCode
-      );
+      const response = await loginAPI.postLogin({
+        email: this.state.email,
+        password: this.state.password,
+        turnstileToken: this.state.turnstileToken,
+        twoFactorCode: this.state.otpInput,
+        isRecoveryCode: this.state.isRecoveryCode
+      });
 
       let data = {};
       try {
@@ -225,29 +215,29 @@ export default class LoginView extends React.Component {
         data = {};
       }
 
-      if (response.ok && data.jwt) {
+      if (response.ok && data?.jwt) {
         this.setState({twoFactorDialogOpen: false, lockoutInfo: null});
         await this.handleCompleteLogin(data);
         return;
       }
 
-      if (data?.requiresTwoFactor) {
-        const lockoutInfo = response.status === 429 ? {
-          message: data?.message,
-          retryAfterSeconds: data?.retryAfterSeconds
-        } : null;
+      if (response.status === 403 && data?.requiresTwoFactor) {
+        this.handleTwoFactorChallenge(data, response.status);
+        return;
+      }
 
+      if (response.status === 429 && data?.requiresTwoFactor) {
+        this.handleTwoFactorChallenge(data, response.status);
+        return;
+      }
+
+      if (response.status === 401) {
+        const message = data?.message || t('Invalid two-factor code.');
         this.setState({
-          twoFactorMessage: data?.message || t('Invalid code. Please try again.'),
-          lockoutInfo
+          twoFactorMessage: message,
+          lockoutInfo: null
         });
-
-        const toastMessage = data?.message || t('Invalid two-factor code.');
-        if (response.status === 429) {
-          toast.warn(`${t('Authentication Failed')}: ${t(toastMessage)}`, TOAST_OPTIONS);
-        } else {
-          toast.error(`${t('Authentication Failed')} ${t(toastMessage)}`, TOAST_OPTIONS);
-        }
+        toast.error(`${t('Authentication Failed')} ${t(message)}`, TOAST_OPTIONS);
         return;
       }
 
@@ -299,18 +289,19 @@ export default class LoginView extends React.Component {
       responseData = {};
     }
 
-    if (httpResponse.ok) {
-      if (responseData?.requiresTwoFactor && !responseData?.jwt) {
-        this.handleTwoFactorChallenge(responseData, httpResponse.status);
-        return;
-      }
-
+    if (httpResponse.ok && responseData?.jwt && !responseData?.requiresTwoFactor) {
       await this.handleCompleteLogin(responseData);
       return;
     }
 
     if (responseData?.requiresTwoFactor) {
       this.handleTwoFactorChallenge(responseData, httpResponse.status);
+      return;
+    }
+
+    if (httpResponse.status === 429) {
+      const message = responseData?.message || t('Too many attempts. Please wait before trying again.');
+      toast.warn(`${t('Authentication Failed')}: ${t(message)}`, TOAST_OPTIONS);
       return;
     }
 
@@ -348,7 +339,7 @@ export default class LoginView extends React.Component {
               {this.state.twoFactorMessage || t('Enter the authentication code to continue.')}
             </Typography>
 
-            {this.state.enrollmentRequired && !this.state.twoFactorChallenge && (
+            {this.state.enrollmentRequired && (
               <Alert severity="warning" sx={{mb: 2}}>
                 {t('Enrollment is required for your role. After signing in, open the "Two-Factor Security" page to complete enrollment. If you cannot proceed, contact an administrator.')}
               </Alert>
@@ -379,7 +370,7 @@ export default class LoginView extends React.Component {
           <DialogActions>
             <Button onClick={this.handleOtpDialogClose}>{t('Cancel')}</Button>
             <Button onClick={this.handleOtpSubmit}
-                    disabled={this.state.otpSubmitting || !!this.state.lockoutInfo || (this.state.enrollmentRequired && !this.state.twoFactorChallenge)}
+                    disabled={this.state.otpSubmitting || !!this.state.lockoutInfo}
                     variant="contained">
               {t('Verify')}
             </Button>
