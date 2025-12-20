@@ -153,9 +153,16 @@ class TwoFactorAuthenticationServiceTest {
     }
 
     private SystemUser buildUser(Set<SystemActor> roles, boolean twoFactorEnabled) {
-        SystemUser user = new SystemUser();
-        user.setEmail("user@example.com");
-        user.setSystemActors(roles);
+        SystemUser user = new SystemUser(
+                "John",
+                "Doe",
+                "TAXCODE",
+                java.time.LocalDate.of(1990, 1, 1),
+                "user@example.com",
+                "password",
+                roles,
+                "public"
+        );
         user.setTwoFactorEnabled(twoFactorEnabled);
         user.setTwoFaVersionOrSalt("v1");
         return user;

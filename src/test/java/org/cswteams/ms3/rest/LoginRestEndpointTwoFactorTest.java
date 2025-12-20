@@ -17,8 +17,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Set;
@@ -66,9 +66,16 @@ class LoginRestEndpointTwoFactorTest {
         when(blacklistService.isInBlackList(any())).thenReturn(false);
         when(authenticationManager.authenticate(any())).thenReturn(Mockito.mock(Authentication.class));
 
-        SystemUser user = new SystemUser();
-        user.setEmail("user@example.com");
-        user.setSystemActors(Set.of(SystemActor.PLANNER));
+        SystemUser user = new SystemUser(
+                "John",
+                "Doe",
+                "TAXCODE",
+                java.time.LocalDate.of(1990, 1, 1),
+                "user@example.com",
+                "password",
+                Set.of(SystemActor.PLANNER),
+                "tenant"
+        );
         user.setTwoFactorEnabled(true);
 
         CustomUserDetails details = new CustomUserDetails(1L, "John", "Doe", user.getEmail(), "encoded", user.getSystemActors(), "tenant");

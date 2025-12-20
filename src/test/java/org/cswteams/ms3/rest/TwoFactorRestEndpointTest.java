@@ -50,9 +50,16 @@ class TwoFactorRestEndpointTest {
     private Clock clock;
 
     private SystemUser buildUser() {
-        SystemUser user = new SystemUser();
-        user.setEmail("user@example.com");
-        user.setTenant("public");
+        SystemUser user = new SystemUser(
+                "John",
+                "Doe",
+                "TAXCODE",
+                java.time.LocalDate.of(1990, 1, 1),
+                "user@example.com",
+                "password",
+                Collections.emptySet(),
+                "public"
+        );
         user.setTwoFactorEnabled(false);
         return user;
     }
