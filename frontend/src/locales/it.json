@@ -81,6 +81,9 @@
   "Re-enroll to refresh codes": "Riattiva per aggiornare i codici",
   "Start enrollment": "Avvia attivazione",
   "Two-factor authentication required.": "Richiesta verifica in due passaggi.",
+  "Two-factor enrollment required.": "Richiesta attivazione della verifica in due passaggi.",
+  "Two-factor enrollment required. Please complete enrollment to continue.": "È richiesta l’attivazione della verifica in due passaggi. Completa l’attivazione per continuare.",
+  "Two-factor authentication is required to continue.": "La verifica in due passaggi è necessaria per continuare.",
   "Enter the code from your authenticator app to continue.": "Inserisci il codice dall’app di autenticazione per continuare.",
   "Please enter a code to continue.": "Inserisci un codice per continuare.",
   "Invalid two-factor code.": "Codice a due fattori non valido.",
@@ -92,6 +95,7 @@
   "seconds": "secondi",
   "Too many attempts. Please wait before trying again.": "Troppi tentativi. Attendi prima di riprovare.",
   "Too many attempts. Please wait.": "Troppi tentativi. Attendi.",
+  "An unknown authentication error occurred. Please try again.": "Si è verificato un errore di autenticazione sconosciuto. Riprova.",
   "Verify": "Verifica",
 
   "Conditions": "Condizioni",
