@@ -16,6 +16,7 @@ import {TwoFactorAPI} from "../../API/TwoFactorAPI";
 import {toast} from "react-toastify";
 import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
+import {QRCodeCanvas} from "qrcode.react";
 
 export default class TwoFactorEnrollmentView extends React.Component {
   constructor(props) {
@@ -238,9 +239,28 @@ export default class TwoFactorEnrollmentView extends React.Component {
           <Typography variant="body2" gutterBottom>
             {t('Scan the QR code with your authenticator app or enter the manual key below, then provide the current code to confirm enrollment.')}
           </Typography>
-          {this.state.qrImage && (
-            <Box sx={{my: 2, display: 'flex', justifyContent: 'center'}}>
-              <img src={this.state.qrImage} alt={t('Authenticator QR code')} style={{maxWidth: '240px'}} />
+          {(this.state.otpauthUrl || this.state.qrImage) && (
+            <Box sx={{my: 3, display: 'flex', justifyContent: 'center'}}>
+              <Box
+                sx={{
+                  p: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  display: 'inline-flex',
+                  backgroundColor: 'background.paper'
+                }}
+              >
+                {this.state.otpauthUrl ? (
+                  <QRCodeCanvas
+                    value={this.state.otpauthUrl}
+                    size={220}
+                    includeMargin
+                  />
+                ) : (
+                  <img src={this.state.qrImage} alt={t('Authenticator QR code')} style={{maxWidth: '220px'}} />
+                )}
+              </Box>
             </Box>
           )}
           <TextField
