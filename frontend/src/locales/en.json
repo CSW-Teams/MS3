@@ -82,6 +82,9 @@
   "Re-enroll to refresh codes": "Re-enroll to refresh codes",
   "Start enrollment": "Start enrollment",
   "Two-factor authentication required.": "Two-factor authentication required.",
+  "Two-factor enrollment required.": "Two-factor enrollment required.",
+  "Two-factor enrollment required. Please complete enrollment to continue.": "Two-factor enrollment required. Please complete enrollment to continue.",
+  "Two-factor authentication is required to continue.": "Two-factor authentication is required to continue.",
   "Enter the code from your authenticator app to continue.": "Enter the code from your authenticator app to continue.",
   "Please enter a code to continue.": "Please enter a code to continue.",
   "Invalid two-factor code.": "Invalid two-factor code.",
@@ -93,6 +96,7 @@
   "seconds": "seconds",
   "Too many attempts. Please wait before trying again.": "Too many attempts. Please wait before trying again.",
   "Too many attempts. Please wait.": "Too many attempts. Please wait.",
+  "An unknown authentication error occurred. Please try again.": "An unknown authentication error occurred. Please try again.",
   "Verify": "Verify",
 
   "Condition deleted successfully": "Condition deleted successfully",
