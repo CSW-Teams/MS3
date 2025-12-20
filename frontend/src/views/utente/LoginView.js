@@ -30,6 +30,29 @@ const TOAST_OPTIONS = {
   theme: "colored",
 };
 
+const TWO_FACTOR_MESSAGE_MAP = {
+  twoFactorRequired: {
+    dialog: 'Two-factor authentication required.',
+    toast: 'Enter the code from your authenticator app to continue.'
+  },
+  lockout: {
+    dialog: 'Too many failed attempts. Please wait before retrying.',
+    toast: 'Too many attempts. Please wait before trying again.'
+  },
+  invalidCode: {
+    dialog: 'Invalid two-factor code.',
+    toast: 'Invalid two-factor code.'
+  },
+  enrollmentRequired: {
+    dialog: 'Two-factor enrollment required. Please complete enrollment to continue.',
+    toast: 'Two-factor enrollment required.'
+  },
+  fallback: {
+    dialog: 'Enter the authentication code to continue.',
+    toast: 'Two-factor authentication is required to continue.'
+  }
+};
+
 // Define a LoginView component using React class-based component
 export default class LoginView extends React.Component {
   constructor(props) {
@@ -145,15 +168,50 @@ export default class LoginView extends React.Component {
     this.handleDialogOpen();
   }
 
+  resolveTwoFactorChallengeKey = (status, data) => {
+    if (status === 429 && data?.requiresTwoFactor) {
+      return 'lockout';
+    }
+
+    if (status === 403 && data?.requiresTwoFactor) {
+      return 'twoFactorRequired';
+    }
+
+    if (data?.enrollmentRequired) {
+      return 'enrollmentRequired';
+    }
+
+    return 'fallback';
+  }
+
+  resolveTwoFactorErrorKey = (status) => {
+    if (status === 401) {
+      return 'invalidCode';
+    }
+
+    if (status === 429) {
+      return 'lockout';
+    }
+
+    return 'fallback';
+  }
+
+  getTwoFactorCopy = (key) => {
+    return TWO_FACTOR_MESSAGE_MAP[key] || TWO_FACTOR_MESSAGE_MAP.fallback;
+  }
+
   handleTwoFactorChallenge = (data, status) => {
+    const challengeKey = this.resolveTwoFactorChallengeKey(status, data);
+    const {dialog, toast: toastMessage} = this.getTwoFactorCopy(challengeKey);
+    const lockoutCopy = this.getTwoFactorCopy('lockout');
     const lockoutInfo = status === 429 ? {
-      message: data?.message,
+      message: t(lockoutCopy.dialog),
       retryAfterSeconds: data?.retryAfterSeconds
     } : null;
 
     this.setState({
       twoFactorDialogOpen: true,
-      twoFactorMessage: data?.message || t('Two-factor authentication required.'),
+      twoFactorMessage: t(dialog),
       otpInput: "",
       isRecoveryCode: false,
       lockoutInfo,
@@ -161,11 +219,11 @@ export default class LoginView extends React.Component {
     });
 
     if (status === 429) {
-      toast.warn(`${t('Authentication Failed')}: ${t(data?.message || 'Too many attempts. Please wait.')}`, TOAST_OPTIONS);
+      toast.warn(`${t('Authentication Failed')}: ${t(lockoutCopy.toast)}`, TOAST_OPTIONS);
       return;
     }
 
-    toast.info(t('Enter the code from your authenticator app to continue.'), TOAST_OPTIONS);
+    toast.info(t(toastMessage), TOAST_OPTIONS);
   }
 
   handleOtpDialogClose = () => {
@@ -232,16 +290,18 @@ export default class LoginView extends React.Component {
       }
 
       if (response.status === 401) {
-        const message = data?.message || t('Invalid two-factor code.');
+        const {dialog, toast: toastMessage} = this.getTwoFactorCopy(this.resolveTwoFactorErrorKey(response.status));
         this.setState({
-          twoFactorMessage: message,
+          twoFactorMessage: t(dialog),
           lockoutInfo: null
         });
-        toast.error(`${t('Authentication Failed')} ${t(message)}`, TOAST_OPTIONS);
+        toast.error(`${t('Authentication Failed')} ${t(toastMessage)}`, TOAST_OPTIONS);
         return;
       }
 
-      toast.error(`${t('Authentication Failed')} ${t(data?.message || '')}`, TOAST_OPTIONS);
+      const fallbackCopy = this.getTwoFactorCopy(this.resolveTwoFactorErrorKey(response.status));
+      this.setState({twoFactorMessage: t(fallbackCopy.dialog)});
+      toast.error(`${t('Authentication Failed')} ${t(fallbackCopy.toast)}`, TOAST_OPTIONS);
     } catch (err) {
       console.error("OTP verification error:", err);
       toast.error(`${t('Authentication Failed. Server not online')}`, TOAST_OPTIONS);
