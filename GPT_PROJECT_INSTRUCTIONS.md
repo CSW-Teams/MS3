@@ -1,6 +1,6 @@
 
 <!-- v4 -->
-<!-- filename: PROJECT_INSTRUCTIONS.md -->
+<!-- filename: GPT_PROJECT_INSTRUCTIONS.md -->
 
 # MS3 — Project Operating Rules (Final Macro-Prompt Workflow)
 
