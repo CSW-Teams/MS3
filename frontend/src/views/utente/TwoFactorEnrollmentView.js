@@ -58,6 +58,23 @@ export default class TwoFactorEnrollmentView extends React.Component {
     });
   }
 
+  isValidOtpauthUrl = (url) => {
+    if (typeof url !== "string") {
+      return false;
+    }
+
+    const trimmed = url.trim();
+    return trimmed.startsWith("otpauth://");
+  }
+
+  sanitizeOtpauthUrl = (url) => {
+    if (!this.isValidOtpauthUrl(url)) {
+      return "";
+    }
+
+    return url.trim();
+  }
+
   loadStatus = async () => {
     this.setState({loadingStatus: true});
     try {
@@ -87,6 +104,16 @@ export default class TwoFactorEnrollmentView extends React.Component {
   }
 
   handleStartEnrollment = async () => {
+    this.setState({
+      enrollmentStarted: true,
+      qrImage: null,
+      manualKey: "",
+      otpauthUrl: "",
+      recoveryCodes: [],
+      otpInput: "",
+      confirmationInFlight: false,
+    });
+
     try {
       const response = await this.twoFactorApi.startEnrollment();
       let data = {};
@@ -98,6 +125,7 @@ export default class TwoFactorEnrollmentView extends React.Component {
 
       if (!response.ok) {
         toast.error(t(data?.message || "Unable to start enrollment."));
+        this.setState({enrollmentStarted: false});
         return;
       }
 
@@ -105,13 +133,14 @@ export default class TwoFactorEnrollmentView extends React.Component {
         enrollmentStarted: true,
         qrImage: data.qrImage || null,
         manualKey: data.manualKey || data.secretKey || "",
-        otpauthUrl: data.otpauthUrl || "",
+        otpauthUrl: this.sanitizeOtpauthUrl(data.otpauthUrl),
         recoveryCodes: data.recoveryCodes || [],
         statusMessage: data.message || "",
         otpInput: "",
       });
       toast.info(t("Scan the QR code or enter the manual key, then confirm with an authenticator code."));
     } catch (err) {
+      this.setState({enrollmentStarted: false});
       panic();
     }
   }
@@ -232,6 +261,11 @@ export default class TwoFactorEnrollmentView extends React.Component {
       return null;
     }
 
+    const hasValidOtpauthUrl = this.isValidOtpauthUrl(this.state.otpauthUrl);
+    const hasQrImage = !!this.state.qrImage;
+    const showQrCode = hasValidOtpauthUrl || hasQrImage;
+    const showQrUnavailable = !showQrCode;
+
     return (
       <Card variant="outlined" sx={{mt: 3}}>
         <CardContent>
@@ -239,7 +273,12 @@ export default class TwoFactorEnrollmentView extends React.Component {
           <Typography variant="body2" gutterBottom>
             {t('Scan the QR code with your authenticator app or enter the manual key below, then provide the current code to confirm enrollment.')}
           </Typography>
-          {(this.state.otpauthUrl || this.state.qrImage) && (
+          {showQrUnavailable && (
+            <Alert severity="warning" sx={{my: 2}}>
+              {t('We could not generate a QR code for this enrollment. Use the manual key below to add your authenticator.')}
+            </Alert>
+          )}
+          {showQrCode && (
             <Box sx={{my: 3, display: 'flex', justifyContent: 'center'}}>
               <Box
                 sx={{
@@ -251,7 +290,7 @@ export default class TwoFactorEnrollmentView extends React.Component {
                   backgroundColor: 'background.paper'
                 }}
               >
-                {this.state.otpauthUrl ? (
+                {hasValidOtpauthUrl ? (
                   <QRCodeCanvas
                     value={this.state.otpauthUrl}
                     size={220}
