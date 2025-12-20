@@ -11,7 +11,9 @@ export  class LoginAPI {
     const userDetails = {
       email: credenziali.email,
       password: credenziali.password,
-      turnstileToken: credenziali.turnstileToken
+      turnstileToken: credenziali.turnstileToken,
+      twoFactorCode: credenziali.twoFactorCode,
+      isRecoveryCode: credenziali.isRecoveryCode
     }
 
     const requestOptions = {
@@ -21,22 +23,6 @@ export  class LoginAPI {
     };
 
     return await fetch('/api/login/', requestOptions);
-  }
-
-  async postLoginOtp(challenge, code, isRecoveryCode = false) {
-    const payload = {
-      challenge,
-      code,
-      isRecoveryCode
-    };
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    };
-
-    return await fetch('/api/login/otp', requestOptions);
   }
 
   /**
