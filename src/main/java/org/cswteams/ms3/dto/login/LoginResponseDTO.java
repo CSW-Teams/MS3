@@ -15,8 +15,14 @@ public class LoginResponseDTO {
     private final String tenant;
 
     private final String jwt;
+    private final boolean requiresTwoFactor;
+    private final String message;
 
     public LoginResponseDTO(CustomUserDetails customUserDetails, String jwt) {
+        this(customUserDetails, jwt, false, null);
+    }
+
+    public LoginResponseDTO(CustomUserDetails customUserDetails, String jwt, boolean requiresTwoFactor, String message) {
         this.id = customUserDetails.getId();
         this.name = customUserDetails.getName();
         this.lastname = customUserDetails.getLastname();
@@ -25,5 +31,7 @@ public class LoginResponseDTO {
         this.tenant = customUserDetails.getTenant();
 
         this.jwt = jwt;
+        this.requiresTwoFactor = requiresTwoFactor;
+        this.message = message;
     }
 }

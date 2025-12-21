@@ -37,9 +37,38 @@ docker-compose up -d
 Se si impiega il codice in produzione, è opportuno impostare le variabili di ambiente `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_TENANT_PUBLIC_USER`, `DB_TENANT_PUBLIC_PASSWORD`, `DB_TENANT_A_USER`, `DB_TENANT_A_PASSWORD`, `DB_TENANT_B_USER` e `DB_TENANT_B_PASSWORD` con i valori desiderati, altrimenti verranno utilizzati i valori di default presenti nel file `.env` che sono salvati in chiaro in questa repository, e ciò può rappresentare un problema di sicurezza.
 La variabile di ambiente `FRONTEND_EXPOSE` determina su quale porta il server node ascolterà le richieste dei clients (Default is 8080).
 
+### 🔐 Configurazione 2FA (TOTP)
+Per l'implementazione TOTP 2FA sono richieste variabili di ambiente aggiuntive. Configurarle prima del deploy e non committare mai i segreti:
+
+| Variabile | Descrizione |
+| --- | --- |
+| `HMAC_MASTER_KEY` | Chiave master usata per derivare i segreti TOTP e i codici di recupero (non deve mai essere loggata o salvata in chiaro). |
+| `MAX_OTP_ATTEMPTS` | Numero massimo di tentativi OTP consecutivi prima del blocco temporaneo. |
+| `OTP_LOCKOUT_SECONDS` | Durata del blocco OTP dopo aver superato `MAX_OTP_ATTEMPTS`. |
+| `ENFORCED_2FA_ROLES` | Lista (separata da virgole) dei ruoli per cui la 2FA è obbligatoria dopo l'accesso con password. |
+| `RECOVERY_CODE_COUNT` | Numero totale di codici di recupero generati per ogni enrollment; l'ultimo codice disabilita la 2FA e richiede una nuova attivazione. |
+
+Note operative:
+- Le challenge OTP non hanno TTL; la sicurezza deriva dalla freschezza dell'OTP (30s) e dal lockout di tentativi.
+- I pipeline di deploy devono gestire `HMAC_MASTER_KEY` come secret sicuro (store dedicato/secret manager) e non tramite file versione.
+- Verificare che le variabili siano presenti in ogni ambiente prima di abilitare la 2FA agli utenti.
+
 Per utilizzare l'applicazione, poi, visitare (sostituire FRONTEND_EXPOSE con il valore configurato):
 ```
 http://localhost:FRONTEND_EXPOSE
 ```
+
+### 🗄️ Aggiornare il database con modifiche di schema (es. colonne 2FA)
+L'avvio in container crea i ruoli e i permessi tramite `src/main/resources/db/init-scripts/init-users.sh` prima che lo
+`SchemasInitializer` dell'applicazione applichi gli script SQL per ogni tenant (public, A, B). Assicurarsi che le variabili di
+ambiente `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_TENANT_PUBLIC_USER`, `DB_TENANT_PUBLIC_PASSWORD`, `DB_TENANT_A_USER`,
+`DB_TENANT_A_PASSWORD`, `DB_TENANT_B_USER`, `DB_TENANT_B_PASSWORD` siano impostate in `.env` o nella shell e corrispondano ai
+placeholder in `src/main/resources/application-container.properties`, altrimenti l'initializer non potrà collegarsi per creare o
+aggiornare le tabelle (incluse le colonne 2FA).
+
+Quando vengono introdotte modifiche strutturali (come nuove colonne 2FA), è consigliabile ricreare il volume `db_data` per
+evitare schemi obsoleti:
+1. Fermare i container: `docker-compose down -v` (oppure rimuovere il volume `ms3_db_data`).
+2. Rieseguire `docker-compose up -d` per rieseguire gli script di bootstrap e l'initializer sugli schemi puliti.
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/90c0c1712b2141c2a3bfd8e243cd598a)](https://app.codacy.com/gh/CSW-Teams/MS3/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)

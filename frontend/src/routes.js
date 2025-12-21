@@ -24,6 +24,7 @@ import SingleUserProfileView from "./views/utente/SingleUserProfileView";
 import PersonalSingleUserProfileView
   from "./views/utente/PersonalSingleUserProfileView";
 import ShiftManagementView from "./views/configuratore/ShiftManagementView";
+import TwoFactorEnrollmentView from "./views/utente/TwoFactorEnrollmentView";
 
 
 export default [
@@ -112,6 +113,11 @@ export default [
     path: "/turni",
     layout: DefaultLayout,
     component:  ShiftManagementView
+  },
+  {
+    path: "/two-factor",
+    layout: DefaultLayout,
+    component: TwoFactorEnrollmentView
   },
   {
     path: "/gestione-festivita",

@@ -26,7 +26,7 @@ public class NotificationRestEndpoint {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         if (notificationDTOS.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+            return new ResponseEntity<>(notificationDTOS, HttpStatus.OK);
         }
         return new ResponseEntity<>(notificationDTOS, HttpStatus.OK);
     }

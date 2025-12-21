@@ -11,7 +11,9 @@ export  class LoginAPI {
     const userDetails = {
       email: credenziali.email,
       password: credenziali.password,
-      turnstileToken: credenziali.turnstileToken
+      turnstileToken: credenziali.turnstileToken,
+      twoFactorCode: credenziali.twoFactorCode,
+      isRecoveryCode: credenziali.isRecoveryCode
     }
 
     const requestOptions = {
