@@ -63,8 +63,6 @@ public class ScheduleBuilder {
     private void validateDates(LocalDate startDate, LocalDate endDate) throws IllegalScheduleException {
         if(startDate.isAfter(endDate))
             throw new IllegalScheduleException();
-        else if(startDate.isBefore(LocalDate.now()))
-            throw new IllegalScheduleException("[ERROR] Cannot create a schedule from a date previous than today!");
     }
 
     /**
@@ -211,14 +209,6 @@ public class ScheduleBuilder {
                         try {
                             this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
                         } catch (NotEnoughFeasibleUsersException e) {
-                            if(entry.getKey() == Seniority.STRUCTURED){
-                                List<DoctorAssignment> listDa = concreteShift.getDoctorAssignmentList()
-                                        .stream()
-                                        .filter(da->da.getDoctor().getSeniority() == Seniority.STRUCTURED)
-                                        .collect(Collectors.toList());
-                                if(listDa.isEmpty()) throw new IllegalScheduleException("There aren't structured meds for this shift");
-                            }
-
                             // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
                             logger.log(Level.SEVERE, e.getMessage(), e);
                             schedule.setCauseIllegal(e);

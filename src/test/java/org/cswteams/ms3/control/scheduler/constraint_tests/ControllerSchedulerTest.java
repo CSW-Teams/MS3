@@ -1,5 +1,6 @@
 package org.cswteams.ms3.control.scheduler.constraint_tests;
 
+import org.cswteams.ms3.AbstractMultiTenantIntegrationTest;
 import org.cswteams.ms3.control.preferenze.CalendarSetting;
 import org.cswteams.ms3.control.preferenze.CalendarSettingBuilder;
 import org.cswteams.ms3.control.preferenze.ICalendarServiceManager;
@@ -23,10 +24,8 @@ import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TimeSlot;
 import org.cswteams.ms3.exception.CalendarServiceException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.cswteams.ms3.tenant.TenantContext;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
 @ActiveProfiles("test")
-public abstract class ControllerSchedulerTest {
+public abstract class ControllerSchedulerTest extends AbstractMultiTenantIntegrationTest {
 
 
     protected boolean isPossible ;
@@ -100,7 +99,6 @@ public abstract class ControllerSchedulerTest {
 
     @Before
     public void beforeScript() {
-
         System.out.println("Port :" + port);
 
         registerHolidays();
@@ -114,6 +112,11 @@ public abstract class ControllerSchedulerTest {
 
         registerConstraints();
         registerScocciature();
+    }
+
+    @After
+    public void afterScript(){
+        TenantContext.clear();
     }
 
     @Test

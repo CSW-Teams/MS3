@@ -97,6 +97,11 @@ public class SchedulerController implements ISchedulerController {
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot)  {
 
+        boolean hasExistingSchedules = !scheduleDAO.findAll().isEmpty();
+        if (!hasExistingSchedules && startDate.isBefore(LocalDate.now())) {
+            return null; // non consentire schedulazioni iniziali nel passato
+        }
+
         //Check if there already exists a shift schedule for the dates we want to plan.
         if(!alreadyExistsAnotherSchedule(startDate,endDate))
             return null;
@@ -439,14 +444,17 @@ public class SchedulerController implements ISchedulerController {
         List<Schedule> allSchedule = scheduleDAO.findAll();
 
         for (Schedule schedule : allSchedule) {
-            if (!(LocalDate.ofEpochDay(schedule.getStartDate())).isBefore(endNewSchedule) && !(LocalDate.ofEpochDay(schedule.getEndDate())).isBefore(startNewSchedule))
-                return false;
+            LocalDate existingStart = LocalDate.ofEpochDay(schedule.getStartDate());
+            LocalDate existingEnd = LocalDate.ofEpochDay(schedule.getEndDate());
 
+            // block only exact duplicate interval; allow overlaps/adjacent ranges
+            if (existingStart.equals(startNewSchedule) && existingEnd.equals(endNewSchedule)) {
+                return false;
+            }
         }
         return true;
 
     }
-
     /**
      * This private method converts an instance of Schedule into a DTO. It supports the work of scheduleEntitytoDTO() method.
      * @param schedule Schedule instance to be converted into DTO
@@ -517,3 +525,6 @@ public class SchedulerController implements ISchedulerController {
     }
 
 }
+
+
+

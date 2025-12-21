@@ -1,7 +1,10 @@
 package org.cswteams.ms3.control.scocciatura;
 
+import org.cswteams.ms3.AbstractMultiTenantIntegrationTest;
+import org.cswteams.ms3.config.multitenancy.SchemasInitializer;
 import org.cswteams.ms3.control.medicalService.IMedicalServiceController;
 import org.cswteams.ms3.dao.HolidayDAO;
+import org.cswteams.ms3.dao.TaskDAO;
 import org.cswteams.ms3.dto.shift.ShiftDTOIn;
 import org.cswteams.ms3.dto.shift.ShiftDTOOut;
 import org.cswteams.ms3.entity.*;
@@ -12,9 +15,12 @@ import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
@@ -26,9 +32,12 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 
 @SpringBootTest
+@Import(SchemasInitializer.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ActiveProfiles("test")
 @Transactional
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class ControllerScocciaturaTest {
+public class ControllerScocciaturaTest extends AbstractMultiTenantIntegrationTest {
 
     private ControllerScocciatura controller;
     private List<Scocciatura> scocciature;
@@ -38,11 +47,15 @@ public class ControllerScocciaturaTest {
     @Autowired
     private HolidayDAO holidayDAO;
 
+    @Autowired
+    TaskDAO taskDAO;
+
+
     @BeforeEach
     public void setup() {
+        this.setUpTenantForTx();
 
         scocciature = new ArrayList<>();
-
         controller = new ControllerScocciatura(scocciature);
     }
 
@@ -56,6 +69,7 @@ public class ControllerScocciaturaTest {
         ControllerScocciatura controller = new ControllerScocciatura(scocciature);
 
         Task clinic = new Task(TaskEnum.CLINIC);
+        taskDAO.saveAndFlush(clinic);
         MedicalService ambulatorioCardiologia = medicalServiceController.createService(Collections.singletonList(clinic), "CARDIOLOGIA");
 
         List<QuantityShiftSeniority> quantityShiftSeniorityList1 = new ArrayList<>();
