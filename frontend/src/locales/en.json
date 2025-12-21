@@ -40,7 +40,11 @@
   "Configurator": "Configurator",
   "Planner": "Planner",
   "Remember me": "Remember me",
+  "Security check required": "Security check required",
+  "Server responded with non-JSON text": "Server responded with non-JSON text",
   "Forgot Password?": "Forgot Password?",
+  "Library loading error": "Error while loading libraries, please refresh the page",
+  "Loading security check": "Loading security check...",
 
   "Condition deleted successfully": "Condition deleted successfully",
   "Condition created successfully": "Condition created successfully",

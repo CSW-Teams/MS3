@@ -6,6 +6,7 @@ import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 import RoleSelectionDialog from "../../components/common/DialogRolePicker";
 import {UserAPI} from "../../API/UserAPI";
+import TurnstileWidget from "../../components/common/TurnstileWidget";
 
 // Toast notification options for error/success messages
 const TOAST_OPTIONS = {
@@ -24,17 +25,30 @@ export default class LoginView extends React.Component {
   constructor(props) {
     super(props);
 
+    // React Ref to the Cloudflare Turnstile widget
+    this.turnstileRef = React.createRef();
+
     // Initial state with empty fields for email and password
     this.state = {
-      email: "",
-      password: "",
+      email: "", password: "",
 
       open: false, // Dialog box open/close state
-      systemActorsAvailable: [] // Available system actors for the user
+      systemActorsAvailable: [], // Available system actors for the user
+
+      // new states for captcha
+      turnstileToken: null,    // token from Cloudflare
+      captchaVisible: false,   // if true shows widget
     }
 
     // Binding the handleSubmit method to the class instance
     this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  // Called when the user verifies the captcha to set the token received from the widget.
+  // This method is called by the TurnstileWidget component
+  handleVerify = (token) => {
+    // No null check to use this function to reset the state token on token expiration.
+    this.setState({turnstileToken: token});
   }
 
   // Opens the dialog box
@@ -55,7 +69,6 @@ export default class LoginView extends React.Component {
       localStorage.removeItem("jwt")
 
       toast.error(`${t('Login Failed:')} ${t("No role selected for the login")}.`, TOAST_OPTIONS);
-
       return
     }
 
@@ -65,7 +78,7 @@ export default class LoginView extends React.Component {
     let id;
 
     try {
-      id = await(new UserAPI().getSingleUserTenantId(this.state.email));
+      id = await (new UserAPI().getSingleUserTenantId(this.state.email));
 
       // Store user tenant id in localStorage
       localStorage.setItem("id", id);
@@ -101,6 +114,12 @@ export default class LoginView extends React.Component {
   async handleSubmit(e) {
     e.preventDefault();
 
+    // Se il captcha è visibile ma l'utente non l'ha ancora risolto (token null)
+    if (this.state.captchaVisible && !this.state.turnstileToken) {
+      toast.warn(t("Please complete the security check."), TOAST_OPTIONS);
+      return;
+    }
+
     // Function to handle successful login response
     const handleSuccess = async (response) => {
       const user = await response.json();
@@ -118,7 +137,7 @@ export default class LoginView extends React.Component {
       }
 
       // If multiple system actors are available, display the dialog for role selection
-      this.setState({ systemActorsAvailable: user.systemActors });
+      this.setState({systemActorsAvailable: user.systemActors});
       this.handleDialogOpen();
     };
 
@@ -135,19 +154,37 @@ export default class LoginView extends React.Component {
 
     // Default function to handle errors
     const handleDefaultError = async (response) => {
-      const errorMessage = await response.text();
-      toast.error(`${t('Authentication Failed')} ${t(errorMessage)}.`, TOAST_OPTIONS);
+      // Captcha activated on 400 or 401 response code
+      if (response.status === 401 || response.status === 400) {
+        this.setState({
+          captchaVisible: true, turnstileToken: null
+        }, () => {
+          // Reset the widget iff it's already mounted.
+          if (this.turnstileRef.current) {
+            this.turnstileRef.current.resetWidget();
+          }
+        });
+        toast.warn(`${t('Authentication Failed')}: ${t("Security check required")}.`, TOAST_OPTIONS);
+        return;
+      }
+      toast.error(`${t('Authentication Failed')} ${t(errorData.message || "")}.`, TOAST_OPTIONS);
     };
 
     let loginAPI = new LoginAPI();
     let httpResponse;
 
     try {
+      const payload = {
+        email: this.state.email,
+        password: this.state.password,
+        turnstileToken: this.state.turnstileToken // Sends token along the credentials
+      };
       // Attempt to perform login
-      httpResponse = await loginAPI.postLogin(this.state);
+      httpResponse = await loginAPI.postLogin(payload);
     } catch (err) {
-      // If an error occurs during the login request, handle it (panic state)
-      panic();
+      // Intercept network errors (backend:8080 unreachable, etc.)
+      console.error("Fetch error:", err);
+      toast.error(`${t('Authentication Failed. Server not online')}`, TOAST_OPTIONS);
       return;
     }
 
@@ -158,7 +195,6 @@ export default class LoginView extends React.Component {
     const handler = HTTP_STATUS_HANDLERS[statusClass] || handleDefaultError;
     await handler(httpResponse);
   }
-
 
   render() {
     return (
@@ -172,13 +208,12 @@ export default class LoginView extends React.Component {
         <div className="Auth-page-content" style={{
           width: '100vw',       // Occupa tutta la larghezza dello schermo
           height: '100vh',      // Occupa tutta l'altezza dello schermo
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center', // Centrare orizzontalmente
+          display: 'flex', flexDirection: 'row', alignItems: 'center', // Centrare orizzontalmente
           justifyContent: 'center', // Centrare verticalmente
           gap: '20px', // Spazio tra i due blocchi
         }}>
-          <form className="Auth-form" style={{ width: '100%', maxWidth: '440px' }}>
+          <form className="Auth-form"
+                style={{width: '100%', maxWidth: '440px'}}>
             <div className="Auth-form-content">
               <h3 className="Auth-form-title">Login</h3>
 
@@ -206,6 +241,16 @@ export default class LoginView extends React.Component {
                 />
               </div>
 
+              {/* ----- CAPTCHA CONTAINER ----- */}
+              {this.state.captchaVisible && (
+                <TurnstileWidget
+                  className="d-grid gap-2 mt-3"
+                  ref={this.turnstileRef} // Ref to the widget
+                  siteKey={process.env.REACT_APP_TURNSTILE_KEY}
+                  onVerify={this.handleVerify} // Callback to set the token after captcha is solved
+                />
+              )}
+
               <div className="d-grid gap-2 mt-3">
                 <button onClick={this.handleSubmit} type="submit"
                         className="btn btn-primary">
@@ -225,11 +270,11 @@ export default class LoginView extends React.Component {
           </form>
 
           {/* Shortcut on login page for the development team
-          * This table is shown only in development environment
-        */}
-          {process.env.NODE_ENV === "development" && (
-            <div
-              className="Auth-form-content" style={{ width: '100%', maxWidth: '800px' }}>
+            * This table is shown only in development environment
+            */}
+          {process.env.NODE_ENV === "development" && (<div
+              className="Auth-form-content"
+              style={{width: '100%', maxWidth: '800px'}}>
               <h3 className="Auth-form-title">Development shortcut</h3>
 
               <table style={{width: '100%', borderCollapse: 'collapse'}}>
@@ -246,10 +291,10 @@ export default class LoginView extends React.Component {
                 <tbody>
                 <tr style={{borderBottom: '1px solid black'}}>
                   <td style={{textAlign: 'center'}}>A</td>
-                  <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>Dottore
+                  </td>
                   <td style={{
-                    padding: '10px',
-                    textAlign: 'center'
+                    padding: '10px', textAlign: 'center'
                   }}>giuliacantone.tenanta@gmail.com
                   </td>
                   <td>Specialista Junior</td>
@@ -266,10 +311,10 @@ export default class LoginView extends React.Component {
                 </tr>
                 <tr style={{borderBottom: '1px solid black'}}>
                   <td style={{textAlign: 'center'}}>B</td>
-                  <td style={{padding: '10px', textAlign: 'center'}}>Dottore</td>
+                  <td style={{padding: '10px', textAlign: 'center'}}>Dottore
+                  </td>
                   <td style={{
-                    padding: '10px',
-                    textAlign: 'center'
+                    padding: '10px', textAlign: 'center'
                   }}>domenicoverde.tenantb@gmail.com
                   </td>
                   <td>Specialista Senior</td>
@@ -289,8 +334,7 @@ export default class LoginView extends React.Component {
                     Planner
                   </td>
                   <td style={{
-                    padding: '10px',
-                    textAlign: 'center'
+                    padding: '10px', textAlign: 'center'
                   }}>giovannicantone.tenanta@gmail.com
                   </td>
                   <td>Specialista Senior</td>
@@ -309,8 +353,7 @@ export default class LoginView extends React.Component {
                   <td style={{padding: '10px', textAlign: 'center'}}>Dottore
                   </td>
                   <td style={{
-                    padding: '10px',
-                    textAlign: 'center'
+                    padding: '10px', textAlign: 'center'
                   }}>giuliofarnasini.tenantb@gmail.com
                   </td>
                   <td>Strutturato</td>
@@ -330,8 +373,7 @@ export default class LoginView extends React.Component {
                     style={{padding: '10px', textAlign: 'center'}}>Configuratore
                   </td>
                   <td style={{
-                    padding: '10px',
-                    textAlign: 'center'
+                    padding: '10px', textAlign: 'center'
                   }}>salvatimartina97.tenanta@gmail.com
                   </td>
                   <td>Specialista Junior</td>
@@ -352,8 +394,7 @@ export default class LoginView extends React.Component {
                     Configuratore, Planner
                   </td>
                   <td style={{
-                    padding: '10px',
-                    textAlign: 'center'
+                    padding: '10px', textAlign: 'center'
                   }}>fullpermessi.tenantb@gmail.com
                   </td>
                   <td>Strutturato</td>
@@ -369,11 +410,8 @@ export default class LoginView extends React.Component {
                 </tr>
                 </tbody>
               </table>
-            </div>
-          )}
+            </div>)}
         </div>
-      </div>
-    )
+      </div>)
   }
-
 }

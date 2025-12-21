@@ -40,7 +40,11 @@
   "Configurator": "Configuratore",
   "Planner": "Pianificatore",
   "Remember me": "Ricordami",
+  "Security check required": "Controllo di sicurezza necessario",
+  "Server responded with non-JSON text": "Il server ha risposto con testo non-JSON",
   "Forgot Password?": "Password Dimenticata?",
+  "Library loading error": "Errore nel caricamento delle librerie, si prega di ricaricare la pagina",
+  "Loading security check": "Caricamento del controllo di sicurezza in corso...",
 
   "Conditions": "Condizioni",
   "Conditions modified successfully": "Condizioni modificate con successo",
