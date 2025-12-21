@@ -49,6 +49,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 // This is necessary because users need to access this endpoint to obtain their authentication token.
                 .antMatchers(HttpMethod.POST, "/login/").permitAll()
                 .antMatchers(HttpMethod.GET, "/login/").permitAll()
+                .antMatchers(HttpMethod.POST, "/logout").authenticated()// Anyone who is logged in can log out
 
                 // Require authentication for all other endpoints.
                 // This ensures that all other resources are secured and can only be accessed by authenticated users with valid credentials.

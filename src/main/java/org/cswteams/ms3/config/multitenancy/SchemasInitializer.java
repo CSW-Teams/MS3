@@ -101,6 +101,9 @@ public class SchemasInitializer {
             tableScript = new ClassPathResource("db/shared/create_shared_info.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
+            tableScript = new ClassPathResource("db/create_blacklisted_tokens.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
             System.out.println("Tabelle create nello schema 'public'");
         } catch (ScriptException e) {
             e.printStackTrace();

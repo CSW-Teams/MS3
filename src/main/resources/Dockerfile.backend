@@ -4,14 +4,18 @@
 # compatible with the project's configured toolchain.
 FROM eclipse-temurin:11-jdk-alpine
 VOLUME /tmp
+
+# Cartella di lavoro
+WORKDIR /app
+
+# Profilo Spring attivo
 ENV SPRING_PROFILES_ACTIVE=container
 
-# preinstall the dependencies
+# Preinstallazione dipendenze
 COPY .mvn .mvn
-COPY ./mvnw ./mvnw
-COPY ./pom.xml ./pom.xml
-RUN chmod -R 777 ./mvnw
-# in case the following command fails with error "mvnw not found", download dos2unix and run it on the mvnw file
+COPY mvnw .
+COPY pom.xml .
+RUN chmod +x ./mvnw
 RUN ./mvnw dependency:go-offline
 
 # copy sources and compile them in a jar
@@ -21,4 +25,8 @@ COPY ./src ./src
 # normal builds (running mvn test/verify will still compile and run tests).
 RUN ./mvnw package -DskipTests -Dmaven.test.skip=true
 
-ENTRYPOINT ["java","-jar", "./target/ms3-0.0.1-SNAPSHOT.jar"]
+# Espone porta di default Spring Boot
+EXPOSE 8080
+
+# Comando per avviare l'app
+ENTRYPOINT ["java","-jar","./target/ms3-0.0.1-SNAPSHOT.jar"]

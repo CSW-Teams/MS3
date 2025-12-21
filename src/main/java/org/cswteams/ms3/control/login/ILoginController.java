@@ -6,7 +6,7 @@ import org.cswteams.ms3.exception.login.InvalidEmailAddressException;
 import org.cswteams.ms3.exception.login.InvalidRoleException;
 
 public interface ILoginController {
-
+    //
     /**
      * Authenticate a user, based on login data received via DTO.
      *
