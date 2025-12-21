@@ -1,13 +1,10 @@
 package org.cswteams.ms3.control.controllerscheduler.utils;
 
-import lombok.Getter;
-
 import java.time.LocalDate;
 
 /**
  * Utility enumeration containing some useful dates often used in some tests.
  */
-@Getter
 public enum TestDatesEnum {
 
     /**
@@ -43,4 +40,8 @@ public enum TestDatesEnum {
      * Internal state.
      */
     private final LocalDate date;
+
+    public LocalDate getDate() {
+        return date;
+    }
 }
