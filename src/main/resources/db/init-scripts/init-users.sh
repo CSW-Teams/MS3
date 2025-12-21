@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 set -e
 
 # Bootstrap Postgres roles so the Spring SchemasInitializer can create/alter schemas

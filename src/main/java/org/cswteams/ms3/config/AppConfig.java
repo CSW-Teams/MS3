@@ -1,5 +1,7 @@
 package org.cswteams.ms3.config;
 
+import org.cswteams.ms3.security.TwoFactorProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -55,12 +57,12 @@ import java.time.Clock;
  */
 @Configuration
 @EnableAspectJAutoProxy
+@EnableConfigurationProperties(TwoFactorProperties.class)
 public class AppConfig {
 
     @Bean
     public Clock clock() {
-        // Production environment uses the system clock in the default zone
-        return Clock.systemDefaultZone();
+        return Clock.systemUTC();
     }
 
     @Bean
