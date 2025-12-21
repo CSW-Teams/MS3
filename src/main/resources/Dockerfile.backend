@@ -1,18 +1,25 @@
-# NOTE: you must first generate the jar file with ./mvnw install 
-FROM eclipse-temurin:17-jdk-alpine
-VOLUME /tmp
+# Usa un'immagine JDK completa (non Alpine) compatibile con ARM
+FROM eclipse-temurin:17-jdk
+
+# Cartella di lavoro
+WORKDIR /app
+
+# Profilo Spring attivo
 ENV SPRING_PROFILES_ACTIVE=container
 
-# preinstall the dependencies
+# Preinstallazione dipendenze
 COPY .mvn .mvn
-COPY ./mvnw ./mvnw
-COPY ./pom.xml ./pom.xml
-RUN chmod -R 777 ./mvnw
-# in case the following command fails with error "mvnw not found", download dos2unix and run it on the mvnw file
+COPY mvnw .
+COPY pom.xml .
+RUN chmod +x ./mvnw
 RUN ./mvnw dependency:go-offline
 
-# copy sources and compile them in a jar
-COPY ./src ./src
+# Copia codice sorgente e compila il jar
+COPY src ./src
 RUN ./mvnw package -DskipTests
 
-ENTRYPOINT ["java","-jar", "./target/ms3-0.0.1-SNAPSHOT.jar"]
+# Espone porta di default Spring Boot
+EXPOSE 8080
+
+# Comando per avviare l'app
+ENTRYPOINT ["java","-jar","./target/ms3-0.0.1-SNAPSHOT.jar"]

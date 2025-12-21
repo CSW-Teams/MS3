@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Clock;
+
 /**
  * Configuration class for enabling Spring AOP and AspectJ auto-proxying.
  *
@@ -54,6 +56,13 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 @EnableAspectJAutoProxy
 public class AppConfig {
+
+    @Bean
+    public Clock clock() {
+        // Production environment uses the system clock in the default zone
+        return Clock.systemDefaultZone();
+    }
+
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();

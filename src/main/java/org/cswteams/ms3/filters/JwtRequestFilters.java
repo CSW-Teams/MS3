@@ -1,6 +1,7 @@
 package org.cswteams.ms3.filters;
 
 import org.cswteams.ms3.control.login.LoginController;
+import org.cswteams.ms3.control.logout.JwtBlacklistService;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.tenant.TenantContext;
 import org.cswteams.ms3.utils.JwtUtil;
@@ -26,11 +27,18 @@ public class JwtRequestFilters extends OncePerRequestFilter {
 
     private static final String DEFAULT_SCHEMA = "public";
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+
+    private final LoginController loginController;
+
+    private final JwtBlacklistService jwtBlacklistService;
 
     @Autowired
-    private LoginController loginController;
+    public JwtRequestFilters(JwtUtil jwtUtil, LoginController loginController, JwtBlacklistService jwtBlacklistService) {
+        this.jwtUtil = jwtUtil;
+        this.loginController = loginController;
+        this.jwtBlacklistService = jwtBlacklistService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -43,6 +51,16 @@ public class JwtRequestFilters extends OncePerRequestFilter {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
+            // Check if the JWT has been explicitly invalidated via logout.
+            // Even if the token is still structurally valid and not expired,
+            // a blacklisted token must not be accepted to guarantee a proper logout
+            // in a stateless JWT-based authentication system.
+            if (jwtBlacklistService.isBlacklisted(jwt)) {
+                logger.debug("JWT token is blacklisted");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token is invalidated (logged out)");
+                return;
+            }
             username = jwtUtil.extractUsername(jwt);
         } else {
             // Log missing or invalid token header and allow unauthenticated endpoints to bypass
@@ -67,8 +85,7 @@ public class JwtRequestFilters extends OncePerRequestFilter {
             }
 
             if (jwtUtil.validateToken(jwt, loggedUserDTO)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                        new UsernamePasswordAuthenticationToken(loggedUserDTO, null, loggedUserDTO.getAuthorities());
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loggedUserDTO, null, loggedUserDTO.getAuthorities());
 
                 logger.debug("UsernamePasswordAuthToken: {}", usernamePasswordAuthenticationToken);
 

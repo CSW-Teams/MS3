@@ -37,7 +37,7 @@ public class UsersRestEndpoint {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getAllUsers() {
         Set<UserDTO> utenti = userController.getAllUsers();
-        return new ResponseEntity<>(utenti, HttpStatus.FOUND);
+        return new ResponseEntity<>(utenti, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyRole('CONFIGURATOR', 'DOCTOR', 'PLANNER')")

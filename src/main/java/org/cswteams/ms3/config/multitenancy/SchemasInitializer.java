@@ -90,6 +90,9 @@ public class SchemasInitializer {
             tableScript = new ClassPathResource("db/shared/create_shared_info.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
+            tableScript = new ClassPathResource("db/create_blacklisted_tokens.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
             System.out.println("Tabelle create nello schema 'public'");
         } catch (ScriptException e) {
             e.printStackTrace();
@@ -180,6 +183,6 @@ public class SchemasInitializer {
         Statement statement = connection.createStatement();
 
         // Passa allo schema del tenant
-        statement.execute("SET search_path TO " + tenantName);
+        statement.execute("SET search_path TO " + tenantName + ", public");
     }
 }
