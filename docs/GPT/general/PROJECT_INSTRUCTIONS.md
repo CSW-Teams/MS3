@@ -1,3 +1,5 @@
+<!-- v2 -->
+<!-- filename: general/PROJECT_INSTRUCTIONS.md -->
 ## GPT Project Instructions — MS3 (Conceptual-Only)
 
 ### Purpose and Positioning
@@ -60,3 +62,5 @@ If clarity is missing (e.g., desired abstraction depth, priority areas, or accep
 - Boundaries, non-goals, and guiding principles are clear.
 - GPT responsibilities and constraints are explicit and defer authority to humans.
 - Guidance enables general Q&A, high-level ideation, and strategic or exploratory discussions within the MS3 domain while respecting all constraints above.
+
+**End of PROJECT_INSTRUCTIONS.md**
