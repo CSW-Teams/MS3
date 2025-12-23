@@ -63,4 +63,4 @@ If clarity is missing (e.g., desired abstraction depth, priority areas, or accep
 - GPT responsibilities and constraints are explicit and defer authority to humans.
 - Guidance enables general Q&A, high-level ideation, and strategic or exploratory discussions within the MS3 domain while respecting all constraints above.
 
-**End of PROJECT_INSTRUCTIONS.md**
+**End of general/PROJECT_INSTRUCTIONS.md**
