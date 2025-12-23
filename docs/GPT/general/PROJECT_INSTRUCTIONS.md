@@ -1,5 +1,5 @@
 <!-- v1 -->
-<!-- filename: docs/GPT/General/GPT_PROJECT_INSTRUCTIONS.md -->
+<!-- filename: general/PROJECT_INSTRUCTIONS.md -->
 
 # General-Purpose GPT Project Instructions (Concept-Only)
 
@@ -85,4 +85,4 @@ If any of these are unclear, request the missing details explicitly before proce
 
 ---
 
-**End of GPT_PROJECT_INSTRUCTIONS.md**
+**End of general/PROJECT_INSTRUCTIONS.md**
