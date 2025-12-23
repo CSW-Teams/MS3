@@ -1,6 +1,5 @@
-
 <!-- v4 -->
-<!-- filename: GPT_PROJECT_INSTRUCTIONS.md -->
+<!-- filename: codex-prompt-builder/PROJECT_INSTRUCTIONS.md -->
 
 # MS3 — Project Operating Rules (Final Macro-Prompt Workflow)
 
@@ -198,4 +197,4 @@ Before sending any macro-prompt, GPT must verify:
 
 ---
 
-**End of PROJECT_INSTRUCTIONS.md**
+**End of codex-prompt-builder/PROJECT_INSTRUCTIONS.md**
