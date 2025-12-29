@@ -23,9 +23,10 @@ public class CustomUserDetails implements UserDetails {
     private final String password;
     private final Set<SystemActor> systemActors;
     private final String tenant;
+    private final Boolean isMFAEnabled;
 
 
-    public CustomUserDetails(Long id, String name, String lastname, String email, String password, Set<SystemActor> systemActors, String tenant) {
+    public CustomUserDetails(Long id, String name, String lastname, String email, String password, Set<SystemActor> systemActors, String tenant, Boolean isMFAEnabled) {
         this.id = id;
         this.name = name;
         this.lastname = lastname;
@@ -33,6 +34,7 @@ public class CustomUserDetails implements UserDetails {
         this.password = password;
         this.systemActors = systemActors;
         this.tenant = tenant;
+        this.isMFAEnabled = isMFAEnabled;
     }
 
     /**

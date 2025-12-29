@@ -36,6 +36,7 @@ public class JwtUtil {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
         claims.put("current_tenant", userDetails.getTenant().toLowerCase());
+        claims.put("is_multi_factor_authentication_enabled", userDetails.getIsMFAEnabled());
 
         return createToken(claims, userDetails.getUsername());
     }
@@ -84,5 +85,14 @@ public class JwtUtil {
                 .getBody();
 
         return claims.get("current_tenant", String.class);
+    }
+
+    public Boolean parseMFAInfoFromJwt(String token){
+        Claims claims = Jwts.parser()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("is_multi_factor_authentication_enabled", Boolean.class);
     }
 }
