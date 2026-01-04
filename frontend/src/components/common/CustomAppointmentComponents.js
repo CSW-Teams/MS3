@@ -19,6 +19,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Rating,
 } from '@mui/material';
 import {
   RichiestaRimozioneDaTurnoAPI
@@ -80,9 +81,12 @@ export const Content = ({
   );
 
   const [isConfirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [isFeedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [justification, setJustification] = useState('');
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [retiredUser, setRetiredUser] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackText, setFeedbackText] = useState('');
 
   useEffect(() => {
     const checkPendingRequest = async () => {
@@ -116,8 +120,22 @@ export const Content = ({
     setConfirmationDialogOpen(false);
   };
 
+  const openFeedbackDialog = () => {
+    setFeedbackDialogOpen(true);
+  };
+
+  const closeFeedbackDialog = () => {
+    setFeedbackDialogOpen(false);
+    setFeedbackRating(0);
+    setFeedbackText('');
+  };
+
   const handleRetireButtonClick = () => {
     openConfirmationDialog();
+  };
+
+  const handleInsertFeedbackButtonClick = () => {
+    openFeedbackDialog();
   };
 
   const retireFromShiftButton = view!=="global" && (
@@ -126,6 +144,14 @@ export const Content = ({
       onClick={handleRetireButtonClick}
     >
       Ritirati dal turno
+    </Button>
+  );
+
+  const insertFeedbackForShiftButton = (<Button
+    style={{marginTop: '20px'}}
+    onClick={handleInsertFeedbackButtonClick}
+    >
+      Lascia un feedback
     </Button>
   );
   // contents of tooltip may vary depending on the type of the corresponding schedulable
@@ -237,6 +263,7 @@ export const Content = ({
             ) }
           </Grid>
           {retireFromShiftButton}
+          {insertFeedbackForShiftButton}
           {view === 'global' && actor === 'PIANIFICATORE' && hasPendingRequest === true && (
             <div style={{ color: 'red', marginTop: '10px' }}>
               <p>Attenzione: {retiredUser} ha richiesto di ritirarsi da questo turno.</p>
@@ -269,6 +296,41 @@ export const Content = ({
               </Button>
               <Button onClick={handleConfirmRetirement} color="primary">
                 Conferma
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={isFeedbackDialogOpen}
+            onClose={closeFeedbackDialog}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>Lascia un feedback</DialogTitle>
+            <DialogContent>
+              <Rating
+                name="feedback-rating"
+                max={6}
+                value={feedbackRating}
+                onChange={(event, newValue) => setFeedbackRating(newValue || 0)}
+              />
+              <TextField
+                id={"feedback-text"}
+                margin={"normal"}
+                label="Feedback"
+                fullWidth
+                multiline
+                minRows={3}
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeFeedbackDialog} color="primary">
+                Annulla
+              </Button>
+              <Button onClick={closeFeedbackDialog} color="primary">
+                Salva
               </Button>
             </DialogActions>
           </Dialog>

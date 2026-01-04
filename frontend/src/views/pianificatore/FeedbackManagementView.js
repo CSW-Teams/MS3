@@ -26,7 +26,7 @@ export default class FeedbackManagementView extends React.Component{
 
   async componentDidMount() {
     try {
-
+    // TODO: invocazione backend per popolare la tabella
     } catch(err) {
       panic()
       return
