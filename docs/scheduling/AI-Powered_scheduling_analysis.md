@@ -74,6 +74,51 @@ graph LR
 - `GET /api/concrete-shifts/user_id={userID}` (DOCTOR): shifts for a specific doctor.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L81-L97】
 - `POST /api/concrete-shifts/available-users-for-replacement/` (DOCTOR): returns candidate doctors for replacement.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L162-L167】
 
+## Scheduling generation algorithm (as-is)
+### Purpose and triggers
+- Automates population of concrete shifts for a date range using shift templates, respecting seniority/task counts, constraint rules, holidays, and doctor “uffa” priorities. Creation is invoked by planners via `POST /api/schedule/generation`, while `POST /api/schedule/regeneration/id={id}` deletes and rebuilds an existing window after restoring saved priority snapshots.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L69】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L165-L199】
+
+### Inputs and preparatory checks
+- **Date window**: start/end LocalDate from the request; `ScheduleBuilder` rejects inverted ranges, and the controller forbids the very first schedule if it starts in the past.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L63-L116】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L100-L143】
+- **Uniqueness**: generation aborts when an identical start/end range already exists (overlaps allowed).【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L105-L158】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L437-L456】
+- **Shift templates**: for each day in range, all `Shift` templates matching the day of week spawn `ConcreteShift` shells without doctors.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L109-L143】
+- **Static data**: constraints, doctors, holidays, doctor-holiday mappings, `DoctorUffaPriority` queues, priority snapshots, and “scocciatura” annoyance weights are loaded once and fed into `ScheduleBuilder` and `ControllerScocciatura`.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L131-L148】【F:src/main/java/org/cswteams/ms3/control/scocciatura/ControllerScocciatura.java†L25-L118】
+
+### Core generation flow
+1) `ScheduleBuilder.build()` resets violations, copies current priorities into snapshots, and normalizes queue values when `ControllerScocciatura` is present.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L180-L241】
+2) For each concrete shift:
+   - **On-duty assignment**: for every seniority/task requirement in `QuantityShiftSeniority`, `addDoctors` tries to place the required number of doctors. Failure to reach the quota throws `NotEnoughFeasibleUsersException`, captured as the schedule’s illegal cause while continuing iteration.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L205-L235】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L253-L350】
+   - **On-call assignment**: repeats the same loop for on-call slots; shortages log violations but do not stop generation.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L224-L235】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L253-L350】
+3) After processing all shifts, updated priority queues attach to the schedule, which is persisted alongside refreshed snapshots and `DoctorUffaPriority` rows.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L238-L241】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L149-L156】
+
+### Selection, ordering, and constraint checks inside `addDoctors`
+- **Priority queues**: before picking doctors, `ControllerScocciatura` adjusts temporary priorities per queue (general always; long-shift when an earlier morning shift exists; night when applicable) and orders candidates after a shuffle to break ties, keeping values within configured bounds from `priority.properties`.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L265-L289】【F:src/main/java/org/cswteams/ms3/control/scocciatura/ControllerScocciatura.java†L20-L144】
+- **Eligibility filter**: only doctors matching the required seniority are considered; doctor-specific holidays are looked up for constraint context.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L291-L307】
+- **Constraint evaluation**: each candidate is wrapped in `ContextConstraint` (doctor, concrete shift, holidays) and passed to `verifyAllConstraints` with `isForced=false`, meaning any hard constraint—or a soft one when not forced—blocks assignment and leaves the doctor unpicked.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L303-L346】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L441-L461】
+- **Assignment effects**: successful picks create `DoctorAssignment`, update queue priorities (general plus long-shift/night when relevant), and increment the selected counter; if the required count is not met, a `NotEnoughFeasibleUsersException` signals an incomplete schedule.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L306-L350】【F:src/main/java/org/cswteams/ms3/control/scocciatura/ControllerScocciatura.java†L52-L110】
+
+### Outputs and failure modes
+- **Successful generation**: returns a `Schedule` with populated concrete shifts, updated priorities, and recorded constraint violations (if any). REST maps an empty violation list to HTTP 202; non-empty violations to 206.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L180-L241】【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L44】
+- **Illegal or rejected runs**: returning `null` (past initial range, duplicate interval, date validation failure, or `IllegalScheduleException`) yields HTTP 406; regeneration of past schedules is blocked with 417. When constraints prevent filling required slots, `Schedule.causeIllegal` is set, the schedule is still saved with violations, and clients treat it as partial content.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L100-L199】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L205-L241】【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L69】
+
+### Testing and limitations
+- Constraint unit tests exercise individual rules but there is no end-to-end test for generation ordering, priority normalization, or multi-day coverage; shortages and random shuffle behavior remain unverified by automated tests.【F:src/test/java/org/cswteams/ms3/VincoloUbiquitàTest.java†L1-L120】【F:src/test/java/org/cswteams/ms3/VincoloTurniContiguiTest.java†L1-L120】【F:src/test/java/org/cswteams/ms3/VincoloMaxPeriodoConsecutivoTest.java†L1-L120】
+
+```mermaid
+flowchart TD
+  Start([Planner POST /api/schedule/generation]) --> Dates{Validate dates /\nfirst schedule not past}
+  Dates -- invalid --> Reject[Return 406]
+  Dates -- ok --> Dup{Duplicate range?}
+  Dup -- yes --> Reject
+  Dup -- no --> Shifts[Expand days → ConcreteShift shells]
+  Shifts --> Builder[Build ScheduleBuilder with constraints, holidays, priorities, scocciature]
+  Builder --> Assign[For each shift: update queues → verify constraints → add doctors]
+  Assign -- quota met --> Persist[Persist schedule + priority snapshots]
+  Assign -- quota missing --> Illegal[Mark causeIllegal + violated constraints]
+  Persist --> Response[HTTP 202 if no violations else 206]
+  Illegal --> Response
+```
+
 ### Frontend implementation notes
 - Planner schedule management UI shows list and allows regeneration/deletion; creation drawer uses Material UI date pickers and shows loading overlay during API calls.【F:frontend/src/views/pianificatore/ScheduleGeneratorView.js†L38-L200】【F:frontend/src/components/common/BottomViewAggiungiSchedulazione.js†L30-L151】
 - Global and single schedule views inherit from a shared `ScheduleView` (not modified here) that handles filtering, CSV export, and shift editing; global view conditionally renders assignment drawer based on actor role.【F:frontend/src/views/utente/GlobalScheduleView.js†L10-L28】【F:frontend/src/views/utente/SingleScheduleView.js†L13-L41】
