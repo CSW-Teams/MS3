@@ -25,7 +25,7 @@ import PersonalSingleUserProfileView
   from "./views/utente/PersonalSingleUserProfileView";
 import ShiftManagementView from "./views/configuratore/ShiftManagementView";
 import TwoFactorEnrollmentView from "./views/utente/TwoFactorEnrollmentView";
-
+import FeedbackManagementView from "./views/pianificatore/FeedbackManagementView";
 
 export default [
   {
@@ -118,6 +118,11 @@ export default [
     path: "/two-factor",
     layout: DefaultLayout,
     component: TwoFactorEnrollmentView
+  },
+  {
+    path: "/feedback",
+    layout: DefaultLayout,
+    component: FeedbackManagementView
   },
   {
     path: "/gestione-festivita",

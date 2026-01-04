@@ -26,6 +26,8 @@
   "Requests Received": "Richieste Ricevute",
   "Requests Sent": "Richieste Inviate",
 
+  "Visualize Feedbacks": "Visualizza Feedback",
+
   "Authentication Failed. Server not online": "Autenticazione Fallita. I server non sono attualmente in servizio, riprova più tardi.",
   "Authentication Failed": "Autenticazione Fallita: ",
   "Invalid Credentials": "Credenziali di accesso non valide. Verifica i dati inseriti e riprova",

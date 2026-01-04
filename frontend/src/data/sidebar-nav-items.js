@@ -67,7 +67,11 @@ export function pianificatore() {
         htmlBefore: '<i class="material-icons">shield</i>',
         to: "/two-factor",
       },
-
+      {
+        title: "Visualize Feedbacks",
+        htmlBefore: '<i class="material-icons">view_module</i>',
+        to: "/feedback",
+      },
 
     ];
 }
