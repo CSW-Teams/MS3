@@ -10,6 +10,7 @@ import {
 import IconButton from "@mui/material/IconButton";
 import {panic} from "../../components/common/Panic";
 import {t} from "i18next";
+import { ScheduleFeedbackAPI } from "../../API/ScheduleFeedbackAPI";
 
 export default class FeedbackManagementView extends React.Component{
 
@@ -26,7 +27,18 @@ export default class FeedbackManagementView extends React.Component{
 
   async componentDidMount() {
     try {
-    // TODO: invocazione backend per popolare la tabella
+      let api = new ScheduleFeedbackAPI();
+      const rawData = await api.getFeedbacks(); // Chiamata al Backend
+
+      const formattedFeedbacks = rawData.map(item => ({
+        name: item.doctorName,
+        lastname: item.doctorLastname,
+        feedback_rating: item.score,
+        feedback_text: item.comment
+      }));
+
+      this.setState({ feedbacks: formattedFeedbacks });
+
     } catch(err) {
       panic()
       return

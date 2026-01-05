@@ -26,6 +26,7 @@ import {
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
 import {panic} from "./Panic";
 import {teal, yellow} from "@material-ui/core/colors";
+import { ScheduleFeedbackAPI } from "../../API/ScheduleFeedbackAPI";
 
 
 // AppointmentContent di SingleScheduleView
@@ -136,6 +137,25 @@ export const Content = ({
 
   const handleInsertFeedbackButtonClick = () => {
     openFeedbackDialog();
+  };
+
+  const saveFeedback = async () => {
+    const api = new ScheduleFeedbackAPI();
+
+    const payload = {
+      concreteShiftIds: [appointmentData.id],
+      score: feedbackRating,
+      comment: feedbackText
+    };
+
+    try {
+      await api.postFeedback(payload);
+      alert("Feedback inviato con successo!");
+      closeFeedbackDialog();
+    } catch (error) {
+      console.error("Errore invio feedback", error);
+      alert("Errore durante l'invio del feedback.");
+    }
   };
 
   const retireFromShiftButton = view!=="global" && (
@@ -329,7 +349,7 @@ export const Content = ({
               <Button onClick={closeFeedbackDialog} color="primary">
                 Annulla
               </Button>
-              <Button onClick={closeFeedbackDialog} color="primary">
+              <Button onClick={saveFeedback} color="primary">
                 Salva
               </Button>
             </DialogActions>
