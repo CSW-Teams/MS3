@@ -1,160 +1,189 @@
-# MS3 Scheduling / Planning — As-Is Analysis
+# AI-Powered Scheduler Analysis (MS3 ↔ ABS)
 
-## Purpose and scope
-Internal developer-facing snapshot of the current scheduling (pianificazione) feature set as implemented in MS3. Covers end-user behavior (planner/doctor), UI entry points, backend/API/service/data flow, persistence, constraints, security, and notable tests.
+## 1. Context and Goals
+- **User story**: When planners generate a deterministic schedule, doctors can leave structured (picklists, ratings) and free-text feedback. Before publishing a new schedule, MS3 should invoke an external Agent Broker Service (ABS) that returns up to 3 alternative rearrangements of the deterministic output that better satisfy prior feedback while respecting constraints and uffaPoints. Planners review proposals, pick one, or fall back to MS3’s baseline.
+- **Non-goals**: Implementing ABS itself; redesigning the deterministic scheduler; detailed UI mockups or persistence schemas; adding new scheduling algorithms; production hardening of unrelated modules.
+- **Success criteria / KPIs**:
+  - Hard constraints are never violated in accepted proposals; soft/tenant violations are explicit and auditable.
+  - Planners receive ≤3 proposals with clear metrics (uffaPoints delta, broken constraints, unsatisfied feedbacks) and explanations.
+  - Scheduler workload does not increase (proposal review fits existing regeneration/publish flow).
+  - Feedback lifecycle is governed (expiry, conflicts, removals) and auditable.
+  - Tenant isolation, GDPR minimization (pseudonymization), and schema-versioned contracts for MS3↔ABS.
+  - Deterministic reproducibility: proposals can be justified and re-validated with MS3’s constraint engine.
 
-## User-facing behavior
-### Actors & permissions
-- **Planner (PLANNER role)**: only role allowed to generate, regenerate, delete schedules and create/modify/delete concrete shifts; can view all schedules including illegal ones. API enforcement via `@PreAuthorize` on scheduling and concrete shift endpoints.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L136】【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L42-L160】
-- **Doctor (DOCTOR role)**: can view schedules (date list and illegal schedules), view own concrete shifts, and request replacement candidates; cannot generate or delete schedules.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L88-L118】【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L81-L167】
-- **Configurator**: read access to concrete shifts (including incomplete) and illegal schedules.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L108-L118】【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L99-L114】
+## 2. Current MS3 Scheduling: As-Is (Repo-Based)
+- **Actors/permissions**:
+  - Planner (PLANNER): generate/regenerate/delete schedules, manage concrete shifts.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L136】 
+  - Doctor (DOCTOR): view schedules, view illegal schedules, request removal from shifts; cannot generate schedules.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L88-L118】【F:src/main/java/org/cswteams/ms3/rest/RichiestaRimozioneDaTurnoRestEndpoint.java†L21-L75】
+  - Configurator: read schedules/illegal schedules.
+- **Scheduling generation pipeline**:
+  - Frontend planner view triggers POST `/api/schedule/generation` with start/end dates; toasts differentiate 202/206/406/400 outcomes.【F:frontend/src/views/pianificatore/ScheduleGeneratorView.js†L38-L155】
+  - REST endpoint calls `SchedulerController.createSchedule`, which builds concrete shifts for each day/shift template, instantiates `ScheduleBuilder`, and persists schedule and priority snapshots.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L87-L163】
+  - Regeneration restores priority snapshots, deletes the old schedule (if future), and rebuilds it.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L165-L199】
+- **Current constraint model**:
+  - Constraints are entities with `violable` (soft vs hard) and description; enforced via `verifyConstraint` on `ContextConstraint` during schedule build and manual shift edits.【F:src/main/java/org/cswteams/ms3/entity/constraint/Constraint.java†L15-L46】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L433-L484】
+  - Hard violations (non-violable or forced=false) mark schedule illegal; soft violations may be allowed when `forced` is true for manual edits.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L433-L520】
+- **Current uffaPoints logic**:
+  - Uffa priorities (`DoctorUffaPriority`) drive queue ordering; `ControllerScocciatura` updates priorities based on “scocciature” annoyances, normalizes bounds, and orders doctors per queue before assignment.【F:src/main/java/org/cswteams/ms3/control/scocciatura/ControllerScocciatura.java†L12-L96】
+  - Schedule generation updates snapshots and priorities per assignment and persists them with the schedule.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L180-L240】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L149-L158】
+- **Data lifecycle (draft/published/versioning)**:
+  - Schedules are persisted with start/end, concrete shifts, violated constraints, and an empty `causeIllegal` setter (effectively a flag). No explicit draft/publish phases; regeneration deletes and recreates.
+- **Existing feedback mechanisms**:
+  - Doctor “request removal from shift” workflow exists but no structured/textual feedback on schedules; preferences per doctor capture desired time slots but are not tied to AI proposals.【F:src/main/java/org/cswteams/ms3/rest/RichiestaRimozioneDaTurnoRestEndpoint.java†L21-L75】【F:src/main/java/org/cswteams/ms3/control/preferences/PreferenceController.java†L19-L107】
+- **Multi-tenancy/security**:
+  - `TenantContext` thread-local is set from JWT but scheduling controllers/DAOs do not filter by tenant; effectively single-tenant behavior now.【F:src/main/java/org/cswteams/ms3/tenant/TenantContext.java†L1-L15】【F:src/main/java/org/cswteams/ms3/filters/JwtRequestFilters.java†L26-L98】
 
-### Core planner flows
-- **Generate schedule**: From `/generazione-scheduling`, planners open a bottom drawer, pick start/end dates, and trigger POST `/api/schedule/generation`. UI toasts differentiate success (202), incomplete (206), duplicate range (406), or generic errors; the list reloads after creation.【F:frontend/src/views/pianificatore/ScheduleGeneratorView.js†L38-L105】【F:frontend/src/components/common/BottomViewAggiungiSchedulazione.js†L30-L146】【F:frontend/src/API/AssegnazioneTurnoAPI.js†L286-L312】
-- **View schedules**: Table shows start/end dates and status (illegal -> “Incompleta”). Latest schedule gets a “Rigenera” button that re-POSTs `/api/schedule/regeneration/id={id}`; deletion uses DELETE `/api/schedule/id={id}` with warnings for past schedules (417).【F:frontend/src/views/pianificatore/ScheduleGeneratorView.js†L107-L200】【F:frontend/src/API/ScheduleAPI.js†L6-L40】
-- **Manage concrete shifts**: Planners call POST `/api/concrete-shifts/` to add shifts (optionally forced), PUT to modify, DELETE to remove. Violations return 406/NOT_ACCEPTABLE with constraint messages.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L42-L160】
+## 3. The New Feature: Target User Flow
+1. **Doctor feedback capture**
+   - Doctors submit structured feedback (ratings, selections) and free text tied to specific schedules or periods.
+2. **Scheduler review**
+   - Planner views aggregated feedback, filters unacceptable/conflicting items, can disable or edit before requesting proposals.
+3. **ABS request**
+   - MS3 sends deterministic baseline schedule snapshot + vetted feedback + constraint/uffa model references to ABS.
+4. **ABS proposals**
+   - ABS returns 1–3 rearranged schedules with metrics (uffaPoints delta vs baseline, broken constraints, unsatisfied feedbacks) and explanations.
+5. **Scheduler decision**
+   - Planner compares proposals vs baseline, can accept one, force-accept with justification, or fall back to baseline.
+6. **Auditability**
+   - All requests/responses, validations, and chosen/forced actions are logged with correlation IDs.
 
-### Core doctor flows
-- **View personal schedule**: `/pianificazione-privata` loads shifts for the logged-in doctor (`/api/concrete-shifts/user_id={id}`) and renders the scheduler UI specialized for single-user content.【F:frontend/src/views/utente/SingleScheduleView.js†L13-L41】
-- **View global schedule**: `/pianificazione-globale` fetches all concrete shifts; planners additionally see a drawer to add manual assignments via `TemporaryDrawer` (not specific to schedule generation).【F:frontend/src/views/utente/GlobalScheduleView.js†L10-L28】
-- **Request replacements**: Doctors can query available users for a replacement via POST `/api/concrete-shifts/available-users-for-replacement/` (returns candidates).【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L162-L167】
+### GDPR-compliant pseudonymization guardrails (new critical point)
+- ABS must never receive direct identifiers (e.g., name, surname, badge number, codice fiscale, email, phone, addresses) for doctors or other entities.
+- ABS operates only on pseudonymous identifiers generated by MS3 (e.g., `absDoctorId`, `absLocationId`, `absShiftId`) per request/tenant; sensitive attributes are excluded or generalized.
+- MS3 is the sole resolver that maps pseudonymous identifiers back to real entities; ABS responses must contain only pseudonymous references so MS3 can re-link internally.
 
-### UI entry points and navigation
-- Routes expose `/generazione-scheduling`, `/pianificazione-privata`, and `/pianificazione-globale` under the default layout.【F:frontend/src/routes.js†L24-L43】
-- Navbar links to global planning, and the sidebar adapts by actor (translations in `sidebar-nav-items`). Planner-only create buttons are guarded client-side by role checks (e.g., global schedule view hides assignment drawer for doctors/configurators).【F:frontend/src/views/utente/GlobalScheduleView.js†L21-L27】
+## 4. Proposed Integration Architecture Options
+| Option | Latency | Complexity | Reliability | UX impact | Auditability | Multi-tenant risk |
+| --- | --- | --- | --- | --- | --- | --- |
+| Synchronous REST (POST ABS, wait) | Low (request/response) | Medium (timeouts/retries) | Sensitive to ABS latency/outages | Fast feedback but blocks UI | Correlate via request IDs; inline explanations | Risk if tenant context leaks in payload; easier to bound scope |
+| Async job + poll/callback | Medium (queue + status) | Higher (job store, callbacks) | Better retry/isolation; supports longer ABS runs | Planner waits on status; needs refresh/poll UI | Job records improve audit trail | Payloads stored server-side; ensure tenant-specific queues |
+| Event-driven (message broker) | Variable | Highest (broker ops, consumers) | Decouples failures; resilient | Requires notification UI; eventual consistency | Strong traceability if events are signed/versioned | Broker must be tenant-scoped; risk of cross-topic leakage |
 
-### Error handling surfaced to users
-- Generation errors map HTTP codes to toasts: 202 success, 206 partial (violations), 406 duplicate interval, generic errors otherwise; regeneration and deletion surface specific errors for past schedules (417) or bad requests.【F:frontend/src/components/common/BottomViewAggiungiSchedulazione.js†L54-L105】【F:frontend/src/views/pianificatore/ScheduleGeneratorView.js†L68-L155】
-- Concrete shift APIs return NOT_ACCEPTABLE with constraint descriptions when hard/forced checks fail; BAD_REQUEST on malformed input, NOT_FOUND on missing schedule linkage, EXPECTATION_FAILED on regeneration/delete rules.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L42-L160】【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L136】
+## 5. Contract / Protocol Design (JSON-Based)
+- **Request payload (to ABS)**
+  - `contractVersion`, `requestId` (uuid/idempotency), `tenantId`
+  - `baselineSchedule`: dates, shifts, assignments, violatedConstraints (soft-only), doctor availability, priority snapshot references — all using pseudonymous identifiers (`absDoctorId`, `absShiftId`, `absLocationId`) and non-identifying attributes (skills/tags, not names/contact info)
+  - `constraints`: list with ids, type (hard/soft/tenant), descriptions
+  - `uffaModel`: version/hash of scoring function and per-doctor priority states
+  - `feedback`: structured array (type, target shift/doctor/period, priority) + free-text items with optional NLP preprocessing hints; references only pseudonymous IDs
+  - `overridePolicy`: what soft/tenant constraints ABS may relax and acceptable thresholds
+  - `lifecycle`: generation timestamp, expiry window, concurrency token (schedule version)
+  - `privacy`: pseudonymization scheme identifier, retention expectations, and redaction hints (no direct identifiers)
+- **Response payload (from ABS)**
+  - `contractVersion`, `requestId`, `correlationId`
+  - `proposals`: max 3 items each with `proposalId`, `deltaUffaPoints`, `brokenConstraints` (ids + severities), `unsatisfiedFeedback` list, `changeset` (diff vs baseline), `explanations` (human-readable + machine-readable codes), `dataProvenance` (models/weights used) — all references use pseudonymous IDs so MS3 can re-link internally
+  - `errors|warnings`: validation issues, unsupported feedback, partial results reason
+- **Versioning strategy**
+  - Semver per contract; ABS must tolerate older versions; MS3 keeps backward-compatible fields and adds `extensions` map for future flags.
+- **Idempotency & correlation**
+  - `requestId` acts as idempotency key; `correlationId` for tracing MS3↔ABS; include `scheduleVersion` to detect races.
+- **Error taxonomy**
+  - `INVALID_PAYLOAD`, `UNSUPPORTED_CONSTRAINT`, `TIMEOUT`, `PARTIAL_PROPOSALS`, `NO_FEASIBLE_PROPOSAL`, `AUTH_FAILURE`.
 
-### Multi-tenancy
-- A `TenantContext` ThreadLocal exists but scheduling controllers/DAOs do not currently set or check tenant values, so scheduling appears effectively single-tenant in the current code paths.【F:src/main/java/org/cswteams/ms3/tenant/TenantContext.java†L1-L15】
-
-## Technical implementation
-### Architecture & data flow
-- React views → API clients (`ScheduleAPI`, `AssegnazioneTurnoAPI`) → Spring REST endpoints (`ScheduleRestEndpoint`, `ConcreteShiftRestEndpoint`) → service/controller layer (`SchedulerController`, `ScheduleBuilder`) → JPA DAOs → PostgreSQL.
-- Constraint enforcement occurs inside `ScheduleBuilder` when generating schedules and inside `SchedulerController` when adding/modifying concrete shifts; violations populate `Schedule.violatedConstraints` and `causeIllegal` to drive HTTP 206/406 responses.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L105-L220】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L93-L206】
-
-```mermaid
-graph LR
-  UI[React schedule views] --> APIClients[ScheduleAPI / AssegnazioneTurnoAPI]
-  APIClients --> REST[ScheduleRestEndpoint / ConcreteShiftRestEndpoint]
-  REST --> Service[SchedulerController]
-  Service --> Builder[ScheduleBuilder]
-  Builder --> DAO[ScheduleDAO & related DAOs]
-  DAO --> DB[(PostgreSQL)]
-  Service --> REST
-  REST --> APIClients
-  APIClients --> UI
+### Draft JSON schema sketch
+```json
+{
+  "contractVersion": "1.0",
+  "requestId": "uuid",
+  "tenantId": "string",
+  "scheduleVersion": "etag/number",
+  "privacy": {"pseudonymization": "v1", "retentionPolicy": "no-ABS-persistence"},
+  "baselineSchedule": {
+    "startDate": "YYYY-MM-DD",
+    "endDate": "YYYY-MM-DD",
+    "concreteShifts": [
+      {"id": "uuid", "date": "YYYY-MM-DD", "shiftId": "absShiftId", "assignments": [{"doctorId": "absDoctorId", "taskId": "id", "status": "ON_DUTY|ON_CALL"}]}
+    ],
+    "violatedConstraints": [{"constraintId": "id", "type": "SOFT|TENANT", "description": "..."}],
+    "doctorPriorities": [{"doctorId": "absDoctorId", "priority": {"general": 0, "night": 0, "long": 0}}]
+  },
+  "constraints": [{"id": "id", "type": "HARD|SOFT|TENANT", "description": "...", "parameters": {}}],
+  "uffaModel": {"version": "string", "upperBound": 0, "lowerBound": 0},
+  "feedback": [{"id": "uuid", "kind": "structured|text", "target": {"date": "...", "doctorId": "absDoctorId"}, "value": "...", "priority": "LOW|MEDIUM|HIGH", "expiresAt": "..."}],
+  "overridePolicy": {"allowSoft": true, "allowTenant": false, "maxBroken": 2},
+  "lifecycle": {"generatedAt": "timestamp", "expiresAt": "timestamp"}
+}
+```
+```json
+{
+  "contractVersion": "1.0",
+  "requestId": "uuid",
+  "correlationId": "uuid",
+  "proposals": [
+    {
+      "proposalId": "uuid",
+      "deltaUffaPoints": -3,
+      "brokenConstraints": [{"constraintId": "id", "type": "SOFT|TENANT", "severity": "minor|major"}],
+      "unsatisfiedFeedback": ["feedbackId"],
+      "changeset": [{"concreteShiftId": "id", "action": "swap|move|replace", "details": {"fromDoctorId": "absDoctorId", "toDoctorId": "absDoctorId"}}],
+      "explanations": {"summary": "...", "codes": ["SOFT_CONSTRAINT_RELAXED"], "trace": "url|blob"},
+      "metrics": {"fairness": {}, "coverage": {}},
+      "validation": {"schema": "1.0", "issues": []}
+    }
+  ],
+  "warnings": ["string"],
+  "errors": []
+}
 ```
 
-### Domain model & persistence
-- `Schedule`: start/end epoch days, list of `ConcreteShift` entries via join table `schedule_concrete_shifts`, list of violated `Constraint`s via `schedule_violated_constraints`, and transient priority snapshots for doctor queues.【F:src/main/java/org/cswteams/ms3/entity/Schedule.java†L12-L97】
-- `ConcreteShift`: date (epoch), associated abstract `Shift`, `DoctorAssignment` list with statuses (ON_DUTY/ON_CALL/REMOVED). Cloning preserves assignments for modification flows.【F:src/main/java/org/cswteams/ms3/entity/ConcreteShift.java†L10-L78】
-- DAOs: `ScheduleDAO` queries schedules by containing date and filters illegal schedules; generation ensures no duplicate start/end interval but permits overlaps.【F:src/main/java/org/cswteams/ms3/dao/ScheduleDAO.java†L12-L18】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L437-L456】
-- Priority queues: `DoctorUffaPriority`/`Snapshot` collections passed through builders to preserve ordering across generations (persisted alongside schedules).【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L90-L199】
+#### Pseudonymous ID strategy
+- **Per-tenant scoping**: generate `absDoctorId`/other IDs that are unique within a tenant and unusable across tenants; incorporate tenant-specific salts to prevent linkability.
+- **Stability window options**:
+  - *Stable per tenant/time window*: aids ABS pattern learning but increases linkability risk; requires strict retention and DPA controls.
+  - *Per-request ephemeral*: minimizes linkage/snooping risk; reduces continuity for ABS optimization; requires deterministic mapping within a single request/response cycle.
+- **Collision resistance/non-guessability**: use cryptographically secure random IDs or HMAC-based derivations (non-sequential), refreshed per chosen stability window.
 
-### Backend services & rules
-- **Schedule creation**: Validates start <= end and rejects initial historical generation if no schedules exist. Builds concrete shifts for every day in range where an abstract shift’s `daysOfWeek` matches; wraps in `ScheduleBuilder`, attaches constraints/holidays/priorities, and saves schedule plus updated priority records. Returns null on illegal schedule creation (mapped to 406).【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L47】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L88-L163】
-- **Regeneration**: Restores doctor priority snapshot, deletes existing schedule if not past, then reuses `createSchedule`; failure yields 417/400.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L52-L69】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L165-L199】
-- **Concrete shift operations**: Conversions from DTO resolve `Shift` by service/timeslot, build `DoctorAssignment` lists for tasks, check collisions (same doctor on duty & on call), and run constraint validation via `ScheduleBuilder.addConcreteShift` (hard vs. soft `forced`). Illegal outcomes keep DB untouched or revert to old assignment on modification.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L202-L362】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L206-L286】
-- **Constraint evaluation**: `ScheduleBuilder` iterates constraints (`verifyConstraint`) within `ContextConstraint`, logs violations, and for generation stops on hard violations while allowing forced insertion of soft ones. Not enough feasible doctors raises `NotEnoughFeasibleUsersException`, marking schedule illegal and accumulating violated constraints.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L93-L206】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L286-L351】
+## 6. Feedback Interpretation and Acceptability Rules
+- **Responsibilities**
+  - MS3 vets feedback for legality, duplicates, conflicts, expiry; ABS focuses on optimization within approved feedback and constraint bounds.
+- **Examples**
+  - Unacceptable: requests that violate hard constraints (e.g., pregnant doctor on night shift), cross-tenant requests, discriminatory text.
+  - Partially acceptable: “fewer night shifts” without numeric bound → MS3 normalizes to threshold or marks as advisory.
+- **Conflict resolution**
+  - Detect doctor vs doctor conflicts (both want same holiday) and prioritize via tenant policy/uffa weights; mark unsatisfied feedback explicitly in proposals.
+- **Decay/expiry**
+  - Attach `expiresAt` or decay weight to feedback; auto-expire after N cycles or when schedule window passes.
 
-### API surface (key scheduling endpoints)
-- `POST /api/schedule/generation` (PLANNER): body `ScheduleGenerationDTO` -> 202 accepted, 206 partial (violations), 406 duplicate range, 400 invalid dates.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L47】
-- `POST /api/schedule/regeneration/id={id}` (PLANNER): 202 ok, 417 expectation failed (past/not deleted), 400 on exception.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L52-L69】
-- `GET /api/schedule/` (PLANNER): list of `ScheduleDTO` (start/end/id/isIllegal).【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L71-L80】
-- `GET /api/schedule/dates/` (DOCTOR/PLANNER): condensed schedule info for planner UI (dates + violation flag).【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L84-L106】
-- `GET /api/schedule/illegals` (DOCTOR/PLANNER/CONFIGURATOR): schedules with violated constraints.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L108-L118】
-- `DELETE /api/schedule/id={id}` (PLANNER): deletes future schedules only; returns 417 otherwise.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L120-L136】
-- `POST /api/concrete-shifts/` (PLANNER): add shift, returning 202 on success, 406 with constraint messages on violations, 404 if schedule missing, 400 on bad input.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L42-L79】
-- `PUT /api/concrete-shifts/` (PLANNER): modify shift; returns 202 when constraints satisfied, 406 with log otherwise.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L116-L148】
-- `DELETE /api/concrete-shifts/{id}` (PLANNER): removes shift assignment and entity.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L151-L160】
-- `GET /api/concrete-shifts/` (CONFIGURATOR/DOCTOR/PLANNER): all shifts; `/incomplete` filters to INCOMPLETE state.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L99-L114】
-- `GET /api/concrete-shifts/user_id={userID}` (DOCTOR): shifts for a specific doctor.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L81-L97】
-- `POST /api/concrete-shifts/available-users-for-replacement/` (DOCTOR): returns candidate doctors for replacement.【F:src/main/java/org/cswteams/ms3/rest/ConcreteShiftRestEndpoint.java†L162-L167】
+## 7. Validation, Safety, and Governance
+- MS3 remains source of truth: all ABS proposals are re-validated through `ScheduleBuilder.verifyAllConstraints` (hard constraints inviolate) before display and again before acceptance.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L433-L520】
+- Pre-display gate: reject proposals violating hard constraints or exceeding allowed soft/tenant breaches; attach reject reasons.
+- Audit: log request/response bodies (redacted), validation results, and planner actions with correlation IDs.
+- GDPR minimization: share only necessary non-identifying attributes; exclude direct identifiers; apply pseudonymization with tenant-scoped, non-guessable IDs; avoid free-text unless required and consider template-based structured capture.
+- Retention & processor governance: MS3 stores feedback text per tenant policy with minimization/expiry; ABS (as a data processor) must not persist inputs/outputs beyond processing, must document processing purposes in the DPA, and should expose deletion/retention attestations in observability.
+- Multi-tenancy: include `tenantId` in contract; ABS must be forbidden from cross-tenant learning; isolate storage and model fine-tuning per tenant; pseudonymous IDs must not be linkable across tenants.
 
-## Scheduling generation algorithm (as-is)
-### Purpose and triggers
-- Automates population of concrete shifts for a date range using shift templates, respecting seniority/task counts, constraint rules, holidays, and doctor “uffa” priorities. Creation is invoked by planners via `POST /api/schedule/generation`, while `POST /api/schedule/regeneration/id={id}` deletes and rebuilds an existing window after restoring saved priority snapshots.【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L69】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L165-L199】
+## 8. UX/Decision Support for Scheduler
+- Present baseline + up to 3 proposals side-by-side with metrics (delta uffaPoints, broken constraint count/types, unsatisfied feedback list) and textual explanations.
+- Provide diff view of changesets per concrete shift/doctor assignment.
+- Allow “accept”, “accept with override” (captures justification), or “reject all → keep baseline”.
+- Enable editing/voiding feedback items before sending to ABS; show why items were deemed unacceptable.
 
-### Inputs and preparatory checks
-- **Date window**: start/end LocalDate from the request; `ScheduleBuilder` rejects inverted ranges, and the controller forbids the very first schedule if it starts in the past.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L63-L116】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L100-L143】
-- **Uniqueness**: generation aborts when an identical start/end range already exists (overlaps allowed).【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L105-L158】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L437-L456】
-- **Shift templates**: for each day in range, all `Shift` templates matching the day of week spawn `ConcreteShift` shells without doctors.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L109-L143】
-- **Static data**: constraints, doctors, holidays, doctor-holiday mappings, `DoctorUffaPriority` queues, priority snapshots, and “scocciatura” annoyance weights are loaded once and fed into `ScheduleBuilder` and `ControllerScocciatura`.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L131-L148】【F:src/main/java/org/cswteams/ms3/control/scocciatura/ControllerScocciatura.java†L25-L118】
+## 9. Observability and Operations
+- Logging: structured logs for ABS requests/responses with `tenantId`, `requestId`, `correlationId`, validation outcomes.
+- Metrics: ABS latency, success/partial/failure counts, proposal count distribution, validation rejection rates, constraint violation types, feedback coverage rate.
+- Tracing: distributed tracing spans from UI action → MS3 → ABS → MS3 validation for auditability.
+- Fallbacks: if ABS unavailable or times out, fall back to deterministic schedule; surface toast/notification but do not block publishing.
+- Performance/latency budgets: synchronous path only if ABS SLA < few seconds; otherwise async job with polling.
+- Cost: limit proposals to ≤3 and throttle per tenant; optional rate limits to protect ABS.
 
-### Core generation flow
-1) `ScheduleBuilder.build()` resets violations, copies current priorities into snapshots, and normalizes queue values when `ControllerScocciatura` is present.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L180-L241】
-2) For each concrete shift:
-   - **On-duty assignment**: for every seniority/task requirement in `QuantityShiftSeniority`, `addDoctors` tries to place the required number of doctors. Failure to reach the quota throws `NotEnoughFeasibleUsersException`, captured as the schedule’s illegal cause while continuing iteration.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L205-L235】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L253-L350】
-   - **On-call assignment**: repeats the same loop for on-call slots; shortages log violations but do not stop generation.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L224-L235】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L253-L350】
-3) After processing all shifts, updated priority queues attach to the schedule, which is persisted alongside refreshed snapshots and `DoctorUffaPriority` rows.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L238-L241】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L149-L156】
-
-### Selection, ordering, and constraint checks inside `addDoctors`
-- **Priority queues**: before picking doctors, `ControllerScocciatura` adjusts temporary priorities per queue (general always; long-shift when an earlier morning shift exists; night when applicable) and orders candidates after a shuffle to break ties, keeping values within configured bounds from `priority.properties`.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L265-L289】【F:src/main/java/org/cswteams/ms3/control/scocciatura/ControllerScocciatura.java†L20-L144】
-- **Eligibility filter**: only doctors matching the required seniority are considered; doctor-specific holidays are looked up for constraint context.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L291-L307】
-- **Constraint evaluation**: each candidate is wrapped in `ContextConstraint` (doctor, concrete shift, holidays) and passed to `verifyAllConstraints` with `isForced=false`, meaning any hard constraint—or a soft one when not forced—blocks assignment and leaves the doctor unpicked.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L303-L346】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L441-L461】
-- **Assignment effects**: successful picks create `DoctorAssignment`, update queue priorities (general plus long-shift/night when relevant), and increment the selected counter; if the required count is not met, a `NotEnoughFeasibleUsersException` signals an incomplete schedule.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L306-L350】【F:src/main/java/org/cswteams/ms3/control/scocciatura/ControllerScocciatura.java†L52-L110】
-
-### Outputs and failure modes
-- **Successful generation**: returns a `Schedule` with populated concrete shifts, updated priorities, and recorded constraint violations (if any). REST maps an empty violation list to HTTP 202; non-empty violations to 206.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L180-L241】【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L44】
-- **Illegal or rejected runs**: returning `null` (past initial range, duplicate interval, date validation failure, or `IllegalScheduleException`) yields HTTP 406; regeneration of past schedules is blocked with 417. When constraints prevent filling required slots, `Schedule.causeIllegal` is set, the schedule is still saved with violations, and clients treat it as partial content.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L100-L199】【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L205-L241】【F:src/main/java/org/cswteams/ms3/rest/ScheduleRestEndpoint.java†L29-L69】
-
-### Testing and limitations
-- Constraint unit tests exercise individual rules but there is no end-to-end test for generation ordering, priority normalization, or multi-day coverage; shortages and random shuffle behavior remain unverified by automated tests.【F:src/test/java/org/cswteams/ms3/VincoloUbiquitàTest.java†L1-L120】【F:src/test/java/org/cswteams/ms3/VincoloTurniContiguiTest.java†L1-L120】【F:src/test/java/org/cswteams/ms3/VincoloMaxPeriodoConsecutivoTest.java†L1-L120】
-
-```mermaid
-flowchart TD
-  Start([Planner POST /api/schedule/generation]) --> Dates{Validate dates /\nfirst schedule not past}
-  Dates -- invalid --> Reject[Return 406]
-  Dates -- ok --> Dup{Duplicate range?}
-  Dup -- yes --> Reject
-  Dup -- no --> Shifts[Expand days → ConcreteShift shells]
-  Shifts --> Builder[Build ScheduleBuilder with constraints, holidays, priorities, scocciature]
-  Builder --> Assign[For each shift: update queues → verify constraints → add doctors]
-  Assign -- quota met --> Persist[Persist schedule + priority snapshots]
-  Assign -- quota missing --> Illegal[Mark causeIllegal + violated constraints]
-  Persist --> Response[HTTP 202 if no violations else 206]
-  Illegal --> Response
-```
-
-### Frontend implementation notes
-- Planner schedule management UI shows list and allows regeneration/deletion; creation drawer uses Material UI date pickers and shows loading overlay during API calls.【F:frontend/src/views/pianificatore/ScheduleGeneratorView.js†L38-L200】【F:frontend/src/components/common/BottomViewAggiungiSchedulazione.js†L30-L151】
-- Global and single schedule views inherit from a shared `ScheduleView` (not modified here) that handles filtering, CSV export, and shift editing; global view conditionally renders assignment drawer based on actor role.【F:frontend/src/views/utente/GlobalScheduleView.js†L10-L28】【F:frontend/src/views/utente/SingleScheduleView.js†L13-L41】
-- API clients encapsulate fetch calls with auth headers and map HTTP status to UI behavior; schedule APIs use `/api/schedule/*` while shift allocation uses `/api/concrete-shifts/*`.【F:frontend/src/API/ScheduleAPI.js†L6-L40】【F:frontend/src/API/AssegnazioneTurnoAPI.js†L277-L313】
-
-### Sequence: schedule generation (planner)
-```mermaid
-sequenceDiagram
-  participant PlannerUI as Planner UI
-  participant ScheduleAPI as ScheduleAPI
-  participant ScheduleRest as ScheduleRestEndpoint
-  participant Scheduler as SchedulerController
-  participant Builder as ScheduleBuilder
-  participant DAO as ScheduleDAO/ShiftDAO
-
-  PlannerUI->>ScheduleAPI: pick start/end → postGenerationSchedule()
-  ScheduleAPI->>ScheduleRest: POST /api/schedule/generation
-  ScheduleRest->>Scheduler: createSchedule(start,end)
-  Scheduler->>DAO: load shifts/doctors/constraints
-  Scheduler->>Builder: new ScheduleBuilder(...)
-  Builder-->>Scheduler: Schedule (with violations?)
-  Scheduler->>DAO: save schedule, priorities
-  ScheduleRest-->>ScheduleAPI: HTTP 202/206/406/400
-  ScheduleAPI-->>PlannerUI: status → toast + refresh
-```
-
-### Persistence/validation constraints
-- Concrete shifts reference `Shift` templates and doctor assignments; `ScheduleBuilder` verifies constraints (hard vs. soft), holidays, and doctor priority queues before committing assignments. Violated constraints are stored on the schedule for planner review.【F:src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java†L93-L206】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L202-L362】
-- Deleting schedules clears foreign key references from doctor priority records before removal; schedules in the past are protected from deletion/regeneration.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L413-L434】
-- Schedule overlaps are allowed except for exact duplicate ranges; this is the only duplication check in creation logic.【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L100-L108】【F:src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java†L437-L456】
-
-### Testing footprint
-- Constraint-focused unit tests (`VincoloUbiquitàTest`, `VincoloTurniContiguiTest`, `VincoloMaxPeriodoConsecutivoTest`) create `Schedule` and `UserScheduleState` instances to validate rule enforcement, indicating partial coverage of constraint logic but limited end-to-end scheduling tests.【F:src/test/java/org/cswteams/ms3/VincoloUbiquitàTest.java†L1-L120】【F:src/test/java/org/cswteams/ms3/VincoloTurniContiguiTest.java†L1-L120】【F:src/test/java/org/cswteams/ms3/VincoloMaxPeriodoConsecutivoTest.java†L1-L120】
-
-## Open questions / ambiguities
-- Tenant isolation: `TenantContext` is unused in scheduling paths; unclear if multi-tenant support is intentionally disabled or configured elsewhere.
-- Constraint catalog: REST exposes violations, but the authoritative list/semantics of constraint types are spread across `entity/constraint` classes; some hard vs. soft behavior is inferred but not documented.
-- Schedule validity states: UI labels “Incompleta” for illegal schedules but backend distinguishes partial content vs. illegal; mapping of `ShiftState.INCOMPLETE` vs. schedule illegal status is not unified.
-- Snapshot/priority lifecycle: regeneration restores snapshots, but concurrency/rollback behavior for partial failures is unspecified.
+## 10. Open Decisions and Recommendations
+- **Open decisions**
+  - Which feedback types are supported in MVP (e.g., shift-level vs period-level)?
+  - Thresholds for acceptable soft/tenant constraint violations per tenant.
+  - Whether ABS can persist learned models per tenant or operate statelessly with MS3-provided data only.
+  - Storage/retention for textual feedback and ABS traces; whether pseudonymous IDs are stable per window or per request.
+  - UI placement for feedback moderation and proposal comparison.
+- **Must-not-break invariants**
+  - Hard constraints are never violated in accepted schedules; soft/tenant relaxations are explicit and bounded.
+  - Max 3 proposals per ABS response; if none valid, baseline remains.
+  - No direct identifiers ever leave the MS3 boundary; ABS receives only pseudonymous IDs and non-identifying attributes.
+  - ABS outputs must remain re-linkable to MS3 entities solely via pseudonymous IDs resolved internally by MS3.
+  - No cross-tenant data leakage or linkability in payloads, logs, pseudonymous IDs, or ABS learning.
+  - UffaPoints/priority deltas use MS3’s authoritative logic for validation and display consistency.
+  - Every accepted proposal is re-validated by MS3 before persistence/display.
+- **Recommended MVP slice**
+  - Synchronous ABS call with short timeout; single proposal returned; structured feedback only; UI for planner to approve/disable feedback items pre-request; re-validation gate using existing `ScheduleBuilder` and constraint metadata; logging with correlation IDs.
+- **Phased rollout**
+  1. **Phase 1**: Add feedback data model + moderation UI; define contract v1 with versioning/idempotency; synchronous ABS integration behind feature flag; validation gate.
+  2. **Phase 2**: Introduce async job/polling for long-running proposals; richer metrics/explanations; text feedback NLP preprocessing.
+  3. **Phase 3**: Event/broker-based scaling, tenant-specific model tuning, advanced conflict resolution and fairness analytics.
