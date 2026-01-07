@@ -12,6 +12,7 @@ import { SchedulableType } from "../../API/Schedulable";
 import Button from "@mui/material/Button";
 import { t } from "i18next";
 import partyImage from '../../images/party-icon.svg';
+import {toast, ToastContainer} from "react-toastify";
 
 import {
   Dialog,
@@ -149,8 +150,56 @@ export const Content = ({
     };
 
     try {
-      await api.postFeedback(payload);
-      alert("Feedback inviato con successo!");
+      if (!payload.score) {
+        toast.warning(t("Please provide a score for your feedback"), {
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                      });
+        return
+      }
+      else if (!payload.comment){
+        toast.warning(t("Please provide a text for your feedback"), {
+                                position: "top-center",
+                                autoClose: 5000,
+                                hideProgressBar: true,
+                                closeOnClick: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                progress: undefined,
+                                theme: "colored",
+                              });
+        return
+      }
+      const response = await api.postFeedback(payload);
+      if (response.status === 201){
+        toast.success(t("Feedback successfully inserted"), {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+              });
+      } else {
+        toast.error(t("An error occurred while inserting a feedback"), {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+              });
+      }
       closeFeedbackDialog();
     } catch (error) {
       console.error("Errore invio feedback", error);

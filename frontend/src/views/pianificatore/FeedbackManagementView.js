@@ -7,7 +7,11 @@ import {
   MDBContainer,
   MDBRow, MDBTable, MDBTableBody, MDBTableHead,
 } from "mdb-react-ui-kit";
-import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
 import {panic} from "../../components/common/Panic";
 import {t} from "i18next";
 import { ScheduleFeedbackAPI } from "../../API/ScheduleFeedbackAPI";
@@ -21,6 +25,8 @@ export default class FeedbackManagementView extends React.Component{
       orderBy: "lastname",
       orderDirection: "asc",
       attore: localStorage.getItem("actor"),
+      isTextModalOpen: false,
+      selectedFeedback: null,
     };
   }
 
@@ -67,6 +73,14 @@ export default class FeedbackManagementView extends React.Component{
     });
   }
 
+  openTextModal = (feedback) => {
+    this.setState({ isTextModalOpen: true, selectedFeedback: feedback });
+  }
+
+  closeTextModal = () => {
+    this.setState({ isTextModalOpen: false, selectedFeedback: null });
+  }
+
   render(){
     const sortedData = [...this.state.feedbacks].sort((a, b) => {
       const {orderBy, orderDirection} = this.state;
@@ -82,6 +96,15 @@ export default class FeedbackManagementView extends React.Component{
       }
       return orderDirection === "asc" ? left - right : right - left;
     });
+    const previewStyle = {
+      maxWidth: 420,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      display: "block",
+      minWidth: 0,
+    };
+
     return (
           <MDBContainer fluid className="main-content-container px-4 pb-4 pt-4">
             <MDBCard alignment="center">
@@ -110,11 +133,42 @@ export default class FeedbackManagementView extends React.Component{
                         <td>{data.name}</td>
                         <td>{data.lastname}</td>
                         <td>{data.feedback_rating}</td>
-                        <td>{data.feedback_text}</td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Button
+                              variant="text"
+                              align="center"
+                              color="primary"
+                              onClick={() => this.openTextModal(data)}
+                            >
+                              {t("Show")}
+                            </Button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </MDBTableBody>
                 </MDBTable>
+                <Dialog
+                  open={this.state.isTextModalOpen}
+                  onClose={this.closeTextModal}
+                  maxWidth="sm"
+                  fullWidth
+                >
+                  <DialogTitle>
+                    {t("Text")} {this.state.selectedFeedback
+                    ? `- ${this.state.selectedFeedback.name} ${this.state.selectedFeedback.lastname}`
+                    : ""}
+                  </DialogTitle>
+                  <DialogContent>
+                    <div style={{ whiteSpace: "pre-wrap" }}>
+                      {this.state.selectedFeedback?.feedback_text || ""}
+                    </div>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={this.closeTextModal}>{t("Close")}</Button>
+                  </DialogActions>
+                </Dialog>
               </MDBCardBody>
             </MDBCard>
           </MDBContainer>

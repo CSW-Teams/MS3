@@ -224,6 +224,7 @@
   "Doctors on Duty": "Medici di Guardia",
   "Doctors on Call": "Medici Reperibili",
   "Close":  "Chiudi",
+  "Show": "Mostra",
   "Filter": "Filtra",
   "Weekly": "Settimanale",
   "Daily": "Giornaliero",
@@ -430,5 +431,9 @@
   "Add shift": "Aggiungi turno",
 
   "No time slot selected": "Nessuna fascia oraria selezionata",
-  "No day of the week selected": "Nessuna giorno della settimana selezionato"
+  "No day of the week selected": "Nessuna giorno della settimana selezionato",
+  "Feedback successfully inserted": "Feedback inserito con successo",
+  "An error occurred while inserting a feedback": "Qualcosa è andato storto nell'inserimento del feedback",
+  "Please provide a score for your feedback": "Per inserire un feedback è necessario un punteggio",
+  "Please provide a text for your feedback": "Per inserire un feedback è necessario inserire un testo"
 }
