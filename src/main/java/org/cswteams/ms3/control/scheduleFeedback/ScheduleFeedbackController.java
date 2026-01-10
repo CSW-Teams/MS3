@@ -46,22 +46,9 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
         }
         
         feedbackDTO.setDoctorId(doctor.getId());
-        return addFeedbackById(feedbackDTO);
-    }
-
-    private ScheduleFeedbackDTO addFeedbackById(ScheduleFeedbackDTO feedbackDTO) {
-        if (feedbackDTO.getDoctorId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID del Dottore non trovato");
-        }
-
-        Doctor doctor = doctorDAO.findById(feedbackDTO.getDoctorId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Dottore con ID " + feedbackDTO.getDoctorId() + " non trovato nel database."
-                ));
 
         if (feedbackDTO.getConcreteShiftIds() == null || feedbackDTO.getConcreteShiftIds().isEmpty()) {
-             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Devi selezionare almeno un turno per inviare un feedback.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Devi selezionare almeno un turno per inviare un feedback.");
         }
 
         Set<Long> requestedShiftIds = feedbackDTO.getConcreteShiftIds().stream()
@@ -115,14 +102,7 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
     }
 
     @Override
-    public List<ScheduleFeedbackDTO> getFeedbacksByDoctor(Long doctorId) {
-        return scheduleFeedbackDAO.findByDoctorId(doctorId).stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ScheduleFeedbackDTO> getFeedbacksByDoctorEmail(String email) {
+    public List<ScheduleFeedbackDTO> getFeedbacksByDoctor(String email) {
         Doctor doctor = doctorDAO.findByEmail(email);
          if (doctor == null) {
              throw new ResponseStatusException(
@@ -130,7 +110,58 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
                         "Dottore con email " + email + " non trovato nel database."
                 );
         }
-        return getFeedbacksByDoctor(doctor.getId());
+
+        return scheduleFeedbackDAO.findByDoctorId(doctor.getId()).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    // update di un feedback lasciato dall'utente, non integrato. Valutarne integrazione futura con agenti AI?
+    @Override
+    @Transactional
+    public ScheduleFeedbackDTO updateFeedback(ScheduleFeedbackDTO feedbackDTO, String email) {
+        Doctor doctor = doctorDAO.findByEmail(email);
+        if (doctor == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Dottore con email " + email + " non trovato nel database."
+            );
+        }
+
+        ScheduleFeedback feedback = scheduleFeedbackDAO.findById(feedbackDTO.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Feedback con ID " + feedbackDTO.getId() + " non trovato."));
+
+        if (!feedback.getDoctor().getId().equals(doctor.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non sei autorizzato a modificare questo feedback.");
+        }
+
+        feedback.setComment(feedbackDTO.getComment());
+        feedback.setScore(feedbackDTO.getScore());
+
+        ScheduleFeedback updatedFeedback = scheduleFeedbackDAO.save(feedback);
+        return convertToDTO(updatedFeedback);
+    }
+
+    // delete di un feedback lasciato dall'utente, non integrato. Valutarne integrazione futura con agenti AI?
+    @Override
+    @Transactional
+    public void deleteFeedback(Long feedbackId, String email) {
+        Doctor doctor = doctorDAO.findByEmail(email);
+        if (doctor == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Dottore con email " + email + " non trovato nel database."
+            );
+        }
+
+        ScheduleFeedback feedback = scheduleFeedbackDAO.findById(feedbackId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Feedback con ID " + feedbackId + " non trovato."));
+
+        if (!feedback.getDoctor().getId().equals(doctor.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Non sei autorizzato ad eliminare questo feedback.");
+        }
+
+        scheduleFeedbackDAO.delete(feedback);
     }
 
     private ScheduleFeedbackDTO convertToDTO(ScheduleFeedback feedback) {

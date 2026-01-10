@@ -48,19 +48,29 @@ public class ScheduleFeedbackRestEndpoint {
     public ResponseEntity<List<ScheduleFeedbackDTO>> getMyFeedbacks() {
         String loggedUserEmail = getCurrentUserEmail();
 
-        List<ScheduleFeedbackDTO> feedbacks = scheduleFeedbackController.getFeedbacksByDoctorEmail(loggedUserEmail);
+        List<ScheduleFeedbackDTO> feedbacks = scheduleFeedbackController.getFeedbacksByDoctor(loggedUserEmail);
         return new ResponseEntity<>(feedbacks, HttpStatus.OK);
     }
 
-    private Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            return userDetails.getId();
+    // update endpoint non integrato. Valutarne integrazione futura con agenti AI?
+    @PreAuthorize("hasAnyRole('DOCTOR')")
+    @PutMapping
+    public ResponseEntity<ScheduleFeedbackDTO> updateFeedback(@Valid @RequestBody ScheduleFeedbackDTO feedbackDTO) {
+        if (feedbackDTO == null || feedbackDTO.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID feedback mancante.");
         }
+        String loggedUserEmail = getCurrentUserEmail();
+        ScheduleFeedbackDTO updated = scheduleFeedbackController.updateFeedback(feedbackDTO, loggedUserEmail);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
+    }
 
-        return null;
+    // delete endpoint non integrato. Valutarne integrazione futura con agenti AI?
+    @PreAuthorize("hasAnyRole('DOCTOR')")
+    @DeleteMapping("/{feedbackId}")
+    public ResponseEntity<Void> deleteFeedback(@PathVariable Long feedbackId) {
+        String loggedUserEmail = getCurrentUserEmail();
+        scheduleFeedbackController.deleteFeedback(feedbackId, loggedUserEmail);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     private String getCurrentUserEmail() {

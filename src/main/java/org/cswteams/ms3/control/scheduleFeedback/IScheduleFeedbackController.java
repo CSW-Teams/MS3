@@ -7,6 +7,7 @@ import java.util.List;
 public interface IScheduleFeedbackController {
     ScheduleFeedbackDTO addFeedback(ScheduleFeedbackDTO feedbackDTO, String email);
     List<ScheduleFeedbackDTO> getAllFeedbacks();
-    List<ScheduleFeedbackDTO> getFeedbacksByDoctor(Long doctorId);
-    List<ScheduleFeedbackDTO> getFeedbacksByDoctorEmail(String email);
+    List<ScheduleFeedbackDTO> getFeedbacksByDoctor(String email);
+    ScheduleFeedbackDTO updateFeedback(ScheduleFeedbackDTO feedbackDTO, String email);
+    void deleteFeedback(Long feedbackId, String email);
 }
