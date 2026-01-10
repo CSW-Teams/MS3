@@ -22,267 +22,235 @@
 ---
 
 ## Cos’è Codacy e perché viene usato
-Codacy è una piattaforma di **analisi statica** e **code quality** che integra più strumenti (linters, code analyzers, security scanners) per valutare automaticamente la qualità del codice. Nel flusso di MS3 è utilizzata per:
-- **Prevenire regressioni** di qualità (via Quality Gate e Project Grade).
-- **Bloccare PR non conformi** tramite i check su GitHub.
-- **Uniformare lo stile** con Code Patterns.
+Codacy è una piattaforma di **analisi statica** e **code quality** che integra più strumenti (linters, code analyzers, security scanners) per valutare automaticamente la qualità del codice.
+
+Nel flusso di MS3 è utilizzata per:
+- **Prevenire regressioni** di qualità tramite Quality Gate e PR Checks.
+- **Bloccare PR non conformi** ai requisiti di qualità.
+- **Uniformare lo stile** del codice tramite Code Patterns.
 - **Misurare complessità, duplicazioni e code smells**.
+- **Monitorare la qualità nel tempo** tramite il Project Grade.
 
 ---
 
 ## Concetti chiave
-- **Project/Repository**: ogni repository analizzato è un progetto Codacy.
-- **Provider**: l’integrazione con GitHub (o altri provider) che permette sincronizzazione e PR checks.
-- **Analysis**: analisi statica automatica del codice che produce issue, metriche e grade.
-- **Issues**: problemi di qualità, stile, sicurezza o maintainability rilevati dagli strumenti.
-- **Quality Gate**: criteri di qualità minimi da rispettare per superare i check.
-- **Project Grade**: punteggio complessivo (A–F) della qualità del progetto.
-- **PR Checks**: status checks su GitHub che indicano se la PR è conforme ai requisiti.
-- **New Issues Only**: focalizzazione sui problemi introdotti di recente (baseline).
+- **Project / Repository**: ogni repository analizzato corrisponde a un progetto Codacy.
+- **Provider**: integrazione con GitHub per sincronizzazione e PR checks.
+- **Analysis**: esecuzione dell’analisi statica che produce issue, metriche e grade.
+- **Issues**: violazioni di qualità, stile, sicurezza o manutenibilità.
+- **Quality Gate**: criteri minimi di qualità che una PR deve rispettare.
+- **Project Grade**: valutazione complessiva (A–F) della qualità del progetto.
+- **PR Checks**: verifiche automatiche visibili nelle Pull Request GitHub.
+- **New Issues Only**: approccio che valuta solo i problemi introdotti di recente.
 
 ---
 
 ## Panoramica funzionalità
-Le funzionalità principali di Codacy includono:
-- **Dashboard di progetto**: stato generale, grade, trend e quick links.
-- **Issues list**: elenco e dettaglio delle issue con filtri per severità e categoria.
-- **Quality Gate**: definizione e verifica dei criteri di qualità.
-- **Code Patterns**: regole di stile, best practice e sicurezza.
-- **Duplicazione e complessità**: metriche di duplicazione e complessità ciclomatica.
-- **PR analysis**: annotazioni e check automatici sulle Pull Request.
-- **Security findings**: rilevazioni di vulnerabilità o pattern insicuri.
-- **Integrazioni**: GitHub, notifiche e webhook.
+Le principali funzionalità offerte da Codacy includono:
+- Dashboard di progetto con stato e trend qualità.
+- Lista delle issue con filtri per severità e categoria.
+- Quality Gate configurabili.
+- Code Patterns per stile e best practice.
+- Analisi di complessità ciclomatica.
+- Rilevamento duplicazioni di codice.
+- Annotazioni automatiche nelle Pull Request.
+- Integrazione nativa con GitHub.
 
 ---
 
 ## Onboarding: registrazione e accesso via GitHub
-1. **Accedi a Codacy** tramite GitHub (OAuth).
-2. **Autorizza l’accesso** a repository e organizzazioni richiesti (in base ai permessi).
-3. **Completa il profilo** Codacy, scegliendo l’organizzazione corretta.
+1. Accedere a Codacy tramite GitHub (OAuth).
+2. Autorizzare l’accesso ai repository richiesti.
+3. Selezionare l’organizzazione corretta.
 
-> Nota: a seconda della policy aziendale, l’accesso potrebbe richiedere l’installazione dell’app Codacy su GitHub da parte di un admin.
+> Nota: l’installazione dell’app Codacy su GitHub può richiedere permessi di amministratore.
 
 ---
 
 ## Collegare Codacy a un repository
-1. In Codacy, seleziona **Add Project** (o equivalente nella UI attuale).
-2. Scegli il **provider GitHub** e l’organizzazione corretta.
-3. Seleziona il repository **MS3** da importare.
-4. Attendi la prima **analisi iniziale** (baseline).
-
-> Suggerimento: la prima analisi può richiedere tempo a seconda della dimensione del repository e della configurazione dei tool.
+1. Selezionare **Add Project** in Codacy.
+2. Scegliere GitHub come provider.
+3. Selezionare il repository MS3.
+4. Attendere il completamento della prima analisi (baseline iniziale).
 
 ---
 
 ## Impostazioni base di progetto e organizzazione
-Le impostazioni di base (posizione esatta nella UI può variare) includono:
-- **Organization settings**: membri, ruoli, permessi e integrazioni.
-- **Project settings**: configurazione dei tool, language support, quality gate e notifications.
-- **PR integration**: attivazione dei check automatici sulle pull request.
+Le impostazioni principali includono:
+- Gestione membri e permessi.
+- Configurazione tool di analisi.
+- Attivazione PR checks.
+- Definizione Quality Gate.
 
-**Best practice consigliate per MS3**:
-- Verificare che l’integrazione GitHub sia attiva e che i **status checks** siano obbligatori.
-- Mantenere attivo il set di tool che copre **style**, **maintainability**, **security** e **duplication**.
+**Best practice MS3**:
+- PR checks Codacy obbligatori.
+- Tool attivi per style, maintainability, security e duplication.
 
 ---
 
 ## Quality Gate, Project Grade e PR Checks (DoD)
-Questa sezione mappa direttamente i requisiti di DoD relativi a Codacy.
 
-### ✅ Quality Gate deve passare
-- **Significato**: il Quality Gate definisce criteri minimi (es. assenza di nuove issue critiche, soglia di duplicazione, limiti di complessità).
-- **Dove vederlo**:
-  - **Codacy UI**: nella sezione Quality Gate o nel dashboard del progetto.
-  - **GitHub PR Checks**: come status check automatico in “Checks”.
-- **Cause comuni di fallimento**:
-  - Nuove issue di severità alta.
-  - Superamento soglia di duplicazione.
-  - Complessità elevata o code smells.
-- **Come rimediare**:
-  1. Aprire la lista issue e filtrare per **New Issues**.
-  2. Correggere il codice o rifattorizzare.
-  3. Rieseguire la pipeline/PR check.
+### Quality Gate
+Il **Quality Gate** definisce le condizioni minime che una PR deve soddisfare per essere considerata accettabile.
 
-### ✅ Project Grade ≥ D
-- **Significato**: il grade è un voto complessivo (A–F) calcolato da Codacy.
-- **Dove vederlo**: dashboard di progetto e summary della qualità.
-- **Come prevenire regressioni**:
-  - Evitare di introdurre nuove issue.
-  - Mantenere bassa la duplicazione.
-  - Ridurre complessità in nuove modifiche.
-- **Cosa fare se scende**:
-  - Analizzare metriche di qualità e lista issue.
-  - Identificare moduli con molte violazioni o peggioramenti.
+Tipici criteri:
+- Nessuna nuova issue critica.
+- Duplicazione sotto soglia.
+- Complessità entro limiti accettabili.
 
-### ✅ GitHub PR Checks devono essere verdi
-- **Significato**: Codacy pubblica un check che deve essere “success”.
-- **Segnali principali**:
-  - Superamento Quality Gate.
-  - Assenza di issue bloccanti nei file modificati.
-- **Come reagire a un check fallito**:
-  1. Aprire il dettaglio del check in GitHub.
-  2. Seguire il link a Codacy per vedere le issue.
-  3. Correggere o giustificare (se permesso) e rieseguire.
+Il Quality Gate è **bloccante**: se fallisce, la PR non può essere mergiata.
+
+---
+
+### Project Grade: significato e modello di calcolo
+
+Il **Project Grade** è una valutazione sintetica della qualità complessiva del codice di un progetto, espressa da **A** a **F**.
+
+Il grade è calcolato:
+- per branch,
+- sull’intero codice analizzato,
+- come aggregazione ponderata di più metriche.
+
+Contribuiscono al grade:
+- Numero e severità delle issue.
+- Densità di issue rispetto alle linee di codice.
+- Complessità ciclomatica.
+- Duplicazione del codice.
+- Copertura dei test (se presente).
+
+Il Project Grade rappresenta quindi **la salute strutturale del progetto**, non la qualità di una singola PR.
+
+---
+
+### Relazione tra Project Grade e Pull Request
+
+- Il Project Grade **non è un criterio diretto di accettazione** di una PR.
+- Le PR sono valutate tramite:
+  - Quality Gate,
+  - PR Checks,
+  - nuove issue introdotte.
+
+Un progetto può avere un Project Grade medio-basso e accettare PR corrette, purché **non introducano regressioni**.
+
+---
+
+### PR Checks
+I PR Checks Codacy:
+- vengono eseguiti automaticamente su ogni PR,
+- mostrano lo stato direttamente su GitHub,
+- devono risultare **verdi** per il merge.
 
 ---
 
 ## Code Patterns e stile del codice (DoD)
-I **Code Patterns** sono regole di stile e best practice definite da tool specifici.
+I Code Patterns definiscono regole di stile, sicurezza e best practice.
 
-- **Configurazione**: in genere nella sezione Project Settings > Code Patterns.
-- **Output**: le violazioni appaiono come issue e possono essere visibili nei PR checks.
-- **Come agire**:
-  - Correggere la regola violata (es. naming, formattazione, best practice).
-  - Evitare di “sopprimere” pattern senza motivazione.
+- Le violazioni generano issue.
+- Le issue compaiono nei PR Checks.
+- Le regole vanno modificate solo con consenso del team.
 
 ---
 
 ## Clean Code: complessità, duplicazione e commented code (DoD)
 
 ### Complessità ciclomatica
-- Codacy rileva la **complessità** tramite tool integrati (es. PMD/SpotBugs o equivalenti).
-- **Come interpretare**: issue di complessità alta indicano metodi difficili da mantenere o testare.
-- **Refactoring consigliato**:
-  - Spezzare funzioni lunghe.
-  - Ridurre branching annidato.
-  - Estrarre metodi e classi.
+Indica il livello di ramificazione logica del codice.
+
+**Refactoring consigliato**:
+- suddividere funzioni complesse,
+- ridurre nesting,
+- estrarre metodi.
+
+---
 
 ### Duplicazione
-- Codacy rileva **duplicazioni** e può applicare soglie nel Quality Gate.
-- **Dove vederla**: metriche di duplicazione e issue associate.
-- **Come intervenire**:
-  - Estrarre codice comune.
-  - Evitare copia-incolla e creare utility condivise.
+Il codice duplicato riduce manutenibilità e qualità.
+
+**Azioni consigliate**:
+- estrarre logica comune,
+- evitare copia-incolla.
+
+---
 
 ### Commented-out code
-- Codacy può rilevare porzioni di codice commentato in base ai tool attivi.
-- **Aspettativa DoD**: il codice commentato non deve restare nel repository.
-- **Come intervenire**:
-  - Rimuovere il codice commentato.
-  - Se serve conservarlo, usare strumenti di versioning o documentazione, non commenti nel codice.
+Il codice commentato non deve restare nel repository.
+
+**DoD**:
+- rimuovere codice commentato,
+- usare version control per lo storico.
 
 ---
 
 ## Workflow quotidiano: sviluppatore e team
 
-### Sviluppatore (giornaliero)
-1. Lavorare su feature/bugfix.
-2. Prima della PR, controllare eventuali warning locali (lint, test).
-3. Aprire PR e verificare i **Codacy checks**.
-4. Risolvere le issue segnalate (focus su **New Issues**).
-5. Assicurarsi che Quality Gate e Project Grade non peggiorino.
+### Sviluppatore
+1. Implementa feature o fix.
+2. Apre PR.
+3. Verifica PR Checks Codacy.
+4. Risolve eventuali nuove issue.
+5. Assicura Quality Gate superato.
 
-### Team (settimanale/sprint)
-- Monitorare dashboard Codacy e trend qualità.
-- Rivedere regole/patterns troppo rumorosi.
-- Pianificare task di refactoring per ridurre complessità e duplicazione.
+---
+
+### Team
+- Monitorare trend di qualità.
+- Valutare rumore delle regole.
+- Pianificare refactoring incrementali.
 
 ---
 
 ## Triage e analisi delle issue
-Per ogni issue:
-1. **Severità**: alta/critica vs media/bassa.
-2. **Categoria**: style, maintainability, security, duplication.
-3. **Contesto**: file coinvolti, commit recente.
-4. **Assegnazione**: responsabile del modulo.
+Per ogni issue valutare:
+- Severità.
+- Categoria.
+- Contesto.
+- Responsabilità.
 
-Strumenti utili:
-- Filtri “New Issues”.
-- Filtri per branch (default branch vs feature).
-- Cronologia dell’issue.
+Usare filtri:
+- New Issues.
+- Branch.
+- Categoria.
 
 ---
 
 ## Gestione del legacy: “New Issues Only” e baseline
 
+### Il problema del legacy
+Il codice legacy influisce sul Project Grade perché il grade considera **tutto il codice esistente**.
+
+Questo non rende inutile la metrica, ma richiede **una corretta interpretazione**.
+
+---
+
+### Strategia MS3
+MS3 separa:
+- **controllo di qualità** (PR, bloccante),
+- **misurazione di qualità** (Project Grade, osservazionale).
+
+---
+
 ### “New Issues Only”
-- **Concetto**: la qualità viene misurata solo sulle issue introdotte dopo una baseline iniziale.
-- **Vantaggi**: evita di bloccare PR per debito tecnico storico.
-- **Workflow atteso**:
-  1. Stabilire una baseline iniziale.
-  2. Imporre che ogni PR non aggiunga nuove issue.
-  3. Ridurre gradualmente il debito tecnico con iniziative dedicate.
+Principio operativo:
+> Il codice nuovo non deve peggiorare la qualità esistente.
 
-### Baseline / “ignore existing issues”
-Codacy supporta il concetto di **baseline** (o “ignore existing issues”) in modo variabile a seconda del piano e della configurazione.
-
-**Se disponibile**:
-1. Impostare una baseline dalla situazione attuale del default branch.
-2. Abilitare la modalità “New Issues Only” per i check.
-
-**Se non disponibile**:
-- Usare Quality Gate orientati ai soli file modificati in PR.
-- Gestire il debito storico con backlog dedicato, mantenendo i check su nuove issue.
+- Le PR sono valutate solo sulle nuove issue.
+- Il debito tecnico storico non blocca lo sviluppo.
 
 ---
 
-## Ignorare o sopprimere issue e falsi positivi
-- Codacy permette di **ignorarle** o **sopprimerle** in base ai tool e ai permessi.
-- Usare l’ignore solo quando:
-  - l’issue è un falso positivo documentato,
-  - la regola non è applicabile al contesto.
-- Documentare sempre la motivazione.
-
-> Nota: le modalità di ignore variano per tool e piano; consultare le opzioni del progetto.
+### Modifiche su codice legacy
+- Nuove issue → da correggere.
+- Issue rimosse → miglioramento.
+- Issue esistenti → accettabili, ma opportunità di refactoring.
 
 ---
 
-## Risoluzione problemi comuni
+### Baseline
+Se disponibile:
+- il default branch diventa riferimento iniziale.
 
-### PR check non compare su GitHub
-Possibili cause:
-- App Codacy non installata su GitHub.
-- Permessi mancanti sul repository.
-- Integrazione disattivata nelle impostazioni.
+Se non disponibile:
+- Quality Gate orientato ai file modificati.
 
-**Azioni**:
-1. Verificare installazione dell’app.
-2. Controllare che il repository sia incluso nell’integrazione.
-3. Riconfigurare l’integrazione in Codacy.
-
-### Nessun risultato di analisi in Codacy
-Possibili cause:
-- Webhook non attivo.
-- Branch non monitorato.
-- Analisi fallita o non avviata.
-
-**Azioni**:
-1. Controllare lo stato dei webhook su GitHub.
-2. Verificare che il branch di default sia monitorato.
-3. Forzare una nuova analisi (nuovo commit o re-run).
-
-### Quality Gate fallito
-- Identificare le issue “New Issues”.
-- Correggere i file modificati.
-- Rivalutare la PR.
-
-### Regole troppo rumorose
-- Discutere in team se disabilitare o ridurre severità.
-- Preferire la correzione o la disattivazione mirata.
-
----
-
-## Note su piani, limiti e coerenza con Codacy
-- Alcune funzionalità (baseline, advanced security, policy gating) possono dipendere dal **piano Codacy**.
-- La **terminologia e la UI** possono variare nel tempo: verificare sempre la sezione di aiuto ufficiale.
-- Evitare di introdurre configurazioni o segreti nel repository: usare sistemi di gestione secure (GitHub Secrets o secret manager).
-
----
-
-## Checklist DoD (Codacy)
-- [ ] Quality Gate **passato** su PR.
-- [ ] Project Grade **≥ D**.
-- [ ] PR Check Codacy **verde** in GitHub.
-- [ ] Nessuna violazione di Code Patterns rilevante.
-- [ ] Complessità entro soglie accettate.
-- [ ] Duplicazione sotto soglia Quality Gate.
-- [ ] Nessun codice commentato o duplicato introdotto.
-
----
-
-### Glossario rapido
-- **Quality Gate**: set di regole che decide se la qualità è accettabile.
-- **Project Grade**: voto complessivo (A–F).
-- **New Issues Only**: controllo solo su problemi introdotti di recente.
-- **PR Checks**: verifiche automatiche sulla Pull Request.
-
+In entrambi i casi:
+- miglioramento graduale
