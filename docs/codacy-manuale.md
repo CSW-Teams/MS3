@@ -2,6 +2,8 @@
 
 > **Obiettivo**: fornire un manuale operativo completo su Codacy per sviluppatori e team di progetto, allineato alla Definition of Done (DoD) di MS3 e focalizzato su analisi statica, qualità del codice e integrazione con GitHub Pull Request.
 
+---
+
 ## Indice
 1. [Cos’è Codacy e perché viene usato](#cosè-codacy-e-perché-viene-usato)
 2. [Concetti chiave](#concetti-chiave)
@@ -22,152 +24,183 @@
 ---
 
 ## Cos’è Codacy e perché viene usato
-Codacy è una piattaforma di **analisi statica** e **code quality** che integra più strumenti (linters, code analyzers, security scanners) per valutare automaticamente la qualità del codice.
 
-Nel flusso di MS3 è utilizzata per:
-- **Prevenire regressioni** di qualità tramite Quality Gate e PR Checks.
-- **Bloccare PR non conformi** ai requisiti di qualità.
-- **Uniformare lo stile** del codice tramite Code Patterns.
-- **Misurare complessità, duplicazioni e code smells**.
-- **Monitorare la qualità nel tempo** tramite il Project Grade.
+Codacy è una piattaforma di **analisi statica del codice** e **code quality** che integra molteplici strumenti (linters, analyzer di manutenibilità, security scanner) per valutare automaticamente la qualità del codice sorgente.
+
+Nel flusso di lavoro MS3, Codacy viene utilizzata per:
+- prevenire **regressioni di qualità** tramite Quality Gate e PR Checks;
+- applicare automaticamente la **Definition of Done**;
+- uniformare lo **stile del codice**;
+- individuare **code smells**, problemi di sicurezza e manutenibilità;
+- monitorare l’evoluzione della qualità nel tempo.
 
 ---
 
 ## Concetti chiave
-- **Project / Repository**: ogni repository analizzato corrisponde a un progetto Codacy.
-- **Provider**: integrazione con GitHub per sincronizzazione e PR checks.
-- **Analysis**: esecuzione dell’analisi statica che produce issue, metriche e grade.
-- **Issues**: violazioni di qualità, stile, sicurezza o manutenibilità.
-- **Quality Gate**: criteri minimi di qualità che una PR deve rispettare.
+
+- **Project / Repository**: ogni repository GitHub analizzato corrisponde a un progetto Codacy.
+- **Provider**: sistema di versionamento (GitHub) integrato con Codacy.
+- **Analysis**: esecuzione dell’analisi statica che produce issue e metriche.
+- **Issue**: violazione di una regola di qualità, stile, sicurezza o complessità.
+- **Quality Gate**: insieme di criteri minimi che una PR deve rispettare.
 - **Project Grade**: valutazione complessiva (A–F) della qualità del progetto.
-- **PR Checks**: verifiche automatiche visibili nelle Pull Request GitHub.
-- **New Issues Only**: approccio che valuta solo i problemi introdotti di recente.
+- **PR Checks**: controlli automatici eseguiti sulle Pull Request.
+- **New Issues Only**: principio secondo cui vengono valutati solo i problemi introdotti dal nuovo codice.
 
 ---
 
 ## Panoramica funzionalità
-Le principali funzionalità offerte da Codacy includono:
-- Dashboard di progetto con stato e trend qualità.
-- Lista delle issue con filtri per severità e categoria.
-- Quality Gate configurabili.
-- Code Patterns per stile e best practice.
-- Analisi di complessità ciclomatica.
-- Rilevamento duplicazioni di codice.
-- Annotazioni automatiche nelle Pull Request.
-- Integrazione nativa con GitHub.
+
+Codacy fornisce:
+- dashboard di progetto con trend di qualità;
+- lista delle issue con filtri per severità e categoria;
+- Quality Gate configurabili;
+- Code Patterns per stile e best practice;
+- analisi di complessità ciclomatica;
+- rilevamento di duplicazioni di codice;
+- annotazioni automatiche nelle Pull Request;
+- integrazione nativa con GitHub.
 
 ---
 
 ## Onboarding: registrazione e accesso via GitHub
-1. Accedere a Codacy tramite GitHub (OAuth).
+
+1. Accedere a Codacy tramite autenticazione GitHub (OAuth).
 2. Autorizzare l’accesso ai repository richiesti.
 3. Selezionare l’organizzazione corretta.
 
-> Nota: l’installazione dell’app Codacy su GitHub può richiedere permessi di amministratore.
+> **Nota**: l’installazione dell’app Codacy su GitHub può richiedere permessi di amministratore.
 
 ---
 
 ## Collegare Codacy a un repository
+
 1. Selezionare **Add Project** in Codacy.
 2. Scegliere GitHub come provider.
-3. Selezionare il repository MS3.
-4. Attendere il completamento della prima analisi (baseline iniziale).
+3. Selezionare il repository del progetto.
+4. Attendere il completamento della prima analisi, che costituisce la baseline iniziale.
 
 ---
 
 ## Impostazioni base di progetto e organizzazione
-Le impostazioni principali includono:
-- Gestione membri e permessi.
-- Configurazione tool di analisi.
-- Attivazione PR checks.
-- Definizione Quality Gate.
+
+Le principali impostazioni includono:
+- gestione di membri e permessi;
+- attivazione dei tool di analisi;
+- configurazione dei PR Checks;
+- definizione dei Quality Gate.
 
 **Best practice MS3**:
-- PR checks Codacy obbligatori.
-- Tool attivi per style, maintainability, security e duplication.
+- PR Checks Codacy attivi su tutti i branch protetti;
+- Quality Gate basati su nuove issue;
+- enforcement della DoD tramite GitHub branch protection.
 
 ---
 
 ## Quality Gate, Project Grade e PR Checks (DoD)
 
 ### Quality Gate
-Il **Quality Gate** definisce le condizioni minime che una PR deve soddisfare per essere considerata accettabile.
 
-Tipici criteri:
-- Nessuna nuova issue critica.
-- Duplicazione sotto soglia.
-- Complessità entro limiti accettabili.
+Il **Quality Gate** definisce le condizioni minime che una Pull Request deve soddisfare per essere considerata accettabile.
 
-Il Quality Gate è **bloccante**: se fallisce, la PR non può essere mergiata.
+Caratteristiche:
+- viene valutato ad ogni PR;
+- produce un esito binario (pass / fail);
+- il risultato è inviato a GitHub come status check.
+
+Criteri tipici:
+- numero massimo di **nuove issue** oltre una certa severità;
+- assenza di **nuove issue di sicurezza**;
+- limiti su **complessità** e **duplicazione** introdotte;
+- vincoli su **coverage** o **diff coverage**.
+
+Il Quality Gate è progettato per lavorare **sul delta della PR**, non sull’intero codicebase.
 
 ---
 
-### Project Grade: significato e modello di calcolo
+### Quality Gate e codice legacy
 
-Il **Project Grade** è una valutazione sintetica della qualità complessiva del codice di un progetto, espressa da **A** a **F**.
+Codacy distingue tra:
+- issue già presenti prima della PR;
+- issue introdotte dalla PR.
 
-Il grade è calcolato:
-- per branch,
-- sull’intero codice analizzato,
-- come aggregazione ponderata di più metriche.
+Configurando il Quality Gate sulle **new issues**, il debito tecnico storico:
+- non blocca le PR;
+- resta visibile;
+- può essere gestito in modo incrementale.
 
-Contribuiscono al grade:
-- Numero e severità delle issue.
-- Densità di issue rispetto alle linee di codice.
-- Complessità ciclomatica.
-- Duplicazione del codice.
-- Copertura dei test (se presente).
+---
 
-Il Project Grade rappresenta quindi **la salute strutturale del progetto**, non la qualità di una singola PR.
+### Project Grade
+
+Il **Project Grade** è una valutazione globale (A–F) calcolata:
+- sull’intero branch;
+- considerando tutto il codice esistente;
+- aggregando issue, complessità, duplicazione e coverage.
+
+Proprietà chiave:
+- non è PR-aware;
+- non blocca le Pull Request;
+- riflette la salute complessiva del progetto.
 
 ---
 
 ### Relazione tra Project Grade e Pull Request
 
-- Il Project Grade **non è un criterio diretto di accettazione** di una PR.
-- Le PR sono valutate tramite:
-  - Quality Gate,
-  - PR Checks,
-  - nuove issue introdotte.
+Nel workflow MS3:
+- il Project Grade è **osservazionale**;
+- il Quality Gate è **prescrittivo e bloccante**.
 
-Un progetto può avere un Project Grade medio-basso e accettare PR corrette, purché **non introducano regressioni**.
+Una PR può essere accettata anche con Project Grade basso, purché non introduca regressioni.
 
 ---
 
-### PR Checks
-I PR Checks Codacy:
-- vengono eseguiti automaticamente su ogni PR,
-- mostrano lo stato direttamente su GitHub,
-- devono risultare **verdi** per il merge.
+### PR Checks su GitHub
+
+I **PR Checks Codacy**:
+- vengono eseguiti automaticamente;
+- compaiono come status check su GitHub;
+- riflettono l’esito del Quality Gate.
+
+I PR Checks possono essere:
+- **informativi** (merge consentito);
+- **bloccanti** (merge impedito).
+
+La configurazione avviene tramite **branch protection rules di GitHub**, non da Codacy.
+
+**Best practice MS3**:
+- PR Checks Codacy configurati come *required*;
+- merge consentito solo con status verde.
 
 ---
 
 ## Code Patterns e stile del codice (DoD)
-I Code Patterns definiscono regole di stile, sicurezza e best practice.
 
-- Le violazioni generano issue.
-- Le issue compaiono nei PR Checks.
-- Le regole vanno modificate solo con consenso del team.
+I **Code Patterns** definiscono regole di stile, sicurezza e best practice.
+
+- ogni violazione genera una issue;
+- le issue influenzano i PR Checks;
+- le regole vanno modificate solo previo consenso del team.
 
 ---
 
 ## Clean Code: complessità, duplicazione e commented code (DoD)
 
 ### Complessità ciclomatica
-Indica il livello di ramificazione logica del codice.
+Misura la complessità del flusso logico del codice.
 
 **Refactoring consigliato**:
-- suddividere funzioni complesse,
-- ridurre nesting,
+- suddividere funzioni complesse;
+- ridurre nesting;
 - estrarre metodi.
 
 ---
 
 ### Duplicazione
-Il codice duplicato riduce manutenibilità e qualità.
+La duplicazione riduce la manutenibilità.
 
 **Azioni consigliate**:
-- estrarre logica comune,
+- estrarre logica comune;
 - evitare copia-incolla.
 
 ---
@@ -176,8 +209,8 @@ Il codice duplicato riduce manutenibilità e qualità.
 Il codice commentato non deve restare nel repository.
 
 **DoD**:
-- rimuovere codice commentato,
-- usare version control per lo storico.
+- rimuovere codice commentato;
+- affidarsi al version control per lo storico.
 
 ---
 
@@ -185,30 +218,31 @@ Il codice commentato non deve restare nel repository.
 
 ### Sviluppatore
 1. Implementa feature o fix.
-2. Apre PR.
-3. Verifica PR Checks Codacy.
+2. Apre Pull Request.
+3. Analizza PR Checks Codacy.
 4. Risolve eventuali nuove issue.
-5. Assicura Quality Gate superato.
+5. Verifica il superamento del Quality Gate.
 
 ---
 
 ### Team
-- Monitorare trend di qualità.
-- Valutare rumore delle regole.
-- Pianificare refactoring incrementali.
+- monitorare trend di qualità;
+- valutare rumore delle regole;
+- pianificare refactoring incrementali.
 
 ---
 
 ## Triage e analisi delle issue
-Per ogni issue valutare:
-- Severità.
-- Categoria.
-- Contesto.
-- Responsabilità.
 
-Usare filtri:
-- New Issues.
-- Branch.
+Per ogni issue valutare:
+- severità;
+- categoria;
+- contesto;
+- impatto sul codice.
+
+Utilizzare filtri:
+- New Issues;
+- Branch;
 - Categoria.
 
 ---
@@ -216,41 +250,120 @@ Usare filtri:
 ## Gestione del legacy: “New Issues Only” e baseline
 
 ### Il problema del legacy
-Il codice legacy influisce sul Project Grade perché il grade considera **tutto il codice esistente**.
 
-Questo non rende inutile la metrica, ma richiede **una corretta interpretazione**.
-
----
-
-### Strategia MS3
-MS3 separa:
-- **controllo di qualità** (PR, bloccante),
-- **misurazione di qualità** (Project Grade, osservazionale).
+Il codice legacy:
+- influisce sul Project Grade;
+- può generare molte issue;
+- non deve bloccare lo sviluppo corrente.
 
 ---
 
-### “New Issues Only”
+### Principio “New Issues Only”
+
 Principio operativo:
 > Il codice nuovo non deve peggiorare la qualità esistente.
 
-- Le PR sono valutate solo sulle nuove issue.
-- Il debito tecnico storico non blocca lo sviluppo.
+In pratica:
+- le PR sono valutate solo sulle issue introdotte;
+- le issue pre-esistenti non fanno fallire il Quality Gate;
+- il miglioramento è incrementale.
 
 ---
 
-### Modifiche su codice legacy
-- Nuove issue → da correggere.
-- Issue rimosse → miglioramento.
-- Issue esistenti → accettabili, ma opportunità di refactoring.
+### Issue potenziali su codice non modificato
+
+Codacy può segnalare **potential issues**:
+- presenti in linee non modificate;
+- emerse indirettamente dalla PR.
+
+Queste issue:
+- non sono considerate nuove;
+- non bloccano la PR;
+- rappresentano debito tecnico noto.
+
+---
+
+### Modifiche su file legacy
+
+Quando una PR tocca codice legacy:
+- nuove issue → da correggere;
+- issue rimosse → miglioramento;
+- issue esistenti → accettabili.
 
 ---
 
 ### Baseline
-Se disponibile:
-- il default branch diventa riferimento iniziale.
 
-Se non disponibile:
-- Quality Gate orientato ai file modificati.
+Codacy utilizza il **default branch** come baseline implicita:
+- il confronto avviene rispetto allo stato precedente;
+- non è necessario un freeze manuale.
 
-In entrambi i casi:
-- miglioramento graduale
+---
+
+## Ignorare o sopprimere issue e falsi positivi
+
+### Ignorare singole issue
+
+È possibile ignorare manualmente una issue:
+- dalla lista issue;
+- con motivazione tracciabile.
+
+Una issue ignorata:
+- non influisce su Quality Gate;
+- resta documentata come decisione tecnica.
+
+---
+
+### Ignorare issue in blocco: limiti
+
+Codacy **non fornisce un comando “ignora tutto”**.
+
+Questo garantisce:
+- tracciabilità;
+- responsabilità tecnica.
+
+---
+
+### Strategie per il legacy
+
+Approcci consigliati:
+1. alzare la severità del Quality Gate;
+2. disabilitare pattern non rilevanti;
+3. ignorare file o directory legacy;
+4. pulizia incrementale del debito tecnico.
+
+---
+
+### Impatto sulla DoD
+
+Nel modello MS3:
+- ignorare un’issue è una decisione consapevole;
+- la DoD resta applicata al codice nuovo;
+- la qualità migliora nel tempo.
+
+---
+
+## Risoluzione problemi comuni
+
+- PR bloccata → verificare nuove issue e severità.
+- Troppo rumore → rivedere Code Patterns.
+- Project Grade basso → effetto del legacy, non della PR.
+
+---
+
+## Note su piani, limiti e coerenza con Codacy
+
+- Le funzionalità dipendono dal piano Codacy.
+- Alcune metriche (es. coverage) richiedono integrazioni esterne.
+- La configurazione va mantenuta coerente con la DoD del team.
+
+---
+
+## Conclusione
+
+L’uso combinato di:
+- Quality Gate basati su *new issues*,
+- PR Checks bloccanti,
+- gestione consapevole del legacy,
+
+permette di applicare Codacy in modo **realistico, sostenibile e incrementale**, anche su progetti con storico significativo.
