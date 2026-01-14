@@ -1,12 +1,10 @@
 package org.cswteams.ms3.entity;
 
 // IMPORT DI LOMBOK
+
 import lombok.Data;
 
-// IMPORT JPA
 import javax.persistence.*;
-
-// IMPORT JAVA TIME
 import java.time.LocalDateTime;
 
 @Data
@@ -29,4 +27,11 @@ public class BlacklistedToken {
      */
     @Column(nullable = false, name = "blacklisted_at")
     private LocalDateTime blacklistedAt;
+
+    @Column(nullable = false, name = "expires_at")
+    private LocalDateTime expiresAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ms3_system_user_id", nullable = false)
+    private SystemUser systemUser;
 }
