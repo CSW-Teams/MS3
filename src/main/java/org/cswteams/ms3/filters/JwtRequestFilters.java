@@ -20,6 +20,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
 
 @Component
 public class JwtRequestFilters extends OncePerRequestFilter {
@@ -61,7 +62,16 @@ public class JwtRequestFilters extends OncePerRequestFilter {
                 response.getWriter().write("Token is invalidated (logged out)");
                 return;
             }
-            username = jwtUtil.extractUsername(jwt);
+            username = jwtUtil.extractUsername(jwt); // Actually extracts the user email
+
+            // Checks whether the user has had all its tokens blacklisted
+            Date expirationDate = jwtUtil.extractExpiration(jwt);
+            if (jwtBlacklistService.doesUserHaveTokensBlacklistedAfterDate(username, expirationDate)) {
+                logger.debug("JWT tokens is blacklisted for user {}", username);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token is invalid");
+                return;
+            }
         } else {
             // Log missing or invalid token header and allow unauthenticated endpoints to bypass
             logger.debug("Missing or invalid Authorization header for request: {}", request.getRequestURI());
