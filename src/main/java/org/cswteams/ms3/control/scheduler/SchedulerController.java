@@ -178,7 +178,7 @@ public class SchedulerController implements ISchedulerController {
         /* Restore priorities to snapshot */
         for (DoctorUffaPrioritySnapshot dupSnapshot : doctorUffaPrioritySnapshot) {
             for (DoctorUffaPriority dup : doctorUffaPriorityList) {
-                if (dupSnapshot.getDoctor() == dupSnapshot.getDoctor()) {
+                if (dupSnapshot.getDoctor().equals(dup.getDoctor())) {
                     int generalPriority = dupSnapshot.getGeneralPriority();
                     int longShiftPriority = dupSnapshot.getLongShiftPriority();;
                     int nightPriority = dupSnapshot.getNightPriority();
@@ -525,6 +525,5 @@ public class SchedulerController implements ISchedulerController {
     }
 
 }
-
 
 
