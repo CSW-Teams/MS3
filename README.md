@@ -58,6 +58,9 @@ Per utilizzare l'applicazione, poi, visitare (sostituire FRONTEND_EXPOSE con il 
 http://localhost:FRONTEND_EXPOSE
 ```
 
+## 📘 Documentazione
+- [Manuale Codacy (analisi statica e qualità del codice)](docs/codacy-manuale.md)
+
 ### 🗄️ Aggiornare il database con modifiche di schema (es. colonne 2FA)
 L'avvio in container crea i ruoli e i permessi tramite `src/main/resources/db/init-scripts/init-users.sh` prima che lo
 `SchemasInitializer` dell'applicazione applichi gli script SQL per ogni tenant (public, A, B). Assicurarsi che le variabili di
