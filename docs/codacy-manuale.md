@@ -20,6 +20,7 @@
 15. [Note su piani, limiti e coerenza con Codacy](#note-su-piani-limiti-e-coerenza-con-codacy)
 16. [Approfondimento tecnico: Project Grade e impatto del codice legacy](#approfondimento-tecnico-project-grade-e-impatto-del-codice-legacy)
 17. [Approfondimento tecnico: Quality Gates e PR Checks](#approfondimento-tecnico-quality-gates-e-pr-checks)
+18. [Approfondimento tecnico: Code Patterns abilitati e disabilitati in MS3](#approfondimento-tecnico-code-patterns-abilitati-e-disabilitati-in-ms3)
 
 ---
 
@@ -455,3 +456,178 @@ Risultato atteso:
 - PR checks “puliti” e utili;
 - riduzione regressioni;
 - qualità che migliora nel tempo, senza “big bang refactor”.
+
+---
+
+## Approfondimento tecnico: Code Patterns abilitati e disabilitati in MS3
+
+Questa sezione integra il manuale con una lettura **critica e didattica** dei code patterns attivi e disattivati nel progetto MS3.  
+L’obiettivo è fornire un quadro comprensibile a studenti e docenti con background informatico, collegando:
+- **cosa fa ogni tool/pattern**,  
+- **perché è utile**,  
+- **perché è stato abilitato o disabilitato** nel contesto MS3.
+
+> Nota: in Codacy il termine “Code Patterns” indica regole gestite da diversi strumenti (linters, analyzer e security scanner).  
+> In questo approfondimento, per semplicità, consideriamo i “pattern” come **famiglie di regole** fornite da ciascun tool.
+
+### 1) Code patterns **abilitati** (strumenti attivi)
+
+#### Bandit (Python — security)
+- **Cosa fa**: analizza codice Python alla ricerca di pattern di sicurezza noti (es. uso insicuro di `eval`, generazione casuale non sicura, gestione errata di credenziali).  
+- **Perché serve**: intercetta vulnerabilità classiche prima che arrivino in produzione.  
+- **Perché abilitato**: MS3 include script/utility e componenti Python; un controllo sicurezza è essenziale per ridurre il rischio di CWE comuni.
+
+#### Checkstyle (Java — style/consistency)
+- **Cosa fa**: verifica stile e convenzioni Java (naming, spaziature, import, struttura dei file).  
+- **Perché serve**: migliora leggibilità e riduce variabilità nello stile di codice tra sviluppatori.  
+- **Perché abilitato**: nel backend Java 11/Spring Boot, coerenza e manutenibilità sono prioritarie.
+
+#### ESLint (JavaScript/TypeScript — linting)
+- **Cosa fa**: rileva errori logici e violazioni di best practice in JS/TS (variabili inutilizzate, pattern rischiosi, stile).  
+- **Perché serve**: evita bug tipici di JS e migliora qualità del frontend React.  
+- **Perché abilitato**: il frontend MS3 è React; ESLint è lo standard de-facto per qualità JS.
+
+#### Jackson Linter (JSON — formatting/validity)
+- **Cosa fa**: controlla la validità e la formattazione di JSON secondo parsing Jackson.  
+- **Perché serve**: riduce errori di configurazione e scambio dati (config, payload).  
+- **Perché abilitato**: MS3 usa JSON in configurazioni e API; prevenire errori di parsing è critico.
+
+#### Lizard (multi-language — complexity)
+- **Cosa fa**: misura complessità ciclomatica e dimensioni delle funzioni.  
+- **Perché serve**: identifica codice difficile da testare o manutenere.  
+- **Perché abilitato**: aiuta a mantenere le modifiche entro soglie di complessità in PR.
+
+#### markdownlint (Markdown — style)
+- **Cosa fa**: verifica lo stile dei documenti Markdown (heading, spacing, link).  
+- **Perché serve**: mantiene documentazione consistente e leggibile.  
+- **Perché abilitato**: la documentazione è parte della DoD; qualità dei manuali è rilevante.
+
+#### PMD (Java — bugs/maintainability)
+- **Cosa fa**: analizza Java per bug potenziali e code smells (duplicazione, logica ridondante, API misuse).  
+- **Perché serve**: riduce difetti prima del runtime e migliora qualità del codice.  
+- **Perché abilitato**: integra Checkstyle con analisi più semantica su backend Java.
+
+#### Prospector (Python — linting aggregator)
+- **Cosa fa**: aggrega più strumenti Python (pylint, pep8/pycodestyle, mccabe, ecc.).  
+- **Perché serve**: fornisce una vista unificata su qualità Python.  
+- **Perché abilitato**: garantisce copertura ampia di regole senza strumenti manualmente separati.
+
+#### Pylint (Python — linting)
+- **Cosa fa**: analisi statica Python (errori, stile, complessità, design).  
+- **Perché serve**: intercetta bug e migliora leggibilità.  
+- **Perché abilitato**: standard consolidato, complementare a Bandit e Prospector.
+
+#### PSScriptAnalyzer (PowerShell — linting/security)
+- **Cosa fa**: controlla script PowerShell per best practice e rischi di sicurezza.  
+- **Perché serve**: evita errori in script di automazione o tooling.  
+- **Perché abilitato**: MS3 usa script di supporto (es. automazione CI, tooling locale).
+
+#### Semgrep (multi-language — static analysis/security)
+- **Cosa fa**: engine di pattern-matching su codice; rileva vulnerabilità e anti-pattern con regole custom.  
+- **Perché serve**: copre casi non presi da altri tool ed è flessibile.  
+- **Perché abilitato**: utile per sicurezza e per regole specifiche a un progetto.
+
+#### ShellCheck (Shell — linting)
+- **Cosa fa**: analizza script bash/sh per errori comuni e best practice.  
+- **Perché serve**: evita bug sottili in script di build e deploy.  
+- **Perché abilitato**: MS3 include script shell nel workflow di build e tooling.
+
+#### SpotBugs (Java — bug finding)
+- **Cosa fa**: rileva bug in Java basandosi su bytecode e pattern noti.  
+- **Perché serve**: identifica difetti non evidenti dal solo stile (null dereference, concurrency, ecc.).  
+- **Perché abilitato**: aumenta affidabilità del backend.
+
+#### SQLint (SQL — linting)
+- **Cosa fa**: analizza query SQL per errori sintattici e best practice.  
+- **Perché serve**: riduce bug nei database script e query.  
+- **Perché abilitato**: il progetto usa PostgreSQL e SQL è parte della pipeline.
+
+#### Stylelint (CSS/SCSS — linting)
+- **Cosa fa**: verifica stile e validità di CSS/SCSS.  
+- **Perché serve**: evita regressioni visive e inconsistenze stilistiche.  
+- **Perché abilitato**: il frontend React necessita di qualità nel layer di styling.
+
+#### Trivy (security — dependency/container/IaC)
+- **Cosa fa**: scanner per vulnerabilità su dipendenze, container e configurazioni.  
+- **Perché serve**: identifica CVE e configurazioni insicure in fase CI.  
+- **Perché abilitato**: aumenta sicurezza supply-chain e infrastrutturale.
+
+#### TSQLLint (T-SQL — linting)
+- **Cosa fa**: linting specifico per T-SQL (dialetto SQL Microsoft).  
+- **Perché serve**: utile se sono presenti script SQL legacy o compatibilità con T-SQL.  
+- **Perché abilitato**: garantisce qualità per eventuali script T-SQL presenti o di integrazione.
+
+---
+
+### 2) Code patterns **disabilitati** (strumenti non attivi)
+
+#### Checkov (IaC — security)
+- **Cosa fa**: scanner di configurazioni Infrastructure as Code (Terraform, CloudFormation, Kubernetes).  
+- **Perché servirebbe**: rileva misconfigurazioni infrastrutturali e rischi di sicurezza.  
+- **Perché disabilitato**: se MS3 non contiene IaC significativa o la copertura è gestita da altri strumenti, può essere rumore inutile.
+
+#### ESLint9 (JavaScript — nuova major)
+- **Cosa fa**: versione principale aggiornata di ESLint con nuove regole e breaking changes.  
+- **Perché servirebbe**: miglioramenti e nuove regole per JS/TS.  
+- **Perché disabilitato**: evitare breaking changes o divergenze con la toolchain esistente (config legacy, plugin non compatibili).
+
+#### PMD7 (Java — nuova major)
+- **Cosa fa**: nuova major di PMD con regole aggiornate.  
+- **Perché servirebbe**: regole più moderne e accurate.  
+- **Perché disabilitato**: possibili incompatibilità con rule set attuali o incremento di falsi positivi.
+
+#### remark-lint (Markdown — linting alternativo)
+- **Cosa fa**: linting Markdown tramite ecosistema remark.  
+- **Perché servirebbe**: regole più estendibili e pipeline Markdown avanzata.  
+- **Perché disabilitato**: già presente markdownlint; usare entrambi potrebbe creare duplicazioni e conflitti.
+
+#### Ruff (Python — linting/performance)
+- **Cosa fa**: linter Python ad alte prestazioni, unifica molte regole di tool diversi.  
+- **Perché servirebbe**: velocità e copertura ampia.  
+- **Perché disabilitato**: potrebbe sovrapporsi a Pylint/Prospector e alterare l’attuale baseline.
+
+#### Spectral (API — linting OpenAPI)
+- **Cosa fa**: linting di specifiche OpenAPI/AsyncAPI.  
+- **Perché servirebbe**: garantisce qualità delle API contract.  
+- **Perché disabilitato**: utile solo se la specifica API è mantenuta in repo e parte della DoD; se non presente è rumore.
+
+#### SQLFluff (SQL — linting/formatting)
+- **Cosa fa**: linter SQL avanzato con supporto multi-dialect e formattazione.  
+- **Perché servirebbe**: maggiore controllo di stile e quality sulle query.  
+- **Perché disabilitato**: già presente SQLint/TSQLLint; aggiungerlo potrebbe aumentare sovrapposizioni e falsi positivi.
+
+---
+
+### 3) Considerazioni didattiche e operative
+
+#### Coerenza di copertura
+- L’insieme di tool **abilitati** copre linguaggi e asset effettivamente presenti: Java, JS/React, Python, Shell, PowerShell, SQL, Markdown, CSS.  
+- Questo assicura una **copertura trasversale** senza lasciare “zone d’ombra” nella codebase.
+
+#### Evitare duplicazione di regole
+- L’uso simultaneo di tool con scopi sovrapposti (es. due linter SQL o due linter Markdown) può generare **rumore** e conflitti.  
+- La scelta MS3 privilegia un set **complementare**, con overlap limitato.
+
+#### Motivazioni di sicurezza
+- Tool come Bandit, Semgrep e Trivy coprono rispettivamente sicurezza su codice, pattern custom e supply-chain.  
+- Questo approccio multilivello riduce il rischio che una vulnerabilità sfugga a un singolo analizzatore.
+
+#### Allineamento alla Definition of Done (DoD)
+- Gli strumenti abilitati supportano la DoD: prevenzione regressioni, standard di qualità, sicurezza e manutenibilità.  
+- Le disabilitazioni sono mirate a evitare breaking changes e duplicazioni.
+
+---
+
+### 4) Sintesi per studenti e docenti
+
+Nel progetto MS3 i code patterns **attivi** sono stati scelti per coprire in modo equilibrato:
+- **Qualità del codice** (style, complessità, bug finding),
+- **Sicurezza** (pattern insicuri, vulnerabilità, dipendenze),
+- **Documentazione e configurazioni** (Markdown, JSON).
+
+I pattern **disabilitati** non sono “peggiori”, ma:
+- potrebbero duplicare strumenti già presenti,
+- introdurre breaking changes,
+- oppure non essere rilevanti per gli artefatti presenti nel repository.
+
+Questa selezione mira a **massimizzare il valore didattico e operativo** delle analisi, mantenendo le segnalazioni utili e gestibili.
