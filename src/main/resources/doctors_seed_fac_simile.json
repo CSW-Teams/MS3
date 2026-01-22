@@ -1,0 +1,70 @@
+{
+  "doctors": [
+    {
+      "tenant": "A",
+      "name": "Alice",
+      "lastname": "Rossi",
+      "taxCode": "RSSALC90A01H501X",
+      "birthday": "1990-01-01",
+      "email": "alice.rossi+seed@ms3.local",
+      "password": "passw",
+      "seniority": "STRUCTURED",
+      "roles": ["DOCTOR"],
+      "uffaPriority": {
+        "partialGeneralPriority": 0,
+        "generalPriority": 0,
+        "partialLongShiftPriority": 0,
+        "longShiftPriority": 0,
+        "partialNightPriority": 0,
+        "nightPriority": 0
+      },
+      "uffaPrioritySnapshot": {
+        "partialGeneralPriority": 0,
+        "generalPriority": 0,
+        "partialLongShiftPriority": 0,
+        "longShiftPriority": 0,
+        "partialNightPriority": 0,
+        "nightPriority": 0
+      },
+      "holidays": [
+        { "name": "Natale", "worked": false }
+      ],
+      "preferences": [
+        { "date": "2024-12-20", "timeSlots": ["MORNING", "AFTERNOON"] }
+      ]
+    },
+    {
+      "tenant": "B",
+      "name": "Marco",
+      "lastname": "Bianchi",
+      "taxCode": "BNCMRC85B15H501Z",
+      "birthday": "1985-02-15",
+      "email": "marco.bianchi+seed@ms3.local",
+      "password": "passw2",
+      "seniority": "SPECIALIST_SENIOR",
+      "roles": ["DOCTOR", "PLANNER"],
+      "uffaPriority": {
+        "partialGeneralPriority": 1,
+        "generalPriority": 1,
+        "partialLongShiftPriority": 0,
+        "longShiftPriority": 0,
+        "partialNightPriority": 2,
+        "nightPriority": 2
+      },
+      "uffaPrioritySnapshot": {
+        "partialGeneralPriority": 1,
+        "generalPriority": 1,
+        "partialLongShiftPriority": 0,
+        "longShiftPriority": 0,
+        "partialNightPriority": 2,
+        "nightPriority": 2
+      },
+      "holidays": [
+        { "name": "Capodanno", "worked": true }
+      ],
+      "preferences": [
+        { "date": "2024-12-24", "timeSlots": ["NIGHT"] }
+      ]
+    }
+  ]
+}
