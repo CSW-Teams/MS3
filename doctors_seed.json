@@ -7,7 +7,7 @@
     "tax_code": "TAXCODEX00000001",
     "email": "doctor1@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -37,14 +37,14 @@
         "id": 1,
         "date": "2026-01-01",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 2,
         "date": "2026-01-02",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -57,7 +57,7 @@
     "tax_code": "TAXCODEX00000002",
     "email": "doctor2@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -87,14 +87,14 @@
         "id": 3,
         "date": "2026-01-03",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 4,
         "date": "2026-01-04",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -107,7 +107,7 @@
     "tax_code": "TAXCODEX00000003",
     "email": "doctor3@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -137,14 +137,14 @@
         "id": 5,
         "date": "2026-01-05",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 6,
         "date": "2026-01-06",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -157,7 +157,7 @@
     "tax_code": "TAXCODEX00000004",
     "email": "doctor4@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -187,14 +187,14 @@
         "id": 7,
         "date": "2026-01-07",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 8,
         "date": "2026-01-08",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -207,7 +207,7 @@
     "tax_code": "TAXCODEX00000005",
     "email": "doctor5@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -237,14 +237,14 @@
         "id": 9,
         "date": "2026-01-09",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 10,
         "date": "2026-01-10",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -257,7 +257,7 @@
     "tax_code": "TAXCODEX00000006",
     "email": "doctor6@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -287,14 +287,14 @@
         "id": 11,
         "date": "2026-01-11",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 12,
         "date": "2026-01-12",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -307,7 +307,7 @@
     "tax_code": "TAXCODEX00000007",
     "email": "doctor7@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -337,14 +337,14 @@
         "id": 13,
         "date": "2026-01-13",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 14,
         "date": "2026-01-14",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -357,7 +357,7 @@
     "tax_code": "TAXCODEX00000008",
     "email": "doctor8@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -387,14 +387,14 @@
         "id": 15,
         "date": "2026-01-15",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 16,
         "date": "2026-01-16",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -407,7 +407,7 @@
     "tax_code": "TAXCODEX00000009",
     "email": "doctor9@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -437,14 +437,14 @@
         "id": 17,
         "date": "2026-01-17",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 18,
         "date": "2026-01-18",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -457,7 +457,7 @@
     "tax_code": "TAXCODEX00000010",
     "email": "doctor10@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -487,14 +487,14 @@
         "id": 19,
         "date": "2026-01-19",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 20,
         "date": "2026-01-20",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -507,7 +507,7 @@
     "tax_code": "TAXCODEX00000011",
     "email": "doctor11@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -537,14 +537,14 @@
         "id": 21,
         "date": "2026-01-21",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 22,
         "date": "2026-01-22",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -557,7 +557,7 @@
     "tax_code": "TAXCODEX00000012",
     "email": "doctor12@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -587,14 +587,14 @@
         "id": 23,
         "date": "2026-01-23",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 24,
         "date": "2026-01-24",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -607,7 +607,7 @@
     "tax_code": "TAXCODEX00000013",
     "email": "doctor13@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -637,14 +637,14 @@
         "id": 25,
         "date": "2026-01-25",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 26,
         "date": "2026-01-26",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -657,7 +657,7 @@
     "tax_code": "TAXCODEX00000014",
     "email": "doctor14@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -687,14 +687,14 @@
         "id": 27,
         "date": "2026-01-27",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 28,
         "date": "2026-01-28",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -707,7 +707,7 @@
     "tax_code": "TAXCODEX00000015",
     "email": "doctor15@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -737,14 +737,14 @@
         "id": 29,
         "date": "2026-01-29",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 30,
         "date": "2026-01-30",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -757,7 +757,7 @@
     "tax_code": "TAXCODEX00000016",
     "email": "doctor16@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -787,14 +787,14 @@
         "id": 31,
         "date": "2026-01-31",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 32,
         "date": "2026-02-01",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -807,7 +807,7 @@
     "tax_code": "TAXCODEX00000017",
     "email": "doctor17@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -837,14 +837,14 @@
         "id": 33,
         "date": "2026-02-02",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 34,
         "date": "2026-02-03",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -857,7 +857,7 @@
     "tax_code": "TAXCODEX00000018",
     "email": "doctor18@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -887,14 +887,14 @@
         "id": 35,
         "date": "2026-02-04",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 36,
         "date": "2026-02-05",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -907,7 +907,7 @@
     "tax_code": "TAXCODEX00000019",
     "email": "doctor19@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -937,14 +937,14 @@
         "id": 37,
         "date": "2026-02-06",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 38,
         "date": "2026-02-07",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -957,7 +957,7 @@
     "tax_code": "TAXCODEX00000020",
     "email": "doctor20@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -987,14 +987,14 @@
         "id": 39,
         "date": "2026-02-08",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 40,
         "date": "2026-02-09",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -1007,7 +1007,7 @@
     "tax_code": "TAXCODEX00000021",
     "email": "doctor21@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1037,14 +1037,14 @@
         "id": 41,
         "date": "2026-02-10",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 42,
         "date": "2026-02-11",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -1057,7 +1057,7 @@
     "tax_code": "TAXCODEX00000022",
     "email": "doctor22@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1087,14 +1087,14 @@
         "id": 43,
         "date": "2026-02-12",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 44,
         "date": "2026-02-13",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -1107,7 +1107,7 @@
     "tax_code": "TAXCODEX00000023",
     "email": "doctor23@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1137,14 +1137,14 @@
         "id": 45,
         "date": "2026-02-14",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 46,
         "date": "2026-02-15",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -1157,7 +1157,7 @@
     "tax_code": "TAXCODEX00000024",
     "email": "doctor24@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1187,14 +1187,14 @@
         "id": 47,
         "date": "2026-02-16",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 48,
         "date": "2026-02-17",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -1207,7 +1207,7 @@
     "tax_code": "TAXCODEX00000025",
     "email": "doctor25@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1237,14 +1237,14 @@
         "id": 49,
         "date": "2026-02-18",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 50,
         "date": "2026-02-19",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -1257,7 +1257,7 @@
     "tax_code": "TAXCODEX00000026",
     "email": "doctor26@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1287,14 +1287,14 @@
         "id": 51,
         "date": "2026-02-20",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 52,
         "date": "2026-02-21",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -1307,7 +1307,7 @@
     "tax_code": "TAXCODEX00000027",
     "email": "doctor27@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1337,14 +1337,14 @@
         "id": 53,
         "date": "2026-02-22",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 54,
         "date": "2026-02-23",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -1357,7 +1357,7 @@
     "tax_code": "TAXCODEX00000028",
     "email": "doctor28@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1387,14 +1387,14 @@
         "id": 55,
         "date": "2026-02-24",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 56,
         "date": "2026-02-25",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -1407,7 +1407,7 @@
     "tax_code": "TAXCODEX00000029",
     "email": "doctor29@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1437,14 +1437,14 @@
         "id": 57,
         "date": "2026-02-26",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 58,
         "date": "2026-02-27",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -1457,7 +1457,7 @@
     "tax_code": "TAXCODEX00000030",
     "email": "doctor30@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1487,14 +1487,14 @@
         "id": 59,
         "date": "2026-02-28",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 60,
         "date": "2026-03-01",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -1507,7 +1507,7 @@
     "tax_code": "TAXCODEX00000031",
     "email": "doctor31@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1537,14 +1537,14 @@
         "id": 61,
         "date": "2026-03-02",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 62,
         "date": "2026-03-03",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -1557,7 +1557,7 @@
     "tax_code": "TAXCODEX00000032",
     "email": "doctor32@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1587,14 +1587,14 @@
         "id": 63,
         "date": "2026-03-04",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 64,
         "date": "2026-03-05",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -1607,7 +1607,7 @@
     "tax_code": "TAXCODEX00000033",
     "email": "doctor33@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1637,14 +1637,14 @@
         "id": 65,
         "date": "2026-03-06",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 66,
         "date": "2026-03-07",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -1657,7 +1657,7 @@
     "tax_code": "TAXCODEX00000034",
     "email": "doctor34@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1687,14 +1687,14 @@
         "id": 67,
         "date": "2026-03-08",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 68,
         "date": "2026-03-09",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -1707,7 +1707,7 @@
     "tax_code": "TAXCODEX00000035",
     "email": "doctor35@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1737,14 +1737,14 @@
         "id": 69,
         "date": "2026-03-10",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 70,
         "date": "2026-03-11",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -1757,7 +1757,7 @@
     "tax_code": "TAXCODEX00000036",
     "email": "doctor36@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1787,14 +1787,14 @@
         "id": 71,
         "date": "2026-03-12",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 72,
         "date": "2026-03-13",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -1807,7 +1807,7 @@
     "tax_code": "TAXCODEX00000037",
     "email": "doctor37@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1837,14 +1837,14 @@
         "id": 73,
         "date": "2026-03-14",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 74,
         "date": "2026-03-15",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -1857,7 +1857,7 @@
     "tax_code": "TAXCODEX00000038",
     "email": "doctor38@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1887,14 +1887,14 @@
         "id": 75,
         "date": "2026-03-16",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 76,
         "date": "2026-03-17",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -1907,7 +1907,7 @@
     "tax_code": "TAXCODEX00000039",
     "email": "doctor39@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1937,14 +1937,14 @@
         "id": 77,
         "date": "2026-03-18",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 78,
         "date": "2026-03-19",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -1957,7 +1957,7 @@
     "tax_code": "TAXCODEX00000040",
     "email": "doctor40@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -1987,14 +1987,14 @@
         "id": 79,
         "date": "2026-03-20",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 80,
         "date": "2026-03-21",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -2007,7 +2007,7 @@
     "tax_code": "TAXCODEX00000041",
     "email": "doctor41@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2037,14 +2037,14 @@
         "id": 81,
         "date": "2026-03-22",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 82,
         "date": "2026-03-23",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -2057,7 +2057,7 @@
     "tax_code": "TAXCODEX00000042",
     "email": "doctor42@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2087,14 +2087,14 @@
         "id": 83,
         "date": "2026-03-24",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 84,
         "date": "2026-03-25",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -2107,7 +2107,7 @@
     "tax_code": "TAXCODEX00000043",
     "email": "doctor43@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2137,14 +2137,14 @@
         "id": 85,
         "date": "2026-03-26",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 86,
         "date": "2026-03-27",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -2157,7 +2157,7 @@
     "tax_code": "TAXCODEX00000044",
     "email": "doctor44@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2187,14 +2187,14 @@
         "id": 87,
         "date": "2026-03-28",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 88,
         "date": "2026-03-29",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -2207,7 +2207,7 @@
     "tax_code": "TAXCODEX00000045",
     "email": "doctor45@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2237,14 +2237,14 @@
         "id": 89,
         "date": "2026-03-30",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 90,
         "date": "2026-03-31",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -2257,7 +2257,7 @@
     "tax_code": "TAXCODEX00000046",
     "email": "doctor46@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2287,14 +2287,14 @@
         "id": 91,
         "date": "2026-04-01",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 92,
         "date": "2026-04-02",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -2307,7 +2307,7 @@
     "tax_code": "TAXCODEX00000047",
     "email": "doctor47@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2337,14 +2337,14 @@
         "id": 93,
         "date": "2026-04-03",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 94,
         "date": "2026-04-04",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -2357,7 +2357,7 @@
     "tax_code": "TAXCODEX00000048",
     "email": "doctor48@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2387,14 +2387,14 @@
         "id": 95,
         "date": "2026-04-05",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 96,
         "date": "2026-04-06",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -2407,7 +2407,7 @@
     "tax_code": "TAXCODEX00000049",
     "email": "doctor49@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2437,14 +2437,14 @@
         "id": 97,
         "date": "2026-04-07",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 98,
         "date": "2026-04-08",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -2457,7 +2457,7 @@
     "tax_code": "TAXCODEX00000050",
     "email": "doctor50@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2487,14 +2487,14 @@
         "id": 99,
         "date": "2026-04-09",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 100,
         "date": "2026-04-10",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -2507,7 +2507,7 @@
     "tax_code": "TAXCODEX00000051",
     "email": "doctor51@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2537,14 +2537,14 @@
         "id": 101,
         "date": "2026-04-11",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 102,
         "date": "2026-04-12",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -2557,7 +2557,7 @@
     "tax_code": "TAXCODEX00000052",
     "email": "doctor52@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2587,14 +2587,14 @@
         "id": 103,
         "date": "2026-04-13",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 104,
         "date": "2026-04-14",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -2607,7 +2607,7 @@
     "tax_code": "TAXCODEX00000053",
     "email": "doctor53@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2637,14 +2637,14 @@
         "id": 105,
         "date": "2026-04-15",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 106,
         "date": "2026-04-16",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -2657,7 +2657,7 @@
     "tax_code": "TAXCODEX00000054",
     "email": "doctor54@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2687,14 +2687,14 @@
         "id": 107,
         "date": "2026-04-17",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 108,
         "date": "2026-04-18",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -2707,7 +2707,7 @@
     "tax_code": "TAXCODEX00000055",
     "email": "doctor55@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2737,14 +2737,14 @@
         "id": 109,
         "date": "2026-04-19",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 110,
         "date": "2026-04-20",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -2757,7 +2757,7 @@
     "tax_code": "TAXCODEX00000056",
     "email": "doctor56@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2787,14 +2787,14 @@
         "id": 111,
         "date": "2026-04-21",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 112,
         "date": "2026-04-22",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -2807,7 +2807,7 @@
     "tax_code": "TAXCODEX00000057",
     "email": "doctor57@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2837,14 +2837,14 @@
         "id": 113,
         "date": "2026-04-23",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 114,
         "date": "2026-04-24",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -2857,7 +2857,7 @@
     "tax_code": "TAXCODEX00000058",
     "email": "doctor58@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2887,14 +2887,14 @@
         "id": 115,
         "date": "2026-04-25",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 116,
         "date": "2026-04-26",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -2907,7 +2907,7 @@
     "tax_code": "TAXCODEX00000059",
     "email": "doctor59@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2937,14 +2937,14 @@
         "id": 117,
         "date": "2026-04-27",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 118,
         "date": "2026-04-28",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -2957,7 +2957,7 @@
     "tax_code": "TAXCODEX00000060",
     "email": "doctor60@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -2987,14 +2987,14 @@
         "id": 119,
         "date": "2026-04-29",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 120,
         "date": "2026-04-30",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -3007,7 +3007,7 @@
     "tax_code": "TAXCODEX00000061",
     "email": "doctor61@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3037,14 +3037,14 @@
         "id": 121,
         "date": "2026-05-01",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 122,
         "date": "2026-05-02",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -3057,7 +3057,7 @@
     "tax_code": "TAXCODEX00000062",
     "email": "doctor62@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3087,14 +3087,14 @@
         "id": 123,
         "date": "2026-05-03",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 124,
         "date": "2026-05-04",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -3107,7 +3107,7 @@
     "tax_code": "TAXCODEX00000063",
     "email": "doctor63@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3137,14 +3137,14 @@
         "id": 125,
         "date": "2026-05-05",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 126,
         "date": "2026-05-06",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -3157,7 +3157,7 @@
     "tax_code": "TAXCODEX00000064",
     "email": "doctor64@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3187,14 +3187,14 @@
         "id": 127,
         "date": "2026-05-07",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 128,
         "date": "2026-05-08",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -3207,7 +3207,7 @@
     "tax_code": "TAXCODEX00000065",
     "email": "doctor65@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3237,14 +3237,14 @@
         "id": 129,
         "date": "2026-05-09",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 130,
         "date": "2026-05-10",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -3257,7 +3257,7 @@
     "tax_code": "TAXCODEX00000066",
     "email": "doctor66@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3287,14 +3287,14 @@
         "id": 131,
         "date": "2026-05-11",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 132,
         "date": "2026-05-12",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -3307,7 +3307,7 @@
     "tax_code": "TAXCODEX00000067",
     "email": "doctor67@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3337,14 +3337,14 @@
         "id": 133,
         "date": "2026-05-13",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 134,
         "date": "2026-05-14",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -3357,7 +3357,7 @@
     "tax_code": "TAXCODEX00000068",
     "email": "doctor68@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3387,14 +3387,14 @@
         "id": 135,
         "date": "2026-05-15",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 136,
         "date": "2026-05-16",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -3407,7 +3407,7 @@
     "tax_code": "TAXCODEX00000069",
     "email": "doctor69@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3437,14 +3437,14 @@
         "id": 137,
         "date": "2026-05-17",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 138,
         "date": "2026-05-18",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -3457,7 +3457,7 @@
     "tax_code": "TAXCODEX00000070",
     "email": "doctor70@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3487,14 +3487,14 @@
         "id": 139,
         "date": "2026-05-19",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 140,
         "date": "2026-05-20",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -3507,7 +3507,7 @@
     "tax_code": "TAXCODEX00000071",
     "email": "doctor71@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3537,14 +3537,14 @@
         "id": 141,
         "date": "2026-05-21",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 142,
         "date": "2026-05-22",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -3557,7 +3557,7 @@
     "tax_code": "TAXCODEX00000072",
     "email": "doctor72@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3587,14 +3587,14 @@
         "id": 143,
         "date": "2026-05-23",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 144,
         "date": "2026-05-24",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -3607,7 +3607,7 @@
     "tax_code": "TAXCODEX00000073",
     "email": "doctor73@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3637,14 +3637,14 @@
         "id": 145,
         "date": "2026-05-25",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 146,
         "date": "2026-05-26",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -3657,7 +3657,7 @@
     "tax_code": "TAXCODEX00000074",
     "email": "doctor74@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3687,14 +3687,14 @@
         "id": 147,
         "date": "2026-05-27",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 148,
         "date": "2026-05-28",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -3707,7 +3707,7 @@
     "tax_code": "TAXCODEX00000075",
     "email": "doctor75@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3737,14 +3737,14 @@
         "id": 149,
         "date": "2026-05-29",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 150,
         "date": "2026-05-30",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -3757,7 +3757,7 @@
     "tax_code": "TAXCODEX00000076",
     "email": "doctor76@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3787,14 +3787,14 @@
         "id": 151,
         "date": "2026-05-31",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 152,
         "date": "2026-06-01",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -3807,7 +3807,7 @@
     "tax_code": "TAXCODEX00000077",
     "email": "doctor77@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3837,14 +3837,14 @@
         "id": 153,
         "date": "2026-06-02",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 154,
         "date": "2026-06-03",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -3857,7 +3857,7 @@
     "tax_code": "TAXCODEX00000078",
     "email": "doctor78@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3887,14 +3887,14 @@
         "id": 155,
         "date": "2026-06-04",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 156,
         "date": "2026-06-05",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -3907,7 +3907,7 @@
     "tax_code": "TAXCODEX00000079",
     "email": "doctor79@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3937,14 +3937,14 @@
         "id": 157,
         "date": "2026-06-06",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 158,
         "date": "2026-06-07",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -3957,7 +3957,7 @@
     "tax_code": "TAXCODEX00000080",
     "email": "doctor80@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -3987,14 +3987,14 @@
         "id": 159,
         "date": "2026-06-08",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 160,
         "date": "2026-06-09",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -4007,7 +4007,7 @@
     "tax_code": "TAXCODEX00000081",
     "email": "doctor81@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4037,14 +4037,14 @@
         "id": 161,
         "date": "2026-06-10",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 162,
         "date": "2026-06-11",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -4057,7 +4057,7 @@
     "tax_code": "TAXCODEX00000082",
     "email": "doctor82@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4087,14 +4087,14 @@
         "id": 163,
         "date": "2026-06-12",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 164,
         "date": "2026-06-13",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -4107,7 +4107,7 @@
     "tax_code": "TAXCODEX00000083",
     "email": "doctor83@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4137,14 +4137,14 @@
         "id": 165,
         "date": "2026-06-14",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 166,
         "date": "2026-06-15",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -4157,7 +4157,7 @@
     "tax_code": "TAXCODEX00000084",
     "email": "doctor84@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4187,14 +4187,14 @@
         "id": 167,
         "date": "2026-06-16",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 168,
         "date": "2026-06-17",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -4207,7 +4207,7 @@
     "tax_code": "TAXCODEX00000085",
     "email": "doctor85@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4237,14 +4237,14 @@
         "id": 169,
         "date": "2026-06-18",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 170,
         "date": "2026-06-19",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -4257,7 +4257,7 @@
     "tax_code": "TAXCODEX00000086",
     "email": "doctor86@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4287,14 +4287,14 @@
         "id": 171,
         "date": "2026-06-20",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 172,
         "date": "2026-06-21",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -4307,7 +4307,7 @@
     "tax_code": "TAXCODEX00000087",
     "email": "doctor87@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4337,14 +4337,14 @@
         "id": 173,
         "date": "2026-06-22",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 174,
         "date": "2026-06-23",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -4357,7 +4357,7 @@
     "tax_code": "TAXCODEX00000088",
     "email": "doctor88@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4387,14 +4387,14 @@
         "id": 175,
         "date": "2026-06-24",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 176,
         "date": "2026-06-25",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -4407,7 +4407,7 @@
     "tax_code": "TAXCODEX00000089",
     "email": "doctor89@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4437,14 +4437,14 @@
         "id": 177,
         "date": "2026-06-26",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 178,
         "date": "2026-06-27",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -4457,7 +4457,7 @@
     "tax_code": "TAXCODEX00000090",
     "email": "doctor90@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4487,14 +4487,14 @@
         "id": 179,
         "date": "2026-06-28",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 180,
         "date": "2026-06-29",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -4507,7 +4507,7 @@
     "tax_code": "TAXCODEX00000091",
     "email": "doctor91@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4537,14 +4537,14 @@
         "id": 181,
         "date": "2026-06-30",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 182,
         "date": "2026-07-01",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -4557,7 +4557,7 @@
     "tax_code": "TAXCODEX00000092",
     "email": "doctor92@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4587,14 +4587,14 @@
         "id": 183,
         "date": "2026-07-02",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 184,
         "date": "2026-07-03",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -4607,7 +4607,7 @@
     "tax_code": "TAXCODEX00000093",
     "email": "doctor93@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4637,14 +4637,14 @@
         "id": 185,
         "date": "2026-07-04",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 186,
         "date": "2026-07-05",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -4657,7 +4657,7 @@
     "tax_code": "TAXCODEX00000094",
     "email": "doctor94@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4687,14 +4687,14 @@
         "id": 187,
         "date": "2026-07-06",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 188,
         "date": "2026-07-07",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -4707,7 +4707,7 @@
     "tax_code": "TAXCODEX00000095",
     "email": "doctor95@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4737,14 +4737,14 @@
         "id": 189,
         "date": "2026-07-08",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 190,
         "date": "2026-07-09",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -4757,7 +4757,7 @@
     "tax_code": "TAXCODEX00000096",
     "email": "doctor96@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4787,14 +4787,14 @@
         "id": 191,
         "date": "2026-07-10",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 192,
         "date": "2026-07-11",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -4807,7 +4807,7 @@
     "tax_code": "TAXCODEX00000097",
     "email": "doctor97@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4837,14 +4837,14 @@
         "id": 193,
         "date": "2026-07-12",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 194,
         "date": "2026-07-13",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
@@ -4857,7 +4857,7 @@
     "tax_code": "TAXCODEX00000098",
     "email": "doctor98@example.com",
     "password": "password",
-    "seniority": 1,
+    "seniority": "SPECIALIST_JUNIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4887,14 +4887,14 @@
         "id": 195,
         "date": "2026-07-14",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       },
       {
         "id": 196,
         "date": "2026-07-15",
         "time_slots": [
-          0
+          "MORNING"
         ]
       }
     ]
@@ -4907,7 +4907,7 @@
     "tax_code": "TAXCODEX00000099",
     "email": "doctor99@example.com",
     "password": "password",
-    "seniority": 2,
+    "seniority": "SPECIALIST_SENIOR",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4937,14 +4937,14 @@
         "id": 197,
         "date": "2026-07-16",
         "time_slots": [
-          0
+          "MORNING"
         ]
       },
       {
         "id": 198,
         "date": "2026-07-17",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       }
     ]
@@ -4957,7 +4957,7 @@
     "tax_code": "TAXCODEX00000100",
     "email": "doctor100@example.com",
     "password": "password",
-    "seniority": 0,
+    "seniority": "STRUCTURED",
     "system_actors": [
       "DOCTOR"
     ],
@@ -4987,14 +4987,14 @@
         "id": 199,
         "date": "2026-07-18",
         "time_slots": [
-          1
+          "AFTERNOON"
         ]
       },
       {
         "id": 200,
         "date": "2026-07-19",
         "time_slots": [
-          2
+          "NIGHT"
         ]
       }
     ]
