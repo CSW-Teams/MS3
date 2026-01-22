@@ -462,7 +462,7 @@ Risultato atteso:
 ## Approfondimento tecnico: Code Patterns abilitati e disabilitati in MS3
 
 Questa sezione integra il manuale con una lettura **critica e didattica** dei code patterns attivi e disattivati nel progetto MS3.  
-L’obiettivo è fornire un quadro comprensibile a studenti e docenti con background informatico, collegando:
+L’obiettivo è fornire un quadro comprensibile a sviluppatori e team di progetto, collegando:
 - **cosa fa ogni tool/pattern**,  
 - **perché è utile**,  
 - **perché è stato abilitato o disabilitato** nel contesto MS3.
@@ -618,7 +618,7 @@ L’obiettivo è fornire un quadro comprensibile a studenti e docenti con backgr
 
 ---
 
-### 4) Sintesi per studenti e docenti
+### 4) Sintesi
 
 Nel progetto MS3 i code patterns **attivi** sono stati scelti per coprire in modo equilibrato:
 - **Qualità del codice** (style, complessità, bug finding),
