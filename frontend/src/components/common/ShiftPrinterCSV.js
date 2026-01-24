@@ -26,20 +26,22 @@ export function ShiftPrinterCSV(props) {
     }
   });
 
+  const handleClick = (event) => {
+    if (!props.enable) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <Button
       variant="contained"
       style={props.style}
+      component={CSVLink}
+      data={printableShifts}
+      onClick={handleClick}
+      disabled={!props.enable}
     >
-      <CSVLink
-        data={printableShifts}
-        style={{ color: 'inherit', textDecoration: 'none' }}  // Rimuove la stilizzazione del link per mantenerla in linea con il bottone
-        onClick={() => {
-          return props.enable;
-        }}
-      >
-        {props.textLink}
-      </CSVLink>
+      {props.textLink}
     </Button>
   )
 }
