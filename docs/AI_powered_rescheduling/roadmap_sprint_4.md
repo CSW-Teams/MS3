@@ -9,13 +9,6 @@
 - **AI models selected**: Gemini **Gemma** and Grok **Llama-70B**.
 - **Planner-only scope**: AI rescheduling and final schedule selection are **planner-only** during the rescheduling phase, then the chosen schedule replaces the algorithm-generated schedule in full.
 
-### PROMPT FOR THE USER
-1. Can you provide or confirm the exact **API endpoints/SDKs** for Gemini Gemma and Grok Llama-70B so we can pin the integration approach?
-2. Should we prioritize **Direct Prompting** or **MCP Integration** for the first iteration, or plan both as parallel spikes?
-3. Please confirm the **priority/weighting rules** (or acceptable ranges) for the multidimensional decision scale across GQM metrics.
-
----
-
 ## Story 1 — Current Scheduling Flow Analysis & Baseline Mapping
 **Goal**: Document the current scheduling generation/regeneration flow, the scheduling data model, and constraint pipeline to ground AI-powered rescheduling requirements.
 
@@ -53,7 +46,7 @@
 
 ---
 
-## Story 2 — AI Agent Communication & TOON/JSON Protocol Design
+## Story 2 — AI Agent Communication & TOON/JSON Protocol Design (Direct Prompting)
 **Goal**: Define the AI agent communication protocol, context delivery strategy, and TOON artifacts used for scheduling and feedback.
 
 **Functional Scope**
@@ -61,8 +54,9 @@
 - Define **system knowledge** payloads to pass as **context/knowledge base** (not prompt).
 - Define dual-channel communication: **`.toon` from system to agent** and **`.json` from agent to system**.
 - Define TOON-based scheduling file and JSON response contract boundaries.
+- Plan for **direct prompting with context** (no MCP/RLM in this version).
 
-**Estimated Effort**: **12 hours** (6 microtasks × 2h)
+**Estimated Effort**: **10 hours** (5 microtasks × 2h)
 
 **Dependencies**
 - Story 1 (baseline flow understanding).
@@ -74,34 +68,29 @@
 **Sprint Timing**: **Early sprint → before mid-sprint** (enables backend + UI work).
 
 **Microtasks (2h each)**
-1. **AI API inventory and constraints capture**
-   - Description: Identify Gemini Gemma and Grok Llama-70B endpoints, payload limits, auth, and supported formats.
+1. **AI API inventory + endpoint research**
+   - Description: Identify Gemini Gemma and Grok Llama-70B endpoints (if available), payload limits, auth, and supported formats; search public docs for APIs/SDKs and record findings for implementation handoff.
    - Preconditions: Story 1 complete.
    - Parallel affinities: None.
-   - Output artifact: AI API assumptions list + open questions.
+   - Output artifact: AI API assumptions list + endpoint/SDK discovery notes with URLs and version details.
 2. **Define system knowledge base payload**
    - Description: Specify required system info, constraints, decision metrics, and historic schedule context to pass as a knowledge base.
    - Preconditions: Story 1, Microtask 1.
    - Parallel affinities: Metrics design (Story 3).
    - Output artifact: Knowledge base schema draft.
-3. **TOON scheduling file specification (system → agent)**
-   - Description: Define `.toon` schedule input format sent from system to the agent.
+3. **TOON request + JSON response specification**
+   - Description: Define `.toon` schedule input format sent from system to the agent and `.json` response format for AI-produced schedules and metadata.
    - Preconditions: Story 1, Microtask 2.
    - Parallel affinities: Backend orchestration (Story 5).
-   - Output artifact: TOON request schema section.
-4. **JSON response specification (agent → system)**
-   - Description: Define `.json` response format for AI-produced schedules and metadata.
-   - Preconditions: Microtask 3.
-   - Parallel affinities: Backend orchestration (Story 5).
-   - Output artifact: JSON response schema section.
-5. **Define communication protocol & instructions**
-   - Description: Specify request/response flow, retries, timeouts, and agent execution instructions (prompt limited to `.toon`; response strictly `.json`).
-   - Preconditions: Microtasks 1–4.
+   - Output artifact: TOON request schema section + JSON response schema section.
+4. **Define communication protocol & instructions**
+   - Description: Specify request/response flow, retries, timeouts, and agent execution instructions (direct prompting with `.toon` input; response strictly `.json`).
+   - Preconditions: Microtasks 1–3.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Protocol flow chart and error taxonomy.
-6. **GDPR/data minimization review**
+5. **GDPR/data minimization review**
    - Description: Ensure only necessary doctor data and scheduling constraints are transmitted; define redaction rules.
-   - Preconditions: Microtasks 2–5.
+   - Preconditions: Microtasks 2–4.
    - Parallel affinities: Documentation (Story 6).
    - Output artifact: Data minimization checklist.
 
@@ -115,7 +104,7 @@
 - Define a **multidimensional priority scale** and decision algorithm to select among the 4 schedules.
 - Model for summarizing schedule comparison data and selection rationale.
 
-**Estimated Effort**: **12 hours** (6 microtasks × 2h)
+**Estimated Effort**: **14 hours** (7 microtasks × 2h)
 
 **Dependencies**
 - Story 1 (constraints + data model).
@@ -149,14 +138,19 @@
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: None.
    - Output artifact: Priority scale definition.
-5. **Define decision algorithm**
-   - Description: Specify the algorithm that chooses the preferred schedule based on the priority scale.
-   - Preconditions: Microtask 4.
+5. **Decision workshop: weights and trade-offs**
+   - Description: Facilitate stakeholder decision-making to set metric weights/priority ranges and tie-break rules.
+   - Preconditions: Microtasks 1–4.
+   - Parallel affinities: None.
+   - Output artifact: Signed-off weighting matrix + trade-off rules.
+6. **Define decision algorithm**
+   - Description: Specify the algorithm that chooses the preferred schedule based on the agreed priority scale.
+   - Preconditions: Microtask 5.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Decision algorithm spec.
-6. **Design comparison payload + audit/validation checklist**
+7. **Design comparison payload + audit/validation checklist**
    - Description: Draft the backend response schema for 4 schedules and define selection audit + metrics QA checks.
-   - Preconditions: Microtasks 1–5.
+   - Preconditions: Microtasks 1–6.
    - Parallel affinities: UI story (Story 4).
    - Output artifact: JSON schema outline + selection audit/metrics QA checklist.
 
@@ -251,7 +245,7 @@
    - Output artifact: JSON parsing/validation checklist.
 4. **Comparison + selection API contract**
    - Description: Define endpoints for fetching comparison metrics and committing planner selection.
-   - Preconditions: Story 3, Microtask 6.
+   - Preconditions: Story 3, Microtask 7.
    - Parallel affinities: UI story (Story 4).
    - Output artifact: Endpoint spec draft.
 5. **Error + retry strategy**
@@ -261,7 +255,7 @@
    - Output artifact: Failure matrix.
 6. **Security + audit considerations**
    - Description: Define audit logging for schedule selection and AI decisions.
-   - Preconditions: Story 3, Microtask 6.
+   - Preconditions: Story 3, Microtask 7.
    - Parallel affinities: Documentation (Story 6).
    - Output artifact: Audit log plan.
 
@@ -344,8 +338,8 @@
 
 ## Effort Summary
 - Story 1: 6h
-- Story 2: 12h
-- Story 3: 12h
+- Story 2: 10h
+- Story 3: 14h
 - Story 4: 10h
 - Story 5: 12h
 - Story 6: 8h
