@@ -6,13 +6,13 @@
 - **Scope**: Analysis + planning for AI-powered rescheduling with backend + frontend + AI-agent communication + metrics + documentation + stakeholder materials.
 - **Code change policy for this sprint roadmap**: Planning only; no implementation included here.
 - **Key existing flow anchors**: Schedule generation/regeneration uses `/api/schedule/generation` and `/api/schedule/regeneration` in the backend and frontend schedule generator view. The current system generates schedules from the planner UI with a loading overlay and a list of schedules, but has **no AI integration or schedule comparison UI** yet.
+- **AI models selected**: Gemini **Gemma** and Grok **Llama-70B**.
+- **Planner-only scope**: AI rescheduling and final schedule selection are **planner-only** during the rescheduling phase, then the chosen schedule replaces the algorithm-generated schedule in full.
 
 ### PROMPT FOR THE USER
-1. What AI agent APIs (vendor + endpoints) are approved for use, and do we have existing credentials or SDKs?
-2. Do we have an official **TOON** protocol spec (schemas, examples) that must be followed for `.toon` scheduling and feedback files?
-3. What are the **decision metrics** to display and how are they computed/weighted (e.g., fairness, coverage, overtime, constraint violations)?
-4. Should the AI rescheduling flow be **planner-only** or also available to configurators/admins?
-5. Are there **non-functional constraints** (latency, max inference cost) for AI schedule generation?
+1. Can you provide or confirm the exact **API endpoints/SDKs** for Gemini Gemma and Grok Llama-70B so we can pin the integration approach?
+2. Should we prioritize **Direct Prompting** or **MCP Integration** for the first iteration, or plan both as parallel spikes?
+3. Please confirm the **priority/weighting rules** (or acceptable ranges) for the multidimensional decision scale across GQM metrics.
 
 ---
 
@@ -53,61 +53,67 @@
 
 ---
 
-## Story 2 — AI Agent Communication & TOON Protocol Design
+## Story 2 — AI Agent Communication & TOON/JSON Protocol Design
 **Goal**: Define the AI agent communication protocol, context delivery strategy, and TOON artifacts used for scheduling and feedback.
 
 **Functional Scope**
 - Identify AI agent APIs and integration constraints.
 - Define **system knowledge** payloads to pass as **context/knowledge base** (not prompt).
-- Define TOON-based communication protocol and `.toon` file contract boundaries.
+- Define dual-channel communication: **`.toon` from system to agent** and **`.json` from agent to system**.
+- Define TOON-based scheduling file and JSON response contract boundaries.
 
-**Estimated Effort**: **10 hours** (5 microtasks × 2h)
+**Estimated Effort**: **12 hours** (6 microtasks × 2h)
 
 **Dependencies**
 - Story 1 (baseline flow understanding).
 
 **Expected Deliverables**
-- AI communication specification (context structure, TOON file schemas, error handling).
+- AI communication specification (context structure, TOON request + JSON response schemas, error handling).
 - Security + privacy considerations for data transfer (GDPR data minimization).
 
 **Sprint Timing**: **Early sprint → before mid-sprint** (enables backend + UI work).
 
 **Microtasks (2h each)**
 1. **AI API inventory and constraints capture**
-   - Description: Identify target AI agent APIs, response latency, payload limits, and supported formats.
+   - Description: Identify Gemini Gemma and Grok Llama-70B endpoints, payload limits, auth, and supported formats.
    - Preconditions: Story 1 complete.
    - Parallel affinities: None.
    - Output artifact: AI API assumptions list + open questions.
 2. **Define system knowledge base payload**
    - Description: Specify required system info, constraints, decision metrics, and historic schedule context to pass as a knowledge base.
    - Preconditions: Story 1, Microtask 1.
-   - Parallel affinities: Backend metrics design (Story 3).
+   - Parallel affinities: Metrics design (Story 3).
    - Output artifact: Knowledge base schema draft.
-3. **TOON scheduling file specification**
-   - Description: Define `.toon` schedule input format for AI and feedback format for evaluation loop.
-   - Preconditions: User-provided TOON spec (or prompt for user if missing).
+3. **TOON scheduling file specification (system → agent)**
+   - Description: Define `.toon` schedule input format sent from system to the agent.
+   - Preconditions: Story 1, Microtask 2.
    - Parallel affinities: Backend orchestration (Story 5).
-   - Output artifact: TOON scheduling/feedback schema section in documentation.
-4. **Define communication protocol & instructions**
-   - Description: Specify request/response flow, retries, timeouts, and agent execution instructions (prompt limited to `.toon` files only).
-   - Preconditions: Microtasks 1–3.
+   - Output artifact: TOON request schema section.
+4. **JSON response specification (agent → system)**
+   - Description: Define `.json` response format for AI-produced schedules and metadata.
+   - Preconditions: Microtask 3.
+   - Parallel affinities: Backend orchestration (Story 5).
+   - Output artifact: JSON response schema section.
+5. **Define communication protocol & instructions**
+   - Description: Specify request/response flow, retries, timeouts, and agent execution instructions (prompt limited to `.toon`; response strictly `.json`).
+   - Preconditions: Microtasks 1–4.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Protocol flow chart and error taxonomy.
-5. **GDPR/data minimization review**
+6. **GDPR/data minimization review**
    - Description: Ensure only necessary doctor data and scheduling constraints are transmitted; define redaction rules.
-   - Preconditions: Microtasks 2–4.
+   - Preconditions: Microtasks 2–5.
    - Parallel affinities: Documentation (Story 6).
    - Output artifact: Data minimization checklist.
 
 ---
 
-## Story 3 — Metrics Definition & Schedule Comparison Model
-**Goal**: Define decision metrics for comparing 4 schedules (1 standard + 3 AI), and the backend data model required to compute and deliver those metrics.
+## Story 3 — Metrics & Decision Framework (GQM+Strategy Integration)
+**Goal**: Integrate the provided GQM+Strategy analysis into the decision metrics, define the multidimensional priority scale, and specify the decision algorithm for comparing 4 schedules (1 standard + 3 AI).
 
 **Functional Scope**
-- Metric definitions (fairness, coverage, constraint violations, overtime, preference compliance, etc.).
-- Model for summarizing schedule comparison data.
-- API contract for fetching comparison metrics and schedule metadata.
+- Integrate GQM+Strategy metrics and measurement plan into scheduler comparison.
+- Define a **multidimensional priority scale** and decision algorithm to select among the 4 schedules.
+- Model for summarizing schedule comparison data and selection rationale.
 
 **Estimated Effort**: **12 hours** (6 microtasks × 2h)
 
@@ -116,42 +122,43 @@
 - Story 2 (knowledge base + AI protocol impacts).
 
 **Expected Deliverables**
-- Decision metrics catalog with formulas and output schema.
+- Decision metrics catalog aligned with GQM+Strategy levels (business/software/operational).
+- Priority scale and decision algorithm specification.
 - API contract draft for comparison and selection.
 
 **Sprint Timing**: **Early sprint → before mid-sprint** (so UI can target final metrics).
 
 **Microtasks (2h each)**
-1. **Define decision metrics list**
-   - Description: Identify the minimal, planner-facing metrics to compare schedules.
+1. **Integrate GQM+Strategy metrics into planner metrics list**
+   - Description: Translate Business/Software/Operational goals into planner-visible comparison metrics.
    - Preconditions: Story 1.
    - Parallel affinities: None.
-   - Output artifact: Metrics list + definitions.
+   - Output artifact: GQM-aligned metrics list + definitions.
 2. **Map data sources for each metric**
-   - Description: Map required data (constraints, preferences, shift assignments) to each metric.
+   - Description: Map required data (constraints, preferences, shift assignments, feedback) to each GQM metric.
    - Preconditions: Microtask 1.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Data-to-metric matrix.
 3. **Define aggregation + normalization rules**
-   - Description: Specify formulas, scaling, and normalization to enable side-by-side comparison.
+   - Description: Specify formulas, scaling, and normalization for each metric.
    - Preconditions: Microtasks 1–2.
    - Parallel affinities: None.
    - Output artifact: Metric calculation spec.
-4. **Design comparison payload schema**
-   - Description: Draft a backend response schema for 4 schedules and their metrics.
+4. **Define multidimensional priority scale**
+   - Description: Establish weighting/priority rules across metrics (e.g., trade-offs between fairness, coverage, burnout).
    - Preconditions: Microtasks 1–3.
-   - Parallel affinities: UI story (Story 4).
-   - Output artifact: JSON schema outline.
-5. **Define selection logging + audit data**
-   - Description: Specify what to store when a planner selects a schedule (who, why, metrics snapshot).
+   - Parallel affinities: None.
+   - Output artifact: Priority scale definition.
+5. **Define decision algorithm**
+   - Description: Specify the algorithm that chooses the preferred schedule based on the priority scale.
    - Preconditions: Microtask 4.
-   - Parallel affinities: Documentation (Story 6).
-   - Output artifact: Selection audit requirements.
-6. **Metrics validation checklist**
-   - Description: Define sanity checks and failure conditions for metrics computation.
-   - Preconditions: Microtasks 1–4.
    - Parallel affinities: Backend orchestration (Story 5).
-   - Output artifact: Metrics QA checklist.
+   - Output artifact: Decision algorithm spec.
+6. **Design comparison payload + audit/validation checklist**
+   - Description: Draft the backend response schema for 4 schedules and define selection audit + metrics QA checks.
+   - Preconditions: Microtasks 1–5.
+   - Parallel affinities: UI story (Story 4).
+   - Output artifact: JSON schema outline + selection audit/metrics QA checklist.
 
 ---
 
@@ -210,11 +217,11 @@
 
 **Functional Scope**
 - Generation pipeline orchestration and sequencing.
-- AI schedule ingestion (TOON file parsing/unmarshalling).
+- AI schedule ingestion using **TOON input** and **JSON output** parsing/unmarshalling.
 - Metrics computation and storage.
 - Selection endpoint behavior.
 
-**Estimated Effort**: **10 hours** (5 microtasks × 2h)
+**Estimated Effort**: **12 hours** (6 microtasks × 2h)
 
 **Dependencies**
 - Story 2 (AI protocol + TOON).
@@ -232,24 +239,29 @@
    - Preconditions: Stories 2–3.
    - Parallel affinities: UI state design (Story 4).
    - Output artifact: Sequence diagram.
-2. **TOON ingestion + validation plan**
-   - Description: Define how `.toon` schedules and feedback files are parsed and validated.
+2. **TOON request ingestion + validation plan**
+   - Description: Define how `.toon` requests are generated, parsed, and validated before AI calls.
    - Preconditions: Story 2.
    - Parallel affinities: None.
-   - Output artifact: Parsing/validation checklist.
-3. **Comparison + selection API contract**
+   - Output artifact: TOON parsing/validation checklist.
+3. **JSON response ingestion + validation plan**
+   - Description: Define how `.json` AI schedules are parsed, validated, and converted to internal models.
+   - Preconditions: Story 2.
+   - Parallel affinities: None.
+   - Output artifact: JSON parsing/validation checklist.
+4. **Comparison + selection API contract**
    - Description: Define endpoints for fetching comparison metrics and committing planner selection.
-   - Preconditions: Story 3, Microtask 4.
+   - Preconditions: Story 3, Microtask 6.
    - Parallel affinities: UI story (Story 4).
    - Output artifact: Endpoint spec draft.
-4. **Error + retry strategy**
+5. **Error + retry strategy**
    - Description: Define failure modes for AI calls, metrics computation, and schedule parsing.
    - Preconditions: Story 2 protocol.
    - Parallel affinities: UI error design (Story 4).
    - Output artifact: Failure matrix.
-5. **Security + audit considerations**
+6. **Security + audit considerations**
    - Description: Define audit logging for schedule selection and AI decisions.
-   - Preconditions: Story 3, Microtask 5.
+   - Preconditions: Story 3, Microtask 6.
    - Parallel affinities: Documentation (Story 6).
    - Output artifact: Audit log plan.
 
@@ -311,7 +323,7 @@
 
 ## Timeline View (Narrative)
 - **Week 1 (Early sprint)**: Complete Story 1. Start Story 2 (AI protocol) and Story 3 (metrics). Begin Story 4 UI concepting in parallel once metrics schema is drafted.
-- **Week 2 (Before mid-sprint meeting)**: Finalize Stories 2–5 design outputs so that UI wireframes and backend orchestration plan can be demoed.
+- **Week 2 (Before mid-sprint meeting)**: Finalize Stories 2–5 design outputs (including TOON/JSON protocol and decision algorithm) so that UI wireframes and backend orchestration plan can be demoed.
 - **After mid-sprint alignment (Week 2)**: Focus on Story 6 documentation + stakeholder materials using finalized artifacts.
 
 ---
@@ -332,9 +344,9 @@
 
 ## Effort Summary
 - Story 1: 6h
-- Story 2: 10h
+- Story 2: 12h
 - Story 3: 12h
 - Story 4: 10h
-- Story 5: 10h
+- Story 5: 12h
 - Story 6: 8h
-- **Total**: **56 hours** (≤ 60-hour sprint capacity)
+- **Total**: **60 hours**
