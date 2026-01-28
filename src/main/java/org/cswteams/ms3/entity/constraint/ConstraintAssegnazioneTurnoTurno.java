@@ -51,9 +51,9 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
         LocalDateTime cShift2End = cShift2Start.plus(cShift2.getShift().getDuration());
 
         if (cShift1Start.isBefore(cShift2Start)) {
-            return Math.abs(cShift1End.until(cShift2Start, tu)) < delta;
+            return Math.abs(cShift1End.until(cShift2Start, tu)) <= delta;
         } else {
-            return Math.abs(cShift2End.until(cShift1Start, tu)) < delta;
+            return Math.abs(cShift2End.until(cShift1Start, tu)) <= delta;
         }
 
     }
