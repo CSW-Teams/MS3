@@ -9,11 +9,6 @@
 - **AI models selected**: Gemini **Gemma** and Grok **Llama-70B**.
 - **Planner-only scope**: AI rescheduling and final schedule selection are **planner-only** during the rescheduling phase, then the chosen schedule replaces the algorithm-generated schedule in full.
 
-### PROMPT FOR THE USER
-1. If direct model **endpoints/SDKs** are not available now, confirm that they will be provided during implementation tasks in a later sprint.
-
----
-
 ## Story 1 — Current Scheduling Flow Analysis & Baseline Mapping
 **Goal**: Document the current scheduling generation/regeneration flow, the scheduling data model, and constraint pipeline to ground AI-powered rescheduling requirements.
 
@@ -73,11 +68,11 @@
 **Sprint Timing**: **Early sprint → before mid-sprint** (enables backend + UI work).
 
 **Microtasks (2h each)**
-1. **AI API inventory and constraints capture**
-   - Description: Identify Gemini Gemma and Grok Llama-70B endpoints (if available), payload limits, auth, and supported formats; document TBD items if endpoints are not yet available.
+1. **AI API inventory + endpoint research**
+   - Description: Identify Gemini Gemma and Grok Llama-70B endpoints (if available), payload limits, auth, and supported formats; search public docs for APIs/SDKs and record findings for implementation handoff.
    - Preconditions: Story 1 complete.
    - Parallel affinities: None.
-   - Output artifact: AI API assumptions list + open questions.
+   - Output artifact: AI API assumptions list + endpoint/SDK discovery notes with URLs and version details.
 2. **Define system knowledge base payload**
    - Description: Specify required system info, constraints, decision metrics, and historic schedule context to pass as a knowledge base.
    - Preconditions: Story 1, Microtask 1.
