@@ -539,9 +539,6 @@ Questo documento dovrà servire come base per lo sviluppo del Backend (Story 5):
 1. Il **ToonSerializer.java** (per la richiesta).
 2. Il **JsonDeserializer.java** (per la risposta).
 
-
-## Microtask 2.4
-
 ## Microtask 2.4 — Protocollo di comunicazione & istruzioni (piano)
 
 **Obiettivo:** definire il flusso richiesta/risposta, timeouts, retry, istruzioni di esecuzione per agenti AI (input `.toon`, output esclusivamente `.json`), e produrre **flow chart** + **tassonomia errori**.
