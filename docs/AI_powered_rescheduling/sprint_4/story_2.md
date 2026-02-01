@@ -542,6 +542,90 @@ Questo documento dovrà servire come base per lo sviluppo del Backend (Story 5):
 
 ## Microtask 2.4
 
+## Microtask 2.4 — Protocollo di comunicazione & istruzioni (piano)
+
+**Obiettivo:** definire il flusso richiesta/risposta, timeouts, retry, istruzioni di esecuzione per agenti AI (input `.toon`, output esclusivamente `.json`), e produrre **flow chart** + **tassonomia errori**.
+
+**Precondizioni:** Microtask 2.1–2.3 completati.  
+**Affinità in parallelo:** Story 5 (backend orchestration).  
+**Output atteso:** Protocol flow chart + error taxonomy.
+
+### Piano operativo (step-by-step)
+
+1. **Raccogliere i vincoli delle microtask precedenti (2.1–2.3).**  
+   - Confermare requisiti TOON/JSON, contesto e vincoli di input/output già definiti.  
+   - Obiettivo: evitare incoerenze tra schema TOON, schema JSON e protocollo.
+2. **Definire il flusso end-to-end del protocollo (request/response).**  
+   - Provider-agnostic.  
+   - Preflight validation obbligatoria su `.toon` prima della chiamata all’agente.  
+   - “Partial success” trattato come **errore**.  
+   - Output: **flow chart** leggibile in Markdown (Mermaid/diagramma testuale).
+3. **Formalizzare istruzioni di esecuzione per l’agente.**  
+   - Prompt unico e unificato (stessa regola per tutti i provider).  
+   - Input “schedule + feedback” in `.toon`; istruzioni operative passate solo via **context**.  
+   - Output **solo JSON** (nessun testo, nessun markdown).  
+   - Forzare `response_format` JSON (flag/provider-specific).
+4. **Definire timeouts configurabili (draft iniziale).**  
+   - Tutti i timeout devono essere impostabili in configurazione.  
+   - Proposta iniziale (da rivedere):  
+     - **Connect timeout:** 5s  
+     - **Read timeout:** 60s  
+     - **Total timeout:** 90s
+5. **Definire retry policy (draft iniziale).**  
+   - Tutti gli errori sono ritentabili.  
+   - **Max retry:** 3 tentativi.  
+   - **Backoff:** fisso **0ms** (cap massimo 30s, pronto per futuri backoff esponenziali).  
+   - Inserire correlation/request ID dove supportato.
+6. **Costruire la tassonomia degli errori.**  
+   - Separare **Transport** vs **Application/Schema**.  
+   - Includere “partial success” tra gli errori.  
+   - Mantenere i vincoli/violazioni come categoria separata.
+7. **Validare l’allineamento con Story 5 (orchestrazione).**  
+   - Verificare che il flusso e la tassonomia supportino fallback e gestione errori backend.
+
+---
+
+### Protocol Flow Chart (bozza)
+
+```mermaid
+flowchart TD
+  A[Genera .toon da schedule + feedback] --> B[Preflight validation .toon]
+  B -- invalid --> E[Errore: input non valido]
+  B -- valid --> C[Chiamata agent AI (payload JSON con .toon)]
+  C --> D[Response JSON]
+  D -- invalid JSON --> F[Errore: response schema/parse]
+  D -- PARTIAL_SUCCESS --> G[Errore: partial success]
+  D -- FAILURE --> H[Errore: failure dichiarato]
+  D -- SUCCESS --> I[Persistenza e pipeline backend]
+```
+
+---
+
+### Tassonomia Errori (proposta iniziale)
+
+**A) Transport/Network**
+1. Timeout di connessione (connect timeout).  
+2. Timeout di lettura (read timeout).  
+3. Timeout totale richiesta (total timeout).  
+4. Errori di rete (DNS, TLS, reset).  
+5. Rate limit / 429.
+
+**B) Application/Schema**
+1. JSON non valido o malformato.  
+2. JSON valido ma non conforme allo schema (missing fields, types).  
+3. Response `status = FAILURE`.  
+4. Response `status = PARTIAL_SUCCESS` (trattato come errore).  
+5. Violazioni vincoli (hard/soft) oltre soglia ammessa.
+
+**C) Business/Domain**
+1. Incoerenza con vincoli di business (es. assegnazioni impossibili).  
+2. Output privo di assegnazioni o metriche essenziali.
+
+---
+
+### Fallback suggerito (draft)
+
+Se tutte le chiamate AI falliscono: **ritornare lo schedule standard** e segnalare l’errore in metadati/log (nessun blocco totale del flusso).
 
 
 ## Microtask 2.5
