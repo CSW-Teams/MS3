@@ -626,3 +626,52 @@ Se tutte le chiamate AI falliscono: **ritornare lo schedule standard** e segnala
 
 
 ## Microtask 2.5
+
+## Microtask 2.5 — GDPR / Data Minimization Review
+
+**Scope:** Data exchanged between system ↔ AI agent (direct prompting, no MCP/RLM).  
+**Assumption:** AI agent is an external processor; apply minimization and privacy-by-design at protocol/payload level.  
+
+### Data Minimization Checklist
+
+#### Transmitted Data Fields (System → AI Agent)
+
+| Field name | Purpose | Necessary (Yes/No) | GDPR justification |
+| --- | --- | --- | --- |
+| period (schedule window) | Limits the reasoning horizon for rescheduling. | Yes | Required to scope decisions to the target timeframe only. |
+| shifts[id, slot, date, duration, req_str, req_jun] | Defines what must be covered and required staffing per role. | Yes | Essential to generate feasible assignments and coverage. |
+| doctors[id, role] | Identifies candidate pool and role eligibility for each assignment. | Yes | Needed to match staffing requirements without exposing identity. |
+| doctors.priorities{gen, night, long} | Fairness balancing for UFFA queues. | Yes | Required for objective function and fairness constraints. |
+| doctors.holidays_taken (tokenized codes) | Prevents repeating specific holiday assignments. | Yes | Necessary to enforce holiday-related constraints; use tokenized labels only. |
+| blocks[start, end, slots] | Encodes unavailability/preferences in time ranges. | Yes | Needed to avoid illegal or undesired allocations. |
+| active_constraints[type, entity_type, entity_id, reason, params] | Enforces hard/soft constraints during reasoning. | Yes | Required to keep output compliant with scheduling rules. |
+| schedule feedbacks (per shift, anonymized) | Drives rescheduling based on dissatisfaction. | Yes | Necessary to target problematic assignments; must be de-identified. |
+| task/service requirements | Ensures coverage of departments/tasks per shift. | Yes | Needed to validate staffing levels per service. |
+
+#### Data Fields NOT Transmitted (System → AI Agent)
+
+- Doctor names, emails, phone numbers, staff IDs, or any direct identifiers.  
+- Exact birthdates, age, gender, pregnancy status, disability details, or medical condition specifics.  
+- Full historical schedules beyond the current window (only constraints derived from history are allowed).  
+- Raw free-text feedback containing personal or health details.  
+- Internal system IDs not required for matching (e.g., database primary keys unrelated to scheduling).  
+
+#### Redaction Rules
+
+| Field | Redaction technique | Rationale |
+| --- | --- | --- |
+| doctor identifiers | Pseudonymize to stable numeric IDs scoped to a single request. | Avoid re-identification while preserving assignment consistency. |
+| doctor role | Keep as categorical (e.g., STRUCTURED/SPECIALIST). | Role is required for staffing constraints; no personal data. |
+| priority values | Keep numeric deltas only (no history). | Minimizes exposure while preserving fairness objective. |
+| holidays_taken | Tokenize to generic holiday codes (e.g., HOLIDAY_01). | Avoid revealing sensitive calendar patterns. |
+| blocks (unavailability) | Reduce granularity to date+slot; no time-of-day details. | Minimum needed for availability constraints. |
+| schedule feedbacks | Strip free text; keep structured reason codes + severity score. | Removes personal/sensitive content while retaining signal. |
+| constraints params | Remove personal context; keep only machine-actionable parameters. | Prevents leakage of personal circumstances. |
+| time precision | Round to slot boundaries; avoid exact timestamps when not required. | Minimizes temporal re-identification risk. |
+
+#### Final Validation (GDPR Compliance)
+
+- Only data required for scheduling reasoning and constraint enforcement is transmitted.  
+- All personal identifiers and sensitive attributes are excluded or pseudonymized.  
+- Free-text feedback is eliminated in favor of structured codes and scores.  
+- Payloads are minimized to the scheduling window and necessary role/constraint data only.  
