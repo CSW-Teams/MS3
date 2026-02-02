@@ -18,6 +18,9 @@ import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
 import org.cswteams.ms3.utils.DateConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +29,7 @@ import javax.transaction.Transactional;
 // TODO: Generate concrete shift controller from this class
 @Service
 public class SchedulerController implements ISchedulerController {
+    private static final Logger logger = LoggerFactory.getLogger(SchedulerController.class);
 
     @Autowired
     private DoctorDAO doctorDAO;
@@ -96,24 +100,38 @@ public class SchedulerController implements ISchedulerController {
     @Override
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot)  {
+        String mode = resolvePlanMode();
+        long flowStart = System.currentTimeMillis();
 
         boolean hasExistingSchedules = !scheduleDAO.findAll().isEmpty();
         if (!hasExistingSchedules && startDate.isBefore(LocalDate.now())) {
+            logEvent(eventName(mode, "start_rejected"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - flowStart,
+                    "errorType", "PAST_INITIAL_SCHEDULE"
+            ));
             return null; // non consentire schedulazioni iniziali nel passato
         }
 
         //Check if there already exists a shift schedule for the dates we want to plan.
-        if(!alreadyExistsAnotherSchedule(startDate,endDate))
+        if(!alreadyExistsAnotherSchedule(startDate,endDate)) {
+            logEvent(eventName(mode, "start_rejected"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - flowStart,
+                    "errorType", "DUPLICATE_RANGE"
+            ));
             return null;
+        }
 
         //currentDay = date used to iterate on the dates interval (start date -> end date)
         LocalDate currentDay = startDate;
         List<ConcreteShift> allConcreteShifts = new ArrayList<>();
+        long dataLoadStart = System.currentTimeMillis();
+        List<Shift> shifts = shiftDAO.findAll();
+        long concreteShiftBuildStart = System.currentTimeMillis();
 
         //Creation of the concrete shifts by associating a date foreach shift
         //Iteration on all the dates of the interval. Foreach date, we iterate on all the shifts.
         while(!currentDay.isAfter(endDate)){
-            for(Shift shift : shiftDAO.findAll()){
+            for(Shift shift : shifts){
 
                 //We can assign this shift to a certain date only if the corresponding day of week is admissible for the shift.
                 if (shift.getDaysOfWeek().contains(currentDay.getDayOfWeek())){
@@ -124,39 +142,101 @@ public class SchedulerController implements ISchedulerController {
             //We move on the next day.
             currentDay = currentDay.plusDays(1);
         }
+        logEvent(eventName(mode, "concrete_shifts_built"), mode, Map.of(
+                "durationMs", System.currentTimeMillis() - concreteShiftBuildStart,
+                "shiftsCount", shifts.size(),
+                "concreteShiftsCount", allConcreteShifts.size()
+        ));
+
+        List<Constraint> constraints = constraintDAO.findAll();
+        List<Doctor> doctors = doctorDAO.findAll();
+        List<Holiday> holidays = holidayDAO.findAll();
+        List<DoctorHolidays> doctorHolidays = doctorHolidaysDAO.findAll();
+        List<Scocciatura> scocciaturaList = scocciaturaDAO.findAll();
+        long dataLoadDuration = System.currentTimeMillis() - dataLoadStart;
+        logEvent(eventName(mode, "data_loaded"), mode, Map.of(
+                "durationMs", dataLoadDuration,
+                "shiftsCount", shifts.size(),
+                "concreteShiftsCount", allConcreteShifts.size(),
+                "constraintsCount", constraints.size(),
+                "doctorsCount", doctors.size(),
+                "holidaysCount", holidays.size(),
+                "doctorHolidaysCount", doctorHolidays.size(),
+                "prioritiesCount", doctorUffaPriorityList.size(),
+                "snapshotCount", snapshot.size(),
+                "scocciaturaCount", scocciaturaList.size()
+        ));
 
         //Creation of a schedule builder foreach new shift schedule
         try {
-            //NB: DO NOT move this line
-            List<Scocciatura> scocciaturaList = scocciaturaDAO.findAll();
-
+            long builderInitStart = System.currentTimeMillis();
             this.scheduleBuilder = new ScheduleBuilder(
                 startDate,                      //Start date of the shift schedule
                 endDate,                        //End date of the shift schedule
-                constraintDAO.findAll(),        //All the constraints to respect when a doctor is assigned to a concrete shift
+                constraints,                    //All the constraints to respect when a doctor is assigned to a concrete shift
                 allConcreteShifts,              //Concrete shifts (without doctors)
-                doctorDAO.findAll(),            //All the possible doctors who can be assigned to the concrete shifts
-                holidayDAO.findAll(),           //All the holidays saved in the db
-                doctorHolidaysDAO.findAll(),    //All the associations between doctors and holidays
+                doctors,                        //All the possible doctors who can be assigned to the concrete shifts
+                holidays,                       //All the holidays saved in the db
+                doctorHolidays,                 //All the associations between doctors and holidays
                 doctorUffaPriorityList,         //All the information about priority levels on all the queues of the doctors
                 snapshot                        //Snapshot to update to save actual priorities
                 );
+            logEvent(eventName(mode, "builder_initialized"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - builderInitStart,
+                    "constraintsCount", constraints.size(),
+                    "doctorsCount", doctors.size(),
+                    "concreteShiftsCount", allConcreteShifts.size()
+            ));
 
+            long prioritiesStart = System.currentTimeMillis();
             ControllerScocciatura controllerScocciatura = new ControllerScocciatura(scocciaturaList);
             //We set the controller that manages doctors priorities.
             this.scheduleBuilder.setControllerScocciatura(controllerScocciatura);
+            logEvent(eventName(mode, "constraints_priorities_ready"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - prioritiesStart,
+                    "constraintsCount", constraints.size(),
+                    "scocciaturaCount", scocciaturaList.size(),
+                    "prioritiesCount", doctorUffaPriorityList.size()
+            ));
 
+            long buildStart = System.currentTimeMillis();
             Schedule schedule = this.scheduleBuilder.build();
+            logEvent(eventName(mode, "schedule_built"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - buildStart,
+                    "concreteShiftsCount", schedule.getConcreteShifts().size(),
+                    "violatedConstraintsCount", schedule.getViolatedConstraints().size()
+            ));
 
+            long scheduleSaveStart = System.currentTimeMillis();
             scheduleDAO.save(schedule);
+            logEvent(eventName(mode, "schedule_saved"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - scheduleSaveStart,
+                    "planId", schedule.getId()
+            ));
+            long prioritiesSaveStart = System.currentTimeMillis();
             for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
                 dup.setSchedule(schedule);
                 doctorUffaPriorityDAO.save(dup);
             }
+            logEvent(eventName(mode, "priorities_saved"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - prioritiesSaveStart,
+                    "planId", schedule.getId(),
+                    "savedPrioritiesCount", schedule.getDoctorUffaPriorityList().size()
+            ));
+            logEvent(eventName(mode, "persisted"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - scheduleSaveStart,
+                    "planId", schedule.getId(),
+                    "savedPrioritiesCount", schedule.getDoctorUffaPriorityList().size()
+            ));
 
             return schedule;
 
         } catch (IllegalScheduleException e) {
+            logEvent(eventName(mode, "failed"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - flowStart,
+                    "errorType", e.getClass().getSimpleName(),
+                    "errorCode", "ILLEGAL_SCHEDULE"
+            ));
             return null;
         }
 
@@ -164,9 +244,18 @@ public class SchedulerController implements ISchedulerController {
 
     @Override
     public boolean recreateSchedule(long id) {
+        String mode = resolvePlanMode();
+        long flowStart = System.currentTimeMillis();
         Optional<Schedule> optionalSchedule = scheduleDAO.findById(id);
-        if(optionalSchedule.isEmpty())
+        if(optionalSchedule.isEmpty()) {
+            logEvent(eventName(mode, "data_loaded"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - flowStart,
+                    "planId", id,
+                    "phase", "schedule_lookup",
+                    "result", "not_found"
+            ));
             return false;
+        }
 
         Schedule schedule = optionalSchedule.get();
         LocalDate startDate = LocalDate.ofEpochDay(schedule.getStartDate());
@@ -174,8 +263,16 @@ public class SchedulerController implements ISchedulerController {
 
         List<DoctorUffaPrioritySnapshot> doctorUffaPrioritySnapshot = doctorUffaPrioritySnapshotDAO.findAll();
         List<DoctorUffaPriority> doctorUffaPriorityList = doctorUffaPriorityDAO.findAll();
+        logEvent(eventName(mode, "data_loaded"), mode, Map.of(
+                "durationMs", System.currentTimeMillis() - flowStart,
+                "planId", id,
+                "phase", "priorities_loaded",
+                "prioritiesCount", doctorUffaPriorityList.size(),
+                "snapshotCount", doctorUffaPrioritySnapshot.size()
+        ));
 
         /* Restore priorities to snapshot */
+        long prioritiesRestoreStart = System.currentTimeMillis();
         for (DoctorUffaPrioritySnapshot dupSnapshot : doctorUffaPrioritySnapshot) {
             for (DoctorUffaPriority dup : doctorUffaPriorityList) {
                 if (dupSnapshot.getDoctor().equals(dup.getDoctor())) {
@@ -189,13 +286,79 @@ public class SchedulerController implements ISchedulerController {
                 }
             }
         }
+        logEvent(eventName(mode, "priorities_restored"), mode, Map.of(
+                "durationMs", System.currentTimeMillis() - prioritiesRestoreStart,
+                "planId", id,
+                "prioritiesCount", doctorUffaPriorityList.size()
+        ));
 
         //It is not allowed to remove a shift schedule in the past.
-        if(!removeSchedule(id))
+        if(!removeSchedule(id)) {
+            logEvent(eventName(mode, "remove_failed"), mode, Map.of(
+                    "durationMs", System.currentTimeMillis() - flowStart,
+                    "planId", id,
+                    "errorType", "REMOVE_SCHEDULE_FAILED"
+            ));
             return false;
+        }
+        logEvent(eventName(mode, "removed"), mode, Map.of(
+                "durationMs", System.currentTimeMillis() - flowStart,
+                "planId", id
+        ));
 
-        createSchedule(startDate,endDate, doctorUffaPriorityList, doctorUffaPrioritySnapshot);
+        Schedule newSchedule = createSchedule(startDate,endDate, doctorUffaPriorityList, doctorUffaPrioritySnapshot);
+        if (newSchedule != null && newSchedule.getId() != null) {
+            MDC.put("newPlanId", String.valueOf(newSchedule.getId()));
+        }
         return true;
+    }
+
+    private String resolvePlanMode() {
+        String mode = MDC.get("planMode");
+        return mode != null ? mode : "generate";
+    }
+
+    private String eventName(String mode, String baseEvent) {
+        return "plan_" + mode + "_" + baseEvent;
+    }
+
+    private void logEvent(String event, String mode, Map<String, Object> fields) {
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("event", event);
+        data.put("requestId", getRequestId());
+        data.put("mode", mode);
+        data.putAll(fields);
+        logger.info(formatLogMessage(data));
+    }
+
+    private String getRequestId() {
+        String requestId = MDC.get("requestId");
+        return requestId != null ? requestId : "unknown";
+    }
+
+    private String formatLogMessage(Map<String, Object> fields) {
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, Object> entry : fields.entrySet()) {
+            if (builder.length() > 0) {
+                builder.append(' ');
+            }
+            builder.append(entry.getKey()).append('=').append(formatValue(entry.getValue()));
+        }
+        return builder.toString();
+    }
+
+    private String formatValue(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof Number || value instanceof Boolean) {
+            return value.toString();
+        }
+        String text = value.toString();
+        if (text.contains(" ") || text.contains("=")) {
+            return '"' + text.replace("\"", "\\\"") + '"';
+        }
+        return text;
     }
 
     @Override
@@ -525,5 +688,3 @@ public class SchedulerController implements ISchedulerController {
     }
 
 }
-
-
