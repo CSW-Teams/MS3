@@ -3,6 +3,7 @@ package org.cswteams.ms3.filters;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.cswteams.ms3.control.login.LoginController;
+import org.cswteams.ms3.control.logout.JwtBlacklistService;
 import org.cswteams.ms3.utils.JwtUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,12 +26,14 @@ class JwtRequestFiltersTest {
     private JwtRequestFilters jwtRequestFilters;
     private JwtUtil jwtUtil;
     private LoginController loginController;
+    private JwtBlacklistService blacklistService;
 
     @BeforeEach
     void setUp() {
-        jwtRequestFilters = new JwtRequestFilters();
         jwtUtil = new JwtUtil();
         loginController = mock(LoginController.class);
+        blacklistService = mock(JwtBlacklistService.class);
+        jwtRequestFilters = new JwtRequestFilters(jwtUtil, loginController, blacklistService);
 
         ReflectionTestUtils.setField(jwtRequestFilters, "jwtUtil", jwtUtil);
         ReflectionTestUtils.setField(jwtRequestFilters, "loginController", loginController);
