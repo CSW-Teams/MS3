@@ -851,3 +851,118 @@ Questo flusso dimostra che:
 ```
 ● la UI è reattiva ma non predittiva
 ```
+
+## Microtask 4 — Aggiungere il tracciamento dei log del flusso backend per generazione/rigenerazione
+
+**Obiettivo**
+
+Introdurre log strutturati e correlabili per il flusso backend di generazione e rigenerazione
+dello schedulo, con una correlazione unica per request e con copertura dei passaggi chiave
+di orchestrazione (caricamento dati, vincoli/priorità, build, persistenza).
+
+**Cosa è stato implementato**
+
+```
+● Filter di correlazione richieste con header primario X-Request-Id (fallback X-Correlation-Id)
+● Inserimento requestId in MDC e echo di X-Request-Id nelle response
+● Log strutturati nei REST entrypoint generation/regeneration con eventi start/success/fail
+● Log strutturati nel SchedulerController per i passaggi chiave della pipeline
+● Campi di fase per distinguere i data load in rigenerazione
+● In rigenerazione, log di successo con originalPlanId e newPlanId (quando disponibile)
+```
+
+**Endpoint strumentati**
+
+```
+● POST /api/schedule/generation
+● POST /api/schedule/regeneration/id={id}
+```
+
+**Nomi eventi introdotti**
+
+```
+● plan_generate_start / plan_generate_success / plan_generate_failed
+● plan_regenerate_start / plan_regenerate_success / plan_regenerate_failed
+● plan_<mode>_concrete_shifts_built
+● plan_<mode>_data_loaded (con phase = schedule_lookup | priorities_loaded in rigenerazione)
+● plan_<mode>_builder_initialized
+● plan_<mode>_constraints_priorities_ready
+● plan_<mode>_schedule_built
+● plan_<mode>_schedule_saved
+● plan_<mode>_priorities_saved
+● plan_<mode>_persisted
+● plan_<mode>_priorities_restored
+● plan_<mode>_removed / plan_<mode>_remove_failed
+● plan_<mode>_start_rejected
+● plan_<mode>_failed
+```
+
+**Campi log principali**
+
+```
+● event (nome evento)
+● requestId (da X-Request-Id o generato)
+● mode = generate | regenerate
+● durationMs (su step e eventi finali)
+● planId, originalPlanId, newPlanId (quando applicabile)
+● phase (solo per data_loaded in rigenerazione)
+● counts: shiftsCount, concreteShiftsCount, constraintsCount, doctorsCount,
+  holidaysCount, doctorHolidaysCount, prioritiesCount, snapshotCount,
+  scocciaturaCount, savedPrioritiesCount, violatedConstraintsCount
+● errorType / errorCode (solo in failure)
+```
+
+**Tracce di esempio e riproduzione**
+
+```
+curl -X POST "http://localhost:8080/api/schedule/generation" \
+  -H "Authorization: Bearer <JWT>" \
+  -H "Content-Type: application/json" \
+  -H "X-Request-Id: req-gen-001" \
+  -d '{
+        "initialDay": 1,
+        "initialMonth": 2,
+        "initialYear": 2026,
+        "finalDay": 7,
+        "finalMonth": 2,
+        "finalYear": 2026
+      }'
+```
+
+```
+event=plan_generate_start requestId=req-gen-001 mode=generate startDate=2026-02-01 endDate=2026-02-07
+event=plan_generate_concrete_shifts_built requestId=req-gen-001 mode=generate durationMs=12 shiftsCount=6 concreteShiftsCount=42
+event=plan_generate_data_loaded requestId=req-gen-001 mode=generate durationMs=24 shiftsCount=6 concreteShiftsCount=42 constraintsCount=5 doctorsCount=20 holidaysCount=3 doctorHolidaysCount=10 prioritiesCount=20 snapshotCount=20 scocciaturaCount=4
+event=plan_generate_constraints_priorities_ready requestId=req-gen-001 mode=generate durationMs=2 constraintsCount=5 scocciaturaCount=4 prioritiesCount=20
+event=plan_generate_schedule_built requestId=req-gen-001 mode=generate durationMs=180 concreteShiftsCount=42 violatedConstraintsCount=0
+event=plan_generate_persisted requestId=req-gen-001 mode=generate durationMs=18 planId=101 savedPrioritiesCount=20
+event=plan_generate_success requestId=req-gen-001 mode=generate durationMs=220 planId=101 violatedConstraintsCount=0 result=accepted
+```
+
+```
+curl -X POST "http://localhost:8080/api/schedule/regeneration/id=101" \
+  -H "Authorization: Bearer <JWT>" \
+  -H "X-Request-Id: req-reg-001"
+```
+
+```
+event=plan_regenerate_start requestId=req-reg-001 mode=regenerate planId=101
+event=plan_regenerate_data_loaded requestId=req-reg-001 mode=regenerate durationMs=10 planId=101 phase=schedule_lookup result=ok
+event=plan_regenerate_data_loaded requestId=req-reg-001 mode=regenerate durationMs=21 planId=101 phase=priorities_loaded prioritiesCount=20 snapshotCount=20
+event=plan_regenerate_priorities_restored requestId=req-reg-001 mode=regenerate durationMs=3 planId=101 prioritiesCount=20
+event=plan_regenerate_removed requestId=req-reg-001 mode=regenerate durationMs=15 planId=101
+event=plan_regenerate_concrete_shifts_built requestId=req-reg-001 mode=regenerate durationMs=11 shiftsCount=6 concreteShiftsCount=42
+event=plan_regenerate_data_loaded requestId=req-reg-001 mode=regenerate durationMs=31 shiftsCount=6 concreteShiftsCount=42 constraintsCount=5 doctorsCount=20 holidaysCount=3 doctorHolidaysCount=10 prioritiesCount=20 snapshotCount=20 scocciaturaCount=4
+event=plan_regenerate_schedule_built requestId=req-reg-001 mode=regenerate durationMs=170 concreteShiftsCount=42 violatedConstraintsCount=0
+event=plan_regenerate_persisted requestId=req-reg-001 mode=regenerate durationMs=18 planId=102 savedPrioritiesCount=20
+event=plan_regenerate_success requestId=req-reg-001 mode=regenerate durationMs=240 originalPlanId=101 newPlanId=102 result=accepted
+```
+
+**Note / limitazioni**
+
+```
+● I log non includono payload o dati personali; vengono registrati solo ID e conteggi aggregati
+● L’header X-Request-Id viene sempre ri-echo nella response
+```
+
+**Testing non eseguito (non richiesto)**
