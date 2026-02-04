@@ -26,6 +26,14 @@ public class AiProtocolException extends RuntimeException {
         return new AiProtocolException(ErrorCategory.APPLICATION_SCHEMA, ErrorCode.TYPE_MISMATCH, message, cause);
     }
 
+    public static AiProtocolException transportFailure(String message, Throwable cause) {
+        return new AiProtocolException(ErrorCategory.TRANSPORT, ErrorCode.TRANSPORT_FAILURE, message, cause);
+    }
+
+    public static AiProtocolException timeout(String message, Throwable cause) {
+        return new AiProtocolException(ErrorCategory.TRANSPORT, ErrorCode.TIMEOUT, message, cause);
+    }
+
     public enum ErrorCategory { TRANSPORT, APPLICATION_SCHEMA, BUSINESS_DOMAIN }
-    public enum ErrorCode { INVALID_JSON, SCHEMA_MISMATCH, TYPE_MISMATCH }
+    public enum ErrorCode { INVALID_JSON, SCHEMA_MISMATCH, TYPE_MISMATCH, TRANSPORT_FAILURE, TIMEOUT }
 }
