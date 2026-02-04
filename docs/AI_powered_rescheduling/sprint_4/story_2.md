@@ -675,3 +675,37 @@ Se tutte le chiamate AI falliscono: **ritornare lo schedule standard** e segnala
 - All personal identifiers and sensitive attributes are excluded or pseudonymized.  
 - Free-text feedback is eliminated in favor of structured codes and scores.  
 - Payloads are minimized to the scheduling window and necessary role/constraint data only.  
+
+## Microtask 2.6 — Implementation recap (TOON serialization)
+
+**Summary**
+- Added a dedicated TOON serialization module under `org.cswteams.ms3.control.toon` with a pure builder (`ToonBuilder`) and a validated request context (`ToonRequestContext`).
+- Implemented pre-serialization validation (required fields, enum/ID integrity) and post-serialization validation (required sections + GDPR/PII guardrails) via `ToonValidator`.
+- Added unit tests for deterministic TOON output, validation failures, and GDPR/PII exclusions.
+
+**How to run tests**
+- `./mvnw test`
+
+**ADR (Microtask 2.6)**
+ADR: Introduced a dedicated TOON module under control/toon for isolation and testability.
+ADR: Builder input is a pure context object; no DAO or orchestration logic inside.
+ADR: Serialization follows the Story 2.3 TOON schema ordering for determinism.
+ADR: Shift IDs are composed as S_<shiftId>_<yyyyMMdd> to remain stable without DB IDs.
+ADR: Seniority maps to STRUCTURED or JUNIOR to match req_str/req_jun schema.
+ADR: Preferences are serialized as blocks with start=end dates and slot lists.
+ADR: Active constraints are passed in as precomputed rows; builder does not infer them.
+ADR: Feedbacks are serialized as reason codes + severity (no free text).
+ADR: Post-validation enforces GDPR/PII exclusions by scanning forbidden markers.
+ADR: Unit tests cover deterministic output, validation failures, and PII exclusion checks.
+
+**Note / Open points for Story 2.7 & Story 5**
+
+- The chosen `shift_id` format (`S_<shiftId>_<yyyyMMdd>`) is a deterministic, schema-level identifier intended for TOON/JSON exchange, not a direct database key.
+- Repository analysis shows that:
+  - `ConcreteShift.id` is a DB-generated Long and may be null at TOON build time.
+  - `(date + timeSlot)` is not guaranteed to be unique due to multiple medical services.
+- For this reason, Story 2.7 / Story 5 MUST introduce an explicit resolver layer that maps TOON `shift_id` strings to domain entities (`ConcreteShift` or `Shift`).
+- Any future change to the `shift_id` format must be coordinated across:
+  - TOON builder (Story 2),
+  - JSON deserialization (Story 2.7),
+  - backend orchestration and persistence (Story 5).
