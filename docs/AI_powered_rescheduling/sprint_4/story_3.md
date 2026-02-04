@@ -325,3 +325,8 @@ Questa sezione mappa le metriche direttamente sul **JSON Response** definito nel
 
 
 ## Microtask 3.7
+
+- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
+- Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
+- Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
+- Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.

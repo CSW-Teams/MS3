@@ -26,14 +26,12 @@ class JwtRequestFiltersTest {
     private JwtRequestFilters jwtRequestFilters;
     private JwtUtil jwtUtil;
     private LoginController loginController;
-    private JwtBlacklistService blacklistService;
 
     @BeforeEach
     void setUp() {
+        jwtRequestFilters = new JwtRequestFilters();
         jwtUtil = new JwtUtil();
         loginController = mock(LoginController.class);
-        blacklistService = mock(JwtBlacklistService.class);
-        jwtRequestFilters = new JwtRequestFilters(jwtUtil, loginController, blacklistService);
 
         ReflectionTestUtils.setField(jwtRequestFilters, "jwtUtil", jwtUtil);
         ReflectionTestUtils.setField(jwtRequestFilters, "loginController", loginController);
