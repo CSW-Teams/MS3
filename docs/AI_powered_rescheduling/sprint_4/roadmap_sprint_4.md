@@ -158,12 +158,12 @@
    - Preconditions: Microtask 1.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Data-to-metric matrix.
-3. **Implement metric aggregation + normalization utilities** (**3h, In progress Cantone, Capone, Scordo**)
+3. **Implement metric aggregation + normalization utilities** (**3h, Completed by Cantone, Capone, Scordo**)
    - Description: Code metric calculations, scaling, and normalization functions based on the defined formulas.
    - Preconditions: Microtasks 1–2.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Metric calculation utilities + unit tests.
-4. **Implement multidimensional priority scale config** (**3h, In progress Cantone, Capone, Scordo**)
+4. **Implement multidimensional priority scale config** (**3h, Completed by Cantone, Capone, Scordo**)
    - Description: Encode weighting/priority rules as configuration with defaults and override support.
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: None.
