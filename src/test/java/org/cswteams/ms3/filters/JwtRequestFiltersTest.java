@@ -36,7 +36,8 @@ class JwtRequestFiltersTest {
         jwtRequestFilters = new JwtRequestFilters(jwtUtil, loginController, jwtBlacklistService);
 
         when(jwtBlacklistService.isBlacklisted(anyString())).thenReturn(false);
-        when(jwtBlacklistService.doesUserHaveTokensBlacklistedAfterDate(anyString(), any())).thenReturn(false);
+        when(jwtBlacklistService.doesUserHaveTokensBlacklistedAfterDate(anyString(), any(Date.class)))
+                .thenReturn(false);
     }
 
     @AfterEach
