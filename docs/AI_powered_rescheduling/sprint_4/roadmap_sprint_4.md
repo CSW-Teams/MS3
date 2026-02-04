@@ -118,7 +118,7 @@
    - Preconditions: Microtasks 3–4.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: JSON parser + validation tests.
-8. **Implement AI client adapter (Gemma + Llama-70B)** (**2h, In progress Cantone, Capone, Scordo**)
+8. **Implement AI client adapter (Gemma + Llama-70B)** (**2h, In progress Cantone**)
    - Description: Implement configurable AI client interface and adapters for target models with timeout/retry handling.
    - Preconditions: Microtasks 1–4.
    - Parallel affinities: Backend orchestration (Story 5).
@@ -168,7 +168,7 @@
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: None.
    - Output artifact: Priority scale config + validation.
-5. **Implement decision algorithm service** (**3h**)
+5. **Implement decision algorithm service** (**3h, In progress Capone**)
    - Description: Build the algorithm that selects the preferred schedule using priority scale inputs.
    - Preconditions: Microtasks 3–4.
    - Parallel affinities: Backend orchestration (Story 5).
@@ -208,7 +208,7 @@
 **Sprint Timing**: **Before mid-sprint** (so UI concept can be demoed).
 
 **Microtasks**
-1. **Implement UI states & flows** (**2h**)
+1. **Implement UI states & flows** (**2h, In progress Scordo**)
    - Description: Implement loading, success, failure, and partial schedule states in the planner UI.
    - Preconditions: Story 1.
    - Parallel affinities: Backend orchestration (Story 5).
