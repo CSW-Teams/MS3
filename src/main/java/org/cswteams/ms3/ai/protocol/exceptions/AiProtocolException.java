@@ -34,6 +34,23 @@ public class AiProtocolException extends RuntimeException {
         return new AiProtocolException(ErrorCategory.TRANSPORT, ErrorCode.TIMEOUT, message, cause);
     }
 
+    public static AiProtocolException businessFailure(String message) {
+        return new AiProtocolException(ErrorCategory.BUSINESS_DOMAIN, ErrorCode.BUSINESS_FAILURE, message, null);
+    }
+
+    public static AiProtocolException partialSuccess(String message) {
+        return new AiProtocolException(ErrorCategory.BUSINESS_DOMAIN, ErrorCode.PARTIAL_SUCCESS, message, null);
+    }
+
     public enum ErrorCategory { TRANSPORT, APPLICATION_SCHEMA, BUSINESS_DOMAIN }
-    public enum ErrorCode { INVALID_JSON, SCHEMA_MISMATCH, TYPE_MISMATCH, TRANSPORT_FAILURE, TIMEOUT }
+
+    public enum ErrorCode {
+        INVALID_JSON,
+        SCHEMA_MISMATCH,
+        TYPE_MISMATCH,
+        TRANSPORT_FAILURE,
+        TIMEOUT,
+        BUSINESS_FAILURE,
+        PARTIAL_SUCCESS
+    }
 }
