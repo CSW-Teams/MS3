@@ -1,9 +1,5 @@
 # Documentazione Tecnica del Modulo di Scheduling (Sprint 4)
 
-Questo documento consolida i riferimenti alla documentazione tecnica di base relativa al modulo di scheduling, focalizzandosi sugli aspetti analizzati nei Microtask 1.1, 1.2 e 1.3. L'obiettivo è fornire un punto di accesso rapido per sviluppatori e analisti che desiderano comprendere il funzionamento del sistema di generazione e gestione degli schedule.
-
----
-
 ## 1. Microtask 1.1: Backend - Scheduling Flow (Baseline)
 
 Descrizione dettagliata del flusso di generazione e rigenerazione degli schedule, dei componenti principali e delle responsabilità del backend.
