@@ -5,7 +5,7 @@
 - [x] ~~1.3 \- Federico C.~~  
 - [x] ~~1.4 Luca~~  
 - [ ] 1.5 Andrea  
-- [ ] 1.6 Federico S.
+- [x] 1.6 Federico S.
 
 \---
 
