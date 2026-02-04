@@ -53,7 +53,7 @@
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Endpoint regression tests.
-6. **Document baseline flow in code comments + README notes** (**2h, In progress Scordo**)
+6. **Document baseline flow in code comments + README notes** (**2h, Completed Scordo**)
    - Description: Add code-level references pointing to the baseline flow and planner UI touchpoints.
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: Documentation (Story 6).
