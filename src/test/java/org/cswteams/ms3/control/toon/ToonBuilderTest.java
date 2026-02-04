@@ -17,6 +17,7 @@ import org.cswteams.ms3.enums.TimeSlot;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -49,19 +50,22 @@ class ToonBuilderTest {
         Preference preference = new Preference(periodStart, Set.of(TimeSlot.MORNING, TimeSlot.NIGHT), List.of(doctor));
         doctor.getPreferenceList().add(preference);
 
-        Shift shift = new Shift();
-        shift.setId(101L);
-        shift.setTimeSlot(TimeSlot.NIGHT);
-        shift.setStartTime(LocalTime.of(20, 0));
-        shift.setDuration(Duration.ofMinutes(720));
         Task task = new Task(TaskEnum.CLINIC);
         MedicalService service = new MedicalService(List.of(task), "Ward");
-        shift.setMedicalService(service);
         QuantityShiftSeniority quantity = new QuantityShiftSeniority(Map.of(
                 Seniority.STRUCTURED, 2,
                 Seniority.SPECIALIST_JUNIOR, 1
         ), task);
-        shift.setQuantityShiftSeniority(List.of(quantity));
+        Shift shift = new Shift(
+                101L,
+                TimeSlot.NIGHT,
+                LocalTime.of(20, 0),
+                Duration.ofMinutes(720),
+                Set.of(DayOfWeek.MONDAY),
+                service,
+                List.of(quantity),
+                List.of()
+        );
 
         ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
 
@@ -122,11 +126,12 @@ class ToonBuilderTest {
         LocalDate periodEnd = LocalDate.of(2026, 5, 21);
         Doctor doctor = newDoctor(1L, Seniority.SPECIALIST_JUNIOR);
 
-        Shift shift = new Shift();
-        shift.setId(1L);
-        shift.setTimeSlot(TimeSlot.MORNING);
-        shift.setStartTime(LocalTime.of(8, 0));
-        shift.setDuration(Duration.ofMinutes(360));
+        Shift shift = makeShift(
+                1L,
+                TimeSlot.MORNING,
+                LocalTime.of(8, 0),
+                Duration.ofMinutes(360)
+        );
         ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
 
         ToonFeedback feedback = new ToonFeedback("S_UNKNOWN", doctor.getId(), "TOO_LONG", 3);
@@ -153,11 +158,12 @@ class ToonBuilderTest {
         LocalDate periodEnd = LocalDate.of(2026, 5, 21);
         Doctor doctor = newDoctor(2L, Seniority.SPECIALIST_SENIOR);
 
-        Shift shift = new Shift();
-        shift.setId(2L);
-        shift.setTimeSlot(TimeSlot.AFTERNOON);
-        shift.setStartTime(LocalTime.of(14, 0));
-        shift.setDuration(Duration.ofMinutes(360));
+        Shift shift = makeShift(
+                2L,
+                TimeSlot.AFTERNOON,
+                LocalTime.of(14, 0),
+                Duration.ofMinutes(360)
+        );
         ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
 
         DoctorUffaPriority priority = new DoctorUffaPriority();
@@ -185,11 +191,12 @@ class ToonBuilderTest {
         LocalDate periodEnd = LocalDate.of(2026, 5, 21);
         Doctor doctor = newDoctor(3L, Seniority.STRUCTURED);
 
-        Shift shift = new Shift();
-        shift.setId(3L);
-        shift.setTimeSlot(TimeSlot.MORNING);
-        shift.setStartTime(LocalTime.of(8, 0));
-        shift.setDuration(Duration.ofMinutes(360));
+        Shift shift = makeShift(
+                3L,
+                TimeSlot.MORNING,
+                LocalTime.of(8, 0),
+                Duration.ofMinutes(360)
+        );
         ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
 
         ToonRequestContext context = new ToonRequestContext(
@@ -226,6 +233,24 @@ class ToonBuilderTest {
         );
         setField(doctor, "id", id);
         return doctor;
+    }
+
+    private Shift makeShift(Long id, TimeSlot timeSlot, LocalTime startTime, Duration duration) {
+        Task task = new Task(TaskEnum.CLINIC);
+        MedicalService service = new MedicalService(List.of(task), "Ward");
+        QuantityShiftSeniority quantity = new QuantityShiftSeniority(Map.of(
+                Seniority.STRUCTURED, 1
+        ), task);
+        return new Shift(
+                id,
+                timeSlot,
+                startTime,
+                duration,
+                Set.of(DayOfWeek.MONDAY),
+                service,
+                List.of(quantity),
+                List.of()
+        );
     }
 
     private void setField(Object target, String fieldName, Object value) {
