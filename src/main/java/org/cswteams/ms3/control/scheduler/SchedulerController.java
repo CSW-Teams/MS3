@@ -13,6 +13,7 @@ import org.cswteams.ms3.dto.ScheduleDTO;
 import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
 import org.cswteams.ms3.dto.user.UserCreationDTO;
 import org.cswteams.ms3.entity.*;
+import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.exception.ConcreteShiftException;
@@ -27,6 +28,23 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 
 // TODO: Generate concrete shift controller from this class
+/**
+ * {@code SchedulerController} è un {@code @Service} e rappresenta l'orchestratore principale della pipeline di generazione e gestione degli schedule.
+ * È responsabile di:
+ *  - Raccogliere dati dai vari DAO (Data Access Object)</li>
+ *  - Costruire il contesto necessario per la schedulazione</li>
+ *  - Invocare il motore {@link ScheduleBuilder} per la creazione dello schedule</li>
+ *  - Persistere i risultati delle operazioni</li>
+ * Agisce come ponte tra il layer REST ({@link ScheduleRestEndpoint}) e il motore di scheduling vero e proprio ({@link ScheduleBuilder}).
+ *
+ * Per una descrizione dettagliata del flusso di schedulazione e dei componenti coinvolti, si vedano:
+ * @see docs/scheduling_flow/README.md
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-11--backend
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_13-implementazione-schedulercontroller
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_12-application-orchestrator-ischedulercontroller
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+ */
+
 @Service
 public class SchedulerController implements ISchedulerController {
     private static final Logger logger = LoggerFactory.getLogger(SchedulerController.class);
@@ -88,6 +106,17 @@ public class SchedulerController implements ISchedulerController {
     }
 
 
+    /**
+     * Implementazione della versione "proxy" del metodo {@code createSchedule(start, end)}.
+     * Questo metodo carica le priorità correnti e gli snapshot delle priorità dei medici
+     * e poi invoca la variante completa {@link #createSchedule(LocalDate, LocalDate, List, List)}
+     * per eseguire la pipeline di generazione dello schedule.
+     *
+     * @param startDate Data di inizio dello schedule.
+     * @param endDate Data di fine dello schedule.
+     * @return Lo schedule generato o {@code null} se la generazione non è possibile.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_32-createschedulestart-end-proxy
+     */
     @Override
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate) {
@@ -97,6 +126,22 @@ public class SchedulerController implements ISchedulerController {
     }
 
 
+
+    /**
+     * Implementazione completa della pipeline di generazione di uno schedule di turni.
+     * Questo metodo è il cuore dell'orchestratore {@code SchedulerController} e coordina
+     * l'intero processo di creazione dello schedule, dalla raccolta dati alla persistenza.
+     *
+     * @param startDate Data di inizio dello schedule.
+     * @param endDate Data di fine dello schedule.
+     * @param doctorUffaPriorityList Lista delle priorità UFFA attuali dei medici.
+     * @param snapshot Snapshot delle priorità UFFA per scopi di rigenerazione.
+     * @return Lo schedule generato, o {@code null} se la generazione fallisce o non è consentita.
+     * @throws IllegalScheduleException se lo schedule generato non rispetta i vincoli.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_33-createschedulestart-end-priorities-snapshot-full-pipeline
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_2-data-sources-toccate-dao-durante-la-generazione
+     */
     @Override
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot)  {
@@ -200,6 +245,10 @@ public class SchedulerController implements ISchedulerController {
             ));
 
             long buildStart = System.currentTimeMillis();
+            // [BASELINE-FLOW] AI HOOK:
+            // Questo è il punto di biforcazione.
+            // Attualmente si chiama il builder deterministico.
+            // Qui in futuro: if (mode == AI) callAiAgent() else scheduleBuilder.build().
             Schedule schedule = this.scheduleBuilder.build();
             logEvent(eventName(mode, "schedule_built"), mode, Map.of(
                     "durationMs", System.currentTimeMillis() - buildStart,
@@ -242,11 +291,22 @@ public class SchedulerController implements ISchedulerController {
 
     }
 
+    /**
+     * Esegue la rigenerazione di uno schedule esistente.
+     * Questa operazione carica lo schedule specificato, ripristina le priorità dei medici
+     * allo stato dello snapshot, elimina lo schedule precedente e ne genera uno nuovo
+     * con lo stesso intervallo di date.
+     *
+     * @param id L'ID dello schedule da rigenerare.
+     * @return {@code true} se la rigenerazione ha avuto successo, {@code false} altrimenti.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_42-recreatescheduleid
+     */
     @Override
     public boolean recreateSchedule(long id) {
         String mode = resolvePlanMode();
         long flowStart = System.currentTimeMillis();
         Optional<Schedule> optionalSchedule = scheduleDAO.findById(id);
+
         if(optionalSchedule.isEmpty()) {
             logEvent(eventName(mode, "data_loaded"), mode, Map.of(
                     "durationMs", System.currentTimeMillis() - flowStart,

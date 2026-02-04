@@ -18,9 +18,13 @@ import { t } from "i18next";
 import {panic} from "../../components/common/Panic";
 import {Container} from "shards-react";
 
-/*
-* Schermata che permette di generare un nuovo schedule
-*/
+/**
+ * @see docs/scheduling_flow/README.md
+ * This is the main UI component for the Planner to manage schedules.
+ * It displays the list of existing schedules and provides the entry point for creating a new one
+ * via the TemporaryDrawerSchedule component. It handles schedule deletion and regeneration,
+ * reflecting a domain rule that only the latest schedule can be regenerated.
+ */
 export class SchedulerGeneratorView extends React.Component{
 
     constructor(props){

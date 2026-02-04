@@ -13,7 +13,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * All the information about priority levels on the queues of the doctors.
+ * Incapsula tutte le informazioni sui livelli di priorità ("uffa") di un medico
+ * per le diverse code di assegnazione (GENERAL, LONG_SHIFT, NIGHT).
+ * Il sistema delle priorità UFFA mantiene, per ogni medico, tre code indipendenti.
+ * Ogni coda ha un valore persistente e un valore "parziale" usato per ordinare i candidati.
+ *
+ * Fa parte della "Pipeline priorità (UFFA/scocciatura)" (Microtask 1.2).
+ *
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
  */
 @Entity
 @Table(name = "doctor_uffa_priority")
@@ -34,36 +41,42 @@ public class DoctorUffaPriority {
     @GeneratedValue
     private Long id;
 
-    /** Doctor which the Uffa priority refers to */
+    /** Il {@link Doctor medico} a cui si riferisce la priorità Uffa. */
     @OneToOne
     @NotNull
     @JoinColumn(name = "doctor_ms3_tenant_user_id", referencedColumnName = "ms3_tenant_user_id")
     private Doctor doctor;
 
-    /** Current schedule */
+    /** Lo {@link Schedule schedule} corrente a cui sono associate le priorità. */
     @OneToOne
     @JoinColumn(name = "schedule_schedule_id", referencedColumnName = "schedule_id")
     private Schedule schedule;
 
+    /** Priorità parziale per la coda {@link PriorityQueueEnum#GENERAL}. Utilizzata per l'ordinamento temporaneo durante la generazione. */
     @Column(name = "partial_general_priority")
     private int partialGeneralPriority = 0;
 
+    /** Priorità persistente per la coda {@link PriorityQueueEnum#GENERAL}. */
     @Column(name = "general_priority")
     private int generalPriority = 0;
 
+    /** Priorità parziale per la coda {@link PriorityQueueEnum#LONG_SHIFT}. Utilizzata per l'ordinamento temporaneo. */
     @Column(name = "partial_long_shift_priority")
     private int partialLongShiftPriority = 0;
 
+    /** Priorità persistente per la coda {@link PriorityQueueEnum#LONG_SHIFT}. */
     @Column(name = "long_shift_priority")
     private int longShiftPriority = 0;
 
+    /** Priorità parziale per la coda {@link PriorityQueueEnum#NIGHT}. Utilizzata per l'ordinamento temporaneo. */
     @Column(name = "partial_night_priority")
     private int partialNightPriority = 0;
 
+    /** Priorità persistente per la coda {@link PriorityQueueEnum#NIGHT}. */
     @Column(name = "night_priority")
     private int nightPriority = 0;
 
-    /** All the concrete shifts assigned to the doctor in the current schedule */
+    /** Tutti i {@link ConcreteShift turni concreti} assegnati al medico nello schedule corrente. Cache per ottimizzazione. */
     @Transient
     List<ConcreteShift> assegnazioniTurnoCache;
 
@@ -87,7 +100,11 @@ public class DoctorUffaPriority {
     }
 
 
-    /** This method returns a ConcreteShift list for the current schedule. **/
+    /**
+     * Restituisce una lista di {@link ConcreteShift turni concreti} assegnati al medico nello {@link Schedule schedule} corrente.
+     * Questa lista viene inizializzata e memorizzata nella cache al primo accesso.
+     * @return Lista di turni concreti assegnati al medico.
+     */
     public List<ConcreteShift> getAssegnazioniTurnoCache(){
 
         if (assegnazioniTurnoCache == null){
@@ -105,7 +122,11 @@ public class DoctorUffaPriority {
 
     }
 
-    /** This method adds (in order) the new contrete shift to the concrete shifts list related to the referring doctor. **/
+    /**
+     * Aggiunge (in ordine cronologico) il nuovo {@link ConcreteShift turno concreto} alla lista
+     * dei turni già assegnati al medico.
+     * @param newConcreteShift Il nuovo turno concreto da aggiungere.
+     */
     public void addConcreteShift(ConcreteShift newConcreteShift){
         List<ConcreteShift> concreteShiftList = getAssegnazioniTurnoCache();
         int idInsert = concreteShiftList.size();
@@ -119,6 +140,15 @@ public class DoctorUffaPriority {
         concreteShiftList.add(idInsert,newConcreteShift);
     }
 
+    /**
+     * Aggiorna il valore persistente della priorità ("uffa") per una specifica coda,
+     * copiando il valore della priorità parziale.
+     * Questo metodo è chiamato quando un medico viene scelto per un turno,
+     * aggiornando i valori "persistenti" della coda (Microtask 1.2).
+     *
+     * @param pq La {@link PriorityQueueEnum coda di priorità} da aggiornare (GENERAL, LONG_SHIFT, NIGHT).
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+     */
     public void updatePriority(PriorityQueueEnum pq) {  //saveUffaTemp() counterpart
 
         switch(pq) {
@@ -138,6 +168,18 @@ public class DoctorUffaPriority {
 
     }
 
+    /**
+     * Aggiorna il valore della priorità parziale per una specifica coda, applicando un delta
+     * e assicurandosi che il nuovo valore rientri nei limiti superiore e inferiore.
+     * Questo metodo è chiamato per calcolare un delta di "uffa" per ciascun medico,
+     * aggiornando i valori "parziali" della coda interessata (Microtask 1.2).
+     *
+     * @param priorityDelta Il delta di priorità da applicare.
+     * @param pq La {@link PriorityQueueEnum coda di priorità} da aggiornare (GENERAL, LONG_SHIFT, NIGHT).
+     * @param upperBound Limite superiore per il valore della priorità.
+     * @param lowerBound Limite inferiore per il valore della priorità.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+     */
     public void updatePartialPriority(int priorityDelta, PriorityQueueEnum pq, int upperBound, int lowerBound) {  //addUffaTemp() counterpart
         int newPartialPriority;
 

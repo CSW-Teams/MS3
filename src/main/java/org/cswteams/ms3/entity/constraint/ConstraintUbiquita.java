@@ -9,13 +9,27 @@ import javax.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * Implementa il vincolo di ubiquità ({@code ConstraintUbiquita}).
+ * Questo vincolo impedisce sovrapposizioni temporali tra i turni assegnati allo stesso medico
+ * (nessuna intersezione di finestre temporali).
+ *
+ * Fa parte del "Catalogo vincoli attivi" (Microtask 1.2).
+ *
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+ */
 @Entity
 public class ConstraintUbiquita extends ConstraintAssegnazioneTurnoTurno {
 
     /**
-     * This method checks if Ubiquita constraint is respected while inserting a new concrete shift into a schedule.
-     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
-     * @throws ViolatedConstraintException Exception thrown if the constraint is violated
+     * Verifica se il vincolo di ubiquità è rispettato quando si tenta di assegnare un nuovo
+     * {@link ConcreteShift turno concreto} a un medico. Il vincolo è violato se il turno proposto
+     * si sovrappone temporalmente con un turno già assegnato al medico.
+     *
+     * @param context Oggetto {@link ContextConstraint} che comprende il nuovo turno concreto da assegnare
+     *                e le informazioni sullo stato del medico nello schedule corrispondente.
+     * @throws ViolatedConstraintException Eccezione lanciata se il vincolo di ubiquità è violato,
+     *                                     indicando una sovrapposizione di turni.
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {

@@ -20,6 +20,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Questo è l'entry point REST per tutte le operazioni di scheduling (generazione, rigenerazione, eliminazione e lettura).
+ * Agisce come un livello sottile, validando gli input di base e delegando tutta la logica di business a {@link ISchedulerController}.
+ *
+ * Durante le operazioni di generazione e rigenerazione, restituisce codici di stato HTTP all'interfaccia utente
+ * piuttosto che l'intero payload dello schedule, come descritto nell'analisi dell'interfaccia utente (Microtask 1.3).
+ *
+ * Per maggiori dettagli sul flusso di schedulazione e i punti di contatto con la UI, si veda:
+ * @see docs/scheduling_flow/README.md
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-13-analisi-delle-superfici-ui-per-la-schedulazione-planner
+ */
 @RestController
 @RequestMapping("/schedule/")
 public class ScheduleRestEndpoint {
@@ -30,9 +41,26 @@ public class ScheduleRestEndpoint {
     @Autowired
     private ISchedulerController schedulerController;
 
-    /*
-     * This method is invoked by the frontend to request a new shift schedule in the range of
-     * dates passed as parameters.
+    /**
+     * Questo metodo è invocato dal frontend per richiedere la generazione di un nuovo schedule di turni
+     * nell'intervallo di date passato come parametro.
+     *
+     * Flusso UI-Backend (Microtask 1.3 - Generazione dello schedulo):
+     * 1. Il Planner apre la drawer tramite il pulsante "Create schedule".
+     * 2. Il componente `TemporaryDrawerSchedulo` (o `BottomViewAggiungiSchedulazione`) raccoglie `dataInizio` e `dataFine`.
+     * 3. Alla conferma, viene invocato `AssegnazioneTurnoAPI.postGenerationSchedule(dataInizio, dataFine)`.
+     * 4. Il metodo costruisce un payload e invia la richiesta a `POST /api/schedule/generation`.
+     *
+     * Gestione del risultato (Microtask 1.3):
+     * Il frontend non riceve lo schedulo generato, ma interpreta esclusivamente lo status HTTP:
+     * - `202 ACCEPTED`: Schedulo creato correttamente.
+     * - `206 PARTIAL_CONTENT`: Schedulo incompleto (con vincoli violati).
+     * - `406 NOT_ACCEPTABLE`: Schedulo duplicato o non generabile.
+     * - `400 BAD_REQUEST`: Errore generico (es. parametri non validi).
+     *
+     * @param gs DTO contenente le date di inizio e fine per la generazione dello schedule.
+     * @return ResponseEntity con lo stato HTTP che indica l'esito dell'operazione.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-13-analisi-delle-superfici-ui-per-la-schedulazione-planner
      */
     @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "generation")
@@ -86,8 +114,26 @@ public class ScheduleRestEndpoint {
         }
     }
 
-    /*
-     * This method is invoked by the frontend to request a regeneration of an existing shift schedule.
+    /**
+     * Questo metodo è invocato dal frontend per richiedere la rigenerazione di uno schedule di turni esistente.
+     *
+     * Regole UI codificate (Microtask 1.3):
+     * Nel codice frontend è esplicitamente codificata la regola: "Solo l’ultimo schedulo può essere rigenerato."
+     * Questo vincolo anticipa un concetto di "schedulo corrente" e sarà rilevante per il confronto multi-schedulo AI.
+     *
+     * Flusso UI-Backend (Microtask 1.3):
+     * 1. Il client invia `POST /api/schedule/regeneration/id={id}`.
+     * 2. Il REST chiama `schedulerController.recreateSchedule(id)`.
+     *
+     * Gestione del risultato (Microtask 1.3):
+     * Il frontend interpreta lo status HTTP:
+     * - `202 ACCEPTED`: Se la rigenerazione ha avuto successo.
+     * - `417 EXPECTATION_FAILED`: Se la rigenerazione fallisce.
+     * - `400 BAD_REQUEST`: Su eccezione o parametri errati.
+     *
+     * @param id L'ID dello schedule da rigenerare.
+     * @return ResponseEntity con lo stato HTTP che indica l'esito dell'operazione.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-13-analisi-delle-superfici-ui-per-la-schedulazione-planner
      */
     @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "regeneration/id={id}")
@@ -138,8 +184,12 @@ public class ScheduleRestEndpoint {
         }
     }
 
-    /*
-     * This method is invoked to retrieve all the existing shift schedules.
+    /**
+     * Questo metodo è invocato per recuperare tutti gli schedule di turni esistenti.
+     * Utilizzato dalla UI per popolare la lista degli schedule disponibili, ad esempio nella `SchedulerGeneratorView`.
+     *
+     * @return ResponseEntity contenente una lista di {@link ScheduleDTO} e lo stato HTTP.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-13-analisi-delle-superfici-ui-per-la-schedulazione-planner
      */
     @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.GET)
@@ -175,8 +225,11 @@ public class ScheduleRestEndpoint {
 
     }
 
-    /*
-     * This method is invoked to retrieve the illegal shift schedules.
+    /**
+     * Questo metodo è invocato per recuperare gli schedule di turni che contengono violazioni.
+     * La UI può usarlo per mostrare all'utente gli schedule "parziali" o "illegali" che sono stati generati.
+     *
+     * @return ResponseEntity contenente una lista di {@link ScheduleDTO} che rappresentano schedule illegali e lo stato HTTP.
      */
     @PreAuthorize("hasAnyRole('DOCTOR', 'PLANNER', 'CONFIGURATOR')")
     @RequestMapping(method = RequestMethod.GET,path = "illegals")
@@ -187,8 +240,20 @@ public class ScheduleRestEndpoint {
 
     }
 
-    /*
-     * This method is invoked to delete an existing shift schedule.
+    /**
+     * Questo metodo è invocato per eliminare uno schedule di turni esistente.
+     *
+     * Flusso UI (Microtask 1.3 - Eliminazione schedulo):
+     * 1. Viene mostrata una loading overlay.
+     * 2. Viene inviata una richiesta DELETE a questo endpoint.
+     * 3. La UI reagisce in base allo status HTTP (200 OK, 400 BAD_REQUEST, 417 EXPECTATION_FAILED).
+     * 4. La lista degli schedule viene ricaricata tramite `componentDidMount()`.
+     *
+     * Non sono presenti nella UI funzionalità di undo o soft delete.
+     *
+     * @param id L'ID dello schedule da eliminare.
+     * @return ResponseEntity con lo stato HTTP che indica l'esito dell'operazione.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-13-analisi-delle-superfici-ui-per-la-schedulazione-planner
      */
     @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.DELETE, path = "id={id}")

@@ -13,7 +13,13 @@ import java.lang.Math;
 import java.util.*;
 
 /**
- * This class manages all the aspects concerning the uffa prioriy levels.
+ * Gestisce tutti gli aspetti relativi ai livelli di priorità "uffa" (o "scocciatura") dei medici.
+ * Questo controller è responsabile del calcolo, dell'aggiornamento, dell'ordinamento e della
+ * normalizzazione delle priorità dei medici in base alle assegnazioni dei turni.
+ *
+ * Fa parte della "Pipeline priorità (UFFA/scocciatura)" (Microtask 1.2).
+ *
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
  */
 public class ControllerScocciatura {
 
@@ -22,6 +28,15 @@ public class ControllerScocciatura {
     private final int lowerBound;
 
 
+    /**
+     * Costruttore del {@code ControllerScocciatura}. Inizializza le scocciature e legge i valori
+     * di {@code upperBound} e {@code lowerBound} per i livelli di priorità dal file di configurazione
+     * {@code priority.properties}.
+     *
+     * @param scocciature Lista delle {@link Scocciatura scocciature} da gestire.
+     * @throws RuntimeException se il file {@code priority.properties} non può essere letto.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+     */
     public ControllerScocciatura(List<Scocciatura> scocciature) {
         this.scocciature = scocciature;
 
@@ -43,11 +58,17 @@ public class ControllerScocciatura {
 
 
     /**
-     * This method calculates the variation of priority level for a doctor assigned to a specific concrete shift.
-     * Then, it updates the temporary values of priority level.
-     * @param allDoctorUffaPriority State of the doctors with the priority levels for the three queues
-     * @param concreteShift Concrete shift which causes the variation of the temporary value of one priority level
-     * @param pq Priority queue on which the temporary value of the priority level has to be updated
+     * Calcola la variazione del livello di priorità ("uffa") per ciascun {@link Doctor medico}
+     * in relazione all'assegnazione a un {@link ConcreteShift turno concreto}.
+     * Successivamente, aggiorna i valori "parziali" della priorità per la coda specificata.
+     *
+     * Questo metodo è chiamato per calcolare un delta di "uffa" per ciascun medico,
+     * aggiornando i valori parziali della coda interessata (Microtask 1.2).
+     *
+     * @param allDoctorUffaPriority Stato dei medici con i livelli di priorità per le tre code.
+     * @param concreteShift {@link ConcreteShift Turno concreto} che causa la variazione del valore temporaneo di una priorità.
+     * @param pq La {@link PriorityQueueEnum coda di priorità} su cui aggiornare il valore temporaneo della priorità.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
      */
     public void updatePriorityDoctors(List<DoctorUffaPriority> allDoctorUffaPriority, ConcreteShift concreteShift, PriorityQueueEnum pq){
         int priorityDelta;
@@ -64,9 +85,12 @@ public class ControllerScocciatura {
 
 
     /**
-     * This method orders the doctors list (the DoctorUffaPriority list) on the base of the temporary value of the priority level of one queue.
-     * @param allDoctorUffaPriority State of the doctors with the priority levels for the three queues
-     * @param pq Priority queue on which the temporary value of the priority level has to be updated
+     * Ordina la lista dei medici (lista di {@link DoctorUffaPriority}) in base al valore
+     * temporaneo del livello di priorità di una specifica coda.
+     *
+     * @param allDoctorUffaPriority Stato dei medici con i livelli di priorità per le tre code.
+     * @param pq La {@link PriorityQueueEnum coda di priorità} su cui basare l'ordinamento.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
      */
     public void orderByPriority(List<DoctorUffaPriority> allDoctorUffaPriority, PriorityQueueEnum pq){
 
@@ -94,10 +118,17 @@ public class ControllerScocciatura {
 
 
     /**
-     * This method calculates the variation of the priority level for a doctor who has to be assigned to a specific concrete shift
-     * considering all the annoyances.
-     * @param contestoScocciatura Instance comprehending the useful information to calculate the right variation of uffa priority level
-     * @return Total uffa priority variation due to the assignment to the concrete shift included in constestoScocciatura
+     * Calcola la variazione complessiva del livello di priorità ("uffa") per un medico
+     * che deve essere assegnato a un {@link ConcreteShift turno concreto}, considerando tutte le {@link Scocciatura scocciature} applicabili.
+     *
+     * Le "scocciature" che generano i delta sono entità persistenti: penalità per giorno/time slot
+     * (es. weekend o fasce specifiche), per desiderata non rispettate, e per festività/fasce orarie.
+     * Il delta complessivo è la somma dei pesi delle scocciature applicabili al contesto corrente (Microtask 1.2).
+     *
+     * @param contestoScocciatura Istanza {@link ContestoScocciatura} che comprende le informazioni
+     *                            utili per calcolare la variazione di priorità.
+     * @return Variazione totale della priorità ("uffa") dovuta all'assegnazione al turno concreto.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
      */
     public int calcolaUffaComplessivoUtenteAssegnazione(ContestoScocciatura contestoScocciatura){
         int uffa = 0;
@@ -111,9 +142,16 @@ public class ControllerScocciatura {
 
 
     /**
-     * This method normalizes the priority level foreach doctor and foreach queue in a way such that the minimum priority level
-     * for a particular queue turns 0 and other doctors' priority levels are subtracted by the same quantity.
-     * @param allDoctorUffaPriority DoctorUffaPriority instances with the priority levels to be normalized
+     * Normalizza il livello di priorità per ogni medico e per ogni coda, in modo che il livello
+     * di priorità minimo per una particolare coda diventi 0 e i livelli di priorità degli altri
+     * medici vengano sottratti della stessa quantità.
+     *
+     * Questo assicura che il minimo diventi 0, se il controller scocciatura è disponibile
+     * (Microtask 1.2).
+     *
+     * @param allDoctorUffaPriority {@link DoctorUffaPriority Istanza di DoctorUffaPriority}
+     *                              con i livelli di priorità da normalizzare.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
      */
     public void normalizeUffaPriority(List<DoctorUffaPriority> allDoctorUffaPriority) {
 
