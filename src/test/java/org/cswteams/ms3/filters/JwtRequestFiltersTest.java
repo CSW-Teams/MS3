@@ -26,15 +26,17 @@ class JwtRequestFiltersTest {
     private JwtRequestFilters jwtRequestFilters;
     private JwtUtil jwtUtil;
     private LoginController loginController;
+    private JwtBlacklistService jwtBlacklistService;
 
     @BeforeEach
     void setUp() {
-        jwtRequestFilters = new JwtRequestFilters();
         jwtUtil = new JwtUtil();
         loginController = mock(LoginController.class);
+        jwtBlacklistService = mock(JwtBlacklistService.class);
+        jwtRequestFilters = new JwtRequestFilters(jwtUtil, loginController, jwtBlacklistService);
 
-        ReflectionTestUtils.setField(jwtRequestFilters, "jwtUtil", jwtUtil);
-        ReflectionTestUtils.setField(jwtRequestFilters, "loginController", loginController);
+        when(jwtBlacklistService.isBlacklisted(anyString())).thenReturn(false);
+        when(jwtBlacklistService.doesUserHaveTokensBlacklistedAfterDate(anyString(), any())).thenReturn(false);
     }
 
     @AfterEach

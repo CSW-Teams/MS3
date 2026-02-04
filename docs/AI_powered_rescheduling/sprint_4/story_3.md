@@ -259,72 +259,6 @@ This document maps the metrics defined in the GQM+S plan to their potential data
 | **M3.4 \- Uffa Balance Improvement** | Pre vs Post variance of Uffa Points. | **AI JSON Response** (metrics.uffa\_balance). | **Action:** Persist this metric to validate AI effectiveness over manual scheduling. |
 | **M3.5 \- Computation Time** | Time taken to generate schedule. | AIService.java (System logs). | **Action:** Measure latency to ensure API timeout compliance. |
 
-## Microtask 3.3
-
-# **Artifact: Data-to-Metric Mapping Matrix**
-
-**Descrizione:** Questo documento mappa ogni variabile delle formule GQM direttamente sugli attributi delle entità del sistema MS3 (esistenti o da creare).
-
-## **Legenda Mappatura**
-
-* **\[E\] Existing:** Il campo esiste già nel dominio.  
-* **\[N\] New:** Il campo o l'entità deve essere creato (Story 4/5).  
-* **\[C\] Calculated:** Valore derivato a runtime.
-
----
-
-## **1\. Livello 1: Business Metrics (HR & Salute)**
-
-| ID | Variabile Formula | Entità Sorgente | Campo / Attributo | Logica di Estrazione / Filtro |
-| :---- | :---- | :---- | :---- | :---- |
-| **M1.1** | **Richieste Trasf.** | TransferRequest **\[N\]** | creation\_date | COUNT(id) WHERE date in current month AND type \= 'TRANSFER' |
-| **M1.2** | **Staff Uscito** | User **\[E\]** | system\_actors, status **\[N\]** | COUNT(id) WHERE role\='DOCTOR' AND status changed to 'TERMINATED' in month |
-| **M1.3** | **Giorni Malattia** | Holiday **\[E\]** | category **\[N\]**, start\_date, end\_date | SUM(days) WHERE category\='SICKNESS\_STRESS' AND date in current month |
-|  | *Giorni Lavorabili* | ConcreteShift **\[E\]** | date, doctors\_allocated | COUNT(distinct date) \* COUNT(active\_doctors) |
-| **M1.4** | **Reclami** | Feedback **\[N\]** | category **\[N\]**, creation\_date | COUNT(id) WHERE category\='FORMAL\_COMPLAINT' |
-| **M1.5** | **Promoters (9-10)** | SurveyResponse **\[N\]** | question\_id, score | COUNT(id) WHERE question\_type\='eNPS' AND score \>= 9 |
-|  | *Detractors (0-6)* | SurveyResponse **\[N\]** | question\_id, score | COUNT(id) WHERE question\_type\='eNPS' AND score \<= 6 |
-
----
-
-## **2\. Livello 2: Software Metrics (Gradimento & UP)**
-
-Qui mappiamo le metriche sugli oggetti Java analizzati nella Baseline (DoctorUffaPriority, ConcreteShift).
-
-| ID | Variabile Formula | Entità Sorgente | Campo / Attributo | Logica di Estrazione |
-| :---- | :---- | :---- | :---- | :---- |
-| **M2.1** | $UP\_{current}$ | DoctorUffaPriority **\[E\]** | general\_priority, night\_priority | Valore attuale letto a runtime. |
-|  | $UP\_{prev}$ | ScheduleSnapshot **\[N\]** | priority\_snapshot\_json | Valore salvato al momento della generazione precedente. |
-| **M2.2** | **Sentiment** | ScheduleFeedback **\[E\]** | sentiment\_score **\[N\]** | Analisi NLP sul campo message (Text). Valore: \-1 (Neg), 0 (Neu), 1 (Pos). |
-| **M2.3** | $UP\_{min/max}$ | PriorityConfig **\[E\]** | min\_bound, max\_bound | Letti da priority.properties (Baseline). |
-| **M2.4** | $\\Delta\_{UP\_N}$ | **\[C\]** | *Vedi M2.1* | Calcolato: $(UP\_{curr} \- UP\_{prev})$ normalizzato su $(Max \- Min)$. |
-| **M2.5** | $\\sigma^2$ (Varianza) | **\[C\]** | *Vedi M2.1* | VAR\_POP su tutti i valori general\_priority dei medici attivi. |
-| **M2.6** | $\mu_{\Delta}$ (Media Diff) | **[C]** | *Vedi M2.1* | `AVG(UP_curr - UP_prev)` per tutti i medici attivi. |
-| **M2.7** | $\sigma^2_{\Delta}$ (Var Diff) | **[C]** | *Vedi M2.1* | `VAR_POP(UP_curr - UP_prev)` per tutti i medici attivi. |
-| **M2.8** | $\Delta_{min}$ | **[C]** | *Vedi M2.1* | `MIN(UP_curr - UP_prev)`. |
-| **M2.9** | $\Delta_{max}$ | **[C]** | *Vedi M2.1* | `MAX(UP_curr - UP_prev)`. |
-| **M2.10** | **Temp. Change (-N)** | ScheduleFeedback **\[E\]** | sentiment\_score | COUNT WHERE $S\_{t-1} \= \-1$ AND $S\_{t} \= 0$. |
-| **M2.11** | **Change (-+)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = -1$ AND $S_{t} = 1$. |
-| **M2.12** | **Change (N+)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = 0$ AND $S_{t} = 1$. |
-| **M2.13** | **Change (N-)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = 0$ AND $S_{t} = -1$. |
-| **M2.14** | **Change (+-)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = 1$ AND $S_{t} = -1$. |
-| **M2.15** | **Change (+N)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = 1$ AND $S_{t} = 0$. |
-
----
-
-## **3\. Livello 3: Operational Metrics (AI Performance)**
-
-Questa sezione mappa le metriche direttamente sul **JSON Response** definito nel Microtask 3\.
-
-| ID | Variabile Formula | Oggetto JSON (Output AI) | Campo JSON | Note |
-| :---- | :---- | :---- | :---- | :---- |
-| **M3.1** | **Optimality** | metadata | optimality\_score | Valore float 0.0 \- 1.0 fornito dall'LLM. |
-| **M3.2** | **Shift Scoperti** | uncovered\_shifts | Array.length | Conteggio elementi nell'array dei buchi. |
-| **M3.3** | **Violazioni Soft** | assignments | is\_forced | COUNT WHERE is\_forced \= true. |
-| **M3.4** | **Delta Varianza** | metadata.metrics | uffa\_balance.final \- initial | Differenza calcolata dall'AI tra pre e post scenario. |
-| **M3.5** | **Latenza** | metadata | computation\_time\_ms | Tempo di esecuzione della chiamata LLM. 
-
-
 ## Microtask 3.4
 
 
@@ -343,3 +277,16 @@ Questa sezione mappa le metriche direttamente sul **JSON Response** definito nel
 - Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
 - Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
 - Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
+
+## Microtask 3.3
+
+**Implementation Summary (Metric Aggregation + Normalization Utilities)**
+
+- Implementate utility pure per aggregare le metriche di gradimento e calcolare i delta per-doctor (media, varianza popolazione, min/max, coefficiente di variazione) e le transizioni di sentiment in accordo con le definizioni M2.6–M2.15 e M2.18.  
+- Introdotte funzioni di normalizzazione/scaling per $UP_N$ e $\\Delta_{UP_N}$ basate sulla formula $(UP - Min) / (Max - Min)$.  
+- Scelte chiave: validazione esplicita di input null/empty, bound non validi, mismatch di serie e valori sentiment fuori range con `IllegalArgumentException`, per evitare calcoli ambigui o non deterministici.  
+- Classi create:  
+  - `MetricNormalizationUtils` (normalizzazione $UP_N$ e delta normalizzato).  
+  - `MetricAggregationUtils` (statistiche aggregate, delta per-doctor, conteggio transizioni).  
+  - `UffaDeltaStats` (contenitore dei risultati aggregati).  
+  - `SentimentTransitionCounts` (contenitore dei conteggi delle transizioni).  
