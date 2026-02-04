@@ -1,128 +1,115 @@
 package org.cswteams.ms3.ai.broker;
 
-import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
 import org.cswteams.ms3.ai.protocol.AiScheduleJsonParser;
+import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
-import org.junit.jupiter.api.Test;
+import org.cswteams.ms3.ai.protocol.utils.AiStatus;
+import org.junit.Test;
+import org.springframework.web.client.RestClientException;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
-class AgentBrokerImplTest {
+public class AgentBrokerImplTest {
 
     @Test
-    void routesToConfiguredProvider() {
+    public void requestSchedule_shouldSelectConfiguredProvider() {
         AiBrokerProperties properties = new AiBrokerProperties();
-        properties.setProvider(AgentProvider.GEMMA);
+        properties.setProvider(AiProvider.LLAMA70B);
+        properties.setMaxRetries(0);
+        properties.setTotalTimeout(Duration.ZERO);
 
-        RecordingAdapter gemma = new RecordingAdapter(AgentProvider.GEMMA, successJson());
-        RecordingAdapter llama = new RecordingAdapter(AgentProvider.LLAMA_70B, successJson());
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AiProvider.GEMMA);
 
-        AgentBroker broker = new AgentBrokerImpl(properties, List.of(gemma, llama), new AiScheduleJsonParser());
-        AiScheduleResponse response = broker.requestSchedule(AiBrokerRequest.forToon("toon"));
+        AgentProviderAdapter llamaAdapter = mock(AgentProviderAdapter.class);
+        when(llamaAdapter.provider()).thenReturn(AiProvider.LLAMA70B);
+        when(llamaAdapter.requestSchedule("payload")).thenReturn(validJson());
 
-        assertNotNull(response);
-        assertEquals(1, gemma.invocations());
-        assertEquals(0, llama.invocations());
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                new AiScheduleJsonParser(),
+                Arrays.asList(gemmaAdapter, llamaAdapter)
+        );
+
+        AiScheduleResponseDto response = broker.requestSchedule("payload");
+
+        assertEquals(AiStatus.SUCCESS, response.status);
+        verify(llamaAdapter).requestSchedule("payload");
+        verify(gemmaAdapter, never()).requestSchedule(anyString());
     }
 
     @Test
-    void retriesUntilSuccess() {
+    public void requestSchedule_shouldRetryOnTransportFailures() {
         AiBrokerProperties properties = new AiBrokerProperties();
-        properties.setProvider(AgentProvider.LLAMA_70B);
+        properties.setProvider(AiProvider.GEMMA);
         properties.setMaxRetries(2);
         properties.setRetryBackoff(Duration.ZERO);
+        properties.setTotalTimeout(Duration.ZERO);
 
-        FailingThenSuccessAdapter adapter = new FailingThenSuccessAdapter(AgentProvider.LLAMA_70B, 2, successJson());
-        AgentBroker broker = new AgentBrokerImpl(properties, List.of(adapter), new AiScheduleJsonParser());
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AiProvider.GEMMA);
+        when(gemmaAdapter.requestSchedule("payload"))
+                .thenThrow(new RestClientException("first failure"))
+                .thenThrow(new RestClientException("second failure"))
+                .thenReturn(validJson());
 
-        AiScheduleResponse response = broker.requestSchedule(AiBrokerRequest.forToon("toon"));
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                new AiScheduleJsonParser(),
+                Arrays.asList(gemmaAdapter)
+        );
 
-        assertNotNull(response);
-        assertEquals(3, adapter.invocations());
+        AiScheduleResponseDto response = broker.requestSchedule("payload");
+
+        assertEquals(AiStatus.SUCCESS, response.status);
+        verify(gemmaAdapter, times(3)).requestSchedule("payload");
     }
 
     @Test
-    void throwsOnPartialSuccess() {
+    public void requestSchedule_shouldSurfaceTimeouts() {
         AiBrokerProperties properties = new AiBrokerProperties();
-        properties.setProvider(AgentProvider.GEMMA);
+        properties.setProvider(AiProvider.GEMMA);
+        properties.setMaxRetries(0);
+        properties.setTotalTimeout(Duration.ofMillis(20));
 
-        RecordingAdapter adapter = new RecordingAdapter(AgentProvider.GEMMA, partialJson());
-        AgentBroker broker = new AgentBrokerImpl(properties, List.of(adapter), new AiScheduleJsonParser());
-
-        AiProtocolException exception = assertThrows(AiProtocolException.class,
-                () -> broker.requestSchedule(AiBrokerRequest.forToon("toon")));
-
-        assertEquals(AiProtocolException.ErrorCode.PARTIAL_SUCCESS, exception.getCode());
-    }
-
-    private static String successJson() {
-        return "{\"status\":\"SUCCESS\",\"metadata\":{\"reasoning\":\"ok\",\"optimality_score\":0.9,\"metrics\":{\"coverage_percent\":1.0,\"uffa_balance\":{\"night_shift_std_dev\":{\"initial\":1.0,\"final\":0.5}},\"soft_violations_count\":0}},\"assignments\":[],\"uncovered_shifts\":[],\"uffa_delta\":[]}";
-    }
-
-    private static String partialJson() {
-        return "{\"status\":\"PARTIAL_SUCCESS\",\"metadata\":{\"reasoning\":\"partial\",\"optimality_score\":0.4},\"assignments\":[],\"uncovered_shifts\":[],\"uffa_delta\":[]}";
-    }
-
-    private static class RecordingAdapter implements AgentProviderAdapter {
-        private final AgentProvider provider;
-        private final String response;
-        private final AtomicInteger invocations = new AtomicInteger();
-
-        private RecordingAdapter(AgentProvider provider, String response) {
-            this.provider = provider;
-            this.response = response;
-        }
-
-        @Override
-        public AgentProvider provider() {
-            return provider;
-        }
-
-        @Override
-        public String execute(AiBrokerRequest request) {
-            invocations.incrementAndGet();
-            return response;
-        }
-
-        int invocations() {
-            return invocations.get();
-        }
-    }
-
-    private static class FailingThenSuccessAdapter implements AgentProviderAdapter {
-        private final AgentProvider provider;
-        private final int failuresBeforeSuccess;
-        private final String response;
-        private final AtomicInteger invocations = new AtomicInteger();
-
-        private FailingThenSuccessAdapter(AgentProvider provider, int failuresBeforeSuccess, String response) {
-            this.provider = provider;
-            this.failuresBeforeSuccess = failuresBeforeSuccess;
-            this.response = response;
-        }
-
-        @Override
-        public AgentProvider provider() {
-            return provider;
-        }
-
-        @Override
-        public String execute(AiBrokerRequest request) {
-            int attempt = invocations.incrementAndGet();
-            if (attempt <= failuresBeforeSuccess) {
-                throw new RuntimeException("temporary failure");
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AiProvider.GEMMA);
+        when(gemmaAdapter.requestSchedule("payload")).thenAnswer(invocation -> {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
             }
-            return response;
-        }
+            return validJson();
+        });
 
-        int invocations() {
-            return invocations.get();
-        }
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                new AiScheduleJsonParser(),
+                Arrays.asList(gemmaAdapter)
+        );
+
+        AiProtocolException exception = assertThrows(
+                AiProtocolException.class,
+                () -> broker.requestSchedule("payload")
+        );
+
+        assertEquals(AiProtocolException.ErrorCode.TIMEOUT, exception.getCode());
+        verify(gemmaAdapter, times(1)).requestSchedule("payload");
+    }
+
+    private static String validJson() {
+        return "{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}";
     }
 }
