@@ -48,12 +48,12 @@
    - Preconditions: Microtasks 1–2.
    - Parallel affinities: None.
    - Output artifact: Logging configuration + sample traces.
-5. **Add regression tests for current schedule generation endpoints** (**2h, In progress Cantarini**)
+5. **Add regression tests for current schedule generation endpoints** (**2h, Completed by Cantarini**)
    - Description: Create baseline tests that assert the existing generation/regeneration contract to prevent AI changes from breaking current behavior.
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Endpoint regression tests.
-6. **Document baseline flow in code comments + README notes** (**2h, Completed Scordo**)
+6. **Document baseline flow in code comments + README notes** (**2h, Completed by Scordo**)
    - Description: Add code-level references pointing to the baseline flow and planner UI touchpoints.
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: Documentation (Story 6).
