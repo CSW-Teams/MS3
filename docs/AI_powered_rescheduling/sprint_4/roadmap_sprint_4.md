@@ -28,32 +28,32 @@
 **Sprint Timing**: **Early sprint** (needed for all downstream stories).
 
 **Microtasks**
-1. **Map backend schedule generation/regeneration flow** (**2h, Completed**)
+1. **Map backend schedule generation/regeneration flow** (**2h, Completed by Cappellini**)
    - Description: Identify entrypoints, controller orchestration, and data sources used to build schedules.
    - Preconditions: None.
    - Parallel affinities: None.
    - Output artifact: Backend flow diagram / notes in roadmap appendix.
-2. **Catalog constraint and priority pipeline** (**2h, Completed**)
+2. **Catalog constraint and priority pipeline** (**2h, Completed by Capone**)
    - Description: Summarize how constraints and UFFA/scocciatura priorities influence schedule generation.
    - Preconditions: Microtask 1.
    - Parallel affinities: None.
    - Output artifact: Constraint/priority summary and risks list.
-3. **Map current planner UI scheduling surfaces** (**2h, Completed**)
+3. **Map current planner UI scheduling surfaces** (**2h, Completed by Cappellini**)
    - Description: Inventory schedule generation UI, loading states, schedule list presentation, and regeneration actions.
    - Preconditions: None.
    - Parallel affinities: None.
    - Output artifact: UI touchpoints list for planner flow.
-4. **Add backend flow trace logging for generation/regeneration** (**2h**)
+4. **Add backend flow trace logging for generation/regeneration** (**2h, Completed by Capone**)
    - Description: Implement structured logging for generation/regeneration entrypoints to support AI orchestration debugging.
    - Preconditions: Microtasks 1–2.
    - Parallel affinities: None.
    - Output artifact: Logging configuration + sample traces.
-5. **Add regression tests for current schedule generation endpoints** (**2h**)
+5. **Add regression tests for current schedule generation endpoints** (**2h, In progress Cantarini**)
    - Description: Create baseline tests that assert the existing generation/regeneration contract to prevent AI changes from breaking current behavior.
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Endpoint regression tests.
-6. **Document baseline flow in code comments + README notes** (**2h**)
+6. **Document baseline flow in code comments + README notes** (**2h, In progress Scordo**)
    - Description: Add code-level references pointing to the baseline flow and planner UI touchpoints.
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: Documentation (Story 6).
@@ -83,42 +83,42 @@
 **Sprint Timing**: **Early sprint → before mid-sprint** (enables backend + UI work).
 
 **Microtasks**
-1. **AI API inventory + endpoint research** (**2h, Completed**)
+1. **AI API inventory + endpoint research** (**2h, Completed by Capone**)
    - Description: Identify Gemini Gemma and Grok Llama-70B endpoints (if available), payload limits, auth, and supported formats; search public docs for APIs/SDKs and record findings for implementation handoff.
    - Preconditions: Story 1 complete.
    - Parallel affinities: None.
    - Output artifact: AI API assumptions list + endpoint/SDK discovery notes with URLs and version details.
-2. **Define system knowledge base payload** (**2h, Completed**)
+2. **Define system knowledge base payload** (**2h, Completed by Cantarini**)
    - Description: Specify required system info, constraints, decision metrics, and historic schedule context to pass as a knowledge base.
    - Preconditions: Story 1, Microtask 1.
    - Parallel affinities: Metrics design (Story 3).
    - Output artifact: Knowledge base schema draft.
-3. **TOON request + JSON response specification** (**2h, Completed**)
+3. **TOON request + JSON response specification** (**2h, Completed by Scordo**)
    - Description: Define `.toon` schedule input format sent from system to the agent and `.json` response format for AI-produced schedules and metadata.
    - Preconditions: Story 1, Microtask 2.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: TOON request schema section + JSON response schema section.
-4. **Define communication protocol & instructions** (**2h, Completed**)
+4. **Define communication protocol & instructions** (**2h, Completed by Cantone, Capone**)
    - Description: Specify request/response flow, retries, timeouts, and agent execution instructions (direct prompting with `.toon` input; response strictly `.json`).
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Protocol flow chart and error taxonomy.
-5. **GDPR/data minimization review** (**2h, Completed**)
+5. **GDPR/data minimization review** (**2h, Completed by Cantone, Capone**)
    - Description: Ensure only necessary doctor data and scheduling constraints are transmitted; define redaction rules.
    - Preconditions: Microtasks 2–4.
    - Parallel affinities: Documentation (Story 6).
    - Output artifact: Data minimization checklist.
-6. **Implement TOON serialization module** (**2h**)
+6. **Implement TOON serialization module** (**2h, Completed by Capone**)
    - Description: Build code to generate `.toon` payloads from the scheduling model with validation hooks.
    - Preconditions: Microtasks 2–4.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: TOON builder + validation unit tests.
-7. **Implement JSON response parsing + validation** (**2h**)
+7. **Implement JSON response parsing + validation** (**2h, In progress Cappellini**)
    - Description: Build JSON parsing layer that maps AI schedules to internal models with strict schema checks.
    - Preconditions: Microtasks 3–4.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: JSON parser + validation tests.
-8. **Implement AI client adapter (Gemma + Llama-70B)** (**2h**)
+8. **Implement AI client adapter (Gemma + Llama-70B)** (**2h, In progress Cantone, Capone, Scordo**)
    - Description: Implement configurable AI client interface and adapters for target models with timeout/retry handling.
    - Preconditions: Microtasks 1–4.
    - Parallel affinities: Backend orchestration (Story 5).
@@ -148,22 +148,22 @@
 **Sprint Timing**: **Early sprint → before mid-sprint** (so UI can target final metrics).
 
 **Microtasks**
-1. **Integrate GQM+Strategy metrics into planner metrics list** (**2h, Completed**)
+1. **Integrate GQM+Strategy metrics into planner metrics list** (**2h, Completed by Cantarini, Scordo**)
    - Description: Translate Business/Software/Operational goals into planner-visible comparison metrics.
    - Preconditions: Story 1.
    - Parallel affinities: None.
    - Output artifact: GQM-aligned metrics list + definitions.
-2. **Map data sources for each metric** (**2h, Completed**)
+2. **Map data sources for each metric** (**2h, Completed by Cantarini, Scordo**)
    - Description: Map required data (constraints, preferences, shift assignments, feedback) to each GQM metric.
    - Preconditions: Microtask 1.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Data-to-metric matrix.
-3. **Implement metric aggregation + normalization utilities** (**3h**)
+3. **Implement metric aggregation + normalization utilities** (**3h, In progress Cantone, Capone, Scordo**)
    - Description: Code metric calculations, scaling, and normalization functions based on the defined formulas.
    - Preconditions: Microtasks 1–2.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Metric calculation utilities + unit tests.
-4. **Implement multidimensional priority scale config** (**3h**)
+4. **Implement multidimensional priority scale config** (**3h, In progress Cantone, Capone, Scordo**)
    - Description: Encode weighting/priority rules as configuration with defaults and override support.
    - Preconditions: Microtasks 1–3.
    - Parallel affinities: None.
