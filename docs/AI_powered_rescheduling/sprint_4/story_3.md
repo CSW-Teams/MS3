@@ -259,31 +259,25 @@ This document maps the metrics defined in the GQM+S plan to their potential data
 | **M3.4 \- Uffa Balance Improvement** | Pre vs Post variance of Uffa Points. | **AI JSON Response** (metrics.uffa\_balance). | **Action:** Persist this metric to validate AI effectiveness over manual scheduling. |
 | **M3.5 \- Computation Time** | Time taken to generate schedule. | AIService.java (System logs). | **Action:** Measure latency to ensure API timeout compliance. |
 
-## Microtask 3.4
+## Microtask 3.3
 
+**Implementation Summary (Metric Aggregation + Normalization Utilities)**
 
+- Implementate utility pure per aggregare le metriche di gradimento e calcolare i delta per-doctor (media, varianza popolazione, min/max, coefficiente di variazione) e le transizioni di sentiment in accordo con le definizioni M2.6–M2.15 e M2.18.  
+- Introdotte funzioni di normalizzazione/scaling per $UP_N$ e $\\Delta_{UP_N}$ basate sulla formula $(UP - Min) / (Max - Min)$.  
+- Scelte chiave: validazione esplicita di input null/empty, bound non validi, mismatch di serie e valori sentiment fuori range con `IllegalArgumentException`, per evitare calcoli ambigui o non deterministici.  
+- Classi create:  
+  - `MetricNormalizationUtils` (normalizzazione $UP_N$ e delta normalizzato).  
+  - `MetricAggregationUtils` (statistiche aggregate, delta per-doctor, conteggio transizioni).  
+  - `UffaDeltaStats` (contenitore dei risultati aggregati).  
+  - `SentimentTransitionCounts` (contenitore dei conteggi delle transizioni).  
 
-## Microtask 3.5
+## Microtask 3.4 — Multidimensional Priority Scale Config (defaults + overrides)
 
-
-
-## Microtask 3.6
-
-
-
-## Microtask 3.7
-
-- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
-- Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
-- Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
-- Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
-
-### Microtask 3.4 — Multidimensional Priority Scale Config (defaults + overrides)
-
-#### Overview
+### Overview
 Questa microtask introduce una **configurazione multidimensionale della priority scale** per il confronto fra schedulazioni AI. L’obiettivo è rendere esplicito e configurabile il peso assegnato a ciascuna dimensione/metrica di decisione, garantendo **default sensati**, **override parziali** e **validazione rigorosa** a runtime. La configurazione viene risolta in un’unica mappa `PriorityDimension -> weight` (somma = 1.0), pronta per essere usata dall’algoritmo di decisione (microtask 3.5).
 
-#### Config model
+### Config model
 La configurazione è modellata con `@ConfigurationProperties` Spring Boot:
 
 - **`PriorityScaleProperties`**
@@ -293,7 +287,7 @@ La configurazione è modellata con `@ConfigurationProperties` Spring Boot:
 Le chiavi vengono mappate all’enum `PriorityDimension` che definisce esplicitamente le dimensioni attese:
 `COVERAGE`, `UFFA_BALANCE`, `SENTIMENT_TRANSITIONS`, `UP_DELTA`, `VARIANCE_DELTA`.
 
-#### Defaults & Overrides
+### Defaults & Overrides
 I default sono definiti in `application.properties` con prefisso:
 
 ```
@@ -308,7 +302,7 @@ ai.rescheduling.priority-scale.overrides.*
 
 La logica è **merge con defaults**: se un override è presente, sostituisce il valore della dimensione specificata, lasciando invariati gli altri pesi. Il risultato è una mappa completa e deterministica.
 
-#### Validation rules
+### Validation rules
 La validazione avviene **ad ogni accesso** (runtime) tramite `PriorityScaleConfig`:
 
 1. **Default obbligatori**: la sezione `defaults` deve esistere ed essere non vuota.
@@ -319,18 +313,18 @@ La validazione avviene **ad ogni accesso** (runtime) tramite `PriorityScaleConfi
 
 In caso di violazione viene lanciata `PriorityScaleValidationException`, in modo coerente con la strategia “validate on access”.
 
-#### Integration points
+### Integration points
 - **Layer di configurazione Spring**: `PriorityScaleProperties` è registrata via `@EnableConfigurationProperties` in `AppConfig`.
 - **Uso previsto**: il servizio di decisione (microtask 3.5) dovrà invocare `PriorityScaleConfig#getPriorityScale()` per ottenere la mappa validata.
 - **Override ambientali**: i valori possono essere sovrascritti tramite proprietà Spring (env vars, profile, etc.).
 
-#### Key classes/components
+### Key classes/components
 - `PriorityDimension` — enum delle dimensioni supportate.
 - `PriorityScaleProperties` — schema di configurazione (`defaults` + `overrides`).
 - `PriorityScaleConfig` — merge + validazione, restituisce la mappa immutabile dei pesi.
 - `PriorityScaleValidationException` — errore runtime per configurazioni invalide.
 
-#### Testing
+### Testing
 Test unitari (`PriorityScaleConfigTest`) coprono:
 - merge di override parziali,
 - dimensione mancante,
@@ -338,7 +332,7 @@ Test unitari (`PriorityScaleConfigTest`) coprono:
 - dimensione sconosciuta,
 - pesi negativi.
 
-#### How to extend
+### How to extend
 Per aggiungere nuove dimensioni:
 1. Estendere l’enum `PriorityDimension`.
 2. Aggiornare i default in `application.properties`.
@@ -346,15 +340,12 @@ Per aggiungere nuove dimensioni:
 
 Le regole di validazione garantiscono che nessuna dimensione resti non pesata.
 
-## Microtask 3.3
 
-**Implementation Summary (Metric Aggregation + Normalization Utilities)**
 
-- Implementate utility pure per aggregare le metriche di gradimento e calcolare i delta per-doctor (media, varianza popolazione, min/max, coefficiente di variazione) e le transizioni di sentiment in accordo con le definizioni M2.6–M2.15 e M2.18.  
-- Introdotte funzioni di normalizzazione/scaling per $UP_N$ e $\\Delta_{UP_N}$ basate sulla formula $(UP - Min) / (Max - Min)$.  
-- Scelte chiave: validazione esplicita di input null/empty, bound non validi, mismatch di serie e valori sentiment fuori range con `IllegalArgumentException`, per evitare calcoli ambigui o non deterministici.  
-- Classi create:  
-  - `MetricNormalizationUtils` (normalizzazione $UP_N$ e delta normalizzato).  
-  - `MetricAggregationUtils` (statistiche aggregate, delta per-doctor, conteggio transizioni).  
-  - `UffaDeltaStats` (contenitore dei risultati aggregati).  
-  - `SentimentTransitionCounts` (contenitore dei conteggi delle transizioni).  
+## Microtask 3.7
+
+- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
+- Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
+- Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
+- Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
+
