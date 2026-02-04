@@ -1,5 +1,6 @@
 package org.cswteams.ms3.config;
 
+import org.cswteams.ms3.ai.priority.PriorityScaleProperties;
 import org.cswteams.ms3.security.TwoFactorProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +58,7 @@ import java.time.Clock;
  */
 @Configuration
 @EnableAspectJAutoProxy
-@EnableConfigurationProperties(TwoFactorProperties.class)
+@EnableConfigurationProperties({TwoFactorProperties.class, PriorityScaleProperties.class})
 public class AppConfig {
 
     @Bean
