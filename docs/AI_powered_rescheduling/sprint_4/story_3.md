@@ -325,3 +325,83 @@ Questa sezione mappa le metriche direttamente sul **JSON Response** definito nel
 
 
 ## Microtask 3.7
+
+## Microtask 3.4 – Multidimensional Priority Scale Configuration
+
+### Purpose
+Microtask 3.4 defines the configuration layer for the multidimensional priority scale used in Story 3 to compare schedules. Its scope is limited to configuration structure, defaults, override rules, and validation. It does not implement any schedule selection or ranking logic; that decision algorithm is deferred to Microtask 3.5.
+
+### Design Decisions
+**Multidimensional scale (Business / Software / Operational).**  
+The scale is explicitly multidimensional to mirror the GQM+Strategy structure and keep decision criteria aligned with the three levels of goals. This separation improves traceability from organizational intent to operational feasibility while keeping weights and constraints independent per dimension.
+
+**Business dimension weight = 0.0.**  
+Business metrics (M1.*) are not collected in this project, therefore the Business dimension is set to 0.0 to avoid relying on unavailable data. The remaining weight is distributed across Software (0.7) and Operational (0.3) to emphasize schedule quality improvements while preserving operational feasibility. The 0.7/0.3 split reflects the project’s didactic focus: prioritize software-level scheduling quality without ignoring operational constraints.
+
+**Soft vs Hard-gate metrics.**  
+Metrics are classified as either soft (contributing to a score/penalty) or hard-gate (blocking conditions). Hard-gate metrics express infeasibility and must be satisfied for a schedule to be considered (e.g., uncovered shifts). Soft metrics capture trade-offs where improvement is desired but not absolute.
+
+**MetricValueType (NUMERIC vs BOOLEAN).**  
+Significance checks M2.16–M2.25 are logical conditions (e.g., Δ≤0), so they are modeled explicitly as BOOLEAN metrics to avoid ambiguity about their scoring. Boolean scoring is defined as true → 1 and false → 0, enabling consistent aggregation alongside numeric metrics.
+
+**Enabled flag semantics (enabled = false ⇒ weight = 0).**  
+If a metric is disabled, its weight must be zero. This prevents contradictory configurations where a metric is excluded but still influences the score, which would undermine the integrity of the scale.
+
+**Directionality for sentiment temperature changes (M2.10).**  
+M2.10 counts changes from negative to neutral (-N). In the delta-strategy interpretation, -N is classified as “higher is better”; therefore its direction is set to HIGHER_IS_BETTER. This ensures that an increase in negative-to-neutral transitions is treated as an improvement.
+
+### Default Priority Scale Configuration
+The default configuration is stored in `priority-scale-default.json`. It includes:
+- Dimension weights (Business 0.0, Software 0.7, Operational 0.3).
+- Per-metric weights within each dimension, normalized to sum to 1.0 for the dimension.
+- Value types (NUMERIC or BOOLEAN) and scoring semantics for BOOLEAN metrics.
+- Hard-gate constraints expressed via thresholds (e.g., uncovered shifts must be 0).
+
+Within the Software dimension, weights are distributed across the comparison metrics (M2.4–M2.15) and the significance checks (M2.16–M2.25). For M2.16–M2.25, the BOOLEAN value type and boolean scoring (true=1, false=0) are explicit so the interpretation is deterministic. The Operational dimension includes a hard-gate on uncovered shifts and soft metrics for operational quality indicators.
+
+### Override Model
+Overrides are applied by merging an override configuration onto the default configuration. The merge logic allows the override to replace or adjust weights, directions, thresholds, value types, and enabled flags while inheriting unspecified fields from the default. This supports environment-specific or scenario-specific tuning without modifying the baseline.
+
+The following cannot be overridden:
+- Metric identifiers (the set of valid metric IDs remains fixed).
+- The normalization contract (weights must remain normalized and sum to 1.0 per dimension).
+
+### Validation Rules
+Validation is conceptual and enforces three layers of correctness:
+1. **Structural validation:** all required dimensions exist; metric IDs are recognized; each metric declares direction, type, value type, and enabled flag.
+2. **Mathematical validation:** dimension weights sum to 1.0; metric weights within each dimension sum to 1.0.
+3. **Logical validation:** hard-gate metrics include thresholds; BOOLEAN metrics define boolean scoring and use a consistent direction; disabled metrics must have weight 0.
+
+### Class Overview (High-Level)
+**PriorityScaleConfig**  
+Represents the full configuration schema for the priority scale. It exists to provide a typed structure for dimensions and metrics so configuration can be validated and consumed consistently.
+
+**DimensionConfig**  
+Defines a single dimension (Business, Software, Operational) with its weight and metric set. It isolates dimension-level weighting and allows independent tuning.
+
+**MetricConfig**  
+Defines a single metric’s configuration, including weight, direction, type (soft vs hard-gate), value type, thresholds, and enabled flag. It is the core unit of configuration and validation.
+
+**MetricDirection**  
+Encodes the optimization direction (higher-is-better vs lower-is-better) for each metric. It ensures a consistent interpretation across metrics.
+
+**MetricType**  
+Distinguishes soft metrics from hard-gate constraints. This supports enforcing blocking conditions for infeasibility.
+
+**MetricValueType**  
+Separates numeric metrics from boolean significance checks. This resolves ambiguity for M2.16–M2.25 and ensures boolean scoring is explicit.
+
+**PriorityScaleMerger**  
+Implements the default + override merge semantics. It exists to enable safe, partial overrides without duplicating the full default configuration.
+
+**PriorityScaleValidator**  
+Enforces structural, mathematical, and logical correctness of the configuration. It prevents inconsistent or incomplete configurations from being used in decision processes.
+
+**PriorityScaleLoader**  
+Loads the default configuration and applies an optional override resource, then validates the result. It encapsulates the configuration bootstrapping step for Microtask 3.4.
+
+**PriorityScaleProperties**  
+Defines the configuration properties for locating the default and override resources. It provides a standard Spring mechanism to configure file locations without code changes.
+
+### Boundary with Other Microtasks
+Microtask 3.4 does not compute metrics, does not compare schedules, and does not implement the decision algorithm. It only defines how priorities are configured and validated. Its output is a validated priority-scale configuration that is intended to be consumed by Microtask 3.5, which will apply the configured weights and constraints during schedule selection.

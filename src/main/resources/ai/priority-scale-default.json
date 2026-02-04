@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "dimensions": {
+    "business": {
+      "weight": 0.0,
+      "metrics": {}
+    },
+    "software": {
+      "weight": 0.7,
+      "metrics": {
+        "M2.4": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.5": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.6": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.7": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.8": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.9": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.10": { "weight": 0.05, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.11": { "weight": 0.05, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.12": { "weight": 0.05, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.13": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.14": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.15": { "weight": 0.05, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M2.16": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.17": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.18": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.19": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.20": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.21": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.22": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.23": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.24": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true },
+        "M2.25": { "weight": 0.04, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "BOOLEAN", "booleanScoreTrue": 1.0, "booleanScoreFalse": 0.0, "enabled": true }
+      }
+    },
+    "operational": {
+      "weight": 0.3,
+      "metrics": {
+        "M3.1": { "weight": 0.3, "direction": "HIGHER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M3.2": { "weight": 0.0, "direction": "LOWER_IS_BETTER", "type": "HARD_GATE", "valueType": "NUMERIC", "threshold": 0.0, "enabled": true },
+        "M3.3": { "weight": 0.3, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M3.4": { "weight": 0.2, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true },
+        "M3.5": { "weight": 0.2, "direction": "LOWER_IS_BETTER", "type": "SOFT", "valueType": "NUMERIC", "enabled": true }
+      }
+    }
+  }
+}
