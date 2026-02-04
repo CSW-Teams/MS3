@@ -1,7 +1,8 @@
 package org.cswteams.ms3.ai.broker;
 
-import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
+import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
 
 public interface AgentBroker {
-    AiScheduleResponseDto requestSchedule(String requestPayload);
+
+    AiScheduleResponse requestSchedule(AiBrokerRequest request);
 }

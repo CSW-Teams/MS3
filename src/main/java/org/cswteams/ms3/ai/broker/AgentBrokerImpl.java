@@ -1,101 +1,109 @@
 package org.cswteams.ms3.ai.broker;
 
+import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
+import org.cswteams.ms3.ai.broker.mapper.AiScheduleResponseMapper;
 import org.cswteams.ms3.ai.protocol.AiScheduleJsonParser;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
-import org.springframework.web.client.RestClientException;
+import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class AgentBrokerImpl implements AgentBroker {
+
     private final AiBrokerProperties properties;
+    private final Map<AgentProvider, AgentProviderAdapter> adapters;
     private final AiScheduleJsonParser jsonParser;
-    private final Map<AiProvider, AgentProviderAdapter> adaptersByProvider;
+    private final AiScheduleResponseMapper mapper = new AiScheduleResponseMapper();
 
     public AgentBrokerImpl(AiBrokerProperties properties,
-                           AiScheduleJsonParser jsonParser,
-                           List<AgentProviderAdapter> adapters) {
+                           List<AgentProviderAdapter> adapters,
+                           AiScheduleJsonParser jsonParser) {
         this.properties = properties;
         this.jsonParser = jsonParser;
-        this.adaptersByProvider = new EnumMap<>(AiProvider.class);
+        this.adapters = new EnumMap<>(AgentProvider.class);
         for (AgentProviderAdapter adapter : adapters) {
-            this.adaptersByProvider.put(adapter.provider(), adapter);
+            this.adapters.put(adapter.provider(), adapter);
         }
     }
 
     @Override
-    public AiScheduleResponseDto requestSchedule(String requestPayload) {
-        AiProvider provider = properties.getProvider();
-        AgentProviderAdapter adapter = adaptersByProvider.get(provider);
+    public AiScheduleResponse requestSchedule(AiBrokerRequest request) {
+        validateRequest(request);
+        AgentProvider provider = properties.getProvider();
+        AgentProviderAdapter adapter = adapters.get(provider);
         if (adapter == null) {
-            throw new IllegalStateException("No AI adapter registered for provider: " + provider);
+            throw AiProtocolException.businessFailure("No adapter configured for provider " + provider);
         }
-        int maxRetries = Math.max(0, properties.getMaxRetries());
-        Duration backoff = properties.getRetryBackoff();
-        for (int attempt = 0; attempt <= maxRetries; attempt++) {
-            try {
-                String responsePayload = requestWithTotalTimeout(adapter, requestPayload);
-                return jsonParser.parse(responsePayload);
-            } catch (AiProtocolException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                if (!isRetryable(ex) || attempt == maxRetries) {
-                    throw toTransportException(ex);
-                }
-                applyBackoff(backoff);
-            }
-        }
-        throw AiProtocolException.transportFailure("AI provider request failed.", null);
+        return executeWithRetry(adapter, request);
     }
 
-    private String requestWithTotalTimeout(AgentProviderAdapter adapter, String requestPayload) throws Exception {
+    private AiScheduleResponse executeWithRetry(AgentProviderAdapter adapter, AiBrokerRequest request) {
+        Instant start = Instant.now();
         Duration totalTimeout = properties.getTotalTimeout();
-        if (totalTimeout == null || totalTimeout.isZero() || totalTimeout.isNegative()) {
-            return adapter.requestSchedule(requestPayload);
-        }
-        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> adapter.requestSchedule(requestPayload));
-        try {
-            return future.get(totalTimeout.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (TimeoutException ex) {
-            future.cancel(true);
-            throw ex;
-        } catch (ExecutionException ex) {
-            Throwable cause = ex.getCause();
-            if (cause instanceof Exception) {
-                throw (Exception) cause;
+        int maxRetries = properties.getMaxRetries();
+        Duration backoff = properties.getRetryBackoff();
+        AiProtocolException lastException = null;
+
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            if (isTotalTimeoutExceeded(start, totalTimeout)) {
+                throw AiProtocolException.timeout("AI broker total timeout exceeded", lastException);
             }
-            throw new RuntimeException(cause);
+            try {
+                String rawJson = adapter.execute(request);
+                AiScheduleResponseDto dto = jsonParser.parse(rawJson);
+                if (dto.status == AiStatus.PARTIAL_SUCCESS) {
+                    throw AiProtocolException.partialSuccess("AI response marked PARTIAL_SUCCESS");
+                }
+                if (dto.status == AiStatus.FAILURE) {
+                    throw AiProtocolException.businessFailure("AI response marked FAILURE");
+                }
+                return mapper.toDomain(dto);
+            } catch (AiProtocolException ex) {
+                lastException = ex;
+            } catch (RuntimeException ex) {
+                lastException = AiProtocolException.transportFailure("AI provider call failed", ex);
+            }
+
+            if (attempt < maxRetries) {
+                sleep(backoff);
+            }
+        }
+
+        if (lastException != null) {
+            throw lastException;
+        }
+        throw AiProtocolException.transportFailure("AI provider call failed", null);
+    }
+
+    private void validateRequest(AiBrokerRequest request) {
+        if (request == null || request.getToonPayload() == null || request.getToonPayload().trim().isEmpty()) {
+            throw AiProtocolException.businessFailure("Missing TOON payload for AI broker");
         }
     }
 
-    private boolean isRetryable(Exception ex) {
-        return ex instanceof RestClientException
-                || ex instanceof TimeoutException
-                || ex instanceof java.io.IOException;
+    private static boolean isTotalTimeoutExceeded(Instant start, Duration totalTimeout) {
+        if (totalTimeout == null) {
+            return false;
+        }
+        if (totalTimeout.isZero() || totalTimeout.isNegative()) {
+            return true;
+        }
+        return Duration.between(start, Instant.now()).compareTo(totalTimeout) > 0;
     }
 
-    private void applyBackoff(Duration backoff) {
+    private static void sleep(Duration backoff) {
         if (backoff == null || backoff.isZero() || backoff.isNegative()) {
             return;
         }
         try {
             Thread.sleep(backoff.toMillis());
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-    }
-
-    private AiProtocolException toTransportException(Exception ex) {
-        if (ex instanceof TimeoutException) {
-            return AiProtocolException.timeout("AI provider request timed out.", ex);
-        }
-        return AiProtocolException.transportFailure("AI provider request failed.", ex);
     }
 }
