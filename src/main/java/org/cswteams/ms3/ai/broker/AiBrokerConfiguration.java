@@ -6,13 +6,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @Configuration
 @EnableConfigurationProperties(AiBrokerProperties.class)
 public class AiBrokerConfiguration {
 
     @Bean
     public AiScheduleJsonParser aiScheduleJsonParser() {
-        return new AiScheduleJsonParser();
+        return new AiScheduleJsonParser(true, true);
     }
 
     @Bean
@@ -27,8 +29,8 @@ public class AiBrokerConfiguration {
 
     @Bean
     public AgentBroker agentBroker(AiBrokerProperties properties,
-                                   AiScheduleJsonParser jsonParser,
-                                   java.util.List<AgentProviderAdapter> adapters) {
-        return new AgentBrokerImpl(properties, jsonParser, adapters);
+                                   List<AgentProviderAdapter> adapters,
+                                   AiScheduleJsonParser jsonParser) {
+        return new AgentBrokerImpl(properties, adapters, jsonParser);
     }
 }

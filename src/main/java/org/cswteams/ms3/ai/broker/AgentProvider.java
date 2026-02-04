@@ -1,6 +1,6 @@
 package org.cswteams.ms3.ai.broker;
 
-public enum AiProvider {
+public enum AgentProvider {
     GEMMA,
-    LLAMA70B
+    LLAMA_70B
 }
