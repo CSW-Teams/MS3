@@ -233,13 +233,17 @@ This document maps the metrics defined in the GQM+S plan to their potential data
 
 ## **Level 2: Software Goal (Migliorare Gradimento)**
 
+## **Level 2: Software Goal (Migliorare Gradimento)**
+
 | Metric (ID & Name) | Data Required | Potential Data Source(s) | Notes & Actions Required |
 | :---- | :---- | :---- | :---- |
-| **M2.1 \- Delta UP** | Uffa Points (current vs previous). | ScheduleAPI.js, Doctor.js. | **Action:** Backend service to calculate/store historical UP snapshots. |
-| **M2.2 \- Sentiment Feedback** | Categorized feedback (pos/neu/neg). | ScheduleFeedbackAPI.js. | **Action:** Implement Sentiment Analysis process on raw text. |
-| **M2.3 \- $UP\_N$ (Normalizzato)** | UP, Min/Max assignable values. | ScheduleAPI.js, VincoliAPI.js. | **Action:** Service to compute normalized score based on constraints. |
-| **Comparison Metrics ($\\Delta\_{UP\_N}, \\Delta\_{\\sigma^2}$)** | Derived stats from old/new schedules. | ScheduleAPI.js. | **Action:** The AI Scheduler must output these deltas in its response. |
-| **Feedback Temperature Changes** | Historical sentiment evolution. | ScheduleFeedbackAPI.js. | **Action:** Service to compare sentiment $t\_0$ vs $t\_{-1}$ per doctor. |
+| **M2.1 - Delta UP** | Uffa Points (current vs previous). | `ScheduleAPI.js`, `Doctor.js`. | **Action:** Backend service to calculate/store historical UP snapshots. |
+| **M2.2 - Sentiment Feedback** | Categorized feedback (pos/neu/neg). | `ScheduleFeedbackAPI.js`. | **Action:** Implement Sentiment Analysis process on raw text. |
+| **M2.3 - $UP_N$ (Normalizzato)** | UP, Min/Max assignable values. | `ScheduleAPI.js`, `VincoliAPI.js`. | **Action:** Service to compute normalized score based on constraints. |
+| **M2.4, M2.5 - Global Deltas ($\Delta_{UP_N}, \Delta_{\sigma^2}$)** | Aggregated UP stats from old/new schedules. | `ScheduleAPI.js`, `ScheduleSnapshot`. | **Action:** The AI Scheduler must output these global deltas in its response. |
+| **M2.6 - M2.9 - Individual Deltas ($\mu_\Delta, \sigma^2_\Delta, \Delta_{min/max}$)** | Per-doctor UP values for current ($t$) and previous ($t_{-1}$) schedule. | `ScheduleSnapshot` (JSON blob of previous UPs). | **Action:** Need to parse the previous schedule's snapshot to compare doctor-by-doctor. |
+| **M2.10 - M2.15 - Sentiment Transitions (Temperature)** | Paired feedback status ($S_{t-1}, S_t$) for each doctor. | `ScheduleFeedbackAPI.js`. | **Action:** Service must query feedback by `doctor_id` for the last 2 schedules to detect state changes (e.g., Neg->Pos). |
+| **M2.16 - M2.25 - Evaluation Thresholds** | Boolean results based on metrics M2.4 - M2.15. | **Calculated within AI Service**. | **Action:** These are logical checks performed by the AI or the Benchmarking Service to validate improvement. |
 
 ## 
 
@@ -295,7 +299,16 @@ Qui mappiamo le metriche sugli oggetti Java analizzati nella Baseline (DoctorUff
 | **M2.3** | $UP\_{min/max}$ | PriorityConfig **\[E\]** | min\_bound, max\_bound | Letti da priority.properties (Baseline). |
 | **M2.4** | $\\Delta\_{UP\_N}$ | **\[C\]** | *Vedi M2.1* | Calcolato: $(UP\_{curr} \- UP\_{prev})$ normalizzato su $(Max \- Min)$. |
 | **M2.5** | $\\sigma^2$ (Varianza) | **\[C\]** | *Vedi M2.1* | VAR\_POP su tutti i valori general\_priority dei medici attivi. |
+| **M2.6** | $\mu_{\Delta}$ (Media Diff) | **[C]** | *Vedi M2.1* | `AVG(UP_curr - UP_prev)` per tutti i medici attivi. |
+| **M2.7** | $\sigma^2_{\Delta}$ (Var Diff) | **[C]** | *Vedi M2.1* | `VAR_POP(UP_curr - UP_prev)` per tutti i medici attivi. |
+| **M2.8** | $\Delta_{min}$ | **[C]** | *Vedi M2.1* | `MIN(UP_curr - UP_prev)`. |
+| **M2.9** | $\Delta_{max}$ | **[C]** | *Vedi M2.1* | `MAX(UP_curr - UP_prev)`. |
 | **M2.10** | **Temp. Change (-N)** | ScheduleFeedback **\[E\]** | sentiment\_score | COUNT WHERE $S\_{t-1} \= \-1$ AND $S\_{t} \= 0$. |
+| **M2.11** | **Change (-+)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = -1$ AND $S_{t} = 1$. |
+| **M2.12** | **Change (N+)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = 0$ AND $S_{t} = 1$. |
+| **M2.13** | **Change (N-)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = 0$ AND $S_{t} = -1$. |
+| **M2.14** | **Change (+-)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = 1$ AND $S_{t} = -1$. |
+| **M2.15** | **Change (+N)** | ScheduleFeedback **[E]** | sentiment_score | COUNT WHERE $S_{t-1} = 1$ AND $S_{t} = 0$. |
 
 ---
 
