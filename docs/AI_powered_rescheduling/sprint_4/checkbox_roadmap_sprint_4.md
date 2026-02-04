@@ -4,7 +4,7 @@
 - [x] ~~1.2 \- Luca~~   
 - [x] ~~1.3 \- Federico C.~~  
 - [x] ~~1.4 Luca~~  
-- [ ] 1.5 Andrea  
+- [x] ~~1.5 Andrea~~  
 - [x] ~~1.6 Federico S.~~ 
 
 \---
