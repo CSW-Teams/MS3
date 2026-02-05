@@ -18,7 +18,7 @@
 - [x] ~~2.5 Luca~~  
 - [x] ~~2.6 Luca~~  
 - [ ] 2.7 Federico C.  
-- [x] ~~2.8 Cantone, Capone, Scordo~~
+- [x] ~~2.8 Cantone~~
 
 \---
 
@@ -26,7 +26,7 @@
 
 - [x] ~~3.1 Andrea e Federico S.~~  
 - [x] ~~3.2 Andrea e Federico S.~~  
-- [x] ~~3.3 Andrea e Federico S. Cantone, Capone, Scordo~~
+- [x] ~~3.3 Andrea e Federico S. Cantone, Capone~~
 - [x] ~~3.4  Cantone, Capone, Scordo~~
 - [x] ~~3.5 Capone~~
 - [ ] 3.6  
@@ -36,7 +36,7 @@
 
 # Story 4 — Planner UI: Schedule Comparison & Selection
 
-- [ ] 4.1  Scordo
+- [x] ~~4.1 Scordo~~
 - [ ] 4.2  
 - [ ] 4.3  
 - [ ] 4.4  
