@@ -342,10 +342,46 @@ Le regole di validazione garantiscono che nessuna dimensione resti non pesata.
 
 
 
+## Microtask 3.5 — Decision Algorithm Service (Priority Scale–Driven)
+
+### Overview
+Questa microtask implementa il **decision algorithm service** che seleziona la schedulazione preferita tra più candidate, usando la **multidimensional priority scale** introdotta nella 3.4. L’algoritmo assume che tutte le metriche in input siano **normalizzate in [0,1] e “higher is better”**, così da consentire una combinazione lineare coerente con i pesi configurati.
+
+### Decision logic & tie-breaks
+- **Scoring principale:** *weighted sum* dei valori normalizzati per ogni `PriorityDimension`, usando la mappa validata da `PriorityScaleConfig#getPriorityScale()`.
+- **Determinismo:** a parità di input, il risultato è deterministico; l’ordinamento dipende solo dai valori metrici e dai pesi.
+- **Tie-break lexicografico (ordine fisso):**  
+  `COVERAGE → UFFA_BALANCE → SENTIMENT_TRANSITIONS → UP_DELTA → VARIANCE_DELTA`.  
+  Se il punteggio complessivo è equivalente (entro tolleranza numerica), si confrontano in sequenza le dimensioni sopra in ordine decrescente di priorità.
+- **Input validation:** nessuna lista vuota/null, nessun valore metrica null/NaN/∞, e range **[0,1]** per ciascuna dimensione. Gli errori generano `IllegalArgumentException`, coerentemente con le utility metriche della 3.3.
+
+### Classi introdotte/aggiornate
+- **`AiScheduleCandidateMetrics`**: DTO “pure” che rappresenta una candidate schedule con i valori normalizzati delle dimensioni (coverage, uffa balance, sentiment transitions, UP delta, variance delta) e un `candidateId` stabile per debug/test.
+- **`DecisionAlgorithmService`**: interfaccia di servizio per la selezione della schedulazione preferita.
+- **`DecisionAlgorithmServiceImpl`**: implementazione concreta che:
+  - recupera i pesi da `PriorityScaleConfig`,
+  - calcola il *weighted sum*,
+  - applica il tie-break lexicografico,
+  - valida i dati in input.
+
+### Integrazione con Priority Scale (Microtask 3.4)
+Il servizio dipende direttamente da `PriorityScaleConfig` per ottenere la **mappa pesi validata** (default + override). In questo modo:
+- tutte le dimensioni sono sempre presenti,
+- la somma dei pesi è garantita pari a 1,
+- la decisione è **configuration-driven** e pronta per override via proprietà Spring.
+
+### Unit test strategy
+I test unitari coprono:
+- selezione corretta del candidato migliore con *weighted sum*,
+- comportamento con **override** della priority scale,
+- tie-break deterministico con ordine fisso delle dimensioni,
+- validazione input (lista vuota, metrica fuori range),
+- scenario realistico con tre schedulazioni tipiche (standard/empatica/efficiente).
+
+
 ## Microtask 3.7
 
 - Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
 - Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
 - Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
 - Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
-
