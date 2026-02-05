@@ -259,25 +259,6 @@ This document maps the metrics defined in the GQM+S plan to their potential data
 | **M3.4 \- Uffa Balance Improvement** | Pre vs Post variance of Uffa Points. | **AI JSON Response** (metrics.uffa\_balance). | **Action:** Persist this metric to validate AI effectiveness over manual scheduling. |
 | **M3.5 \- Computation Time** | Time taken to generate schedule. | AIService.java (System logs). | **Action:** Measure latency to ensure API timeout compliance. |
 
-## Microtask 3.4
-
-
-
-## Microtask 3.5
-
-
-
-## Microtask 3.6
-
-
-
-## Microtask 3.7
-
-- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
-- Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
-- Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
-- Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
-
 ## Microtask 3.3
 
 **Implementation Summary (Metric Aggregation + Normalization Utilities)**
@@ -290,3 +271,117 @@ This document maps the metrics defined in the GQM+S plan to their potential data
   - `MetricAggregationUtils` (statistiche aggregate, delta per-doctor, conteggio transizioni).  
   - `UffaDeltaStats` (contenitore dei risultati aggregati).  
   - `SentimentTransitionCounts` (contenitore dei conteggi delle transizioni).  
+
+## Microtask 3.4 — Multidimensional Priority Scale Config (defaults + overrides)
+
+### Overview
+Questa microtask introduce una **configurazione multidimensionale della priority scale** per il confronto fra schedulazioni AI. L’obiettivo è rendere esplicito e configurabile il peso assegnato a ciascuna dimensione/metrica di decisione, garantendo **default sensati**, **override parziali** e **validazione rigorosa** a runtime. La configurazione viene risolta in un’unica mappa `PriorityDimension -> weight` (somma = 1.0), pronta per essere usata dall’algoritmo di decisione (microtask 3.5).
+
+### Config model
+La configurazione è modellata con `@ConfigurationProperties` Spring Boot:
+
+- **`PriorityScaleProperties`**
+  - `defaults`: mappa `String -> Double` con i pesi di default.
+  - `overrides`: mappa `String -> Double` con i pesi di override (parziali).
+
+Le chiavi vengono mappate all’enum `PriorityDimension` che definisce esplicitamente le dimensioni attese:
+`COVERAGE`, `UFFA_BALANCE`, `SENTIMENT_TRANSITIONS`, `UP_DELTA`, `VARIANCE_DELTA`.
+
+### Defaults & Overrides
+I default sono definiti in `application.properties` con prefisso:
+
+```
+ai.rescheduling.priority-scale.defaults.*
+```
+
+Gli override possono essere definiti con prefisso:
+
+```
+ai.rescheduling.priority-scale.overrides.*
+```
+
+La logica è **merge con defaults**: se un override è presente, sostituisce il valore della dimensione specificata, lasciando invariati gli altri pesi. Il risultato è una mappa completa e deterministica.
+
+### Validation rules
+La validazione avviene **ad ogni accesso** (runtime) tramite `PriorityScaleConfig`:
+
+1. **Default obbligatori**: la sezione `defaults` deve esistere ed essere non vuota.
+2. **Chiavi valide**: ogni chiave deve corrispondere a un valore dell’enum `PriorityDimension`.
+3. **Pesi non-negativi**: i pesi devono essere ≥ 0.
+4. **Copertura completa**: dopo il merge, tutte le dimensioni devono essere presenti.
+5. **Somma = 1.0**: la somma dei pesi deve essere 1 (tolleranza numerica minima).
+
+In caso di violazione viene lanciata `PriorityScaleValidationException`, in modo coerente con la strategia “validate on access”.
+
+### Integration points
+- **Layer di configurazione Spring**: `PriorityScaleProperties` è registrata via `@EnableConfigurationProperties` in `AppConfig`.
+- **Uso previsto**: il servizio di decisione (microtask 3.5) dovrà invocare `PriorityScaleConfig#getPriorityScale()` per ottenere la mappa validata.
+- **Override ambientali**: i valori possono essere sovrascritti tramite proprietà Spring (env vars, profile, etc.).
+
+### Key classes/components
+- `PriorityDimension` — enum delle dimensioni supportate.
+- `PriorityScaleProperties` — schema di configurazione (`defaults` + `overrides`).
+- `PriorityScaleConfig` — merge + validazione, restituisce la mappa immutabile dei pesi.
+- `PriorityScaleValidationException` — errore runtime per configurazioni invalide.
+
+### Testing
+Test unitari (`PriorityScaleConfigTest`) coprono:
+- merge di override parziali,
+- dimensione mancante,
+- somma pesi non valida,
+- dimensione sconosciuta,
+- pesi negativi.
+
+### How to extend
+Per aggiungere nuove dimensioni:
+1. Estendere l’enum `PriorityDimension`.
+2. Aggiornare i default in `application.properties`.
+3. Aggiornare la documentazione/decision service per integrare la nuova dimensione.
+
+Le regole di validazione garantiscono che nessuna dimensione resti non pesata.
+
+
+
+## Microtask 3.5 — Decision Algorithm Service (Priority Scale–Driven)
+
+### Overview
+Questa microtask implementa il **decision algorithm service** che seleziona la schedulazione preferita tra più candidate, usando la **multidimensional priority scale** introdotta nella 3.4. L’algoritmo assume che tutte le metriche in input siano **normalizzate in [0,1] e “higher is better”**, così da consentire una combinazione lineare coerente con i pesi configurati.
+
+### Decision logic & tie-breaks
+- **Scoring principale:** *weighted sum* dei valori normalizzati per ogni `PriorityDimension`, usando la mappa validata da `PriorityScaleConfig#getPriorityScale()`.
+- **Determinismo:** a parità di input, il risultato è deterministico; l’ordinamento dipende solo dai valori metrici e dai pesi.
+- **Tie-break lexicografico (ordine fisso):**  
+  `COVERAGE → UFFA_BALANCE → SENTIMENT_TRANSITIONS → UP_DELTA → VARIANCE_DELTA`.  
+  Se il punteggio complessivo è equivalente (entro tolleranza numerica), si confrontano in sequenza le dimensioni sopra in ordine decrescente di priorità.
+- **Input validation:** nessuna lista vuota/null, nessun valore metrica null/NaN/∞, e range **[0,1]** per ciascuna dimensione. Gli errori generano `IllegalArgumentException`, coerentemente con le utility metriche della 3.3.
+
+### Classi introdotte/aggiornate
+- **`AiScheduleCandidateMetrics`**: DTO “pure” che rappresenta una candidate schedule con i valori normalizzati delle dimensioni (coverage, uffa balance, sentiment transitions, UP delta, variance delta) e un `candidateId` stabile per debug/test.
+- **`DecisionAlgorithmService`**: interfaccia di servizio per la selezione della schedulazione preferita.
+- **`DecisionAlgorithmServiceImpl`**: implementazione concreta che:
+  - recupera i pesi da `PriorityScaleConfig`,
+  - calcola il *weighted sum*,
+  - applica il tie-break lexicografico,
+  - valida i dati in input.
+
+### Integrazione con Priority Scale (Microtask 3.4)
+Il servizio dipende direttamente da `PriorityScaleConfig` per ottenere la **mappa pesi validata** (default + override). In questo modo:
+- tutte le dimensioni sono sempre presenti,
+- la somma dei pesi è garantita pari a 1,
+- la decisione è **configuration-driven** e pronta per override via proprietà Spring.
+
+### Unit test strategy
+I test unitari coprono:
+- selezione corretta del candidato migliore con *weighted sum*,
+- comportamento con **override** della priority scale,
+- tie-break deterministico con ordine fisso delle dimensioni,
+- validazione input (lista vuota, metrica fuori range),
+- scenario realistico con tre schedulazioni tipiche (standard/empatica/efficiente).
+
+
+## Microtask 3.7
+
+- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
+- Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
+- Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
+- Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.

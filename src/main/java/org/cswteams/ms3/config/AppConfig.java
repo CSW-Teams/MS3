@@ -1,10 +1,13 @@
 package org.cswteams.ms3.config;
 
+import org.cswteams.ms3.ai.broker.AiBrokerProperties;
+import org.cswteams.ms3.ai.priority.PriorityScaleProperties;
 import org.cswteams.ms3.security.TwoFactorProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Clock;
@@ -57,7 +60,7 @@ import java.time.Clock;
  */
 @Configuration
 @EnableAspectJAutoProxy
-@EnableConfigurationProperties(TwoFactorProperties.class)
+@EnableConfigurationProperties({TwoFactorProperties.class, PriorityScaleProperties.class, AiBrokerProperties.class})
 public class AppConfig {
 
     @Bean
@@ -66,7 +69,10 @@ public class AppConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
+    public RestTemplate restTemplate(AiBrokerProperties properties) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Math.toIntExact(properties.getConnectTimeout().toMillis()));
+        requestFactory.setReadTimeout(Math.toIntExact(properties.getReadTimeout().toMillis()));
+        return new RestTemplate(requestFactory);
     }
 }

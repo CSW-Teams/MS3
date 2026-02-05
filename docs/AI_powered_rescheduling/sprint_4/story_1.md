@@ -966,3 +966,6 @@ event=plan_regenerate_success requestId=req-reg-001 mode=regenerate durationMs=2
 ```
 
 **Testing non eseguito (non richiesto)**
+
+## Microtask 6 - Document baseline flow in code comments + README notes
+Aggiunto README in docs/AI_powered_rescheduling/sprint_4/README.md e javadoc nel codice.
