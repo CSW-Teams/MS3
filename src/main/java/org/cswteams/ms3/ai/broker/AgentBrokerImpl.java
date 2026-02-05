@@ -87,10 +87,12 @@ public class AgentBrokerImpl implements AgentBroker {
     }
 
     private static boolean isTotalTimeoutExceeded(Instant start, Duration totalTimeout) {
-        if (totalTimeout == null) {
+        // Null or zero means no total timeout is enforced.
+        if (totalTimeout == null || totalTimeout.isZero()) {
             return false;
         }
-        if (totalTimeout.isZero() || totalTimeout.isNegative()) {
+        // Negative timeouts are treated as invalid and immediately exceeded.
+        if (totalTimeout.isNegative()) {
             return true;
         }
         return Duration.between(start, Instant.now()).compareTo(totalTimeout) > 0;
