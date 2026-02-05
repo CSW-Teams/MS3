@@ -55,6 +55,9 @@ public class AgentBrokerImpl implements AgentBroker {
             }
             try {
                 String rawJson = adapter.execute(request);
+                if (isTotalTimeoutExceeded(start, totalTimeout)) {
+                    throw AiProtocolException.timeout("AI broker total timeout exceeded", lastException);
+                }
                 AiScheduleResponseDto dto = jsonParser.parse(rawJson);
                 if (dto.status == AiStatus.PARTIAL_SUCCESS) {
                     throw AiProtocolException.partialSuccess("AI response marked PARTIAL_SUCCESS");
