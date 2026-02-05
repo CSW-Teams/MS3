@@ -107,9 +107,81 @@ public class AgentBrokerImplTest {
         verify(gemmaAdapter, times(1)).execute(request);
     }
 
+    @Test
+    public void requestSchedule_shouldThrowForPartialSuccessStatus() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(0);
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(gemmaAdapter.execute(request)).thenReturn(partialSuccessJson());
+
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser()
+        );
+
+        AiProtocolException exception = assertThrows(
+                AiProtocolException.class,
+                () -> broker.requestSchedule(request)
+        );
+
+        assertEquals(AiProtocolException.ErrorCode.PARTIAL_SUCCESS, exception.getCode());
+        verify(gemmaAdapter).execute(request);
+    }
+
+    @Test
+    public void requestSchedule_shouldThrowForFailureStatus() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(0);
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(gemmaAdapter.execute(request)).thenReturn(failureJson());
+
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser()
+        );
+
+        AiProtocolException exception = assertThrows(
+                AiProtocolException.class,
+                () -> broker.requestSchedule(request)
+        );
+
+        assertEquals(AiProtocolException.ErrorCode.BUSINESS_FAILURE, exception.getCode());
+        verify(gemmaAdapter).execute(request);
+    }
+
     private static String validJson() {
         return "{"
                 + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}";
+    }
+
+    private static String partialSuccessJson() {
+        return "{"
+                + "\"status\":\"PARTIAL_SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}";
+    }
+
+    private static String failureJson() {
+        return "{"
+                + "\"status\":\"FAILURE\","
                 + "\"assignments\":[],"
                 + "\"uncovered_shifts\":[],"
                 + "\"uffa_delta\":[]"
