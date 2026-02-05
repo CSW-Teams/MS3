@@ -4,14 +4,14 @@ import org.cswteams.ms3.ai.protocol.AiScheduleJsonParser;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClientException;
 
 import java.time.Duration;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
