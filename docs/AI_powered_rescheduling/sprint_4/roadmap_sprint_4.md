@@ -208,7 +208,7 @@
 **Sprint Timing**: **Before mid-sprint** (so UI concept can be demoed).
 
 **Microtasks**
-1. **Implement UI states & flows** (**2h, In progress Scordo**)
+1. **Implement UI states & flows** (**2h, Completed Scordo**)
    - Description: Implement loading, success, failure, and partial schedule states in the planner UI.
    - Preconditions: Story 1.
    - Parallel affinities: Backend orchestration (Story 5).
