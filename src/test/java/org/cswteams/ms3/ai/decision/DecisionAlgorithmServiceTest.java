@@ -63,9 +63,9 @@ public class DecisionAlgorithmServiceTest {
         DecisionAlgorithmService service = new DecisionAlgorithmServiceImpl(defaultConfig());
 
         AiScheduleCandidateMetrics candidateA = new AiScheduleCandidateMetrics("A",
-                0.9, 0.5, 0.5, 0.5, 0.5);
+                0.8, 0.6, 0.5, 0.55, 0.575);
         AiScheduleCandidateMetrics candidateB = new AiScheduleCandidateMetrics("B",
-                0.9, 0.4, 0.9, 0.9, 0.9);
+                0.8, 0.5, 0.6, 0.6, 0.6);
 
         AiScheduleCandidateMetrics preferred = service.selectPreferred(Arrays.asList(candidateA, candidateB));
 
