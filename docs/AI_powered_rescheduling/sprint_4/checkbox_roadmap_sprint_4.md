@@ -18,7 +18,7 @@
 - [x] ~~2.5 Luca~~  
 - [x] ~~2.6 Luca~~  
 - [ ] 2.7 Federico C.  
-- [ ] 2.8 Cantone, Capone, Scordo
+- [x] ~~2.8 Cantone, Capone, Scordo~~
 
 \---
 
@@ -28,7 +28,7 @@
 - [x] ~~3.2 Andrea e Federico S.~~  
 - [x] ~~3.3 Andrea e Federico S. Cantone, Capone, Scordo~~
 - [x] ~~3.4  Cantone, Capone, Scordo~~
-- [ ] 3.5  Capone
+- [x] ~~3.5 Capone~~
 - [ ] 3.6  
 - [ ] 3.7
 
