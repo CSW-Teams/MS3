@@ -20,15 +20,15 @@ public class AgentBrokerImplTest {
     @Test
     public void requestSchedule_shouldSelectConfiguredProvider() {
         AiBrokerProperties properties = new AiBrokerProperties();
-        properties.setProvider(AiProvider.LLAMA70B);
+        properties.setProvider(AgentProvider.LLAMA_70B);
         properties.setMaxRetries(0);
         properties.setTotalTimeout(Duration.ZERO);
 
         AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
-        when(gemmaAdapter.provider()).thenReturn(AiProvider.GEMMA);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
 
         AgentProviderAdapter llamaAdapter = mock(AgentProviderAdapter.class);
-        when(llamaAdapter.provider()).thenReturn(AiProvider.LLAMA70B);
+        when(llamaAdapter.provider()).thenReturn(AgentProvider.LLAMA_70B);
         when(llamaAdapter.requestSchedule("payload")).thenReturn(validJson());
 
         AgentBrokerImpl broker = new AgentBrokerImpl(
@@ -47,13 +47,13 @@ public class AgentBrokerImplTest {
     @Test
     public void requestSchedule_shouldRetryOnTransportFailures() {
         AiBrokerProperties properties = new AiBrokerProperties();
-        properties.setProvider(AiProvider.GEMMA);
+        properties.setProvider(AgentProvider.GEMMA);
         properties.setMaxRetries(2);
         properties.setRetryBackoff(Duration.ZERO);
         properties.setTotalTimeout(Duration.ZERO);
 
         AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
-        when(gemmaAdapter.provider()).thenReturn(AiProvider.GEMMA);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
         when(gemmaAdapter.requestSchedule("payload"))
                 .thenThrow(new RestClientException("first failure"))
                 .thenThrow(new RestClientException("second failure"))
@@ -74,12 +74,12 @@ public class AgentBrokerImplTest {
     @Test
     public void requestSchedule_shouldSurfaceTimeouts() {
         AiBrokerProperties properties = new AiBrokerProperties();
-        properties.setProvider(AiProvider.GEMMA);
+        properties.setProvider(AgentProvider.GEMMA);
         properties.setMaxRetries(0);
         properties.setTotalTimeout(Duration.ofMillis(20));
 
         AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
-        when(gemmaAdapter.provider()).thenReturn(AiProvider.GEMMA);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
         when(gemmaAdapter.requestSchedule("payload")).thenAnswer(invocation -> {
             try {
                 Thread.sleep(50);
