@@ -325,4 +325,35 @@ export class AssegnazioneTurnoAPI {
 
   }
 
+  async postGenerationScheduleAi(dataStart, dataEnd) {
+
+    const initialDay = dataStart.$d.getDate();
+    const initialMonth = dataStart.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
+    const initialYear = dataStart.$d.getFullYear();
+    const finalDay = dataEnd.$d.getDate();
+    const finalMonth = dataEnd.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
+    const finalYear = dataEnd.$d.getFullYear();
+
+    let requestGeneration = {
+      initialDay: initialDay,
+      initialMonth: initialMonth,
+      initialYear: initialYear,
+      finalDay: finalDay,
+      finalMonth: finalMonth,
+      finalYear: finalYear
+    };
+
+    console.log(JSON.stringify(requestGeneration))
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(requestGeneration)
+    };
+
+    const response = await fetchWithAuth('/api/schedule/generation/ai', requestOptions);
+    const body = await response.json();
+    return {status: response.status, body: body};
+
+  }
+
 }
