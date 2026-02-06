@@ -10,6 +10,8 @@ import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.TimeSlot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -24,6 +26,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class ToonBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(ToonBuilder.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
     private final ToonValidator validator;
 
@@ -33,8 +36,19 @@ public class ToonBuilder {
 
     public String build(ToonRequestContext context) {
         validator.preValidate(context);
+        logger.info("event=toon_payload_build_start period_start={} period_end={} mode={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} feedbacks_count={} constraints_count={}",
+                context.getPeriodStart(),
+                context.getPeriodEnd(),
+                context.getMode(),
+                context.getConcreteShifts() == null ? 0 : context.getConcreteShifts().size(),
+                context.getDoctors() == null ? 0 : context.getDoctors().size(),
+                context.getDoctorUffaPriorities() == null ? 0 : context.getDoctorUffaPriorities().size(),
+                context.getDoctorHolidays() == null ? 0 : context.getDoctorHolidays().size(),
+                context.getFeedbacks() == null ? 0 : context.getFeedbacks().size(),
+                context.getActiveConstraints() == null ? 0 : context.getActiveConstraints().size());
         String payload = serialize(context);
         validator.postValidate(payload);
+        logger.info("event=toon_payload_build_success payload_length={}", payload.length());
         return payload;
     }
 

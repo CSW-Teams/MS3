@@ -8,6 +8,8 @@ import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleVariantsResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 public class AgentBrokerImpl implements AgentBroker {
 
+    private static final Logger logger = LoggerFactory.getLogger(AgentBrokerImpl.class);
     private final AiBrokerProperties properties;
     private final Map<AgentProvider, AgentProviderAdapter> adapters;
     private final AiScheduleJsonParser jsonParser;
@@ -38,6 +41,13 @@ public class AgentBrokerImpl implements AgentBroker {
     public AiScheduleVariantsResponse requestSchedule(AiBrokerRequest request) {
         validateRequest(request);
         AgentProvider provider = properties.getProvider();
+        logger.info("event=ai_broker_request_start provider={} correlation_id={} payload_length={} instructions_length={} max_retries={} total_timeout_ms={}",
+                provider,
+                request.getCorrelationId(),
+                request.getToonPayload() == null ? 0 : request.getToonPayload().length(),
+                request.getInstructions() == null ? 0 : request.getInstructions().length(),
+                properties.getMaxRetries(),
+                properties.getTotalTimeout() == null ? null : properties.getTotalTimeout().toMillis());
         AgentProviderAdapter adapter = adapters.get(provider);
         if (adapter == null) {
             throw AiProtocolException.businessFailure("No adapter configured for provider " + provider);
@@ -54,18 +64,32 @@ public class AgentBrokerImpl implements AgentBroker {
 
         for (int attempt = 0; attempt <= maxRetries; attempt++) {
             if (isTotalTimeoutExceeded(start, totalTimeout)) {
+                logger.warn("event=ai_broker_timeout_exceeded attempt={} correlation_id={}", attempt, request.getCorrelationId());
                 throw AiProtocolException.timeout("AI broker total timeout exceeded", lastException);
             }
             try {
+                logger.info("event=ai_broker_attempt_start attempt={} correlation_id={}", attempt, request.getCorrelationId());
                 String rawJson = adapter.execute(request);
                 if (isTotalTimeoutExceeded(start, totalTimeout)) {
+                    logger.warn("event=ai_broker_timeout_exceeded attempt={} correlation_id={}", attempt, request.getCorrelationId());
                     throw AiProtocolException.timeout("AI broker total timeout exceeded", lastException);
                 }
                 AiScheduleVariantsResponseDto dto = jsonParser.parseVariants(rawJson);
+                logger.info("event=ai_broker_attempt_success attempt={} correlation_id={} variants_count={}",
+                        attempt,
+                        request.getCorrelationId(),
+                        dto == null || dto.variants == null ? 0 : dto.variants.size());
                 return mapVariants(dto);
             } catch (AiProtocolException ex) {
+                logger.warn("event=ai_broker_attempt_failed attempt={} correlation_id={} error_code={}",
+                        attempt,
+                        request.getCorrelationId(),
+                        ex.getCode());
                 lastException = ex;
             } catch (RuntimeException ex) {
+                logger.warn("event=ai_broker_attempt_failed attempt={} correlation_id={} error_code=TRANSPORT_FAILURE",
+                        attempt,
+                        request.getCorrelationId());
                 lastException = AiProtocolException.transportFailure("AI provider call failed", ex);
             }
 

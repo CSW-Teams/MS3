@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleVariantsResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AiScheduleJsonParser {
 
+    private static final Logger logger = LoggerFactory.getLogger(AiScheduleJsonParser.class);
     private static final List<String> REQUIRED_VARIANT_LABELS = Collections.unmodifiableList(
             Arrays.asList("EMPATHETIC", "EFFICIENT", "BALANCED")
     );
@@ -50,8 +53,11 @@ public class AiScheduleJsonParser {
         if (json == null || json.trim().isEmpty()) {
             throw AiProtocolException.invalidJson("Empty JSON response from AI", null);
         }
+        logger.info("event=ai_json_parse_start type=single length={}", json.length());
         try {
-            return objectMapper.readValue(json, AiScheduleResponseDto.class);
+            AiScheduleResponseDto dto = objectMapper.readValue(json, AiScheduleResponseDto.class);
+            logger.info("event=ai_json_parse_success type=single");
+            return dto;
         } catch (UnrecognizedPropertyException e) {
             throw AiProtocolException.schemaMismatch("Unknown property in AI JSON response", e);
         } catch (MismatchedInputException e) {
@@ -72,9 +78,12 @@ public class AiScheduleJsonParser {
         if (json == null || json.trim().isEmpty()) {
             throw AiProtocolException.invalidJson("Empty JSON response from AI", null);
         }
+        logger.info("event=ai_json_parse_start type=variants length={}", json.length());
         try {
             AiScheduleVariantsResponseDto dto = objectMapper.readValue(json, AiScheduleVariantsResponseDto.class);
             validateVariantLabels(dto);
+            logger.info("event=ai_json_parse_success type=variants variants_count={}",
+                    dto.variants == null ? 0 : dto.variants.size());
             return dto;
         } catch (UnrecognizedPropertyException e) {
             throw AiProtocolException.schemaMismatch("Unknown property in AI JSON response", e);
