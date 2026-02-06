@@ -11,6 +11,9 @@ import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 
 import java.io.IOException;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class AiScheduleJsonParser {
 
     private final ObjectMapper objectMapper;

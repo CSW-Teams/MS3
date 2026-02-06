@@ -57,6 +57,22 @@ public class AiProtocolException extends RuntimeException {
         return new AiProtocolException(ErrorCategory.BUSINESS_DOMAIN, ErrorCode.PARTIAL_SUCCESS, message, null);
     }
 
+    public static AiProtocolException entityNotFound(String message) {
+        return new AiProtocolException(ErrorCategory.BUSINESS_DOMAIN, ErrorCode.ENTITY_NOT_FOUND, message, null);
+    }
+
+    public static AiProtocolException invalidFormat(String message) {
+        return new AiProtocolException(ErrorCategory.APPLICATION_SCHEMA, ErrorCode.INVALID_FORMAT, message, null);
+    }
+
+    public static AiProtocolException invalidFormat(String message, Throwable cause) {
+        return new AiProtocolException(ErrorCategory.APPLICATION_SCHEMA, ErrorCode.INVALID_FORMAT, message, cause);
+    }
+
+    public static AiProtocolException taskResolutionError(String message) {
+        return new AiProtocolException(ErrorCategory.BUSINESS_DOMAIN, ErrorCode.TASK_RESOLUTION_ERROR, message, null);
+    }
+
     public enum ErrorCategory { TRANSPORT, APPLICATION_SCHEMA, BUSINESS_DOMAIN }
 
     public enum ErrorCode {
@@ -66,6 +82,9 @@ public class AiProtocolException extends RuntimeException {
         TRANSPORT_FAILURE,
         TIMEOUT,
         BUSINESS_FAILURE,
-        PARTIAL_SUCCESS
+        PARTIAL_SUCCESS,
+        ENTITY_NOT_FOUND,
+        INVALID_FORMAT,
+        TASK_RESOLUTION_ERROR
     }
 }

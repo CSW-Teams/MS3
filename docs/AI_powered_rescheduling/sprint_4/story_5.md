@@ -160,6 +160,37 @@ Nota: l’uso del comment testuale è permesso, ma deve rimanere confinato a con
 
 ## Microtask 5.3
 
+**Implement JSON response ingestion + validation (2h)**
+
+**Descrizione**
+Implementare il parsing, la validazione e la conversione delle risposte JSON generate dall'AI in modelli interni del dominio. Questo include la gestione degli `AiAssignmentDto` per creare entità `ConcreteShift` e `DoctorAssignment`, inferendo le `Task` appropriate.
+
+**Precondizioni**
+- Story 2 completata (protocollo AI, formati TOON/JSON, validazioni).
+
+**Affinità in parallelo**
+- Nessuna.
+
+**Output artifact**
+- Pipeline di ingestione JSON completamente implementata e integrabile nel servizio di orchestrazione.
+
+---
+
+### Cosa è stato implementato
+
+*   **Servizio `AiScheduleConverterService`:** È stata creata una nuova classe `AiScheduleConverterService.java` nel package `org.cswteams.ms3.ai.protocol.converter`. Questo servizio orchestra l'intero processo di ingestione del JSON dell'AI.
+*   **Parsing e Validazione:** Il servizio utilizza `AiScheduleJsonParser` (per il parsing sintattico) e `AiScheduleSemanticValidator` (per la validazione semantica) per assicurare che la risposta AI sia ben formata e coerente. Sono state aggiunte le annotazioni `@Service` a entrambi questi componenti per permettere l'autowiring.
+*   **Conversione a Modelli Interni:** Il cuore del servizio è la mappatura dei `AiAssignmentDto` (presenti nella risposta AI) in entità del dominio `ConcreteShift` e `DoctorAssignment`.
+    *   **Estrazione `Shift` e Data:** Il servizio analizza il campo `shiftId` dal formato `S_<id>_<yyyyMMdd>` per estrarre l'ID del template `Shift` e la data specifica dell'assegnazione.
+    *   **Risoluzione Entità:** Vengono risolte le entità `Doctor` e `Shift` (template) usando i rispettivi DAOs (`DoctorDAO`, `ShiftDAO`). È stata gestita la non conformità del metodo `findById` di `DoctorDAO` che restituisce direttamente l'entità o `null` anziché un `Optional`.
+    *   **Inferenza `Task`:** È stata implementata una logica per inferire l'entità `Task` associata all'assegnazione, basandosi sul template `Shift` e sulla `Seniority` del medico (`roleCovered`). In caso di ambiguità o impossibilità di risoluzione, viene lanciata un'eccezione specifica.
+    *   **Creazione `ConcreteShift` e `DoctorAssignment`:** Vengono create le entità `ConcreteShift` (raggruppando le assegnazioni per lo stesso turno concreto) e `DoctorAssignment`, collegandole correttamente con `Doctor`, `ConcreteShift` e `Task`.
+*   **Gestione Errori:** Tutte le fasi di parsing, validazione e conversione sono dotate di robusta gestione degli errori, lanciando `AiProtocolException` con codici specifici (`ENTITY_NOT_FOUND`, `INVALID_FORMAT`, `TASK_RESOLUTION_ERROR`) per indicare problemi durante il processo. Per supportare ciò, `AiProtocolException.java` è stata modificata per includere i metodi factory statici e i `ErrorCode` corrispondenti.
+*   **Adattamento Java 11:** La classe `ParsedShiftId` è stata implementata come una classe statica interna invece di un `record` (funzionalità Java 16), per compatibilità con l'ambiente di compilazione Java 11 del progetto.
+
+### Testing non eseguito (non richiesto)
+Non sono stati eseguiti test automatici specifici per questo microtask.
+
 ## Microtask 5.4
 
 ## Microtask 5.5
