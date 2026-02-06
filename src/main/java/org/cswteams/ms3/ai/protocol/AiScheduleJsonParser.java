@@ -11,11 +11,19 @@ import org.cswteams.ms3.ai.protocol.dto.AiScheduleVariantsResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 @Service
 public class AiScheduleJsonParser {
+
+    private static final List<String> REQUIRED_VARIANT_LABELS = Collections.unmodifiableList(
+            Arrays.asList("EMPATHETIC", "EFFICIENT", "BALANCED")
+    );
 
     private final ObjectMapper objectMapper;
     private final boolean failOnTypeMismatch;
@@ -65,7 +73,9 @@ public class AiScheduleJsonParser {
             throw AiProtocolException.invalidJson("Empty JSON response from AI", null);
         }
         try {
-            return objectMapper.readValue(json, AiScheduleVariantsResponseDto.class);
+            AiScheduleVariantsResponseDto dto = objectMapper.readValue(json, AiScheduleVariantsResponseDto.class);
+            validateVariantLabels(dto);
+            return dto;
         } catch (UnrecognizedPropertyException e) {
             throw AiProtocolException.schemaMismatch("Unknown property in AI JSON response", e);
         } catch (MismatchedInputException e) {
@@ -82,6 +92,10 @@ public class AiScheduleJsonParser {
         }
     }
 
+    public static List<String> requiredVariantLabels() {
+        return REQUIRED_VARIANT_LABELS;
+    }
+
     private static String buildJsonPath(JsonMappingException e) {
         StringBuilder path = new StringBuilder("$");
         for (JsonMappingException.Reference ref : e.getPath()) {
@@ -92,5 +106,36 @@ public class AiScheduleJsonParser {
             }
         }
         return path.toString();
+    }
+
+    private static void validateVariantLabels(AiScheduleVariantsResponseDto dto) {
+        if (dto == null || dto.variants == null) {
+            throw AiProtocolException.schemaMismatch("AI response missing variants", null);
+        }
+        List<String> missing = new ArrayList<>();
+        for (String label : REQUIRED_VARIANT_LABELS) {
+            if (!dto.variants.containsKey(label)) {
+                missing.add(label);
+            }
+        }
+        if (!missing.isEmpty()) {
+            throw AiProtocolException.schemaMismatch(
+                    "AI response missing variants: " + String.join(", ", missing),
+                    null
+            );
+        }
+
+        List<String> unexpected = new ArrayList<>();
+        for (String label : dto.variants.keySet()) {
+            if (!REQUIRED_VARIANT_LABELS.contains(label)) {
+                unexpected.add(label);
+            }
+        }
+        if (!unexpected.isEmpty()) {
+            throw AiProtocolException.schemaMismatch(
+                    "AI response contains unexpected variants: " + String.join(", ", unexpected),
+                    null
+            );
+        }
     }
 }

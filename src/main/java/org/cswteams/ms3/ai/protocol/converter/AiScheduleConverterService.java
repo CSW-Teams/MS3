@@ -5,6 +5,7 @@ import org.cswteams.ms3.ai.protocol.AiScheduleSemanticValidator;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
+import org.cswteams.ms3.ai.protocol.dto.AiScheduleVariantsResponseDto;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
 import org.cswteams.ms3.dao.TaskDAO;
@@ -66,6 +67,27 @@ public class AiScheduleConverterService {
 
         // 3. Map AiAssignmentDto to ConcreteShift entities with DoctorAssignments
         return mapAssignmentsToConcreteShifts(aiResponseDto.assignments);
+    }
+
+    /**
+     * Converts a multi-variant JSON response into internal ConcreteShift lists for each variant.
+     *
+     * @param jsonResponse The raw JSON string from the AI containing variants.
+     * @return A map keyed by variant label with the corresponding ConcreteShift entities.
+     * @throws AiProtocolException if parsing, validation, or conversion fails.
+     */
+    public Map<String, List<ConcreteShift>> convertVariants(String jsonResponse) {
+        AiScheduleVariantsResponseDto variantsDto = jsonParser.parseVariants(jsonResponse);
+        Map<String, List<ConcreteShift>> converted = new LinkedHashMap<>();
+        for (String label : AiScheduleJsonParser.requiredVariantLabels()) {
+            AiScheduleResponseDto variant = variantsDto.variants.get(label);
+            if (variant == null) {
+                throw AiProtocolException.schemaMismatch("AI response missing variant " + label, null);
+            }
+            semanticValidator.validate(variant);
+            converted.put(label, mapAssignmentsToConcreteShifts(variant.assignments));
+        }
+        return converted;
     }
 
     /**
