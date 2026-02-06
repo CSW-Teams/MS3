@@ -318,21 +318,42 @@
    - Preconditions: Stories 2–5.
    - Parallel affinities: None.
    - Output artifact: Technical doc draft.
+   - **Nanotasks (parallelizable)**:
+     - **6.1.a** Capture backend orchestration flow diagram draft (sequence: standard + AI schedules, metrics, selection) and stash in doc workspace.
+     - **6.1.b** Draft AI protocol section (TOON request, JSON response, retries/timeouts, error taxonomy).
+     - **6.1.c** Draft metrics + decision algorithm section (GQM mapping, priority scale, comparison payload fields).
+     - **6.1.d** Draft UI comparison/selection flow notes (states, error handling, success messaging).
+     - **6.1.e** Assemble glossary + data minimization notes (GDPR redactions, data fields included/excluded).
 2. **Sprint summary + decisions log** (**1h**)
    - Description: Write a sprint summary and major decision record.
    - Preconditions: Story 1–5.
    - Parallel affinities: None.
    - Output artifact: Sprint summary doc.
+   - **Nanotasks (parallelizable)**:
+     - **6.2.a** Write sprint timeline summary (what completed per story, key milestones).
+     - **6.2.b** Capture decisions log (AI models chosen, protocol choices, metric priorities).
+     - **6.2.c** Record open questions/risks and mitigation items for next sprint.
+     - **6.2.d** Add dependency impacts (what Story 6 content depends on remaining Story 4/5 items).
 3. **Stakeholder slide deck** (**1h**)
    - Description: Create slides covering problem, approach, and progress.
    - Preconditions: Story 4 design and Story 5 orchestration plan.
    - Parallel affinities: None.
    - Output artifact: Slide deck outline or draft.
+   - **Nanotasks (parallelizable)**:
+     - **6.3.a** Draft slide 1–2: problem statement + baseline scheduling flow snapshot.
+     - **6.3.b** Draft slide 3–4: AI rescheduling approach (protocol + orchestration diagram).
+     - **6.3.c** Draft slide 5: metrics + decision framework summary.
+     - **6.3.d** Draft slide 6: UI comparison/selection preview + next steps.
 4. **Retrospective inputs** (**1h**)
    - Description: Capture what went well, what didn’t, and risks for next sprint.
    - Preconditions: Story 6 Microtasks 1–3.
    - Parallel affinities: None.
    - Output artifact: Retro notes.
+   - **Nanotasks (parallelizable)**:
+     - **6.4.a** Collect “what went well” bullets (process, technical wins, collaboration).
+     - **6.4.b** Collect “what didn’t go well” bullets (blockers, gaps, late changes).
+     - **6.4.c** Capture risks + mitigations for next sprint (AI reliability, data quality, UI readiness).
+     - **6.4.d** Note improvement actions (documentation parallelization, testing strategy, stakeholder sync).
 
 ---
 
