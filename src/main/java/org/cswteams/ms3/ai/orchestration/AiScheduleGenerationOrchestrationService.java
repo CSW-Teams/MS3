@@ -23,6 +23,7 @@ import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.metrics.MetricAggregationUtils;
 import org.cswteams.ms3.ai.metrics.MetricNormalizationUtils;
+import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetadataDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetricsDto;
@@ -31,6 +32,7 @@ import org.cswteams.ms3.ai.protocol.dto.AiStdDevDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaBalanceDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaDeltaDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUncoveredShiftDto;
+import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
@@ -59,10 +61,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class AiScheduleGenerationOrchestrationService {
@@ -92,8 +96,10 @@ public class AiScheduleGenerationOrchestrationService {
     private final AgentBroker agentBroker;
     private final AiReschedulingOrchestrationService aiReschedulingOrchestrationService;
     private final DecisionAlgorithmService decisionAlgorithmService;
+    private final AiScheduleConverterService aiScheduleConverterService;
     private final ObjectMapper objectMapper;
     private final AiScheduleComparisonMapper comparisonMapper = new AiScheduleComparisonMapper();
+    private final AtomicReference<TransientComparisonState> transientComparisonState = new AtomicReference<>();
 
     @Autowired
     public AiScheduleGenerationOrchestrationService(ISchedulerController schedulerController,
@@ -103,6 +109,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     AgentBroker agentBroker,
                                                     AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
                                                     DecisionAlgorithmService decisionAlgorithmService,
+                                                    AiScheduleConverterService aiScheduleConverterService,
                                                     ObjectMapper objectMapper) {
         this.schedulerController = schedulerController;
         this.doctorDAO = doctorDAO;
@@ -111,11 +118,12 @@ public class AiScheduleGenerationOrchestrationService {
         this.agentBroker = agentBroker;
         this.aiReschedulingOrchestrationService = aiReschedulingOrchestrationService;
         this.decisionAlgorithmService = decisionAlgorithmService;
+        this.aiScheduleConverterService = aiScheduleConverterService;
         this.objectMapper = objectMapper;
     }
 
     public AiScheduleComparisonResponseDto generateScheduleComparison(LocalDate startDate, LocalDate endDate) {
-        Schedule standardSchedule = schedulerController.createSchedule(startDate, endDate);
+        Schedule standardSchedule = schedulerController.createScheduleTransient(startDate, endDate);
         if (standardSchedule == null) {
             return null;
         }
@@ -143,7 +151,55 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         AiScheduleDecisionOutcome outcome = selectDecisionOutcome(candidates, normalizedMetrics);
+        cacheTransientCandidates(startDate, endDate, candidates);
         return comparisonMapper.toDto(comparisonCandidates, outcome);
+    }
+
+    public SelectionResult persistSelectedCandidate(String candidateIdOrLabel) {
+        if (candidateIdOrLabel == null || candidateIdOrLabel.trim().isEmpty()) {
+            return SelectionResult.invalid("MISSING_SELECTION");
+        }
+        TransientComparisonState state = transientComparisonState.get();
+        if (state == null) {
+            return SelectionResult.noActiveComparison("NO_ACTIVE_COMPARISON");
+        }
+        CandidateData candidate = state.resolveCandidate(candidateIdOrLabel);
+        if (candidate == null) {
+            return SelectionResult.notFound("CANDIDATE_NOT_FOUND");
+        }
+        if (!schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
+            return SelectionResult.duplicateRange("DUPLICATE_RANGE");
+        }
+        Schedule schedule = buildScheduleForCandidate(state, candidate);
+        if (schedule == null) {
+            return SelectionResult.invalid("INVALID_CANDIDATE");
+        }
+        Schedule persisted = schedulerController.persistSchedule(schedule);
+        if (persisted == null || persisted.getId() == null) {
+            return SelectionResult.invalid("PERSIST_FAILED");
+        }
+        transientComparisonState.set(null);
+        return SelectionResult.persisted(persisted.getId());
+    }
+
+    private Schedule buildScheduleForCandidate(TransientComparisonState state, CandidateData candidate) {
+        if (candidate.schedule != null) {
+            return candidate.schedule;
+        }
+        try {
+            List<ConcreteShift> concreteShifts = aiScheduleConverterService.convert(candidate.rawScheduleJson);
+            return new Schedule(state.startDate.toEpochDay(), state.endDate.toEpochDay(), concreteShifts);
+        } catch (AiProtocolException ex) {
+            return null;
+        }
+    }
+
+    private void cacheTransientCandidates(LocalDate startDate, LocalDate endDate, List<CandidateData> candidates) {
+        Map<String, CandidateData> mappedCandidates = new LinkedHashMap<>();
+        for (CandidateData candidate : candidates) {
+            mappedCandidates.put(candidate.candidateId, candidate);
+        }
+        transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates));
     }
 
     private String buildToonPayload(LocalDate startDate, LocalDate endDate, List<ConcreteShift> concreteShifts) {
@@ -176,10 +232,11 @@ public class AiScheduleGenerationOrchestrationService {
         String rawJson = serializeResponse(responseDto);
         return new CandidateData(
                 "standard",
-                schedule.getId(),
+                null,
                 ScheduleCandidateType.STANDARD,
                 rawJson,
-                metrics
+                metrics,
+                schedule
         );
     }
 
@@ -199,7 +256,7 @@ public class AiScheduleGenerationOrchestrationService {
             DecisionMetricValues metrics = buildAiMetrics(variant);
             AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
             String rawJson = serializeResponse(responseDto);
-            candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics));
+            candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics, null));
         }
         return Collections.unmodifiableList(candidates);
     }
@@ -730,17 +787,20 @@ public class AiScheduleGenerationOrchestrationService {
         private final ScheduleCandidateType type;
         private final String rawScheduleJson;
         private final DecisionMetricValues rawMetrics;
+        private final Schedule schedule;
 
         private CandidateData(String candidateId,
                               Long scheduleId,
                               ScheduleCandidateType type,
                               String rawScheduleJson,
-                              DecisionMetricValues rawMetrics) {
+                              DecisionMetricValues rawMetrics,
+                              Schedule schedule) {
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.scheduleId = scheduleId;
             this.type = Objects.requireNonNull(type, "type");
             this.rawScheduleJson = rawScheduleJson;
             this.rawMetrics = Objects.requireNonNull(rawMetrics, "rawMetrics");
+            this.schedule = schedule;
         }
     }
 
@@ -751,6 +811,94 @@ public class AiScheduleGenerationOrchestrationService {
         private PriorityDeltaStats(double mean, double variance) {
             this.mean = mean;
             this.variance = variance;
+        }
+    }
+
+    private static class TransientComparisonState {
+        private final LocalDate startDate;
+        private final LocalDate endDate;
+        private final Map<String, CandidateData> candidates;
+
+        private TransientComparisonState(LocalDate startDate,
+                                         LocalDate endDate,
+                                         Map<String, CandidateData> candidates) {
+            this.startDate = Objects.requireNonNull(startDate, "startDate");
+            this.endDate = Objects.requireNonNull(endDate, "endDate");
+            this.candidates = Objects.requireNonNull(candidates, "candidates");
+        }
+
+        private CandidateData resolveCandidate(String candidateIdOrLabel) {
+            if (candidateIdOrLabel == null) {
+                return null;
+            }
+            String trimmed = candidateIdOrLabel.trim();
+            if (trimmed.isEmpty()) {
+                return null;
+            }
+            for (CandidateData candidate : candidates.values()) {
+                if (candidate.candidateId.equalsIgnoreCase(trimmed)) {
+                    return candidate;
+                }
+                if (candidate.type.getLabel().equalsIgnoreCase(trimmed)) {
+                    return candidate;
+                }
+                if (candidate.type.name().equalsIgnoreCase(trimmed)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
+    }
+
+    public static class SelectionResult {
+        public enum Status {
+            PERSISTED,
+            INVALID_SELECTION,
+            CANDIDATE_NOT_FOUND,
+            NO_ACTIVE_COMPARISON,
+            DUPLICATE_RANGE
+        }
+
+        private final Status status;
+        private final Long scheduleId;
+        private final String errorCode;
+
+        private SelectionResult(Status status, Long scheduleId, String errorCode) {
+            this.status = status;
+            this.scheduleId = scheduleId;
+            this.errorCode = errorCode;
+        }
+
+        public static SelectionResult persisted(Long scheduleId) {
+            return new SelectionResult(Status.PERSISTED, scheduleId, null);
+        }
+
+        public static SelectionResult invalid(String errorCode) {
+            return new SelectionResult(Status.INVALID_SELECTION, null, errorCode);
+        }
+
+        public static SelectionResult notFound(String errorCode) {
+            return new SelectionResult(Status.CANDIDATE_NOT_FOUND, null, errorCode);
+        }
+
+        public static SelectionResult noActiveComparison(String errorCode) {
+            return new SelectionResult(Status.NO_ACTIVE_COMPARISON, null, errorCode);
+        }
+
+        public static SelectionResult duplicateRange(String errorCode) {
+            return new SelectionResult(Status.DUPLICATE_RANGE, null, errorCode);
+        }
+
+        public Status getStatus() {
+            return status;
+        }
+
+        public Long getScheduleId() {
+            return scheduleId;
+        }
+
+        public String getErrorCode() {
+            return errorCode;
         }
     }
 }
