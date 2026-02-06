@@ -17,7 +17,7 @@
 - [x] ~~2.4 Giuseppe~~  
 - [x] ~~2.5 Luca~~  
 - [x] ~~2.6 Luca~~  
-- [ ] 2.7 Federico C.  
+- [x] ~~2.7 Federico C.~~  
 - [x] ~~2.8 Cantone~~
 
 \---
