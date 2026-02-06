@@ -1,12 +1,11 @@
 import React from "react";
 import Button from '@mui/material/Button';
-import {toast, ToastContainer} from "react-toastify";
+import {toast} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {
   MDBCard,
   MDBCardBody,
   MDBCardTitle,
-  MDBCol,
   MDBContainer,
   MDBRow, MDBTable, MDBTableBody, MDBTableHead,
 } from "mdb-react-ui-kit";
@@ -14,13 +13,20 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TemporaryDrawerSchedule from "../../components/common/BottomViewAggiungiSchedulazione";
 import {ScheduleAPI} from "../../API/ScheduleAPI";
+import {AssegnazioneTurnoAPI} from "../../API/AssegnazioneTurnoAPI";
 import { t } from "i18next";
 import {panic} from "../../components/common/Panic";
-import {Container} from "shards-react";
+import { Container } from "shards-react";
+import GenerationLoadingModal from "../../components/common/GenerationLoadingModal";
+import GenerationStatusFeedback from "../../components/common/GenerationStatusFeedback";
 
-/*
-* Schermata che permette di generare un nuovo schedule
-*/
+/**
+ * @see docs/scheduling_flow/README.md
+ * This is the main UI component for the Planner to manage schedules.
+ * It displays the list of existing schedules and provides the entry point for creating a new one
+ * via the TemporaryDrawerSchedule component. It handles schedule deletion and regeneration,
+ * reflecting a domain rule that only the latest schedule can be regenerated.
+ */
 export class SchedulerGeneratorView extends React.Component{
 
     constructor(props){
@@ -29,10 +35,16 @@ export class SchedulerGeneratorView extends React.Component{
             dataStart: "",
             dataEnd: "",
             schedulazioni: [{}],
-            loading: false,
+            loading: false, // Per delete e vecchi caricatori
+            isGenerationLoading: false, // Nuovo stato per la modale di caricamento della generazione
+            generationStatus: null, // 'success', 'partial', 'error', null
+            generationMessage: '',
+            generationDetails: '',
         }
 
         this.componentDidMount = this.componentDidMount.bind(this);
+        this.handleGenerateSchedule = this.handleGenerateSchedule.bind(this);
+        this.handleCloseGenerationFeedback = this.handleCloseGenerationFeedback.bind(this);
     }
 
     async componentDidMount() {
@@ -105,65 +117,123 @@ export class SchedulerGeneratorView extends React.Component{
     }
 
     async handleRegeneration(idSchedule) {
+      this.setState({isGenerationLoading: true}); // Inizio caricamento generazione
+
       let scheduleAPI = new ScheduleAPI();
       let responseStatus;
       try {
         responseStatus = await scheduleAPI.rigeneraSchedule(idSchedule);
+        // La logica di gestione della risposta
+        if (responseStatus === 202) {
+            await this.componentDidMount() // Attendere il ricaricamento degli schedule
+            this.setState({
+                generationStatus: 'success',
+                generationMessage: t("Schedule successfully recreated"),
+                generationDetails: ''
+            });
+          } else if (responseStatus === 417) {
+            this.setState({
+                generationStatus: 'error',
+                generationMessage: t("Old Schedules cannot be regenerated"),
+                generationDetails: ''
+            });
+          } else {
+            this.setState({
+                generationStatus: 'error',
+                generationMessage: t("Regeneration Error"),
+                generationDetails: ''
+            });
+          }
       } catch (err) {
-
-        panic()
-        return
-      }
-
-      if (responseStatus === 202) {
-        this.componentDidMount()
-        toast.success(t("Schedule successfully recreated"), {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
+        panic();
+        // In caso di errore non gestito (panic), il loading viene comunque terminato dal finally
+        this.setState({
+            generationStatus: 'error',
+            generationMessage: t("An unexpected error occurred during regeneration."),
+            generationDetails: err.message || t("Please try again later.")
         });
-      } else if (responseStatus === 417) {
-        toast.error(t("Old Schedules cannot be regenerated"), {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-      }
-
-      else {
-        toast.error(t("Regeneration Error"), {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
+      } finally {
+        this.setState({isGenerationLoading: false}); // Fine caricamento generazione
       }
     }
 
+    async handleGenerateSchedule(dataInizio, dataFine) {
+      this.setState({ isGenerationLoading: true, generationStatus: null, generationMessage: '', generationDetails: '' });
+
+      let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI();
+      let responseStatus;
+      try {
+        responseStatus = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio, dataFine);
+        await this.componentDidMount(); // Ricarica gli schedule dopo la generazione
+
+        switch (responseStatus) {
+          case 202:
+            this.setState({
+              generationStatus: 'success',
+              generationMessage: t("Schedule successfully created."),
+            });
+            break;
+          case 206:
+            this.setState({
+              generationStatus: 'partial',
+              generationMessage: t("Schedule generated with warnings."),
+              generationDetails: t("Some constraints were violated, resulting in a partial schedule."),
+            });
+            break;
+          case 406: // NOT_ACCEPTABLE HTTP ERROR
+            this.setState({
+              generationStatus: 'error',
+              generationMessage: t("Error: Schedule already exists or cannot be generated."),
+              generationDetails: t("Please check dates and existing schedules."),
+            });
+            break;
+          default:
+            this.setState({
+              generationStatus: 'error',
+              generationMessage: t("Schedule Generation Error."),
+              generationDetails: t("An unexpected error occurred."),
+            });
+            break;
+        }
+
+      } catch (err) {
+        panic();
+        this.setState({
+          generationStatus: 'error',
+          generationMessage: t("An unexpected error occurred during schedule generation."),
+          generationDetails: err.message || t("Please try again later."),
+        });
+      } finally {
+        this.setState({ isGenerationLoading: false });
+      }
+    }
+
+    handleCloseGenerationFeedback() {
+        this.setState({
+            generationStatus: null,
+            generationMessage: '',
+            generationDetails: '',
+        });
+    }
 
   render() {
+    const { loading, isGenerationLoading, generationStatus, generationMessage, generationDetails, schedulazioni } = this.state;
+
     return (
       <Container fluid className="main-content-container px-4 pb-4">
         <MDBContainer className="py-5">
           <MDBCard alignment='center'>
             <MDBCardBody >
               <MDBCardTitle>{t("Schedule management")}</MDBCardTitle>
+              {/* Componente per il feedback sulla generazione dello schedule */}
+              <GenerationStatusFeedback
+                status={generationStatus}
+                message={generationMessage}
+                details={generationDetails}
+                onClose={this.handleCloseGenerationFeedback}
+              />
               <MDBRow className="mt-3 mb-3 mx-3">
-                <TemporaryDrawerSchedule onPostGeneration={this.componentDidMount}></TemporaryDrawerSchedule>
+                <TemporaryDrawerSchedule onGenerateSchedule={this.handleGenerateSchedule}></TemporaryDrawerSchedule>
               </MDBRow>
               <MDBRow>
                 <MDBTable align="middle" bordered small hover>
@@ -177,7 +247,7 @@ export class SchedulerGeneratorView extends React.Component{
                     </tr>
                   </MDBTableHead>
                   <MDBTableBody>
-                    {this.state.schedulazioni.map((schedule, key) => {
+                    {schedulazioni.map((schedule, key) => {
                       const millisecondsInDay = 86400000; // 24 * 60 * 60 * 1000
                       const initialDayMillis = schedule.initialDate * millisecondsInDay;
                       const finalDayMillis = schedule.finalDate * millisecondsInDay;
@@ -205,7 +275,7 @@ export class SchedulerGeneratorView extends React.Component{
                             </IconButton>
                           </td>
                           <td className="align-middle">
-                            {schedule === this.state.schedulazioni[this.state.schedulazioni.length - 1] &&
+                            {schedule === schedulazioni[schedulazioni.length - 1] &&
                             <Button onClick={() => this.handleRegeneration(schedule.id)}>Rigenera</Button>
                             }
                           </td>
@@ -216,7 +286,7 @@ export class SchedulerGeneratorView extends React.Component{
                 </MDBTable>
               </MDBRow>
 
-              {this.state.loading && (
+              {loading && (
                 <div className="loading-overlay">
                   <div className="loading-spinner"></div>
                 </div>
@@ -225,6 +295,8 @@ export class SchedulerGeneratorView extends React.Component{
             </MDBCardBody>
           </MDBCard>
         </MDBContainer>
+        {/* Modale di caricamento per la generazione */}
+        <GenerationLoadingModal isOpen={isGenerationLoading} />
       </Container>
     )
   }

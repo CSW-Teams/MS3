@@ -84,10 +84,11 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
 
+        System.out.println(claims.get("is_multi_factor_authentication_enabled", Boolean.class));
         return claims.get("current_tenant", String.class);
     }
 
-    public Boolean parseMFAInfoFromJwt(String token){
+    public Boolean parseIsMFAEnabledFromJwt(String token){
         Claims claims = Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .build()

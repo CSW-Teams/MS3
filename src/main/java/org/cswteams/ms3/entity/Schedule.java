@@ -55,7 +55,7 @@ public class Schedule {
     private Exception causeIllegal;
 
     public void setCauseIllegal(Exception causeIllegal){
-
+        this.causeIllegal = causeIllegal;
     }
 
     /** List of priority levels on all the queues of the doctors after the schedule generation */

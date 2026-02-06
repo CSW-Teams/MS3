@@ -1,5 +1,11 @@
 import {fetchWithAuth} from "../utils/fetchWithAuth";
 
+/**
+ * @see docs/scheduling_flow/README.md
+ * This class is an API wrapper for managing Schedule entities.
+ * It handles fetching, deleting (DELETE /api/schedule/id=...), and regenerating (POST /api/schedule/regeneration/id=...) schedules.
+ * These methods are primarily used by the SchedulerGeneratorView to manage the lifecycle of schedules.
+ */
 export class ScheduleAPI {
 
 

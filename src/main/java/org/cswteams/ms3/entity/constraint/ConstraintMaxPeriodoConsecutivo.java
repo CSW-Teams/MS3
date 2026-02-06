@@ -14,19 +14,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class implements the maximum number of consecutive minutes that a doctor can work.
+ * Implementa il vincolo {@code ConstraintMaxPeriodoConsecutivo}, che limita il numero di minuti
+ * consecutivi che un medico può lavorare. Può essere parametrizzato in base alla categoria/condizione
+ * del medico (es. over-62, gravidanza).
+ @see ConfigVincoli for the configuration of this constraint.
+ * Fa parte del "Catalogo vincoli attivi" (Microtask 1.2).
  *
- * @see ConfigVincoli for the configuration of this constraint.
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
  */
 @Entity
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
 public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurnoTurno {
+    /**
+     * Numero massimo di minuti consecutivi che un medico può lavorare.
+     */
     @NotNull
     @Column(name = "max_consecutive_minutes")
     private long maxConsecutiveMinutes;
 
+    /**
+     * La {@link Condition condizione} (o categoria) del medico a cui si applica questo vincolo.
+     * Se {@code null}, il vincolo si applica a tutti i medici.
+     */
     @ManyToOne
     @JoinColumn(name = "constrained_category_id")
     private Condition constrainedCategory;
@@ -46,11 +57,14 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
     }
 
     /**
-     * This method checks if maxPeriodoConsecutivo constraint is respected while inserting a new concrete shift into a schedule.
+     * Verifica se il vincolo {@code ConstraintMaxPeriodoConsecutivo} è rispettato quando si tenta di assegnare
+     * un nuovo {@link ConcreteShift turno concreto} a un medico. Il vincolo è violato se l'aggiunta del
+     * nuovo turno crea una sequenza di turni contigui che supera {@code maxConsecutiveMinutes},
+     * tenendo conto dell'eventuale {@link Condition categoria} del medico.
      *
-     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
-     * @throws ViolatedConstraintException Exception thrown if the constraint is violated
-     * @see ConstraintMaxPeriodoConsecutivo
+     * @param context Oggetto {@link ContextConstraint} che comprende il nuovo turno concreto da assegnare
+     *                e le informazioni sullo stato del medico nello schedule corrispondente.
+     * @throws ViolatedConstraintException Eccezione lanciata se il vincolo è violato.
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
@@ -111,9 +125,13 @@ public class ConstraintMaxPeriodoConsecutivo extends ConstraintAssegnazioneTurno
     }
 
     /**
-     * Private method which verifies if the doctor belongs to a specific category (condition): remember that max number of consecutive minutes depends on the doctor condition.
-     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
-     * @return Boolean that represents if the doctor belongs (right now) to the category
+     * Metodo privato che verifica se il medico appartiene a una specifica categoria ({@link Condition condizione}),
+     * poiché il numero massimo di minuti consecutivi può dipendere dalla condizione del medico.
+     *
+     * @param context Oggetto {@link ContextConstraint} che comprende il {@link ConcreteShift turno concreto}
+     *                da assegnare e le informazioni sullo stato del medico nello schedule corrispondente.
+     * @return {@code true} se il medico appartiene (al momento) alla categoria specificata dal vincolo,
+     *         o se il vincolo non è limitato a una categoria specifica; {@code false} altrimenti.
      */
     private boolean verificaAppartenenzaCategoria(ContextConstraint context){
 

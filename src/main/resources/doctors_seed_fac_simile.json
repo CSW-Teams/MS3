@@ -1,0 +1,102 @@
+[
+  {
+    "ms3_tenant_user_id": 1,
+    "name": "Nome1",
+    "lastname": "Cognome1",
+    "birthday": "1970-01-31",
+    "tax_code": "TAXCODEX00000001",
+    "email": "doctor1@example.com",
+    "password": "password",
+    "seniority": "STRUCTURED",
+    "system_actors": [
+      "DOCTOR"
+    ],
+    "doctor_uffa_priority": {
+      "id": 1,
+      "general_priority": 0,
+      "long_shift_priority": 0,
+      "night_priority": 0,
+      "partial_general_priority": 0,
+      "partial_long_shift_priority": 0,
+      "partial_night_priority": 0,
+      "schedule_schedule_id": null
+    },
+    "doctor_uffa_priority_snapshot": {
+      "id": 1,
+      "general_priority": 0,
+      "long_shift_priority": 0,
+      "night_priority": 0,
+      "schedule_schedule_id": null
+    },
+    "doctor_holidays": {
+      "doctor_holidays_id": 1,
+      "holiday_map_base64": "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAB3CAAAABAAAAAAeA=="
+    },
+    "preferences": [
+      {
+        "id": 1,
+        "date": "2026-01-01",
+        "time_slots": [
+          "AFTERNOON"
+        ]
+      },
+      {
+        "id": 2,
+        "date": "2026-01-02",
+        "time_slots": [
+          "NIGHT"
+        ]
+      }
+    ]
+  },
+  {
+    "ms3_tenant_user_id": 2,
+    "name": "Nome2",
+    "lastname": "Cognome2",
+    "birthday": "1970-03-02",
+    "tax_code": "TAXCODEX00000002",
+    "email": "doctor2@example.com",
+    "password": "password",
+    "seniority": "STRUCTURED",
+    "system_actors": [
+      "DOCTOR"
+    ],
+    "doctor_uffa_priority": {
+      "id": 2,
+      "general_priority": 1,
+      "long_shift_priority": 1,
+      "night_priority": 1,
+      "partial_general_priority": 1,
+      "partial_long_shift_priority": 1,
+      "partial_night_priority": 1,
+      "schedule_schedule_id": null
+    },
+    "doctor_uffa_priority_snapshot": {
+      "id": 2,
+      "general_priority": 1,
+      "long_shift_priority": 1,
+      "night_priority": 1,
+      "schedule_schedule_id": null
+    },
+    "doctor_holidays": {
+      "doctor_holidays_id": 2,
+      "holiday_map_base64": "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAB3CAAAABAAAAAAeA=="
+    },
+    "preferences": [
+      {
+        "id": 3,
+        "date": "2026-01-03",
+        "time_slots": [
+          "NIGHT"
+        ]
+      },
+      {
+        "id": 4,
+        "date": "2026-01-04",
+        "time_slots": [
+          "MORNING"
+        ]
+      }
+    ]
+  }
+]

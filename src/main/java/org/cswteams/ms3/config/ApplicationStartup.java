@@ -25,15 +25,20 @@ import org.cswteams.ms3.exception.CalendarServiceException;
 import org.cswteams.ms3.exception.ShiftException;
 import org.cswteams.ms3.tenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -120,6 +125,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     @Autowired
     private SystemUserDAO systemUserDAO;
 
+    @Value("${ms3.seed.doctors.enabled:false}")
+    private boolean seedDoctorsEnabled;
+
 
     @SneakyThrows
     @Override
@@ -131,8 +139,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         //  if (doctorDAO.count() == 0) {
 
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
         TenantConfig tenantConfig = objectMapper.readValue(new File("src/main/resources/tenants_config.json"), TenantConfig.class);
         List<String> tenantSchemas = tenantConfig.getTenants();
+        Optional<com.fasterxml.jackson.databind.JsonNode> doctorSeedData = Optional.empty();
+
+        if (seedDoctorsEnabled) {
+            doctorSeedData = loadDoctorSeedData(objectMapper);
+        }
 
         for (String tenant : tenantSchemas) {
             changeSchema(tenant.toLowerCase());
@@ -146,6 +160,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             for (String tenant : tenantSchemas) {
                 changeSchema(tenant.toLowerCase());
                 populateTenantDB(tenant);
+                seedDoctorsForTenant(tenant, doctorSeedData);
                 registerConstraints();
                 registerScocciature();
             }
@@ -162,6 +177,191 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     private void changeSchema(String tenant) {
         TenantContext.setCurrentTenant(tenant);
+    }
+
+    private Optional<com.fasterxml.jackson.databind.JsonNode> loadDoctorSeedData(ObjectMapper objectMapper) {
+        List<Resource> resources = Arrays.asList(
+                new ClassPathResource("doctors_seed.json"),
+                new FileSystemResource("doctors_seed.json"),
+                new FileSystemResource("src/main/resources/doctors_seed.json"),
+                new ClassPathResource("doctors_seed_fac_simile.json"),
+                new FileSystemResource("doctors_seed_fac_simile.json"),
+                new FileSystemResource("src/main/resources/doctors_seed_fac_simile.json")
+        );
+
+        for (Resource resource : resources) {
+            if (resource.exists()) {
+                try (InputStream inputStream = resource.getInputStream()) {
+                    return Optional.of(objectMapper.readTree(inputStream));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private void seedDoctorsForTenant(String tenant, Optional<com.fasterxml.jackson.databind.JsonNode> doctorSeedData) {
+        if (!seedDoctorsEnabled || doctorSeedData.isEmpty()) {
+            return;
+        }
+
+        com.fasterxml.jackson.databind.JsonNode doctorsNode = doctorSeedData.get();
+        if (doctorsNode == null || !doctorsNode.isArray() || doctorsNode.size() == 0) {
+            return;
+        }
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        List<Holiday> allHolidays = holidayDAO.findAll();
+
+        for (com.fasterxml.jackson.databind.JsonNode seed : doctorsNode) {
+            String seedTenant = getTextValue(seed, "tenant");
+            if (seedTenant != null && !seedTenant.equalsIgnoreCase(tenant)) {
+                continue;
+            }
+
+            String email = getTextValue(seed, "email");
+            if (email != null && doctorDAO.findByEmail(email) != null) {
+                continue;
+            }
+
+            Set<SystemActor> roles = parseRoles(seed.get("system_actors"));
+            Seniority seniority = parseSeniority(seed.get("seniority"));
+            String password = getTextValue(seed, "password");
+            Doctor doctor = new Doctor(
+                    getTextValue(seed, "name"),
+                    getTextValue(seed, "lastname"),
+                    getTextValue(seed, "tax_code"),
+                    parseLocalDate(seed.get("birthday")),
+                    email,
+                    encoder.encode(password == null ? "" : password),
+                    seniority,
+                    roles
+            );
+            doctor = doctorDAO.saveAndFlush(doctor);
+
+            DoctorUffaPriority priority = new DoctorUffaPriority(doctor);
+            applyPrioritySeed(priority, seed.get("doctor_uffa_priority"));
+            doctorUffaPriorityDAO.save(priority);
+
+            DoctorUffaPrioritySnapshot prioritySnapshot = new DoctorUffaPrioritySnapshot(doctor);
+            applyPrioritySnapshot(prioritySnapshot, seed.get("doctor_uffa_priority_snapshot"));
+            doctorUffaPrioritySnapshotDAO.save(prioritySnapshot);
+
+            HashMap<Holiday, Boolean> holidayMap = new HashMap<>();
+            com.fasterxml.jackson.databind.JsonNode holidaysNode = seed.get("holidays");
+            if (holidaysNode != null && holidaysNode.isArray()) {
+                for (com.fasterxml.jackson.databind.JsonNode holidaySeed : holidaysNode) {
+                    String holidayName = getTextValue(holidaySeed, "name");
+                    Holiday holiday = findHolidayByName(allHolidays, holidayName);
+                    if (holiday != null) {
+                        holidayMap.put(holiday, holidaySeed.path("worked").asBoolean(false));
+                    }
+                }
+            }
+            DoctorHolidays doctorHolidays = new DoctorHolidays(doctor, holidayMap);
+            doctorHolidaysDAO.save(doctorHolidays);
+
+            com.fasterxml.jackson.databind.JsonNode preferencesNode = seed.get("preferences");
+            if (preferencesNode != null && preferencesNode.isArray() && preferencesNode.size() > 0) {
+                for (com.fasterxml.jackson.databind.JsonNode preferenceSeed : preferencesNode) {
+                    LocalDate date = parseLocalDate(preferenceSeed.get("date"));
+                    Set<TimeSlot> timeSlots = parseTimeSlots(preferenceSeed.get("time_slots"));
+                    Preference preference = new Preference(date, timeSlots, Collections.singletonList(doctor));
+                    preference = preferenceDAO.save(preference);
+                    doctor.getPreferenceList().add(preference);
+                }
+                doctorDAO.save(doctor);
+            }
+        }
+    }
+
+    private void applyPrioritySeed(DoctorUffaPriority priority, com.fasterxml.jackson.databind.JsonNode seed) {
+        if (seed == null || seed.isNull()) {
+            return;
+        }
+        priority.setPartialGeneralPriority(seed.path("partial_general_priority").asInt(0));
+        priority.setGeneralPriority(seed.path("general_priority").asInt(0));
+        priority.setPartialLongShiftPriority(seed.path("partial_long_shift_priority").asInt(0));
+        priority.setLongShiftPriority(seed.path("long_shift_priority").asInt(0));
+        priority.setPartialNightPriority(seed.path("partial_night_priority").asInt(0));
+        priority.setNightPriority(seed.path("night_priority").asInt(0));
+    }
+
+    private void applyPrioritySnapshot(DoctorUffaPrioritySnapshot snapshot, com.fasterxml.jackson.databind.JsonNode seed) {
+        if (seed == null || seed.isNull()) {
+            return;
+        }
+        snapshot.setGeneralPriority(seed.path("general_priority").asInt(0));
+        snapshot.setLongShiftPriority(seed.path("long_shift_priority").asInt(0));
+        snapshot.setNightPriority(seed.path("night_priority").asInt(0));
+    }
+
+    private Set<SystemActor> parseRoles(com.fasterxml.jackson.databind.JsonNode rolesNode) {
+        if (rolesNode == null || !rolesNode.isArray() || rolesNode.size() == 0) {
+            return Set.of(SystemActor.DOCTOR);
+        }
+        Set<SystemActor> roles = new HashSet<>();
+        for (com.fasterxml.jackson.databind.JsonNode roleNode : rolesNode) {
+            String role = roleNode.asText(null);
+            if (role != null) {
+                roles.add(SystemActor.valueOf(role));
+            }
+        }
+        if (roles.isEmpty()) {
+            roles.add(SystemActor.DOCTOR);
+        }
+        return roles;
+    }
+
+    private Seniority parseSeniority(com.fasterxml.jackson.databind.JsonNode seniorityNode) {
+        if (seniorityNode == null || seniorityNode.isNull()) {
+            return Seniority.STRUCTURED;
+        }
+        return Seniority.valueOf(seniorityNode.asText());
+    }
+
+    private LocalDate parseLocalDate(com.fasterxml.jackson.databind.JsonNode dateNode) {
+        if (dateNode == null || dateNode.isNull()) {
+            return null;
+        }
+        return LocalDate.parse(dateNode.asText());
+    }
+
+    private Set<TimeSlot> parseTimeSlots(com.fasterxml.jackson.databind.JsonNode timeSlotsNode) {
+        if (timeSlotsNode == null || !timeSlotsNode.isArray() || timeSlotsNode.size() == 0) {
+            return Collections.emptySet();
+        }
+        Set<TimeSlot> timeSlots = new HashSet<>();
+        for (com.fasterxml.jackson.databind.JsonNode slotNode : timeSlotsNode) {
+            String slot = slotNode.asText(null);
+            if (slot != null) {
+                timeSlots.add(TimeSlot.valueOf(slot));
+            }
+        }
+        return timeSlots;
+    }
+
+    private String getTextValue(com.fasterxml.jackson.databind.JsonNode node, String fieldName) {
+        if (node == null) {
+            return null;
+        }
+        com.fasterxml.jackson.databind.JsonNode valueNode = node.get(fieldName);
+        return valueNode == null || valueNode.isNull() ? null : valueNode.asText();
+    }
+
+
+    private Holiday findHolidayByName(List<Holiday> holidays, String name) {
+        if (name == null) {
+            return null;
+        }
+        for (Holiday holiday : holidays) {
+            if (name.equals(holiday.getName())) {
+                return holiday;
+            }
+        }
+        return null;
     }
 
 
