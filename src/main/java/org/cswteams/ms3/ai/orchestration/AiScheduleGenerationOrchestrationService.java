@@ -8,6 +8,7 @@ import org.cswteams.ms3.ai.broker.domain.AiAssignment;
 import org.cswteams.ms3.ai.broker.domain.AiMetadata;
 import org.cswteams.ms3.ai.broker.domain.AiMetrics;
 import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
+import org.cswteams.ms3.ai.broker.domain.AiScheduleVariantsResponse;
 import org.cswteams.ms3.ai.broker.domain.AiStdDev;
 import org.cswteams.ms3.ai.broker.domain.AiUffaBalance;
 import org.cswteams.ms3.ai.broker.domain.AiUffaDelta;
@@ -29,6 +30,7 @@ import org.cswteams.ms3.ai.protocol.dto.AiStdDevDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaBalanceDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaDeltaDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUncoveredShiftDto;
+import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
@@ -54,6 +56,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +69,20 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
+    private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(
+            new VariantDefinition(EMPATHETIC_LABEL,
+                    "ai-empathetic",
+                    ScheduleCandidateType.EMPATHETIC,
+                    "Maximize doctor well-being and respect expressed preferences as strict constraints."),
+            new VariantDefinition(EFFICIENT_LABEL,
+                    "ai-efficient",
+                    ScheduleCandidateType.EFFICIENT,
+                    "Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance."),
+            new VariantDefinition(BALANCED_LABEL,
+                    "ai-balanced",
+                    ScheduleCandidateType.BALANCED,
+                    "Balance well-being and operational efficiency, allowing soft constraint tradeoffs.")
+    );
 
     private final ISchedulerController schedulerController;
     private final DoctorDAO doctorDAO;
@@ -105,29 +122,10 @@ public class AiScheduleGenerationOrchestrationService {
         String toonPayload = buildToonPayload(startDate, endDate, standardSchedule.getConcreteShifts());
 
         CandidateData standardCandidate = buildStandardCandidate(standardSchedule);
-        CandidateData empatheticCandidate = requestAiCandidate(
-                ScheduleCandidateType.EMPATHETIC,
-                "ai-empathetic",
-                buildVariantInstructions(EMPATHETIC_LABEL,
-                        "Maximize doctor well-being and respect expressed preferences as strict constraints."),
-                toonPayload
-        );
-        CandidateData efficientCandidate = requestAiCandidate(
-                ScheduleCandidateType.EFFICIENT,
-                "ai-efficient",
-                buildVariantInstructions(EFFICIENT_LABEL,
-                        "Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance."),
-                toonPayload
-        );
-        CandidateData balancedCandidate = requestAiCandidate(
-                ScheduleCandidateType.BALANCED,
-                "ai-balanced",
-                buildVariantInstructions(BALANCED_LABEL,
-                        "Balance well-being and operational efficiency, allowing soft constraint tradeoffs."),
-                toonPayload
-        );
-
-        List<CandidateData> candidates = List.of(standardCandidate, empatheticCandidate, efficientCandidate, balancedCandidate);
+        List<CandidateData> aiCandidates = requestAiCandidates(toonPayload);
+        List<CandidateData> candidates = new ArrayList<>();
+        candidates.add(standardCandidate);
+        candidates.addAll(aiCandidates);
         Map<String, AiScheduleCandidateMetrics> normalizedMetrics = normalizeMetrics(candidates);
 
         List<AiScheduleComparisonCandidate> comparisonCandidates = new ArrayList<>();
@@ -184,16 +182,25 @@ public class AiScheduleGenerationOrchestrationService {
         );
     }
 
-    private CandidateData requestAiCandidate(ScheduleCandidateType type,
-                                             String candidateId,
-                                             String instructions,
-                                             String toonPayload) {
+    private List<CandidateData> requestAiCandidates(String toonPayload) {
+        String instructions = buildMultiVariantInstructions();
         AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, UUID.randomUUID().toString());
-        AiScheduleResponse response = agentBroker.requestSchedule(request);
-        DecisionMetricValues metrics = buildAiMetrics(response);
-        AiScheduleResponseDto responseDto = buildAiResponseDto(response);
-        String rawJson = serializeResponse(responseDto);
-        return new CandidateData(candidateId, null, type, rawJson, metrics);
+        AiScheduleVariantsResponse response = agentBroker.requestSchedule(request);
+        List<CandidateData> candidates = new ArrayList<>();
+        for (VariantDefinition definition : VARIANT_DEFINITIONS) {
+            AiScheduleResponse variant = response.getVariant(definition.label);
+            if (variant == null) {
+                throw AiProtocolException.schemaMismatch(
+                        "AI response missing variant " + definition.label,
+                        null
+                );
+            }
+            DecisionMetricValues metrics = buildAiMetrics(variant);
+            AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
+            String rawJson = serializeResponse(responseDto);
+            candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics));
+        }
+        return Collections.unmodifiableList(candidates);
     }
 
     private DecisionMetricValues buildStandardMetrics(Schedule schedule) {
@@ -701,10 +708,31 @@ public class AiScheduleGenerationOrchestrationService {
         return normalized;
     }
 
-    private String buildVariantInstructions(String label, String intent) {
-        return "VARIANT: " + label + "\n" +
-                "GOAL: " + intent + "\n" +
-                "Return a single schedule JSON compliant with the schema, no extra text.";
+    private String buildMultiVariantInstructions() {
+        StringBuilder builder = new StringBuilder("Generate three schedule variants in a single JSON response.\n");
+        builder.append("Use the labels EMPATHETIC, EFFICIENT, BALANCED under the \"variants\" object.\n");
+        for (VariantDefinition definition : VARIANT_DEFINITIONS) {
+            builder.append("- ").append(definition.label).append(": ").append(definition.intent).append("\n");
+        }
+        builder.append("Return only the JSON object, no extra text.");
+        return builder.toString();
+    }
+
+    private static class VariantDefinition {
+        private final String label;
+        private final String candidateId;
+        private final ScheduleCandidateType type;
+        private final String intent;
+
+        private VariantDefinition(String label,
+                                  String candidateId,
+                                  ScheduleCandidateType type,
+                                  String intent) {
+            this.label = Objects.requireNonNull(label, "label");
+            this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
+            this.type = Objects.requireNonNull(type, "type");
+            this.intent = Objects.requireNonNull(intent, "intent");
+        }
     }
 
     private static class CandidateData {
