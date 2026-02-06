@@ -173,7 +173,7 @@
    - Preconditions: Microtasks 3–4.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Decision service + unit tests.
-6. **Implement comparison payload builder** (**3h**)
+6. **Implement comparison payload builder** (**3h, In progress Capone**)
    - Description: Build backend models and serialization for the 4-schedule comparison response.
    - Preconditions: Microtasks 3–5.
    - Parallel affinities: UI story (Story 4).
@@ -258,12 +258,12 @@
 **Sprint Timing**: **Before mid-sprint** (to enable demoable architecture).
 
 **Microtasks**
-1. **Implement orchestration sequence service** (**2h**)
+1. **Implement orchestration sequence service** (**2h, In progress Scordo**)
    - Description: Implement the service that sequences standard + AI schedule generation and metrics computation.
    - Preconditions: Stories 2–3.
    - Parallel affinities: UI state design (Story 4).
    - Output artifact: Orchestration service implementation.
-2. **Implement TOON request generation + validation** (**2h**)
+2. **Implement TOON request generation + validation** (**2h, In progress Cantone**)
    - Description: Implement `.toon` request generation and validation gates before AI calls.
    - Preconditions: Story 2.
    - Parallel affinities: None.
