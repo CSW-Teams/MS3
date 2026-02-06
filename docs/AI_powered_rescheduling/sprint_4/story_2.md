@@ -651,7 +651,6 @@ Se tutte le chiamate AI falliscono: **ritornare lo schedule standard** e segnala
 - Doctor names, emails, phone numbers, staff IDs, or any direct identifiers.  
 - Exact birthdates, age, gender, pregnancy status, disability details, or medical condition specifics.  
 - Full historical schedules beyond the current window (only constraints derived from history are allowed).  
-- Raw free-text feedback containing personal or health details.  
 - Internal system IDs not required for matching (e.g., database primary keys unrelated to scheduling).  
 
 #### Redaction Rules
@@ -663,7 +662,7 @@ Se tutte le chiamate AI falliscono: **ritornare lo schedule standard** e segnala
 | priority values | Keep numeric deltas only (no history). | Minimizes exposure while preserving fairness objective. |
 | holidays_taken | Tokenize to generic holiday codes (e.g., HOLIDAY_01). | Avoid revealing sensitive calendar patterns. |
 | blocks (unavailability) | Reduce granularity to date+slot; no time-of-day details. | Minimum needed for availability constraints. |
-| schedule feedbacks | Strip free text; keep structured reason codes + severity score. | Removes personal/sensitive content while retaining signal. |
+| schedule feedbacks | Require structured category + rating; allow optional text comments limited to scheduling-related content. | Preserves actionable signal while allowing focused context without personal data. |
 | constraints params | Remove personal context; keep only machine-actionable parameters. | Prevents leakage of personal circumstances. |
 | time precision | Round to slot boundaries; avoid exact timestamps when not required. | Minimizes temporal re-identification risk. |
 
@@ -671,7 +670,7 @@ Se tutte le chiamate AI falliscono: **ritornare lo schedule standard** e segnala
 
 - Only data required for scheduling reasoning and constraint enforcement is transmitted.  
 - All personal identifiers and sensitive attributes are excluded or pseudonymized.  
-- Free-text feedback is eliminated in favor of structured codes and scores.  
+- Free-text feedback is limited to scheduling-related comments, with structured category and rating required.  
 - Payloads are minimized to the scheduling window and necessary role/constraint data only.  
 
 ## Microtask 2.6 — Implementation recap (TOON serialization)
