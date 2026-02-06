@@ -6,6 +6,7 @@ import org.cswteams.ms3.control.toon.ToonConstraintEntityType;
 import org.cswteams.ms3.control.toon.ToonConstraintType;
 import org.cswteams.ms3.control.toon.ToonFeedback;
 import org.cswteams.ms3.control.toon.ToonRequestContext;
+import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorHolidays;
@@ -14,6 +15,7 @@ import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.Preference;
 import org.cswteams.ms3.entity.QuantityShiftSeniority;
+import org.cswteams.ms3.entity.RequestRemovalFromConcreteShift;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.enums.Seniority;
@@ -36,6 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AiReschedulingOrchestrationServiceTest {
 
@@ -74,7 +78,10 @@ class AiReschedulingOrchestrationServiceTest {
                 Map.of("until", "2026-05-21T08:00:00Z")
         );
 
-        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService();
+        RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
+        when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+                .thenReturn(List.of());
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao);
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
                 periodStart,
                 periodEnd,
@@ -101,6 +108,48 @@ class AiReschedulingOrchestrationServiceTest {
         assertFalse(payload.contains("- id: 10\n"));
         assertTrue(payload.contains(shiftId + ", 1, TOO_MANY_NIGHTS, 4\n"));
         assertTrue(payload.contains("HARD, DOCTOR, 1, REST_PERIOD, { \"until\": \"2026-05-21T08:00:00Z\" }\n"));
+    }
+
+    @Test
+    void includesScheduleFeedbacksInToonPayload() {
+        LocalDate periodStart = LocalDate.of(2026, 6, 1);
+        LocalDate periodEnd = LocalDate.of(2026, 6, 2);
+        Doctor doctor = newDoctor(12L, Seniority.SPECIALIST_JUNIOR);
+
+        Shift shift = makeShift(
+                202L,
+                TimeSlot.MORNING,
+                LocalTime.of(8, 0),
+                Duration.ofMinutes(480)
+        );
+        ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
+        String shiftId = ToonBuilder.shiftIdFor(concreteShift);
+
+        RequestRemovalFromConcreteShift request = new RequestRemovalFromConcreteShift(concreteShift, doctor, "Free text reason");
+        request.setReviewed(true);
+        request.setAccepted(false);
+
+        RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
+        when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+                .thenReturn(List.of(request));
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao);
+
+        AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
+                periodStart,
+                periodEnd,
+                "rebalance_uffa",
+                List.of(concreteShift),
+                List.of(doctor),
+                List.of(new DoctorUffaPriority(doctor)),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        ToonBuilder builder = new ToonBuilder();
+        String payload = builder.build(toonRequest.getToonRequestContext());
+        assertTrue(payload.contains(shiftId + ", 1, REMOVAL_REJECTED, 4\n"));
+        assertFalse(payload.contains("Free text reason"));
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {
