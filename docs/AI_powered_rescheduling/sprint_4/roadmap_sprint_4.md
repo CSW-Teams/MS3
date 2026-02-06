@@ -113,7 +113,7 @@
    - Preconditions: Microtasks 2–4.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: TOON builder + validation unit tests.
-7. **Implement JSON response parsing + validation** (**2h, In progress Cappellini**)
+7. **Implement JSON response parsing + validation** (**2h, Completed by Cappellini**)
    - Description: Build JSON parsing layer that maps AI schedules to internal models with strict schema checks.
    - Preconditions: Microtasks 3–4.
    - Parallel affinities: Backend orchestration (Story 5).
