@@ -1,15 +1,18 @@
 package org.cswteams.ms3.ai.broker;
 
 import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
+import org.cswteams.ms3.ai.broker.domain.AiScheduleVariantsResponse;
 import org.cswteams.ms3.ai.broker.mapper.AiScheduleResponseMapper;
 import org.cswteams.ms3.ai.protocol.AiScheduleJsonParser;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
+import org.cswteams.ms3.ai.protocol.dto.AiScheduleVariantsResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +35,7 @@ public class AgentBrokerImpl implements AgentBroker {
     }
 
     @Override
-    public AiScheduleResponse requestSchedule(AiBrokerRequest request) {
+    public AiScheduleVariantsResponse requestSchedule(AiBrokerRequest request) {
         validateRequest(request);
         AgentProvider provider = properties.getProvider();
         AgentProviderAdapter adapter = adapters.get(provider);
@@ -42,7 +45,7 @@ public class AgentBrokerImpl implements AgentBroker {
         return executeWithRetry(adapter, request);
     }
 
-    private AiScheduleResponse executeWithRetry(AgentProviderAdapter adapter, AiBrokerRequest request) {
+    private AiScheduleVariantsResponse executeWithRetry(AgentProviderAdapter adapter, AiBrokerRequest request) {
         Instant start = Instant.now();
         Duration totalTimeout = properties.getTotalTimeout();
         int maxRetries = properties.getMaxRetries();
@@ -58,14 +61,8 @@ public class AgentBrokerImpl implements AgentBroker {
                 if (isTotalTimeoutExceeded(start, totalTimeout)) {
                     throw AiProtocolException.timeout("AI broker total timeout exceeded", lastException);
                 }
-                AiScheduleResponseDto dto = jsonParser.parse(rawJson);
-                if (dto.status == AiStatus.PARTIAL_SUCCESS) {
-                    throw AiProtocolException.partialSuccess("AI response marked PARTIAL_SUCCESS");
-                }
-                if (dto.status == AiStatus.FAILURE) {
-                    throw AiProtocolException.businessFailure("AI response marked FAILURE");
-                }
-                return mapper.toDomain(dto);
+                AiScheduleVariantsResponseDto dto = jsonParser.parseVariants(rawJson);
+                return mapVariants(dto);
             } catch (AiProtocolException ex) {
                 lastException = ex;
             } catch (RuntimeException ex) {
@@ -81,6 +78,27 @@ public class AgentBrokerImpl implements AgentBroker {
             throw lastException;
         }
         throw AiProtocolException.transportFailure("AI provider call failed", null);
+    }
+
+    private AiScheduleVariantsResponse mapVariants(AiScheduleVariantsResponseDto dto) {
+        if (dto == null || dto.variants == null || dto.variants.isEmpty()) {
+            throw AiProtocolException.schemaMismatch("AI response missing variants", null);
+        }
+        Map<String, AiScheduleResponse> mapped = new HashMap<>();
+        for (Map.Entry<String, AiScheduleResponseDto> entry : dto.variants.entrySet()) {
+            AiScheduleResponseDto variant = entry.getValue();
+            if (variant == null) {
+                throw AiProtocolException.schemaMismatch("AI response variant " + entry.getKey() + " is null", null);
+            }
+            if (variant.status == AiStatus.PARTIAL_SUCCESS) {
+                throw AiProtocolException.partialSuccess("AI response marked PARTIAL_SUCCESS for variant " + entry.getKey());
+            }
+            if (variant.status == AiStatus.FAILURE) {
+                throw AiProtocolException.businessFailure("AI response marked FAILURE for variant " + entry.getKey());
+            }
+            mapped.put(entry.getKey(), mapper.toDomain(variant));
+        }
+        return new AiScheduleVariantsResponse(mapped);
     }
 
     private void validateRequest(AiBrokerRequest request) {
