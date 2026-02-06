@@ -1,5 +1,7 @@
 package org.cswteams.ms3.rest;
 
+import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonResponseDto;
+import org.cswteams.ms3.ai.orchestration.AiScheduleGenerationOrchestrationService;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.dto.ScheduleGenerationDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
@@ -40,6 +42,9 @@ public class ScheduleRestEndpoint {
 
     @Autowired
     private ISchedulerController schedulerController;
+
+    @Autowired
+    private AiScheduleGenerationOrchestrationService aiScheduleGenerationOrchestrationService;
 
     /**
      * Questo metodo è invocato dal frontend per richiedere la generazione di un nuovo schedule di turni
@@ -112,6 +117,31 @@ public class ScheduleRestEndpoint {
         } finally {
             MDC.remove(MODE_KEY);
         }
+    }
+
+    /**
+     * Endpoint dedicato alla generazione di schedulazioni con orchestrazione AI.
+     * Restituisce il confronto tra la schedulazione standard e le tre varianti AI (empatica, efficiente, bilanciata)
+     * includendo metriche e payload JSON per ciascun candidato.
+     *
+     * @param gs DTO contenente le date di inizio e fine per la generazione dello schedule.
+     * @return ResponseEntity con il payload di confronto o errore di validazione.
+     */
+    @PreAuthorize("hasAnyRole('PLANNER')")
+    @RequestMapping(method = RequestMethod.POST, path = "generation/ai")
+    public ResponseEntity<?> createScheduleWithAi(@RequestBody() ScheduleGenerationDTO gs) {
+        if (gs == null || gs.getEndDate().isBefore(gs.getStartDate())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        AiScheduleComparisonResponseDto response = aiScheduleGenerationOrchestrationService.generateScheduleComparison(
+                gs.getStartDate(),
+                gs.getEndDate()
+        );
+        if (response == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
