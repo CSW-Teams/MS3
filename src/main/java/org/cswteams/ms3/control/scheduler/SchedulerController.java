@@ -122,7 +122,15 @@ public class SchedulerController implements ISchedulerController {
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate) {
         List<DoctorUffaPriority> doctorUffaPriorityList = doctorUffaPriorityDAO.findAll();
         List<DoctorUffaPrioritySnapshot> doctorUffaPrioritySnapshot = doctorUffaPrioritySnapshotDAO.findAll();
-        return createSchedule(startDate, endDate, doctorUffaPriorityList, doctorUffaPrioritySnapshot);
+        return createScheduleInternal(startDate, endDate, doctorUffaPriorityList, doctorUffaPrioritySnapshot, true);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public Schedule createScheduleTransient(LocalDate startDate, LocalDate endDate) {
+        List<DoctorUffaPriority> doctorUffaPriorityList = doctorUffaPriorityDAO.findAll();
+        List<DoctorUffaPrioritySnapshot> doctorUffaPrioritySnapshot = doctorUffaPrioritySnapshotDAO.findAll();
+        return createScheduleInternal(startDate, endDate, doctorUffaPriorityList, doctorUffaPrioritySnapshot, false);
     }
 
 
@@ -145,6 +153,14 @@ public class SchedulerController implements ISchedulerController {
     @Override
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot)  {
+        return createScheduleInternal(startDate, endDate, doctorUffaPriorityList, snapshot, true);
+    }
+
+    private Schedule createScheduleInternal(LocalDate startDate,
+                                            LocalDate endDate,
+                                            List<DoctorUffaPriority> doctorUffaPriorityList,
+                                            List<DoctorUffaPrioritySnapshot> snapshot,
+                                            boolean persist) {
         String mode = resolvePlanMode();
         long flowStart = System.currentTimeMillis();
 
@@ -256,27 +272,29 @@ public class SchedulerController implements ISchedulerController {
                     "violatedConstraintsCount", schedule.getViolatedConstraints().size()
             ));
 
-            long scheduleSaveStart = System.currentTimeMillis();
-            scheduleDAO.save(schedule);
-            logEvent(eventName(mode, "schedule_saved"), mode, Map.of(
-                    "durationMs", System.currentTimeMillis() - scheduleSaveStart,
-                    "planId", schedule.getId()
-            ));
-            long prioritiesSaveStart = System.currentTimeMillis();
-            for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
-                dup.setSchedule(schedule);
-                doctorUffaPriorityDAO.save(dup);
+            if (persist) {
+                long scheduleSaveStart = System.currentTimeMillis();
+                scheduleDAO.save(schedule);
+                logEvent(eventName(mode, "schedule_saved"), mode, Map.of(
+                        "durationMs", System.currentTimeMillis() - scheduleSaveStart,
+                        "planId", schedule.getId()
+                ));
+                long prioritiesSaveStart = System.currentTimeMillis();
+                for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
+                    dup.setSchedule(schedule);
+                    doctorUffaPriorityDAO.save(dup);
+                }
+                logEvent(eventName(mode, "priorities_saved"), mode, Map.of(
+                        "durationMs", System.currentTimeMillis() - prioritiesSaveStart,
+                        "planId", schedule.getId(),
+                        "savedPrioritiesCount", schedule.getDoctorUffaPriorityList().size()
+                ));
+                logEvent(eventName(mode, "persisted"), mode, Map.of(
+                        "durationMs", System.currentTimeMillis() - scheduleSaveStart,
+                        "planId", schedule.getId(),
+                        "savedPrioritiesCount", schedule.getDoctorUffaPriorityList().size()
+                ));
             }
-            logEvent(eventName(mode, "priorities_saved"), mode, Map.of(
-                    "durationMs", System.currentTimeMillis() - prioritiesSaveStart,
-                    "planId", schedule.getId(),
-                    "savedPrioritiesCount", schedule.getDoctorUffaPriorityList().size()
-            ));
-            logEvent(eventName(mode, "persisted"), mode, Map.of(
-                    "durationMs", System.currentTimeMillis() - scheduleSaveStart,
-                    "planId", schedule.getId(),
-                    "savedPrioritiesCount", schedule.getDoctorUffaPriorityList().size()
-            ));
 
             return schedule;
 
@@ -289,6 +307,23 @@ public class SchedulerController implements ISchedulerController {
             return null;
         }
 
+    }
+
+    @Override
+    @Transactional
+    public Schedule persistSchedule(Schedule schedule) {
+        if (schedule == null) {
+            return null;
+        }
+        scheduleDAO.save(schedule);
+        List<DoctorUffaPriority> priorities = schedule.getDoctorUffaPriorityList();
+        if (priorities != null) {
+            for (DoctorUffaPriority dup : priorities) {
+                dup.setSchedule(schedule);
+                doctorUffaPriorityDAO.save(dup);
+            }
+        }
+        return schedule;
     }
 
     /**

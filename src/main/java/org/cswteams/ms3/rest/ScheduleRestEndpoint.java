@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonResponseDto;
+import org.cswteams.ms3.ai.comparison.dto.AiScheduleSelectionRequestDto;
 import org.cswteams.ms3.ai.orchestration.AiScheduleGenerationOrchestrationService;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.dto.ScheduleGenerationDTO;
@@ -142,6 +143,34 @@ public class ScheduleRestEndpoint {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * Endpoint dedicato alla selezione finale della schedulazione preferita tra i candidati.
+     * Accetta l'identificativo/label del candidato scelto e persiste solo quello.
+     *
+     * @param selection DTO con l'id/label del candidato selezionato.
+     * @return ResponseEntity con lo stato HTTP che indica l'esito dell'operazione.
+     */
+    @PreAuthorize("hasAnyRole('PLANNER')")
+    @RequestMapping(method = RequestMethod.POST, path = "selection")
+    public ResponseEntity<?> selectScheduleCandidate(@RequestBody AiScheduleSelectionRequestDto selection) {
+        if (selection == null || selection.getCandidateId() == null || selection.getCandidateId().trim().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        AiScheduleGenerationOrchestrationService.SelectionResult result =
+                aiScheduleGenerationOrchestrationService.persistSelectedCandidate(selection.getCandidateId());
+        if (result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.PERSISTED) {
+            return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
+        }
+        if (result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.DUPLICATE_RANGE) {
+            return new ResponseEntity<>(result, HttpStatus.NOT_ACCEPTABLE);
+        }
+        if (result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.NO_ACTIVE_COMPARISON
+                || result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.CANDIDATE_NOT_FOUND) {
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
     }
 
     /**
