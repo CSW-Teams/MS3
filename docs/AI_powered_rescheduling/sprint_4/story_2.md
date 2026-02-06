@@ -711,6 +711,53 @@ ADR: Unit tests cover deterministic output, validation failures, and PII exclusi
 
 ## Microtask 2.7
 
+## Microtask 2.7 — JSON Response Parsing & Validation
+
+**A) Scopo del microtask**  
+Garantire che la risposta dell’agente AI sia JSON valido, conforme allo schema definito nel Microtask 2.3 e semanticamente coerente prima dell’orchestrazione (Story 5).
+
+**B) Parsing JSON**  
+È stato introdotto un parser dedicato basato su Jackson. Il parsing è strict ma configurabile: fallisce su JSON malformato, proprietà sconosciute e mismatch di tipo (array/object, string/number, ecc.), con flag per modalità permissive controllate quando necessario.
+
+**C) DTO di protocollo**  
+I DTO sono raccolti nel package `org.cswteams.ms3.ai.protocol.dto` e mappano 1:1 lo schema JSON del Microtask 2.3. La root response, i metadati/metrics, gli assignments, gli uncovered shifts e l’uffa delta sono rappresentati con naming camelCase in Java e `@JsonProperty` per lo snake_case. Le collezioni sono inizializzate a liste vuote. Sono stati introdotti gli enum `AiStatus` (SUCCESS, PARTIAL_SUCCESS, FAILURE) e `AiUffaQueue` (gen, night, long, case-sensitive). Il campo `role_covered` è mappato sull’enum di dominio `Seniority`.
+
+**D) Validazione semantica (schema checks)**  
+È stata introdotta una validazione separata dal parsing con controlli su campi obbligatori, range numerici e vincoli per assignment. In particolare: `optimality_score` ∈ [0,1], `coverage_percent` ∈ [0,1], `soft_violations_count` ≥ 0; per ogni assignment `shift_id` valido, `doctor_id` > 0, `role_covered` ammesso, `is_forced` presente e `violation_note` obbligatoria se `is_forced=true`, oltre all’assenza di duplicati sulla coppia (shift_id, doctor_id). Gli errori sono classificati come `APPLICATION_SCHEMA` con dettagli path-based.
+
+**E) Allineamento ADR (Microtask 2.6)**  
+Lo `shift_id` è trattato come identificatore di scambio e validato nel formato `S_<id>_<yyyyMMdd>`, senza lookup DB in parsing/validazione (risoluzione demandata a Story 5). Per `role_covered`, l’ADR richiede STRUCTURED/JUNIOR e nel dominio MS3 il valore JUNIOR è rappresentato da `Seniority.SPECIALIST_JUNIOR`, documentato come decisione di compatibilità. I test sono stati aggiornati per rispettare il formato ADR di `shift_id`.
+
+**F) Test e verifiche**  
+Sono presenti test unitari per parsing JSON valido e malformato, proprietà sconosciute, mismatch di tipo, validazione semantica, mapping completo dei DTO e allineamento ADR (shift_id, role_covered). I DTO sono verificati tramite deserializzazione di una “full response”.
+
+**Regole di protocollo sul campo status**  
+- SUCCESS come unico esito valido: PASS  
+- PARTIAL_SUCCESS trattato come errore: PASS  
+- FAILURE trattato come errore: PASS  
+- Eccezioni dedicate e test di copertura: PASS  
+- Nessuna modifica necessaria: requisito già soddisfatto.
+
+**Audit tassonomia errori (Microtask 2.7)**  
+- Separazione Transport / Network: PASS (gestita a livello broker/orchestrazione, non nel parser/validator)  
+- Classification Application / Schema: PASS (INVALID_JSON, SCHEMA_MISMATCH, TYPE_MISMATCH)  
+- Classification Business / Protocol: PASS (PARTIAL_SUCCESS, BUSINESS_FAILURE)  
+- Categoria + codice errore presenti: PASS  
+- Dettagli strutturati (path/message): PASS (ValidationError + details in AiProtocolException)  
+- Correlation/request ID: PASS (gestito a livello superiore; non nel protocol layer)  
+- Nessuna modifica necessaria: requisito già soddisfatto.
+
+**Audit test suite (Microtask 2.7)**  
+- Happy path con status=SUCCESS: PASS  
+- JSON malformato: PASS  
+- Campo obbligatorio mancante: PASS  
+- Enum non valido: PASS  
+- Tipo errato (type mismatch): PASS  
+- Valori fuori range: PASS  
+- status=PARTIAL_SUCCESS: PASS  
+- status=FAILURE: PASS  
+- Test aggiunti: `AiScheduleJsonParserTest` (enum non valido).
+
 
 ## Microtask 2.8 — Agent Broker (Gemma + Llama‑70B)
 

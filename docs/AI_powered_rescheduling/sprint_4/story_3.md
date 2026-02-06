@@ -385,3 +385,4 @@ I test unitari coprono:
 - Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
 - Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
 - Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
+- `shift_id` è validato come exchange-id secondo formato ADR `S_<id>_<yyyyMMdd>`; nessun lookup DB in questa fase.

@@ -1,17 +1,28 @@
 package org.cswteams.ms3.ai.protocol.exceptions;
 
 import lombok.Getter;
+import org.cswteams.ms3.ai.protocol.ValidationError;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 public class AiProtocolException extends RuntimeException {
 
     private final ErrorCategory category;
     private final ErrorCode code;
+    private final List<ValidationError> details;
 
     AiProtocolException(ErrorCategory category, ErrorCode code, String message, Throwable cause) {
+        this(category, code, message, null, cause);
+    }
+
+    AiProtocolException(ErrorCategory category, ErrorCode code, String message, List<ValidationError> details, Throwable cause) {
         super(message, cause);
         this.category = category;
         this.code = code;
+        this.details = details == null ? null : Collections.unmodifiableList(new ArrayList<>(details));
     }
 
     public static AiProtocolException invalidJson(String message, Throwable cause) {
@@ -20,6 +31,10 @@ public class AiProtocolException extends RuntimeException {
 
     public static AiProtocolException schemaMismatch(String message, Throwable cause) {
         return new AiProtocolException(ErrorCategory.APPLICATION_SCHEMA, ErrorCode.SCHEMA_MISMATCH, message, cause);
+    }
+
+    public static AiProtocolException schemaMismatch(String message, List<ValidationError> details, Throwable cause) {
+        return new AiProtocolException(ErrorCategory.APPLICATION_SCHEMA, ErrorCode.SCHEMA_MISMATCH, message, details, cause);
     }
 
     public static AiProtocolException typeMismatch(String message, Throwable cause) {
