@@ -54,6 +54,8 @@ import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +72,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class AiScheduleGenerationOrchestrationService {
+    private static final Logger logger = LoggerFactory.getLogger(AiScheduleGenerationOrchestrationService.class);
     private static final String MODE_GENERATE = "generate";
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
@@ -123,10 +126,17 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     public AiScheduleComparisonResponseDto generateScheduleComparison(LocalDate startDate, LocalDate endDate) {
+        logger.info("event=ai_standard_generation_start start_date={} end_date={}", startDate, endDate);
         Schedule standardSchedule = schedulerController.createScheduleTransient(startDate, endDate);
         if (standardSchedule == null) {
+            logger.warn("event=ai_standard_generation_empty start_date={} end_date={}", startDate, endDate);
             return null;
         }
+        int standardShiftCount = standardSchedule.getConcreteShifts() == null
+                ? 0
+                : standardSchedule.getConcreteShifts().size();
+        logger.info("event=ai_standard_generation_completed start_date={} end_date={} shifts_count={}",
+                startDate, endDate, standardShiftCount);
 
         String toonPayload = buildToonPayload(startDate, endDate, standardSchedule.getConcreteShifts());
 
@@ -208,6 +218,16 @@ public class AiScheduleGenerationOrchestrationService {
         List<DoctorHolidays> doctorHolidays = doctorHolidaysDAO.findAll();
         List<ToonActiveConstraint> activeConstraints = new ArrayList<>();
         List<ToonFeedback> feedbacks = new ArrayList<>();
+        int shiftCount = concreteShifts == null ? 0 : concreteShifts.size();
+        logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} feedbacks_count={}",
+                startDate,
+                endDate,
+                shiftCount,
+                doctors.size(),
+                priorities.size(),
+                doctorHolidays.size(),
+                activeConstraints.size(),
+                feedbacks.size());
 
         AiReschedulingToonRequest request = aiReschedulingOrchestrationService.buildToonRequestContext(
                 startDate,
@@ -242,8 +262,16 @@ public class AiScheduleGenerationOrchestrationService {
 
     private List<CandidateData> requestAiCandidates(String toonPayload) {
         String instructions = buildMultiVariantInstructions();
-        AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, UUID.randomUUID().toString());
+        String correlationId = UUID.randomUUID().toString();
+        AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
+        logger.info("event=ai_broker_request_prepared correlation_id={} payload_length={} instructions_length={}",
+                correlationId,
+                toonPayload == null ? 0 : toonPayload.length(),
+                instructions == null ? 0 : instructions.length());
         AiScheduleVariantsResponse response = agentBroker.requestSchedule(request);
+        logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
+                correlationId,
+                response == null || response.getVariants() == null ? 0 : response.getVariants().size());
         List<CandidateData> candidates = new ArrayList<>();
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
             AiScheduleResponse variant = response.getVariant(definition.label);
@@ -271,6 +299,11 @@ public class AiScheduleGenerationOrchestrationService {
                 schedule.getDoctorUffaPrioritiesSnapshot(),
                 schedule.getDoctorUffaPriorityList()
         );
+        logger.info("event=metrics_standard_calculated coverage={} uffa_balance={} delta_mean={} delta_variance={}",
+                coverage,
+                uffaBalance,
+                deltaStats.mean,
+                deltaStats.variance);
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
@@ -286,6 +319,11 @@ public class AiScheduleGenerationOrchestrationService {
         Double coverage = metrics != null ? metrics.getCoveragePercent() : 0.0;
         Double uffaBalance = resolveUffaBalanceImprovement(metrics);
         PriorityDeltaStats deltaStats = computeUffaDeltaStats(response.getUffaDelta());
+        logger.info("event=metrics_ai_calculated coverage={} uffa_balance={} delta_mean={} delta_variance={}",
+                coverage,
+                uffaBalance,
+                deltaStats.mean,
+                deltaStats.variance);
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
@@ -371,6 +409,7 @@ public class AiScheduleGenerationOrchestrationService {
 
     private double computeCoverage(List<ConcreteShift> concreteShifts) {
         if (concreteShifts == null || concreteShifts.isEmpty()) {
+            logger.info("event=coverage_computed total_required=0 total_assigned=0 coverage=0.0");
             return 0.0;
         }
         int totalRequired = 0;
@@ -382,9 +421,15 @@ public class AiScheduleGenerationOrchestrationService {
             totalAssigned += Math.min(required, assigned);
         }
         if (totalRequired == 0) {
+            logger.info("event=coverage_computed total_required=0 total_assigned={} coverage=1.0", totalAssigned);
             return 1.0;
         }
-        return (double) totalAssigned / totalRequired;
+        double coverage = (double) totalAssigned / totalRequired;
+        logger.info("event=coverage_computed total_required={} total_assigned={} coverage={}",
+                totalRequired,
+                totalAssigned,
+                coverage);
+        return coverage;
     }
 
     private int computeShiftRequirement(Shift shift) {
@@ -702,6 +747,7 @@ public class AiScheduleGenerationOrchestrationService {
     private Map<String, AiScheduleCandidateMetrics> normalizeMetrics(List<CandidateData> candidates) {
         Map<String, AiScheduleCandidateMetrics> normalized = new HashMap<>();
         if (candidates == null || candidates.isEmpty()) {
+            logger.info("event=metrics_normalization_empty candidates_count=0");
             return normalized;
         }
         double minCoverage = Double.POSITIVE_INFINITY;
@@ -751,6 +797,18 @@ public class AiScheduleGenerationOrchestrationService {
             );
             normalized.put(candidate.candidateId, normalizedCandidate);
         }
+        logger.info("event=metrics_normalization_completed candidates_count={} coverage_min={} coverage_max={} uffa_min={} uffa_max={} sentiment_min={} sentiment_max={} up_delta_min={} up_delta_max={} variance_min={} variance_max={}",
+                candidates.size(),
+                minCoverage,
+                maxCoverage,
+                minUffaBalance,
+                maxUffaBalance,
+                minSentiment,
+                maxSentiment,
+                minUpDelta,
+                maxUpDelta,
+                minVariance,
+                maxVariance);
         return normalized;
     }
 
