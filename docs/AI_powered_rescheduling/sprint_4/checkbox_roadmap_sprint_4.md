@@ -29,7 +29,7 @@
 - [x] ~~3.3 Andrea e Federico S. Cantone, Capone~~
 - [x] ~~3.4  Cantone, Capone, Scordo~~
 - [x] ~~3.5 Capone~~
-- [ ] 3.6  DEPENDENCIES 3.3->3.5
+- [ ] 3.6 Capone - DEPENDENCIES 3.3->3.5
 - [ ] 3.7  DEPENDENCIES 3.3->3.6
 
 \---
@@ -46,8 +46,8 @@
 
 # Story 5 — Backend Orchestration Plan for AI Rescheduling
 
-- [ ] 5.1  DEPENDENCIES 2.X 3.X
-- [ ] 5.2  DEPENDENCIES 2.X
+- [ ] 5.1 Scordo - DEPENDENCIES 2.X 3.X
+- [ ] 5.2 Cantone - DEPENDENCIES 2.X
 - [ ] 5.3  DEPENDENCIES 2.X
 - [ ] 5.4  DEPENDENCIES 3.6
 - [ ] 5.5  DEPENDENCIES 2.X
