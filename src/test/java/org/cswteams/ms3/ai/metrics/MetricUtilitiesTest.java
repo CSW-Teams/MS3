@@ -18,6 +18,20 @@ public class MetricUtilitiesTest {
         assertEquals(0.5, normalized, 0.0001);
     }
 
+    @Test
+    public void normalizeRange_shouldInvertWhenLowerIsBetter() {
+        double normalized = MetricNormalizationUtils.normalizeRange(8.0, 0.0, 10.0, true);
+
+        assertEquals(0.2, normalized, 0.0001);
+    }
+
+    @Test
+    public void normalizeRange_equalBounds_shouldReturnOne() {
+        double normalized = MetricNormalizationUtils.normalizeRange(4.0, 4.0, 4.0, false);
+
+        assertEquals(1.0, normalized, 0.0001);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void normalizeUpValue_outOfRange_shouldThrow() {
         MetricNormalizationUtils.normalizeUpValue(15.0, 0.0, 10.0);
