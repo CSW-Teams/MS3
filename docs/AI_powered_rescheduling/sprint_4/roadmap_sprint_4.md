@@ -173,7 +173,7 @@
    - Preconditions: Microtasks 3–4.
    - Parallel affinities: Backend orchestration (Story 5).
    - Output artifact: Decision service + unit tests.
-6. **Implement comparison payload builder** (**3h, In progress Capone**)
+6. **Implement comparison payload builder** (**3h, Completed by Capone**)
    - Description: Build backend models and serialization for the 4-schedule comparison response.
    - Preconditions: Microtasks 3–5.
    - Parallel affinities: UI story (Story 4).
@@ -268,7 +268,7 @@
    - Preconditions: Story 2.
    - Parallel affinities: None.
    - Output artifact: TOON generation + validation pipeline.
-3. **Implement JSON response ingestion + validation** (**2h, In progress Scordo**)
+3. **Implement JSON response ingestion + validation** (**2h, Completed by Scordo**)
    - Description: Implement AI schedule parsing, validation, and conversion to internal models.
    - Preconditions: Story 2.
    - Parallel affinities: None.
