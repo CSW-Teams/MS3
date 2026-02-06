@@ -258,7 +258,7 @@
 **Sprint Timing**: **Before mid-sprint** (to enable demoable architecture).
 
 **Microtasks**
-1. **Implement orchestration sequence service** (**2h, In progress Scordo**)
+1. **Implement orchestration sequence service** (**2h**)
    - Description: Implement the service that sequences standard + AI schedule generation and metrics computation.
    - Preconditions: Stories 2–3.
    - Parallel affinities: UI state design (Story 4).
@@ -268,7 +268,7 @@
    - Preconditions: Story 2.
    - Parallel affinities: None.
    - Output artifact: TOON generation + validation pipeline.
-3. **Implement JSON response ingestion + validation** (**2h**)
+3. **Implement JSON response ingestion + validation** (**2h, In progress Scordo**)
    - Description: Implement AI schedule parsing, validation, and conversion to internal models.
    - Preconditions: Story 2.
    - Parallel affinities: None.
