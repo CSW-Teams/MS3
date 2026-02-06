@@ -386,3 +386,41 @@ I test unitari coprono:
 - Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
 - Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
 - `shift_id` è validato come exchange-id secondo formato ADR `S_<id>_<yyyyMMdd>`; nessun lookup DB in questa fase.
+
+## Microtask 3.6 — Comparison Payload Builder (DTO + Mapper)
+
+### Obiettivo
+Definire il **payload di confronto** per l’endpoint `/comparison`, includendo:
+- dati grezzi della schedulazione (testo TOON o raw schedule text),
+- metriche decisionali **raw** e **normalizzate**,
+- metadati del candidato (scheduleId e/o candidateId + tipo),
+- outcome della decisione (schedulazione selezionata).
+
+### Scelte progettuali
+- **Separazione domain vs DTO**: i modelli di dominio descrivono i dati necessari al confronto, mentre i DTO sono ottimizzati per la serializzazione JSON e l’uso nel layer REST.
+- **CandidateId condizionale**: il campo `candidateId` viene esposto solo se `scheduleId` non è disponibile (es. prima della persistenza), per evitare duplicazione di identificativi e mantenere compatibilità con la UI.
+- **Metriche duali**: ogni candidato include sia i valori **raw** (per trasparenza diagnostica) sia quelli **normalizzati** (per il punteggio decisionale), in coerenza con l’algoritmo di decisione di microtask 3.5.
+- **Tipizzazione esplicita dei candidati**: i tipi `standard`, `empathetic`, `efficient`, `balanced` sono modellati con un enum, per garantire consistenza di labeling tra backend e frontend.
+
+### Classi create (livello alto)
+**Domain (`org.cswteams.ms3.ai.comparison.domain`)**
+- `ScheduleCandidateType`: enum dei 4 tipi di schedulazione confrontati, con label stabile per l’output.
+- `DecisionMetricValues`: contenitore delle metriche decisionali raw (coverage, uffa balance, sentiment transitions, UP delta, variance delta).
+- `AiScheduleComparisonCandidate`: rappresenta un candidato con metadati, raw schedule text e metriche (raw + normalizzate).
+- `AiScheduleDecisionOutcome`: rappresenta la scelta finale (candidateId/scheduleId + tipo).
+
+**DTO (`org.cswteams.ms3.ai.comparison.dto`)**
+- `AiScheduleCandidateMetadataDto`: metadati serializzati del candidato (candidateId opzionale, scheduleId, type).
+- `AiScheduleDecisionMetricValuesDto`: struttura standard per set di metriche (raw o normalizzate).
+- `AiScheduleDecisionMetricsDto`: wrapper che espone `raw` e `normalized`.
+- `AiScheduleComparisonCandidateDto`: payload del candidato in output (metadata + rawScheduleText + metrics).
+- `AiScheduleDecisionOutcomeDto`: outcome della decisione, esposto tramite metadata del candidato selezionato.
+- `AiScheduleComparisonResponseDto`: risposta complessiva con lista candidati + decisionOutcome.
+
+**Mapper (`org.cswteams.ms3.ai.comparison.mapper`)**
+- `AiScheduleComparisonMapper`: converte il dominio in DTO, gestisce null-safety, filtra candidati null e applica la regola di esposizione `candidateId` solo se `scheduleId` è assente.
+
+### Risultato
+- Il backend dispone di un modello strutturato e serializzabile per il confronto di 4 schedulazioni, pronto per il consumo UI.
+- Le metriche sono disponibili in doppia forma (raw + normalized) per garantire sia **spiegabilità** sia **compatibilità** con l’algoritmo di decisione.
+- L’output è coerente con le convenzioni JSON già presenti (naming consistente con DTO esistenti).
