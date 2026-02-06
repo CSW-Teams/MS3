@@ -112,8 +112,8 @@ class ToonBuilderTest {
                 "  blocks[1]:\n" +
                 "  - start: 2026-05-20, end: 2026-05-20, slots: [\"MORNING\", \"NIGHT\"]\n\n" +
                 "# Feedbacks\n" +
-                "feedbacks[1]{shift_id, doctor_id, reason_code, severity}:\n" +
-                shiftId + ", 10, TOO_MANY_NIGHTS, 4\n\n" +
+                "feedbacks[1]{shift_id, doctor_id, reason_code, severity, comment}:\n" +
+                shiftId + ", 10, TOO_MANY_NIGHTS, 4, \"\"\n\n" +
                 "# Vincoli di Business\n" +
                 "active_constraints[1]{type, entity_type, entity_id, reason, params}:\n" +
                 "HARD, DOCTOR, 10, REST_PERIOD, { \"until\": \"2026-05-21T08:00:00Z\" }\n";

@@ -106,7 +106,7 @@ class AiReschedulingOrchestrationServiceTest {
         assertNotNull(payload);
         assertTrue(payload.contains("- id: 1\n"));
         assertFalse(payload.contains("- id: 10\n"));
-        assertTrue(payload.contains(shiftId + ", 1, TOO_MANY_NIGHTS, 4\n"));
+        assertTrue(payload.contains(shiftId + ", 1, TOO_MANY_NIGHTS, 4, \"\"\n"));
         assertTrue(payload.contains("HARD, DOCTOR, 1, REST_PERIOD, { \"until\": \"2026-05-21T08:00:00Z\" }\n"));
     }
 
@@ -148,8 +148,7 @@ class AiReschedulingOrchestrationServiceTest {
 
         ToonBuilder builder = new ToonBuilder();
         String payload = builder.build(toonRequest.getToonRequestContext());
-        assertTrue(payload.contains(shiftId + ", 1, REMOVAL_REJECTED, 4\n"));
-        assertFalse(payload.contains("Free text reason"));
+        assertTrue(payload.contains(shiftId + ", 1, REMOVAL_REJECTED, 4, \"Free text reason\"\n"));
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {

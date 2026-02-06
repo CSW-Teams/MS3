@@ -24,8 +24,8 @@ public class AiReschedulingOrchestrationService {
     private static final String FEEDBACK_REASON_PENDING = "REMOVAL_PENDING";
     private static final String FEEDBACK_REASON_ACCEPTED = "REMOVAL_ACCEPTED";
     private static final String FEEDBACK_REASON_REJECTED = "REMOVAL_REJECTED";
-    private static final int FEEDBACK_SEVERITY_PENDING = 6;
-    private static final int FEEDBACK_SEVERITY_ACCEPTED = 8;
+    private static final int FEEDBACK_SEVERITY_PENDING = 3;
+    private static final int FEEDBACK_SEVERITY_ACCEPTED = 6;
     private static final int FEEDBACK_SEVERITY_REJECTED = 4;
 
     private final ToonPseudonymizationMapper pseudonymizationMapper = new ToonPseudonymizationMapper();
@@ -103,7 +103,8 @@ public class AiReschedulingOrchestrationService {
                 shiftId,
                 request.getRequestingDoctor().getId(),
                 resolveReasonCode(request),
-                resolveSeverity(request)
+                resolveSeverity(request),
+                request.getReason()
         );
     }
 

@@ -171,12 +171,14 @@ public class ToonBuilder {
                 .thenComparing(ToonFeedback::getDoctorId));
         builder.append("# Feedbacks\n");
         builder.append("feedbacks[").append(ordered.size())
-                .append("]{shift_id, doctor_id, reason_code, severity}:\n");
+                .append("]{shift_id, doctor_id, reason_code, severity, comment}:\n");
         for (ToonFeedback feedback : ordered) {
             builder.append(feedback.getShiftId()).append(", ")
                     .append(feedback.getDoctorId()).append(", ")
                     .append(feedback.getReasonCode()).append(", ")
-                    .append(feedback.getSeverity()).append("\n");
+                    .append(feedback.getSeverity()).append(", ")
+                    .append(renderFeedbackComment(feedback.getComment()))
+                    .append("\n");
         }
         builder.append("\n");
     }
@@ -208,6 +210,18 @@ public class ToonBuilder {
         return ordered.entrySet().stream()
                 .map(entry -> "\"" + entry.getKey() + "\": \"" + entry.getValue() + "\"")
                 .collect(Collectors.joining(", ", "{ ", " }"));
+    }
+
+    private String renderFeedbackComment(String comment) {
+        if (comment == null) {
+            return "\"\"";
+        }
+        String escaped = comment
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r");
+        return "\"" + escaped + "\"";
     }
 
     private List<String> resolveHolidayTokens(DoctorHolidays doctorHolidays) {
