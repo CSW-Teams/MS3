@@ -47,7 +47,7 @@
 # Story 5 — Backend Orchestration Plan for AI Rescheduling
 
 - [ ] 5.1  DEPENDENCIES 2.X 3.X
-- [ ] 5.2 Cantone - DEPENDENCIES 2.X
+- [x] ~~5.2 Cantone - DEPENDENCIES 2.X~~
 - [ ] 5.3 Scordo - DEPENDENCIES 2.X
 - [ ] 5.4  DEPENDENCIES 3.6
 - [ ] 5.5  DEPENDENCIES 2.X
