@@ -22,6 +22,7 @@ import org.cswteams.ms3.ai.comparison.mapper.AiScheduleComparisonMapper;
 import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.metrics.MetricAggregationUtils;
+import org.cswteams.ms3.ai.metrics.MetricNormalizationUtils;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetadataDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetricsDto;
@@ -673,11 +674,16 @@ public class AiScheduleGenerationOrchestrationService {
 
         for (CandidateData candidate : candidates) {
             DecisionMetricValues metrics = candidate.rawMetrics;
-            double coverage = normalize(metrics.getCoverage(), minCoverage, maxCoverage, false);
-            double uffaBalance = normalize(metrics.getUffaBalance(), minUffaBalance, maxUffaBalance, false);
-            double sentiment = normalize(metrics.getSentimentTransitions(), minSentiment, maxSentiment, false);
-            double upDelta = normalize(metrics.getUpDelta(), minUpDelta, maxUpDelta, true);
-            double variance = normalize(metrics.getVarianceDelta(), minVariance, maxVariance, true);
+            double coverage = MetricNormalizationUtils.normalizeRange(metrics.getCoverage(), minCoverage, maxCoverage,
+                    false);
+            double uffaBalance = MetricNormalizationUtils.normalizeRange(metrics.getUffaBalance(), minUffaBalance,
+                    maxUffaBalance, false);
+            double sentiment = MetricNormalizationUtils.normalizeRange(metrics.getSentimentTransitions(), minSentiment,
+                    maxSentiment, false);
+            double upDelta = MetricNormalizationUtils.normalizeRange(metrics.getUpDelta(), minUpDelta, maxUpDelta,
+                    true);
+            double variance = MetricNormalizationUtils.normalizeRange(metrics.getVarianceDelta(), minVariance,
+                    maxVariance, true);
             AiScheduleCandidateMetrics normalizedCandidate = new AiScheduleCandidateMetrics(
                     candidate.candidateId,
                     coverage,
@@ -687,23 +693,6 @@ public class AiScheduleGenerationOrchestrationService {
                     variance
             );
             normalized.put(candidate.candidateId, normalizedCandidate);
-        }
-        return normalized;
-    }
-
-    private double normalize(double value, double min, double max, boolean lowerIsBetter) {
-        if (Double.compare(min, max) == 0) {
-            return 1.0;
-        }
-        double normalized = (value - min) / (max - min);
-        if (lowerIsBetter) {
-            normalized = 1.0 - normalized;
-        }
-        if (normalized < 0.0) {
-            return 0.0;
-        }
-        if (normalized > 1.0) {
-            return 1.0;
         }
         return normalized;
     }
