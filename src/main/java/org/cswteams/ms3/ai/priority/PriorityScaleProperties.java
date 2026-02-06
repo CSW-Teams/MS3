@@ -1,12 +1,10 @@
 package org.cswteams.ms3.ai.priority;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@Configuration
 @ConfigurationProperties(prefix = "ai.rescheduling.priority-scale")
 public class PriorityScaleProperties {
 

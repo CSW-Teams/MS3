@@ -13,11 +13,6 @@ import java.util.List;
 public class AiBrokerConfiguration {
 
     @Bean
-    public AiScheduleJsonParser aiScheduleJsonParser() {
-        return new AiScheduleJsonParser(true, true);
-    }
-
-    @Bean
     public AgentProviderAdapter gemmaAgentAdapter(RestTemplate restTemplate, AiBrokerProperties properties) {
         return new GemmaAgentAdapter(restTemplate, properties);
     }
