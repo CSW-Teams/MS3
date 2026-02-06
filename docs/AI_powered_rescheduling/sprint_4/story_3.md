@@ -377,15 +377,7 @@ I test unitari coprono:
 - tie-break deterministico con ordine fisso delle dimensioni,
 - validazione input (lista vuota, metrica fuori range),
 - scenario realistico con tre schedulazioni tipiche (standard/empatica/efficiente).
-
-
-## Microtask 3.7
-
-- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
-- Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
-- Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
-- Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
-- `shift_id` è validato come exchange-id secondo formato ADR `S_<id>_<yyyyMMdd>`; nessun lookup DB in questa fase.
+  
 
 ## Microtask 3.6 — Comparison Payload Builder (DTO + Mapper)
 
@@ -424,3 +416,11 @@ Definire il **payload di confronto** per l’endpoint `/comparison`, includendo:
 - Il backend dispone di un modello strutturato e serializzabile per il confronto di 4 schedulazioni, pronto per il consumo UI.
 - Le metriche sono disponibili in doppia forma (raw + normalized) per garantire sia **spiegabilità** sia **compatibilità** con l’algoritmo di decisione.
 - L’output è coerente con le convenzioni JSON già presenti (naming consistente con DTO esistenti).
+
+## Microtask 3.7
+
+- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
+- Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
+- Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
+- Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
+- `shift_id` è validato come exchange-id secondo formato ADR `S_<id>_<yyyyMMdd>`; nessun lookup DB in questa fase.
