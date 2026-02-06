@@ -88,7 +88,8 @@ public class ToonPseudonymizationMapper {
                         feedback.getShiftId(),
                         pseudonymId,
                         feedback.getReasonCode(),
-                        feedback.getSeverity()
+                        feedback.getSeverity(),
+                        feedback.getComment()
                 ));
             }
         }

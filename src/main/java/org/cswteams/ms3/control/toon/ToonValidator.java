@@ -199,8 +199,11 @@ public class ToonValidator {
             if (feedback.getReasonCode() == null || feedback.getReasonCode().trim().isEmpty()) {
                 throw new ToonValidationException("Feedback reason code is required");
             }
-            if (feedback.getSeverity() < 0 || feedback.getSeverity() > 10) {
-                throw new ToonValidationException("Feedback severity must be 0-10");
+            if (!ToonFeedback.Category.isKnown(feedback.getReasonCode())) {
+                throw new ToonValidationException("Feedback reason code is invalid: " + feedback.getReasonCode());
+            }
+            if (feedback.getSeverity() < 1 || feedback.getSeverity() > 6) {
+                throw new ToonValidationException("Feedback severity must be 1-6");
             }
         }
     }
