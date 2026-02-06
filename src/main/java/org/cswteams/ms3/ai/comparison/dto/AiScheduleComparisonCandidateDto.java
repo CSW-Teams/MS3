@@ -22,7 +22,21 @@ public class AiScheduleComparisonCandidateDto {
         return rawScheduleText;
     }
 
+    /**
+     * Alias per il download JSON completo della schedulazione.
+     */
+    public String getScheduleJson() {
+        return rawScheduleText;
+    }
+
     public AiScheduleDecisionMetricsDto getMetrics() {
+        return metrics;
+    }
+
+    /**
+     * Alias per esporre le metriche decisionali utilizzate dal confronto.
+     */
+    public AiScheduleDecisionMetricsDto getDecisionMetrics() {
         return metrics;
     }
 }
