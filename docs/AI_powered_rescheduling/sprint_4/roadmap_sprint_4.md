@@ -178,7 +178,7 @@
    - Preconditions: Microtasks 3–5.
    - Parallel affinities: UI story (Story 4).
    - Output artifact: Comparison payload DTOs + mapper.
-7. **Add audit + validation checks for metric computation** (**2h**)
+7. **Add audit + validation checks for metric computation** (**2h**, Completed by Federico C.)
    - Description: Implement QA checks for missing metrics and audit annotations for selection outcomes.
    - Preconditions: Microtasks 3–6.
    - Parallel affinities: Documentation (Story 6).
@@ -278,7 +278,7 @@
    - Preconditions: Story 3, Microtask 6.
    - Parallel affinities: UI story (Story 4).
    - Output artifact: API endpoints + integration tests.
-5. **Implement error + retry handling** (**1h, In progress Cantone**)
+5. **Implement error + retry handling** (**1h, Completed by Cantone**)
    - Description: Implement failure handling and retries for AI calls and metric computation.
    - Preconditions: Story 2 protocol.
    - Parallel affinities: UI error design (Story 4).

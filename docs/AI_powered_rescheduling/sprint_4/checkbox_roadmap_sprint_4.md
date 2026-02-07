@@ -30,7 +30,7 @@
 - [x] ~~3.4  Cantone, Capone, Scordo~~
 - [x] ~~3.5 Capone~~
 - [x] ~~3.6 Capone~~
-- [ ] 3.7 Federico C.
+- [x] ~~3.7 Federico C.~~
 
 \---
 
@@ -50,7 +50,7 @@
 - [x] ~~5.2 Cantone~~
 - [x] ~~5.3 Scordo~~
 - [ ] 5.4  Capone 
-- [ ] 5.5  Cantone
+- [x] ~~5.5  Cantone~~
 - [ ] 5.6  DEPENDENCIES 3.7
 
 \---
