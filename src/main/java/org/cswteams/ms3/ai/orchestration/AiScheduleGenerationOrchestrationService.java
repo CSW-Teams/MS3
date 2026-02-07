@@ -268,6 +268,8 @@ public class AiScheduleGenerationOrchestrationService {
                 correlationId,
                 toonPayload == null ? 0 : toonPayload.length(),
                 instructions == null ? 0 : instructions.length());
+        // Transport-level failures (timeouts/network/rate limits) are handled exclusively by AgentBrokerImpl.
+        // Orchestration focuses on schema validation, metrics evaluation, and system-level decision logic.
         AiScheduleVariantsResponse response = agentBroker.requestSchedule(request);
         logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
                 correlationId,

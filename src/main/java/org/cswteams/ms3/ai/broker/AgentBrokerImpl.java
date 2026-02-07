@@ -18,6 +18,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Transport-layer boundary for AI provider calls.
+ *
+ * <p>This broker is the sole layer responsible for handling transport-level failures such as timeouts,
+ * network errors, and rate limits. It applies retries and converts low-level failures into
+ * {@link AiProtocolException} instances for callers to interpret as needed.</p>
+ */
 public class AgentBrokerImpl implements AgentBroker {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentBrokerImpl.class);
