@@ -17,9 +17,7 @@ import org.cswteams.ms3.ai.comparison.domain.AiScheduleComparisonCandidate;
 import org.cswteams.ms3.ai.comparison.domain.AiScheduleDecisionOutcome;
 import org.cswteams.ms3.ai.comparison.domain.DecisionMetricValues;
 import org.cswteams.ms3.ai.comparison.domain.ScheduleCandidateType;
-import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonCandidateDto;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonResponseDto;
-import org.cswteams.ms3.ai.comparison.dto.AiScheduleDecisionOutcomeDto;
 import org.cswteams.ms3.ai.comparison.mapper.AiScheduleComparisonMapper;
 import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
@@ -35,7 +33,6 @@ import org.cswteams.ms3.ai.protocol.dto.AiStdDevDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaBalanceDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaDeltaDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUncoveredShiftDto;
-import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
@@ -205,13 +202,15 @@ public class AiScheduleGenerationOrchestrationService {
             outcome = null;
         }
         cacheTransientCandidates(startDate, endDate, candidates);
-        AiScheduleComparisonResponseDto response = comparisonMapper.toDto(comparisonCandidates, outcome);
         if (errorMetadata != null) {
-            return new AiScheduleComparisonResponseWithErrorDto(response.getCandidates(),
-                    response.getDecisionOutcome(),
-                    errorMetadata);
+            return comparisonMapper.toDto(comparisonCandidates,
+                    outcome,
+                    "METRICS",
+                    errorMetadata.getErrorCode(),
+                    errorMetadata.getStage(),
+                    errorMetadata.isRetryable());
         }
-        return response;
+        return comparisonMapper.toDto(comparisonCandidates, outcome);
     }
 
     public SelectionResult persistSelectedCandidate(String candidateIdOrLabel) {
@@ -974,21 +973,6 @@ public class AiScheduleGenerationOrchestrationService {
 
         public boolean isRetryable() {
             return retryable;
-        }
-    }
-
-    private static class AiScheduleComparisonResponseWithErrorDto extends AiScheduleComparisonResponseDto {
-        private final MetricsErrorMetadata error;
-
-        private AiScheduleComparisonResponseWithErrorDto(List<AiScheduleComparisonCandidateDto> candidates,
-                                                         AiScheduleDecisionOutcomeDto decisionOutcome,
-                                                         MetricsErrorMetadata error) {
-            super(candidates, decisionOutcome);
-            this.error = error;
-        }
-
-        public MetricsErrorMetadata getError() {
-            return error;
         }
     }
 

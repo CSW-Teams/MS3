@@ -173,8 +173,8 @@ public class SchedulerController implements ISchedulerController {
             return null; // non consentire schedulazioni iniziali nel passato
         }
 
-        //Check if there already exists a shift schedule for the dates we want to plan.
-        if(!alreadyExistsAnotherSchedule(startDate,endDate)) {
+        // Check if there already exists a shift schedule for the dates we want to plan.
+        if(alreadyExistsAnotherSchedule(startDate,endDate)) {
             logEvent(eventName(mode, "start_rejected"), mode, Map.of(
                     "durationMs", System.currentTimeMillis() - flowStart,
                     "errorType", "DUPLICATE_RANGE"
@@ -707,10 +707,10 @@ public class SchedulerController implements ISchedulerController {
 
             // block only exact duplicate interval; allow overlaps/adjacent ranges
             if (existingStart.equals(startNewSchedule) && existingEnd.equals(endNewSchedule)) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
 
     }
     /**

@@ -132,6 +132,14 @@ public interface ISchedulerController {
     boolean removeConcreteShift(Long concreteShiftId);
 
     /**
+     * This method verifies the existence of a shift schedule for the dates we want to plan.
+     * @param startNewSchedule First date to be planned for a shift schedule
+     * @param endNewSchedule Last date to be planned for a shift schedule
+     * @return False if there already exists a shift schedule for the dates we want to plan, true otherwise
+     */
+    boolean alreadyExistsAnotherSchedule(LocalDate startNewSchedule, LocalDate endNewSchedule);
+
+    /**
      * This method adds a new concrete shift to an existing schedule; the concrete shift is described by the DTO parameter.
      *
      * @param registerConcreteShiftDTO DTO class that describes the new concrete shift
