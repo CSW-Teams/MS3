@@ -50,3 +50,31 @@ Il componente drawer è stato semplificato ("Dumb Component").
 * **Validazione:** Implementata validazione locale per garantire l'integrità dei dati prima dell'invio.
 
 ---
+
+## Microtask 4.4: Wire success message reuse
+### 1. Descrizione e Obiettivo del Task
+L'obiettivo principale è integrare un pattern di notifica di successo già esistente all'interno del flusso di selezione dello schedule nel Planner UI, dopo che un utente ha completato la scelta di uno schedule. Questo per garantire coerenza nell'esperienza utente e riutilizzare codice esistente. La precondizione è l'inventario dell'interfaccia utente della Story 1.
+
+### 2. Comprendere il Pattern di Notifica di Successo Esistente
+
+Si fa un uso estensivo della libreria `react-toastify`, in numerosi file, le notifiche di successo vengono mostrate tramite la funzione `toast.success(message, options)`.
+
+### 3. Identificare il Punto di Innesco per il Messaggio di Successo
+
+Esaminando il contesto della "Story 4" e in particolare del "Microtask 3: Implement selection + confirmation modal", capiamo che il messaggio di successo deve apparire dopo che l'utente ha confermato la selezione di uno schedule. Il componente UI principale del planner è `frontend/src/views/pianificatore/ScheduleGeneratorView.js`.
+All'interno di `ScheduleGeneratorView.js` c'è la funzione `handleConfirmSelection`. Questa funzione è responsabile della gestione della conferma della selezione di uno schedule e, al suo interno, effettua una chiamata all'API `ScheduleAPI().selectScheduleCandidate()`. Il messaggio di successo deve essere visualizzato immediatamente dopo che questa chiamata API restituisce uno stato 202 (HTTP Accepted), indicando una selezione riuscita. 
+
+### 4. Integrare la Notifica di Successo
+
+Confermato il pattern (`toast.success`) e il punto di innesco (`if (response.status === 202)` in `handleConfirmSelection`), si aggiunge il seguente blocco di codice all'interno del blocco `if (response.status === 202)` della funzione `handleConfirmSelection` in`frontend/src/views/pianificatore/ScheduleGeneratorView.js`:
+
+              toast.success(t("Schedule successfully selected!"), {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                }
