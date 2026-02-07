@@ -39,8 +39,8 @@
 - [x] ~~4.1 Scordo~~
 - [ ] 4.2 Andrea
 - [ ] 4.3  DEPENDENCIES 4.2
-- [ ] 4.4  Scordo
-- [ ] 4.5  Scordo
+- [x] ~~4.4 Scordo~~
+- [x] ~~4.5 Scordo~~
 
 \---
 
