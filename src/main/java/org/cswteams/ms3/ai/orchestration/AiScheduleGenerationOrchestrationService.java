@@ -17,9 +17,7 @@ import org.cswteams.ms3.ai.comparison.domain.AiScheduleComparisonCandidate;
 import org.cswteams.ms3.ai.comparison.domain.AiScheduleDecisionOutcome;
 import org.cswteams.ms3.ai.comparison.domain.DecisionMetricValues;
 import org.cswteams.ms3.ai.comparison.domain.ScheduleCandidateType;
-import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonCandidateDto;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonResponseDto;
-import org.cswteams.ms3.ai.comparison.dto.AiScheduleDecisionOutcomeDto;
 import org.cswteams.ms3.ai.comparison.mapper.AiScheduleComparisonMapper;
 import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
@@ -84,7 +82,20 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
-    private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(new VariantDefinition(EMPATHETIC_LABEL, "ai-empathetic", ScheduleCandidateType.EMPATHETIC, "Maximize doctor well-being and respect expressed preferences as strict constraints."), new VariantDefinition(EFFICIENT_LABEL, "ai-efficient", ScheduleCandidateType.EFFICIENT, "Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance."), new VariantDefinition(BALANCED_LABEL, "ai-balanced", ScheduleCandidateType.BALANCED, "Balance well-being and operational efficiency, allowing soft constraint tradeoffs."));
+    private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(
+            new VariantDefinition(EMPATHETIC_LABEL,
+                    "ai-empathetic",
+                    ScheduleCandidateType.EMPATHETIC,
+                    "Maximize doctor well-being and respect expressed preferences as strict constraints."),
+            new VariantDefinition(EFFICIENT_LABEL,
+                    "ai-efficient",
+                    ScheduleCandidateType.EFFICIENT,
+                    "Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance."),
+            new VariantDefinition(BALANCED_LABEL,
+                    "ai-balanced",
+                    ScheduleCandidateType.BALANCED,
+                    "Balance well-being and operational efficiency, allowing soft constraint tradeoffs.")
+    );
 
     private final ISchedulerController schedulerController;
     private final DoctorDAO doctorDAO;
@@ -99,7 +110,15 @@ public class AiScheduleGenerationOrchestrationService {
     private final AtomicReference<TransientComparisonState> transientComparisonState = new AtomicReference<>();
 
     @Autowired
-    public AiScheduleGenerationOrchestrationService(ISchedulerController schedulerController, DoctorDAO doctorDAO, DoctorUffaPriorityDAO doctorUffaPriorityDAO, DoctorHolidaysDAO doctorHolidaysDAO, AgentBroker agentBroker, AiReschedulingOrchestrationService aiReschedulingOrchestrationService, DecisionAlgorithmService decisionAlgorithmService, AiScheduleConverterService aiScheduleConverterService, ObjectMapper objectMapper) {
+    public AiScheduleGenerationOrchestrationService(ISchedulerController schedulerController,
+                                                    DoctorDAO doctorDAO,
+                                                    DoctorUffaPriorityDAO doctorUffaPriorityDAO,
+                                                    DoctorHolidaysDAO doctorHolidaysDAO,
+                                                    AgentBroker agentBroker,
+                                                    AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
+                                                    DecisionAlgorithmService decisionAlgorithmService,
+                                                    AiScheduleConverterService aiScheduleConverterService,
+                                                    ObjectMapper objectMapper) {
         this.schedulerController = schedulerController;
         this.doctorDAO = doctorDAO;
         this.doctorUffaPriorityDAO = doctorUffaPriorityDAO;
@@ -120,8 +139,11 @@ public class AiScheduleGenerationOrchestrationService {
         }
         String metricsCorrelationId = UUID.randomUUID().toString();
         MetricsErrorMetadata errorMetadata = null;
-        int standardShiftCount = standardSchedule.getConcreteShifts() == null ? 0 : standardSchedule.getConcreteShifts().size();
-        logger.info("event=ai_standard_generation_completed start_date={} end_date={} shifts_count={}", startDate, endDate, standardShiftCount);
+        int standardShiftCount = standardSchedule.getConcreteShifts() == null
+                ? 0
+                : standardSchedule.getConcreteShifts().size();
+        logger.info("event=ai_standard_generation_completed start_date={} end_date={} shifts_count={}",
+                startDate, endDate, standardShiftCount);
 
         String toonPayload = buildToonPayload(startDate, endDate, standardSchedule.getConcreteShifts());
 
@@ -129,7 +151,10 @@ public class AiScheduleGenerationOrchestrationService {
         try {
             standardMetrics = buildStandardMetrics(standardSchedule);
         } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
-            errorMetadata = buildMetricsError(errorMetadata, metricsCorrelationId, ERROR_STANDARD_METRICS, ex);
+            errorMetadata = buildMetricsError(errorMetadata,
+                    metricsCorrelationId,
+                    ERROR_STANDARD_METRICS,
+                    ex);
             standardMetrics = fallbackMetrics();
         }
 
@@ -146,29 +171,46 @@ public class AiScheduleGenerationOrchestrationService {
         try {
             normalizedMetrics = normalizeMetrics(candidates);
         } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
-            errorMetadata = buildMetricsError(errorMetadata, metricsCorrelationId, ERROR_NORMALIZATION, ex);
+            errorMetadata = buildMetricsError(errorMetadata,
+                    metricsCorrelationId,
+                    ERROR_NORMALIZATION,
+                    ex);
             normalizedMetrics = new HashMap<>();
         }
 
         List<AiScheduleComparisonCandidate> comparisonCandidates = new ArrayList<>();
         for (CandidateData candidate : candidates) {
             AiScheduleCandidateMetrics metrics = normalizedMetrics.get(candidate.candidateId);
-            comparisonCandidates.add(new AiScheduleComparisonCandidate(candidate.candidateId, candidate.scheduleId, candidate.type, candidate.rawScheduleJson, candidate.rawMetrics, metrics));
+            comparisonCandidates.add(new AiScheduleComparisonCandidate(
+                    candidate.candidateId,
+                    candidate.scheduleId,
+                    candidate.type,
+                    candidate.rawScheduleJson,
+                    candidate.rawMetrics,
+                    metrics
+            ));
         }
 
         AiScheduleDecisionOutcome outcome;
         try {
             outcome = selectDecisionOutcome(candidates, normalizedMetrics);
         } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
-            errorMetadata = buildMetricsError(errorMetadata, metricsCorrelationId, ERROR_DECISION, ex);
+            errorMetadata = buildMetricsError(errorMetadata,
+                    metricsCorrelationId,
+                    ERROR_DECISION,
+                    ex);
             outcome = null;
         }
         cacheTransientCandidates(startDate, endDate, candidates);
-        AiScheduleComparisonResponseDto response = comparisonMapper.toDto(comparisonCandidates, outcome);
         if (errorMetadata != null) {
-            return new AiScheduleComparisonResponseWithErrorDto(response.getCandidates(), response.getDecisionOutcome(), errorMetadata);
+            return comparisonMapper.toDto(comparisonCandidates,
+                    outcome,
+                    "METRICS",
+                    errorMetadata.getErrorCode(),
+                    errorMetadata.getStage(),
+                    errorMetadata.isRetryable());
         }
-        return response;
+        return comparisonMapper.toDto(comparisonCandidates, outcome);
     }
 
     public SelectionResult persistSelectedCandidate(String candidateIdOrLabel) {
@@ -183,7 +225,7 @@ public class AiScheduleGenerationOrchestrationService {
         if (candidate == null) {
             return SelectionResult.notFound("CANDIDATE_NOT_FOUND");
         }
-        if (schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
+        if (!schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
             return SelectionResult.duplicateRange("DUPLICATE_RANGE");
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);
@@ -225,9 +267,27 @@ public class AiScheduleGenerationOrchestrationService {
         List<ToonActiveConstraint> activeConstraints = new ArrayList<>();
         List<ToonFeedback> feedbacks = new ArrayList<>();
         int shiftCount = concreteShifts == null ? 0 : concreteShifts.size();
-        logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} feedbacks_count={}", startDate, endDate, shiftCount, doctors.size(), priorities.size(), doctorHolidays.size(), activeConstraints.size(), feedbacks.size());
+        logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} feedbacks_count={}",
+                startDate,
+                endDate,
+                shiftCount,
+                doctors.size(),
+                priorities.size(),
+                doctorHolidays.size(),
+                activeConstraints.size(),
+                feedbacks.size());
 
-        AiReschedulingToonRequest request = aiReschedulingOrchestrationService.buildToonRequestContext(startDate, endDate, MODE_GENERATE, concreteShifts, doctors, priorities, doctorHolidays, activeConstraints, feedbacks);
+        AiReschedulingToonRequest request = aiReschedulingOrchestrationService.buildToonRequestContext(
+                startDate,
+                endDate,
+                MODE_GENERATE,
+                concreteShifts,
+                doctors,
+                priorities,
+                doctorHolidays,
+                activeConstraints,
+                feedbacks
+        );
 
         ToonRequestContext context = request.getToonRequestContext();
         ToonBuilder builder = new ToonBuilder();
@@ -237,30 +297,48 @@ public class AiScheduleGenerationOrchestrationService {
     private CandidateData buildStandardCandidate(Schedule schedule, DecisionMetricValues metrics) {
         AiScheduleResponseDto responseDto = buildStandardResponseDto(schedule, metrics);
         String rawJson = serializeResponse(responseDto);
-        return new CandidateData("standard", null, ScheduleCandidateType.STANDARD, rawJson, metrics, schedule);
+        return new CandidateData(
+                "standard",
+                null,
+                ScheduleCandidateType.STANDARD,
+                rawJson,
+                metrics,
+                schedule
+        );
     }
 
     private CandidateBatch requestAiCandidates(String toonPayload) {
         String instructions = buildMultiVariantInstructions();
         String correlationId = UUID.randomUUID().toString();
         AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
-        logger.info("event=ai_broker_request_prepared correlation_id={} payload_length={} instructions_length={}", correlationId, toonPayload == null ? 0 : toonPayload.length(), instructions == null ? 0 : instructions.length());
+        logger.info("event=ai_broker_request_prepared correlation_id={} payload_length={} instructions_length={}",
+                correlationId,
+                toonPayload == null ? 0 : toonPayload.length(),
+                instructions == null ? 0 : instructions.length());
         // Transport-level failures (timeouts/network/rate limits) are handled exclusively by AgentBrokerImpl.
         // Orchestration focuses on schema validation, metrics evaluation, and system-level decision logic.
         AiScheduleVariantsResponse response = agentBroker.requestSchedule(request);
-        logger.info("event=ai_broker_response_received correlation_id={} variants_count={}", correlationId, response == null || response.getVariants() == null ? 0 : response.getVariants().size());
+        logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
+                correlationId,
+                response == null || response.getVariants() == null ? 0 : response.getVariants().size());
         List<CandidateData> candidates = new ArrayList<>();
         MetricsErrorMetadata errorMetadata = null;
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
             AiScheduleResponse variant = response.getVariant(definition.label);
             if (variant == null) {
-                throw AiProtocolException.schemaMismatch("AI response missing variant " + definition.label, null);
+                throw AiProtocolException.schemaMismatch(
+                        "AI response missing variant " + definition.label,
+                        null
+                );
             }
             DecisionMetricValues metrics;
             try {
                 metrics = buildAiMetrics(variant);
             } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
-                errorMetadata = buildMetricsError(errorMetadata, correlationId, ERROR_AI_METRICS, ex);
+                errorMetadata = buildMetricsError(errorMetadata,
+                        correlationId,
+                        ERROR_AI_METRICS,
+                        ex);
                 metrics = fallbackMetrics();
             }
             AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
@@ -272,10 +350,26 @@ public class AiScheduleGenerationOrchestrationService {
 
     private DecisionMetricValues buildStandardMetrics(Schedule schedule) {
         double coverage = computeCoverage(schedule.getConcreteShifts());
-        PriorityDeltaStats deltaStats = computePriorityDeltaStats(schedule.getDoctorUffaPrioritiesSnapshot(), schedule.getDoctorUffaPriorityList());
-        double uffaBalance = computeUffaBalanceImprovement(schedule.getDoctorUffaPrioritiesSnapshot(), schedule.getDoctorUffaPriorityList());
-        logger.info("event=metrics_standard_calculated coverage={} uffa_balance={} delta_mean={} delta_variance={}", coverage, uffaBalance, deltaStats.mean, deltaStats.variance);
-        return new DecisionMetricValues(coverage, uffaBalance, 0.0, deltaStats.mean, deltaStats.variance);
+        PriorityDeltaStats deltaStats = computePriorityDeltaStats(
+                schedule.getDoctorUffaPrioritiesSnapshot(),
+                schedule.getDoctorUffaPriorityList()
+        );
+        double uffaBalance = computeUffaBalanceImprovement(
+                schedule.getDoctorUffaPrioritiesSnapshot(),
+                schedule.getDoctorUffaPriorityList()
+        );
+        logger.info("event=metrics_standard_calculated coverage={} uffa_balance={} delta_mean={} delta_variance={}",
+                coverage,
+                uffaBalance,
+                deltaStats.mean,
+                deltaStats.variance);
+        return new DecisionMetricValues(
+                coverage,
+                uffaBalance,
+                0.0,
+                deltaStats.mean,
+                deltaStats.variance
+        );
     }
 
     private DecisionMetricValues buildAiMetrics(AiScheduleResponse response) {
@@ -284,8 +378,18 @@ public class AiScheduleGenerationOrchestrationService {
         Double coverage = metrics != null ? metrics.getCoveragePercent() : 0.0;
         Double uffaBalance = resolveUffaBalanceImprovement(metrics);
         PriorityDeltaStats deltaStats = computeUffaDeltaStats(response.getUffaDelta());
-        logger.info("event=metrics_ai_calculated coverage={} uffa_balance={} delta_mean={} delta_variance={}", coverage, uffaBalance, deltaStats.mean, deltaStats.variance);
-        return new DecisionMetricValues(coverage, uffaBalance, 0.0, deltaStats.mean, deltaStats.variance);
+        logger.info("event=metrics_ai_calculated coverage={} uffa_balance={} delta_mean={} delta_variance={}",
+                coverage,
+                uffaBalance,
+                deltaStats.mean,
+                deltaStats.variance);
+        return new DecisionMetricValues(
+                coverage,
+                uffaBalance,
+                0.0,
+                deltaStats.mean,
+                deltaStats.variance
+        );
     }
 
     private double resolveUffaBalanceImprovement(AiMetrics metrics) {
@@ -300,7 +404,8 @@ public class AiScheduleGenerationOrchestrationService {
         return stdDev.getInitial() - stdDev.getFinalValue();
     }
 
-    private PriorityDeltaStats computePriorityDeltaStats(List<DoctorUffaPrioritySnapshot> snapshots, List<DoctorUffaPriority> current) {
+    private PriorityDeltaStats computePriorityDeltaStats(List<DoctorUffaPrioritySnapshot> snapshots,
+                                                         List<DoctorUffaPriority> current) {
         if (snapshots == null || current == null) {
             return new PriorityDeltaStats(0.0, 0.0);
         }
@@ -327,7 +432,8 @@ public class AiScheduleGenerationOrchestrationService {
         return new PriorityDeltaStats(MetricAggregationUtils.mean(deltas), MetricAggregationUtils.variance(deltas));
     }
 
-    private double computeUffaBalanceImprovement(List<DoctorUffaPrioritySnapshot> snapshots, List<DoctorUffaPriority> current) {
+    private double computeUffaBalanceImprovement(List<DoctorUffaPrioritySnapshot> snapshots,
+                                                 List<DoctorUffaPriority> current) {
         if (snapshots == null || current == null || snapshots.isEmpty() || current.isEmpty()) {
             return 0.0;
         }
@@ -378,7 +484,10 @@ public class AiScheduleGenerationOrchestrationService {
             return 1.0;
         }
         double coverage = (double) totalAssigned / totalRequired;
-        logger.info("event=coverage_computed total_required={} total_assigned={} coverage={}", totalRequired, totalAssigned, coverage);
+        logger.info("event=coverage_computed total_required={} total_assigned={} coverage={}",
+                totalRequired,
+                totalAssigned,
+                coverage);
         return coverage;
     }
 
@@ -443,7 +552,9 @@ public class AiScheduleGenerationOrchestrationService {
         dto.metadata.optimalityScore = null;
         dto.metadata.metrics = new AiMetricsDto();
         dto.metadata.metrics.coveragePercent = metrics.getCoverage();
-        dto.metadata.metrics.softViolationsCount = schedule.getViolatedConstraints() != null ? schedule.getViolatedConstraints().size() : 0;
+        dto.metadata.metrics.softViolationsCount = schedule.getViolatedConstraints() != null
+                ? schedule.getViolatedConstraints().size()
+                : 0;
         dto.metadata.metrics.uffaBalance = buildStandardUffaBalance(schedule);
         dto.assignments = buildAssignmentsFromSchedule(schedule);
         dto.uncoveredShifts = buildUncoveredShifts(schedule);
@@ -662,7 +773,8 @@ public class AiScheduleGenerationOrchestrationService {
         }
     }
 
-    private AiScheduleDecisionOutcome selectDecisionOutcome(List<CandidateData> candidates, Map<String, AiScheduleCandidateMetrics> normalizedMetrics) {
+    private AiScheduleDecisionOutcome selectDecisionOutcome(List<CandidateData> candidates,
+                                                           Map<String, AiScheduleCandidateMetrics> normalizedMetrics) {
         List<AiScheduleCandidateMetrics> metrics = new ArrayList<>();
         for (CandidateData candidate : candidates) {
             AiScheduleCandidateMetrics candidateMetrics = normalizedMetrics.get(candidate.candidateId);
@@ -684,7 +796,11 @@ public class AiScheduleGenerationOrchestrationService {
         if (selectedCandidate == null) {
             return null;
         }
-        return new AiScheduleDecisionOutcome(selectedCandidate.candidateId, selectedCandidate.scheduleId, selectedCandidate.type);
+        return new AiScheduleDecisionOutcome(
+                selectedCandidate.candidateId,
+                selectedCandidate.scheduleId,
+                selectedCandidate.type
+        );
     }
 
     private Map<String, AiScheduleCandidateMetrics> normalizeMetrics(List<CandidateData> candidates) {
@@ -720,15 +836,38 @@ public class AiScheduleGenerationOrchestrationService {
 
         for (CandidateData candidate : candidates) {
             DecisionMetricValues metrics = candidate.rawMetrics;
-            double coverage = MetricNormalizationUtils.normalizeRange(metrics.getCoverage(), minCoverage, maxCoverage, false);
-            double uffaBalance = MetricNormalizationUtils.normalizeRange(metrics.getUffaBalance(), minUffaBalance, maxUffaBalance, false);
-            double sentiment = MetricNormalizationUtils.normalizeRange(metrics.getSentimentTransitions(), minSentiment, maxSentiment, false);
-            double upDelta = MetricNormalizationUtils.normalizeRange(metrics.getUpDelta(), minUpDelta, maxUpDelta, true);
-            double variance = MetricNormalizationUtils.normalizeRange(metrics.getVarianceDelta(), minVariance, maxVariance, true);
-            AiScheduleCandidateMetrics normalizedCandidate = new AiScheduleCandidateMetrics(candidate.candidateId, coverage, uffaBalance, sentiment, upDelta, variance);
+            double coverage = MetricNormalizationUtils.normalizeRange(metrics.getCoverage(), minCoverage, maxCoverage,
+                    false);
+            double uffaBalance = MetricNormalizationUtils.normalizeRange(metrics.getUffaBalance(), minUffaBalance,
+                    maxUffaBalance, false);
+            double sentiment = MetricNormalizationUtils.normalizeRange(metrics.getSentimentTransitions(), minSentiment,
+                    maxSentiment, false);
+            double upDelta = MetricNormalizationUtils.normalizeRange(metrics.getUpDelta(), minUpDelta, maxUpDelta,
+                    true);
+            double variance = MetricNormalizationUtils.normalizeRange(metrics.getVarianceDelta(), minVariance,
+                    maxVariance, true);
+            AiScheduleCandidateMetrics normalizedCandidate = new AiScheduleCandidateMetrics(
+                    candidate.candidateId,
+                    coverage,
+                    uffaBalance,
+                    sentiment,
+                    upDelta,
+                    variance
+            );
             normalized.put(candidate.candidateId, normalizedCandidate);
         }
-        logger.info("event=metrics_normalization_completed candidates_count={} coverage_min={} coverage_max={} uffa_min={} uffa_max={} sentiment_min={} sentiment_max={} up_delta_min={} up_delta_max={} variance_min={} variance_max={}", candidates.size(), minCoverage, maxCoverage, minUffaBalance, maxUffaBalance, minSentiment, maxSentiment, minUpDelta, maxUpDelta, minVariance, maxVariance);
+        logger.info("event=metrics_normalization_completed candidates_count={} coverage_min={} coverage_max={} uffa_min={} uffa_max={} sentiment_min={} sentiment_max={} up_delta_min={} up_delta_max={} variance_min={} variance_max={}",
+                candidates.size(),
+                minCoverage,
+                maxCoverage,
+                minUffaBalance,
+                maxUffaBalance,
+                minSentiment,
+                maxSentiment,
+                minUpDelta,
+                maxUpDelta,
+                minVariance,
+                maxVariance);
         return normalized;
     }
 
@@ -742,8 +881,16 @@ public class AiScheduleGenerationOrchestrationService {
         return builder.toString();
     }
 
-    private MetricsErrorMetadata buildMetricsError(MetricsErrorMetadata existing, String correlationId, String errorCode, Exception ex) {
-        logger.error("event=metrics_computation_failed correlation_id={} error_code={} stage={} message={}", correlationId, errorCode, METRICS_COMPUTE_STAGE, ex.getMessage(), ex);
+    private MetricsErrorMetadata buildMetricsError(MetricsErrorMetadata existing,
+                                                   String correlationId,
+                                                   String errorCode,
+                                                   Exception ex) {
+        logger.error("event=metrics_computation_failed correlation_id={} error_code={} stage={} message={}",
+                correlationId,
+                errorCode,
+                METRICS_COMPUTE_STAGE,
+                ex.getMessage(),
+                ex);
         if (existing != null) {
             return existing;
         }
@@ -767,7 +914,10 @@ public class AiScheduleGenerationOrchestrationService {
         private final ScheduleCandidateType type;
         private final String intent;
 
-        private VariantDefinition(String label, String candidateId, ScheduleCandidateType type, String intent) {
+        private VariantDefinition(String label,
+                                  String candidateId,
+                                  ScheduleCandidateType type,
+                                  String intent) {
             this.label = Objects.requireNonNull(label, "label");
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.type = Objects.requireNonNull(type, "type");
@@ -815,19 +965,6 @@ public class AiScheduleGenerationOrchestrationService {
         }
     }
 
-    private static class AiScheduleComparisonResponseWithErrorDto extends AiScheduleComparisonResponseDto {
-        private final MetricsErrorMetadata error;
-
-        private AiScheduleComparisonResponseWithErrorDto(List<AiScheduleComparisonCandidateDto> candidates, AiScheduleDecisionOutcomeDto decisionOutcome, MetricsErrorMetadata error) {
-            super(candidates, decisionOutcome);
-            this.error = error;
-        }
-
-        public MetricsErrorMetadata getError() {
-            return error;
-        }
-    }
-
     private static class CandidateData {
         private final String candidateId;
         private final Long scheduleId;
@@ -836,7 +973,12 @@ public class AiScheduleGenerationOrchestrationService {
         private final DecisionMetricValues rawMetrics;
         private final Schedule schedule;
 
-        private CandidateData(String candidateId, Long scheduleId, ScheduleCandidateType type, String rawScheduleJson, DecisionMetricValues rawMetrics, Schedule schedule) {
+        private CandidateData(String candidateId,
+                              Long scheduleId,
+                              ScheduleCandidateType type,
+                              String rawScheduleJson,
+                              DecisionMetricValues rawMetrics,
+                              Schedule schedule) {
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.scheduleId = scheduleId;
             this.type = Objects.requireNonNull(type, "type");
@@ -861,7 +1003,9 @@ public class AiScheduleGenerationOrchestrationService {
         private final LocalDate endDate;
         private final Map<String, CandidateData> candidates;
 
-        private TransientComparisonState(LocalDate startDate, LocalDate endDate, Map<String, CandidateData> candidates) {
+        private TransientComparisonState(LocalDate startDate,
+                                         LocalDate endDate,
+                                         Map<String, CandidateData> candidates) {
             this.startDate = Objects.requireNonNull(startDate, "startDate");
             this.endDate = Objects.requireNonNull(endDate, "endDate");
             this.candidates = Objects.requireNonNull(candidates, "candidates");
@@ -891,9 +1035,18 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     public static class SelectionResult {
+        public enum Status {
+            PERSISTED,
+            INVALID_SELECTION,
+            CANDIDATE_NOT_FOUND,
+            NO_ACTIVE_COMPARISON,
+            DUPLICATE_RANGE
+        }
+
         private final Status status;
         private final Long scheduleId;
         private final String errorCode;
+
         private SelectionResult(Status status, Long scheduleId, String errorCode) {
             this.status = status;
             this.scheduleId = scheduleId;
@@ -930,10 +1083,6 @@ public class AiScheduleGenerationOrchestrationService {
 
         public String getErrorCode() {
             return errorCode;
-        }
-
-        public enum Status {
-            PERSISTED, INVALID_SELECTION, CANDIDATE_NOT_FOUND, NO_ACTIVE_COMPARISON, DUPLICATE_RANGE
         }
     }
 }
