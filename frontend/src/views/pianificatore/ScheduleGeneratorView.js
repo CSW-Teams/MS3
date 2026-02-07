@@ -379,6 +379,16 @@ export class SchedulerGeneratorView extends React.Component{
           isSelectionSubmitting: false,
           selectedScheduleId: response.body?.scheduleId ?? null,
         });
+        toast.success(t("Schedule successfully selected!"), {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
         return;
       }
 
