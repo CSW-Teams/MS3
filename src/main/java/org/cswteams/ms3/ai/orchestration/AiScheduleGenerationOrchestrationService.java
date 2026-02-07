@@ -18,6 +18,7 @@ import org.cswteams.ms3.ai.comparison.domain.AiScheduleDecisionOutcome;
 import org.cswteams.ms3.ai.comparison.domain.DecisionMetricValues;
 import org.cswteams.ms3.ai.comparison.domain.ScheduleCandidateType;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonResponseDto;
+import org.cswteams.ms3.ai.comparison.dto.AiScheduleSelectionRequestDto;
 import org.cswteams.ms3.ai.comparison.mapper.AiScheduleComparisonMapper;
 import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
@@ -44,6 +45,7 @@ import org.cswteams.ms3.control.toon.ToonRequestContext;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
+import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorAssignment;
@@ -101,6 +103,7 @@ public class AiScheduleGenerationOrchestrationService {
     private final DoctorDAO doctorDAO;
     private final DoctorUffaPriorityDAO doctorUffaPriorityDAO;
     private final DoctorHolidaysDAO doctorHolidaysDAO;
+    private final ScheduleDAO scheduleDAO;
     private final AgentBroker agentBroker;
     private final AiReschedulingOrchestrationService aiReschedulingOrchestrationService;
     private final DecisionAlgorithmService decisionAlgorithmService;
@@ -114,6 +117,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     DoctorDAO doctorDAO,
                                                     DoctorUffaPriorityDAO doctorUffaPriorityDAO,
                                                     DoctorHolidaysDAO doctorHolidaysDAO,
+                                                    ScheduleDAO scheduleDAO,
                                                     AgentBroker agentBroker,
                                                     AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
                                                     DecisionAlgorithmService decisionAlgorithmService,
@@ -123,6 +127,7 @@ public class AiScheduleGenerationOrchestrationService {
         this.doctorDAO = doctorDAO;
         this.doctorUffaPriorityDAO = doctorUffaPriorityDAO;
         this.doctorHolidaysDAO = doctorHolidaysDAO;
+        this.scheduleDAO = scheduleDAO;
         this.agentBroker = agentBroker;
         this.aiReschedulingOrchestrationService = aiReschedulingOrchestrationService;
         this.decisionAlgorithmService = decisionAlgorithmService;
@@ -201,40 +206,83 @@ public class AiScheduleGenerationOrchestrationService {
                     ex);
             outcome = null;
         }
-        cacheTransientCandidates(startDate, endDate, candidates);
+        AiScheduleComparisonResponseDto response;
         if (errorMetadata != null) {
-            return comparisonMapper.toDto(comparisonCandidates,
+            response = comparisonMapper.toDto(comparisonCandidates,
                     outcome,
                     "METRICS",
                     errorMetadata.getErrorCode(),
                     errorMetadata.getStage(),
                     errorMetadata.isRetryable());
+        } else {
+            response = comparisonMapper.toDto(comparisonCandidates, outcome);
         }
-        return comparisonMapper.toDto(comparisonCandidates, outcome);
+        cacheTransientComparison(startDate, endDate, candidates, response);
+        return response;
+    }
+
+    public AiScheduleComparisonResponseDto getLatestComparison() {
+        TransientComparisonState state = transientComparisonState.get();
+        return state == null ? null : state.response;
+    }
+
+    public SelectionResult selectSchedule(AiScheduleSelectionRequestDto selection) {
+        if (selection == null) {
+            return SelectionResult.invalid("MISSING_SELECTION", "Selection payload is required.");
+        }
+        Long scheduleId = selection.getScheduleId();
+        String candidateId = selection.getCandidateId();
+        if (scheduleId == null && (candidateId == null || candidateId.trim().isEmpty())) {
+            return SelectionResult.invalid("MISSING_SELECTION", "Provide a scheduleId or candidateId.");
+        }
+        if (scheduleId != null) {
+            return persistSelectedSchedule(scheduleId);
+        }
+        return persistSelectedCandidate(candidateId);
     }
 
     public SelectionResult persistSelectedCandidate(String candidateIdOrLabel) {
         if (candidateIdOrLabel == null || candidateIdOrLabel.trim().isEmpty()) {
-            return SelectionResult.invalid("MISSING_SELECTION");
+            return SelectionResult.invalid("MISSING_SELECTION", "Provide a candidateId.");
         }
         TransientComparisonState state = transientComparisonState.get();
         if (state == null) {
-            return SelectionResult.noActiveComparison("NO_ACTIVE_COMPARISON");
+            return SelectionResult.noActiveComparison("NO_ACTIVE_COMPARISON", "No active comparison to resolve.");
         }
         CandidateData candidate = state.resolveCandidate(candidateIdOrLabel);
         if (candidate == null) {
-            return SelectionResult.notFound("CANDIDATE_NOT_FOUND");
+            return SelectionResult.notFound("CANDIDATE_NOT_FOUND", "Candidate could not be resolved.");
         }
+        return persistCandidate(state, candidate);
+    }
+
+    private SelectionResult persistSelectedSchedule(Long scheduleId) {
+        TransientComparisonState state = transientComparisonState.get();
+        if (state != null) {
+            CandidateData candidate = state.resolveCandidate(scheduleId);
+            if (candidate != null) {
+                return persistCandidate(state, candidate);
+            }
+        }
+        Schedule schedule = scheduleDAO.findById(scheduleId).orElse(null);
+        if (schedule == null) {
+            return SelectionResult.scheduleNotFound("SCHEDULE_NOT_FOUND", "Schedule could not be resolved.");
+        }
+        transientComparisonState.set(null);
+        return SelectionResult.persisted(schedule.getId());
+    }
+
+    private SelectionResult persistCandidate(TransientComparisonState state, CandidateData candidate) {
         if (!schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
-            return SelectionResult.duplicateRange("DUPLICATE_RANGE");
+            return SelectionResult.duplicateRange("DUPLICATE_RANGE", "Schedule already exists for this date range.");
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);
         if (schedule == null) {
-            return SelectionResult.invalid("INVALID_CANDIDATE");
+            return SelectionResult.invalid("INVALID_CANDIDATE", "Unable to build the selected schedule.");
         }
         Schedule persisted = schedulerController.persistSchedule(schedule);
         if (persisted == null || persisted.getId() == null) {
-            return SelectionResult.invalid("PERSIST_FAILED");
+            return SelectionResult.invalid("PERSIST_FAILED", "Unable to persist selected schedule.");
         }
         transientComparisonState.set(null);
         return SelectionResult.persisted(persisted.getId());
@@ -252,12 +300,15 @@ public class AiScheduleGenerationOrchestrationService {
         }
     }
 
-    private void cacheTransientCandidates(LocalDate startDate, LocalDate endDate, List<CandidateData> candidates) {
+    private void cacheTransientComparison(LocalDate startDate,
+                                          LocalDate endDate,
+                                          List<CandidateData> candidates,
+                                          AiScheduleComparisonResponseDto response) {
         Map<String, CandidateData> mappedCandidates = new LinkedHashMap<>();
         for (CandidateData candidate : candidates) {
             mappedCandidates.put(candidate.candidateId, candidate);
         }
-        transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates));
+        transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates, response));
     }
 
     private String buildToonPayload(LocalDate startDate, LocalDate endDate, List<ConcreteShift> concreteShifts) {
@@ -1013,13 +1064,16 @@ public class AiScheduleGenerationOrchestrationService {
         private final LocalDate startDate;
         private final LocalDate endDate;
         private final Map<String, CandidateData> candidates;
+        private final AiScheduleComparisonResponseDto response;
 
         private TransientComparisonState(LocalDate startDate,
                                          LocalDate endDate,
-                                         Map<String, CandidateData> candidates) {
+                                         Map<String, CandidateData> candidates,
+                                         AiScheduleComparisonResponseDto response) {
             this.startDate = Objects.requireNonNull(startDate, "startDate");
             this.endDate = Objects.requireNonNull(endDate, "endDate");
             this.candidates = Objects.requireNonNull(candidates, "candidates");
+            this.response = response;
         }
 
         private CandidateData resolveCandidate(String candidateIdOrLabel) {
@@ -1043,6 +1097,18 @@ public class AiScheduleGenerationOrchestrationService {
             }
             return null;
         }
+
+        private CandidateData resolveCandidate(Long scheduleId) {
+            if (scheduleId == null) {
+                return null;
+            }
+            for (CandidateData candidate : candidates.values()) {
+                if (scheduleId.equals(candidate.scheduleId)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
     }
 
     public static class SelectionResult {
@@ -1051,37 +1117,44 @@ public class AiScheduleGenerationOrchestrationService {
             INVALID_SELECTION,
             CANDIDATE_NOT_FOUND,
             NO_ACTIVE_COMPARISON,
-            DUPLICATE_RANGE
+            DUPLICATE_RANGE,
+            SCHEDULE_NOT_FOUND
         }
 
         private final Status status;
         private final Long scheduleId;
         private final String errorCode;
+        private final String errorMessage;
 
-        private SelectionResult(Status status, Long scheduleId, String errorCode) {
+        private SelectionResult(Status status, Long scheduleId, String errorCode, String errorMessage) {
             this.status = status;
             this.scheduleId = scheduleId;
             this.errorCode = errorCode;
+            this.errorMessage = errorMessage;
         }
 
         public static SelectionResult persisted(Long scheduleId) {
-            return new SelectionResult(Status.PERSISTED, scheduleId, null);
+            return new SelectionResult(Status.PERSISTED, scheduleId, null, null);
         }
 
-        public static SelectionResult invalid(String errorCode) {
-            return new SelectionResult(Status.INVALID_SELECTION, null, errorCode);
+        public static SelectionResult invalid(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.INVALID_SELECTION, null, errorCode, errorMessage);
         }
 
-        public static SelectionResult notFound(String errorCode) {
-            return new SelectionResult(Status.CANDIDATE_NOT_FOUND, null, errorCode);
+        public static SelectionResult notFound(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.CANDIDATE_NOT_FOUND, null, errorCode, errorMessage);
         }
 
-        public static SelectionResult noActiveComparison(String errorCode) {
-            return new SelectionResult(Status.NO_ACTIVE_COMPARISON, null, errorCode);
+        public static SelectionResult noActiveComparison(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.NO_ACTIVE_COMPARISON, null, errorCode, errorMessage);
         }
 
-        public static SelectionResult duplicateRange(String errorCode) {
-            return new SelectionResult(Status.DUPLICATE_RANGE, null, errorCode);
+        public static SelectionResult duplicateRange(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.DUPLICATE_RANGE, null, errorCode, errorMessage);
+        }
+
+        public static SelectionResult scheduleNotFound(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.SCHEDULE_NOT_FOUND, null, errorCode, errorMessage);
         }
 
         public Status getStatus() {
@@ -1094,6 +1167,10 @@ public class AiScheduleGenerationOrchestrationService {
 
         public String getErrorCode() {
             return errorCode;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
     }
 }

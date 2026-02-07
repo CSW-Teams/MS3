@@ -193,6 +193,72 @@ Non sono stati eseguiti test automatici specifici per questo microtask.
 
 ## Microtask 5.4
 
+**Implement Comparison + Selection Endpoints (2h)**
+
+**Obiettivo**
+Esporre gli endpoint REST necessari per ottenere il confronto tra le schedulazioni (standard + AI) e per
+confermare la schedulazione selezionata dal planner, garantendo la compatibilità con la UI dello Story 4 e
+con il flusso di orchestrazione definito in Story 5.
+
+**Scelte architetturali**
+- **Controller thin e logica nel service:** i controller REST delegano la logica di selezione e di recupero
+  del confronto al service di orchestrazione, mantenendo il layer REST minimale e coerente con il pattern
+  esistente in `ScheduleRestEndpoint`.
+- **Stato di confronto transiente:** viene mantenuto in memoria lo stato dell’ultimo confronto generato per
+  permettere il recupero dei candidati e la risoluzione dei `candidateId` forniti dalla UI. Lo stato
+  transiente contiene anche la risposta serializzata da restituire al GET `/api/comparison`.
+- **Selezione flessibile:** il payload di selezione accetta **`scheduleId` o `candidateId`**. Se arriva
+  `candidateId`, la risoluzione avviene sullo stato di confronto. Se la risoluzione fallisce, si risponde
+  con `409 CONFLICT` e un errore strutturato.
+- **Compatibilità con rigenerazione:** la selezione finale persiste lo schedule scelto tramite lo stesso
+  controller di scheduling, in modo da rispettare le regole di generazione/rigenerazione già esistenti e
+  non duplicare logica di persistenza.
+
+**Classi create / modificate**
+- **`ComparisonRestEndpoint`**  
+  Nuovo controller REST che espone:
+  - `GET /api/comparison`: restituisce l’ultimo confronto disponibile, includendo candidati, metriche raw e
+    normalizzate, e decision outcome.
+  - `POST /api/comparison/selection`: conferma la scelta del planner; accetta `scheduleId` o `candidateId`
+    ed esegue la persistenza della schedulazione selezionata.  
+  Serve come endpoint dedicato al confronto, separando l’API AI dal flusso storico di scheduling.
+
+- **`AiScheduleSelectionRequestDto`**  
+  Esteso per includere `scheduleId` oltre a `candidateId`. Questo adeguamento consente alla UI di inviare
+  direttamente l’identificativo persistito quando disponibile, riducendo l’ambiguità nel binding del
+  candidato.
+
+- **`AiScheduleGenerationOrchestrationService`**  
+  Esteso con:
+  - **Cache della risposta di confronto:** salvataggio dell’ultimo confronto in stato transiente per
+    il recupero via `GET /api/comparison`.
+  - **Metodo `getLatestComparison()`:** restituisce la risposta pronta da inviare al client.
+  - **Metodo `selectSchedule(...)`:** punto centrale di selezione che accetta il DTO, valida il payload,
+    risolve `candidateId` in schedule effettivo e persiste la selezione.
+  - **Gestione errori esplicita:** ritorno di errori con `errorCode` e messaggi chiari per casi come
+    `NO_ACTIVE_COMPARISON` o `CANDIDATE_NOT_FOUND`, così da supportare la UI negli stati di errore.
+
+- **`ScheduleRestEndpoint`**  
+  Aggiornato per delegare la selezione al nuovo metodo di orchestrazione; mantiene compatibilità con il
+  vecchio endpoint `/schedule/selection`, ma riutilizza la stessa logica comune di selezione.
+
+**Perché questi cambiamenti rispetto a quanto già esisteva**
+- Il flusso precedente gestiva solo la selezione tramite `candidateId`, senza endpoint di confronto dedicato
+  e senza un meccanismo di recupero del confronto a valle della generazione AI.
+- La UI della Story 4 richiede endpoint espliciti per ottenere il confronto e per selezionare lo schedule
+  scelto, con risposta coerente anche in caso di errori di risoluzione.
+- Centralizzare la selezione in orchestrazione evita duplicazioni fra endpoint e garantisce che la
+  persistenza dello schedule avvenga con le stesse regole di validazione già consolidate nello scheduler
+  controller.
+
+**Testing / integrazione**
+Sono stati aggiunti test di integrazione per coprire:
+- `GET /api/comparison` con payload valido.
+- `POST /api/comparison/selection` con `scheduleId`.
+- `POST /api/comparison/selection` con `candidateId`.
+- `POST /api/comparison/selection` con `candidateId` non risolvibile e risposta `409 CONFLICT`.
+
+
 ## Microtask 5.5
 
 ## Microtask 5.6
