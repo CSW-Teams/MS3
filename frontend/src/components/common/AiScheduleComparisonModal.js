@@ -93,53 +93,59 @@ function AiScheduleComparisonModal({
       aria-describedby="ai-schedule-comparison-metrics"
     >
       <Box sx={modalStyle}>
-        <Grid container spacing={2}>
-          {cards.map((candidate, cardIndex) => {
-            const metadata = candidate?.metadata;
-            const metrics = resolveMetrics(candidate);
-            const scheduleId = metadata?.scheduleId ?? placeholder;
-            const selectionKey = resolveSelectionKey(candidate);
-            const isSelected = selectionKey && selectionKey === selectedCandidateKey;
-            const isSelectable = Boolean(candidate && selectionKey && onSelectCandidate);
-            const values = metricLabels.map((metric) => ({
-              label: metric.label,
-              value: metrics?.[metric.key],
-            }));
+        {candidates.length === 0 ? (
+          <Typography variant="h6" component="div" align="center" sx={{ mt: 2 }}>
+            {t('No AI-generated schedules available for comparison.')}
+          </Typography>
+        ) : (
+          <Grid container spacing={2}>
+            {cards.map((candidate, cardIndex) => {
+              const metadata = candidate?.metadata;
+              const metrics = resolveMetrics(candidate);
+              const scheduleId = metadata?.scheduleId ?? placeholder;
+              const selectionKey = resolveSelectionKey(candidate);
+              const isSelected = selectionKey && selectionKey === selectedCandidateKey;
+              const isSelectable = Boolean(candidate && selectionKey && onSelectCandidate);
+              const values = metricLabels.map((metric) => ({
+                label: metric.label,
+                value: metrics?.[metric.key],
+              }));
 
-            return (
-              <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
-                <Card sx={cardStyle} elevation={3}>
-                  <CardContent sx={metricsContainerStyle}>
-                    <Typography variant="h6" component="div">
-                      {resolveCandidateLabel(metadata)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {`Schedule ID / ID schedulazione: ${scheduleId}`}
-                    </Typography>
-                    {values.map((metric) => (
-                      <Typography
-                        key={`ai-comparison-metric-${cardIndex}-${metric.label}`}
-                        variant="body1"
-                        component="div"
-                      >
-                        {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
+              return (
+                <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
+                  <Card sx={cardStyle} elevation={3}>
+                    <CardContent sx={metricsContainerStyle}>
+                      <Typography variant="h6" component="div">
+                        {resolveCandidateLabel(metadata)}
                       </Typography>
-                    ))}
-                    <Button
-                      variant={isSelected ? 'contained' : 'outlined'}
-                      disabled={!isSelectable || (selectionLocked && !isSelected)}
-                      onClick={() => onSelectCandidate(candidate)}
-                    >
-                      {isSelected
-                        ? 'Selected / Selezionato'
-                        : 'Select schedule / Seleziona schedulazione'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            );
-          })}
-        </Grid>
+                      <Typography variant="body2" color="text.secondary">
+                        {`Schedule ID / ID schedulazione: ${scheduleId}`}
+                      </Typography>
+                      {values.map((metric) => (
+                        <Typography
+                          key={`ai-comparison-metric-${cardIndex}-${metric.label}`}
+                          variant="body1"
+                          component="div"
+                        >
+                          {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
+                        </Typography>
+                      ))}
+                      <Button
+                        variant={isSelected ? 'contained' : 'outlined'}
+                        disabled={!isSelectable || (selectionLocked && !isSelected)}
+                        onClick={() => onSelectCandidate(candidate)}
+                      >
+                        {isSelected
+                          ? 'Selected / Selezionato'
+                          : 'Select schedule / Seleziona schedulazione'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+        )}
       </Box>
     </Modal>
   );

@@ -268,7 +268,7 @@ export class SchedulerGeneratorView extends React.Component{
             this.setState({
               generationStatus: 'error',
               generationMessage: t("Error: Schedule already exists or cannot be generated."),
-              generationDetails: t("Please check dates and existing schedules."),
+              generationDetails: response.body?.message || t("Please check dates and existing schedules."),
               isComparisonOpen: false,
               comparisonCandidates: [],
             });
@@ -277,7 +277,7 @@ export class SchedulerGeneratorView extends React.Component{
             this.setState({
               generationStatus: 'error',
               generationMessage: t("Schedule Generation Error."),
-              generationDetails: t("An unexpected error occurred."),
+              generationDetails: response.body?.message || response.body?.error || t("An unexpected error occurred."),
               isComparisonOpen: false,
               comparisonCandidates: [],
             });
@@ -289,7 +289,7 @@ export class SchedulerGeneratorView extends React.Component{
         this.setState({
           generationStatus: 'error',
           generationMessage: t("An unexpected error occurred during schedule generation."),
-          generationDetails: err.message || t("Please try again later."),
+          generationDetails: err.message || response.body?.message || response.body?.error || t("Please try again later."),
           isComparisonOpen: false,
           comparisonCandidates: [],
         });
