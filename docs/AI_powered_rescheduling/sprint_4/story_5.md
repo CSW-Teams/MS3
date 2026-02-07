@@ -196,3 +196,44 @@ Non sono stati eseguiti test automatici specifici per questo microtask.
 ## Microtask 5.5
 
 ## Microtask 5.6
+
+**Audit validation module + selection outcomes auditing**
+
+Microtask 5.6 introduce il modulo di audit/validazione per la fase di orchestrazione, con:
+1) validazione strutturata delle metriche (errori con categoria/codice/dettagli + correlationId)
+2) audit delle selezioni/ranking con eventi annotati e registrazione su log file (persistenza DB opzionale).
+
+### Validazione metriche (audit.validation)
+- **`ErrorCategory`**: enum di classificazione per errori di validazione.
+- **`ValidationViolation`**: dettaglio strutturato con `path` e `message`.
+- **`MetricValidationException`**: eccezione tipizzata con category, errorCode, details e correlationId (da MDC).
+- **`MetricValidationErrorResponse`**: risposta standard con `status=FAILURE`, categoria, codice, dettagli e correlationId.
+- **`MetricComputationResult`**: input del validator (mappa metriche + coverage opzionale).
+- **`MetricComputationValidator`**: service riusabile che valida presence/format dei valori (missing, null, NaN/Infinity, range, coverage) e lancia `MetricValidationException`.
+- **`MetricValidationExceptionHandler`**: `@RestControllerAdvice` che traduce l’eccezione in HTTP 400 con payload strutturato.
+
+### Correlation ID (audit.correlation)
+- **`RequestCorrelationFilter`**: filtro servlet che legge `X-Correlation-Id` (o genera UUID), lo registra in MDC e lo propaga in response.
+
+### Audit selezioni (audit.selection)
+- **`@AuditSelection`**: annotation per metodi di selezione/ranking.
+- **`AuditableSelectionResult`**: interfaccia per produrre eventi audit.
+- **`SelectionAuditEvent`**: DTO evento (selectionName, outcomeId, candidateId, score, selected, reasons, tenantId, correlationId, timestamp).
+- **`AuditSelectionAspect`**: aspect `@AfterReturning` che intercetta i metodi annotati e registra gli eventi.
+- **`AuditRecorder`**: recorder centralizzato che:
+  - logga sempre su logger dedicato `MS3_AUDIT`;
+  - arricchisce `tenantId` da `TenantContext` (fallback `central_db`);
+  - arricchisce `correlationId` da MDC;
+  - **opzionalmente** persiste su DB quando `audit.persistence.enabled=true`.
+- **Persistenza audit opzionale**:
+  - **`SelectionAuditRecord`** entity + **`SelectionAuditRecordRepository`**.
+  - **`AuditProperties`** con `audit.persistence.enabled` (default `false`).
+
+### Integrazione nel flusso
+- `DecisionAlgorithmService` espone `selectPreferredWithAudit(...)`, implementato in `DecisionAlgorithmServiceImpl` con `@AuditSelection("decision_algorithm_select_preferred")`.
+- `AiScheduleGenerationOrchestrationService` usa il metodo con audit per la scelta del candidato finale.
+
+### Test mirati
+- `MetricComputationValidatorTest`
+- `AuditSelectionAspectTest`
+- `RequestCorrelationFilterTest`

@@ -51,7 +51,7 @@
 - [x] ~~5.3 Scordo~~
 - [ ] 5.4  Capone 
 - [x] ~~5.5  Cantone~~
-- [ ] 5.6  DEPENDENCIES 3.7
+- [x] ~~5.6 Federico C.~~
 
 \---
 
