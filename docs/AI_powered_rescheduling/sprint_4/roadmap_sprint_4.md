@@ -258,7 +258,7 @@
 **Sprint Timing**: **Before mid-sprint** (to enable demoable architecture).
 
 **Microtasks**
-1. **Implement orchestration sequence service** (**2h**)
+1. **Implement orchestration sequence service** (**2h, Completed by Cantone**)
    - Description: Implement the service that sequences standard + AI schedule generation and metrics computation.
    - Preconditions: Stories 2–3.
    - Parallel affinities: UI state design (Story 4).
@@ -273,12 +273,12 @@
    - Preconditions: Story 2.
    - Parallel affinities: None.
    - Output artifact: JSON ingestion pipeline.
-4. **Implement comparison + selection endpoints** (**2h**)
+4. **Implement comparison + selection endpoints** (**2h, In progress Capoe**)
    - Description: Build API endpoints for comparison metrics and committing planner selection.
    - Preconditions: Story 3, Microtask 6.
    - Parallel affinities: UI story (Story 4).
    - Output artifact: API endpoints + integration tests.
-5. **Implement error + retry handling** (**1h**)
+5. **Implement error + retry handling** (**1h, In progress Cantone**)
    - Description: Implement failure handling and retries for AI calls and metric computation.
    - Preconditions: Story 2 protocol.
    - Parallel affinities: UI error design (Story 4).
