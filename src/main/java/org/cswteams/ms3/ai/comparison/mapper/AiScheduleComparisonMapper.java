@@ -20,11 +20,27 @@ public class AiScheduleComparisonMapper {
 
     public AiScheduleComparisonResponseDto toDto(List<AiScheduleComparisonCandidate> candidates,
                                                  AiScheduleDecisionOutcome outcome) {
+        return toDto(candidates, outcome, null, null, null, false);
+    }
+
+    public AiScheduleComparisonResponseDto toDto(List<AiScheduleComparisonCandidate> candidates,
+                                                 AiScheduleDecisionOutcome outcome,
+                                                 String errorType,
+                                                 String errorCode,
+                                                 String failureStage,
+                                                 boolean retryable) {
         List<AiScheduleComparisonCandidateDto> mappedCandidates = mapCandidates(candidates);
         AiScheduleDecisionOutcomeDto decisionOutcome = outcome == null ? null : new AiScheduleDecisionOutcomeDto(
                 toMetadata(outcome.getCandidateId(), outcome.getScheduleId(), outcome.getType().getLabel())
         );
-        return new AiScheduleComparisonResponseDto(mappedCandidates, decisionOutcome);
+        String generationStatus = resolveGenerationStatus(mappedCandidates, errorCode);
+        return new AiScheduleComparisonResponseDto(mappedCandidates,
+                decisionOutcome,
+                generationStatus,
+                errorType,
+                errorCode,
+                failureStage,
+                retryable);
     }
 
     private List<AiScheduleComparisonCandidateDto> mapCandidates(List<AiScheduleComparisonCandidate> candidates) {
@@ -78,5 +94,15 @@ public class AiScheduleComparisonMapper {
                 values.getUpDelta(),
                 values.getVarianceDelta()
         );
+    }
+
+    private String resolveGenerationStatus(List<AiScheduleComparisonCandidateDto> candidates, String errorCode) {
+        if (errorCode == null || errorCode.trim().isEmpty()) {
+            return "success";
+        }
+        if (candidates == null || candidates.isEmpty()) {
+            return "error";
+        }
+        return "partial";
     }
 }
