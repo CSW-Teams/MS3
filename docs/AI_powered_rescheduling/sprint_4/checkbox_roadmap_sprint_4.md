@@ -30,14 +30,14 @@
 - [x] ~~3.4  Cantone, Capone, Scordo~~
 - [x] ~~3.5 Capone~~
 - [x] ~~3.6 Capone~~
-- [ ] 3.7  DEPENDENCIES 3.3->3.6
+- [ ] 3.7  DEPENDENCIES 3.3->3.6 
 
 \---
 
 # Story 4 — Planner UI: Schedule Comparison & Selection
 
 - [x] ~~4.1 Scordo~~
-- [ ] 4.2  DEPENDENCIES 3.6
+- [ ] 4.2 Andrea DEPENDENCIES 3.6
 - [ ] 4.3  DEPENDENCIES 4.2
 - [ ] 4.4  DEPENDENCIES 1.X
 - [ ] 4.5  DEPENDENCIES 2.X
@@ -46,10 +46,10 @@
 
 # Story 5 — Backend Orchestration Plan for AI Rescheduling
 
-- [ ] 5.1  DEPENDENCIES 2.X 3.X
+- [x] ~~5.1  DEPENDENCIES 2.X 3.X Cantone~~
 - [x] ~~5.2 Cantone~~
 - [x] ~~5.3 Scordo~~
-- [ ] 5.4  DEPENDENCIES 3.6
+- [ ] 5.4  Capone DEPENDENCIES 3.6
 - [ ] 5.5  DEPENDENCIES 2.X
 - [ ] 5.6  DEPENDENCIES 3.7
 
