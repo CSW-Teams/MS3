@@ -178,7 +178,7 @@
    - Preconditions: Microtasks 3–5.
    - Parallel affinities: UI story (Story 4).
    - Output artifact: Comparison payload DTOs + mapper.
-7. **Add audit + validation checks for metric computation** (**2h**)
+7. **Add audit + validation checks for metric computation** (**2h, in progress Cantarini**)
    - Description: Implement QA checks for missing metrics and audit annotations for selection outcomes.
    - Preconditions: Microtasks 3–6.
    - Parallel affinities: Documentation (Story 6).
