@@ -31,17 +31,22 @@ const metricsContainerStyle = {
   alignItems: 'center',
 };
 
-const normalizeCardMetrics = (metrics) => {
+const isPrimitiveValue = (value) => (
+  value === null || (typeof value !== 'object' && typeof value !== 'function')
+);
+
+const normalizeCardMetrics = (metrics, placeholder) => {
+  const safePlaceholder = placeholder ?? '—';
   if (Array.isArray(metrics)) {
-    return metrics;
+    return metrics.map((value) => (isPrimitiveValue(value) ? value : safePlaceholder));
   }
   if (metrics && typeof metrics === 'object') {
-    return Object.values(metrics);
+    return Object.values(metrics).map((value) => (isPrimitiveValue(value) ? value : safePlaceholder));
   }
   if (metrics === null || metrics === undefined) {
     return [];
   }
-  return [metrics];
+  return [isPrimitiveValue(metrics) ? metrics : safePlaceholder];
 };
 
 const formatMetric = (value, placeholder) => {
@@ -57,7 +62,7 @@ const formatMetric = (value, placeholder) => {
 function AiScheduleComparisonModal({ isOpen, onClose, comparisonMetrics = [], placeholderText }) {
   const placeholder = placeholderText || t('—');
   const cards = Array.from({ length: 4 }, (_, index) =>
-    normalizeCardMetrics(comparisonMetrics[index])
+    normalizeCardMetrics(comparisonMetrics[index], placeholder)
   );
 
   return (

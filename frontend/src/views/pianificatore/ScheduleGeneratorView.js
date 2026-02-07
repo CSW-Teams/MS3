@@ -188,9 +188,9 @@ export class SchedulerGeneratorView extends React.Component{
         switch (response.status) {
           case 200:
           case 202: {
+            // Response shape is expected to include comparisonMetrics or metrics; avoid falling back to the whole body.
             const comparisonMetrics = response.body?.comparisonMetrics
               ?? response.body?.metrics
-              ?? response.body
               ?? [];
             this.setState({
               generationStatus: 'success',
