@@ -195,4 +195,83 @@ Non sono stati eseguiti test automatici specifici per questo microtask.
 
 ## Microtask 5.5
 
+**Implement error + retry handling (1h)**
+
+**Descrizione**\
+Implementare gestione fallimenti e retry per le chiamate AI e per la computazione delle metriche, con separazione netta delle responsabilità:
+
+* **Broker**: errori di connessione/trasporto/timeout/rate limit e retry.
+* **Orchestrator**: errori di sistema/logica/metriche e fallback.
+
+**Precondizioni**
+
+* Story 2 (protocollo AI + broker con retry/timeout).
+
+**Affinità in parallelo**
+
+* UI error design (Story 4).
+
+**Output artifact**
+
+* Logica di error handling + logging strutturato + metadati di errore in response payload.
+
+***
+
+### 1) Scope tecnico del microtask
+
+**1.1 Broker (responsabilità esclusiva)**
+
+* Gestione errori di trasporto: timeouts, connessioni, DNS/TLS, rate limit.
+* Retry policy gestita a livello broker (configurabile).
+* Non propagare logica di retry al livello orchestratore per errori di trasporto.
+
+**1.2 Orchestrator (responsabilità esclusiva)**
+
+* Gestione errori di sistema/logica/metriche (es. `IllegalArgumentException`, configurazione invalidata).
+* Fallback su schedule standard quando l’AI non è disponibile.
+* Inserimento metadati di errore nel payload di risposta.
+
+***
+
+### 2) Piano operativo (step-by-step)
+
+**Step A — Gestione errori AI (broker)**\
+Verificare che `AgentBrokerImpl` gestisca retry/timeout e log strutturati con `correlation_id`.
+
+**Step B — Gestione errori metriche (orchestrator)**\
+In `AiScheduleGenerationOrchestrationService`:
+
+* `try/catch` per eccezioni metriche e di sistema.
+* Log `event=metrics_computation_failed` con `correlation_id` ed `error_code`.
+* Ritorno di payload con stato `error` o `partial`, più metadati errore.
+
+**Step C — Payload con metadati errore**\
+Estendere i DTO di confronto (`AiScheduleComparisonResponseDto` o candidati) con:
+
+* `generationStatus` (`success` | `partial` | `error`)
+* `errorType` / `errorCode`
+* `failureStage` (e.g., `METRICS_COMPUTE`)
+* `retryable` (true/false)
+
+**Step D — UI handshake (future)**\
+Le UI devono usare `retryable=true` per chiedere al planner se vuole ritentare (Story 4).
+
+***
+
+### 3) Logging & Audit
+
+* Logging strutturato: `event=ai_broker_attempt_failed`, `event=metrics_computation_failed`.
+* Campi minimi: `correlation_id`, `error_code`, `stage`, `retry_attempt`.
+* Nessun dato personale nel log (GDPR).
+
+***
+
+### 4) Test minimi attesi
+
+```
+● Broker: retry su errori di trasporto (già coperto).
+● Orchestrator: errore metriche → response con generationStatus=error + errorCode.
+● Fallback: se AI fallisce, standard schedule disponibile + metadata errore.
+```
+
 ## Microtask 5.6
