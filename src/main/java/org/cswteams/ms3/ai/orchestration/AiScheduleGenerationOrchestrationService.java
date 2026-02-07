@@ -786,7 +786,18 @@ public class AiScheduleGenerationOrchestrationService {
         if (metrics.isEmpty()) {
             return null;
         }
-        AiScheduleCandidateMetrics selected = decisionAlgorithmService.selectPreferred(metrics);
+        org.cswteams.ms3.audit.selection.AuditedSelectionResult auditedResult =
+                decisionAlgorithmService.selectPreferredWithAudit(metrics);
+        AiScheduleCandidateMetrics selected = null;
+        for (AiScheduleCandidateMetrics candidate : metrics) {
+            if (candidate.getCandidateId().equals(auditedResult.getSelectedCandidateId())) {
+                selected = candidate;
+                break;
+            }
+        }
+        if (selected == null) {
+            return null;
+        }
         CandidateData selectedCandidate = null;
         for (CandidateData candidate : candidates) {
             if (candidate.candidateId.equals(selected.getCandidateId())) {

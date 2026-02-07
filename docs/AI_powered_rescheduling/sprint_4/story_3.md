@@ -419,8 +419,18 @@ Definire il **payload di confronto** per l’endpoint `/comparison`, includendo:
 
 ## Microtask 3.7
 
-- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile).
-- Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
-- Il parser supporta `failOnTypeMismatch` e include il path dell’errore nel messaggio (es. `$.assignments[0].doctor_id`).
-- Mismatch di tipo classificati come `APPLICATION_SCHEMA` / `TYPE_MISMATCH`.
-- `shift_id` è validato come exchange-id secondo formato ADR `S_<id>_<yyyyMMdd>`; nessun lookup DB in questa fase.
+- Il parser `AiScheduleJsonParser` espone il fail-on-unknown-properties via costruttore (strict configurabile). Se abilitato, proprietà sconosciute causano `SCHEMA_MISMATCH` con categoria `APPLICATION_SCHEMA`.
+- È stato aggiunto il flag `failOnTypeMismatch`: se attivo, mismatch di tipo (array/object, string/number, ecc.) generano `TYPE_MISMATCH` con path nel messaggio (es. `$.assignments[0].doctor_id`). La modalità permissiva è supportata tramite coercizioni scalari.
+- La mappatura dei DTO riflette 1:1 lo schema JSON del microtask 2.3 con naming camelCase in Java e `@JsonProperty` per snake_case. I DTO risiedono in `org.cswteams.ms3.ai.protocol.dto` e includono root, metadata/metrics, assignments, uncovered_shifts e uffa_delta.
+- Le collezioni nella root sono inizializzate a liste vuote per robustezza. Sono presenti enum di protocollo (`AiStatus`, `AiUffaQueue`) e `role_covered` è mappato su `Seniority`.
+- È stata introdotta una validazione semantica separata dal parsing (`AiScheduleSemanticValidator`) con errori strutturati path-based: campi obbligatori, range numerici, vincoli per assignments, assenza di duplicati su coppia (shift_id, doctor_id).
+- Allineamento ADR: `shift_id` è validato come exchange-id nel formato `S_<id>_<yyyyMMdd>` (con parsing data), senza lookup DB; `role_covered` è limitato a STRUCTURED/JUNIOR (mappato su `Seniority.SPECIALIST_JUNIOR` per compatibilità dominio).
+- Test unitari coprono: JSON malformato, proprietà sconosciute, mismatch di tipo, enum non validi, mapping completo dei DTO, validazione semantica (missing/range/duplicate), enforcement status (SUCCESS ok, PARTIAL_SUCCESS/FAILURE errore) e allineamento ADR su `shift_id`.
+
+**Classi audit-related (modulo Audit Validation):**
+- `ErrorCategory`, `ValidationViolation`, `MetricValidationException`: tassonomia errori e dettagli strutturati (path/message) con supporto correlationId (da MDC `requestId`).
+- `MetricComputationResult` + `MetricComputationValidator`: validazione QA su metriche computate (missing/NaN/Infinity/out-of-range) e copertura audit; errori con codice stabile e dettagli in `violations`.
+- `MetricValidationErrorResponse` + `MetricValidationExceptionHandler`: risposta HTTP standardizzata (`status=FAILURE`) per errori di validazione.
+- `AuditSelection` + `AuditSelectionAspect`: AOP per generare eventi audit sui metodi di selezione/ranking.
+- `SelectionAuditEvent`, `AuditableSelectionResult`, `AuditedSelectionResult`: modello eventi e wrapper per esportare eventi audit dal risultato di selezione.
+- `AuditRecorder`: logger dedicato `MS3_AUDIT`, arricchisce con tenantId (da `TenantContext`, fallback `central_db`) e correlationId.

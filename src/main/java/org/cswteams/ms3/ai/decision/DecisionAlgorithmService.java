@@ -5,4 +5,7 @@ import java.util.List;
 public interface DecisionAlgorithmService {
 
     AiScheduleCandidateMetrics selectPreferred(List<AiScheduleCandidateMetrics> candidates);
+
+    org.cswteams.ms3.audit.selection.AuditedSelectionResult selectPreferredWithAudit(
+            List<AiScheduleCandidateMetrics> candidates);
 }
