@@ -178,7 +178,7 @@
    - Preconditions: Microtasks 3–5.
    - Parallel affinities: UI story (Story 4).
    - Output artifact: Comparison payload DTOs + mapper.
-7. **Add audit + validation checks for metric computation** (**2h**, Completed by Federico C.)
+7. **Add audit + validation checks for metric computation** (**2h, Completed by Federico C**.)
    - Description: Implement QA checks for missing metrics and audit annotations for selection outcomes.
    - Preconditions: Microtasks 3–6.
    - Parallel affinities: Documentation (Story 6).
@@ -223,12 +223,12 @@
    - Preconditions: Microtask 2.
    - Parallel affinities: Documentation (Story 6).
    - Output artifact: Modal component + copy.
-4. **Wire success message reuse** (**2h**)
+4. **Wire success message reuse** (**2h, Completed by Scordo**)
    - Description: Integrate existing success notification patterns for completed selection flow.
    - Preconditions: Story 1 UI inventory.
    - Parallel affinities: None.
    - Output artifact: Success notification wiring.
-5. **Implement UI error + fallback handling** (**2h**)
+5. **Implement UI error + fallback handling** (**2h, Completed by Scordo**)
    - Description: Implement error handling for missing metrics or AI failures (UI fallbacks + messages).
    - Preconditions: Story 2 protocol.
    - Parallel affinities: Backend orchestration (Story 5).
@@ -283,7 +283,7 @@
    - Preconditions: Story 2 protocol.
    - Parallel affinities: UI error design (Story 4).
    - Output artifact: Error handling logic + logging.
-6. **Implement security + audit logging** (**1h**)
+6. **Implement security + audit logging** (**1h, Completed by Federico C**)
    - Description: Implement audit logging for schedule selection and AI decisions.
    - Preconditions: Story 3, Microtask 7.
    - Parallel affinities: Documentation (Story 6).
