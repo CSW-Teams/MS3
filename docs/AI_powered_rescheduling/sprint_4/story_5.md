@@ -36,6 +36,98 @@
 
 ## Microtask 5.1
 
+**Orchestration sequence service (2h)**
+
+**Descrizione**
+Definire e implementare la **sequenza di orchestrazione** che coordina la generazione **baseline** e le tre varianti AI, garantendo validazione, calcolo metriche e risposta di confronto coerente con le Story 1–4.
+
+La pipeline deve essere **sincrona** (trigger HTTP → orchestrazione → risposta), senza rendering grafico della schedule, e con persistenza **solo della schedule selezionata**.
+
+**Precondizioni**
+- Story 1 completata (baseline schedule generation).
+- Story 2 completata (TOON/JSON protocol, broker, validazioni).
+- Story 3 completata (metriche di confronto).
+- Story 4 completata (stati UI success/partial/failure).
+
+**Affinità in parallelo**
+- Microtask 5.2 (TOON request generation + validation).
+- Microtask 5.3 (JSON response ingestion + validation).
+
+**Output artifact**
+- Servizio di orchestrazione completo che restituisce **baseline + 3 variant AI** con metriche e payload di confronto (Option A).
+
+---
+
+### 1) Scope tecnico del microtask
+
+**1.1 Sequenza orchestrata end-to-end**
+La pipeline deve eseguire in ordine:
+
+```
+1) Generazione schedule standard (baseline, Story 1)
+2) Costruzione TOON (Story 2) + pre-validation gate
+3) Chiamata AI singola → 3 varianti etichettate (Empatica/Efficiente/Bilanciata)
+4) Parsing + validazione JSON delle 3 varianti (Story 2)
+5) Calcolo metriche di confronto (Story 3)
+6) Composizione risposta di confronto (Option A)
+```
+
+**1.2 Single AI call / multi-variant**
+La chiamata AI deve essere **unica** e restituire **3 schedule distinte** con label:
+
+```
+● Empatica (Doctor-Oriented)
+● Efficiente (Organization-Oriented)
+● Bilanciata (AI Recommendation)
+```
+
+**1.3 Persistence rule**
+Persistenza solo dopo **selezione esplicita** (endpoint di commit).  
+Baseline e varianti AI non vengono salvate automaticamente.
+
+---
+
+### 2) Output di confronto (Option A)
+
+La risposta di confronto deve includere **4 JSON completi** e il blocco metriche:
+
+```
+● baseline schedule JSON
+● ai_empatica JSON
+● ai_efficiente JSON
+● ai_bilanciata JSON
+● metrics: set completo Story 3
+```
+
+Nota: la risposta è **API-only**, senza rendering grafico o layout UI.
+
+---
+
+### 3) Error handling / status (Story 4)
+
+Gestire gli stati compatibili con la UI:
+
+```
+● success (tutte le varianti valide + metriche)
+● partial (1 o più varianti invalid o fallback su baseline)
+● failure (errore critico, nessuna variante valida)
+```
+
+I failure devono essere **espliciti e tracciabili** (audit/log).
+
+---
+
+### 4) Test minimi attesi
+
+```
+● baseline generata correttamente
+● singola chiamata AI restituisce 3 varianti etichettate
+● validazione JSON fallisce → stato partial (almeno 1 variante valida)
+● validazione JSON fallisce su tutte → stato failure
+● metrics calcolate e incluse nella response Option A
+● selezione persiste solo schedule scelta
+```
+
 ## Microtask 5.2
 
 **Implement TOON request generation + validation (2h)**
