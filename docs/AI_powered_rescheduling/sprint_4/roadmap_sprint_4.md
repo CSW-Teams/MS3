@@ -273,7 +273,7 @@
    - Preconditions: Story 2.
    - Parallel affinities: None.
    - Output artifact: JSON ingestion pipeline.
-4. **Implement comparison + selection endpoints** (**2h, In progress Capoe**)
+4. **Implement comparison + selection endpoints** (**2h, Completed by Capoe**)
    - Description: Build API endpoints for comparison metrics and committing planner selection.
    - Preconditions: Story 3, Microtask 6.
    - Parallel affinities: UI story (Story 4).
