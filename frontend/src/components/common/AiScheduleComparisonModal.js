@@ -7,12 +7,14 @@ const modalStyle = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: '90%',
-  maxWidth: 900,
+  width: '80%',
+  maxWidth: 720,
+  maxHeight: '80vh',
   bgcolor: 'background.paper',
   borderRadius: 2,
   boxShadow: 24,
-  p: 3,
+  p: 2,
+  overflowY: 'auto',
 };
 
 const cardStyle = {
@@ -36,34 +38,34 @@ const formatMetric = (value, placeholder) => {
     return placeholder;
   }
   if (typeof value === 'number') {
-    return value.toFixed(2);
+    return value;
   }
   return value;
 };
 
 const metricLabels = [
-  { key: 'coverage', label: 'Coverage / Copertura' },
-  { key: 'uffaBalance', label: 'UFFA balance / Bilanciamento UFFA' },
-  { key: 'sentimentTransitions', label: 'Sentiment transitions / Transizioni sentimento' },
-  { key: 'upDelta', label: 'UP delta / Delta UFFA' },
-  { key: 'varianceDelta', label: 'Variance delta / Delta varianza' },
+  { key: 'coverage', labelKey: 'Coverage' },
+  { key: 'uffaBalance', labelKey: 'UFFA balance' },
+  { key: 'sentimentTransitions', labelKey: 'Sentiment transitions' },
+  { key: 'upDelta', labelKey: 'UP delta' },
+  { key: 'varianceDelta', labelKey: 'Variance delta' },
 ];
 
 const resolveCandidateLabel = (metadata) => {
   if (!metadata?.type) {
-    return 'Schedule / Schedulazione';
+    return t('Schedule');
   }
   switch (metadata.type.toLowerCase()) {
     case 'standard':
-      return 'Standard / Standard';
+      return t('Standard');
     case 'empathetic':
-      return 'Empathetic / Empatica';
+      return t('Empathetic');
     case 'efficient':
-      return 'Efficient / Efficiente';
+      return t('Efficient');
     case 'balanced':
-      return 'Balanced / Bilanciata';
+      return t('Balanced');
     default:
-      return `${metadata.type} / ${metadata.type}`;
+      return metadata.type;
   }
 };
 
@@ -82,7 +84,7 @@ function AiScheduleComparisonModal({
   selectedCandidateKey,
   selectionLocked,
 }) {
-  const placeholder = placeholderText || t('—');
+  const placeholder = placeholderText || t('N/A');
   const cards = Array.from({ length: 4 }, (_, index) => candidates[index] ?? null);
 
   return (
@@ -107,7 +109,7 @@ function AiScheduleComparisonModal({
               const isSelected = selectionKey && selectionKey === selectedCandidateKey;
               const isSelectable = Boolean(candidate && selectionKey && onSelectCandidate);
               const values = metricLabels.map((metric) => ({
-                label: metric.label,
+                label: t(metric.labelKey),
                 value: metrics?.[metric.key],
               }));
 
@@ -119,7 +121,7 @@ function AiScheduleComparisonModal({
                         {resolveCandidateLabel(metadata)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {`Schedule ID / ID schedulazione: ${scheduleId}`}
+                        {`${t('Schedule ID')}: ${scheduleId}`}
                       </Typography>
                       {values.map((metric) => (
                         <Typography
@@ -135,9 +137,7 @@ function AiScheduleComparisonModal({
                         disabled={!isSelectable || (selectionLocked && !isSelected)}
                         onClick={() => onSelectCandidate(candidate)}
                       >
-                        {isSelected
-                          ? 'Selected / Selezionato'
-                          : 'Select schedule / Seleziona schedulazione'}
+                        {isSelected ? t('Selected') : t('Select schedule')}
                       </Button>
                     </CardContent>
                   </Card>

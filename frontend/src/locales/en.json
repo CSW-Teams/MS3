@@ -428,5 +428,20 @@
   "Add shift": "Add shift",
 
   "No time slot selected": "No time slot selected",
-  "No day of the week selected": "No day of the week selected"
+  "No day of the week selected": "No day of the week selected",
+
+  "Schedule": "Schedule",
+  "Schedule ID": "Schedule ID",
+  "Select schedule": "Select schedule",
+  "Selected": "Selected",
+  "Coverage": "Coverage",
+  "UFFA balance": "UFFA balance",
+  "Sentiment transitions": "Sentiment transitions",
+  "UP delta": "UP delta",
+  "Variance delta": "Variance delta",
+  "Standard": "Standard",
+  "Empathetic": "Empathetic",
+  "Efficient": "Efficient",
+  "Balanced": "Balanced",
+  "N/A": "N/A"
 }

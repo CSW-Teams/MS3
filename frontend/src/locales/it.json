@@ -428,5 +428,20 @@
   "Add shift": "Aggiungi turno",
 
   "No time slot selected": "Nessuna fascia oraria selezionata",
-  "No day of the week selected": "Nessuna giorno della settimana selezionato"
+  "No day of the week selected": "Nessuna giorno della settimana selezionato",
+
+  "Schedule": "Schedulazione",
+  "Schedule ID": "ID schedulazione",
+  "Select schedule": "Seleziona schedulazione",
+  "Selected": "Selezionato",
+  "Coverage": "Copertura",
+  "UFFA balance": "Bilanciamento UFFA",
+  "Sentiment transitions": "Transizioni sentimento",
+  "UP delta": "Delta UFFA",
+  "Variance delta": "Delta varianza",
+  "Standard": "Standard",
+  "Empathetic": "Empatica",
+  "Efficient": "Efficiente",
+  "Balanced": "Bilanciata",
+  "N/A": "N/D"
 }
