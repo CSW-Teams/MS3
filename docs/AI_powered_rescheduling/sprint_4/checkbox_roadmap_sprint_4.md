@@ -49,7 +49,7 @@
 - [x] ~~5.1 Cantone~~
 - [x] ~~5.2 Cantone~~
 - [x] ~~5.3 Scordo~~
-- [ ] 5.4  Capone 
+- [x] ~~5.4  Capone~~
 - [x] ~~5.5  Cantone~~
 - [x] ~~5.6 Federico C.~~
 
