@@ -39,8 +39,11 @@ public class GemmaAgentAdapter implements AgentProviderAdapter {
             throw AiProtocolException.businessFailure("Gemma API key is not configured");
         }
 
-        String prompt = AiPromptTemplate.build(request.getInstructions(), request.getToonPayload());
-        Map<String, Object> payload = Map.of("contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", prompt))))
+        String systemPrompt = AiPromptTemplate.systemPrompt();
+        String userPrompt = AiPromptTemplate.buildUserContent(request.getInstructions(), request.getToonPayload());
+        Map<String, Object> payload = Map.of(
+                "system_instruction", Map.of("parts", List.of(Map.of("text", systemPrompt))),
+                "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", userPrompt))))
                 //,"generationConfig", Map.of("responseMimeType", "application/json")
         );
 
