@@ -50,3 +50,56 @@ Il componente drawer è stato semplificato ("Dumb Component").
 * **Validazione:** Implementata validazione locale per garantire l'integrità dei dati prima dell'invio.
 
 ---
+
+## Microtask 4.3: Modale di conferma selezione schedulazione
+
+**Descrizione Task:** Implementazione della modale di conferma per la selezione finale di uno schedule tra 4 candidati, con copy bilingue EN/IT e blocco selezione dopo conferma.
+**Obiettivo:** Rendere esplicita e irreversibile la scelta del Planner, invocando l’endpoint di selezione e disabilitando ulteriori selezioni dopo la conferma.
+
+---
+
+### 1. Sintesi del microtask
+
+Aggiornamento della UI di confronto per mostrare i dettagli dei candidati, aggiunta di una modale di conferma con copy bilingue e wiring completo della selezione con chiamata al backend.  
+Dopo la conferma, la selezione viene bloccata e viene conservato un hook per la futura notifica di successo (Story 4.4).
+
+---
+
+### 2. Componenti Chiave Implementati
+
+#### A. `AiScheduleComparisonModal.js` (Aggiornamento layout + CTA)
+
+Il componente di confronto è stato esteso per mostrare i metadati del candidato e abilitare l’azione di selezione.
+
+* **Layout:** 4 card con:
+  * etichetta del candidato (Standard, Empatica, Efficiente, Bilanciata)
+  * Schedule ID
+  * metriche decisionali con label bilingue (coverage, UFFA balance, sentiment transitions, UP delta, variance delta)
+* **CTA per selezione:** pulsante “Select schedule / Seleziona schedulazione”.
+* **Lock della selezione:** quando lo schedule è confermato, tutte le altre selezioni vengono disabilitate.
+
+#### B. `AiScheduleSelectionConfirmationModal.js` (Nuovo Componente)
+
+Modale di conferma per la scelta finale dello schedule.
+
+* **Copy bilingue EN/IT:** testo scritto da zero per chiarezza e decisione finale.
+* **Contesto visivo:** mostra candidato e Schedule ID selezionati.
+* **Azioni:** “Cancel / Annulla” chiude la modale senza effetti, “Confirm selection / Conferma selezione” finalizza la scelta.
+
+#### C. `ScheduleGeneratorView.js` (Orchestrazione selezione)
+
+Il componente orchestratore gestisce lo stato di selezione e l’invocazione del backend.
+
+* **Nuovi stati:** `comparisonCandidates`, `selectionLocked`, `selectedCandidateKey`, `pendingCandidate`, `isSelectionConfirmationOpen`, `isSelectionSubmitting`, `selectedScheduleId`.
+* **Flusso selezione:** click su una card → apertura modale → conferma → chiamata API → lock selezione.
+* **Hook per Story 4.4:** `selectedScheduleId` mantenuto per messaggi di successo futuri.
+
+#### D. `ScheduleAPI.js` (Endpoint di selezione)
+
+Nuovo metodo API per invocare l’endpoint di selezione:
+
+* **POST** `/api/schedule/selection`
+* **Payload:** `{ candidateId }` (o label del candidato)
+* **Output:** status HTTP e body di risposta per il lock UI
+
+---
