@@ -218,6 +218,33 @@ public class AiScheduleJsonParserTest {
     }
 
     @Test
+    public void parse_uffaDeltaNumber_shouldParse() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
+        String json = "{"
+                + "\"status\":\"SUCCESS\","
+                + "\"metadata\":{"
+                + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
+                + "\"optimality_score\":0.85,"
+                + "\"metrics\":{"
+                + "\"coverage_percent\":0.98,"
+                + "\"uffa_balance\":{\"night_shift_std_dev\":{\"initial\":40.1,\"final\":22.5}},"
+                + "\"soft_violations_count\":1"
+                + "}"
+                + "},"
+                + "\"assignments\":[{\"shift_id\":\"S_101_20260520\",\"doctor_id\":100,\"role_covered\":\"STRUCTURED\",\"is_forced\":false}],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":0.123"
+                + "}";
+
+        AiScheduleResponseDto dto = parser.parse(json);
+
+        assertNotNull(dto);
+        assertNotNull(dto.uffaDelta);
+        assertTrue(dto.uffaDelta.isEmpty());
+    }
+
+    @Test
     public void parse_typeMismatch_doctorIdString_withPermissiveMode_shouldParse() {
         AiScheduleJsonParser parser = new AiScheduleJsonParser(true, false);
         String json = "{"
