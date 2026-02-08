@@ -5,6 +5,13 @@ The "variants" field must contain exactly three labeled schedules: "EMPATHETIC",
 Each variant must follow the schedule response schema (status, metadata, assignments, uncovered_shifts, uffa_delta).
 Do not include markdown or extra text.
 Return JSON only, no markdown.
+Generate three schedule variants in a single JSON response.
+Use the labels EMPATHETIC, EFFICIENT, BALANCED under the "variants" object.
+Variant intent:
+- EMPATHETIC: Maximize doctor well-being and respect expressed preferences as strict constraints.
+- EFFICIENT: Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance.
+- BALANCED: Balance well-being and operational efficiency, allowing soft constraint tradeoffs.
+Return only the JSON object, no extra text.
 
 Required JSON schema structure:
 {

@@ -357,7 +357,7 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private CandidateBatch requestAiCandidates(String toonPayload) {
-        String instructions = buildMultiVariantInstructions();
+        String instructions = null;
         String correlationId = UUID.randomUUID().toString();
         AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
         logger.info("event=ai_broker_request_prepared correlation_id={} payload_length={} instructions_length={}",
@@ -929,16 +929,6 @@ public class AiScheduleGenerationOrchestrationService {
                 minVariance,
                 maxVariance);
         return normalized;
-    }
-
-    private String buildMultiVariantInstructions() {
-        StringBuilder builder = new StringBuilder("Generate three schedule variants in a single JSON response.\n");
-        builder.append("Use the labels ")
-                .append(AiPromptTemplate.variantLabels())
-                .append(" under the \"variants\" object.\n");
-        builder.append(AiPromptTemplate.buildVariantIntentInstructions());
-        builder.append("Return only the JSON object, no extra text.");
-        return builder.toString();
     }
 
     private MetricsErrorMetadata buildMetricsError(MetricsErrorMetadata existing,
