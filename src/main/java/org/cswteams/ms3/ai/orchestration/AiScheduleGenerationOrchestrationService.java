@@ -87,16 +87,13 @@ public class AiScheduleGenerationOrchestrationService {
     private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(
             new VariantDefinition(EMPATHETIC_LABEL,
                     "ai-empathetic",
-                    ScheduleCandidateType.EMPATHETIC,
-                    "Maximize doctor well-being and respect expressed preferences as strict constraints."),
+                    ScheduleCandidateType.EMPATHETIC),
             new VariantDefinition(EFFICIENT_LABEL,
                     "ai-efficient",
-                    ScheduleCandidateType.EFFICIENT,
-                    "Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance."),
+                    ScheduleCandidateType.EFFICIENT),
             new VariantDefinition(BALANCED_LABEL,
                     "ai-balanced",
-                    ScheduleCandidateType.BALANCED,
-                    "Balance well-being and operational efficiency, allowing soft constraint tradeoffs.")
+                    ScheduleCandidateType.BALANCED)
     );
 
     private final ISchedulerController schedulerController;
@@ -936,10 +933,10 @@ public class AiScheduleGenerationOrchestrationService {
 
     private String buildMultiVariantInstructions() {
         StringBuilder builder = new StringBuilder("Generate three schedule variants in a single JSON response.\n");
-        builder.append("Use the labels EMPATHETIC, EFFICIENT, BALANCED under the \"variants\" object.\n");
-        for (VariantDefinition definition : VARIANT_DEFINITIONS) {
-            builder.append("- ").append(definition.label).append(": ").append(definition.intent).append("\n");
-        }
+        builder.append("Use the labels ")
+                .append(AiPromptTemplate.variantLabels())
+                .append(" under the \"variants\" object.\n");
+        builder.append(AiPromptTemplate.buildVariantIntentInstructions());
         builder.append("Return only the JSON object, no extra text.");
         return builder.toString();
     }
@@ -975,16 +972,13 @@ public class AiScheduleGenerationOrchestrationService {
         private final String label;
         private final String candidateId;
         private final ScheduleCandidateType type;
-        private final String intent;
 
         private VariantDefinition(String label,
                                   String candidateId,
-                                  ScheduleCandidateType type,
-                                  String intent) {
+                                  ScheduleCandidateType type) {
             this.label = Objects.requireNonNull(label, "label");
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.type = Objects.requireNonNull(type, "type");
-            this.intent = Objects.requireNonNull(intent, "intent");
         }
     }
 
