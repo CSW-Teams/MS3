@@ -43,11 +43,13 @@ public class Llama70bAgentAdapter implements AgentProviderAdapter {
             throw AiProtocolException.businessFailure("Llama-70B model is not configured");
         }
 
-        String prompt = AiPromptTemplate.build(request.getInstructions(), request.getToonPayload());
+        String systemPrompt = AiPromptTemplate.systemPrompt();
+        String userPrompt = AiPromptTemplate.buildUserContent(request.getInstructions(), request.getToonPayload());
         Map<String, Object> payload = Map.of(
                 "model", model,
                 "messages", List.of(
-                        Map.of("role", "user", "content", prompt)
+                        Map.of("role", "system", "content", systemPrompt),
+                        Map.of("role", "user", "content", userPrompt)
                 ),
                 "response_format", Map.of("type", "json_object")
         );

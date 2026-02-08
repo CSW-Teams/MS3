@@ -39,6 +39,3 @@ Stable validation rules:
 - The "variants" object must include exactly these labels: "EMPATHETIC", "EFFICIENT", "BALANCED".
 - Each variant object must include the fields: "status", "metadata", "assignments", "uncovered_shifts", "uffa_delta".
 - Field names must match exactly; do not wrap or rename sections.
-
-{{INSTRUCTIONS_SECTION}}TOON_INPUT:
-{{TOON_INPUT}}
