@@ -19,6 +19,26 @@ import {panic} from "../../components/common/Panic";
 import { Container } from "shards-react";
 import GenerationLoadingModal from "../../components/common/GenerationLoadingModal";
 import GenerationStatusFeedback from "../../components/common/GenerationStatusFeedback";
+import AiScheduleComparisonModal from "../../components/common/AiScheduleComparisonModal";
+import AiScheduleSelectionConfirmationModal from "../../components/common/AiScheduleSelectionConfirmationModal";
+
+const resolveCandidateLabel = (metadata) => {
+  if (!metadata?.type) {
+    return 'Schedule / Schedulazione';
+  }
+  switch (metadata.type.toLowerCase()) {
+    case 'standard':
+      return 'Standard / Standard';
+    case 'empathetic':
+      return 'Empathetic / Empatica';
+    case 'efficient':
+      return 'Efficient / Efficiente';
+    case 'balanced':
+      return 'Balanced / Bilanciata';
+    default:
+      return `${metadata.type} / ${metadata.type}`;
+  }
+};
 
 /**
  * @see docs/scheduling_flow/README.md
@@ -40,11 +60,23 @@ export class SchedulerGeneratorView extends React.Component{
             generationStatus: null, // 'success', 'partial', 'error', null
             generationMessage: '',
             generationDetails: '',
+            isComparisonOpen: false,
+            comparisonCandidates: [],
+            selectionLocked: false,
+            selectedCandidateKey: null,
+            pendingCandidate: null,
+            isSelectionConfirmationOpen: false,
+            isSelectionSubmitting: false,
+            selectedScheduleId: null, // Hook for future success messaging (Story 4.4).
         }
 
         this.componentDidMount = this.componentDidMount.bind(this);
         this.handleGenerateSchedule = this.handleGenerateSchedule.bind(this);
         this.handleCloseGenerationFeedback = this.handleCloseGenerationFeedback.bind(this);
+        this.handleCloseComparisonModal = this.handleCloseComparisonModal.bind(this);
+        this.handleOpenSelectionConfirmation = this.handleOpenSelectionConfirmation.bind(this);
+        this.handleCancelSelectionConfirmation = this.handleCancelSelectionConfirmation.bind(this);
+        this.handleConfirmSelection = this.handleConfirmSelection.bind(this);
     }
 
     async componentDidMount() {
@@ -129,19 +161,43 @@ export class SchedulerGeneratorView extends React.Component{
             this.setState({
                 generationStatus: 'success',
                 generationMessage: t("Schedule successfully recreated"),
-                generationDetails: ''
+                generationDetails: '',
+                isComparisonOpen: false,
+                comparisonCandidates: [],
+                selectionLocked: false,
+                selectedCandidateKey: null,
+                pendingCandidate: null,
+                isSelectionConfirmationOpen: false,
+                isSelectionSubmitting: false,
+                selectedScheduleId: null,
             });
           } else if (responseStatus === 417) {
             this.setState({
                 generationStatus: 'error',
                 generationMessage: t("Old Schedules cannot be regenerated"),
-                generationDetails: ''
+                generationDetails: '',
+                isComparisonOpen: false,
+                comparisonCandidates: [],
+                selectionLocked: false,
+                selectedCandidateKey: null,
+                pendingCandidate: null,
+                isSelectionConfirmationOpen: false,
+                isSelectionSubmitting: false,
+                selectedScheduleId: null,
             });
           } else {
             this.setState({
                 generationStatus: 'error',
                 generationMessage: t("Regeneration Error"),
-                generationDetails: ''
+                generationDetails: '',
+                isComparisonOpen: false,
+                comparisonCandidates: [],
+                selectionLocked: false,
+                selectedCandidateKey: null,
+                pendingCandidate: null,
+                isSelectionConfirmationOpen: false,
+                isSelectionSubmitting: false,
+                selectedScheduleId: null,
             });
           }
       } catch (err) {
@@ -150,7 +206,15 @@ export class SchedulerGeneratorView extends React.Component{
         this.setState({
             generationStatus: 'error',
             generationMessage: t("An unexpected error occurred during regeneration."),
-            generationDetails: err.message || t("Please try again later.")
+            generationDetails: err.message || t("Please try again later."),
+            isComparisonOpen: false,
+            comparisonCandidates: [],
+            selectionLocked: false,
+            selectedCandidateKey: null,
+            pendingCandidate: null,
+            isSelectionConfirmationOpen: false,
+            isSelectionSubmitting: false,
+            selectedScheduleId: null,
         });
       } finally {
         this.setState({isGenerationLoading: false}); // Fine caricamento generazione
@@ -158,40 +222,64 @@ export class SchedulerGeneratorView extends React.Component{
     }
 
     async handleGenerateSchedule(dataInizio, dataFine) {
-      this.setState({ isGenerationLoading: true, generationStatus: null, generationMessage: '', generationDetails: '' });
+      this.setState({
+        isGenerationLoading: true,
+        generationStatus: null,
+        generationMessage: '',
+        generationDetails: '',
+        comparisonCandidates: [],
+        isComparisonOpen: false,
+        selectionLocked: false,
+        selectedCandidateKey: null,
+        pendingCandidate: null,
+        isSelectionConfirmationOpen: false,
+        isSelectionSubmitting: false,
+        selectedScheduleId: null,
+      });
 
       let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI();
-      let responseStatus;
+      let response;
       try {
-        responseStatus = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio, dataFine);
+        response = await assegnazioneTurnoAPI.postGenerationScheduleAi(dataInizio, dataFine);
         await this.componentDidMount(); // Ricarica gli schedule dopo la generazione
 
-        switch (responseStatus) {
-          case 202:
+        switch (response.status) {
+          case 200:
+          case 202: {
+            const comparisonCandidates = response.body?.candidates ?? [];
             this.setState({
               generationStatus: 'success',
               generationMessage: t("Schedule successfully created."),
+              comparisonCandidates: comparisonCandidates,
+              isComparisonOpen: comparisonCandidates.length > 0,
             });
             break;
+          }
           case 206:
             this.setState({
               generationStatus: 'partial',
               generationMessage: t("Schedule generated with warnings."),
               generationDetails: t("Some constraints were violated, resulting in a partial schedule."),
+              isComparisonOpen: false,
+              comparisonCandidates: [],
             });
             break;
           case 406: // NOT_ACCEPTABLE HTTP ERROR
             this.setState({
               generationStatus: 'error',
               generationMessage: t("Error: Schedule already exists or cannot be generated."),
-              generationDetails: t("Please check dates and existing schedules."),
+              generationDetails: response.body?.message || t("Please check dates and existing schedules."),
+              isComparisonOpen: false,
+              comparisonCandidates: [],
             });
             break;
           default:
             this.setState({
               generationStatus: 'error',
               generationMessage: t("Schedule Generation Error."),
-              generationDetails: t("An unexpected error occurred."),
+              generationDetails: response.body?.message || response.body?.error || t("An unexpected error occurred."),
+              isComparisonOpen: false,
+              comparisonCandidates: [],
             });
             break;
         }
@@ -201,7 +289,9 @@ export class SchedulerGeneratorView extends React.Component{
         this.setState({
           generationStatus: 'error',
           generationMessage: t("An unexpected error occurred during schedule generation."),
-          generationDetails: err.message || t("Please try again later."),
+          generationDetails: err.message || response.body?.message || response.body?.error || t("Please try again later."),
+          isComparisonOpen: false,
+          comparisonCandidates: [],
         });
       } finally {
         this.setState({ isGenerationLoading: false });
@@ -216,8 +306,121 @@ export class SchedulerGeneratorView extends React.Component{
         });
     }
 
+    handleCloseComparisonModal() {
+      this.setState({ isComparisonOpen: false, comparisonCandidates: [] });
+    }
+
+    handleOpenSelectionConfirmation(candidate) {
+      if (this.state.selectionLocked || !candidate) {
+        return;
+      }
+      this.setState({
+        pendingCandidate: candidate,
+        isSelectionConfirmationOpen: true,
+      });
+    }
+
+    handleCancelSelectionConfirmation() {
+      if (this.state.isSelectionSubmitting) {
+        return;
+      }
+      this.setState({
+        pendingCandidate: null,
+        isSelectionConfirmationOpen: false,
+      });
+    }
+
+    async handleConfirmSelection() {
+      const { pendingCandidate, selectionLocked, isSelectionSubmitting } = this.state;
+      if (!pendingCandidate || selectionLocked || isSelectionSubmitting) {
+        return;
+      }
+      const candidateKey =
+        pendingCandidate.metadata?.candidateId ?? pendingCandidate.metadata?.type;
+      if (!candidateKey) {
+        toast.error("Selection data missing / Dati selezione mancanti", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        return;
+      }
+
+      this.setState({ isSelectionSubmitting: true });
+      let response;
+      try {
+        response = await new ScheduleAPI().selectScheduleCandidate(candidateKey);
+      } catch (error) {
+        toast.error("Selection failed / Selezione non riuscita", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        this.setState({ isSelectionSubmitting: false });
+        return;
+      }
+
+      if (response.status === 202) {
+        this.setState({
+          selectionLocked: true,
+          selectedCandidateKey: candidateKey,
+          pendingCandidate: null,
+          isSelectionConfirmationOpen: false,
+          isSelectionSubmitting: false,
+          selectedScheduleId: response.body?.scheduleId ?? null,
+        });
+        toast.success(t("Schedule successfully selected!"), {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        return;
+      }
+
+      toast.error("Selection could not be saved / Impossibile salvare la selezione", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      this.setState({ isSelectionSubmitting: false });
+    }
+
   render() {
-    const { loading, isGenerationLoading, generationStatus, generationMessage, generationDetails, schedulazioni } = this.state;
+    const {
+      loading,
+      isGenerationLoading,
+      generationStatus,
+      generationMessage,
+      generationDetails,
+      schedulazioni,
+      isComparisonOpen,
+      comparisonCandidates,
+      selectionLocked,
+      selectedCandidateKey,
+      pendingCandidate,
+      isSelectionConfirmationOpen,
+      isSelectionSubmitting,
+    } = this.state;
 
     return (
       <Container fluid className="main-content-container px-4 pb-4">
@@ -297,6 +500,22 @@ export class SchedulerGeneratorView extends React.Component{
         </MDBContainer>
         {/* Modale di caricamento per la generazione */}
         <GenerationLoadingModal isOpen={isGenerationLoading} />
+        <AiScheduleComparisonModal
+          isOpen={isComparisonOpen}
+          onClose={this.handleCloseComparisonModal}
+          candidates={comparisonCandidates}
+          onSelectCandidate={this.handleOpenSelectionConfirmation}
+          selectionLocked={selectionLocked}
+          selectedCandidateKey={selectedCandidateKey}
+        />
+        <AiScheduleSelectionConfirmationModal
+          isOpen={isSelectionConfirmationOpen}
+          onConfirm={this.handleConfirmSelection}
+          onCancel={this.handleCancelSelectionConfirmation}
+          candidateLabel={resolveCandidateLabel(pendingCandidate?.metadata)}
+          scheduleId={pendingCandidate?.metadata?.scheduleId}
+          isSubmitting={isSelectionSubmitting}
+        />
       </Container>
     )
   }

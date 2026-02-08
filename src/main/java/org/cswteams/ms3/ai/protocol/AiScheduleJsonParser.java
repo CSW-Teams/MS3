@@ -50,12 +50,13 @@ public class AiScheduleJsonParser {
     }
 
     public AiScheduleResponseDto parse(String json) {
-        if (json == null || json.trim().isEmpty()) {
+        String payload = normalizeJsonPayload(json);
+        if (payload == null || payload.isEmpty()) {
             throw AiProtocolException.invalidJson("Empty JSON response from AI", null);
         }
-        logger.info("event=ai_json_parse_start type=single length={}", json.length());
+        logger.info("event=ai_json_parse_start type=single length={}", payload.length());
         try {
-            AiScheduleResponseDto dto = objectMapper.readValue(json, AiScheduleResponseDto.class);
+            AiScheduleResponseDto dto = objectMapper.readValue(payload, AiScheduleResponseDto.class);
             logger.info("event=ai_json_parse_success type=single");
             return dto;
         } catch (UnrecognizedPropertyException e) {
@@ -75,12 +76,13 @@ public class AiScheduleJsonParser {
     }
 
     public AiScheduleVariantsResponseDto parseVariants(String json) {
-        if (json == null || json.trim().isEmpty()) {
+        String payload = normalizeJsonPayload(json);
+        if (payload == null || payload.isEmpty()) {
             throw AiProtocolException.invalidJson("Empty JSON response from AI", null);
         }
-        logger.info("event=ai_json_parse_start type=variants length={}", json.length());
+        logger.info("event=ai_json_parse_start type=variants length={}", payload.length());
         try {
-            AiScheduleVariantsResponseDto dto = objectMapper.readValue(json, AiScheduleVariantsResponseDto.class);
+            AiScheduleVariantsResponseDto dto = objectMapper.readValue(payload, AiScheduleVariantsResponseDto.class);
             validateVariantLabels(dto);
             logger.info("event=ai_json_parse_success type=variants variants_count={}",
                     dto.variants == null ? 0 : dto.variants.size());
@@ -103,6 +105,27 @@ public class AiScheduleJsonParser {
 
     public static List<String> requiredVariantLabels() {
         return REQUIRED_VARIANT_LABELS;
+    }
+
+    private static String normalizeJsonPayload(String json) {
+        if (json == null) {
+            return null;
+        }
+        String trimmed = json.trim();
+        if (trimmed.isEmpty()) {
+            return trimmed;
+        }
+        if (trimmed.startsWith("```")) {
+            int firstNewline = trimmed.indexOf('\n');
+            if (firstNewline >= 0) {
+                trimmed = trimmed.substring(firstNewline + 1);
+            }
+            trimmed = trimmed.trim();
+            if (trimmed.endsWith("```")) {
+                trimmed = trimmed.substring(0, trimmed.length() - 3).trim();
+            }
+        }
+        return trimmed;
     }
 
     private static String buildJsonPath(JsonMappingException e) {

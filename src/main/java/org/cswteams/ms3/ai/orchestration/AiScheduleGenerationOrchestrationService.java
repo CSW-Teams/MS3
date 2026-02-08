@@ -18,11 +18,13 @@ import org.cswteams.ms3.ai.comparison.domain.AiScheduleDecisionOutcome;
 import org.cswteams.ms3.ai.comparison.domain.DecisionMetricValues;
 import org.cswteams.ms3.ai.comparison.domain.ScheduleCandidateType;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonResponseDto;
+import org.cswteams.ms3.ai.comparison.dto.AiScheduleSelectionRequestDto;
 import org.cswteams.ms3.ai.comparison.mapper.AiScheduleComparisonMapper;
 import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.metrics.MetricAggregationUtils;
 import org.cswteams.ms3.ai.metrics.MetricNormalizationUtils;
+import org.cswteams.ms3.ai.priority.PriorityScaleValidationException;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetadataDto;
@@ -32,7 +34,6 @@ import org.cswteams.ms3.ai.protocol.dto.AiStdDevDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaBalanceDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaDeltaDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUncoveredShiftDto;
-import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
@@ -44,6 +45,7 @@ import org.cswteams.ms3.control.toon.ToonRequestContext;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
+import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorAssignment;
@@ -74,6 +76,11 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AiScheduleGenerationOrchestrationService {
     private static final Logger logger = LoggerFactory.getLogger(AiScheduleGenerationOrchestrationService.class);
     private static final String MODE_GENERATE = "generate";
+    private static final String METRICS_COMPUTE_STAGE = "METRICS_COMPUTE";
+    private static final String ERROR_STANDARD_METRICS = "STANDARD_METRICS_FAILED";
+    private static final String ERROR_AI_METRICS = "AI_METRICS_FAILED";
+    private static final String ERROR_NORMALIZATION = "METRICS_NORMALIZATION_FAILED";
+    private static final String ERROR_DECISION = "METRICS_DECISION_FAILED";
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
@@ -96,6 +103,7 @@ public class AiScheduleGenerationOrchestrationService {
     private final DoctorDAO doctorDAO;
     private final DoctorUffaPriorityDAO doctorUffaPriorityDAO;
     private final DoctorHolidaysDAO doctorHolidaysDAO;
+    private final ScheduleDAO scheduleDAO;
     private final AgentBroker agentBroker;
     private final AiReschedulingOrchestrationService aiReschedulingOrchestrationService;
     private final DecisionAlgorithmService decisionAlgorithmService;
@@ -109,6 +117,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     DoctorDAO doctorDAO,
                                                     DoctorUffaPriorityDAO doctorUffaPriorityDAO,
                                                     DoctorHolidaysDAO doctorHolidaysDAO,
+                                                    ScheduleDAO scheduleDAO,
                                                     AgentBroker agentBroker,
                                                     AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
                                                     DecisionAlgorithmService decisionAlgorithmService,
@@ -118,6 +127,7 @@ public class AiScheduleGenerationOrchestrationService {
         this.doctorDAO = doctorDAO;
         this.doctorUffaPriorityDAO = doctorUffaPriorityDAO;
         this.doctorHolidaysDAO = doctorHolidaysDAO;
+        this.scheduleDAO = scheduleDAO;
         this.agentBroker = agentBroker;
         this.aiReschedulingOrchestrationService = aiReschedulingOrchestrationService;
         this.decisionAlgorithmService = decisionAlgorithmService;
@@ -132,6 +142,9 @@ public class AiScheduleGenerationOrchestrationService {
             logger.warn("event=ai_standard_generation_empty start_date={} end_date={}", startDate, endDate);
             return null;
         }
+        standardSchedule = scheduleDAO.save(standardSchedule);
+        String metricsCorrelationId = UUID.randomUUID().toString();
+        MetricsErrorMetadata errorMetadata = null;
         int standardShiftCount = standardSchedule.getConcreteShifts() == null
                 ? 0
                 : standardSchedule.getConcreteShifts().size();
@@ -140,12 +153,36 @@ public class AiScheduleGenerationOrchestrationService {
 
         String toonPayload = buildToonPayload(startDate, endDate, standardSchedule.getConcreteShifts());
 
-        CandidateData standardCandidate = buildStandardCandidate(standardSchedule);
-        List<CandidateData> aiCandidates = requestAiCandidates(toonPayload);
+        DecisionMetricValues standardMetrics;
+        try {
+            standardMetrics = buildStandardMetrics(standardSchedule);
+        } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
+            errorMetadata = buildMetricsError(errorMetadata,
+                    metricsCorrelationId,
+                    ERROR_STANDARD_METRICS,
+                    ex);
+            standardMetrics = fallbackMetrics();
+        }
+
+        CandidateData standardCandidate = buildStandardCandidate(standardSchedule, standardMetrics);
+        CandidateBatch aiBatch = requestAiCandidates(toonPayload);
+        if (aiBatch.errorMetadata != null) {
+            errorMetadata = mergeError(errorMetadata, aiBatch.errorMetadata);
+        }
+        List<CandidateData> aiCandidates = aiBatch.candidates;
         List<CandidateData> candidates = new ArrayList<>();
         candidates.add(standardCandidate);
         candidates.addAll(aiCandidates);
-        Map<String, AiScheduleCandidateMetrics> normalizedMetrics = normalizeMetrics(candidates);
+        Map<String, AiScheduleCandidateMetrics> normalizedMetrics;
+        try {
+            normalizedMetrics = normalizeMetrics(candidates);
+        } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
+            errorMetadata = buildMetricsError(errorMetadata,
+                    metricsCorrelationId,
+                    ERROR_NORMALIZATION,
+                    ex);
+            normalizedMetrics = new HashMap<>();
+        }
 
         List<AiScheduleComparisonCandidate> comparisonCandidates = new ArrayList<>();
         for (CandidateData candidate : candidates) {
@@ -160,33 +197,93 @@ public class AiScheduleGenerationOrchestrationService {
             ));
         }
 
-        AiScheduleDecisionOutcome outcome = selectDecisionOutcome(candidates, normalizedMetrics);
-        cacheTransientCandidates(startDate, endDate, candidates);
-        return comparisonMapper.toDto(comparisonCandidates, outcome);
+        AiScheduleDecisionOutcome outcome;
+        try {
+            outcome = selectDecisionOutcome(candidates, normalizedMetrics);
+        } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
+            errorMetadata = buildMetricsError(errorMetadata,
+                    metricsCorrelationId,
+                    ERROR_DECISION,
+                    ex);
+            outcome = null;
+        }
+        AiScheduleComparisonResponseDto response;
+        if (errorMetadata != null) {
+            response = comparisonMapper.toDto(comparisonCandidates,
+                    outcome,
+                    "METRICS",
+                    errorMetadata.getErrorCode(),
+                    errorMetadata.getStage(),
+                    errorMetadata.isRetryable());
+        } else {
+            response = comparisonMapper.toDto(comparisonCandidates, outcome);
+        }
+        cacheTransientComparison(startDate, endDate, candidates, response);
+        return response;
+    }
+
+    public AiScheduleComparisonResponseDto getLatestComparison() {
+        TransientComparisonState state = transientComparisonState.get();
+        return state == null ? null : state.response;
+    }
+
+    public SelectionResult selectSchedule(AiScheduleSelectionRequestDto selection) {
+        if (selection == null) {
+            return SelectionResult.invalid("MISSING_SELECTION", "Selection payload is required.");
+        }
+        Long scheduleId = selection.getScheduleId();
+        String candidateId = selection.getCandidateId();
+        if (scheduleId == null && (candidateId == null || candidateId.trim().isEmpty())) {
+            return SelectionResult.invalid("MISSING_SELECTION", "Provide a scheduleId or candidateId.");
+        }
+        if (scheduleId != null) {
+            return persistSelectedSchedule(scheduleId);
+        }
+        return persistSelectedCandidate(candidateId);
     }
 
     public SelectionResult persistSelectedCandidate(String candidateIdOrLabel) {
         if (candidateIdOrLabel == null || candidateIdOrLabel.trim().isEmpty()) {
-            return SelectionResult.invalid("MISSING_SELECTION");
+            return SelectionResult.invalid("MISSING_SELECTION", "Provide a candidateId.");
         }
         TransientComparisonState state = transientComparisonState.get();
         if (state == null) {
-            return SelectionResult.noActiveComparison("NO_ACTIVE_COMPARISON");
+            return SelectionResult.noActiveComparison("NO_ACTIVE_COMPARISON", "No active comparison to resolve.");
         }
         CandidateData candidate = state.resolveCandidate(candidateIdOrLabel);
         if (candidate == null) {
-            return SelectionResult.notFound("CANDIDATE_NOT_FOUND");
+            return SelectionResult.notFound("CANDIDATE_NOT_FOUND", "Candidate could not be resolved.");
         }
+        return persistCandidate(state, candidate);
+    }
+
+    private SelectionResult persistSelectedSchedule(Long scheduleId) {
+        TransientComparisonState state = transientComparisonState.get();
+        if (state != null) {
+            CandidateData candidate = state.resolveCandidate(scheduleId);
+            if (candidate != null) {
+                return persistCandidate(state, candidate);
+            }
+        }
+        Schedule schedule = scheduleDAO.findById(scheduleId).orElse(null);
+        if (schedule == null) {
+            return SelectionResult.scheduleNotFound("SCHEDULE_NOT_FOUND", "Schedule could not be resolved.");
+        }
+        transientComparisonState.set(null);
+        return SelectionResult.persisted(schedule.getId());
+    }
+
+    private SelectionResult persistCandidate(TransientComparisonState state, CandidateData candidate) {
         if (!schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
-            return SelectionResult.duplicateRange("DUPLICATE_RANGE");
+            return SelectionResult.duplicateRange("DUPLICATE_RANGE", "Schedule already exists for this date range.");
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);
         if (schedule == null) {
-            return SelectionResult.invalid("INVALID_CANDIDATE");
+            return SelectionResult.invalid("INVALID_CANDIDATE", "Unable to build the selected schedule.");
         }
         Schedule persisted = schedulerController.persistSchedule(schedule);
         if (persisted == null || persisted.getId() == null) {
-            return SelectionResult.invalid("PERSIST_FAILED");
+            return SelectionResult.invalid("PERSIST_FAILED", "Unable to persist selected schedule.");
         }
         transientComparisonState.set(null);
         return SelectionResult.persisted(persisted.getId());
@@ -204,12 +301,15 @@ public class AiScheduleGenerationOrchestrationService {
         }
     }
 
-    private void cacheTransientCandidates(LocalDate startDate, LocalDate endDate, List<CandidateData> candidates) {
+    private void cacheTransientComparison(LocalDate startDate,
+                                          LocalDate endDate,
+                                          List<CandidateData> candidates,
+                                          AiScheduleComparisonResponseDto response) {
         Map<String, CandidateData> mappedCandidates = new LinkedHashMap<>();
         for (CandidateData candidate : candidates) {
             mappedCandidates.put(candidate.candidateId, candidate);
         }
-        transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates));
+        transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates, response));
     }
 
     private String buildToonPayload(LocalDate startDate, LocalDate endDate, List<ConcreteShift> concreteShifts) {
@@ -246,8 +346,7 @@ public class AiScheduleGenerationOrchestrationService {
         return builder.build(context);
     }
 
-    private CandidateData buildStandardCandidate(Schedule schedule) {
-        DecisionMetricValues metrics = buildStandardMetrics(schedule);
+    private CandidateData buildStandardCandidate(Schedule schedule, DecisionMetricValues metrics) {
         AiScheduleResponseDto responseDto = buildStandardResponseDto(schedule, metrics);
         String rawJson = serializeResponse(responseDto);
         return new CandidateData(
@@ -260,7 +359,7 @@ public class AiScheduleGenerationOrchestrationService {
         );
     }
 
-    private List<CandidateData> requestAiCandidates(String toonPayload) {
+    private CandidateBatch requestAiCandidates(String toonPayload) {
         String instructions = buildMultiVariantInstructions();
         String correlationId = UUID.randomUUID().toString();
         AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
@@ -268,11 +367,14 @@ public class AiScheduleGenerationOrchestrationService {
                 correlationId,
                 toonPayload == null ? 0 : toonPayload.length(),
                 instructions == null ? 0 : instructions.length());
+        // Transport-level failures (timeouts/network/rate limits) are handled exclusively by AgentBrokerImpl.
+        // Orchestration focuses on schema validation, metrics evaluation, and system-level decision logic.
         AiScheduleVariantsResponse response = agentBroker.requestSchedule(request);
         logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
                 correlationId,
                 response == null || response.getVariants() == null ? 0 : response.getVariants().size());
         List<CandidateData> candidates = new ArrayList<>();
+        MetricsErrorMetadata errorMetadata = null;
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
             AiScheduleResponse variant = response.getVariant(definition.label);
             if (variant == null) {
@@ -281,12 +383,21 @@ public class AiScheduleGenerationOrchestrationService {
                         null
                 );
             }
-            DecisionMetricValues metrics = buildAiMetrics(variant);
+            DecisionMetricValues metrics;
+            try {
+                metrics = buildAiMetrics(variant);
+            } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
+                errorMetadata = buildMetricsError(errorMetadata,
+                        correlationId,
+                        ERROR_AI_METRICS,
+                        ex);
+                metrics = fallbackMetrics();
+            }
             AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
             String rawJson = serializeResponse(responseDto);
             candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics, null));
         }
-        return Collections.unmodifiableList(candidates);
+        return new CandidateBatch(Collections.unmodifiableList(candidates), errorMetadata);
     }
 
     private DecisionMetricValues buildStandardMetrics(Schedule schedule) {
@@ -726,7 +837,18 @@ public class AiScheduleGenerationOrchestrationService {
         if (metrics.isEmpty()) {
             return null;
         }
-        AiScheduleCandidateMetrics selected = decisionAlgorithmService.selectPreferred(metrics);
+        org.cswteams.ms3.audit.selection.AuditedSelectionResult auditedResult =
+                decisionAlgorithmService.selectPreferredWithAudit(metrics);
+        AiScheduleCandidateMetrics selected = null;
+        for (AiScheduleCandidateMetrics candidate : metrics) {
+            if (candidate.getCandidateId().equals(auditedResult.getSelectedCandidateId())) {
+                selected = candidate;
+                break;
+            }
+        }
+        if (selected == null) {
+            return null;
+        }
         CandidateData selectedCandidate = null;
         for (CandidateData candidate : candidates) {
             if (candidate.candidateId.equals(selected.getCandidateId())) {
@@ -822,6 +944,33 @@ public class AiScheduleGenerationOrchestrationService {
         return builder.toString();
     }
 
+    private MetricsErrorMetadata buildMetricsError(MetricsErrorMetadata existing,
+                                                   String correlationId,
+                                                   String errorCode,
+                                                   Exception ex) {
+        logger.error("event=metrics_computation_failed correlation_id={} error_code={} stage={} message={}",
+                correlationId,
+                errorCode,
+                METRICS_COMPUTE_STAGE,
+                ex.getMessage(),
+                ex);
+        if (existing != null) {
+            return existing;
+        }
+        return new MetricsErrorMetadata(correlationId, errorCode, METRICS_COMPUTE_STAGE, true);
+    }
+
+    private MetricsErrorMetadata mergeError(MetricsErrorMetadata existing, MetricsErrorMetadata incoming) {
+        if (existing != null) {
+            return existing;
+        }
+        return incoming;
+    }
+
+    private DecisionMetricValues fallbackMetrics() {
+        return new DecisionMetricValues(0.0, 0.0, 0.0, 0.0, 0.0);
+    }
+
     private static class VariantDefinition {
         private final String label;
         private final String candidateId;
@@ -836,6 +985,46 @@ public class AiScheduleGenerationOrchestrationService {
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.type = Objects.requireNonNull(type, "type");
             this.intent = Objects.requireNonNull(intent, "intent");
+        }
+    }
+
+    private static class CandidateBatch {
+        private final List<CandidateData> candidates;
+        private final MetricsErrorMetadata errorMetadata;
+
+        private CandidateBatch(List<CandidateData> candidates, MetricsErrorMetadata errorMetadata) {
+            this.candidates = candidates;
+            this.errorMetadata = errorMetadata;
+        }
+    }
+
+    private static class MetricsErrorMetadata {
+        private final String correlationId;
+        private final String errorCode;
+        private final String stage;
+        private final boolean retryable;
+
+        private MetricsErrorMetadata(String correlationId, String errorCode, String stage, boolean retryable) {
+            this.correlationId = correlationId;
+            this.errorCode = errorCode;
+            this.stage = stage;
+            this.retryable = retryable;
+        }
+
+        public String getCorrelationId() {
+            return correlationId;
+        }
+
+        public String getErrorCode() {
+            return errorCode;
+        }
+
+        public String getStage() {
+            return stage;
+        }
+
+        public boolean isRetryable() {
+            return retryable;
         }
     }
 
@@ -876,13 +1065,16 @@ public class AiScheduleGenerationOrchestrationService {
         private final LocalDate startDate;
         private final LocalDate endDate;
         private final Map<String, CandidateData> candidates;
+        private final AiScheduleComparisonResponseDto response;
 
         private TransientComparisonState(LocalDate startDate,
                                          LocalDate endDate,
-                                         Map<String, CandidateData> candidates) {
+                                         Map<String, CandidateData> candidates,
+                                         AiScheduleComparisonResponseDto response) {
             this.startDate = Objects.requireNonNull(startDate, "startDate");
             this.endDate = Objects.requireNonNull(endDate, "endDate");
             this.candidates = Objects.requireNonNull(candidates, "candidates");
+            this.response = response;
         }
 
         private CandidateData resolveCandidate(String candidateIdOrLabel) {
@@ -906,6 +1098,18 @@ public class AiScheduleGenerationOrchestrationService {
             }
             return null;
         }
+
+        private CandidateData resolveCandidate(Long scheduleId) {
+            if (scheduleId == null) {
+                return null;
+            }
+            for (CandidateData candidate : candidates.values()) {
+                if (scheduleId.equals(candidate.scheduleId)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
     }
 
     public static class SelectionResult {
@@ -914,37 +1118,44 @@ public class AiScheduleGenerationOrchestrationService {
             INVALID_SELECTION,
             CANDIDATE_NOT_FOUND,
             NO_ACTIVE_COMPARISON,
-            DUPLICATE_RANGE
+            DUPLICATE_RANGE,
+            SCHEDULE_NOT_FOUND
         }
 
         private final Status status;
         private final Long scheduleId;
         private final String errorCode;
+        private final String errorMessage;
 
-        private SelectionResult(Status status, Long scheduleId, String errorCode) {
+        private SelectionResult(Status status, Long scheduleId, String errorCode, String errorMessage) {
             this.status = status;
             this.scheduleId = scheduleId;
             this.errorCode = errorCode;
+            this.errorMessage = errorMessage;
         }
 
         public static SelectionResult persisted(Long scheduleId) {
-            return new SelectionResult(Status.PERSISTED, scheduleId, null);
+            return new SelectionResult(Status.PERSISTED, scheduleId, null, null);
         }
 
-        public static SelectionResult invalid(String errorCode) {
-            return new SelectionResult(Status.INVALID_SELECTION, null, errorCode);
+        public static SelectionResult invalid(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.INVALID_SELECTION, null, errorCode, errorMessage);
         }
 
-        public static SelectionResult notFound(String errorCode) {
-            return new SelectionResult(Status.CANDIDATE_NOT_FOUND, null, errorCode);
+        public static SelectionResult notFound(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.CANDIDATE_NOT_FOUND, null, errorCode, errorMessage);
         }
 
-        public static SelectionResult noActiveComparison(String errorCode) {
-            return new SelectionResult(Status.NO_ACTIVE_COMPARISON, null, errorCode);
+        public static SelectionResult noActiveComparison(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.NO_ACTIVE_COMPARISON, null, errorCode, errorMessage);
         }
 
-        public static SelectionResult duplicateRange(String errorCode) {
-            return new SelectionResult(Status.DUPLICATE_RANGE, null, errorCode);
+        public static SelectionResult duplicateRange(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.DUPLICATE_RANGE, null, errorCode, errorMessage);
+        }
+
+        public static SelectionResult scheduleNotFound(String errorCode, String errorMessage) {
+            return new SelectionResult(Status.SCHEDULE_NOT_FOUND, null, errorCode, errorMessage);
         }
 
         public Status getStatus() {
@@ -957,6 +1168,10 @@ public class AiScheduleGenerationOrchestrationService {
 
         public String getErrorCode() {
             return errorCode;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
     }
 }

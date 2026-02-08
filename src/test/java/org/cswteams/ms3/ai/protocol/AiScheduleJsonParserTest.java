@@ -138,6 +138,8 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"algorithm\":\"min-cost-flow\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -160,6 +162,8 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"algorithm\":\"min-cost-flow\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -182,6 +186,8 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"algorithm\":\"min-cost-flow\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -212,12 +218,40 @@ public class AiScheduleJsonParserTest {
     }
 
     @Test
+    public void parse_uffaDeltaNumber_shouldParse() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
+        String json = "{"
+                + "\"status\":\"SUCCESS\","
+                + "\"metadata\":{"
+                + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
+                + "\"optimality_score\":0.85,"
+                + "\"metrics\":{"
+                + "\"coverage_percent\":0.98,"
+                + "\"uffa_balance\":{\"night_shift_std_dev\":{\"initial\":40.1,\"final\":22.5}},"
+                + "\"soft_violations_count\":1"
+                + "}"
+                + "},"
+                + "\"assignments\":[{\"shift_id\":\"S_101_20260520\",\"doctor_id\":100,\"role_covered\":\"STRUCTURED\",\"is_forced\":false}],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":0.123"
+                + "}";
+
+        AiScheduleResponseDto dto = parser.parse(json);
+
+        assertNotNull(dto);
+        assertNotNull(dto.uffaDelta);
+        assertTrue(dto.uffaDelta.isEmpty());
+    }
+
+    @Test
     public void parse_typeMismatch_doctorIdString_withPermissiveMode_shouldParse() {
         AiScheduleJsonParser parser = new AiScheduleJsonParser(true, false);
         String json = "{"
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -245,6 +279,8 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"algorithm\":\"min-cost-flow\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -265,6 +301,8 @@ public class AiScheduleJsonParserTest {
         assertNotNull(dto.metadata.metrics.uffaBalance);
         assertNotNull(dto.metadata.metrics.uffaBalance.nightShiftStdDev);
         assertEquals(Double.valueOf(22.5), dto.metadata.metrics.uffaBalance.nightShiftStdDev.finalValue);
+        assertEquals("min-cost-flow", dto.metadata.algorithm);
+        assertEquals("2025-01-31T08:15:30Z", dto.metadata.generationTime);
         assertEquals(Seniority.STRUCTURED, dto.assignments.get(0).roleCovered);
         assertEquals(AiUffaQueue.GEN, dto.uffaDelta.get(0).queue);
     }
@@ -276,6 +314,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"OK\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -324,6 +363,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"

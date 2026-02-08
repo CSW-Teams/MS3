@@ -2,13 +2,17 @@ package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.logout.LogoutController;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
+import org.cswteams.ms3.utils.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Date;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -16,7 +20,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = LogoutRestEndpoint.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class LogoutRestEndpointTest {
 
     private static final String authHeaderPrefix = "Bearer ";
@@ -32,10 +37,16 @@ public class LogoutRestEndpointTest {
     @MockBean
     private LogoutController logoutController;
 
+    @MockBean
+    private JwtUtil jwtUtil;
+
     @BeforeEach
     void setUp() {
         this.customUserDetails = mock(CustomUserDetails.class);
         when(customUserDetails.getEmail()).thenReturn(userEmail);
+        when(jwtUtil.extractUsername(anyString())).thenReturn(userEmail);
+        when(jwtUtil.validateToken(anyString(), any())).thenReturn(true);
+        when(jwtUtil.extractExpiration(token)).thenReturn(new Date(System.currentTimeMillis() + 10000));
     }
 
     @Test

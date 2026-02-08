@@ -2,16 +2,17 @@ package org.cswteams.ms3.ai.broker;
 
 import org.cswteams.ms3.ai.protocol.AiScheduleJsonParser;
 import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
+import org.cswteams.ms3.ai.broker.domain.AiScheduleVariantsResponse;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.springframework.web.client.RestClientException;
 
 import java.time.Duration;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -38,9 +39,10 @@ public class AgentBrokerImplTest {
                 new AiScheduleJsonParser()
         );
 
-        AiScheduleResponse response = broker.requestSchedule(request);
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
 
-        assertEquals(AiStatus.SUCCESS, response.getStatus());
+        AiScheduleResponse variant = response.getVariant("EMPATHETIC");
+        assertEquals(AiStatus.SUCCESS, variant.getStatus());
         verify(llamaAdapter).execute(request);
         verify(gemmaAdapter, never()).execute(any(AiBrokerRequest.class));
     }
@@ -67,9 +69,10 @@ public class AgentBrokerImplTest {
                 new AiScheduleJsonParser()
         );
 
-        AiScheduleResponse response = broker.requestSchedule(request);
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
 
-        assertEquals(AiStatus.SUCCESS, response.getStatus());
+        AiScheduleResponse variant = response.getVariant("EMPATHETIC");
+        assertEquals(AiStatus.SUCCESS, variant.getStatus());
         verify(gemmaAdapter, times(3)).execute(request);
     }
 
@@ -98,10 +101,14 @@ public class AgentBrokerImplTest {
                 new AiScheduleJsonParser()
         );
 
-        AiProtocolException exception = assertThrows(
-                AiProtocolException.class,
-                () -> broker.requestSchedule(request)
-        );
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(request);
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
 
         assertEquals(AiProtocolException.ErrorCode.TIMEOUT, exception.getCode());
         verify(gemmaAdapter, times(1)).execute(request);
@@ -125,10 +132,14 @@ public class AgentBrokerImplTest {
                 new AiScheduleJsonParser()
         );
 
-        AiProtocolException exception = assertThrows(
-                AiProtocolException.class,
-                () -> broker.requestSchedule(request)
-        );
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(request);
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
 
         assertEquals(AiProtocolException.ErrorCode.PARTIAL_SUCCESS, exception.getCode());
         verify(gemmaAdapter, times(1)).execute(request);
@@ -152,10 +163,14 @@ public class AgentBrokerImplTest {
                 new AiScheduleJsonParser()
         );
 
-        AiProtocolException exception = assertThrows(
-                AiProtocolException.class,
-                () -> broker.requestSchedule(request)
-        );
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(request);
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
 
         assertEquals(AiProtocolException.ErrorCode.BUSINESS_FAILURE, exception.getCode());
         verify(gemmaAdapter, times(1)).execute(request);
@@ -163,28 +178,76 @@ public class AgentBrokerImplTest {
 
     private static String validJson() {
         return "{"
+                + "\"variants\":{"
+                + "\"EMPATHETIC\":{"
                 + "\"status\":\"SUCCESS\","
                 + "\"assignments\":[],"
                 + "\"uncovered_shifts\":[],"
                 + "\"uffa_delta\":[]"
+                + "},"
+                + "\"EFFICIENT\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "},"
+                + "\"BALANCED\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}"
+                + "}"
                 + "}";
     }
 
     private static String partialSuccessJson() {
         return "{"
+                + "\"variants\":{"
+                + "\"EMPATHETIC\":{"
                 + "\"status\":\"PARTIAL_SUCCESS\","
                 + "\"assignments\":[],"
                 + "\"uncovered_shifts\":[],"
                 + "\"uffa_delta\":[]"
+                + "},"
+                + "\"EFFICIENT\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "},"
+                + "\"BALANCED\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}"
+                + "}"
                 + "}";
     }
 
     private static String failureJson() {
         return "{"
+                + "\"variants\":{"
+                + "\"EMPATHETIC\":{"
                 + "\"status\":\"FAILURE\","
                 + "\"assignments\":[],"
                 + "\"uncovered_shifts\":[],"
                 + "\"uffa_delta\":[]"
+                + "},"
+                + "\"EFFICIENT\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "},"
+                + "\"BALANCED\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}"
+                + "}"
                 + "}";
     }
 }

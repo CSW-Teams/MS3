@@ -155,11 +155,8 @@ public class ScheduleRestEndpoint {
     @PreAuthorize("hasAnyRole('PLANNER')")
     @RequestMapping(method = RequestMethod.POST, path = "selection")
     public ResponseEntity<?> selectScheduleCandidate(@RequestBody AiScheduleSelectionRequestDto selection) {
-        if (selection == null || selection.getCandidateId() == null || selection.getCandidateId().trim().isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
         AiScheduleGenerationOrchestrationService.SelectionResult result =
-                aiScheduleGenerationOrchestrationService.persistSelectedCandidate(selection.getCandidateId());
+                aiScheduleGenerationOrchestrationService.selectSchedule(selection);
         if (result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.PERSISTED) {
             return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
         }
@@ -167,7 +164,8 @@ public class ScheduleRestEndpoint {
             return new ResponseEntity<>(result, HttpStatus.NOT_ACCEPTABLE);
         }
         if (result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.NO_ACTIVE_COMPARISON
-                || result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.CANDIDATE_NOT_FOUND) {
+                || result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.CANDIDATE_NOT_FOUND
+                || result.getStatus() == AiScheduleGenerationOrchestrationService.SelectionResult.Status.SCHEDULE_NOT_FOUND) {
             return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);

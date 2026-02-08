@@ -967,5 +967,57 @@ event=plan_regenerate_success requestId=req-reg-001 mode=regenerate durationMs=2
 
 **Testing non eseguito (non richiesto)**
 
+## **Microtask 5 — Aggiungere regression tests per gli endpoint di generazione schedulo**
+
+**Obiettivo**
+
+Creare una suite di test di regressione (Unit e Integration) per congelare il comportamento attuale degli endpoint di generazione, rigenerazione e gestione degli scheduli. Questo assicura che l'introduzione delle logiche AI nelle prossime storie non alteri il contratto esistente o la business logic critica (es. controlli sulle date, gestione priorità, deduplica).
+
+**Cosa è stato implementato**
+
+Sono state create/estese due classi di test:
+1.  **`SchedulerControllerTest.java` (Unit Test)**: Isola la logica di controllo usando Mockito per i DAO. Copre tutti i rami decisionali di creazione, rimozione e rigenerazione.
+2.  **`ScheduleTests.java` (Integration Test)**: Verifica il comportamento end-to-end con database H2, testando la persistenza reale, i vincoli di integrità e il ripristino delle priorità (UFFA).
+
+**Dettaglio dei Test di Regressione (Unitari)**
+
+I test unitari in `SchedulerControllerTest` sono organizzati per categoria funzionale:
+
+* **Recupero Scheduli**
+    * `getAllSchedulesWithDates_ReturnsDTOs`: Verifica il mapping corretto verso `ShowScheduleToPlannerDTO` usato dalla UI.
+    * `readSchedules_ReturnsDTOs`: Verifica il recupero standard per l'amministrazione.
+    * `readIllegalSchedules_ReturnsDTOs`: Assicura che gli scheduli marcati come illegali vengano filtrati correttamente.
+
+* **Logica di Creazione**
+    * `createSchedule_Success`: Valida il flusso felice di creazione per date future.
+    * `createSchedule_InitialPastDate_ReturnsNull`: Verifica il blocco della creazione di scheduli nel passato (se è il primo).
+    * `createSchedule_OverlapRequest_ReturnsNull`: Verifica la prevenzione di scheduli con range date identici a quelli esistenti.
+
+* **Rimozione Schedulo**
+    * `removeSchedule_PastSchedule_ReturnsFalse`: Garantisce che non si possano cancellare scheduli passati (storico).
+    * `removeSchedule_FutureSchedule_Success`: Conferma la possibilità di cancellare scheduli futuri, inclusa la pulizia delle priorità associate.
+
+* **Rigenerazione**
+    * `recreateSchedule_PastSchedule_ReturnsFalse`: Impedisce la rigenerazione di scheduli storici.
+    * `recreateSchedule_NotFound_ReturnsFalse`: Gestisce graceful failure su ID inesistenti.
+
+* **Gestione Turni Concreti**
+    * `addConcreteShift_ShiftNotFound_ThrowsException`: Verifica la validazione dei template di turno in input.
+
+**Dettaglio dei Test di Regressione (Integrazione)**
+
+I test in `ScheduleTests` verificano l'interazione con il layer di persistenza:
+
+* **Validità Range Date (`createScheduleValidTest`)**: Test parametrico per confermare la creazione su range validi (futuro e presente).
+* **Deduplica Reale (`testCreateScheduleDuplicateRangeFails`)**: Verifica che il DB/Controller rifiuti effettivamente duplicati esatti.
+* **Ripristino Priorità (`testRecreateScheduleRestoresPrioritiesFlow`)**: Test critico per l'algoritmo UFFA. Verifica che, rigenerando uno schedulo, le priorità "spese" dai medici vengano resettate ai valori dello snapshot originale, garantendo equità.
+* **Gestione Scheduli Illegali (`readIllegalScheduleTest`)**: Simula un flusso completo in cui un vincolo viene violato, l'eccezione catturata, lo schedulo salvato parzialmente e poi recuperato correttamente come "illegale".
+* **Robustezza Inserimento Manuale (`testAddConcreteShiftDoctorCollision_DoesntThrowException`)**: Verifica che l'inserimento manuale (`addConcreteShift`) sia permissivo rispetto a collisioni di ruolo (stesso medico guardia+reperibile), mantenendo il comportamento attuale (nessuna eccezione lanciata).
+
+**Note / Limitazioni**
+
+* I test coprono la logica attuale "as-is", inclusi comportamenti potenzialmente migliorabili (es. collisioni manuali permesse) che non devono cambiare implicitamente durante il refactoring AI.
+* I test di integrazione richiedono il seed dei dati (medici, servizi, task) eseguito nel `setUp()` per simulare un tenant valido.
+
 ## Microtask 6 - Document baseline flow in code comments + README notes
 Aggiunto README in docs/AI_powered_rescheduling/sprint_4/README.md e javadoc nel codice.

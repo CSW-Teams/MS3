@@ -2,6 +2,9 @@ package org.cswteams.ms3.ai.decision;
 
 import org.cswteams.ms3.ai.priority.PriorityDimension;
 import org.cswteams.ms3.ai.priority.PriorityScaleConfig;
+import org.cswteams.ms3.audit.selection.AuditSelection;
+import org.cswteams.ms3.audit.selection.AuditedSelectionResult;
+import org.cswteams.ms3.audit.selection.SelectionAuditEvent;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -52,6 +55,52 @@ public class DecisionAlgorithmServiceImpl implements DecisionAlgorithmService {
             }
         }
         return best;
+    }
+
+    @Override
+    @AuditSelection("decision_algorithm_select_preferred")
+    public AuditedSelectionResult selectPreferredWithAudit(List<AiScheduleCandidateMetrics> candidates) {
+        if (candidates == null || candidates.isEmpty()) {
+            throw new IllegalArgumentException("Candidates list cannot be null or empty");
+        }
+        Map<PriorityDimension, Double> weights = priorityScaleConfig.getPriorityScale();
+        AiScheduleCandidateMetrics best = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
+        Map<String, Double> scores = new java.util.HashMap<>();
+        for (AiScheduleCandidateMetrics candidate : candidates) {
+            validateCandidate(candidate);
+            double score = weightedScore(candidate, weights);
+            scores.put(candidate.getCandidateId(), score);
+            if (best == null || score > bestScore + SCORE_TOLERANCE) {
+                best = candidate;
+                bestScore = score;
+            } else if (Math.abs(score - bestScore) <= SCORE_TOLERANCE) {
+                int comparison = compareByTieBreak(candidate, best);
+                if (comparison > 0) {
+                    best = candidate;
+                    bestScore = score;
+                }
+            }
+        }
+        if (best == null) {
+            throw new IllegalStateException("Unable to select preferred candidate");
+        }
+        List<SelectionAuditEvent> events = new java.util.ArrayList<>();
+        for (AiScheduleCandidateMetrics candidate : candidates) {
+            Map<String, Object> reasons = new java.util.LinkedHashMap<>();
+            reasons.put("weights", weights);
+            reasons.put("metrics", candidate.toMetricMap());
+            boolean selected = candidate.getCandidateId().equals(best.getCandidateId());
+            events.add(new SelectionAuditEvent(
+                    null,
+                    candidate.getCandidateId(),
+                    candidate.getCandidateId(),
+                    scores.get(candidate.getCandidateId()),
+                    selected,
+                    reasons
+            ));
+        }
+        return new AuditedSelectionResult(best.getCandidateId(), events);
     }
 
     private double weightedScore(AiScheduleCandidateMetrics candidate, Map<PriorityDimension, Double> weights) {

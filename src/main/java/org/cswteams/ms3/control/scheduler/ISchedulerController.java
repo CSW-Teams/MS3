@@ -142,4 +142,13 @@ public interface ISchedulerController {
      * @throws IllegalScheduleException Rised if the new concrete shift makes the schedule illegal
      */
     Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws ConcreteShiftException, IllegalScheduleException;
+
+    /**
+     * Verifies whether a schedule already exists for the specified date range.
+     *
+     * @param startNewSchedule First date to be planned for a shift schedule
+     * @param endNewSchedule Last date to be planned for a shift schedule
+     * @return False if there already exists a shift schedule for the dates we want to plan, true otherwise
+     */
+    boolean alreadyExistsAnotherSchedule(LocalDate startNewSchedule, LocalDate endNewSchedule);
 }
