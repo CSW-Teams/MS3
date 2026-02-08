@@ -19,7 +19,6 @@ import {panic} from "../../components/common/Panic";
 import { Container } from "shards-react";
 import GenerationLoadingModal from "../../components/common/GenerationLoadingModal";
 import GenerationStatusFeedback from "../../components/common/GenerationStatusFeedback";
-import AiScheduleComparisonModal from "../../components/common/AiScheduleComparisonModal";
 
 /**
  * @see docs/scheduling_flow/README.md
@@ -41,14 +40,11 @@ export class SchedulerGeneratorView extends React.Component{
             generationStatus: null, // 'success', 'partial', 'error', null
             generationMessage: '',
             generationDetails: '',
-            isComparisonOpen: false,
-            comparisonMetrics: [],
         }
 
         this.componentDidMount = this.componentDidMount.bind(this);
         this.handleGenerateSchedule = this.handleGenerateSchedule.bind(this);
         this.handleCloseGenerationFeedback = this.handleCloseGenerationFeedback.bind(this);
-        this.handleCloseComparisonModal = this.handleCloseComparisonModal.bind(this);
     }
 
     async componentDidMount() {
@@ -133,22 +129,19 @@ export class SchedulerGeneratorView extends React.Component{
             this.setState({
                 generationStatus: 'success',
                 generationMessage: t("Schedule successfully recreated"),
-                generationDetails: '',
-                isComparisonOpen: true,
+                generationDetails: ''
             });
           } else if (responseStatus === 417) {
             this.setState({
                 generationStatus: 'error',
                 generationMessage: t("Old Schedules cannot be regenerated"),
-                generationDetails: '',
-                isComparisonOpen: false,
+                generationDetails: ''
             });
           } else {
             this.setState({
                 generationStatus: 'error',
                 generationMessage: t("Regeneration Error"),
-                generationDetails: '',
-                isComparisonOpen: false,
+                generationDetails: ''
             });
           }
       } catch (err) {
@@ -157,8 +150,7 @@ export class SchedulerGeneratorView extends React.Component{
         this.setState({
             generationStatus: 'error',
             generationMessage: t("An unexpected error occurred during regeneration."),
-            generationDetails: err.message || t("Please try again later."),
-            isComparisonOpen: false,
+            generationDetails: err.message || t("Please try again later.")
         });
       } finally {
         this.setState({isGenerationLoading: false}); // Fine caricamento generazione
@@ -179,7 +171,6 @@ export class SchedulerGeneratorView extends React.Component{
             this.setState({
               generationStatus: 'success',
               generationMessage: t("Schedule successfully created."),
-              isComparisonOpen: true,
             });
             break;
           case 206:
@@ -187,7 +178,6 @@ export class SchedulerGeneratorView extends React.Component{
               generationStatus: 'partial',
               generationMessage: t("Schedule generated with warnings."),
               generationDetails: t("Some constraints were violated, resulting in a partial schedule."),
-              isComparisonOpen: false,
             });
             break;
           case 406: // NOT_ACCEPTABLE HTTP ERROR
@@ -195,7 +185,6 @@ export class SchedulerGeneratorView extends React.Component{
               generationStatus: 'error',
               generationMessage: t("Error: Schedule already exists or cannot be generated."),
               generationDetails: t("Please check dates and existing schedules."),
-              isComparisonOpen: false,
             });
             break;
           default:
@@ -203,7 +192,6 @@ export class SchedulerGeneratorView extends React.Component{
               generationStatus: 'error',
               generationMessage: t("Schedule Generation Error."),
               generationDetails: t("An unexpected error occurred."),
-              isComparisonOpen: false,
             });
             break;
         }
@@ -214,7 +202,6 @@ export class SchedulerGeneratorView extends React.Component{
           generationStatus: 'error',
           generationMessage: t("An unexpected error occurred during schedule generation."),
           generationDetails: err.message || t("Please try again later."),
-          isComparisonOpen: false,
         });
       } finally {
         this.setState({ isGenerationLoading: false });
@@ -229,21 +216,8 @@ export class SchedulerGeneratorView extends React.Component{
         });
     }
 
-    handleCloseComparisonModal() {
-      this.setState({ isComparisonOpen: false });
-    }
-
   render() {
-    const {
-      loading,
-      isGenerationLoading,
-      generationStatus,
-      generationMessage,
-      generationDetails,
-      schedulazioni,
-      isComparisonOpen,
-      comparisonMetrics,
-    } = this.state;
+    const { loading, isGenerationLoading, generationStatus, generationMessage, generationDetails, schedulazioni } = this.state;
 
     return (
       <Container fluid className="main-content-container px-4 pb-4">
@@ -323,11 +297,6 @@ export class SchedulerGeneratorView extends React.Component{
         </MDBContainer>
         {/* Modale di caricamento per la generazione */}
         <GenerationLoadingModal isOpen={isGenerationLoading} />
-        <AiScheduleComparisonModal
-          isOpen={isComparisonOpen}
-          onClose={this.handleCloseComparisonModal}
-          comparisonMetrics={comparisonMetrics}
-        />
       </Container>
     )
   }
