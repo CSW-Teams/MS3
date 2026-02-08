@@ -51,6 +51,55 @@ Il componente drawer è stato semplificato ("Dumb Component").
 
 ---
 
+## Microtask 4.2: UI Modal di Confronto AI (2×2 Grid)
+
+**Descrizione Task:** Creazione del componente modale che visualizza il confronto tra schedulazioni AI con layout a griglia 2×2.
+**Obiettivo:** Fornire una vista compatta delle metriche normalizzate senza etichette, mantenendo coerenza con il tema esistente.
+
+---
+
+### 1. Sintesi del microtask
+
+È stato introdotto un nuovo componente modale dedicato al confronto delle schedulazioni AI. La modale rende una griglia fissa 2×2 con quattro card che mostrano esclusivamente valori metrici normalizzati, senza titoli o label, e con placeholder in caso di dati mancanti.
+
+---
+
+### 2. Componenti Chiave Implementati
+
+#### A. `AiScheduleComparisonModal.js` (Nuovo Componente)
+
+Componente UI per la presentazione dei risultati di confronto.
+
+* **Layout:** Modal centrata con griglia 2×2 (`Grid` + `Card` MUI), responsive e coerente con il tema.
+* **Contenuto:** Ogni card mostra solo valori metrici in formato numerico o testuale, senza intestazioni.
+* **Placeholder:** In assenza di metriche, viene mostrato un placeholder neutro (es. “—”).
+* **Normalizzazione:** Supporta input come array o oggetto di metriche, convertiti in lista ordinata per la visualizzazione.
+
+---
+
+## Microtask 4.3: Integrazione Modale di Confronto nel Flusso UI
+
+**Descrizione Task:** Collegamento della modale di confronto AI al flusso di generazione/rigenerazione.
+**Obiettivo:** Aprire la modale automaticamente dopo una generazione AI completata con successo.
+
+---
+
+### 1. Sintesi del microtask
+
+La `ScheduleGeneratorView` è stata estesa per gestire lo stato della modale di confronto e per aprirla quando la generazione o rigenerazione termina con successo. La chiusura è gestita da handler dedicato, mantenendo separata la logica del feedback di stato (success/partial/error).
+
+---
+
+### 2. Componenti Chiave Implementati
+
+#### A. `ScheduleGeneratorView.js` (Integrazione Stato UI)
+
+* **Nuovi stati UI:** `isComparisonOpen` e `comparisonMetrics` per controllare visibilità e contenuti.
+* **Trigger di apertura:** La modale viene aperta su `responseStatus === 202` (success) per generazione e rigenerazione.
+* **Chiusura dedicata:** Handler separato per la chiusura della modale (`handleCloseComparisonModal`).
+
+---
+
 ## Microtask 4.3: Modale di conferma selezione schedulazione
 
 **Descrizione Task:** Implementazione della modale di conferma per la selezione finale di uno schedule tra 4 candidati, con copy bilingue EN/IT e blocco selezione dopo conferma.
