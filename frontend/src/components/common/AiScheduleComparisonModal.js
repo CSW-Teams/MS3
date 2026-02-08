@@ -75,6 +75,18 @@ const resolveSelectionKey = (candidate) =>
 const resolveMetrics = (candidate) =>
   candidate?.metrics?.normalized || candidate?.metrics?.raw || {};
 
+const downloadJson = (data, filename) => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json;charset=utf-8',
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+};
+
 function AiScheduleComparisonModal({
   isOpen,
   onClose,
@@ -86,6 +98,8 @@ function AiScheduleComparisonModal({
 }) {
   const placeholder = placeholderText || t('N/A');
   const cards = Array.from({ length: 4 }, (_, index) => candidates[index] ?? null);
+  const downloadableCandidates = cards.filter(Boolean);
+  const downloadDisabled = downloadableCandidates.length === 0;
 
   return (
     <Modal
@@ -100,51 +114,64 @@ function AiScheduleComparisonModal({
             {t('No AI-generated schedules available for comparison.')}
           </Typography>
         ) : (
-          <Grid container spacing={2}>
-            {cards.map((candidate, cardIndex) => {
-              const metadata = candidate?.metadata;
-              const metrics = resolveMetrics(candidate);
-              const scheduleId = metadata?.scheduleId ?? placeholder;
-              const selectionKey = resolveSelectionKey(candidate);
-              const isSelected = selectionKey && selectionKey === selectedCandidateKey;
-              const isSelectable = Boolean(candidate && selectionKey && onSelectCandidate);
-              const values = metricLabels.map((metric) => ({
-                label: t(metric.labelKey),
-                value: metrics?.[metric.key],
-              }));
+          <React.Fragment>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+              <Button
+                variant="outlined"
+                disabled={downloadDisabled}
+                onClick={() =>
+                  downloadJson(downloadableCandidates, 'ai-schedules.json')
+                }
+              >
+                {t('Download')}
+              </Button>
+            </Box>
+            <Grid container spacing={2}>
+              {cards.map((candidate, cardIndex) => {
+                const metadata = candidate?.metadata;
+                const metrics = resolveMetrics(candidate);
+                const scheduleId = metadata?.scheduleId ?? placeholder;
+                const selectionKey = resolveSelectionKey(candidate);
+                const isSelected = selectionKey && selectionKey === selectedCandidateKey;
+                const isSelectable = Boolean(candidate && selectionKey && onSelectCandidate);
+                const values = metricLabels.map((metric) => ({
+                  label: t(metric.labelKey),
+                  value: metrics?.[metric.key],
+                }));
 
-              return (
-                <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
-                  <Card sx={cardStyle} elevation={3}>
-                    <CardContent sx={metricsContainerStyle}>
-                      <Typography variant="h6" component="div">
-                        {resolveCandidateLabel(metadata)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {`${t('Schedule ID')}: ${scheduleId}`}
-                      </Typography>
-                      {values.map((metric) => (
-                        <Typography
-                          key={`ai-comparison-metric-${cardIndex}-${metric.label}`}
-                          variant="body1"
-                          component="div"
-                        >
-                          {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
+                return (
+                  <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
+                    <Card sx={cardStyle} elevation={3}>
+                      <CardContent sx={metricsContainerStyle}>
+                        <Typography variant="h6" component="div">
+                          {resolveCandidateLabel(metadata)}
                         </Typography>
-                      ))}
-                      <Button
-                        variant={isSelected ? 'contained' : 'outlined'}
-                        disabled={!isSelectable || (selectionLocked && !isSelected)}
-                        onClick={() => onSelectCandidate(candidate)}
-                      >
-                        {isSelected ? t('Selected') : t('Select schedule')}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
+                        <Typography variant="body2" color="text.secondary">
+                          {`${t('Schedule ID')}: ${scheduleId}`}
+                        </Typography>
+                        {values.map((metric) => (
+                          <Typography
+                            key={`ai-comparison-metric-${cardIndex}-${metric.label}`}
+                            variant="body1"
+                            component="div"
+                          >
+                            {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
+                          </Typography>
+                        ))}
+                        <Button
+                          variant={isSelected ? 'contained' : 'outlined'}
+                          disabled={!isSelectable || (selectionLocked && !isSelected)}
+                          onClick={() => onSelectCandidate(candidate)}
+                        >
+                          {isSelected ? t('Selected') : t('Select schedule')}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </React.Fragment>
         )}
       </Box>
     </Modal>
