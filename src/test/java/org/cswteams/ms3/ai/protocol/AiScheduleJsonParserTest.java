@@ -138,6 +138,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -160,6 +161,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -182,6 +184,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -218,6 +221,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -245,6 +249,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -265,6 +270,7 @@ public class AiScheduleJsonParserTest {
         assertNotNull(dto.metadata.metrics.uffaBalance);
         assertNotNull(dto.metadata.metrics.uffaBalance.nightShiftStdDev);
         assertEquals(Double.valueOf(22.5), dto.metadata.metrics.uffaBalance.nightShiftStdDev.finalValue);
+        assertEquals("2025-01-31T08:15:30Z", dto.metadata.generationTime);
         assertEquals(Seniority.STRUCTURED, dto.assignments.get(0).roleCovered);
         assertEquals(AiUffaQueue.GEN, dto.uffaDelta.get(0).queue);
     }
@@ -276,6 +282,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"OK\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
@@ -324,6 +331,7 @@ public class AiScheduleJsonParserTest {
                 + "\"status\":\"SUCCESS\","
                 + "\"metadata\":{"
                 + "\"reasoning\":\"ok\","
+                + "\"generation_time\":\"2025-01-31T08:15:30Z\","
                 + "\"optimality_score\":0.85,"
                 + "\"metrics\":{"
                 + "\"coverage_percent\":0.98,"
