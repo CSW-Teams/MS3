@@ -25,7 +25,7 @@ Questo documento mette a confronto le due migliori opzioni gratuite attualmente 
 
 ---
 
-## 2. Groq (Llama 3 & Mistral)
+## 2. Groq (Llama 3)
 
 Groq non crea modelli, ma offre un'infrastruttura hardware (LPU) velocissima per far girare modelli open-source.
 
