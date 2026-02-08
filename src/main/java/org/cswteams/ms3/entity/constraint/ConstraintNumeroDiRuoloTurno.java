@@ -17,18 +17,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class implements the check of the number of doctors of each seniority in a concrete shift.
- * It defines how many doctors foreach seniority have to be associated to each concrete shift.
- * For instance, nocturne shifts in ward must have one specialist and one structured on duty and
- * one specialist and one structured on call.
+ * Implementa il vincolo {@code ConstraintNumeroDiRuoloTurno}, che garantisce il rispetto
+ * dei numeri minimi di medici per {@link Seniority seniority} (es. specialista, strutturato)
+ * all'interno di un {@link ConcreteShift turno concreto}, sia per i medici "on duty" che per quelli "on call".
+ *
+ * Fa parte del "Catalogo vincoli attivi" (Microtask 1.2).
+ *
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
  */
 @Entity
 public class ConstraintNumeroDiRuoloTurno extends Constraint {
-
     /**
-     * This method checks if numeroDiRuoloTurno constraint is respected while inserting a new concrete shift into a schedule.
-     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
-     * @throws ViolatedConstraintException Exception thrown if the constraint is violated
+     * Verifica se il vincolo {@code ConstraintNumeroDiRuoloTurno} è rispettato quando si tenta di assegnare
+     * un nuovo {@link ConcreteShift turno concreto} a un medico. Questo vincolo assicura che il turno
+     * abbia il numero richiesto di medici per ogni {@link Seniority seniority}, sia per i medici
+     * {@code ON_DUTY} che {@code ON_CALL}.
+     *
+     * @param context Oggetto {@link ContextConstraint} che comprende il nuovo turno concreto da assegnare
+     *                e le informazioni sullo stato del medico nello schedule corrispondente.
+     * @throws ViolatedConstraintException Eccezione lanciata se il vincolo è violato (es. numero insufficiente
+     *                                     di medici di una data seniority).
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
@@ -57,11 +65,16 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
     }
 
     /**
-     * This auxiliary method is used to check the constraint and reuse the code. It makes the same checks both for on duty doctors
-     * and for on call doctors.
-     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
-     * @param assignedDoctors On duty doctors or on call doctors that have been already assigned
-     * @throws ViolatedVincoloRuoloNumeroException Exception thrown if the constraint is violated
+     * Metodo ausiliario utilizzato per verificare il vincolo {@code ConstraintNumeroDiRuoloTurno},
+     * riutilizzando la logica sia per i medici {@code ON_DUTY} che {@code ON_CALL}.
+     * Calcola il numero di medici già assegnati con la stessa {@link Seniority seniority} del medico
+     * che si tenta di aggiungere e verifica se il numero richiesto di medici per quella seniority
+     * è già stato raggiunto per il {@link ConcreteShift turno concreto}.
+     *
+     * @param context Oggetto {@link ContextConstraint} che comprende il nuovo turno concreto da assegnare
+     *                e le informazioni sullo stato del medico nello schedule corrispondente.
+     * @param assignedDoctors Lista di medici ({@code ON_DUTY} o {@code ON_CALL}) già assegnati al turno.
+     * @throws ViolatedVincoloRuoloNumeroException Eccezione lanciata se il vincolo è violato.
      */
     private void verify(ContextConstraint context, List<Doctor> assignedDoctors) throws ViolatedVincoloRuoloNumeroException {
 
@@ -83,10 +96,15 @@ public class ConstraintNumeroDiRuoloTurno extends Constraint {
     }
 
     /**
-     * This auxiliary method counts, in a concrete shift, how many doctors foreach seniority are on duty or on call.
-     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
-     * @param assignedDoctors On duty doctors or on call doctors that have been already assigned
-     * @throws ViolatedVincoloRuoloNumeroException Exception thrown if the constraint is violated
+     * Metodo ausiliario che conta, in un {@link ConcreteShift turno concreto}, quanti medici per
+     * ogni {@link Seniority seniority} sono {@code ON_DUTY} o {@code ON_CALL}.
+     * Verifica se il numero di medici di ogni seniority nel turno è sufficiente rispetto ai requisiti.
+     *
+     * @param context Oggetto {@link ContextConstraint} che comprende il nuovo turno concreto da assegnare
+     *                e le informazioni sullo stato del medico nello schedule corrispondente.
+     * @param assignedDoctors Lista di medici ({@code ON_DUTY} o {@code ON_CALL}) già assegnati al turno.
+     * @throws ViolatedVincoloRuoloNumeroException Eccezione lanciata se il vincolo è violato
+     *                                             (es. numero insufficiente di medici di una data seniority).
      */
     private void countSeniority(ContextConstraint context, List<Doctor> assignedDoctors) throws ViolatedVincoloRuoloNumeroException {
         //We count how many doctors foreach seniority there are in the concrete shift.

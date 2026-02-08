@@ -3,12 +3,8 @@ import Drawer from '@material-ui/core/Drawer';
 import BasicDatePicker from './DataPicker';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { AssegnazioneTurnoAPI } from '../../API/AssegnazioneTurnoAPI';
+import { toast } from 'react-toastify';
 import { t } from "i18next";
-import "./../../style/LoadingOverlay.css"
-import {panic} from "./Panic";
 
 
 export default function TemporaryDrawerSchedulo(props) {
@@ -16,7 +12,6 @@ export default function TemporaryDrawerSchedulo(props) {
   const [dataInizio,setDataInizio] = React.useState("")
   const [dataFine,setDataFine] = React.useState("")
   const [open,setOpen] = React.useState(false)
-  const [loading, setLoading] = React.useState(false)
 
   const handleDataInizio = (dataInizio) => {
     setDataInizio(dataInizio);
@@ -26,9 +21,6 @@ export default function TemporaryDrawerSchedulo(props) {
     setDataFine(dataFine);
   }
 
-
-  //Funzione che apre la schermata secondaria che permette di creare un nuovo schedulo.
-  //Viene passata come callback al componente <Drawer>
   const toggleDrawer = (open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
@@ -36,73 +28,28 @@ export default function TemporaryDrawerSchedulo(props) {
     setOpen(open);
   };
 
-  //La funzione verrà invocata quando l'utente schiaccerà il bottone per creare un nuovo schedulo.
-  const aggiungiSchedulo= async () => {
-
-    setLoading(true)
-
-    let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI();
-    let status ;
-    try {
-      status = await assegnazioneTurnoAPI.postGenerationSchedule(dataInizio,dataFine)
-    } catch (err) {
-
-      panic()
-      return
+  const aggiungiSchedulo = () => {
+    // Validazione Input
+    if (!dataInizio || !dataFine) {
+        toast.error(t("Please select both dates for schedule generation."), {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            draggable: true,
+            theme: "colored",
+        });
+        return; // Blocca l'esecuzione se le date non sono selezionate
     }
 
-    if(status==202){
+    // 1. Chiudi subito il drawer per dare feedback immediato
+    setOpen(false);
 
-      toast.success(t("Schedule successfully created"), {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+    // 2. Delega al padre la logica (ScheduleGeneratorView.js)
+    if (props.onGenerateSchedule) {
+      // Chiamata senza await per non bloccare la chiusura del drawer, il padre gestisce il loading globale
+      props.onGenerateSchedule(dataInizio, dataFine);
     }
-    else if (status == 206){
-      toast.warning(t("Warning! Incomplete Schedule"), {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
-    else if (status == 406){ //NOT ACCEPTABLE HTTP ERROR
-      toast.error(t("Error: Schedule already exists"), {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
-    else{
-      toast.error(t("Schedule Generation Error"), {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
-    setOpen(false)
-    setLoading(false)
-    props.onPostGeneration();
   }
 
   return (
@@ -124,14 +71,6 @@ export default function TemporaryDrawerSchedulo(props) {
             justifyContent: 'center',
             height: '45vh',
           }}>
-
-            {loading ? (
-              // Visualizza la schermata di caricamento
-              <div className="loading-overlay">
-                <div className="loading-spinner"></div>
-              </div>
-            ) : (
-              // Visualizza il contenuto normale quando non è in corso il caricamento
               <Stack spacing={3}>
                 <div style={{
                   display: 'flex',
@@ -145,12 +84,9 @@ export default function TemporaryDrawerSchedulo(props) {
                   {t("Create schedule")}
                 </Button>
               </Stack>
-            )}
-
           </div>
         </Drawer>
       </React.Fragment>
     </div>
-
   );
 }

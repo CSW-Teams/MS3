@@ -48,4 +48,18 @@ public interface RequestRemovalFromConcreteShiftDAO extends JpaRepository<Reques
             "FROM   RequestRemovalFromConcreteShift r " +
             "WHERE  r.requestingDoctor.id = ?1")
     List<RequestRemovalFromConcreteShift> findAllByUser(Long UserId);
+
+    /**
+     * Returns all removal requests whose concrete shift falls within the provided epoch day range.
+     *
+     * @param startEpochDay inclusive start epoch day
+     * @param endEpochDay inclusive end epoch day
+     * @return list of removal requests in the date range
+     */
+    @Query("SELECT  r " +
+            "FROM   RequestRemovalFromConcreteShift r " +
+            "WHERE  r.concreteShift.date >= ?1 " +
+            "       AND " +
+            "       r.concreteShift.date <= ?2")
+    List<RequestRemovalFromConcreteShift> findAllByConcreteShiftDateBetween(long startEpochDay, long endEpochDay);
 }
