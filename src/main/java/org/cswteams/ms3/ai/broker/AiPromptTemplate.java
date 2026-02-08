@@ -20,13 +20,20 @@ public final class AiPromptTemplate {
     }
 
     public static String build(String instructions, String toonPayload) {
-        String instructionsSection = "";
+        return TEMPLATE + "\n\n" + buildUserContent(instructions, toonPayload);
+    }
+
+    public static String systemPrompt() {
+        return TEMPLATE;
+    }
+
+    public static String buildUserContent(String instructions, String toonPayload) {
+        StringBuilder builder = new StringBuilder();
         if (instructions != null && !instructions.trim().isEmpty()) {
-            instructionsSection = "Instructions:\n" + instructions.trim() + "\n\n";
+            builder.append("Instructions:\n").append(instructions.trim()).append("\n\n");
         }
-        return TEMPLATE
-                .replace("{{INSTRUCTIONS_SECTION}}", instructionsSection)
-                .replace("{{TOON_INPUT}}", toonPayload == null ? "" : toonPayload);
+        builder.append("TOON_INPUT:\n").append(toonPayload == null ? "" : toonPayload);
+        return builder.toString();
     }
 
     public static String buildVariantIntentInstructions() {
