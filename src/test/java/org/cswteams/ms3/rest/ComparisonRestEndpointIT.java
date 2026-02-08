@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cswteams.ms3.ai.broker.AiPromptTemplate;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleCandidateMetadataDto;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonCandidateDto;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonResponseDto;
@@ -49,7 +50,9 @@ class ComparisonRestEndpointIT {
         AiScheduleCandidateMetadataDto metadata = new AiScheduleCandidateMetadataDto("standard", null, "STANDARD");
         AiScheduleComparisonCandidateDto candidate = new AiScheduleComparisonCandidateDto(metadata, "{}", metrics);
         AiScheduleDecisionOutcomeDto outcome = new AiScheduleDecisionOutcomeDto(metadata);
-        AiScheduleComparisonResponseDto response = new AiScheduleComparisonResponseDto(List.of(candidate), outcome);
+        AiScheduleComparisonResponseDto response = new AiScheduleComparisonResponseDto(List.of(candidate),
+                outcome,
+                AiPromptTemplate.metricsSpecId());
 
         when(aiScheduleGenerationOrchestrationService.getLatestComparison()).thenReturn(response);
 

@@ -9,6 +9,7 @@ import org.cswteams.ms3.ai.comparison.dto.AiScheduleComparisonResponseDto;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleDecisionMetricValuesDto;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleDecisionMetricsDto;
 import org.cswteams.ms3.ai.comparison.dto.AiScheduleDecisionOutcomeDto;
+import org.cswteams.ms3.ai.broker.AiPromptTemplate;
 import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 
 import java.util.Collections;
@@ -37,6 +38,7 @@ public class AiScheduleComparisonMapper {
         return new AiScheduleComparisonResponseDto(mappedCandidates,
                 decisionOutcome,
                 generationStatus,
+                AiPromptTemplate.metricsSpecId(),
                 errorType,
                 errorCode,
                 failureStage,
