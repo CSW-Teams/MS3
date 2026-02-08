@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 public final class AiPromptTemplate {
 
     private static final String TEMPLATE_RESOURCE = "/ai/system_prompt_template.txt";
+    private static final String METRICS_SPEC_ID = "DECISION_METRICS_V1";
+    private static final String METRICS_SPEC_TOKEN = "${DECISION_METRICS_SPEC_ID}";
     private static final String TEMPLATE = loadTemplate();
     private AiPromptTemplate() {
     }
@@ -17,6 +19,10 @@ public final class AiPromptTemplate {
 
     public static String systemPrompt() {
         return TEMPLATE;
+    }
+
+    public static String metricsSpecId() {
+        return METRICS_SPEC_ID;
     }
 
     public static String buildUserContent(String instructions, String toonPayload) {
@@ -33,7 +39,8 @@ public final class AiPromptTemplate {
             if (inputStream == null) {
                 throw new IllegalStateException("Missing AI system prompt template resource: " + TEMPLATE_RESOURCE);
             }
-            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            String template = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            return template.replace(METRICS_SPEC_TOKEN, METRICS_SPEC_ID);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load AI system prompt template", e);
         }
