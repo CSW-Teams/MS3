@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AiMetadataDto {
     public String reasoning;
+    @JsonProperty("algorithm")
+    public String algorithm;
     @JsonProperty("generation_time")
     public String generationTime;
     @JsonProperty("optimality_score")
