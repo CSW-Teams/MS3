@@ -142,6 +142,7 @@ public class AiScheduleGenerationOrchestrationService {
             logger.warn("event=ai_standard_generation_empty start_date={} end_date={}", startDate, endDate);
             return null;
         }
+        standardSchedule = scheduleDAO.save(standardSchedule);
         String metricsCorrelationId = UUID.randomUUID().toString();
         MetricsErrorMetadata errorMetadata = null;
         int standardShiftCount = standardSchedule.getConcreteShifts() == null

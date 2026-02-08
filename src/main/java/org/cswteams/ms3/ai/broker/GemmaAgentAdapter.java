@@ -40,18 +40,15 @@ public class GemmaAgentAdapter implements AgentProviderAdapter {
         }
 
         String prompt = AiPromptTemplate.build(request.getInstructions(), request.getToonPayload());
-        Map<String, Object> payload = Map.of(
-                "contents", List.of(Map.of(
-                        "role", "user",
-                        "parts", List.of(Map.of("text", prompt))
-                )),
-                "generationConfig", Map.of("responseMimeType", "application/json")
+        Map<String, Object> payload = Map.of("contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", prompt))))
+                //,"generationConfig", Map.of("responseMimeType", "application/json")
         );
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("x-goog-api-key", apiKey);
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+        url = String.format("%s?key=%s", url, apiKey);
 
         String response = restTemplate.postForObject(url, entity, String.class);
         if (response == null || response.isBlank()) {
