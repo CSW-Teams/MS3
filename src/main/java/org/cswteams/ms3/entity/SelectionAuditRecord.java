@@ -1,4 +1,4 @@
-package org.cswteams.ms3.audit.selection;
+package org.cswteams.ms3.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

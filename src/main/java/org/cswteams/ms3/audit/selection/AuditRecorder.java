@@ -3,10 +3,13 @@ package org.cswteams.ms3.audit.selection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.audit.AuditProperties;
+import org.cswteams.ms3.dao.SelectionAuditRecordRepository;
+import org.cswteams.ms3.entity.SelectionAuditRecord;
 import org.cswteams.ms3.tenant.TenantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -21,6 +24,7 @@ public class AuditRecorder {
     private final ObjectMapper objectMapper;
     private final SelectionAuditRecordRepository repository;
 
+    @Autowired
     public AuditRecorder(AuditProperties properties,
                          ObjectMapper objectMapper,
                          SelectionAuditRecordRepository repository) {
