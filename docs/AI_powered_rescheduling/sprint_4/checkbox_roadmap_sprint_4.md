@@ -68,11 +68,11 @@
   - [x] ~~6.2.b Capture decisions log~~
   - [x] ~~6.2.c Record open questions/risks + mitigations~~
   - [x] ~~6.2.d Add dependency impacts for remaining work~~
-- [ ] 6.3  
-  - [ ] 6.3.a Draft slides 1–2 (problem + baseline flow)
-  - [ ] 6.3.b Draft slides 3–4 (AI approach + orchestration)
-  - [ ] 6.3.c Draft slide 5 (metrics + decision framework)
-  - [ ] 6.3.d Draft slide 6 (UI preview + next steps)
+- [x] ~~6.3~~ 
+  - [x] ~~6.3.a Draft slides 1–2 (problem + baseline flow)~~
+  - [x] ~~6.3.b Draft slides 3–4 (AI approach + orchestration)~~
+  - [x] ~~6.3.c Draft slide 5 (metrics + decision framework)~~
+  - [x] ~~6.3.d Draft slide 6 (UI preview + next steps)~~
 - [ ] 6.4
   - [ ] 6.4.a Collect “what went well” bullets
   - [ ] 6.4.b Collect “what didn’t go well” bullets
