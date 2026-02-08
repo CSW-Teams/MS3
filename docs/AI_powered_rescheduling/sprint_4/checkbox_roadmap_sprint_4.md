@@ -57,17 +57,17 @@
 
 # Story 6 — Documentation & Stakeholder Materials
 
-- [ ] 6.1  
-  - [ ] 6.1.a Capture backend orchestration flow diagram draft
-  - [ ] 6.1.b Draft AI protocol section (TOON/JSON + retries/timeouts)
-  - [ ] 6.1.c Draft metrics + decision algorithm section
-  - [ ] 6.1.d Draft UI comparison/selection flow notes
-  - [ ] 6.1.e Assemble glossary + data minimization notes
-- [ ] 6.2  
-  - [ ] 6.2.a Write sprint timeline summary
-  - [ ] 6.2.b Capture decisions log
-  - [ ] 6.2.c Record open questions/risks + mitigations
-  - [ ] 6.2.d Add dependency impacts for remaining work
+- [x] ~~6.1~~  
+  - [x] ~~6.1.a Capture backend orchestration flow diagram draft~~
+  - [x] ~~6.1.b Draft AI protocol section (TOON/JSON + retries/timeouts)~~
+  - [x] ~~6.1.c Draft metrics + decision algorithm section~~
+  - [x] ~~6.1.d Draft UI comparison/selection flow notes~~
+  - [x] ~~6.1.e Assemble glossary + data minimization notes~~
+- [x] ~~6.2~~ 
+  - [x] ~~6.2.a Write sprint timeline summary~~
+  - [x] ~~6.2.b Capture decisions log~~
+  - [x] ~~6.2.c Record open questions/risks + mitigations~~
+  - [x] ~~6.2.d Add dependency impacts for remaining work~~
 - [ ] 6.3  
   - [ ] 6.3.a Draft slides 1–2 (problem + baseline flow)
   - [ ] 6.3.b Draft slides 3–4 (AI approach + orchestration)
