@@ -38,7 +38,7 @@ const formatMetric = (value, placeholder) => {
     return placeholder;
   }
   if (typeof value === 'number') {
-    return value;
+    return value.toFixed(2);
   }
   return value;
 };
