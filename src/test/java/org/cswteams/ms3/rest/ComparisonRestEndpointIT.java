@@ -53,7 +53,7 @@ class ComparisonRestEndpointIT {
 
         when(aiScheduleGenerationOrchestrationService.getLatestComparison()).thenReturn(response);
 
-        mockMvc.perform(get("/api/comparison"))
+        mockMvc.perform(get("/comparison"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.candidates[0].metadata.candidateId").value("standard"))
                 .andExpect(jsonPath("$.candidates[0].metrics.raw.coverage").value(1.0))
@@ -69,7 +69,7 @@ class ComparisonRestEndpointIT {
 
         when(aiScheduleGenerationOrchestrationService.selectSchedule(any())).thenReturn(result);
 
-        mockMvc.perform(post("/api/comparison/selection")
+        mockMvc.perform(post("/comparison/selection")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
@@ -85,7 +85,7 @@ class ComparisonRestEndpointIT {
 
         when(aiScheduleGenerationOrchestrationService.selectSchedule(any())).thenReturn(result);
 
-        mockMvc.perform(post("/api/comparison/selection")
+        mockMvc.perform(post("/comparison/selection")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
@@ -102,7 +102,7 @@ class ComparisonRestEndpointIT {
 
         when(aiScheduleGenerationOrchestrationService.selectSchedule(any())).thenReturn(result);
 
-        mockMvc.perform(post("/api/comparison/selection")
+        mockMvc.perform(post("/comparison/selection")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
