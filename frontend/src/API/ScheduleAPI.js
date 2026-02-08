@@ -45,22 +45,5 @@ export class ScheduleAPI {
 
   }
 
-  async selectScheduleCandidate(candidateId) {
-    const requestOptions = {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ candidateId: candidateId }),
-    };
-
-    const response = await fetchWithAuth('/api/schedule/selection', requestOptions);
-    let body = null;
-    try {
-      body = await response.json();
-    } catch (error) {
-      body = null;
-    }
-    return { status: response.status, body: body };
-  }
-
 
 }

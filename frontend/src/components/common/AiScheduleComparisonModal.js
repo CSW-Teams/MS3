@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Card, CardContent, Grid, Modal, Typography } from '@mui/material';
+import { Box, Card, CardContent, Grid, Modal, Typography } from '@mui/material';
 import { t } from 'i18next';
 
 const modalStyle = {
@@ -31,6 +31,24 @@ const metricsContainerStyle = {
   alignItems: 'center',
 };
 
+const isPrimitiveValue = (value) => (
+  value === null || (typeof value !== 'object' && typeof value !== 'function')
+);
+
+const normalizeCardMetrics = (metrics, placeholder) => {
+  const safePlaceholder = placeholder ?? '—';
+  if (Array.isArray(metrics)) {
+    return metrics.map((value) => (isPrimitiveValue(value) ? value : safePlaceholder));
+  }
+  if (metrics && typeof metrics === 'object') {
+    return Object.values(metrics).map((value) => (isPrimitiveValue(value) ? value : safePlaceholder));
+  }
+  if (metrics === null || metrics === undefined) {
+    return [];
+  }
+  return [isPrimitiveValue(metrics) ? metrics : safePlaceholder];
+};
+
 const formatMetric = (value, placeholder) => {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return placeholder;
@@ -41,49 +59,11 @@ const formatMetric = (value, placeholder) => {
   return value;
 };
 
-const metricLabels = [
-  { key: 'coverage', label: 'Coverage / Copertura' },
-  { key: 'uffaBalance', label: 'UFFA balance / Bilanciamento UFFA' },
-  { key: 'sentimentTransitions', label: 'Sentiment transitions / Transizioni sentimento' },
-  { key: 'upDelta', label: 'UP delta / Delta UFFA' },
-  { key: 'varianceDelta', label: 'Variance delta / Delta varianza' },
-];
-
-const resolveCandidateLabel = (metadata) => {
-  if (!metadata?.type) {
-    return 'Schedule / Schedulazione';
-  }
-  switch (metadata.type.toLowerCase()) {
-    case 'standard':
-      return 'Standard / Standard';
-    case 'empathetic':
-      return 'Empathetic / Empatica';
-    case 'efficient':
-      return 'Efficient / Efficiente';
-    case 'balanced':
-      return 'Balanced / Bilanciata';
-    default:
-      return `${metadata.type} / ${metadata.type}`;
-  }
-};
-
-const resolveSelectionKey = (candidate) =>
-  candidate?.metadata?.candidateId ?? candidate?.metadata?.type ?? '';
-
-const resolveMetrics = (candidate) =>
-  candidate?.metrics?.normalized || candidate?.metrics?.raw || {};
-
-function AiScheduleComparisonModal({
-  isOpen,
-  onClose,
-  candidates = [],
-  placeholderText,
-  onSelectCandidate,
-  selectedCandidateKey,
-  selectionLocked,
-}) {
+function AiScheduleComparisonModal({ isOpen, onClose, comparisonMetrics = [], placeholderText }) {
   const placeholder = placeholderText || t('—');
-  const cards = Array.from({ length: 4 }, (_, index) => candidates[index] ?? null);
+  const cards = Array.from({ length: 4 }, (_, index) =>
+    normalizeCardMetrics(comparisonMetrics[index], placeholder)
+  );
 
   return (
     <Modal
@@ -94,46 +74,21 @@ function AiScheduleComparisonModal({
     >
       <Box sx={modalStyle}>
         <Grid container spacing={2}>
-          {cards.map((candidate, cardIndex) => {
-            const metadata = candidate?.metadata;
-            const metrics = resolveMetrics(candidate);
-            const scheduleId = metadata?.scheduleId ?? placeholder;
-            const selectionKey = resolveSelectionKey(candidate);
-            const isSelected = selectionKey && selectionKey === selectedCandidateKey;
-            const isSelectable = Boolean(candidate && selectionKey && onSelectCandidate);
-            const values = metricLabels.map((metric) => ({
-              label: metric.label,
-              value: metrics?.[metric.key],
-            }));
-
+          {cards.map((metrics, cardIndex) => {
+            const values = metrics.length > 0 ? metrics : [placeholder];
             return (
               <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
                 <Card sx={cardStyle} elevation={3}>
                   <CardContent sx={metricsContainerStyle}>
-                    <Typography variant="h6" component="div">
-                      {resolveCandidateLabel(metadata)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {`Schedule ID / ID schedulazione: ${scheduleId}`}
-                    </Typography>
-                    {values.map((metric) => (
+                    {values.map((metric, metricIndex) => (
                       <Typography
-                        key={`ai-comparison-metric-${cardIndex}-${metric.label}`}
-                        variant="body1"
+                        key={`ai-comparison-metric-${cardIndex}-${metricIndex}`}
+                        variant="h6"
                         component="div"
                       >
-                        {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
+                        {formatMetric(metric, placeholder)}
                       </Typography>
                     ))}
-                    <Button
-                      variant={isSelected ? 'contained' : 'outlined'}
-                      disabled={!isSelectable || (selectionLocked && !isSelected)}
-                      onClick={() => onSelectCandidate(candidate)}
-                    >
-                      {isSelected
-                        ? 'Selected / Selezionato'
-                        : 'Select schedule / Seleziona schedulazione'}
-                    </Button>
                   </CardContent>
                 </Card>
               </Grid>

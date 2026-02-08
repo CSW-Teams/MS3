@@ -20,25 +20,6 @@ import { Container } from "shards-react";
 import GenerationLoadingModal from "../../components/common/GenerationLoadingModal";
 import GenerationStatusFeedback from "../../components/common/GenerationStatusFeedback";
 import AiScheduleComparisonModal from "../../components/common/AiScheduleComparisonModal";
-import AiScheduleSelectionConfirmationModal from "../../components/common/AiScheduleSelectionConfirmationModal";
-
-const resolveCandidateLabel = (metadata) => {
-  if (!metadata?.type) {
-    return 'Schedule / Schedulazione';
-  }
-  switch (metadata.type.toLowerCase()) {
-    case 'standard':
-      return 'Standard / Standard';
-    case 'empathetic':
-      return 'Empathetic / Empatica';
-    case 'efficient':
-      return 'Efficient / Efficiente';
-    case 'balanced':
-      return 'Balanced / Bilanciata';
-    default:
-      return `${metadata.type} / ${metadata.type}`;
-  }
-};
 
 /**
  * @see docs/scheduling_flow/README.md
@@ -61,22 +42,13 @@ export class SchedulerGeneratorView extends React.Component{
             generationMessage: '',
             generationDetails: '',
             isComparisonOpen: false,
-            comparisonCandidates: [],
-            selectionLocked: false,
-            selectedCandidateKey: null,
-            pendingCandidate: null,
-            isSelectionConfirmationOpen: false,
-            isSelectionSubmitting: false,
-            selectedScheduleId: null, // Hook for future success messaging (Story 4.4).
+            comparisonMetrics: [],
         }
 
         this.componentDidMount = this.componentDidMount.bind(this);
         this.handleGenerateSchedule = this.handleGenerateSchedule.bind(this);
         this.handleCloseGenerationFeedback = this.handleCloseGenerationFeedback.bind(this);
         this.handleCloseComparisonModal = this.handleCloseComparisonModal.bind(this);
-        this.handleOpenSelectionConfirmation = this.handleOpenSelectionConfirmation.bind(this);
-        this.handleCancelSelectionConfirmation = this.handleCancelSelectionConfirmation.bind(this);
-        this.handleConfirmSelection = this.handleConfirmSelection.bind(this);
     }
 
     async componentDidMount() {
@@ -163,13 +135,7 @@ export class SchedulerGeneratorView extends React.Component{
                 generationMessage: t("Schedule successfully recreated"),
                 generationDetails: '',
                 isComparisonOpen: false,
-                comparisonCandidates: [],
-                selectionLocked: false,
-                selectedCandidateKey: null,
-                pendingCandidate: null,
-                isSelectionConfirmationOpen: false,
-                isSelectionSubmitting: false,
-                selectedScheduleId: null,
+                comparisonMetrics: [],
             });
           } else if (responseStatus === 417) {
             this.setState({
@@ -177,13 +143,7 @@ export class SchedulerGeneratorView extends React.Component{
                 generationMessage: t("Old Schedules cannot be regenerated"),
                 generationDetails: '',
                 isComparisonOpen: false,
-                comparisonCandidates: [],
-                selectionLocked: false,
-                selectedCandidateKey: null,
-                pendingCandidate: null,
-                isSelectionConfirmationOpen: false,
-                isSelectionSubmitting: false,
-                selectedScheduleId: null,
+                comparisonMetrics: [],
             });
           } else {
             this.setState({
@@ -191,13 +151,7 @@ export class SchedulerGeneratorView extends React.Component{
                 generationMessage: t("Regeneration Error"),
                 generationDetails: '',
                 isComparisonOpen: false,
-                comparisonCandidates: [],
-                selectionLocked: false,
-                selectedCandidateKey: null,
-                pendingCandidate: null,
-                isSelectionConfirmationOpen: false,
-                isSelectionSubmitting: false,
-                selectedScheduleId: null,
+                comparisonMetrics: [],
             });
           }
       } catch (err) {
@@ -208,13 +162,7 @@ export class SchedulerGeneratorView extends React.Component{
             generationMessage: t("An unexpected error occurred during regeneration."),
             generationDetails: err.message || t("Please try again later."),
             isComparisonOpen: false,
-            comparisonCandidates: [],
-            selectionLocked: false,
-            selectedCandidateKey: null,
-            pendingCandidate: null,
-            isSelectionConfirmationOpen: false,
-            isSelectionSubmitting: false,
-            selectedScheduleId: null,
+            comparisonMetrics: [],
         });
       } finally {
         this.setState({isGenerationLoading: false}); // Fine caricamento generazione
@@ -227,14 +175,8 @@ export class SchedulerGeneratorView extends React.Component{
         generationStatus: null,
         generationMessage: '',
         generationDetails: '',
-        comparisonCandidates: [],
+        comparisonMetrics: [],
         isComparisonOpen: false,
-        selectionLocked: false,
-        selectedCandidateKey: null,
-        pendingCandidate: null,
-        isSelectionConfirmationOpen: false,
-        isSelectionSubmitting: false,
-        selectedScheduleId: null,
       });
 
       let assegnazioneTurnoAPI = new AssegnazioneTurnoAPI();
@@ -246,12 +188,15 @@ export class SchedulerGeneratorView extends React.Component{
         switch (response.status) {
           case 200:
           case 202: {
-            const comparisonCandidates = response.body?.candidates ?? [];
+            // Response shape is expected to include comparisonMetrics or metrics; avoid falling back to the whole body.
+            const comparisonMetrics = response.body?.comparisonMetrics
+              ?? response.body?.metrics
+              ?? [];
             this.setState({
               generationStatus: 'success',
               generationMessage: t("Schedule successfully created."),
-              comparisonCandidates: comparisonCandidates,
-              isComparisonOpen: comparisonCandidates.length > 0,
+              comparisonMetrics: comparisonMetrics,
+              isComparisonOpen: true,
             });
             break;
           }
@@ -261,7 +206,7 @@ export class SchedulerGeneratorView extends React.Component{
               generationMessage: t("Schedule generated with warnings."),
               generationDetails: t("Some constraints were violated, resulting in a partial schedule."),
               isComparisonOpen: false,
-              comparisonCandidates: [],
+              comparisonMetrics: [],
             });
             break;
           case 406: // NOT_ACCEPTABLE HTTP ERROR
@@ -270,7 +215,7 @@ export class SchedulerGeneratorView extends React.Component{
               generationMessage: t("Error: Schedule already exists or cannot be generated."),
               generationDetails: t("Please check dates and existing schedules."),
               isComparisonOpen: false,
-              comparisonCandidates: [],
+              comparisonMetrics: [],
             });
             break;
           default:
@@ -279,7 +224,7 @@ export class SchedulerGeneratorView extends React.Component{
               generationMessage: t("Schedule Generation Error."),
               generationDetails: t("An unexpected error occurred."),
               isComparisonOpen: false,
-              comparisonCandidates: [],
+              comparisonMetrics: [],
             });
             break;
         }
@@ -291,7 +236,7 @@ export class SchedulerGeneratorView extends React.Component{
           generationMessage: t("An unexpected error occurred during schedule generation."),
           generationDetails: err.message || t("Please try again later."),
           isComparisonOpen: false,
-          comparisonCandidates: [],
+          comparisonMetrics: [],
         });
       } finally {
         this.setState({ isGenerationLoading: false });
@@ -307,92 +252,7 @@ export class SchedulerGeneratorView extends React.Component{
     }
 
     handleCloseComparisonModal() {
-      this.setState({ isComparisonOpen: false, comparisonCandidates: [] });
-    }
-
-    handleOpenSelectionConfirmation(candidate) {
-      if (this.state.selectionLocked || !candidate) {
-        return;
-      }
-      this.setState({
-        pendingCandidate: candidate,
-        isSelectionConfirmationOpen: true,
-      });
-    }
-
-    handleCancelSelectionConfirmation() {
-      if (this.state.isSelectionSubmitting) {
-        return;
-      }
-      this.setState({
-        pendingCandidate: null,
-        isSelectionConfirmationOpen: false,
-      });
-    }
-
-    async handleConfirmSelection() {
-      const { pendingCandidate, selectionLocked, isSelectionSubmitting } = this.state;
-      if (!pendingCandidate || selectionLocked || isSelectionSubmitting) {
-        return;
-      }
-      const candidateKey =
-        pendingCandidate.metadata?.candidateId ?? pendingCandidate.metadata?.type;
-      if (!candidateKey) {
-        toast.error("Selection data missing / Dati selezione mancanti", {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-        return;
-      }
-
-      this.setState({ isSelectionSubmitting: true });
-      let response;
-      try {
-        response = await new ScheduleAPI().selectScheduleCandidate(candidateKey);
-      } catch (error) {
-        toast.error("Selection failed / Selezione non riuscita", {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-        this.setState({ isSelectionSubmitting: false });
-        return;
-      }
-
-      if (response.status === 202) {
-        this.setState({
-          selectionLocked: true,
-          selectedCandidateKey: candidateKey,
-          pendingCandidate: null,
-          isSelectionConfirmationOpen: false,
-          isSelectionSubmitting: false,
-          selectedScheduleId: response.body?.scheduleId ?? null,
-        });
-        return;
-      }
-
-      toast.error("Selection could not be saved / Impossibile salvare la selezione", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-      this.setState({ isSelectionSubmitting: false });
+      this.setState({ isComparisonOpen: false, comparisonMetrics: [] });
     }
 
   render() {
@@ -404,12 +264,7 @@ export class SchedulerGeneratorView extends React.Component{
       generationDetails,
       schedulazioni,
       isComparisonOpen,
-      comparisonCandidates,
-      selectionLocked,
-      selectedCandidateKey,
-      pendingCandidate,
-      isSelectionConfirmationOpen,
-      isSelectionSubmitting,
+      comparisonMetrics,
     } = this.state;
 
     return (
@@ -493,18 +348,7 @@ export class SchedulerGeneratorView extends React.Component{
         <AiScheduleComparisonModal
           isOpen={isComparisonOpen}
           onClose={this.handleCloseComparisonModal}
-          candidates={comparisonCandidates}
-          onSelectCandidate={this.handleOpenSelectionConfirmation}
-          selectionLocked={selectionLocked}
-          selectedCandidateKey={selectedCandidateKey}
-        />
-        <AiScheduleSelectionConfirmationModal
-          isOpen={isSelectionConfirmationOpen}
-          onConfirm={this.handleConfirmSelection}
-          onCancel={this.handleCancelSelectionConfirmation}
-          candidateLabel={resolveCandidateLabel(pendingCandidate?.metadata)}
-          scheduleId={pendingCandidate?.metadata?.scheduleId}
-          isSubmitting={isSelectionSubmitting}
+          comparisonMetrics={comparisonMetrics}
         />
       </Container>
     )
