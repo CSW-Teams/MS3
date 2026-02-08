@@ -181,6 +181,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
     private Optional<com.fasterxml.jackson.databind.JsonNode> loadDoctorSeedData(ObjectMapper objectMapper) {
         List<Resource> resources = Arrays.asList(
+                new ClassPathResource("doctors_seed.json"),
+                new FileSystemResource("doctors_seed.json"),
+                new FileSystemResource("src/main/resources/doctors_seed.json"),
                 new ClassPathResource("doctors_seed_fac_simile.json"),
                 new FileSystemResource("doctors_seed_fac_simile.json"),
                 new FileSystemResource("src/main/resources/doctors_seed_fac_simile.json")
@@ -204,8 +207,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             return;
         }
 
-        com.fasterxml.jackson.databind.JsonNode rootNode = doctorSeedData.get();
-        com.fasterxml.jackson.databind.JsonNode doctorsNode = rootNode.get("doctors");
+        com.fasterxml.jackson.databind.JsonNode doctorsNode = doctorSeedData.get();
         if (doctorsNode == null || !doctorsNode.isArray() || doctorsNode.size() == 0) {
             return;
         }
@@ -224,13 +226,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 continue;
             }
 
-            Set<SystemActor> roles = parseRoles(seed.get("roles"));
+            Set<SystemActor> roles = parseRoles(seed.get("system_actors"));
             Seniority seniority = parseSeniority(seed.get("seniority"));
             String password = getTextValue(seed, "password");
             Doctor doctor = new Doctor(
                     getTextValue(seed, "name"),
                     getTextValue(seed, "lastname"),
-                    getTextValue(seed, "taxCode"),
+                    getTextValue(seed, "tax_code"),
                     parseLocalDate(seed.get("birthday")),
                     email,
                     encoder.encode(password == null ? "" : password),
@@ -240,11 +242,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             doctor = doctorDAO.saveAndFlush(doctor);
 
             DoctorUffaPriority priority = new DoctorUffaPriority(doctor);
-            applyPrioritySeed(priority, seed.get("uffaPriority"));
+            applyPrioritySeed(priority, seed.get("doctor_uffa_priority"));
             doctorUffaPriorityDAO.save(priority);
 
             DoctorUffaPrioritySnapshot prioritySnapshot = new DoctorUffaPrioritySnapshot(doctor);
-            applyPrioritySnapshot(prioritySnapshot, seed.get("uffaPrioritySnapshot"));
+            applyPrioritySnapshot(prioritySnapshot, seed.get("doctor_uffa_priority_snapshot"));
             doctorUffaPrioritySnapshotDAO.save(prioritySnapshot);
 
             HashMap<Holiday, Boolean> holidayMap = new HashMap<>();
@@ -265,7 +267,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
             if (preferencesNode != null && preferencesNode.isArray() && preferencesNode.size() > 0) {
                 for (com.fasterxml.jackson.databind.JsonNode preferenceSeed : preferencesNode) {
                     LocalDate date = parseLocalDate(preferenceSeed.get("date"));
-                    Set<TimeSlot> timeSlots = parseTimeSlots(preferenceSeed.get("timeSlots"));
+                    Set<TimeSlot> timeSlots = parseTimeSlots(preferenceSeed.get("time_slots"));
                     Preference preference = new Preference(date, timeSlots, Collections.singletonList(doctor));
                     preference = preferenceDAO.save(preference);
                     doctor.getPreferenceList().add(preference);
@@ -279,21 +281,21 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         if (seed == null || seed.isNull()) {
             return;
         }
-        priority.setPartialGeneralPriority(seed.path("partialGeneralPriority").asInt(0));
-        priority.setGeneralPriority(seed.path("generalPriority").asInt(0));
-        priority.setPartialLongShiftPriority(seed.path("partialLongShiftPriority").asInt(0));
-        priority.setLongShiftPriority(seed.path("longShiftPriority").asInt(0));
-        priority.setPartialNightPriority(seed.path("partialNightPriority").asInt(0));
-        priority.setNightPriority(seed.path("nightPriority").asInt(0));
+        priority.setPartialGeneralPriority(seed.path("partial_general_priority").asInt(0));
+        priority.setGeneralPriority(seed.path("general_priority").asInt(0));
+        priority.setPartialLongShiftPriority(seed.path("partial_long_shift_priority").asInt(0));
+        priority.setLongShiftPriority(seed.path("long_shift_priority").asInt(0));
+        priority.setPartialNightPriority(seed.path("partial_night_priority").asInt(0));
+        priority.setNightPriority(seed.path("night_priority").asInt(0));
     }
 
     private void applyPrioritySnapshot(DoctorUffaPrioritySnapshot snapshot, com.fasterxml.jackson.databind.JsonNode seed) {
         if (seed == null || seed.isNull()) {
             return;
         }
-        snapshot.setGeneralPriority(seed.path("generalPriority").asInt(0));
-        snapshot.setLongShiftPriority(seed.path("longShiftPriority").asInt(0));
-        snapshot.setNightPriority(seed.path("nightPriority").asInt(0));
+        snapshot.setGeneralPriority(seed.path("general_priority").asInt(0));
+        snapshot.setLongShiftPriority(seed.path("long_shift_priority").asInt(0));
+        snapshot.setNightPriority(seed.path("night_priority").asInt(0));
     }
 
     private Set<SystemActor> parseRoles(com.fasterxml.jackson.databind.JsonNode rolesNode) {
@@ -348,6 +350,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         com.fasterxml.jackson.databind.JsonNode valueNode = node.get(fieldName);
         return valueNode == null || valueNode.isNull() ? null : valueNode.asText();
     }
+
 
     private Holiday findHolidayByName(List<Holiday> holidays, String name) {
         if (name == null) {

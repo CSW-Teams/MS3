@@ -1,70 +1,102 @@
-{
-  "doctors": [
-    {
-      "tenant": "A",
-      "name": "Alice",
-      "lastname": "Rossi",
-      "taxCode": "RSSALC90A01H501X",
-      "birthday": "1990-01-01",
-      "email": "alice.rossi+seed@ms3.local",
-      "password": "passw",
-      "seniority": "STRUCTURED",
-      "roles": ["DOCTOR"],
-      "uffaPriority": {
-        "partialGeneralPriority": 0,
-        "generalPriority": 0,
-        "partialLongShiftPriority": 0,
-        "longShiftPriority": 0,
-        "partialNightPriority": 0,
-        "nightPriority": 0
-      },
-      "uffaPrioritySnapshot": {
-        "partialGeneralPriority": 0,
-        "generalPriority": 0,
-        "partialLongShiftPriority": 0,
-        "longShiftPriority": 0,
-        "partialNightPriority": 0,
-        "nightPriority": 0
-      },
-      "holidays": [
-        { "name": "Natale", "worked": false }
-      ],
-      "preferences": [
-        { "date": "2024-12-20", "timeSlots": ["MORNING", "AFTERNOON"] }
-      ]
+[
+  {
+    "ms3_tenant_user_id": 1,
+    "name": "Nome1",
+    "lastname": "Cognome1",
+    "birthday": "1970-01-31",
+    "tax_code": "TAXCODEX00000001",
+    "email": "doctor1@example.com",
+    "password": "password",
+    "seniority": "STRUCTURED",
+    "system_actors": [
+      "DOCTOR"
+    ],
+    "doctor_uffa_priority": {
+      "id": 1,
+      "general_priority": 0,
+      "long_shift_priority": 0,
+      "night_priority": 0,
+      "partial_general_priority": 0,
+      "partial_long_shift_priority": 0,
+      "partial_night_priority": 0,
+      "schedule_schedule_id": null
     },
-    {
-      "tenant": "B",
-      "name": "Marco",
-      "lastname": "Bianchi",
-      "taxCode": "BNCMRC85B15H501Z",
-      "birthday": "1985-02-15",
-      "email": "marco.bianchi+seed@ms3.local",
-      "password": "passw2",
-      "seniority": "SPECIALIST_SENIOR",
-      "roles": ["DOCTOR", "PLANNER"],
-      "uffaPriority": {
-        "partialGeneralPriority": 1,
-        "generalPriority": 1,
-        "partialLongShiftPriority": 0,
-        "longShiftPriority": 0,
-        "partialNightPriority": 2,
-        "nightPriority": 2
+    "doctor_uffa_priority_snapshot": {
+      "id": 1,
+      "general_priority": 0,
+      "long_shift_priority": 0,
+      "night_priority": 0,
+      "schedule_schedule_id": null
+    },
+    "doctor_holidays": {
+      "doctor_holidays_id": 1,
+      "holiday_map_base64": "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAB3CAAAABAAAAAAeA=="
+    },
+    "preferences": [
+      {
+        "id": 1,
+        "date": "2026-01-01",
+        "time_slots": [
+          "AFTERNOON"
+        ]
       },
-      "uffaPrioritySnapshot": {
-        "partialGeneralPriority": 1,
-        "generalPriority": 1,
-        "partialLongShiftPriority": 0,
-        "longShiftPriority": 0,
-        "partialNightPriority": 2,
-        "nightPriority": 2
+      {
+        "id": 2,
+        "date": "2026-01-02",
+        "time_slots": [
+          "NIGHT"
+        ]
+      }
+    ]
+  },
+  {
+    "ms3_tenant_user_id": 2,
+    "name": "Nome2",
+    "lastname": "Cognome2",
+    "birthday": "1970-03-02",
+    "tax_code": "TAXCODEX00000002",
+    "email": "doctor2@example.com",
+    "password": "password",
+    "seniority": "STRUCTURED",
+    "system_actors": [
+      "DOCTOR"
+    ],
+    "doctor_uffa_priority": {
+      "id": 2,
+      "general_priority": 1,
+      "long_shift_priority": 1,
+      "night_priority": 1,
+      "partial_general_priority": 1,
+      "partial_long_shift_priority": 1,
+      "partial_night_priority": 1,
+      "schedule_schedule_id": null
+    },
+    "doctor_uffa_priority_snapshot": {
+      "id": 2,
+      "general_priority": 1,
+      "long_shift_priority": 1,
+      "night_priority": 1,
+      "schedule_schedule_id": null
+    },
+    "doctor_holidays": {
+      "doctor_holidays_id": 2,
+      "holiday_map_base64": "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAB3CAAAABAAAAAAeA=="
+    },
+    "preferences": [
+      {
+        "id": 3,
+        "date": "2026-01-03",
+        "time_slots": [
+          "NIGHT"
+        ]
       },
-      "holidays": [
-        { "name": "Capodanno", "worked": true }
-      ],
-      "preferences": [
-        { "date": "2024-12-24", "timeSlots": ["NIGHT"] }
-      ]
-    }
-  ]
-}
+      {
+        "id": 4,
+        "date": "2026-01-04",
+        "time_slots": [
+          "MORNING"
+        ]
+      }
+    ]
+  }
+]
