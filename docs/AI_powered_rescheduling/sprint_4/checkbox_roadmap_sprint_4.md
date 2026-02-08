@@ -39,19 +39,19 @@
 - [x] ~~4.1 Scordo~~
 - [ ] 4.2 Andrea
 - [ ] 4.3  DEPENDENCIES 4.2
-- [ ] 4.4  Scordo
-- [ ] 4.5  Scordo
+- [x] ~~4.4 Scordo~~
+- [x] ~~4.5 Scordo~~
 
 \---
 
 # Story 5 — Backend Orchestration Plan for AI Rescheduling
 
-- [x] ~~5.1  DEPENDENCIES 2.X 3.X Cantone~~
+- [x] ~~5.1 Cantone~~
 - [x] ~~5.2 Cantone~~
 - [x] ~~5.3 Scordo~~
-- [ ] 5.4  Capone 
+- [x] ~~5.4  Capone~~
 - [x] ~~5.5  Cantone~~
-- [ ] 5.6  DEPENDENCIES 3.7
+- [x] ~~5.6 Federico C.~~
 
 \---
 

@@ -39,7 +39,7 @@ public class AiScheduleResponseMapper {
         if (dto == null) {
             return null;
         }
-        return new AiMetadata(dto.reasoning, dto.optimalityScore, toMetrics(dto.metrics));
+        return new AiMetadata(dto.reasoning, dto.algorithm, dto.optimalityScore, toMetrics(dto.metrics));
     }
 
     private AiMetrics toMetrics(AiMetricsDto dto) {
