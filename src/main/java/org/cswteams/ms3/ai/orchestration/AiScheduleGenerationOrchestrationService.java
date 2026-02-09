@@ -81,6 +81,7 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String ERROR_AI_METRICS = "AI_METRICS_FAILED";
     private static final String ERROR_NORMALIZATION = "METRICS_NORMALIZATION_FAILED";
     private static final String ERROR_DECISION = "METRICS_DECISION_FAILED";
+    private static final double METRICS_COMPARISON_TOLERANCE = 1e-6;
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
@@ -380,18 +381,18 @@ public class AiScheduleGenerationOrchestrationService {
                         null
                 );
             }
+            AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
+            String rawJson = serializeResponse(responseDto);
             DecisionMetricValues metrics;
             try {
-                metrics = buildAiMetrics(variant);
-            } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
+                metrics = buildAiMetrics(variant, rawJson, definition.candidateId, correlationId);
+            } catch (AiProtocolException | IllegalArgumentException | PriorityScaleValidationException ex) {
                 errorMetadata = buildMetricsError(errorMetadata,
                         correlationId,
                         ERROR_AI_METRICS,
                         ex);
                 metrics = fallbackMetrics();
             }
-            AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
-            String rawJson = serializeResponse(responseDto);
             candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics, null));
         }
         return new CandidateBatch(Collections.unmodifiableList(candidates), errorMetadata);
@@ -421,17 +422,27 @@ public class AiScheduleGenerationOrchestrationService {
         );
     }
 
-    private DecisionMetricValues buildAiMetrics(AiScheduleResponse response) {
-        AiMetadata metadata = response.getMetadata();
-        AiMetrics metrics = metadata != null ? metadata.getMetrics() : null;
-        Double coverage = metrics != null ? metrics.getCoveragePercent() : 0.0;
-        Double uffaBalance = resolveUffaBalanceImprovement(metrics);
+    private DecisionMetricValues buildAiMetrics(AiScheduleResponse response,
+                                                String rawJson,
+                                                String candidateId,
+                                                String correlationId) {
+        DecisionMetricValues aiProvided = buildAiProvidedMetrics(response);
+        DecisionMetricValues serverComputed = buildAiMetricsFromAssignments(response, rawJson);
+        compareAiMetrics(aiProvided, serverComputed, candidateId, correlationId);
+        logger.info("event=metrics_ai_calculated candidate_id={} coverage={} uffa_balance={} delta_mean={} delta_variance={}",
+                candidateId,
+                serverComputed.getCoverage(),
+                serverComputed.getUffaBalance(),
+                serverComputed.getUpDelta(),
+                serverComputed.getVarianceDelta());
+        return serverComputed;
+    }
+
+    private DecisionMetricValues buildAiMetricsFromAssignments(AiScheduleResponse response, String rawJson) {
+        List<ConcreteShift> concreteShifts = aiScheduleConverterService.convert(rawJson);
+        double coverage = computeCoverage(concreteShifts);
+        double uffaBalance = 0.0;
         PriorityDeltaStats deltaStats = computeUffaDeltaStats(response.getUffaDelta());
-        logger.info("event=metrics_ai_calculated coverage={} uffa_balance={} delta_mean={} delta_variance={}",
-                coverage,
-                uffaBalance,
-                deltaStats.mean,
-                deltaStats.variance);
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
@@ -439,6 +450,60 @@ public class AiScheduleGenerationOrchestrationService {
                 deltaStats.mean,
                 deltaStats.variance
         );
+    }
+
+    private DecisionMetricValues buildAiProvidedMetrics(AiScheduleResponse response) {
+        if (response == null) {
+            return null;
+        }
+        AiMetadata metadata = response.getMetadata();
+        AiMetrics metrics = metadata != null ? metadata.getMetrics() : null;
+        if (metrics == null) {
+            return null;
+        }
+        Double coverage = metrics.getCoveragePercent() != null ? metrics.getCoveragePercent() : 0.0;
+        Double uffaBalance = resolveUffaBalanceImprovement(metrics);
+        PriorityDeltaStats deltaStats = computeUffaDeltaStats(response.getUffaDelta());
+        return new DecisionMetricValues(
+                coverage,
+                uffaBalance,
+                0.0,
+                deltaStats.mean,
+                deltaStats.variance
+        );
+    }
+
+    private void compareAiMetrics(DecisionMetricValues aiProvided,
+                                  DecisionMetricValues serverComputed,
+                                  String candidateId,
+                                  String correlationId) {
+        if (aiProvided == null) {
+            logger.warn("event=metrics_ai_missing candidate_id={} correlation_id={}",
+                    candidateId,
+                    correlationId);
+            return;
+        }
+        boolean coverageMismatch = !approximatelyEqual(aiProvided.getCoverage(), serverComputed.getCoverage());
+        boolean uffaBalanceMismatch = !approximatelyEqual(aiProvided.getUffaBalance(), serverComputed.getUffaBalance());
+        if (coverageMismatch || uffaBalanceMismatch) {
+            logger.warn("event=metrics_ai_mismatch candidate_id={} correlation_id={} coverage_ai={} coverage_server={} uffa_balance_ai={} uffa_balance_server={}",
+                    candidateId,
+                    correlationId,
+                    aiProvided.getCoverage(),
+                    serverComputed.getCoverage(),
+                    aiProvided.getUffaBalance(),
+                    serverComputed.getUffaBalance());
+        }
+    }
+
+    private boolean approximatelyEqual(Double left, Double right) {
+        if (left == null && right == null) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        return Math.abs(left - right) <= METRICS_COMPARISON_TOLERANCE;
     }
 
     private double resolveUffaBalanceImprovement(AiMetrics metrics) {
