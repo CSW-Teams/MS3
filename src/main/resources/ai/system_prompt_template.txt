@@ -23,28 +23,127 @@ Required JSON schema structure:
 {
   "variants": {
     "EMPATHETIC": {
-      "status": string,
-      "metadata": object,
-      "assignments": array,
-      "uncovered_shifts": array,
-      "uffa_delta": number,
-      "metrics": object
+      "status": "SUCCESS | PARTIAL_SUCCESS | FAILURE",
+      "metadata": {
+        "reasoning": string,
+        "algorithm": string,
+        "generation_time": string,
+        "optimality_score": number,
+        "metrics": {
+          "coverage_percent": number,
+          "uffa_balance": {
+            "night_shift_std_dev": {
+              "initial": number,
+              "final": number
+            }
+          },
+          "soft_violations_count": number
+        }
+      },
+      "assignments": [
+        {
+          "shift_id": string,
+          "doctor_id": number,
+          "role_covered": "STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR",
+          "is_forced": boolean,
+          "violation_note": string
+        }
+      ],
+      "uncovered_shifts": [
+        {
+          "shift_id": string,
+          "reason": string
+        }
+      ],
+      "uffa_delta": [
+        {
+          "doctor_id": number,
+          "queue": "gen | night | long",
+          "points": number
+        }
+      ]
     },
     "EFFICIENT": {
-      "status": string,
-      "metadata": object,
-      "assignments": array,
-      "uncovered_shifts": array,
-      "uffa_delta": number,
-      "metrics": object
+      "status": "SUCCESS | PARTIAL_SUCCESS | FAILURE",
+      "metadata": {
+        "reasoning": string,
+        "algorithm": string,
+        "generation_time": string,
+        "optimality_score": number,
+        "metrics": {
+          "coverage_percent": number,
+          "uffa_balance": {
+            "night_shift_std_dev": {
+              "initial": number,
+              "final": number
+            }
+          },
+          "soft_violations_count": number
+        }
+      },
+      "assignments": [
+        {
+          "shift_id": string,
+          "doctor_id": number,
+          "role_covered": "STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR",
+          "is_forced": boolean,
+          "violation_note": string
+        }
+      ],
+      "uncovered_shifts": [
+        {
+          "shift_id": string,
+          "reason": string
+        }
+      ],
+      "uffa_delta": [
+        {
+          "doctor_id": number,
+          "queue": "gen | night | long",
+          "points": number
+        }
+      ]
     },
     "BALANCED": {
-      "status": string,
-      "metadata": object,
-      "assignments": array,
-      "uncovered_shifts": array,
-      "uffa_delta": number,
-      "metrics": object
+      "status": "SUCCESS | PARTIAL_SUCCESS | FAILURE",
+      "metadata": {
+        "reasoning": string,
+        "algorithm": string,
+        "generation_time": string,
+        "optimality_score": number,
+        "metrics": {
+          "coverage_percent": number,
+          "uffa_balance": {
+            "night_shift_std_dev": {
+              "initial": number,
+              "final": number
+            }
+          },
+          "soft_violations_count": number
+        }
+      },
+      "assignments": [
+        {
+          "shift_id": string,
+          "doctor_id": number,
+          "role_covered": "STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR",
+          "is_forced": boolean,
+          "violation_note": string
+        }
+      ],
+      "uncovered_shifts": [
+        {
+          "shift_id": string,
+          "reason": string
+        }
+      ],
+      "uffa_delta": [
+        {
+          "doctor_id": number,
+          "queue": "gen | night | long",
+          "points": number
+        }
+      ]
     }
   }
 }
@@ -53,5 +152,5 @@ Stable validation rules:
 - The response must be a single JSON object.
 - The top-level object must contain a "variants" field.
 - The "variants" object must include exactly these labels: "EMPATHETIC", "EFFICIENT", "BALANCED".
-- Each variant object must include the fields: "status", "metadata", "assignments", "uncovered_shifts", "uffa_delta", "metrics".
+- Each variant object must include the fields: "status", "metadata", "assignments", "uncovered_shifts", "uffa_delta".
 - Field names must match exactly; do not wrap or rename sections.
