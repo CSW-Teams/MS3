@@ -14,7 +14,7 @@
 - **Diagram placeholder:** Baseline flow map from Story 1 (sequence of REST → orchestration → build).【F:docs/AI_powered_rescheduling/sprint_4/roadmap_sprint_4.md†L30-L69】
 
 ## Slide 3 — AI Protocol (TOON/JSON) & Data Minimization
-- Direct prompting only (no MCP/RLM): system sends TOON context, AI returns strict JSON response.【F:docs/AI_powered_rescheduling/sprint_4/story_2.md†L15-L78】
+- Direct prompting (system + users) only (no MCP/RLM): system sends TOON context, AI returns strict JSON response.【F:docs/AI_powered_rescheduling/sprint_4/story_2.md†L15-L78】
 - TOON input captures schedule window, shifts, doctors, constraints, blocks, and feedbacks in a token‑efficient format.【F:docs/AI_powered_rescheduling/sprint_4/technical_doc_draft.md†L40-L58】
 - JSON output must validate schema and semantics; only `SUCCESS` accepted, failures trigger fallback handling.【F:docs/AI_powered_rescheduling/sprint_4/technical_doc_draft.md†L59-L83】
 - GDPR minimization: pseudonymized doctor IDs, limited feedback context, and no direct identifiers in payloads.【F:docs/AI_powered_rescheduling/sprint_4/technical_doc_draft.md†L158-L199】
