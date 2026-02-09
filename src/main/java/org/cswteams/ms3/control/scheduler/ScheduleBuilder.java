@@ -325,11 +325,10 @@ public class ScheduleBuilder {
      * @param doctorList La lista di {@link Doctor medici} già assegnati al turno.
      * @param status Lo {@link ConcreteShiftDoctorStatus stato} di assegnazione (e.g., ON_DUTY, ON_CALL).
      * @param task Il {@link Task} associato al turno per l'assegnazione.
-     * @throws NotEnoughFeasibleUsersException Se il numero di medici idonei disponibili è inferiore a quelli richiesti.
      * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
      */
     private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList,
-                            ConcreteShiftDoctorStatus status, Task task) throws NotEnoughFeasibleUsersException{
+                            ConcreteShiftDoctorStatus status, Task task) {
 
 
         int selectedUsers=0;
@@ -429,10 +428,13 @@ public class ScheduleBuilder {
         // Case in which the algorithm ends without having found enough doctors to place into the concrete shift
         if (selectedUsers != qss.getValue()){
             // [BASELINE-FLOW] GESTIONE BUCHI:
-            // Attualmente il sistema crasha se non trova candidati.
-            // L'AI dovrà intercettare questo punto per restituire uno schedule parziale (con buchi)
-            // invece di lanciare NotEnoughFeasibleUsersException.
-            throw new NotEnoughFeasibleUsersException(qss.getValue(), selectedUsers);
+            // Ora registriamo il gap e continuiamo, restituendo uno schedule parziale senza interrompere il build.
+            NotEnoughFeasibleUsersException gapException = new NotEnoughFeasibleUsersException(qss.getValue(), selectedUsers);
+            if (schedule.getCauseIllegal() == null) {
+                schedule.setCauseIllegal(gapException);
+            }
+            logger.log(Level.WARNING, gapException.getMessage(), gapException);
+            return;
         }
 
     }
