@@ -304,9 +304,24 @@ public class AiScheduleGenerationOrchestrationService {
             LocalDate existingStart = LocalDate.ofEpochDay(schedule.getStartDate());
             LocalDate existingEnd = LocalDate.ofEpochDay(schedule.getEndDate());
             if (existingStart.equals(startDate) && existingEnd.equals(endDate)) {
+                detachDoctorUffaPriorities(schedule);
                 scheduleDAO.delete(schedule);
             }
         }
+    }
+
+    private void detachDoctorUffaPriorities(Schedule schedule) {
+        if (schedule == null || schedule.getId() == null) {
+            return;
+        }
+        List<DoctorUffaPriority> priorities = doctorUffaPriorityDAO.findBySchedule_Id(schedule.getId());
+        if (priorities == null || priorities.isEmpty()) {
+            return;
+        }
+        for (DoctorUffaPriority priority : priorities) {
+            priority.setSchedule(null);
+        }
+        doctorUffaPriorityDAO.saveAll(priorities);
     }
 
     private Schedule buildScheduleForCandidate(TransientComparisonState state, CandidateData candidate) {
