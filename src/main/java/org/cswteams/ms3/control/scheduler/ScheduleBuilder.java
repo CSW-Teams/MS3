@@ -270,18 +270,7 @@ public class ScheduleBuilder {
                 List<Doctor> doctorsOnDuty = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_DUTY));
                 for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
                     for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
-                        try {
-                            this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
-                        } catch (NotEnoughFeasibleUsersException e) {
-                            // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
-                            logger.log(Level.SEVERE, e.getMessage(), e);
-                            schedule.setCauseIllegal(e);
-                            if(schedule.getCauseIllegal() != null) logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
-
-                            for (Constraint constraint : schedule.getViolatedConstraints()){
-                                logger.log(Level.SEVERE, constraint.toString());
-                            }
-                        }
+                        this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
                     }
                 }
 
@@ -289,12 +278,7 @@ public class ScheduleBuilder {
             List<Doctor> doctorsOnCall = DoctorAssignmentUtil.getDoctorsInConcreteShift(concreteShift, Collections.singletonList(ConcreteShiftDoctorStatus.ON_CALL));
             for (QuantityShiftSeniority qss : concreteShift.getShift().getQuantityShiftSeniority()){
                 for(Map.Entry<Seniority,Integer> entry : qss.getSeniorityMap().entrySet()) {
-                    try {
-                        this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_CALL, qss.getTask());
-                    } catch (NotEnoughFeasibleUsersException e){
-                        // Here we define the violation of constraints but do not stop the schedule generation.
-                        logger.log(Level.SEVERE, e.getMessage(), e);
-                    }
+                    this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_CALL, qss.getTask());
                 }
             }
 
@@ -311,8 +295,7 @@ public class ScheduleBuilder {
      * @param qss Number of doctors that have to be added to the concrete shift for a specific seniority for a specific task
      * @param doctorList List  of doctor assigned since the last assegnation
      * @param status type of assignation that we want on the concrateshift
-     * @throws NotEnoughFeasibleUsersException Exception thrown if the number of doctors having the possibility to be
-     * added to the concrete shift is less than numDoctors
+     * Se non ci sono abbastanza medici idonei, lo schedule viene segnato come parziale ma l'assegnazione prosegue.
      */
     /**
      * Aggiunge i medici necessari a una lista di medici assegnati per un {@link ConcreteShift} specifico,
