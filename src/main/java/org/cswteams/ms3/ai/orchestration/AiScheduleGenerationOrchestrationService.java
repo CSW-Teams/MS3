@@ -274,7 +274,7 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private SelectionResult persistCandidate(TransientComparisonState state, CandidateData candidate) {
-        if (!schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
+        if (schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
             return SelectionResult.duplicateRange("DUPLICATE_RANGE", "Schedule already exists for this date range.");
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);

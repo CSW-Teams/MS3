@@ -148,7 +148,7 @@ public interface ISchedulerController {
      *
      * @param startNewSchedule First date to be planned for a shift schedule
      * @param endNewSchedule Last date to be planned for a shift schedule
-     * @return False if there already exists a shift schedule for the dates we want to plan, true otherwise
+     * @return True if there already exists a shift schedule for the dates we want to plan, false otherwise
      */
     boolean alreadyExistsAnotherSchedule(LocalDate startNewSchedule, LocalDate endNewSchedule);
 }

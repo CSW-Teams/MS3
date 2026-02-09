@@ -696,7 +696,7 @@ public class SchedulerController implements ISchedulerController {
      * This method verifies the existence of a shift schedule for the dates we want to plan.
      * @param startNewSchedule First date to be planned for a shift schedule
      * @param endNewSchedule Last date to be planned for a shift schedule
-     * @return False if there already exists a shift schedule for the dates we want to plan, true otherwise
+     * @return True if there already exists a shift schedule for the dates we want to plan, false otherwise
      */
     public boolean alreadyExistsAnotherSchedule(LocalDate startNewSchedule, LocalDate endNewSchedule){
         List<Schedule> allSchedule = scheduleDAO.findAll();
