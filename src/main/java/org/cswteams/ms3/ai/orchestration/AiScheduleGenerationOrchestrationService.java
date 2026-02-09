@@ -275,7 +275,13 @@ public class AiScheduleGenerationOrchestrationService {
 
     private SelectionResult persistCandidate(TransientComparisonState state, CandidateData candidate) {
         if (schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
-            return SelectionResult.duplicateRange("DUPLICATE_RANGE", "Schedule already exists for this date range.");
+            Schedule candidateSchedule = candidate.schedule;
+            if (candidateSchedule != null && candidateSchedule.getId() != null
+                    && scheduleDAO.existsById(candidateSchedule.getId())) {
+                transientComparisonState.set(null);
+                return SelectionResult.persisted(candidateSchedule.getId());
+            }
+            removeExistingSchedulesForRange(state.startDate, state.endDate);
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);
         if (schedule == null) {
@@ -287,6 +293,20 @@ public class AiScheduleGenerationOrchestrationService {
         }
         transientComparisonState.set(null);
         return SelectionResult.persisted(persisted.getId());
+    }
+
+    private void removeExistingSchedulesForRange(LocalDate startDate, LocalDate endDate) {
+        List<Schedule> schedules = scheduleDAO.findAll();
+        for (Schedule schedule : schedules) {
+            if (schedule == null) {
+                continue;
+            }
+            LocalDate existingStart = LocalDate.ofEpochDay(schedule.getStartDate());
+            LocalDate existingEnd = LocalDate.ofEpochDay(schedule.getEndDate());
+            if (existingStart.equals(startDate) && existingEnd.equals(endDate)) {
+                scheduleDAO.delete(schedule);
+            }
+        }
     }
 
     private Schedule buildScheduleForCandidate(TransientComparisonState state, CandidateData candidate) {
