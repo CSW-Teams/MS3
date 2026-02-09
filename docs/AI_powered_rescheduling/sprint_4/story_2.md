@@ -164,8 +164,8 @@ Authorization: Bearer <XAI_API_KEY>
 ```
 **4.3.4 Formati supportati**
 
-⚠ **Grok/xAI** : endpoint/auth/formato ok, ma la parte “free plan con limiti” **va riformulata**
-perché la doc ufficiale parla di **crediti da caricare**.
+⚠ **Grok/xAI** : endpoint/auth/formato ok, ma la parte “free plan con limiti” **andrebbe riformulata**
+perché la doc ufficiale parla di **crediti da caricare**, quindi si è deciso di non utilizzarlo in favore di Llama-70B.
 
 ```
 ● La guida ufficiale “Getting Started” dice esplicitamente che per usare l’API devi
