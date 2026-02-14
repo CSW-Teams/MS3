@@ -22,7 +22,7 @@ services:
       - db
     build:
       context: .
-      dockerfile: ./src/main/resources/Dockerfile.backend
+      dockerfile: ./src/main/resources/Dockerfile.backend.debug
     environment:
       - SPRING_PROFILES_ACTIVE=container
       - DB_NAME=${DB_NAME}
