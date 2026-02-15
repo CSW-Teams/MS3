@@ -417,6 +417,41 @@ public class AiScheduleJsonParserTest {
         }
     }
 
+    @Test
+    public void parseVariants_roleCoveredAliasJunior_shouldMapToSpecialistJunior() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
+        String json = variantsJsonWithRoleCovered("JUNIOR");
+
+        AiScheduleVariantsResponseDto dto = parser.parseVariants(json);
+
+        assertEquals(Seniority.SPECIALIST_JUNIOR, dto.variants.get("EMPATHETIC").assignments.get(0).roleCovered);
+    }
+
+    @Test
+    public void parseVariants_unknownRoleCoveredAlias_shouldThrowTypeMismatch() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
+        String json = variantsJsonWithRoleCovered("MID");
+
+        try {
+            parser.parseVariants(json);
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
+            assertEquals(AiProtocolException.ErrorCode.TYPE_MISMATCH, ex.getCode());
+            assertTrue(ex.getMessage().contains("role_covered"));
+        }
+    }
+
+    @Test
+    public void parseVariants_roleCoveredCanonicalStructured_strictMode_shouldMapWithoutRegression() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
+        String json = variantsJsonWithRoleCovered("STRUCTURED");
+
+        AiScheduleVariantsResponseDto dto = parser.parseVariants(json);
+
+        assertEquals(Seniority.STRUCTURED, dto.variants.get("EFFICIENT").assignments.get(0).roleCovered);
+    }
+
 
     @Test
     public void parse_roleCoveredAliasJunior_shouldMapToSpecialistJunior() {
@@ -473,6 +508,10 @@ public class AiScheduleJsonParserTest {
                 + "\"BALANCED\":" + variantJson
                 + "}"
                 + "}";
+    }
+
+    private static String variantsJsonWithRoleCovered(String roleCovered) {
+        return variantsJson(validJson().replace("STRUCTURED", roleCovered));
     }
 
     private static String validJson() {
