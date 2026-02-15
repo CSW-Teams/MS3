@@ -134,7 +134,7 @@ https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api
 
 ```
 ● Endpoint: identico a Gemini (generateContent)
-● Autenticazione: API key Gemini
+● Autenticazione: API key Gemini via header x-goog-api-key (non come query parameter ?key=)
 ● Limiti: stessi del free plan Gemini
 ● Formato: JSON
 ```
@@ -789,8 +789,41 @@ The Agent Broker is the single entry point for AI agent calls. It abstracts prov
 #### Gemma (Gemini API)
 **Current implementation**
 - Uses `ai.broker.gemma-url` and `ai.broker.gemma-api-key`.
-- Sends prompt + TOON content in a single user message.
+- Sends prompt + TOON content in canonical `contents` order (first `role: "model"`, second `role: "user"`).
+- Sends API key in `x-goog-api-key` request header (not as `?key=` URL query parameter).
 - Expects JSON content inside `candidates[0].content.parts[0].text`.
+
+**Canonical Gemma request shape**
+```http
+POST {ai.broker.gemma-url}
+x-goog-api-key: {ai.broker.gemma-api-key}
+Content-Type: application/json
+```
+
+```json
+{
+  "contents": [
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "You are an AI scheduling assistant. Return only valid JSON."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "<PROMPT + TOON PAYLOAD>"
+        }
+      ]
+    }
+  ]
+}
+```
+
+`system_instruction` must not be used as a top-level field in this integration documentation; the canonical format is the `contents` array above.
 
 #### Llama‑70B (Groq/OpenAI‑compatible)
 **Current implementation**
@@ -814,6 +847,11 @@ ai.broker.total-timeout=90s
 ai.broker.max-retries=3
 ai.broker.retry-backoff=0ms
 ```
+
+Gemma configuration notes:
+- Keep property names unchanged: `ai.broker.gemma-url` and `ai.broker.gemma-api-key`.
+- `ai.broker.gemma-url` must be the bare endpoint and must **not** include `?key=`.
+- Authentication is provided only through the `x-goog-api-key` header.
 
 ### Timeout & Retry Policy
 **Current implementation**
