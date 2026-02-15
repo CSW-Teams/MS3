@@ -1,6 +1,7 @@
 package org.cswteams.ms3.ai.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.cswteams.ms3.enums.Seniority;
 
 public class AiAssignmentDto {
@@ -9,6 +10,7 @@ public class AiAssignmentDto {
     @JsonProperty("doctor_id")
     public Integer doctorId;
     @JsonProperty("role_covered")
+    @JsonDeserialize(using = AiRoleCoveredDeserializer.class)
     public Seniority roleCovered;
     @JsonProperty("is_forced")
     public Boolean isForced;
