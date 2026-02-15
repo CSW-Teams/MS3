@@ -111,6 +111,7 @@ public class AiScheduleGenerationOrchestrationService {
     private final DoctorUffaPriorityDAO doctorUffaPriorityDAO;
     private final DoctorHolidaysDAO doctorHolidaysDAO;
     private final ScheduleDAO scheduleDAO;
+    private final AiActiveConstraintResolver aiActiveConstraintResolver;
     private final AgentBroker agentBroker;
     private final AiReschedulingOrchestrationService aiReschedulingOrchestrationService;
     private final DecisionAlgorithmService decisionAlgorithmService;
@@ -125,6 +126,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     DoctorUffaPriorityDAO doctorUffaPriorityDAO,
                                                     DoctorHolidaysDAO doctorHolidaysDAO,
                                                     ScheduleDAO scheduleDAO,
+                                                    AiActiveConstraintResolver aiActiveConstraintResolver,
                                                     AgentBroker agentBroker,
                                                     AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
                                                     DecisionAlgorithmService decisionAlgorithmService,
@@ -135,6 +137,7 @@ public class AiScheduleGenerationOrchestrationService {
         this.doctorUffaPriorityDAO = doctorUffaPriorityDAO;
         this.doctorHolidaysDAO = doctorHolidaysDAO;
         this.scheduleDAO = scheduleDAO;
+        this.aiActiveConstraintResolver = aiActiveConstraintResolver;
         this.agentBroker = agentBroker;
         this.aiReschedulingOrchestrationService = aiReschedulingOrchestrationService;
         this.decisionAlgorithmService = decisionAlgorithmService;
@@ -334,7 +337,7 @@ public class AiScheduleGenerationOrchestrationService {
         List<DoctorHolidays> doctorHolidays = eligibleDoctorIds.isEmpty()
                 ? List.of()
                 : doctorHolidaysDAO.findByDoctor_IdIn(eligibleDoctorIds);
-        List<ToonActiveConstraint> activeConstraints = new ArrayList<>();
+        List<ToonActiveConstraint> activeConstraints = aiActiveConstraintResolver.resolve(doctors, scopedShifts);
         List<ToonFeedback> feedbacks = new ArrayList<>();
         logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} feedbacks_count={}",
                 startDate,

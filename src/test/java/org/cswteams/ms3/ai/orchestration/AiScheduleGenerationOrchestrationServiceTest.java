@@ -8,6 +8,7 @@ import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.audit.selection.AuditedSelectionResult;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
+import org.cswteams.ms3.control.toon.ToonActiveConstraint;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
@@ -68,6 +69,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
         ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
         AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
         RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
@@ -85,6 +87,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
 
         when(agentBroker.previewTokenBudget(any()))
                 .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.<ToonActiveConstraint>of());
         when(aiScheduleConverterService.convert(any())).thenReturn(List.of(concreteShift));
         when(decisionAlgorithmService.selectPreferredWithAudit(any()))
                 .thenReturn(new AuditedSelectionResult("standard", List.of()));
@@ -95,6 +98,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 doctorUffaPriorityDAO,
                 doctorHolidaysDAO,
                 scheduleDAO,
+                aiActiveConstraintResolver,
                 agentBroker,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
