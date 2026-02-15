@@ -17,6 +17,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.DoubleSupplier;
 
 /**
  * Transport-layer boundary for AI provider calls.
@@ -28,6 +30,9 @@ import java.util.Map;
 public class AgentBrokerImpl implements AgentBroker {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentBrokerImpl.class);
+    private static final long RATE_LIMIT_MIN_BACKOFF_MS = 1_000L;
+    private static final int RATE_LIMIT_BACKOFF_MULTIPLIER = 4;
+    private static final int RATE_LIMIT_RETRY_TOKEN_CUTOFF = 10_000;
     private final AiBrokerProperties properties;
     private final Map<AgentProvider, AgentProviderAdapter> adapters;
     private static final int TOKEN_BUDGET_LIMIT = 15000;
@@ -36,11 +41,12 @@ public class AgentBrokerImpl implements AgentBroker {
     private final AiScheduleResponseMapper mapper = new AiScheduleResponseMapper();
     private final AiTokenEstimator tokenEstimator;
     private final AiTokenUsageTracker tokenUsageTracker;
+    private final DoubleSupplier jitterSource;
 
     public AgentBrokerImpl(AiBrokerProperties properties,
                            List<AgentProviderAdapter> adapters,
                            AiScheduleJsonParser jsonParser) {
-        this(properties, adapters, jsonParser, new AiTokenEstimator(), new AiTokenUsageTracker());
+        this(properties, adapters, jsonParser, new AiTokenEstimator(), new AiTokenUsageTracker(), ThreadLocalRandom.current()::nextDouble);
     }
 
     AgentBrokerImpl(AiBrokerProperties properties,
@@ -48,10 +54,20 @@ public class AgentBrokerImpl implements AgentBroker {
                     AiScheduleJsonParser jsonParser,
                     AiTokenEstimator tokenEstimator,
                     AiTokenUsageTracker tokenUsageTracker) {
+        this(properties, adapters, jsonParser, tokenEstimator, tokenUsageTracker, ThreadLocalRandom.current()::nextDouble);
+    }
+
+    AgentBrokerImpl(AiBrokerProperties properties,
+                    List<AgentProviderAdapter> adapters,
+                    AiScheduleJsonParser jsonParser,
+                    AiTokenEstimator tokenEstimator,
+                    AiTokenUsageTracker tokenUsageTracker,
+                    DoubleSupplier jitterSource) {
         this.properties = properties;
         this.jsonParser = jsonParser;
         this.tokenEstimator = tokenEstimator;
         this.tokenUsageTracker = tokenUsageTracker;
+        this.jitterSource = jitterSource;
         this.adapters = new EnumMap<>(AgentProvider.class);
         for (AgentProviderAdapter adapter : adapters) {
             this.adapters.put(adapter.provider(), adapter);
@@ -122,6 +138,7 @@ public class AgentBrokerImpl implements AgentBroker {
         Duration totalTimeout = properties.getTotalTimeout();
         int maxRetries = properties.getMaxRetries();
         Duration backoff = properties.getRetryBackoff();
+        int estimatedInputTokens = tokenEstimator.estimateInputTokens(request);
         AiProtocolException lastException = null;
 
         for (int attempt = 0; attempt <= maxRetries; attempt++) {
@@ -156,7 +173,24 @@ public class AgentBrokerImpl implements AgentBroker {
             }
 
             if (attempt < maxRetries) {
-                sleep(backoff);
+                boolean rateLimited = isRateLimitedFailure(lastException);
+                if (rateLimited && estimatedInputTokens > RATE_LIMIT_RETRY_TOKEN_CUTOFF) {
+                    logger.warn("event=ai_broker_rate_limit_retry_skipped attempt={} correlation_id={} estimated_input_tokens={} retry_token_cutoff={}",
+                            attempt,
+                            request.getCorrelationId(),
+                            estimatedInputTokens,
+                            RATE_LIMIT_RETRY_TOKEN_CUTOFF);
+                    break;
+                }
+                Duration retryDelay = computeRetryDelay(backoff, attempt, rateLimited);
+                if (rateLimited) {
+                    logger.warn("event=ai_broker_rate_limit_backoff attempt={} correlation_id={} backoff_ms={} estimated_input_tokens={}",
+                            attempt,
+                            request.getCorrelationId(),
+                            retryDelay.toMillis(),
+                            estimatedInputTokens);
+                }
+                sleep(retryDelay);
             }
         }
 
@@ -205,7 +239,69 @@ public class AgentBrokerImpl implements AgentBroker {
         return Duration.between(start, Instant.now()).compareTo(totalTimeout) > 0;
     }
 
-    private static void sleep(Duration backoff) {
+    private Duration computeRetryDelay(Duration baseBackoff, int attempt, boolean rateLimited) {
+        if (!rateLimited) {
+            return normalizeBackoff(baseBackoff);
+        }
+
+        Duration normalized = normalizeBackoff(baseBackoff);
+        long baseMillis = Math.max(normalized.toMillis(), RATE_LIMIT_MIN_BACKOFF_MS);
+        long exponentialMillis = safeMultiply(baseMillis, 1L << Math.min(attempt, 30));
+        long pacedMillis = safeMultiply(exponentialMillis, RATE_LIMIT_BACKOFF_MULTIPLIER);
+        long jitterMillis = (long) (pacedMillis * Math.max(0D, jitterSource.getAsDouble()));
+        return Duration.ofMillis(safeAdd(pacedMillis, jitterMillis));
+    }
+
+    private static Duration normalizeBackoff(Duration backoff) {
+        if (backoff == null || backoff.isZero() || backoff.isNegative()) {
+            return Duration.ZERO;
+        }
+        return backoff;
+    }
+
+    private static long safeMultiply(long value, long factor) {
+        if (value <= 0 || factor <= 0) {
+            return 0;
+        }
+        if (value > Long.MAX_VALUE / factor) {
+            return Long.MAX_VALUE;
+        }
+        return value * factor;
+    }
+
+    private static long safeAdd(long left, long right) {
+        if (Long.MAX_VALUE - left < right) {
+            return Long.MAX_VALUE;
+        }
+        return left + right;
+    }
+
+    private static boolean isRateLimitedFailure(AiProtocolException exception) {
+        if (exception == null) {
+            return false;
+        }
+        if (containsRateLimitMarker(exception.getMessage())) {
+            return true;
+        }
+        Throwable cause = exception.getCause();
+        while (cause != null) {
+            if (containsRateLimitMarker(cause.getMessage())) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
+
+    private static boolean containsRateLimitMarker(String message) {
+        if (message == null) {
+            return false;
+        }
+        String normalized = message.toLowerCase();
+        return normalized.contains("429") || normalized.contains("too many requests") || normalized.contains("rate limit");
+    }
+
+    void sleep(Duration backoff) {
         if (backoff == null || backoff.isZero() || backoff.isNegative()) {
             return;
         }
