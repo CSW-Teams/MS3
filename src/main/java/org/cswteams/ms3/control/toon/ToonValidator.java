@@ -15,13 +15,18 @@ import java.util.Map;
 import java.util.Set;
 
 public class ToonValidator {
-    private static final List<String> REQUIRED_SECTION_MARKERS = List.of(
+    private static final List<String> REQUIRED_LEGACY_SECTION_MARKERS = List.of(
             "ctx:",
             "period:",
             "mode:",
             "shifts[",
-            "doctors[",
-            "active_constraints["
+            "doctors["
+    );
+    private static final List<String> REQUIRED_COMPACT_SECTION_MARKERS = List.of(
+            "ctx:{p:\"",
+            ",m:\"",
+            "sh[",
+            "dr["
     );
     private static final List<String> PII_MARKERS = List.of(
             "name:",
@@ -60,19 +65,53 @@ public class ToonValidator {
         validateFeedbacks(context.getFeedbacks(), context.getConcreteShifts(), context.getDoctors());
     }
 
-    public void postValidate(String toonPayload) {
+    public void postValidate(String toonPayload, ToonBuilder.SerializationMode mode) {
         if (toonPayload == null || toonPayload.trim().isEmpty()) {
             throw new ToonValidationException("Generated TOON payload is empty");
         }
-        for (String marker : REQUIRED_SECTION_MARKERS) {
+        ToonBuilder.SerializationMode selectedMode = mode == null
+                ? ToonBuilder.SerializationMode.LEGACY
+                : mode;
+        List<String> requiredMarkers = selectedMode == ToonBuilder.SerializationMode.COMPACT
+                ? REQUIRED_COMPACT_SECTION_MARKERS
+                : REQUIRED_LEGACY_SECTION_MARKERS;
+        for (String marker : requiredMarkers) {
             if (!toonPayload.contains(marker)) {
                 throw new ToonValidationException("Missing required TOON section: " + marker);
             }
         }
+        validateOptionalSectionCount(toonPayload,
+                selectedMode == ToonBuilder.SerializationMode.COMPACT ? "fb[" : "feedbacks[");
+        validateOptionalSectionCount(toonPayload,
+                selectedMode == ToonBuilder.SerializationMode.COMPACT ? "ac[" : "active_constraints[");
         for (String marker : PII_MARKERS) {
             if (toonPayload.contains(marker)) {
                 throw new ToonValidationException("PII marker found in TOON payload: " + marker);
             }
+        }
+    }
+
+    private void validateOptionalSectionCount(String toonPayload, String sectionMarker) {
+        int markerIndex = toonPayload.indexOf(sectionMarker);
+        if (markerIndex < 0) {
+            return;
+        }
+        int countStart = markerIndex + sectionMarker.length();
+        int countEnd = toonPayload.indexOf("]", countStart);
+        if (countEnd < 0) {
+            throw new ToonValidationException("Malformed TOON section header: " + sectionMarker);
+        }
+        String rawCount = toonPayload.substring(countStart, countEnd).trim();
+        if (rawCount.isEmpty()) {
+            throw new ToonValidationException("Missing TOON section count: " + sectionMarker);
+        }
+        try {
+            int count = Integer.parseInt(rawCount);
+            if (count < 0) {
+                throw new ToonValidationException("Negative TOON section count: " + sectionMarker);
+            }
+        } catch (NumberFormatException ex) {
+            throw new ToonValidationException("Invalid TOON section count: " + sectionMarker);
         }
     }
 

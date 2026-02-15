@@ -57,7 +57,7 @@ public class ToonBuilder {
                 context.getActiveConstraints() == null ? 0 : context.getActiveConstraints().size());
         SerializationMode selectedMode = mode == null ? SerializationMode.LEGACY : mode;
         String payload = selectedMode == SerializationMode.COMPACT ? serializeCompact(context) : serialize(context);
-        validator.postValidate(payload);
+        validator.postValidate(payload, selectedMode);
         logger.info("event=toon_payload_build_success payload_length={}", payload.length());
         return payload;
     }
