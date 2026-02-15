@@ -73,6 +73,10 @@ public class AiProtocolException extends RuntimeException {
         return new AiProtocolException(ErrorCategory.BUSINESS_DOMAIN, ErrorCode.TASK_RESOLUTION_ERROR, message, null);
     }
 
+    public static AiProtocolException tokenBudgetExceeded(String message) {
+        return new AiProtocolException(ErrorCategory.TRANSPORT, ErrorCode.TOKEN_BUDGET_EXCEEDED, message, null);
+    }
+
     public enum ErrorCategory { TRANSPORT, APPLICATION_SCHEMA, BUSINESS_DOMAIN }
 
     public enum ErrorCode {
@@ -85,6 +89,7 @@ public class AiProtocolException extends RuntimeException {
         PARTIAL_SUCCESS,
         ENTITY_NOT_FOUND,
         INVALID_FORMAT,
-        TASK_RESOLUTION_ERROR
+        TASK_RESOLUTION_ERROR,
+        TOKEN_BUDGET_EXCEEDED
     }
 }
