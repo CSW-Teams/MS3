@@ -45,9 +45,8 @@ public class GemmaAgentAdapter implements AgentProviderAdapter {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("x-goog-api-key", apiKey);
         HttpEntity<String> entity = new HttpEntity<>(payloadJson, headers);
-
-        url = String.format("%s?key=%s", url, apiKey);
 
         String response = restTemplate.postForObject(url, entity, String.class);
         if (response == null || response.isBlank()) {
