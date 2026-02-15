@@ -291,6 +291,45 @@ class ToonBuilderTest {
         assertTrue(legacy.contains("doctors[1]:"));
     }
 
+    @Test
+    void emitsCanonicalSpecialistRoleNamesInToonPayload() {
+        LocalDate periodStart = LocalDate.of(2026, 5, 20);
+        LocalDate periodEnd = LocalDate.of(2026, 5, 20);
+        Doctor juniorDoctor = newDoctor(20L, Seniority.SPECIALIST_JUNIOR);
+        Doctor seniorDoctor = newDoctor(21L, Seniority.SPECIALIST_SENIOR);
+        Shift shift = makeShift(
+                120L,
+                TimeSlot.MORNING,
+                LocalTime.of(8, 0),
+                Duration.ofMinutes(360)
+        );
+        ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
+
+        ToonRequestContext context = new ToonRequestContext(
+                periodStart,
+                periodEnd,
+                "generate",
+                List.of(concreteShift),
+                List.of(juniorDoctor, seniorDoctor),
+                List.of(new DoctorUffaPriority(juniorDoctor), new DoctorUffaPriority(seniorDoctor)),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        ToonBuilder builder = new ToonBuilder();
+        String legacy = builder.build(context);
+        String compact = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+
+        assertTrue(legacy.contains("  role: SPECIALIST_JUNIOR"));
+        assertTrue(legacy.contains("  role: SPECIALIST_SENIOR"));
+        assertFalse(legacy.contains("  role: JUNIOR"));
+
+        assertTrue(compact.contains("r:SPECIALIST_JUNIOR"));
+        assertTrue(compact.contains("r:SPECIALIST_SENIOR"));
+        assertFalse(compact.contains("r:JUNIOR"));
+    }
+
     private Doctor newDoctor(Long id, Seniority seniority) {
         Doctor doctor = new Doctor(
                 "Mario",

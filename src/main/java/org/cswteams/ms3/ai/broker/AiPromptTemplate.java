@@ -30,6 +30,7 @@ public final class AiPromptTemplate {
         if (instructions != null && !instructions.trim().isEmpty()) {
             builder.append("Instructions:\n").append(instructions.trim()).append("\n\n");
         }
+        builder.append("Vocabulary rule: TOON_INPUT doctors[*].role uses the same enum naming as assignments[*].role_covered (STRUCTURED, SPECIALIST_JUNIOR, SPECIALIST_SENIOR).\n\n");
         builder.append("TOON_INPUT:\n").append(toonPayload == null ? "" : toonPayload);
         return builder.toString();
     }
