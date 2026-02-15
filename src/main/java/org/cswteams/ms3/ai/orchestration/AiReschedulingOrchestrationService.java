@@ -46,8 +46,19 @@ public class AiReschedulingOrchestrationService {
         if (aiActiveConstraintResolver == null) {
             return List.of();
         }
-        List<ToonActiveConstraint> resolvedConstraints = aiActiveConstraintResolver.resolve(doctors, concreteShifts);
+        AiActiveConstraintResolver.ResolveResult resolveResult = aiActiveConstraintResolver
+                .resolveWithReport(doctors, concreteShifts, false);
+        List<ToonActiveConstraint> resolvedConstraints = resolveResult.getResolvedConstraints();
         return resolvedConstraints == null ? List.of() : resolvedConstraints;
+    }
+
+    public AiActiveConstraintResolver.ResolveResult resolveActiveConstraintsWithReport(List<Doctor> doctors,
+                                                                                       List<ConcreteShift> concreteShifts,
+                                                                                       boolean failFastPolicy) {
+        if (aiActiveConstraintResolver == null) {
+            return new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0);
+        }
+        return aiActiveConstraintResolver.resolveWithReport(doctors, concreteShifts, failFastPolicy);
     }
 
     public AiReschedulingToonRequest buildToonRequestContext(LocalDate periodStart,

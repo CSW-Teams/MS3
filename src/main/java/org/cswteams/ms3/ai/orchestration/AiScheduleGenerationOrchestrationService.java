@@ -41,7 +41,6 @@ import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.toon.ToonActiveConstraint;
 import org.cswteams.ms3.control.toon.ToonBuilder;
-import org.cswteams.ms3.control.toon.ToonConstraintType;
 import org.cswteams.ms3.control.toon.ToonFeedback;
 import org.cswteams.ms3.control.toon.ToonRequestContext;
 import org.cswteams.ms3.dao.DoctorDAO;
@@ -335,29 +334,23 @@ public class AiScheduleGenerationOrchestrationService {
         List<DoctorHolidays> doctorHolidays = eligibleDoctorIds.isEmpty()
                 ? List.of()
                 : doctorHolidaysDAO.findByDoctor_IdIn(eligibleDoctorIds);
-        List<ToonActiveConstraint> resolvedActiveConstraints = aiReschedulingOrchestrationService
-                .resolveActiveConstraints(doctors, scopedShifts);
-        int hardConstraintsCount = 0;
-        int softConstraintsCount = 0;
-        for (ToonActiveConstraint constraint : resolvedActiveConstraints) {
-            if (constraint == null || constraint.getType() == null) {
-                continue;
-            }
-            if (constraint.getType() == ToonConstraintType.HARD) {
-                hardConstraintsCount++;
-            } else if (constraint.getType() == ToonConstraintType.SOFT) {
-                softConstraintsCount++;
-            }
-        }
+        AiActiveConstraintResolver.ResolveResult constraintResolveResult = aiReschedulingOrchestrationService
+                .resolveActiveConstraintsWithReport(doctors, scopedShifts, false);
+        List<ToonActiveConstraint> resolvedActiveConstraints = constraintResolveResult.getResolvedConstraints();
+        int hardConstraintsCount = constraintResolveResult.getHardConstraintsCount();
+        int softConstraintsCount = constraintResolveResult.getSoftConstraintsCount();
+        int skippedConstraintsCount = constraintResolveResult.getSkippedConstraints();
         List<ToonFeedback> feedbacks = new ArrayList<>();
-        logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} constraints_hard_count={} constraints_soft_count={} feedbacks_count={}",
+        logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} constraints_resolved_count={} constraints_skipped_count={} constraints_hard_count={} constraints_soft_count={} feedbacks_count={}",
                 startDate,
                 endDate,
                 scopedShifts.size(),
                 doctors.size(),
                 priorities.size(),
                 doctorHolidays.size(),
+                resolvedActiveConstraints.size() + skippedConstraintsCount,
                 resolvedActiveConstraints.size(),
+                skippedConstraintsCount,
                 hardConstraintsCount,
                 softConstraintsCount,
                 feedbacks.size());

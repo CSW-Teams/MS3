@@ -39,22 +39,41 @@ public class AiActiveConstraintResolver {
     }
 
     public List<ToonActiveConstraint> resolve(List<Doctor> doctors, List<ConcreteShift> concreteShifts) {
+        return resolveWithReport(doctors, concreteShifts, false).getResolvedConstraints();
+    }
+
+    public ResolveResult resolveWithReport(List<Doctor> doctors,
+                                           List<ConcreteShift> concreteShifts,
+                                           boolean failFastPolicy) {
         List<Constraint> constraints = constraintDAO.findAll();
         List<ToonActiveConstraint> mapped = new ArrayList<>();
+        int skippedConstraints = 0;
+        int hardConstraintsCount = 0;
+        int softConstraintsCount = 0;
         for (Constraint constraint : constraints) {
             ToonActiveConstraint activeConstraint = mapConstraint(constraint, doctors, concreteShifts);
             if (activeConstraint != null) {
                 mapped.add(activeConstraint);
+                if (activeConstraint.getType() == ToonConstraintType.HARD) {
+                    hardConstraintsCount++;
+                } else if (activeConstraint.getType() == ToonConstraintType.SOFT) {
+                    softConstraintsCount++;
+                }
+            } else {
+                skippedConstraints++;
+                if (failFastPolicy) {
+                    throw new IllegalStateException("Fail-fast policy enabled: unusable active constraint detected.");
+                }
             }
         }
-        return mapped;
+        return new ResolveResult(mapped, skippedConstraints, hardConstraintsCount, softConstraintsCount);
     }
 
     private ToonActiveConstraint mapConstraint(Constraint constraint,
                                                List<Doctor> doctors,
                                                List<ConcreteShift> concreteShifts) {
         if (constraint == null) {
-            logger.warn("event=ai_constraint_mapping_skipped reason=null_constraint");
+            logger.warn("event=ai_constraint_mapping_skipped reason=null_constraint constraint_id={}", (Object) null);
             return null;
         }
 
@@ -80,6 +99,23 @@ public class AiActiveConstraintResolver {
                 : constraint.getDescription().trim();
 
         ToonConstraintType type = constraint.isViolable() ? ToonConstraintType.SOFT : ToonConstraintType.HARD;
+        if (type == null) {
+            logger.warn("event=ai_constraint_mapping_skipped reason=missing_required_field constraint_id={} field=type", constraint.getId());
+            return null;
+        }
+        if (entityType == null) {
+            logger.warn("event=ai_constraint_mapping_skipped reason=missing_required_field constraint_id={} field=entityType", constraint.getId());
+            return null;
+        }
+        if (entityId.trim().isEmpty()) {
+            logger.warn("event=ai_constraint_mapping_skipped reason=missing_required_field constraint_id={} field=entityId", constraint.getId());
+            return null;
+        }
+        if (reason.isEmpty()) {
+            logger.warn("event=ai_constraint_mapping_skipped reason=missing_required_field constraint_id={} field=reason", constraint.getId());
+            return null;
+        }
+
         return new ToonActiveConstraint(type,
                 entityType,
                 entityId,
@@ -175,5 +211,38 @@ public class AiActiveConstraintResolver {
         }
 
         return params;
+    }
+
+    public static class ResolveResult {
+        private final List<ToonActiveConstraint> resolvedConstraints;
+        private final int skippedConstraints;
+        private final int hardConstraintsCount;
+        private final int softConstraintsCount;
+
+        ResolveResult(List<ToonActiveConstraint> resolvedConstraints,
+                      int skippedConstraints,
+                      int hardConstraintsCount,
+                      int softConstraintsCount) {
+            this.resolvedConstraints = resolvedConstraints;
+            this.skippedConstraints = skippedConstraints;
+            this.hardConstraintsCount = hardConstraintsCount;
+            this.softConstraintsCount = softConstraintsCount;
+        }
+
+        public List<ToonActiveConstraint> getResolvedConstraints() {
+            return resolvedConstraints;
+        }
+
+        public int getSkippedConstraints() {
+            return skippedConstraints;
+        }
+
+        public int getHardConstraintsCount() {
+            return hardConstraintsCount;
+        }
+
+        public int getSoftConstraintsCount() {
+            return softConstraintsCount;
+        }
     }
 }
