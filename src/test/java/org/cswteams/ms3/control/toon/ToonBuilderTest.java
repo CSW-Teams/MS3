@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ToonBuilderTest {
 
@@ -218,6 +219,75 @@ class ToonBuilderTest {
         assertFalse(output.contains("Mario"));
         assertFalse(output.contains("Rossi"));
         assertFalse(output.contains("@"));
+    }
+
+    @Test
+    void buildsCompactPayloadForAiWithEquivalentRequiredDataAndSmallerOutput() {
+        LocalDate periodStart = LocalDate.of(2026, 5, 20);
+        LocalDate periodEnd = LocalDate.of(2026, 5, 22);
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+
+        DoctorUffaPriority priority = new DoctorUffaPriority(doctor);
+        priority.setGeneralPriority(11);
+        priority.setNightPriority(13);
+        priority.setLongShiftPriority(7);
+
+        doctor.getPreferenceList().add(new Preference(periodStart, Set.of(TimeSlot.MORNING, TimeSlot.NIGHT), List.of(doctor)));
+        doctor.getPreferenceList().add(new Preference(periodStart.plusDays(1), Set.of(TimeSlot.MORNING, TimeSlot.NIGHT), List.of(doctor)));
+        doctor.getPreferenceList().add(new Preference(periodStart.plusDays(2), Set.of(TimeSlot.AFTERNOON), List.of(doctor)));
+
+        Shift shift = makeShift(
+                101L,
+                TimeSlot.NIGHT,
+                LocalTime.of(20, 0),
+                Duration.ofMinutes(720)
+        );
+        ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
+        String shiftId = ToonBuilder.shiftIdFor(concreteShift);
+
+        ToonActiveConstraint emptyParamsConstraint = new ToonActiveConstraint(
+                ToonConstraintType.HARD,
+                ToonConstraintEntityType.DOCTOR,
+                String.valueOf(doctor.getId()),
+                "MAX_CONSECUTIVE_NIGHTS",
+                Map.of()
+        );
+
+        ToonRequestContext context = new ToonRequestContext(
+                periodStart,
+                periodEnd,
+                "generate",
+                List.of(concreteShift),
+                List.of(doctor),
+                List.of(priority),
+                List.of(),
+                List.of(emptyParamsConstraint),
+                List.of()
+        );
+
+        ToonBuilder builder = new ToonBuilder();
+        String legacy = builder.build(context);
+        String compact = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+
+        assertTrue(compact.length() < legacy.length());
+        assertFalse(compact.contains("#"));
+        assertFalse(compact.contains("feedbacks["));
+        assertFalse(compact.contains("fb["));
+
+        assertTrue(compact.contains("ctx:{p:\"2026-05-20/2026-05-22\",m:\"generate\"}"));
+        assertTrue(compact.contains("sh[1]{i,s,d,u,rs,rj}:"));
+        assertTrue(compact.contains(shiftId + ",NIGHT,2026-05-20,720,1,0"));
+        assertTrue(compact.contains("-i:10"));
+        assertTrue(compact.contains("r:STRUCTURED"));
+        assertTrue(compact.contains("pr:11,13,7"));
+        assertTrue(compact.contains("b[2]{s,e,t}:"));
+        assertTrue(compact.contains("-2026-05-20,2026-05-21,[\"MORNING\",\"NIGHT\"]"));
+        assertTrue(compact.contains("-2026-05-22,2026-05-22,[\"AFTERNOON\"]"));
+        assertTrue(compact.contains("ac[1]{t,e,i,r,p}:\nHARD,DOCTOR,10,MAX_CONSECUTIVE_NIGHTS\n"));
+
+        assertTrue(legacy.contains("feedbacks[0]") || !legacy.contains("feedbacks["));
+        assertTrue(legacy.contains(shiftId));
+        assertTrue(legacy.contains("doctors[1]:"));
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {
