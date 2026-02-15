@@ -75,6 +75,48 @@ public class AiScheduleJsonParserTest {
     }
 
     @Test
+    public void parseVariants_arrayEnvelope_missingLabel_shouldThrowSchemaMismatch() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser();
+        String json = "{"
+                + "\"variants\":["
+                + "{\"variant\":" + validJson() + "},"
+                + "{\"label\":\"EFFICIENT\",\"variant\":" + validJson() + "},"
+                + "{\"label\":\"BALANCED\",\"variant\":" + validJson() + "}"
+                + "]"
+                + "}";
+
+        assertSchemaMismatch(parser, json);
+    }
+
+    @Test
+    public void parseVariants_arrayEnvelope_duplicateLabel_shouldThrowSchemaMismatch() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser();
+        String json = "{"
+                + "\"variants\":["
+                + "{\"label\":\"EMPATHETIC\",\"variant\":" + validJson() + "},"
+                + "{\"label\":\"EMPATHETIC\",\"variant\":" + validJson() + "},"
+                + "{\"label\":\"BALANCED\",\"variant\":" + validJson() + "}"
+                + "]"
+                + "}";
+
+        assertSchemaMismatch(parser, json);
+    }
+
+    @Test
+    public void parseVariants_arrayEnvelope_unexpectedLabel_shouldThrowSchemaMismatch() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser();
+        String json = "{"
+                + "\"variants\":["
+                + "{\"label\":\"EMPATHETIC\",\"variant\":" + validJson() + "},"
+                + "{\"label\":\"EFFICIENT\",\"variant\":" + validJson() + "},"
+                + "{\"label\":\"EXTRA\",\"variant\":" + validJson() + "}"
+                + "]"
+                + "}";
+
+        assertSchemaMismatch(parser, json);
+    }
+
+    @Test
     public void parseVariants_multipleLabelsMissingRequired_shouldThrowSchemaMismatch() {
         AiScheduleJsonParser parser = new AiScheduleJsonParser();
         String json = "{"
@@ -383,6 +425,16 @@ public class AiScheduleJsonParserTest {
             assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
             assertEquals(AiProtocolException.ErrorCode.TYPE_MISMATCH, ex.getCode());
             assertTrue(ex.getMessage().contains(expectedPath));
+        }
+    }
+
+    private static void assertSchemaMismatch(AiScheduleJsonParser parser, String json) {
+        try {
+            parser.parseVariants(json);
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
+            assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
         }
     }
 

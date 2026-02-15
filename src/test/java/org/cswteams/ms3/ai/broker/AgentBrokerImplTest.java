@@ -336,6 +336,31 @@ public class AgentBrokerImplTest {
     }
 
     @Test
+    public void requestSchedule_shouldNormalizeArrayEnvelopeAndAccessVariantsByLabel() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(0);
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(gemmaAdapter.execute(request)).thenReturn(arrayVariantsJson());
+
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser()
+        );
+
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
+
+        assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
+        assertEquals(AiStatus.SUCCESS, response.getVariant("EFFICIENT").getStatus());
+        assertEquals(AiStatus.SUCCESS, response.getVariant("BALANCED").getStatus());
+    }
+
+    @Test
     public void previewTokenBudget_shouldNotRecordUsage() {
         AiBrokerProperties properties = new AiBrokerProperties();
         properties.setProvider(AgentProvider.GEMMA);
@@ -414,6 +439,31 @@ public class AgentBrokerImplTest {
                 + "\"uffa_delta\":[]"
                 + "}"
                 + "}"
+                + "}";
+    }
+
+    private static String arrayVariantsJson() {
+        return "{"
+                + "\"variants\":["
+                + "{\"label\":\"EMPATHETIC\",\"variant\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}},"
+                + "{\"label\":\"EFFICIENT\",\"variant\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}},"
+                + "{\"label\":\"BALANCED\",\"variant\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}}"
+                + "]"
                 + "}";
     }
 
