@@ -62,6 +62,11 @@ Variant intent:
 - EFFICIENT: Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance.
 - BALANCED: Balance well-being and operational efficiency with soft-constraint tradeoffs.
 
+Constraint handling (from `active_constraints`):
+- HARD constraints: must never be violated in assignments.
+- SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
+- Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).
+
 Hard validation constraints (must match parser/validator expectations):
 - Response is a single JSON object.
 - Required top-level section: "variants".
