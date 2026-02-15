@@ -5,14 +5,11 @@ import org.cswteams.ms3.ai.protocol.AiScheduleSemanticValidator;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
-import org.cswteams.ms3.ai.protocol.dto.AiScheduleVariantsResponseDto;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
-import org.cswteams.ms3.dao.TaskDAO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
-import org.cswteams.ms3.enums.TaskEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +19,6 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 public class AiScheduleConverterService {
@@ -31,23 +27,20 @@ public class AiScheduleConverterService {
     private final AiScheduleSemanticValidator semanticValidator;
     private final DoctorDAO doctorDAO;
     private final ShiftDAO shiftDAO;
-    private final TaskDAO taskDAO;
 
     // Pattern to extract shift ID and date from AI's shift_id format (S_<id>_<yyyyMMdd>)
-    private static final Pattern SHIFT_ID_PATTERN = Pattern.compile("^S_([A-Za-z0-9]+)_(\\\\d{8})$");
+    private static final Pattern SHIFT_ID_PATTERN = Pattern.compile("^S_([A-Za-z0-9]+)_(\\d{8})$");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
 
     @Autowired
     public AiScheduleConverterService(AiScheduleJsonParser jsonParser,
                                       AiScheduleSemanticValidator semanticValidator,
                                       DoctorDAO doctorDAO,
-                                      ShiftDAO shiftDAO,
-                                      TaskDAO taskDAO) {
+                                      ShiftDAO shiftDAO) {
         this.jsonParser = jsonParser;
         this.semanticValidator = semanticValidator;
         this.doctorDAO = doctorDAO;
         this.shiftDAO = shiftDAO;
-        this.taskDAO = taskDAO;
     }
 
     /**
@@ -67,27 +60,6 @@ public class AiScheduleConverterService {
 
         // 3. Map AiAssignmentDto to ConcreteShift entities with DoctorAssignments
         return mapAssignmentsToConcreteShifts(aiResponseDto.assignments);
-    }
-
-    /**
-     * Converts a multi-variant JSON response into internal ConcreteShift lists for each variant.
-     *
-     * @param jsonResponse The raw JSON string from the AI containing variants.
-     * @return A map keyed by variant label with the corresponding ConcreteShift entities.
-     * @throws AiProtocolException if parsing, validation, or conversion fails.
-     */
-    public Map<String, List<ConcreteShift>> convertVariants(String jsonResponse) {
-        AiScheduleVariantsResponseDto variantsDto = jsonParser.parseVariants(jsonResponse);
-        Map<String, List<ConcreteShift>> converted = new LinkedHashMap<>();
-        for (String label : AiScheduleJsonParser.requiredVariantLabels()) {
-            AiScheduleResponseDto variant = variantsDto.variants.get(label);
-            if (variant == null) {
-                throw AiProtocolException.schemaMismatch("AI response missing variant " + label, null);
-            }
-            semanticValidator.validate(variant);
-            converted.put(label, mapAssignmentsToConcreteShifts(variant.assignments));
-        }
-        return converted;
     }
 
     /**
@@ -190,21 +162,11 @@ public class AiScheduleConverterService {
             throw AiProtocolException.taskResolutionError(
                     "No task found for doctor seniority " + doctorSeniority + " in shift template " + shiftTemplate.getId()
             );
-        } else if (new HashSet<>(candidateTasks).size() > 1) {
-            // Check if there are multiple *distinct* tasks for the same seniority within this shift
-            // This indicates an ambiguity that the AI response (AiAssignmentDto) doesn't resolve.
-            String tasks = candidateTasks.stream().map(t -> t.getTaskType().name()).collect(Collectors.joining(", "));
-            throw AiProtocolException.taskResolutionError(
-                    "Ambiguous task resolution for doctor seniority " + doctorSeniority +
-                            " in shift template " + shiftTemplate.getId() + ". Multiple tasks found: " + tasks +
-                            ". AI response needs to specify the task."
-            );
         }
 
         // Return the unique task
         return candidateTasks.get(0);
     }
-
 
     // Helper record for parsing AI's composite shift ID
     private static class ParsedShiftId {
@@ -216,12 +178,5 @@ public class AiScheduleConverterService {
             this.assignmentDate = assignmentDate;
         }
 
-        public String shiftTemplateId() {
-            return shiftTemplateId;
-        }
-
-        public LocalDate assignmentDate() {
-            return assignmentDate;
-        }
     }
 }
