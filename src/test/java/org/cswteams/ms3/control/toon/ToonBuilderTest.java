@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -267,7 +268,7 @@ class ToonBuilderTest {
 
         ToonBuilder builder = new ToonBuilder();
         String legacy = builder.build(context);
-        String compact = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+        String compact = assertDoesNotThrow(() -> builder.build(context, ToonBuilder.SerializationMode.COMPACT));
 
         assertTrue(compact.length() < legacy.length());
         assertFalse(compact.contains("#"));
