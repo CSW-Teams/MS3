@@ -341,7 +341,7 @@ public class AiScheduleGenerationOrchestrationService {
 
         ToonRequestContext context = request.getToonRequestContext();
         ToonBuilder builder = new ToonBuilder();
-        return builder.build(context);
+        return builder.build(context, ToonBuilder.SerializationMode.COMPACT);
     }
 
     private CandidateData buildStandardCandidate(Schedule schedule, DecisionMetricValues metrics) {
