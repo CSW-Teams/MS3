@@ -110,6 +110,62 @@ class AiReschedulingOrchestrationServiceTest {
         assertTrue(payload.contains("HARD, DOCTOR, 1, REST_PERIOD, { \"until\": \"2026-05-21T08:00:00Z\" }\n"));
     }
 
+
+    @Test
+    void filtersOutNonEligibleDoctorsFromPriorityAndHolidayInput() {
+        LocalDate periodStart = LocalDate.of(2026, 7, 10);
+        LocalDate periodEnd = LocalDate.of(2026, 7, 11);
+
+        Doctor eligibleDoctor = newDoctor(21L, Seniority.STRUCTURED);
+        Doctor nonEligibleDoctor = newDoctor(22L, Seniority.SPECIALIST_JUNIOR);
+
+        DoctorUffaPriority eligiblePriority = new DoctorUffaPriority(eligibleDoctor);
+        eligiblePriority.setGeneralPriority(5);
+        DoctorUffaPriority nonEligiblePriority = new DoctorUffaPriority(nonEligibleDoctor);
+        nonEligiblePriority.setGeneralPriority(99);
+
+        Holiday holiday = new Holiday();
+        holiday.setId(701L);
+        DoctorHolidays eligibleHolidays = new DoctorHolidays(eligibleDoctor, new HashMap<>(Map.of(holiday, true)));
+        DoctorHolidays nonEligibleHolidays = new DoctorHolidays(nonEligibleDoctor, new HashMap<>(Map.of(holiday, false)));
+
+        Shift shift = makeShift(
+                303L,
+                TimeSlot.AFTERNOON,
+                LocalTime.of(14, 0),
+                Duration.ofMinutes(480)
+        );
+        ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
+
+        RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
+        when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+                .thenReturn(List.of());
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao);
+
+        AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
+                periodStart,
+                periodEnd,
+                "generate",
+                List.of(concreteShift),
+                List.of(eligibleDoctor),
+                List.of(eligiblePriority, nonEligiblePriority),
+                List.of(eligibleHolidays, nonEligibleHolidays),
+                List.of(),
+                List.of()
+        );
+
+        ToonRequestContext context = toonRequest.getToonRequestContext();
+        assertEquals(1, context.getDoctors().size());
+        assertEquals(1, context.getDoctorUffaPriorities().size());
+        assertEquals(1, context.getDoctorHolidays().size());
+
+        ToonBuilder builder = new ToonBuilder();
+        String payload = builder.build(context);
+        assertNotNull(payload);
+        assertTrue(payload.contains("- id: 1\n"));
+        assertFalse(payload.contains("- id: 2\n"));
+    }
+
     @Test
     void includesScheduleFeedbacksInToonPayload() {
         LocalDate periodStart = LocalDate.of(2026, 6, 1);

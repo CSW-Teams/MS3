@@ -11,5 +11,6 @@ public interface DoctorHolidaysDAO extends JpaRepository<DoctorHolidays,Long> {
 
     List<DoctorHolidays> findAll();
     DoctorHolidays findByDoctor_Id(Long id);
+    List<DoctorHolidays> findByDoctor_IdIn(List<Long> doctorIds);
 
 }

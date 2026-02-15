@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class AiReschedulingOrchestrationService {
@@ -50,10 +52,34 @@ public class AiReschedulingOrchestrationService {
             resolvedFeedbacks.addAll(feedbacks);
         }
         resolvedFeedbacks.addAll(loadScheduleFeedbacks(periodStart, periodEnd));
+        List<Doctor> scopedDoctors = doctors == null ? List.of() : doctors;
+        Set<Long> scopedDoctorIds = new HashSet<>();
+        for (Doctor doctor : scopedDoctors) {
+            if (doctor != null && doctor.getId() != null) {
+                scopedDoctorIds.add(doctor.getId());
+            }
+        }
+        List<DoctorUffaPriority> scopedPriorities = new ArrayList<>();
+        if (doctorUffaPriorities != null) {
+            for (DoctorUffaPriority priority : doctorUffaPriorities) {
+                if (priority != null && priority.getDoctor() != null && scopedDoctorIds.contains(priority.getDoctor().getId())) {
+                    scopedPriorities.add(priority);
+                }
+            }
+        }
+        List<DoctorHolidays> scopedHolidays = new ArrayList<>();
+        if (doctorHolidays != null) {
+            for (DoctorHolidays holidays : doctorHolidays) {
+                if (holidays != null && holidays.getDoctor() != null && scopedDoctorIds.contains(holidays.getDoctor().getId())) {
+                    scopedHolidays.add(holidays);
+                }
+            }
+        }
+
         ToonPseudonymizationResult pseudonymized = pseudonymizationMapper.pseudonymize(
-                doctors,
-                doctorUffaPriorities,
-                doctorHolidays,
+                scopedDoctors,
+                scopedPriorities,
+                scopedHolidays,
                 activeConstraints,
                 resolvedFeedbacks
         );
