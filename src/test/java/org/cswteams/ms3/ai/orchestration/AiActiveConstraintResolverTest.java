@@ -13,6 +13,7 @@ import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.entity.constraint.AdditionalConstraint;
 import org.cswteams.ms3.entity.constraint.Constraint;
+import org.cswteams.ms3.entity.constraint.ConstraintHoliday;
 import org.cswteams.ms3.entity.constraint.ConstraintMaxOrePeriodo;
 import org.cswteams.ms3.entity.constraint.ConstraintNumeroDiRuoloTurno;
 import org.cswteams.ms3.enums.Seniority;
@@ -35,6 +36,34 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class AiActiveConstraintResolverTest {
+
+    @Test
+    void resolveMapsViolableFlagToSoftAndHardTypes() {
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+
+        ConstraintHoliday softConstraint = new ConstraintHoliday();
+        softConstraint.setId(31L);
+        softConstraint.setDescription("Soft holiday preference");
+        softConstraint.setViolable(true);
+
+        ConstraintHoliday hardConstraint = new ConstraintHoliday();
+        hardConstraint.setId(32L);
+        hardConstraint.setDescription("Hard holiday rule");
+        hardConstraint.setViolable(false);
+
+        when(constraintDAO.findAll()).thenReturn(List.of(softConstraint, hardConstraint));
+
+        AiActiveConstraintResolver resolver = new AiActiveConstraintResolver(constraintDAO);
+
+        List<ToonActiveConstraint> mapped = resolver.resolve(
+                List.of(newDoctor(9L)),
+                List.of(newShift(200L, LocalDate.of(2026, 2, 1)))
+        );
+
+        assertEquals(2, mapped.size());
+        assertEquals(ToonConstraintType.SOFT, mapped.get(0).getType());
+        assertEquals(ToonConstraintType.HARD, mapped.get(1).getType());
+    }
 
     @Test
     void resolveMapsSupportedConstraintsWithDeterministicFields() {
