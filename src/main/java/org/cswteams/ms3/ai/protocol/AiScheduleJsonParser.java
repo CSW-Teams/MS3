@@ -141,20 +141,8 @@ public class AiScheduleJsonParser {
     }
 
     private static void validateVariantLabels(AiScheduleVariantsResponseDto dto) {
-        if (dto == null || dto.variants == null) {
+        if (dto == null || dto.variants == null || dto.variants.isEmpty()) {
             throw AiProtocolException.schemaMismatch("AI response missing variants", null);
-        }
-        List<String> missing = new ArrayList<>();
-        for (String label : REQUIRED_VARIANT_LABELS) {
-            if (!dto.variants.containsKey(label)) {
-                missing.add(label);
-            }
-        }
-        if (!missing.isEmpty()) {
-            throw AiProtocolException.schemaMismatch(
-                    "AI response missing variants: " + String.join(", ", missing),
-                    null
-            );
         }
 
         List<String> unexpected = new ArrayList<>();

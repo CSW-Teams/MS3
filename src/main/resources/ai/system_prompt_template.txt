@@ -3,8 +3,9 @@ Return one JSON object only (no markdown, no commentary).
 
 Output contract:
 - Top-level field required: "variants".
-- "variants" must contain exactly these labels: "EMPATHETIC", "EFFICIENT", "BALANCED".
-- Every label must map to the same canonical variant_schema below.
+- "variants" must contain only allowed labels: "EMPATHETIC", "EFFICIENT", "BALANCED".
+- If user instructions request a single label, return exactly that one label only.
+- Every returned label must map to the same canonical variant_schema below.
 
 variant_schema:
 {
@@ -62,6 +63,6 @@ Variant intent:
 Hard validation constraints (must match parser/validator expectations):
 - Response is a single JSON object.
 - Required top-level section: "variants".
-- Required variant labels: "EMPATHETIC", "EFFICIENT", "BALANCED" (no extras).
+- Required variant labels: one or more of "EMPATHETIC", "EFFICIENT", "BALANCED" (no extras).
 - Required fields per variant: "status", "metadata", "assignments", "uncovered_shifts", "uffa_delta".
 - Field names must match exactly; do not rename or wrap required sections.

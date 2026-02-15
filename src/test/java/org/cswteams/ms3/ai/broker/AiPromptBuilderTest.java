@@ -20,7 +20,7 @@ public class AiPromptBuilderTest {
             "You are an AI scheduling agent.",
             "Return one JSON object only",
             "Top-level field required: \"variants\"",
-            "must contain exactly these labels: \"EMPATHETIC\", \"EFFICIENT\", \"BALANCED\"",
+            "must contain only allowed labels: \"EMPATHETIC\", \"EFFICIENT\", \"BALANCED\"",
             "canonical variant_schema",
             "Required fields per variant: \"status\", \"metadata\", \"assignments\", \"uncovered_shifts\", \"uffa_delta\"",
             "Field names must match exactly"

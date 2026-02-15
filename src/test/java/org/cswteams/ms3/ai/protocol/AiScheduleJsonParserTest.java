@@ -38,22 +38,19 @@ public class AiScheduleJsonParserTest {
     }
 
     @Test
-    public void parseVariants_missingLabel_shouldThrowSchemaMismatch() {
+    public void parseVariants_singleLabelEnvelope_shouldReturnDto() {
         AiScheduleJsonParser parser = new AiScheduleJsonParser();
         String json = "{"
                 + "\"variants\":{"
-                + "\"EMPATHETIC\":" + validJson() + ","
-                + "\"EFFICIENT\":" + validJson()
+                + "\"EMPATHETIC\":" + validJson()
                 + "}"
                 + "}";
 
-        try {
-            parser.parseVariants(json);
-            fail("Expected AiProtocolException");
-        } catch (AiProtocolException ex) {
-            assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
-            assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
-        }
+        AiScheduleVariantsResponseDto dto = parser.parseVariants(json);
+
+        assertNotNull(dto);
+        assertEquals(1, dto.variants.size());
+        assertTrue(dto.variants.containsKey("EMPATHETIC"));
     }
 
     @Test

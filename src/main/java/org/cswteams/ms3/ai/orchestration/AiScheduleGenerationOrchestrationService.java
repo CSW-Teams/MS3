@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.ai.broker.AgentBroker;
 import org.cswteams.ms3.ai.broker.AiBrokerRequest;
+import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
 import org.cswteams.ms3.ai.broker.domain.AiAssignment;
 import org.cswteams.ms3.ai.broker.domain.AiMetadata;
 import org.cswteams.ms3.ai.broker.domain.AiMetrics;
@@ -86,16 +87,20 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
+    private static final String BASE_VARIANT_INSTRUCTION = "Return only one variant under variants using the requested label.";
     private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(
             new VariantDefinition(EMPATHETIC_LABEL,
                     "ai-empathetic",
-                    ScheduleCandidateType.EMPATHETIC),
+                    ScheduleCandidateType.EMPATHETIC,
+                    "Generate EMPATHETIC only."),
             new VariantDefinition(EFFICIENT_LABEL,
                     "ai-efficient",
-                    ScheduleCandidateType.EFFICIENT),
+                    ScheduleCandidateType.EFFICIENT,
+                    "Generate EFFICIENT only."),
             new VariantDefinition(BALANCED_LABEL,
                     "ai-balanced",
-                    ScheduleCandidateType.BALANCED)
+                    ScheduleCandidateType.BALANCED,
+                    "Generate BALANCED only.")
     );
 
     private final ISchedulerController schedulerController;
@@ -448,23 +453,49 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private CandidateBatch requestAiCandidates(String toonPayload) {
-        String instructions = null;
-        String correlationId = UUID.randomUUID().toString();
-        AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
-        logger.info("event=ai_broker_request_prepared correlation_id={} payload_length={} instructions_length={}",
-                correlationId,
-                toonPayload == null ? 0 : toonPayload.length(),
-                instructions == null ? 0 : instructions.length());
-        // Transport-level failures (timeouts/network/rate limits) are handled exclusively by AgentBrokerImpl.
-        // Orchestration focuses on schema validation, metrics evaluation, and system-level decision logic.
-        AiScheduleVariantsResponse response = agentBroker.requestSchedule(request);
+        String batchCorrelationId = UUID.randomUUID().toString();
+        Map<String, AiScheduleResponse> aggregatedVariants = new LinkedHashMap<>();
+
+        for (VariantDefinition definition : VARIANT_DEFINITIONS) {
+            String instructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
+            String correlationId = UUID.randomUUID().toString();
+            AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
+            logger.info("event=ai_broker_request_prepared correlation_id={} label={} payload_length={} instructions_length={}",
+                    correlationId,
+                    definition.label,
+                    toonPayload == null ? 0 : toonPayload.length(),
+                    instructions.length());
+
+            AiTokenBudgetGuardResult budgetGuard = agentBroker.previewTokenBudget(request);
+            if (!budgetGuard.isAllowed()) {
+                logger.warn("event=ai_variant_deferred correlation_id={} label={} projected_tpm={} budget_limit={}",
+                        correlationId,
+                        definition.label,
+                        budgetGuard.getProjectedTpm(),
+                        budgetGuard.getBudgetLimit());
+                aggregatedVariants.put(definition.label, buildDeferredResponse(definition.label, budgetGuard));
+                continue;
+            }
+
+            AiScheduleVariantsResponse singleResponse = agentBroker.requestSchedule(request);
+            AiScheduleResponse variant = singleResponse == null ? null : singleResponse.getVariant(definition.label);
+            if (variant == null) {
+                throw AiProtocolException.schemaMismatch(
+                        "AI response missing variant " + definition.label,
+                        null
+                );
+            }
+            aggregatedVariants.put(definition.label, variant);
+        }
+
         logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
-                correlationId,
-                response == null || response.getVariants() == null ? 0 : response.getVariants().size());
+                batchCorrelationId,
+                aggregatedVariants.size());
+
         List<CandidateData> candidates = new ArrayList<>();
         MetricsErrorMetadata errorMetadata = null;
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
-            AiScheduleResponse variant = response.getVariant(definition.label);
+            AiScheduleResponse variant = aggregatedVariants.get(definition.label);
             if (variant == null) {
                 throw AiProtocolException.schemaMismatch(
                         "AI response missing variant " + definition.label,
@@ -475,10 +506,10 @@ public class AiScheduleGenerationOrchestrationService {
             String rawJson = serializeResponse(responseDto);
             DecisionMetricValues metrics;
             try {
-                metrics = buildAiMetrics(variant, rawJson, definition.candidateId, correlationId);
+                metrics = buildAiMetrics(variant, rawJson, definition.candidateId, batchCorrelationId);
             } catch (AiProtocolException | IllegalArgumentException | PriorityScaleValidationException ex) {
                 errorMetadata = buildMetricsError(errorMetadata,
-                        correlationId,
+                        batchCorrelationId,
                         ERROR_AI_METRICS,
                         ex);
                 metrics = fallbackMetrics();
@@ -486,6 +517,19 @@ public class AiScheduleGenerationOrchestrationService {
             candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics, null));
         }
         return new CandidateBatch(Collections.unmodifiableList(candidates), errorMetadata);
+    }
+
+    private AiScheduleResponse buildDeferredResponse(String label, AiTokenBudgetGuardResult budgetGuard) {
+        String reasoning = "Deferred due to token budget guard for label " + label
+                + ". projected_tpm=" + budgetGuard.getProjectedTpm()
+                + ", budget_limit=" + budgetGuard.getBudgetLimit();
+        AiMetrics metrics = new AiMetrics(0.0, new AiUffaBalance(new AiStdDev(0.0, 0.0)), 0);
+        AiMetadata metadata = new AiMetadata(reasoning, "token-budget-guard", 0.0, metrics);
+        return new AiScheduleResponse(AiStatus.PARTIAL_SUCCESS,
+                metadata,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList());
     }
 
     private DecisionMetricValues buildStandardMetrics(Schedule schedule) {
@@ -1117,13 +1161,16 @@ public class AiScheduleGenerationOrchestrationService {
         private final String label;
         private final String candidateId;
         private final ScheduleCandidateType type;
+        private final String variantInstruction;
 
         private VariantDefinition(String label,
                                   String candidateId,
-                                  ScheduleCandidateType type) {
+                                  ScheduleCandidateType type,
+                                  String variantInstruction) {
             this.label = Objects.requireNonNull(label, "label");
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.type = Objects.requireNonNull(type, "type");
+            this.variantInstruction = Objects.requireNonNull(variantInstruction, "variantInstruction");
         }
     }
 

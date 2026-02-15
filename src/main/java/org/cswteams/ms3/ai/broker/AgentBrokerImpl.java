@@ -59,12 +59,26 @@ public class AgentBrokerImpl implements AgentBroker {
     }
 
     @Override
-    public AiScheduleVariantsResponse requestSchedule(AiBrokerRequest request) {
+    public AiTokenBudgetGuardResult previewTokenBudget(AiBrokerRequest request) {
         validateRequest(request);
         AgentProvider provider = properties.getProvider();
         int estimatedInputTokens = tokenEstimator.estimateInputTokens(request);
         int estimatedOutputTokens = tokenEstimator.estimateExpectedOutputTokens(request);
         int projectedTpm = tokenUsageTracker.projectedTpm(provider, estimatedInputTokens, estimatedOutputTokens);
+        boolean allowed = projectedTpm <= TOKEN_BUDGET_LIMIT;
+        return new AiTokenBudgetGuardResult(
+                allowed,
+                estimatedInputTokens,
+                estimatedOutputTokens,
+                projectedTpm,
+                TOKEN_BUDGET_LIMIT
+        );
+    }
+
+    @Override
+    public AiScheduleVariantsResponse requestSchedule(AiBrokerRequest request) {
+        AgentProvider provider = properties.getProvider();
+        AiTokenBudgetGuardResult budgetGuard = previewTokenBudget(request);
 
         logger.info("event=ai_broker_request_start provider={} correlation_id={} payload_length={} instructions_length={} max_retries={} total_timeout_ms={} estimated_input_tokens={} estimated_output_tokens={} projected_tpm={} budget_limit={}",
                 provider,
@@ -73,13 +87,13 @@ public class AgentBrokerImpl implements AgentBroker {
                 request.getInstructions() == null ? 0 : request.getInstructions().length(),
                 properties.getMaxRetries(),
                 properties.getTotalTimeout() == null ? null : properties.getTotalTimeout().toMillis(),
-                estimatedInputTokens,
-                estimatedOutputTokens,
-                projectedTpm,
-                TOKEN_BUDGET_LIMIT);
+                budgetGuard.getEstimatedInputTokens(),
+                budgetGuard.getEstimatedOutputTokens(),
+                budgetGuard.getProjectedTpm(),
+                budgetGuard.getBudgetLimit());
 
-        enforceTokenBudget(provider, request, estimatedInputTokens, estimatedOutputTokens, projectedTpm);
-        tokenUsageTracker.recordUsage(provider, estimatedInputTokens, estimatedOutputTokens);
+        enforceTokenBudget(provider, request, budgetGuard);
+        tokenUsageTracker.recordUsage(provider, budgetGuard.getEstimatedInputTokens(), budgetGuard.getEstimatedOutputTokens());
         AgentProviderAdapter adapter = adapters.get(provider);
         if (adapter == null) {
             throw AiProtocolException.businessFailure("No adapter configured for provider " + provider);
@@ -89,19 +103,17 @@ public class AgentBrokerImpl implements AgentBroker {
 
     private void enforceTokenBudget(AgentProvider provider,
                                     AiBrokerRequest request,
-                                    int estimatedInputTokens,
-                                    int estimatedOutputTokens,
-                                    int projectedTpm) {
-        if (projectedTpm <= TOKEN_BUDGET_LIMIT) {
+                                    AiTokenBudgetGuardResult budgetGuard) {
+        if (budgetGuard.isAllowed()) {
             return;
         }
         logger.warn("event=ai_broker_budget_exceeded provider={} correlation_id={} estimated_input_tokens={} estimated_output_tokens={} projected_tpm={} budget_limit={}",
                 provider,
                 request.getCorrelationId(),
-                estimatedInputTokens,
-                estimatedOutputTokens,
-                projectedTpm,
-                TOKEN_BUDGET_LIMIT);
+                budgetGuard.getEstimatedInputTokens(),
+                budgetGuard.getEstimatedOutputTokens(),
+                budgetGuard.getProjectedTpm(),
+                budgetGuard.getBudgetLimit());
         throw AiProtocolException.tokenBudgetExceeded("AI token budget exceeded for rolling 60-second window");
     }
 

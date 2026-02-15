@@ -224,6 +224,55 @@ public class AgentBrokerImplTest {
         verify(gemmaAdapter, never()).execute(any(AiBrokerRequest.class));
     }
 
+
+    @Test
+    public void requestSchedule_shouldAcceptSingleVariantEnvelope() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(0);
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(gemmaAdapter.execute(request)).thenReturn(singleVariantJson());
+
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser()
+        );
+
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
+
+        assertEquals(1, response.getVariants().size());
+        assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
+    }
+
+    @Test
+    public void previewTokenBudget_shouldNotRecordUsage() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(0);
+        properties.setTotalTimeout(Duration.ZERO);
+
+        MutableClock clock = new MutableClock(Instant.parse("2024-01-01T00:00:00Z"), ZoneId.of("UTC"));
+        AiTokenUsageTracker tracker = new AiTokenUsageTracker(clock);
+
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                Arrays.asList(),
+                new AiScheduleJsonParser(),
+                new AiTokenEstimator(),
+                tracker
+        );
+
+        AiTokenBudgetGuardResult result = broker.previewTokenBudget(AiBrokerRequest.forToon("payload"));
+
+        assertTrue(result.isAllowed());
+        assertEquals(0, tracker.currentTpm(AgentProvider.GEMMA));
+    }
+
     @Test
     public void tokenUsageTracker_shouldKeepRollingSixtySecondWindow() {
         MutableClock clock = new MutableClock(Instant.parse("2024-01-01T00:00:00Z"), ZoneId.of("UTC"));
@@ -260,6 +309,19 @@ public class AgentBrokerImplTest {
                 + "\"uffa_delta\":[]"
                 + "},"
                 + "\"BALANCED\":{"
+                + "\"status\":\"SUCCESS\","
+                + "\"assignments\":[],"
+                + "\"uncovered_shifts\":[],"
+                + "\"uffa_delta\":[]"
+                + "}"
+                + "}"
+                + "}";
+    }
+
+    private static String singleVariantJson() {
+        return "{"
+                + "\"variants\":{"
+                + "\"EMPATHETIC\":{"
                 + "\"status\":\"SUCCESS\","
                 + "\"assignments\":[],"
                 + "\"uncovered_shifts\":[],"
