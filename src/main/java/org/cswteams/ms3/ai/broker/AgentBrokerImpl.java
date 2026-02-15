@@ -30,14 +30,28 @@ public class AgentBrokerImpl implements AgentBroker {
     private static final Logger logger = LoggerFactory.getLogger(AgentBrokerImpl.class);
     private final AiBrokerProperties properties;
     private final Map<AgentProvider, AgentProviderAdapter> adapters;
+    private static final int TOKEN_BUDGET_LIMIT = 15000;
+
     private final AiScheduleJsonParser jsonParser;
     private final AiScheduleResponseMapper mapper = new AiScheduleResponseMapper();
+    private final AiTokenEstimator tokenEstimator;
+    private final AiTokenUsageTracker tokenUsageTracker;
 
     public AgentBrokerImpl(AiBrokerProperties properties,
                            List<AgentProviderAdapter> adapters,
                            AiScheduleJsonParser jsonParser) {
+        this(properties, adapters, jsonParser, new AiTokenEstimator(), new AiTokenUsageTracker());
+    }
+
+    AgentBrokerImpl(AiBrokerProperties properties,
+                    List<AgentProviderAdapter> adapters,
+                    AiScheduleJsonParser jsonParser,
+                    AiTokenEstimator tokenEstimator,
+                    AiTokenUsageTracker tokenUsageTracker) {
         this.properties = properties;
         this.jsonParser = jsonParser;
+        this.tokenEstimator = tokenEstimator;
+        this.tokenUsageTracker = tokenUsageTracker;
         this.adapters = new EnumMap<>(AgentProvider.class);
         for (AgentProviderAdapter adapter : adapters) {
             this.adapters.put(adapter.provider(), adapter);
@@ -48,18 +62,47 @@ public class AgentBrokerImpl implements AgentBroker {
     public AiScheduleVariantsResponse requestSchedule(AiBrokerRequest request) {
         validateRequest(request);
         AgentProvider provider = properties.getProvider();
-        logger.info("event=ai_broker_request_start provider={} correlation_id={} payload_length={} instructions_length={} max_retries={} total_timeout_ms={}",
+        int estimatedInputTokens = tokenEstimator.estimateInputTokens(request);
+        int estimatedOutputTokens = tokenEstimator.estimateExpectedOutputTokens(request);
+        int projectedTpm = tokenUsageTracker.projectedTpm(provider, estimatedInputTokens, estimatedOutputTokens);
+
+        logger.info("event=ai_broker_request_start provider={} correlation_id={} payload_length={} instructions_length={} max_retries={} total_timeout_ms={} estimated_input_tokens={} estimated_output_tokens={} projected_tpm={} budget_limit={}",
                 provider,
                 request.getCorrelationId(),
                 request.getToonPayload() == null ? 0 : request.getToonPayload().length(),
                 request.getInstructions() == null ? 0 : request.getInstructions().length(),
                 properties.getMaxRetries(),
-                properties.getTotalTimeout() == null ? null : properties.getTotalTimeout().toMillis());
+                properties.getTotalTimeout() == null ? null : properties.getTotalTimeout().toMillis(),
+                estimatedInputTokens,
+                estimatedOutputTokens,
+                projectedTpm,
+                TOKEN_BUDGET_LIMIT);
+
+        enforceTokenBudget(provider, request, estimatedInputTokens, estimatedOutputTokens, projectedTpm);
+        tokenUsageTracker.recordUsage(provider, estimatedInputTokens, estimatedOutputTokens);
         AgentProviderAdapter adapter = adapters.get(provider);
         if (adapter == null) {
             throw AiProtocolException.businessFailure("No adapter configured for provider " + provider);
         }
         return executeWithRetry(adapter, request);
+    }
+
+    private void enforceTokenBudget(AgentProvider provider,
+                                    AiBrokerRequest request,
+                                    int estimatedInputTokens,
+                                    int estimatedOutputTokens,
+                                    int projectedTpm) {
+        if (projectedTpm <= TOKEN_BUDGET_LIMIT) {
+            return;
+        }
+        logger.warn("event=ai_broker_budget_exceeded provider={} correlation_id={} estimated_input_tokens={} estimated_output_tokens={} projected_tpm={} budget_limit={}",
+                provider,
+                request.getCorrelationId(),
+                estimatedInputTokens,
+                estimatedOutputTokens,
+                projectedTpm,
+                TOKEN_BUDGET_LIMIT);
+        throw AiProtocolException.tokenBudgetExceeded("AI token budget exceeded for rolling 60-second window");
     }
 
     private AiScheduleVariantsResponse executeWithRetry(AgentProviderAdapter adapter, AiBrokerRequest request) {

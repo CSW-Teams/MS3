@@ -8,10 +8,14 @@ import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.junit.Test;
 import org.springframework.web.client.RestClientException;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -176,6 +180,70 @@ public class AgentBrokerImplTest {
         verify(gemmaAdapter, times(1)).execute(request);
     }
 
+
+    @Test
+    public void requestSchedule_shouldRejectWhenProjectedTokenBudgetExceeded() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(0);
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+
+        AiTokenEstimator estimator = new AiTokenEstimator() {
+            @Override
+            public int estimateInputTokens(AiBrokerRequest request) {
+                return 10000;
+            }
+
+            @Override
+            public int estimateExpectedOutputTokens(AiBrokerRequest request) {
+                return 6000;
+            }
+        };
+
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser(),
+                estimator,
+                new AiTokenUsageTracker(Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneId.of("UTC")))
+        );
+
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(AiBrokerRequest.forToon("payload"));
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
+
+        assertEquals(AiProtocolException.ErrorCode.TOKEN_BUDGET_EXCEEDED, exception.getCode());
+        verify(gemmaAdapter, never()).execute(any(AiBrokerRequest.class));
+    }
+
+    @Test
+    public void tokenUsageTracker_shouldKeepRollingSixtySecondWindow() {
+        MutableClock clock = new MutableClock(Instant.parse("2024-01-01T00:00:00Z"), ZoneId.of("UTC"));
+        AiTokenUsageTracker tracker = new AiTokenUsageTracker(clock);
+
+        tracker.recordUsage(AgentProvider.GEMMA, 1000, 500);
+        assertEquals(1500, tracker.currentTpm(AgentProvider.GEMMA));
+
+        clock.addSeconds(30);
+        tracker.recordUsage(AgentProvider.GEMMA, 300, 200);
+        assertEquals(2000, tracker.currentTpm(AgentProvider.GEMMA));
+
+        clock.addSeconds(31);
+        assertEquals(500, tracker.currentTpm(AgentProvider.GEMMA));
+
+        int projected = tracker.projectedTpm(AgentProvider.GEMMA, 100, 150);
+        assertEquals(750, projected);
+        assertTrue(tracker.currentTpm(AgentProvider.LLAMA_70B) == 0);
+    }
+
     private static String validJson() {
         return "{"
                 + "\"variants\":{"
@@ -250,4 +318,35 @@ public class AgentBrokerImplTest {
                 + "}"
                 + "}";
     }
+
+
+    private static class MutableClock extends Clock {
+        private Instant instant;
+        private final ZoneId zoneId;
+
+        private MutableClock(Instant instant, ZoneId zoneId) {
+            this.instant = instant;
+            this.zoneId = zoneId;
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return zoneId;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return new MutableClock(instant, zone);
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
+
+        private void addSeconds(long seconds) {
+            instant = instant.plusSeconds(seconds);
+        }
+    }
+
 }
