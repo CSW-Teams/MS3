@@ -32,6 +32,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -124,6 +125,58 @@ class AiActiveConstraintResolverTest {
         List<ToonActiveConstraint> mapped = resolver.resolve(List.of(), List.of());
 
         assertTrue(mapped.isEmpty());
+    }
+
+    @Test
+    void resolveWithReportTracksResolvedSkippedAndHardSoftSplit() {
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+
+        ConstraintHoliday hardConstraint = new ConstraintHoliday();
+        hardConstraint.setId(41L);
+        hardConstraint.setDescription("Hard holiday rule");
+        hardConstraint.setViolable(false);
+
+        ConstraintNumeroDiRuoloTurno softConstraint = new ConstraintNumeroDiRuoloTurno();
+        softConstraint.setId(42L);
+        softConstraint.setDescription("Soft role quota");
+        softConstraint.setViolable(true);
+
+        ConstraintMaxOrePeriodo skippedConstraint = new ConstraintMaxOrePeriodo(7, 480);
+        skippedConstraint.setId(43L);
+        skippedConstraint.setDescription("Will be skipped because no doctor");
+        skippedConstraint.setViolable(false);
+
+        when(constraintDAO.findAll()).thenReturn(List.of(hardConstraint, softConstraint, skippedConstraint));
+
+        AiActiveConstraintResolver resolver = new AiActiveConstraintResolver(constraintDAO);
+
+        AiActiveConstraintResolver.ResolveResult result = resolver.resolveWithReport(
+                List.of(),
+                List.of(newShift(200L, LocalDate.of(2026, 2, 1))),
+                false
+        );
+
+        assertEquals(1, result.getResolvedConstraints().size());
+        assertEquals(2, result.getSkippedConstraints());
+        assertEquals(0, result.getHardConstraintsCount());
+        assertEquals(1, result.getSoftConstraintsCount());
+    }
+
+    @Test
+    void resolveWithReportFailsFastWhenPolicyRequiresIt() {
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+
+        ConstraintMaxOrePeriodo skippedConstraint = new ConstraintMaxOrePeriodo(7, 480);
+        skippedConstraint.setId(51L);
+        skippedConstraint.setDescription("No doctors available");
+        skippedConstraint.setViolable(false);
+
+        when(constraintDAO.findAll()).thenReturn(List.of(skippedConstraint));
+
+        AiActiveConstraintResolver resolver = new AiActiveConstraintResolver(constraintDAO);
+
+        assertThrows(IllegalStateException.class,
+                () -> resolver.resolveWithReport(List.of(), List.of(), true));
     }
 
     private Doctor newDoctor(Long id) {
