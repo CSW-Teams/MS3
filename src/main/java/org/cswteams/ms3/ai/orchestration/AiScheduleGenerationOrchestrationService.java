@@ -87,20 +87,23 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
-    private static final String BASE_VARIANT_INSTRUCTION = "Return only one variant under variants using the requested label.";
+    private static final String BASE_VARIANT_INSTRUCTION = "Return strict JSON only with top-level object {'variants': ...}. "
+            + "For object form, put the variant label as the key under variants. "
+            + "If variants is an array, each item must include a non-empty 'label' field and a 'variant' object payload. "
+            + "Return exactly one variant entry matching the requested label.";
     private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(
             new VariantDefinition(EMPATHETIC_LABEL,
                     "ai-empathetic",
                     ScheduleCandidateType.EMPATHETIC,
-                    "Generate EMPATHETIC only."),
+                    "Use label EMPATHETIC (either as variants.EMPATHETIC or variants[0].label=EMPATHETIC)."),
             new VariantDefinition(EFFICIENT_LABEL,
                     "ai-efficient",
                     ScheduleCandidateType.EFFICIENT,
-                    "Generate EFFICIENT only."),
+                    "Use label EFFICIENT (either as variants.EFFICIENT or variants[0].label=EFFICIENT)."),
             new VariantDefinition(BALANCED_LABEL,
                     "ai-balanced",
                     ScheduleCandidateType.BALANCED,
-                    "Generate BALANCED only.")
+                    "Use label BALANCED (either as variants.BALANCED or variants[0].label=BALANCED).")
     );
 
     private final ISchedulerController schedulerController;

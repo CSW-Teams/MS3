@@ -53,6 +53,47 @@ public class AiScheduleJsonParserTest {
         assertTrue(dto.variants.containsKey("EMPATHETIC"));
     }
 
+
+    @Test
+    public void parseVariants_arrayEnvelope_shouldNormalizeLabels() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser();
+        String json = "{"
+                + "\"variants\":["
+                + "{\"label\":\"EMPATHETIC\",\"variant\":" + validJson() + "},"
+                + "{\"label\":\"EFFICIENT\",\"variant\":" + validJson() + "},"
+                + "{\"label\":\"BALANCED\",\"variant\":" + validJson() + "}"
+                + "]"
+                + "}";
+
+        AiScheduleVariantsResponseDto dto = parser.parseVariants(json);
+
+        assertNotNull(dto);
+        assertEquals(3, dto.variants.size());
+        assertTrue(dto.variants.containsKey("EMPATHETIC"));
+        assertTrue(dto.variants.containsKey("EFFICIENT"));
+        assertTrue(dto.variants.containsKey("BALANCED"));
+    }
+
+    @Test
+    public void parseVariants_multipleLabelsMissingRequired_shouldThrowSchemaMismatch() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser();
+        String json = "{"
+                + "\"variants\":{"
+                + "\"EMPATHETIC\":" + validJson() + ","
+                + "\"EFFICIENT\":" + validJson()
+                + "}"
+                + "}";
+
+        try {
+            parser.parseVariants(json);
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
+            assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
+            assertTrue(ex.getMessage().contains("BALANCED"));
+        }
+    }
+
     @Test
     public void parseVariants_unexpectedLabel_shouldThrowSchemaMismatch() {
         AiScheduleJsonParser parser = new AiScheduleJsonParser();
