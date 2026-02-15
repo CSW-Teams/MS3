@@ -47,9 +47,16 @@ public class GemmaAgentAdapter implements AgentProviderAdapter {
                 //,"generationConfig", Map.of("responseMimeType", "application/json")
         );
 
+        String payloadJson;
+        try {
+            payloadJson = objectMapper.writeValueAsString(payload);
+        } catch (IOException e) {
+            throw AiProtocolException.invalidJson("Gemma request payload is not valid JSON", e);
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        HttpEntity<String> entity = new HttpEntity<>(payloadJson, headers);
 
         url = String.format("%s?key=%s", url, apiKey);
 
