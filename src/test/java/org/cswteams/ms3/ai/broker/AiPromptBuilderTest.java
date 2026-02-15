@@ -16,16 +16,14 @@ import static org.mockito.Mockito.when;
 
 public class AiPromptBuilderTest {
 
-    private static final List<String> FIXED_INSTRUCTIONS = List.of(
+    private static final List<String> REQUIRED_SYSTEM_KEYWORDS = List.of(
             "You are an AI scheduling agent.",
-            "Use the provided TOON payload to produce a JSON response only.",
-            "Return a JSON object with a top-level \"variants\" field.",
-            "The \"variants\" field must contain exactly three labeled schedules: \"EMPATHETIC\", \"EFFICIENT\", \"BALANCED\".",
-            "Each variant must follow the schedule response schema (status, metadata, assignments, uncovered_shifts, uffa_delta).",
-            "Do not include markdown or extra text.",
-            "Generate three schedule variants in a single JSON response.",
-            "Use the labels EMPATHETIC, EFFICIENT, BALANCED under the \"variants\" object.",
-            "Return only the JSON object, no extra text."
+            "Return one JSON object only",
+            "Top-level field required: \"variants\"",
+            "must contain exactly these labels: \"EMPATHETIC\", \"EFFICIENT\", \"BALANCED\"",
+            "canonical variant_schema",
+            "Required fields per variant: \"status\", \"metadata\", \"assignments\", \"uncovered_shifts\", \"uffa_delta\"",
+            "Field names must match exactly"
     );
 
     @Test
@@ -101,14 +99,14 @@ public class AiPromptBuilderTest {
     }
 
     private static void assertNoFixedInstructions(String userPrompt) {
-        for (String instruction : FIXED_INSTRUCTIONS) {
+        for (String instruction : REQUIRED_SYSTEM_KEYWORDS) {
             assertFalse("User prompt should not include fixed instruction: " + instruction,
                     userPrompt.contains(instruction));
         }
     }
 
     private static void assertSchemaConstraintsAppearOnce(String systemPrompt) {
-        for (String instruction : FIXED_INSTRUCTIONS) {
+        for (String instruction : REQUIRED_SYSTEM_KEYWORDS) {
             assertEquals("System prompt should include instruction once: " + instruction,
                     1, countOccurrences(systemPrompt, instruction));
         }
