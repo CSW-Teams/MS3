@@ -46,7 +46,6 @@ const formatMetric = (value, placeholder) => {
 const metricLabels = [
   { key: 'coverage', labelKey: 'Coverage' },
   { key: 'uffaBalance', labelKey: 'UFFA balance' },
-  { key: 'sentimentTransitions', labelKey: 'Sentiment transitions' },
   { key: 'upDelta', labelKey: 'UP delta' },
   { key: 'varianceDelta', labelKey: 'Variance delta' },
 ];
@@ -74,6 +73,30 @@ const resolveSelectionKey = (candidate) =>
 
 const resolveMetrics = (candidate) =>
   candidate?.metrics?.normalized || candidate?.metrics?.raw || {};
+
+const resolveSentimentTransitionCounts = (candidate) =>
+  candidate?.metrics?.raw?.sentimentTransitionCounts ||
+  candidate?.metrics?.normalized?.sentimentTransitionCounts ||
+  {};
+
+const formatSentimentTuple = (counts, placeholder) => {
+  if (!counts || typeof counts !== 'object') {
+    return placeholder;
+  }
+  const values = [
+    counts.negativeToNeutral,
+    counts.negativeToPositive,
+    counts.neutralToPositive,
+    counts.neutralToNegative,
+    counts.positiveToNegative,
+    counts.positiveToNeutral,
+  ];
+  const hasMissing = values.some((value) => value === null || value === undefined || Number.isNaN(value));
+  if (hasMissing) {
+    return placeholder;
+  }
+  return `(${values.join(', ')})`;
+};
 
 const downloadJson = (data, filename) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -130,6 +153,7 @@ function AiScheduleComparisonModal({
               {cards.map((candidate, cardIndex) => {
                 const metadata = candidate?.metadata;
                 const metrics = resolveMetrics(candidate);
+                const sentimentTransitionCounts = resolveSentimentTransitionCounts(candidate);
                 const scheduleId = metadata?.scheduleId ?? placeholder;
                 const selectionKey = resolveSelectionKey(candidate);
                 const isSelected = selectionKey && selectionKey === selectedCandidateKey;
@@ -138,6 +162,10 @@ function AiScheduleComparisonModal({
                   label: t(metric.labelKey),
                   value: metrics?.[metric.key],
                 }));
+                const sentimentTuple = formatSentimentTuple(
+                  sentimentTransitionCounts,
+                  placeholder,
+                );
 
                 return (
                   <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
@@ -158,6 +186,13 @@ function AiScheduleComparisonModal({
                             {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
                           </Typography>
                         ))}
+                        <Typography
+                          key={`ai-comparison-sentiment-tuple-${cardIndex}`}
+                          variant="body1"
+                          component="div"
+                        >
+                          {`Sentiment tuple (N->0, N->P, 0->P, 0->N, P->N, P->0): ${sentimentTuple}`}
+                        </Typography>
                         <Button
                           variant={isSelected ? 'contained' : 'outlined'}
                           disabled={!isSelectable || (selectionLocked && !isSelected)}

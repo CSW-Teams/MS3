@@ -14,6 +14,14 @@ public enum AiStatus {
         if (value == null) {
             return null;
         }
-        return valueOf(value.trim().toUpperCase(Locale.ROOT));
+        String normalized = value.trim().toUpperCase(Locale.ROOT);
+        if ("COMPLETE".equals(normalized) || "COMPLETED".equals(normalized)
+                || "OK".equals(normalized) || "DONE".equals(normalized)) {
+            return SUCCESS;
+        }
+        if ("PARTIAL".equals(normalized)) {
+            return PARTIAL_SUCCESS;
+        }
+        return valueOf(normalized);
     }
 }
