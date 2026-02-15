@@ -56,6 +56,7 @@ import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
+import org.cswteams.ms3.enums.Seniority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -311,16 +312,26 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private String buildToonPayload(LocalDate startDate, LocalDate endDate, List<ConcreteShift> concreteShifts) {
-        List<Doctor> doctors = doctorDAO.findAll();
-        List<DoctorUffaPriority> priorities = doctorUffaPriorityDAO.findAll();
-        List<DoctorHolidays> doctorHolidays = doctorHolidaysDAO.findAll();
+        List<ConcreteShift> scopedShifts = filterShiftsInTargetPeriod(startDate, endDate, concreteShifts);
+        List<Doctor> doctors = resolveEligibleDoctors(scopedShifts);
+        List<Long> eligibleDoctorIds = new ArrayList<>();
+        for (Doctor doctor : doctors) {
+            if (doctor != null && doctor.getId() != null) {
+                eligibleDoctorIds.add(doctor.getId());
+            }
+        }
+        List<DoctorUffaPriority> priorities = eligibleDoctorIds.isEmpty()
+                ? List.of()
+                : doctorUffaPriorityDAO.findByDoctor_IdIn(eligibleDoctorIds);
+        List<DoctorHolidays> doctorHolidays = eligibleDoctorIds.isEmpty()
+                ? List.of()
+                : doctorHolidaysDAO.findByDoctor_IdIn(eligibleDoctorIds);
         List<ToonActiveConstraint> activeConstraints = new ArrayList<>();
         List<ToonFeedback> feedbacks = new ArrayList<>();
-        int shiftCount = concreteShifts == null ? 0 : concreteShifts.size();
         logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} feedbacks_count={}",
                 startDate,
                 endDate,
-                shiftCount,
+                scopedShifts.size(),
                 doctors.size(),
                 priorities.size(),
                 doctorHolidays.size(),
@@ -331,7 +342,7 @@ public class AiScheduleGenerationOrchestrationService {
                 startDate,
                 endDate,
                 MODE_GENERATE,
-                concreteShifts,
+                scopedShifts,
                 doctors,
                 priorities,
                 doctorHolidays,
@@ -342,6 +353,85 @@ public class AiScheduleGenerationOrchestrationService {
         ToonRequestContext context = request.getToonRequestContext();
         ToonBuilder builder = new ToonBuilder();
         return builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+    }
+
+
+    private List<ConcreteShift> filterShiftsInTargetPeriod(LocalDate startDate,
+                                                           LocalDate endDate,
+                                                           List<ConcreteShift> concreteShifts) {
+        if (concreteShifts == null || concreteShifts.isEmpty()) {
+            return List.of();
+        }
+        long startEpoch = startDate == null ? Long.MIN_VALUE : startDate.toEpochDay();
+        long endEpoch = endDate == null ? Long.MAX_VALUE : endDate.toEpochDay();
+        List<ConcreteShift> scopedShifts = new ArrayList<>();
+        for (ConcreteShift concreteShift : concreteShifts) {
+            if (concreteShift == null) {
+                continue;
+            }
+            long shiftDate = concreteShift.getDate();
+            if (shiftDate >= startEpoch && shiftDate <= endEpoch) {
+                scopedShifts.add(concreteShift);
+            }
+        }
+        return scopedShifts;
+    }
+
+    private List<Doctor> resolveEligibleDoctors(List<ConcreteShift> scopedShifts) {
+        if (scopedShifts == null || scopedShifts.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, Doctor> doctorsById = new LinkedHashMap<>();
+        List<Doctor> assignedDoctors = extractAssignedDoctors(scopedShifts);
+        for (Doctor doctor : assignedDoctors) {
+            if (doctor != null && doctor.getId() != null) {
+                doctorsById.put(doctor.getId(), doctor);
+            }
+        }
+        List<Seniority> requiredSeniorities = new ArrayList<>();
+        for (ConcreteShift concreteShift : scopedShifts) {
+            if (concreteShift == null || concreteShift.getShift() == null || concreteShift.getShift().getQuantityShiftSeniority() == null) {
+                continue;
+            }
+            for (QuantityShiftSeniority quantityShiftSeniority : concreteShift.getShift().getQuantityShiftSeniority()) {
+                if (quantityShiftSeniority == null || quantityShiftSeniority.getSeniorityQuantityMap() == null) {
+                    continue;
+                }
+                for (Map.Entry<Seniority, Integer> entry : quantityShiftSeniority.getSeniorityQuantityMap().entrySet()) {
+                    if (entry.getKey() != null && entry.getValue() != null && entry.getValue() > 0 && !requiredSeniorities.contains(entry.getKey())) {
+                        requiredSeniorities.add(entry.getKey());
+                    }
+                }
+            }
+        }
+        if (!requiredSeniorities.isEmpty()) {
+            List<Doctor> doctorsBySeniority = doctorDAO.findBySeniorities(requiredSeniorities);
+            for (Doctor doctor : doctorsBySeniority) {
+                if (doctor != null && doctor.getId() != null) {
+                    doctorsById.put(doctor.getId(), doctor);
+                }
+            }
+        }
+        return new ArrayList<>(doctorsById.values());
+    }
+
+    private List<Doctor> extractAssignedDoctors(List<ConcreteShift> scopedShifts) {
+        List<Doctor> doctors = new ArrayList<>();
+        for (ConcreteShift concreteShift : scopedShifts) {
+            if (concreteShift == null || concreteShift.getDoctorAssignmentList() == null) {
+                continue;
+            }
+            for (DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
+                if (assignment == null || assignment.getDoctor() == null || assignment.getDoctor().getId() == null) {
+                    continue;
+                }
+                if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY
+                        || assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL) {
+                    doctors.add(assignment.getDoctor());
+                }
+            }
+        }
+        return doctors;
     }
 
     private CandidateData buildStandardCandidate(Schedule schedule, DecisionMetricValues metrics) {

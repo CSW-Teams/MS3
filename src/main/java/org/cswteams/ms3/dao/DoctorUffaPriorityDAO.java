@@ -11,5 +11,6 @@ public interface DoctorUffaPriorityDAO extends JpaRepository<DoctorUffaPriority,
 
     List<DoctorUffaPriority> findAll();
     List<DoctorUffaPriority> findByDoctor_Id(Long id);
+    List<DoctorUffaPriority> findByDoctor_IdIn(List<Long> doctorIds);
 
 }
