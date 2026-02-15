@@ -2,6 +2,7 @@ package org.cswteams.ms3.ai.protocol.converter;
 
 import org.cswteams.ms3.ai.protocol.AiScheduleJsonParser;
 import org.cswteams.ms3.ai.protocol.AiScheduleSemanticValidator;
+import org.cswteams.ms3.ai.protocol.ValidationError;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
@@ -73,8 +74,11 @@ public class AiScheduleConverterService {
         // Map to hold ConcreteShifts, keyed by a combination of Shift ID and date (long epoch format)
         // This allows grouping assignments for the same concrete shift
         Map<String, ConcreteShift> concreteShiftsMap = new HashMap<>();
+        Map<String, ShiftCoverageAccumulator> coverageByConcreteShift = new HashMap<>();
+        List<ValidationError> validationErrors = new ArrayList<>();
 
-        for (AiAssignmentDto aiAssignment : aiAssignments) {
+        for (int index = 0; index < aiAssignments.size(); index++) {
+            AiAssignmentDto aiAssignment = aiAssignments.get(index);
             // a. Parse shiftId
             ParsedShiftId parsedShiftId = parseAiShiftId(aiAssignment.shiftId);
             String shiftTemplateIdStr = parsedShiftId.shiftTemplateId;
@@ -84,6 +88,12 @@ public class AiScheduleConverterService {
             Doctor doctor = doctorDAO.findById(aiAssignment.doctorId.longValue());
             if (doctor == null) {
                 throw AiProtocolException.entityNotFound("Doctor with ID " + aiAssignment.doctorId + " not found.");
+            }
+            if (!doctor.getSeniority().equals(aiAssignment.roleCovered)) {
+                validationErrors.add(new ValidationError(
+                        "$.assignments[" + index + "].role_covered",
+                        "must match doctor's seniority " + doctor.getSeniority()
+                ));
             }
 
             // c. Resolve Shift (template)
@@ -102,6 +112,10 @@ public class AiScheduleConverterService {
                 // ConcreteShift constructor expects date in long epoch format
                 return new ConcreteShift(assignmentDate.toEpochDay(), shiftTemplate);
             });
+            ShiftCoverageAccumulator coverageAccumulator = coverageByConcreteShift.computeIfAbsent(
+                    concreteShiftKey,
+                    k -> ShiftCoverageAccumulator.fromShiftTemplate(shiftTemplate, aiAssignment.shiftId)
+            );
 
             // f. Create DoctorAssignment
             ConcreteShiftDoctorStatus status = ConcreteShiftDoctorStatus.ON_DUTY; // Default status
@@ -110,6 +124,19 @@ public class AiScheduleConverterService {
 
             DoctorAssignment doctorAssignment = new DoctorAssignment(doctor, status, concreteShift, task);
             concreteShift.getDoctorAssignmentList().add(doctorAssignment);
+            coverageAccumulator.registerAssignment(doctor.getSeniority());
+        }
+
+        for (ShiftCoverageAccumulator coverageAccumulator : coverageByConcreteShift.values()) {
+            coverageAccumulator.addCoverageErrors(validationErrors);
+        }
+
+        if (!validationErrors.isEmpty()) {
+            throw AiProtocolException.schemaMismatch(
+                    "AI response violates minimum doctors/seniority shift constraints",
+                    validationErrors,
+                    null
+            );
         }
 
         return new ArrayList<>(concreteShiftsMap.values());
@@ -178,5 +205,58 @@ public class AiScheduleConverterService {
             this.assignmentDate = assignmentDate;
         }
 
+    }
+
+    private static class ShiftCoverageAccumulator {
+        private final String shiftId;
+        private final Map<Seniority, Integer> requiredBySeniority;
+        private final Map<Seniority, Integer> assignedBySeniority;
+
+        private ShiftCoverageAccumulator(String shiftId,
+                                         Map<Seniority, Integer> requiredBySeniority,
+                                         Map<Seniority, Integer> assignedBySeniority) {
+            this.shiftId = shiftId;
+            this.requiredBySeniority = requiredBySeniority;
+            this.assignedBySeniority = assignedBySeniority;
+        }
+
+        private static ShiftCoverageAccumulator fromShiftTemplate(Shift shiftTemplate, String shiftId) {
+            Map<Seniority, Integer> requiredBySeniority = new EnumMap<>(Seniority.class);
+            if (shiftTemplate.getQuantityShiftSeniority() != null) {
+                for (QuantityShiftSeniority qss : shiftTemplate.getQuantityShiftSeniority()) {
+                    if (qss == null || qss.getSeniorityMap() == null) {
+                        continue;
+                    }
+                    for (Map.Entry<Seniority, Integer> entry : qss.getSeniorityMap().entrySet()) {
+                        if (entry.getKey() == null || entry.getValue() == null || entry.getValue() <= 0) {
+                            continue;
+                        }
+                        requiredBySeniority.merge(entry.getKey(), entry.getValue(), Integer::sum);
+                    }
+                }
+            }
+            return new ShiftCoverageAccumulator(shiftId, requiredBySeniority, new EnumMap<>(Seniority.class));
+        }
+
+        private void registerAssignment(Seniority seniority) {
+            if (seniority == null) {
+                return;
+            }
+            assignedBySeniority.merge(seniority, 1, Integer::sum);
+        }
+
+        private void addCoverageErrors(List<ValidationError> errors) {
+            for (Map.Entry<Seniority, Integer> requiredEntry : requiredBySeniority.entrySet()) {
+                int assigned = assignedBySeniority.getOrDefault(requiredEntry.getKey(), 0);
+                if (assigned < requiredEntry.getValue()) {
+                    errors.add(new ValidationError(
+                            "$.assignments",
+                            "shift_id=" + shiftId + " requires at least " + requiredEntry.getValue()
+                                    + " doctors with seniority=" + requiredEntry.getKey()
+                                    + " but got " + assigned
+                    ));
+                }
+            }
+        }
     }
 }
