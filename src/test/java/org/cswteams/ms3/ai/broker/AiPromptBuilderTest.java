@@ -1,5 +1,7 @@
 package org.cswteams.ms3.ai.broker;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +17,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AiPromptBuilderTest {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final List<String> REQUIRED_SYSTEM_KEYWORDS = List.of(
             "You are an AI scheduling agent.",
@@ -76,26 +80,46 @@ public class AiPromptBuilderTest {
 
         adapter.execute(request);
 
-        HttpEntity<Map<String, Object>> entity = entityCaptor.getValue();
-        Map<String, Object> payload = entity.getBody();
-        assertNotNull(payload);
-        Map<String, Object> systemInstruction = asMap(payload.get("system_instruction"));
-        List<Map<String, Object>> systemParts = asList(systemInstruction.get("parts"));
-        Map<String, Object> systemPart = systemParts.get(0);
-        assertEquals(AiPromptTemplate.systemPrompt(), systemPart.get("text"));
+        HttpEntity<String> entity = entityCaptor.getValue();
+        String payloadBody = entity.getBody();
+        assertNotNull(payloadBody);
 
-        List<Map<String, Object>> contents = asList(payload.get("contents"));
-        Map<String, Object> userContent = contents.get(0);
-        assertEquals("user", userContent.get("role"));
-        List<Map<String, Object>> userParts = asList(userContent.get("parts"));
-        Map<String, Object> userPart = userParts.get(0);
-        assertEquals(AiPromptTemplate.buildUserContent(request.getInstructions(), request.getToonPayload()), userPart.get("text"));
+        JsonNode payload = readTree(payloadBody);
+        String systemPrompt = payload.at("/system_instruction/parts/0/text").asText();
+        assertEquals(AiPromptTemplate.systemPrompt(), systemPrompt);
 
-        String userPrompt = (String) userPart.get("text");
+        JsonNode userContent = payload.at("/contents/0");
+        assertEquals("user", userContent.path("role").asText());
+        String userPrompt = userContent.at("/parts/0/text").asText();
+        assertEquals(AiPromptTemplate.buildUserContent(request.getInstructions(), request.getToonPayload()), userPrompt);
+
         assertNoFixedInstructions(userPrompt);
-
-        String systemPrompt = (String) systemPart.get("text");
         assertSchemaConstraintsAppearOnce(systemPrompt);
+    }
+
+    @Test
+    public void gemmaPromptBuilder_shouldSerializeQuotedInstructionsAsValidJson() {
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setGemmaUrl("http://example.test/gemma");
+        properties.setGemmaApiKey("token");
+        GemmaAgentAdapter adapter = new GemmaAgentAdapter(restTemplate, properties);
+
+        String instructions = "Prioritize \"night\" coverage and keep \"Dr. Smith\" in ICU";
+        AiBrokerRequest request = new AiBrokerRequest("toon-payload", instructions, null);
+        var entityCaptor = org.mockito.ArgumentCaptor.forClass(HttpEntity.class);
+        when(restTemplate.postForObject(eq("http://example.test/gemma?key=token"), entityCaptor.capture(), eq(String.class)))
+                .thenReturn(gemmaResponse());
+
+        adapter.execute(request);
+
+        HttpEntity<String> entity = entityCaptor.getValue();
+        String outboundBody = entity.getBody();
+        assertNotNull(outboundBody);
+
+        JsonNode payload = readTree(outboundBody);
+        String expectedUserPrompt = AiPromptTemplate.buildUserContent(instructions, request.getToonPayload());
+        assertEquals(expectedUserPrompt, payload.at("/contents/0/parts/0/text").asText());
     }
 
     private static void assertNoFixedInstructions(String userPrompt) {
@@ -127,9 +151,13 @@ public class AiPromptBuilderTest {
         return (List<Map<String, Object>>) value;
     }
 
-    @SuppressWarnings("unchecked")
-    private static Map<String, Object> asMap(Object value) {
-        return (Map<String, Object>) value;
+
+    private static JsonNode readTree(String payloadBody) {
+        try {
+            return OBJECT_MAPPER.readTree(payloadBody);
+        } catch (Exception e) {
+            throw new AssertionError("Expected valid JSON payload", e);
+        }
     }
 
     private static String llamaResponse() {

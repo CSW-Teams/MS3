@@ -2,6 +2,8 @@ package org.cswteams.ms3.ai.broker;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -9,8 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class GemmaAgentAdapter implements AgentProviderAdapter {
 
@@ -41,18 +41,7 @@ public class GemmaAgentAdapter implements AgentProviderAdapter {
 
         String systemPrompt = AiPromptTemplate.systemPrompt();
         String userPrompt = AiPromptTemplate.buildUserContent(request.getInstructions(), request.getToonPayload());
-        Map<String, Object> payload = Map.of(
-                "system_instruction", Map.of("parts", List.of(Map.of("text", systemPrompt))),
-                "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", userPrompt))))
-                //,"generationConfig", Map.of("responseMimeType", "application/json")
-        );
-
-        String payloadJson;
-        try {
-            payloadJson = objectMapper.writeValueAsString(payload);
-        } catch (IOException e) {
-            throw AiProtocolException.invalidJson("Gemma request payload is not valid JSON", e);
-        }
+        String payloadJson = buildPayloadJson(systemPrompt, userPrompt);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -65,6 +54,26 @@ public class GemmaAgentAdapter implements AgentProviderAdapter {
             throw AiProtocolException.invalidJson("Empty response from Gemma API", null);
         }
         return extractJsonPayload(response);
+    }
+
+    private String buildPayloadJson(String systemPrompt, String userPrompt) {
+        ObjectNode payload = objectMapper.createObjectNode();
+
+        ObjectNode systemInstruction = payload.putObject("system_instruction");
+        ArrayNode systemParts = systemInstruction.putArray("parts");
+        systemParts.addObject().put("text", systemPrompt);
+
+        ArrayNode contents = payload.putArray("contents");
+        ObjectNode userContent = contents.addObject();
+        userContent.put("role", "user");
+        ArrayNode userParts = userContent.putArray("parts");
+        userParts.addObject().put("text", userPrompt);
+
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (IOException e) {
+            throw AiProtocolException.invalidJson("Gemma request payload is not valid JSON", e);
+        }
     }
 
     private String extractJsonPayload(String response) {
