@@ -444,10 +444,18 @@ public class ToonBuilder {
     }
 
     private String mapSeniority(Seniority seniority) {
-        if (seniority == Seniority.STRUCTURED) {
-            return "STRUCTURED";
+        if (seniority == null) {
+            return "SPECIALIST_JUNIOR";
         }
-        return "JUNIOR";
+        switch (seniority) {
+            case STRUCTURED:
+                return "STRUCTURED";
+            case SPECIALIST_SENIOR:
+                return "SPECIALIST_SENIOR";
+            case SPECIALIST_JUNIOR:
+            default:
+                return "SPECIALIST_JUNIOR";
+        }
     }
 
     public static String shiftIdFor(ConcreteShift shift) {

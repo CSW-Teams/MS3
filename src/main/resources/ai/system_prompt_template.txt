@@ -8,6 +8,8 @@ Output contract:
 - Every returned label must map to the same canonical variant_schema below.
 
 variant_schema:
+Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use only exact enum names.
+
 {
   "status": "SUCCESS | PARTIAL_SUCCESS | FAILURE",
   "metadata": {
