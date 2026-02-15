@@ -145,8 +145,9 @@ public class AiScheduleJsonParser {
             throw AiProtocolException.schemaMismatch("AI response missing variants", null);
         }
 
+        List<String> normalizedLabels = new ArrayList<>(dto.variants.keySet());
         List<String> unexpected = new ArrayList<>();
-        for (String label : dto.variants.keySet()) {
+        for (String label : normalizedLabels) {
             if (!REQUIRED_VARIANT_LABELS.contains(label)) {
                 unexpected.add(label);
             }
@@ -156,6 +157,21 @@ public class AiScheduleJsonParser {
                     "AI response contains unexpected variants: " + String.join(", ", unexpected),
                     null
             );
+        }
+
+        if (normalizedLabels.size() > 1) {
+            List<String> missing = new ArrayList<>();
+            for (String requiredLabel : REQUIRED_VARIANT_LABELS) {
+                if (!dto.variants.containsKey(requiredLabel)) {
+                    missing.add(requiredLabel);
+                }
+            }
+            if (!missing.isEmpty()) {
+                throw AiProtocolException.schemaMismatch(
+                        "AI response missing required variants: " + String.join(", ", missing),
+                        null
+                );
+            }
         }
     }
 }
