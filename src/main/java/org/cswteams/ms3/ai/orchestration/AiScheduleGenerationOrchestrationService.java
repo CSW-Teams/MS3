@@ -402,10 +402,10 @@ public class AiScheduleGenerationOrchestrationService {
                 continue;
             }
             for (QuantityShiftSeniority quantityShiftSeniority : concreteShift.getShift().getQuantityShiftSeniority()) {
-                if (quantityShiftSeniority == null || quantityShiftSeniority.getSeniorityQuantityMap() == null) {
+                if (quantityShiftSeniority == null || quantityShiftSeniority.getSeniorityMap() == null) {
                     continue;
                 }
-                for (Map.Entry<Seniority, Integer> entry : quantityShiftSeniority.getSeniorityQuantityMap().entrySet()) {
+                for (Map.Entry<Seniority, Integer> entry : quantityShiftSeniority.getSeniorityMap().entrySet()) {
                     if (entry.getKey() != null && entry.getValue() != null && entry.getValue() > 0 && !requiredSeniorities.contains(entry.getKey())) {
                         requiredSeniorities.add(entry.getKey());
                     }
