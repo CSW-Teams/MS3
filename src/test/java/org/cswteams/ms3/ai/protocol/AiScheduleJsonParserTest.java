@@ -417,6 +417,33 @@ public class AiScheduleJsonParserTest {
         }
     }
 
+
+    @Test
+    public void parse_roleCoveredAliasJunior_shouldMapToSpecialistJunior() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
+        String json = validJson().replace("STRUCTURED", "  junior  ");
+
+        AiScheduleResponseDto dto = parser.parse(json);
+
+        assertEquals(Seniority.SPECIALIST_JUNIOR, dto.assignments.get(0).roleCovered);
+    }
+
+    @Test
+    public void parse_invalidRoleCovered_shouldThrowTypeMismatchWithPath() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
+        String json = validJson().replace("STRUCTURED", "intern");
+
+        try {
+            parser.parse(json);
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
+            assertEquals(AiProtocolException.ErrorCode.TYPE_MISMATCH, ex.getCode());
+            assertTrue(ex.getMessage().contains("$.assignments[0].role_covered"));
+            assertTrue(ex.getMessage().contains("Unsupported role_covered value"));
+        }
+    }
+
     private static void assertTypeMismatch(AiScheduleJsonParser parser, String json, String expectedPath) {
         try {
             parser.parse(json);
