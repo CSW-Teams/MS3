@@ -58,12 +58,12 @@ public class GemmaAgentAdapter implements AgentProviderAdapter {
 
     private String buildPayloadJson(String systemPrompt, String userPrompt) {
         ObjectNode payload = objectMapper.createObjectNode();
-
-        ObjectNode systemInstruction = payload.putObject("system_instruction");
-        ArrayNode systemParts = systemInstruction.putArray("parts");
+        ArrayNode contents = payload.putArray("contents");
+        ObjectNode systemContent = contents.addObject();
+        systemContent.put("role", "model");
+        ArrayNode systemParts = systemContent.putArray("parts");
         systemParts.addObject().put("text", systemPrompt);
 
-        ArrayNode contents = payload.putArray("contents");
         ObjectNode userContent = contents.addObject();
         userContent.put("role", "user");
         ArrayNode userParts = userContent.putArray("parts");
