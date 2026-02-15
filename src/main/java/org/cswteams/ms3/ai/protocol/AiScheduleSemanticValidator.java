@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import org.cswteams.ms3.enums.Seniority;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -66,7 +67,7 @@ public class AiScheduleSemanticValidator {
     private void validateMetrics(AiMetricsDto metrics, List<ValidationError> errors) {
         if (metrics.coveragePercent == null) {
             errors.add(new ValidationError("$.metadata.metrics.coverage_percent", "must not be null"));
-        } else if (!inRange(metrics.coveragePercent, 0.0, 1.0)) {
+        } else if (!inRange(metrics.coveragePercent, 0.0, 100.0)) {
             errors.add(new ValidationError("$.metadata.metrics.coverage_percent", "must be between 0 and 1"));
         }
         if (metrics.softViolationsCount == null) {
@@ -97,8 +98,9 @@ public class AiScheduleSemanticValidator {
             }
             if (assignment.roleCovered == null) {
                 errors.add(new ValidationError("$.assignments[" + i + "].role_covered", "must not be null"));
-            } else if (assignment.roleCovered != org.cswteams.ms3.enums.Seniority.STRUCTURED
-                    && assignment.roleCovered != org.cswteams.ms3.enums.Seniority.SPECIALIST_JUNIOR) {
+            } else if (assignment.roleCovered != Seniority.STRUCTURED
+                    && assignment.roleCovered != Seniority.SPECIALIST_JUNIOR
+                    && assignment.roleCovered != Seniority.SPECIALIST_SENIOR) {
                 errors.add(new ValidationError("$.assignments[" + i + "].role_covered", "must be STRUCTURED or JUNIOR"));
             }
             if (assignment.isForced == null) {
