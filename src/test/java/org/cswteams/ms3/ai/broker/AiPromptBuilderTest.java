@@ -75,20 +75,22 @@ public class AiPromptBuilderTest {
 
         AiBrokerRequest request = new AiBrokerRequest("toon-payload", "custom instructions", null);
         var entityCaptor = org.mockito.ArgumentCaptor.forClass(HttpEntity.class);
-        when(restTemplate.postForObject(eq("http://example.test/gemma?key=token"), entityCaptor.capture(), eq(String.class)))
+        when(restTemplate.postForObject(eq("http://example.test/gemma"), entityCaptor.capture(), eq(String.class)))
                 .thenReturn(gemmaResponse());
 
         adapter.execute(request);
 
         HttpEntity<String> entity = entityCaptor.getValue();
+        assertEquals("token", entity.getHeaders().getFirst("x-goog-api-key"));
         String payloadBody = entity.getBody();
         assertNotNull(payloadBody);
 
         JsonNode payload = readTree(payloadBody);
-        String systemPrompt = payload.at("/system_instruction/parts/0/text").asText();
+        assertEquals("model", payload.at("/contents/0/role").asText());
+        String systemPrompt = payload.at("/contents/0/parts/0/text").asText();
         assertEquals(AiPromptTemplate.systemPrompt(), systemPrompt);
 
-        JsonNode userContent = payload.at("/contents/0");
+        JsonNode userContent = payload.at("/contents/1");
         assertEquals("user", userContent.path("role").asText());
         String userPrompt = userContent.at("/parts/0/text").asText();
         assertEquals(AiPromptTemplate.buildUserContent(request.getInstructions(), request.getToonPayload()), userPrompt);
@@ -108,18 +110,22 @@ public class AiPromptBuilderTest {
         String instructions = "Prioritize \"night\" coverage and keep \"Dr. Smith\" in ICU";
         AiBrokerRequest request = new AiBrokerRequest("toon-payload", instructions, null);
         var entityCaptor = org.mockito.ArgumentCaptor.forClass(HttpEntity.class);
-        when(restTemplate.postForObject(eq("http://example.test/gemma?key=token"), entityCaptor.capture(), eq(String.class)))
+        when(restTemplate.postForObject(eq("http://example.test/gemma"), entityCaptor.capture(), eq(String.class)))
                 .thenReturn(gemmaResponse());
 
         adapter.execute(request);
 
         HttpEntity<String> entity = entityCaptor.getValue();
+        assertEquals("token", entity.getHeaders().getFirst("x-goog-api-key"));
         String outboundBody = entity.getBody();
         assertNotNull(outboundBody);
 
         JsonNode payload = readTree(outboundBody);
         String expectedUserPrompt = AiPromptTemplate.buildUserContent(instructions, request.getToonPayload());
-        assertEquals(expectedUserPrompt, payload.at("/contents/0/parts/0/text").asText());
+        assertEquals("model", payload.at("/contents/0/role").asText());
+        assertEquals(AiPromptTemplate.systemPrompt(), payload.at("/contents/0/parts/0/text").asText());
+        assertEquals("user", payload.at("/contents/1/role").asText());
+        assertEquals(expectedUserPrompt, payload.at("/contents/1/parts/0/text").asText());
     }
 
     private static void assertNoFixedInstructions(String userPrompt) {
