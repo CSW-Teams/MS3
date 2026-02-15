@@ -66,7 +66,7 @@ public class AiPromptBuilderTest {
     }
 
     @Test
-    public void gemmaPromptBuilder_shouldPlaceSystemPromptAndAvoidFixedInstructionsInUserContent() {
+    public void gemmaPromptBuilder_shouldUseHeaderAuthAndSchemaPayloadWithoutQueryApiKey() {
         RestTemplate restTemplate = mock(RestTemplate.class);
         AiBrokerProperties properties = new AiBrokerProperties();
         properties.setGemmaUrl("http://example.test/gemma");
@@ -75,10 +75,15 @@ public class AiPromptBuilderTest {
 
         AiBrokerRequest request = new AiBrokerRequest("toon-payload", "custom instructions", null);
         var entityCaptor = org.mockito.ArgumentCaptor.forClass(HttpEntity.class);
-        when(restTemplate.postForObject(eq("http://example.test/gemma"), entityCaptor.capture(), eq(String.class)))
+        var urlCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
+        when(restTemplate.postForObject(urlCaptor.capture(), entityCaptor.capture(), eq(String.class)))
                 .thenReturn(gemmaResponse());
 
         adapter.execute(request);
+
+        String outboundUrl = urlCaptor.getValue();
+        assertEquals("http://example.test/gemma", outboundUrl);
+        assertFalse("Gemma URL should not append query API key", outboundUrl.contains("?key="));
 
         HttpEntity<String> entity = entityCaptor.getValue();
         assertEquals("token", entity.getHeaders().getFirst("x-goog-api-key"));
@@ -100,7 +105,7 @@ public class AiPromptBuilderTest {
     }
 
     @Test
-    public void gemmaPromptBuilder_shouldSerializeQuotedInstructionsAsValidJson() {
+    public void gemmaPromptBuilder_shouldSerializeQuotedInstructionsAndPreserveHeaderBasedAuth() {
         RestTemplate restTemplate = mock(RestTemplate.class);
         AiBrokerProperties properties = new AiBrokerProperties();
         properties.setGemmaUrl("http://example.test/gemma");
@@ -110,10 +115,15 @@ public class AiPromptBuilderTest {
         String instructions = "Prioritize \"night\" coverage and keep \"Dr. Smith\" in ICU";
         AiBrokerRequest request = new AiBrokerRequest("toon-payload", instructions, null);
         var entityCaptor = org.mockito.ArgumentCaptor.forClass(HttpEntity.class);
-        when(restTemplate.postForObject(eq("http://example.test/gemma"), entityCaptor.capture(), eq(String.class)))
+        var urlCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
+        when(restTemplate.postForObject(urlCaptor.capture(), entityCaptor.capture(), eq(String.class)))
                 .thenReturn(gemmaResponse());
 
         adapter.execute(request);
+
+        String outboundUrl = urlCaptor.getValue();
+        assertEquals("http://example.test/gemma", outboundUrl);
+        assertFalse("Gemma URL should not append query API key", outboundUrl.contains("?key="));
 
         HttpEntity<String> entity = entityCaptor.getValue();
         assertEquals("token", entity.getHeaders().getFirst("x-goog-api-key"));
