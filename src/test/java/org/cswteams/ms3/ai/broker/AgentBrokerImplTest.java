@@ -12,7 +12,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.DoubleSupplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -78,6 +81,89 @@ public class AgentBrokerImplTest {
         AiScheduleResponse variant = response.getVariant("EMPATHETIC");
         assertEquals(AiStatus.SUCCESS, variant.getStatus());
         verify(gemmaAdapter, times(3)).execute(request);
+    }
+
+
+
+    @Test
+    public void requestSchedule_shouldUseRateLimitBackoffPacing() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(2);
+        properties.setRetryBackoff(Duration.ofMillis(100));
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(gemmaAdapter.execute(request))
+                .thenThrow(AiProtocolException.transportFailure("HTTP 429 Too Many Requests", null))
+                .thenThrow(AiProtocolException.transportFailure("status=429", null))
+                .thenReturn(validJson());
+
+        RecordingBroker broker = new RecordingBroker(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser(),
+                new AiTokenEstimator(),
+                new AiTokenUsageTracker(),
+                () -> 0D
+        );
+
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
+
+        assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
+        assertEquals(Arrays.asList(Duration.ofMillis(4000), Duration.ofMillis(8000)), broker.recordedSleeps);
+        verify(gemmaAdapter, times(3)).execute(request);
+    }
+
+    @Test
+    public void requestSchedule_shouldCutOffRateLimitRetriesForOversizedPayload() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(3);
+        properties.setRetryBackoff(Duration.ofMillis(50));
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(gemmaAdapter.execute(request))
+                .thenThrow(AiProtocolException.transportFailure("HTTP 429 Too Many Requests", null));
+
+        AiTokenEstimator oversizedEstimator = new AiTokenEstimator() {
+            @Override
+            public int estimateInputTokens(AiBrokerRequest request) {
+                return 12000;
+            }
+
+            @Override
+            public int estimateExpectedOutputTokens(AiBrokerRequest request) {
+                return 200;
+            }
+        };
+
+        RecordingBroker broker = new RecordingBroker(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser(),
+                oversizedEstimator,
+                new AiTokenUsageTracker(),
+                () -> 0D
+        );
+
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(request);
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
+
+        assertEquals(AiProtocolException.ErrorCode.TRANSPORT_FAILURE, exception.getCode());
+        assertTrue(broker.recordedSleeps.isEmpty());
+        verify(gemmaAdapter, times(1)).execute(request);
     }
 
     @Test
@@ -379,6 +465,25 @@ public class AgentBrokerImplTest {
                 + "}"
                 + "}"
                 + "}";
+    }
+
+
+    private static class RecordingBroker extends AgentBrokerImpl {
+        private final List<Duration> recordedSleeps = new ArrayList<>();
+
+        private RecordingBroker(AiBrokerProperties properties,
+                                List<AgentProviderAdapter> adapters,
+                                AiScheduleJsonParser jsonParser,
+                                AiTokenEstimator tokenEstimator,
+                                AiTokenUsageTracker tokenUsageTracker,
+                                DoubleSupplier jitterSource) {
+            super(properties, adapters, jsonParser, tokenEstimator, tokenUsageTracker, jitterSource);
+        }
+
+        @Override
+        void sleep(Duration backoff) {
+            recordedSleeps.add(backoff);
+        }
     }
 
 
