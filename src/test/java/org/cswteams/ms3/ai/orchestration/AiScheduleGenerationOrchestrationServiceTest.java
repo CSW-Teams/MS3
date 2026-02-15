@@ -9,6 +9,8 @@ import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.audit.selection.AuditedSelectionResult;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.toon.ToonActiveConstraint;
+import org.cswteams.ms3.control.toon.ToonConstraintEntityType;
+import org.cswteams.ms3.control.toon.ToonConstraintType;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
@@ -75,7 +77,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO);
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
         when(scheduleDAO.save(transientSchedule)).thenReturn(transientSchedule);
@@ -87,7 +89,9 @@ class AiScheduleGenerationOrchestrationServiceTest {
 
         when(agentBroker.previewTokenBudget(any()))
                 .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
-        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.<ToonActiveConstraint>of());
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of(
+                new ToonActiveConstraint(ToonConstraintType.HARD, ToonConstraintEntityType.DOCTOR, String.valueOf(doctor.getId()), "REST_PERIOD", Map.of("hours", 11))
+        ));
         when(aiScheduleConverterService.convert(any())).thenReturn(List.of(concreteShift));
         when(decisionAlgorithmService.selectPreferredWithAudit(any()))
                 .thenReturn(new AuditedSelectionResult("standard", List.of()));
@@ -98,7 +102,6 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 doctorUffaPriorityDAO,
                 doctorHolidaysDAO,
                 scheduleDAO,
-                aiActiveConstraintResolver,
                 agentBroker,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
@@ -113,6 +116,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
 
         String toonPayload = requestCaptor.getAllValues().get(0).getToonPayload();
         assertTrue(toonPayload.startsWith("ctx:{p:\""));
+        assertTrue(toonPayload.contains("REST_PERIOD"));
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {

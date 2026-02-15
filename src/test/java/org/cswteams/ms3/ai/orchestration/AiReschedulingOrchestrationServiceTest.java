@@ -81,7 +81,8 @@ class AiReschedulingOrchestrationServiceTest {
         RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
         when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
-        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
                 periodStart,
                 periodEnd,
@@ -140,7 +141,8 @@ class AiReschedulingOrchestrationServiceTest {
         RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
         when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
-        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
 
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
                 periodStart,
@@ -188,7 +190,8 @@ class AiReschedulingOrchestrationServiceTest {
         RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
         when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of(request));
-        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
 
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
                 periodStart,
@@ -206,6 +209,63 @@ class AiReschedulingOrchestrationServiceTest {
         String payload = builder.build(toonRequest.getToonRequestContext());
         assertTrue(payload.contains(shiftId + ", 1, REMOVAL_REJECTED, 4, \"Free text reason\"\n"));
     }
+
+
+    @Test
+    void resolvesDbBackedConstraintsForGenerateAndRegenerateModesWhenPlaceholdersAreEmpty() {
+        LocalDate periodStart = LocalDate.of(2026, 8, 1);
+        LocalDate periodEnd = LocalDate.of(2026, 8, 2);
+        Doctor doctor = newDoctor(33L, Seniority.STRUCTURED);
+        Shift shift = makeShift(404L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(480));
+        ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
+
+        ToonActiveConstraint resolvedConstraint = new ToonActiveConstraint(
+                ToonConstraintType.SOFT,
+                ToonConstraintEntityType.DOCTOR,
+                String.valueOf(doctor.getId()),
+                "MAX_CONSECUTIVE_DAYS",
+                Map.of("maxDays", 5)
+        );
+
+        RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
+        when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+                .thenReturn(List.of());
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        when(aiActiveConstraintResolver.resolve(List.of(doctor), List.of(concreteShift)))
+                .thenReturn(List.of(resolvedConstraint));
+
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
+
+        AiReschedulingToonRequest generateRequest = service.buildToonRequestContext(
+                periodStart,
+                periodEnd,
+                "generate",
+                List.of(concreteShift),
+                List.of(doctor),
+                List.of(new DoctorUffaPriority(doctor)),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        AiReschedulingToonRequest regenerateRequest = service.buildToonRequestContext(
+                periodStart,
+                periodEnd,
+                "rebalance_uffa",
+                List.of(concreteShift),
+                List.of(doctor),
+                List.of(new DoctorUffaPriority(doctor)),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        assertEquals(1, generateRequest.getToonRequestContext().getActiveConstraints().size());
+        assertEquals(1, regenerateRequest.getToonRequestContext().getActiveConstraints().size());
+        assertEquals("MAX_CONSECUTIVE_DAYS", generateRequest.getToonRequestContext().getActiveConstraints().get(0).getConstraintCode());
+        assertEquals("MAX_CONSECUTIVE_DAYS", regenerateRequest.getToonRequestContext().getActiveConstraints().get(0).getConstraintCode());
+    }
+
 
     private Doctor newDoctor(Long id, Seniority seniority) {
         Doctor doctor = new Doctor(

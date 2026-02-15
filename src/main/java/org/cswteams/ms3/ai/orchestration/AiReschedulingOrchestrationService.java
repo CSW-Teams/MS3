@@ -32,10 +32,22 @@ public class AiReschedulingOrchestrationService {
 
     private final ToonPseudonymizationMapper pseudonymizationMapper = new ToonPseudonymizationMapper();
     private final RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO;
+    private final AiActiveConstraintResolver aiActiveConstraintResolver;
 
     @Autowired
-    public AiReschedulingOrchestrationService(RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO) {
+    public AiReschedulingOrchestrationService(RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO,
+                                              AiActiveConstraintResolver aiActiveConstraintResolver) {
         this.requestRemovalFromConcreteShiftDAO = requestRemovalFromConcreteShiftDAO;
+        this.aiActiveConstraintResolver = aiActiveConstraintResolver;
+    }
+
+    public List<ToonActiveConstraint> resolveActiveConstraints(List<Doctor> doctors,
+                                                               List<ConcreteShift> concreteShifts) {
+        if (aiActiveConstraintResolver == null) {
+            return List.of();
+        }
+        List<ToonActiveConstraint> resolvedConstraints = aiActiveConstraintResolver.resolve(doctors, concreteShifts);
+        return resolvedConstraints == null ? List.of() : resolvedConstraints;
     }
 
     public AiReschedulingToonRequest buildToonRequestContext(LocalDate periodStart,
@@ -47,6 +59,10 @@ public class AiReschedulingOrchestrationService {
                                                              List<DoctorHolidays> doctorHolidays,
                                                              List<ToonActiveConstraint> activeConstraints,
                                                              List<ToonFeedback> feedbacks) {
+        List<ToonActiveConstraint> resolvedConstraints = activeConstraints;
+        if (resolvedConstraints == null || resolvedConstraints.isEmpty()) {
+            resolvedConstraints = resolveActiveConstraints(doctors, concreteShifts);
+        }
         List<ToonFeedback> resolvedFeedbacks = new ArrayList<>();
         if (feedbacks != null) {
             resolvedFeedbacks.addAll(feedbacks);
@@ -80,7 +96,7 @@ public class AiReschedulingOrchestrationService {
                 scopedDoctors,
                 scopedPriorities,
                 scopedHolidays,
-                activeConstraints,
+                resolvedConstraints,
                 resolvedFeedbacks
         );
 
