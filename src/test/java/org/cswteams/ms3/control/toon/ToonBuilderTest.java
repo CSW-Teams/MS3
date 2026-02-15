@@ -292,6 +292,60 @@ class ToonBuilderTest {
     }
 
     @Test
+    void includesAllMappedConstraintsInActiveConstraintsSection() {
+        LocalDate periodStart = LocalDate.of(2026, 6, 1);
+        LocalDate periodEnd = LocalDate.of(2026, 6, 1);
+        Doctor doctor = newDoctor(44L, Seniority.STRUCTURED);
+        Shift shift = makeShift(
+                401L,
+                TimeSlot.AFTERNOON,
+                LocalTime.of(14, 0),
+                Duration.ofMinutes(360)
+        );
+        ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
+        String shiftId = ToonBuilder.shiftIdFor(concreteShift);
+
+        ToonActiveConstraint hardDoctorConstraint = new ToonActiveConstraint(
+                ToonConstraintType.HARD,
+                ToonConstraintEntityType.DOCTOR,
+                String.valueOf(doctor.getId()),
+                "MAX_HOURS",
+                Map.of("limit", "480")
+        );
+        ToonActiveConstraint softShiftConstraint = new ToonActiveConstraint(
+                ToonConstraintType.SOFT,
+                ToonConstraintEntityType.SHIFT,
+                shiftId,
+                "ROLE_QUOTA",
+                Map.of("structured", "1")
+        );
+
+        ToonRequestContext context = new ToonRequestContext(
+                periodStart,
+                periodEnd,
+                "generate",
+                List.of(concreteShift),
+                List.of(doctor),
+                List.of(new DoctorUffaPriority(doctor)),
+                List.of(),
+                List.of(hardDoctorConstraint, softShiftConstraint),
+                List.of()
+        );
+
+        ToonBuilder builder = new ToonBuilder();
+        String legacy = builder.build(context);
+        String compact = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+
+        assertTrue(legacy.contains("active_constraints[2]{type, entity_type, entity_id, reason, params}:"));
+        assertTrue(legacy.contains("HARD, DOCTOR, 44, MAX_HOURS, { \"limit\": \"480\" }"));
+        assertTrue(legacy.contains("SOFT, SHIFT, " + shiftId + ", ROLE_QUOTA, { \"structured\": \"1\" }"));
+
+        assertTrue(compact.contains("ac[2]{t,e,i,r,p}:"));
+        assertTrue(compact.contains("HARD,DOCTOR,44,MAX_HOURS,{limit:\"480\"}"));
+        assertTrue(compact.contains("SOFT,SHIFT," + shiftId + ",ROLE_QUOTA,{structured:\"1\"}"));
+    }
+
+    @Test
     void emitsCanonicalSpecialistRoleNamesInToonPayload() {
         LocalDate periodStart = LocalDate.of(2026, 5, 20);
         LocalDate periodEnd = LocalDate.of(2026, 5, 20);
