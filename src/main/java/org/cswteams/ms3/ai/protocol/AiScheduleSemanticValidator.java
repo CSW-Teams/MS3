@@ -44,6 +44,26 @@ public class AiScheduleSemanticValidator {
         }
     }
 
+    /**
+     * Validation profile used by conversion/persistence flows.
+     * It validates only assignment-level fields required to rebuild ConcreteShift entities.
+     */
+    public void validateForConversion(AiScheduleResponseDto dto) {
+        List<ValidationError> errors = new ArrayList<>();
+        if (dto == null) {
+            errors.add(new ValidationError("$", "response must not be null"));
+            throw AiProtocolException.schemaMismatch("AI response schema validation failed", errors, null);
+        }
+        if (dto.assignments == null) {
+            errors.add(new ValidationError("$.assignments", "must not be null"));
+            throw AiProtocolException.schemaMismatch("AI response schema validation failed", errors, null);
+        }
+        validateAssignments(dto.assignments, errors);
+        if (!errors.isEmpty()) {
+            throw AiProtocolException.schemaMismatch("AI response schema validation failed", errors, null);
+        }
+    }
+
     private void validateMetadata(AiMetadataDto metadata, List<ValidationError> errors) {
         if (metadata == null) {
             return;
@@ -94,12 +114,6 @@ public class AiScheduleSemanticValidator {
             }
             if (!positiveInt(assignment.doctorId)) {
                 errors.add(new ValidationError("$.assignments[" + i + "].doctor_id", "must be > 0"));
-            }
-            if (assignment.roleCovered == null) {
-                errors.add(new ValidationError("$.assignments[" + i + "].role_covered", "must not be null"));
-            } else if (assignment.roleCovered != org.cswteams.ms3.enums.Seniority.STRUCTURED
-                    && assignment.roleCovered != org.cswteams.ms3.enums.Seniority.SPECIALIST_JUNIOR) {
-                errors.add(new ValidationError("$.assignments[" + i + "].role_covered", "must be STRUCTURED or JUNIOR"));
             }
             if (assignment.isForced == null) {
                 errors.add(new ValidationError("$.assignments[" + i + "].is_forced", "must not be null"));

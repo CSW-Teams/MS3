@@ -315,15 +315,15 @@ public class SchedulerController implements ISchedulerController {
         if (schedule == null) {
             return null;
         }
-        scheduleDAO.save(schedule);
+        Schedule persistedSchedule = scheduleDAO.save(schedule);
         List<DoctorUffaPriority> priorities = schedule.getDoctorUffaPriorityList();
         if (priorities != null) {
             for (DoctorUffaPriority dup : priorities) {
-                dup.setSchedule(schedule);
+                dup.setSchedule(persistedSchedule);
                 doctorUffaPriorityDAO.save(dup);
             }
         }
-        return schedule;
+        return persistedSchedule;
     }
 
     /**
