@@ -55,7 +55,8 @@ const resolveCandidateLabel = (metadata) => {
   if (!metadata?.type) {
     return t('Schedule');
   }
-  switch (metadata.type.toLowerCase()) {
+  const normalizedType = String(metadata.type).toLowerCase();
+  switch (normalizedType) {
     case 'standard':
       return t('Standard');
     case 'empathetic':
@@ -105,13 +106,13 @@ function AiScheduleComparisonModal({
     <Modal
       open={isOpen}
       onClose={onClose}
-      aria-labelledby="ai-schedule-comparison"
-      aria-describedby="ai-schedule-comparison-metrics"
+      aria-labelledby="schedule-comparison"
+      aria-describedby="schedule-comparison-metrics"
     >
       <Box sx={modalStyle}>
         {candidates.length === 0 ? (
           <Typography variant="h6" component="div" align="center" sx={{ mt: 2 }}>
-            {t('No AI-generated schedules available for comparison.')}
+            {t('No schedules available for comparison. / Nessuna schedulazione disponibile per il confronto.')}
           </Typography>
         ) : (
           <React.Fragment>
@@ -120,7 +121,7 @@ function AiScheduleComparisonModal({
                 variant="outlined"
                 disabled={downloadDisabled}
                 onClick={() =>
-                  downloadJson(downloadableCandidates, 'ai-schedules.json')
+                  downloadJson(downloadableCandidates, 'schedule-comparison.json')
                 }
               >
                 {t('Download')}
