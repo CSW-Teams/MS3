@@ -41,6 +41,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         when(ctx.schedulerController.alreadyExistsAnotherSchedule(ctx.startDate, ctx.endDate)).thenReturn(true);
 
         ctx.service.generateScheduleComparison(ctx.startDate, ctx.endDate);
+        verify(ctx.schedulerController, never()).persistSchedule(any(Schedule.class));
 
         AiScheduleGenerationOrchestrationService.SelectionResult duplicateResult =
                 ctx.service.persistSelectedCandidate("standard");
@@ -163,7 +164,6 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                 new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-        when(scheduleDAO.save(transientSchedule)).thenReturn(transientSchedule);
         when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(aiActiveConstraintResolver.resolveWithReport(any(), any(), anyBoolean()))
