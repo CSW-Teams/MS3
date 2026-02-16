@@ -16,6 +16,9 @@ Descrizione dettagliata del flusso di generazione e rigenerazione degli schedule
     -   `recreateSchedule(id)`: [SchedulerController.java#recreateSchedule(long)](src/main/java/org/cswteams/ms3/control/scheduler/SchedulerController.java#L214)
 -   **Motore di Generazione:** [ScheduleBuilder.java](src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java)
     -   `build()`: [ScheduleBuilder.java#build()](src/main/java/org/cswteams/ms3/control/scheduler/ScheduleBuilder.java#L169)
+-   **Flow AI generation/selection (authoritative):** [docs/scheduling_flow/ai_generation_selection_flow.md](docs/scheduling_flow/ai_generation_selection_flow.md)
+    -   `POST /schedule/generation/ai` restituisce 4 candidati (standard + 3 AI) e non persiste.
+    -   `POST /schedule/selection` persiste esclusivamente il candidato confermato, con controlli duplicate-range in fase di selezione.
 
 ---
 
