@@ -115,6 +115,7 @@ public class AiScheduleGenerationOrchestrationService {
     private final AiReschedulingOrchestrationService aiReschedulingOrchestrationService;
     private final DecisionAlgorithmService decisionAlgorithmService;
     private final AiScheduleConverterService aiScheduleConverterService;
+    private final AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder;
     private final ObjectMapper objectMapper;
     private final AiScheduleComparisonMapper comparisonMapper = new AiScheduleComparisonMapper();
     private final AtomicReference<TransientComparisonState> transientComparisonState = new AtomicReference<>();
@@ -129,6 +130,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
                                                     DecisionAlgorithmService decisionAlgorithmService,
                                                     AiScheduleConverterService aiScheduleConverterService,
+                                                    AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder,
                                                     ObjectMapper objectMapper) {
         this.schedulerController = schedulerController;
         this.doctorDAO = doctorDAO;
@@ -139,6 +141,7 @@ public class AiScheduleGenerationOrchestrationService {
         this.aiReschedulingOrchestrationService = aiReschedulingOrchestrationService;
         this.decisionAlgorithmService = decisionAlgorithmService;
         this.aiScheduleConverterService = aiScheduleConverterService;
+        this.hardCoveragePromptBlockBuilder = hardCoveragePromptBlockBuilder;
         this.objectMapper = objectMapper;
     }
 
@@ -370,51 +373,7 @@ public class AiScheduleGenerationOrchestrationService {
         ToonRequestContext context = request.getToonRequestContext();
         ToonBuilder builder = new ToonBuilder();
         String toonPayload = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
-        return toonPayload + "\n" + buildHardCoverageRequirementsBlock(scopedShifts);
-    }
-
-    private String buildHardCoverageRequirementsBlock(List<ConcreteShift> concreteShifts) {
-        List<ConcreteShift> ordered = new ArrayList<>(concreteShifts == null ? List.of() : concreteShifts);
-        ordered.sort((left, right) -> {
-            int byDate = Long.compare(left.getDate(), right.getDate());
-            if (byDate != 0) {
-                return byDate;
-            }
-            int byTimeSlot = left.getShift().getTimeSlot().name().compareTo(right.getShift().getTimeSlot().name());
-            if (byTimeSlot != 0) {
-                return byTimeSlot;
-            }
-            Long leftId = left.getShift().getId();
-            Long rightId = right.getShift().getId();
-            return Long.compare(leftId == null ? 0L : leftId, rightId == null ? 0L : rightId);
-        });
-
-        StringBuilder block = new StringBuilder();
-        block.append("hard_coverage_requirements[")
-                .append(ordered.size())
-                .append("]{shift_id,structured,specialist_junior,specialist_senior,total}:\n");
-        for (ConcreteShift concreteShift : ordered) {
-            int structured = 0;
-            int specialistJunior = 0;
-            int specialistSenior = 0;
-            if (concreteShift.getShift() != null && concreteShift.getShift().getQuantityShiftSeniority() != null) {
-                for (QuantityShiftSeniority quantityShiftSeniority : concreteShift.getShift().getQuantityShiftSeniority()) {
-                    if (quantityShiftSeniority == null || quantityShiftSeniority.getSeniorityMap() == null) {
-                        continue;
-                    }
-                    structured += quantityShiftSeniority.getSeniorityMap().getOrDefault(Seniority.STRUCTURED, 0);
-                    specialistJunior += quantityShiftSeniority.getSeniorityMap().getOrDefault(Seniority.SPECIALIST_JUNIOR, 0);
-                    specialistSenior += quantityShiftSeniority.getSeniorityMap().getOrDefault(Seniority.SPECIALIST_SENIOR, 0);
-                }
-            }
-            int total = structured + specialistJunior + specialistSenior;
-            block.append(ToonBuilder.shiftIdFor(concreteShift)).append(",")
-                    .append(structured).append(",")
-                    .append(specialistJunior).append(",")
-                    .append(specialistSenior).append(",")
-                    .append(total).append("\n");
-        }
-        return block.toString();
+        return toonPayload + "\n" + hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
     }
 
 
