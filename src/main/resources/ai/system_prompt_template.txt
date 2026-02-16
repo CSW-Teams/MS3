@@ -64,6 +64,7 @@ Variant intent:
 
 Constraint handling (from `active_constraints`):
 - HARD constraints: must never be violated in assignments.
+- HARD coverage constraints: for each row in `hard_coverage_requirements`, assignments for that `shift_id` must include at least the listed counts for `structured`, `specialist_junior`, and `specialist_senior` (and therefore total >= `total`).
 - SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
 - Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).
 
