@@ -128,8 +128,9 @@ public class SchedulerController implements ISchedulerController {
     @Override
     @Transactional(Transactional.TxType.SUPPORTS)
     public Schedule createScheduleTransient(LocalDate startDate, LocalDate endDate) {
-        List<DoctorUffaPriority> doctorUffaPriorityList = doctorUffaPriorityDAO.findAll();
-        List<DoctorUffaPrioritySnapshot> doctorUffaPrioritySnapshot = doctorUffaPrioritySnapshotDAO.findAll();
+        List<DoctorUffaPriority> doctorUffaPriorityList = cloneDoctorUffaPriorities(doctorUffaPriorityDAO.findAll());
+        List<DoctorUffaPrioritySnapshot> doctorUffaPrioritySnapshot =
+                cloneDoctorUffaPrioritySnapshots(doctorUffaPrioritySnapshotDAO.findAll());
         return createScheduleInternal(startDate, endDate, doctorUffaPriorityList, doctorUffaPrioritySnapshot, false);
     }
 
@@ -734,6 +735,51 @@ public class SchedulerController implements ISchedulerController {
             schedulesDTO.add(scheduleToDTO(entity));
         }
         return schedulesDTO;
+    }
+
+    private List<DoctorUffaPriority> cloneDoctorUffaPriorities(List<DoctorUffaPriority> priorities) {
+        List<DoctorUffaPriority> cloned = new ArrayList<>();
+        if (priorities == null) {
+            return cloned;
+        }
+        for (DoctorUffaPriority source : priorities) {
+            if (source == null) {
+                continue;
+            }
+            DoctorUffaPriority copy = new DoctorUffaPriority();
+            copy.setId(source.getId());
+            copy.setDoctor(source.getDoctor());
+            copy.setSchedule(source.getSchedule());
+            copy.setGeneralPriority(source.getGeneralPriority());
+            copy.setNightPriority(source.getNightPriority());
+            copy.setLongShiftPriority(source.getLongShiftPriority());
+            copy.setPartialGeneralPriority(source.getPartialGeneralPriority());
+            copy.setPartialNightPriority(source.getPartialNightPriority());
+            copy.setPartialLongShiftPriority(source.getPartialLongShiftPriority());
+            cloned.add(copy);
+        }
+        return cloned;
+    }
+
+    private List<DoctorUffaPrioritySnapshot> cloneDoctorUffaPrioritySnapshots(List<DoctorUffaPrioritySnapshot> snapshots) {
+        List<DoctorUffaPrioritySnapshot> cloned = new ArrayList<>();
+        if (snapshots == null) {
+            return cloned;
+        }
+        for (DoctorUffaPrioritySnapshot source : snapshots) {
+            if (source == null) {
+                continue;
+            }
+            DoctorUffaPrioritySnapshot copy = new DoctorUffaPrioritySnapshot();
+            copy.setId(source.getId());
+            copy.setDoctor(source.getDoctor());
+            copy.setSchedule(source.getSchedule());
+            copy.setGeneralPriority(source.getGeneralPriority());
+            copy.setNightPriority(source.getNightPriority());
+            copy.setLongShiftPriority(source.getLongShiftPriority());
+            cloned.add(copy);
+        }
+        return cloned;
     }
 
     /**
