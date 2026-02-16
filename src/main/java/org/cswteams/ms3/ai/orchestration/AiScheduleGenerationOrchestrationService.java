@@ -161,7 +161,11 @@ public class AiScheduleGenerationOrchestrationService {
         logger.info("event=ai_standard_generation_completed start_date={} end_date={} shifts_count={}",
                 startDate, endDate, standardShiftCount);
 
-        String toonPayload = buildToonPayload(startDate, endDate, standardSchedule.getConcreteShifts());
+        String aiRequestCorrelationId = UUID.randomUUID().toString();
+        String toonPayload = buildToonPayload(startDate,
+                endDate,
+                standardSchedule.getConcreteShifts(),
+                aiRequestCorrelationId);
 
         DecisionMetricValues standardMetrics;
         try {
@@ -175,7 +179,7 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         CandidateData standardCandidate = buildStandardCandidate(standardSchedule, standardMetrics);
-        CandidateBatch aiBatch = requestAiCandidates(toonPayload);
+        CandidateBatch aiBatch = requestAiCandidates(toonPayload, aiRequestCorrelationId);
         if (aiBatch.errorMetadata != null) {
             errorMetadata = mergeError(errorMetadata, aiBatch.errorMetadata);
         }
@@ -322,7 +326,10 @@ public class AiScheduleGenerationOrchestrationService {
         transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates, response));
     }
 
-    private String buildToonPayload(LocalDate startDate, LocalDate endDate, List<ConcreteShift> concreteShifts) {
+    private String buildToonPayload(LocalDate startDate,
+                                    LocalDate endDate,
+                                    List<ConcreteShift> concreteShifts,
+                                    String correlationId) {
         List<ConcreteShift> scopedShifts = filterShiftsInTargetPeriod(startDate, endDate, concreteShifts);
         List<Doctor> doctors = resolveEligibleDoctors(scopedShifts);
         List<Long> eligibleDoctorIds = new ArrayList<>();
@@ -373,7 +380,33 @@ public class AiScheduleGenerationOrchestrationService {
         ToonRequestContext context = request.getToonRequestContext();
         ToonBuilder builder = new ToonBuilder();
         String toonPayload = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
-        return toonPayload + "\n" + hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
+        String hardCoverageBlock = hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
+        int generatedHardCoverageRows = countHardCoverageRows(hardCoverageBlock);
+        logger.info("event=hard_coverage_block_built correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={} hard_coverage_block_length={} hard_coverage_block_checksum={}",
+                correlationId,
+                scopedShifts.size(),
+                generatedHardCoverageRows,
+                hardCoverageBlock == null ? 0 : hardCoverageBlock.length(),
+                hardCoverageBlock == null ? "0" : Integer.toHexString(hardCoverageBlock.hashCode()));
+        if (!scopedShifts.isEmpty() && generatedHardCoverageRows == 0) {
+            logger.error("event=hard_coverage_block_empty_with_scoped_shifts correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={}",
+                    correlationId,
+                    scopedShifts.size(),
+                    generatedHardCoverageRows);
+        }
+        return toonPayload + "\n" + hardCoverageBlock;
+    }
+
+    private int countHardCoverageRows(String hardCoverageBlock) {
+        if (hardCoverageBlock == null || hardCoverageBlock.isBlank()) {
+            return 0;
+        }
+        String normalized = hardCoverageBlock.trim();
+        String[] lines = normalized.split("\\R");
+        if (lines.length <= 1) {
+            return 0;
+        }
+        return lines.length - 1;
     }
 
 
@@ -468,8 +501,7 @@ public class AiScheduleGenerationOrchestrationService {
         );
     }
 
-    private CandidateBatch requestAiCandidates(String toonPayload) {
-        String batchCorrelationId = UUID.randomUUID().toString();
+    private CandidateBatch requestAiCandidates(String toonPayload, String batchCorrelationId) {
         Map<String, AiScheduleResponse> aggregatedVariants = new LinkedHashMap<>();
 
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
