@@ -79,25 +79,6 @@ const resolveSentimentTransitionCounts = (candidate) =>
   candidate?.metrics?.normalized?.sentimentTransitionCounts ||
   {};
 
-const formatSentimentTuple = (counts, placeholder) => {
-  if (!counts || typeof counts !== 'object') {
-    return placeholder;
-  }
-  const values = [
-    counts.negativeToNeutral,
-    counts.negativeToPositive,
-    counts.neutralToPositive,
-    counts.neutralToNegative,
-    counts.positiveToNegative,
-    counts.positiveToNeutral,
-  ];
-  const hasMissing = values.some((value) => value === null || value === undefined || Number.isNaN(value));
-  if (hasMissing) {
-    return placeholder;
-  }
-  return `(${values.join(', ')})`;
-};
-
 const downloadJson = (data, filename) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: 'application/json;charset=utf-8',
@@ -162,10 +143,14 @@ function AiScheduleComparisonModal({
                   label: t(metric.labelKey),
                   value: metrics?.[metric.key],
                 }));
-                const sentimentTuple = formatSentimentTuple(
-                  sentimentTransitionCounts,
-                  placeholder,
-                );
+                const sentimentTransitions = [
+                    { label: 'N → 0', key: 'negativeToNeutral' },
+                    { label: 'N → P', key: 'negativeToPositive' },
+                    { label: '0 → P', key: 'neutralToPositive' },
+                    { label: '0 → N', key: 'neutralToNegative' },
+                    { label: 'P → N', key: 'positiveToNegative' },
+                    { label: 'P → 0', key: 'positiveToNeutral' },
+                ];
 
                 return (
                   <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
@@ -186,13 +171,19 @@ function AiScheduleComparisonModal({
                             {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
                           </Typography>
                         ))}
-                        <Typography
-                          key={`ai-comparison-sentiment-tuple-${cardIndex}`}
-                          variant="body1"
-                          component="div"
-                        >
-                          {`Sentiment tuple (N->0, N->P, 0->P, 0->N, P->N, P->0): ${sentimentTuple}`}
-                        </Typography>
+                                                <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                    <Typography variant="subtitle1" component="div" gutterBottom>
+                                                        {t("Sentiment Transition")}
+                                                    </Typography>
+                                                    {sentimentTransitions.map((transition) => (
+                                                        <Box key={transition.key} sx={{ display: 'flex', gap: 1 }}>
+                                                            <Typography variant="body2">{transition.label}:</Typography>
+                                                            <Typography variant="body2">
+                                                                {formatMetric(sentimentTransitionCounts?.[transition.key], placeholder)}
+                                                            </Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
                         <Button
                           variant={isSelected ? 'contained' : 'outlined'}
                           disabled={!isSelectable || (selectionLocked && !isSelected)}

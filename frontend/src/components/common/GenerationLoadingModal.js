@@ -31,7 +31,7 @@ function GenerationLoadingModal({ isOpen }) {
         <Typography id="loading-modal-title" variant="h6" component="h2">
           {t("Generating Schedule...")}
         </Typography>
-        <Typography id="loading-modal-description" sx={{ mt: 2 }}>
+        <Typography id="loading-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
           {t("The AI is working to create your schedule. This might take a moment.")}
         </Typography>
       </Box>

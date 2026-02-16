@@ -39,7 +39,7 @@ MainFooter.propTypes = {
 
 MainFooter.defaultProps = {
   contained: false,
-  copyright: "Copyright © 2022 SprintFloyd - © 2023 Scrumtastic - © 2024 Shifts happen ",
+  copyright: "Copyright © 2022 SprintFloyd - © 2023 Scrumtastic - © 2024 Shifts happen - © 2025 CoffeeBreakpoint",
 };
 
 export default MainFooter;

@@ -24,19 +24,19 @@ import AiScheduleSelectionConfirmationModal from "../../components/common/AiSche
 
 const resolveCandidateLabel = (metadata) => {
   if (!metadata?.type) {
-    return 'Schedule / Schedulazione';
+    return 'Schedule';
   }
   switch (metadata.type.toLowerCase()) {
     case 'standard':
-      return 'Standard / Standard';
+      return 'Standard';
     case 'empathetic':
-      return 'Empathetic / Empatica';
+      return 'Empathetic';
     case 'efficient':
-      return 'Efficient / Efficiente';
+      return 'Efficient';
     case 'balanced':
-      return 'Balanced / Bilanciata';
+      return 'Balanced';
     default:
-      return `${metadata.type} / ${metadata.type}`;
+      return metadata.type;
   }
 };
 
