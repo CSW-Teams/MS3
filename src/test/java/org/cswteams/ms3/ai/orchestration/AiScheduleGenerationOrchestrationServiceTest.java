@@ -106,6 +106,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
                 new ObjectMapper()
         );
 
