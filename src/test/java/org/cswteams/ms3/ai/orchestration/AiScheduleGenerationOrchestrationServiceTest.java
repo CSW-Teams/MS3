@@ -46,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -81,7 +82,6 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-        when(scheduleDAO.save(transientSchedule)).thenReturn(transientSchedule);
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
@@ -112,6 +112,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         );
 
         assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+        verify(schedulerController, never()).persistSchedule(any(Schedule.class));
 
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
@@ -213,7 +214,6 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-        when(scheduleDAO.save(transientSchedule)).thenReturn(transientSchedule);
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
@@ -241,6 +241,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         );
 
         assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+        verify(schedulerController, never()).persistSchedule(any(Schedule.class));
 
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
