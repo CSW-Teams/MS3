@@ -117,6 +117,8 @@ class AiScheduleGenerationOrchestrationServiceTest {
         String toonPayload = requestCaptor.getAllValues().get(0).getToonPayload();
         assertTrue(toonPayload.startsWith("ctx:{p:\""));
         assertTrue(toonPayload.contains("REST_PERIOD"));
+        assertTrue(toonPayload.contains("hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:"));
+        assertTrue(toonPayload.contains("S_1001_20260914,1,0,0,1"));
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {
