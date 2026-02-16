@@ -12,7 +12,6 @@ import org.cswteams.ms3.dao.TaskDAO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
-import org.cswteams.ms3.enums.TaskEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +33,7 @@ public class AiScheduleConverterService {
     private final TaskDAO taskDAO;
 
     // Pattern to extract shift ID and date from AI's shift_id format (S_<id>_<yyyyMMdd>)
-    private static final Pattern SHIFT_ID_PATTERN = Pattern.compile("^S_([A-Za-z0-9]+)_(\\\\d{8})$");
+    private static final Pattern SHIFT_ID_PATTERN = Pattern.compile("^S_([A-Za-z0-9]+)_(\\d{8})$");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
 
     @Autowired
@@ -62,8 +61,9 @@ public class AiScheduleConverterService {
         // 1. Parse the JSON response into AiScheduleResponseDto
         AiScheduleResponseDto aiResponseDto = jsonParser.parse(jsonResponse);
 
-        // 2. Perform semantic validation on the DTO
-        semanticValidator.validate(aiResponseDto);
+        // 2. Perform conversion-oriented semantic validation on the DTO
+        // (metadata can be missing in comparison payloads; assignments are what we need to persist)
+        semanticValidator.validateForConversion(aiResponseDto);
 
         // 3. Map AiAssignmentDto to ConcreteShift entities with DoctorAssignments
         return mapAssignmentsToConcreteShifts(aiResponseDto.assignments);
@@ -121,15 +121,16 @@ public class AiScheduleConverterService {
             }
             Shift shiftTemplate = shiftTemplateOptional.get();
             
-            // d. Resolve Task (Crucial step based on assumption)
-            Task task = resolveTaskForAssignment(shiftTemplate, aiAssignment.roleCovered);
-
-            // e. Find/Create ConcreteShift
+            // d. Find/Create ConcreteShift
             String concreteShiftKey = shiftTemplateIdStr + "_" + assignmentDate.format(DATE_FORMATTER);
             ConcreteShift concreteShift = concreteShiftsMap.computeIfAbsent(concreteShiftKey, k -> {
                 // ConcreteShift constructor expects date in long epoch format
                 return new ConcreteShift(assignmentDate.toEpochDay(), shiftTemplate);
             });
+
+            // e. Resolve Task using shift capacities and already assigned slots in this concrete shift
+            Seniority roleCovered = aiAssignment.roleCovered != null ? aiAssignment.roleCovered : doctor.getSeniority();
+            Task task = resolveTaskForAssignment(shiftTemplate, roleCovered, concreteShift);
 
             // f. Create DoctorAssignment
             ConcreteShiftDoctorStatus status = ConcreteShiftDoctorStatus.ON_DUTY; // Default status
@@ -176,33 +177,87 @@ public class AiScheduleConverterService {
      * @return The resolved Task entity.
      * @throws AiProtocolException if a unique task cannot be resolved for the given shift and seniority.
      */
-    private Task resolveTaskForAssignment(Shift shiftTemplate, Seniority doctorSeniority) {
-        List<Task> candidateTasks = new ArrayList<>();
-
-        for (QuantityShiftSeniority qss : shiftTemplate.getQuantityShiftSeniority()) {
-            if (qss.getSeniorityMap() != null && qss.getSeniorityMap().containsKey(doctorSeniority)) {
-                // If the shift template requires a doctor of this seniority for this QSS entry's task
-                candidateTasks.add(qss.getTask());
-            }
+    private Task resolveTaskForAssignment(Shift shiftTemplate,
+                                          Seniority doctorSeniority,
+                                          ConcreteShift concreteShift) {
+        Seniority lookupSeniority = doctorSeniority;
+        List<Task> candidateTasks = collectTasksForSeniority(shiftTemplate, lookupSeniority);
+        if (candidateTasks.isEmpty() && doctorSeniority == Seniority.SPECIALIST_SENIOR) {
+            // In scheduling, senior doctors can often satisfy junior slots.
+            lookupSeniority = Seniority.SPECIALIST_JUNIOR;
+            candidateTasks = collectTasksForSeniority(shiftTemplate, lookupSeniority);
         }
 
         if (candidateTasks.isEmpty()) {
             throw AiProtocolException.taskResolutionError(
                     "No task found for doctor seniority " + doctorSeniority + " in shift template " + shiftTemplate.getId()
             );
-        } else if (new HashSet<>(candidateTasks).size() > 1) {
-            // Check if there are multiple *distinct* tasks for the same seniority within this shift
-            // This indicates an ambiguity that the AI response (AiAssignmentDto) doesn't resolve.
-            String tasks = candidateTasks.stream().map(t -> t.getTaskType().name()).collect(Collectors.joining(", "));
-            throw AiProtocolException.taskResolutionError(
-                    "Ambiguous task resolution for doctor seniority " + doctorSeniority +
-                            " in shift template " + shiftTemplate.getId() + ". Multiple tasks found: " + tasks +
-                            ". AI response needs to specify the task."
-            );
         }
 
-        // Return the unique task
-        return candidateTasks.get(0);
+        Set<Task> distinctTasks = new HashSet<>(candidateTasks);
+        if (distinctTasks.size() == 1) {
+            return candidateTasks.get(0);
+        }
+
+        // Ambiguous case: allocate deterministically using remaining capacity per task for the given seniority.
+        Map<Long, Integer> requiredByTaskId = new HashMap<>();
+        for (QuantityShiftSeniority qss : shiftTemplate.getQuantityShiftSeniority()) {
+            if (qss.getTask() == null || qss.getTask().getId() == null || qss.getSeniorityMap() == null) {
+                continue;
+            }
+            Integer required = qss.getSeniorityMap().get(lookupSeniority);
+            if (required != null && required > 0) {
+                requiredByTaskId.merge(qss.getTask().getId(), required, Integer::sum);
+            }
+        }
+
+        Map<Long, Integer> assignedByTaskId = new HashMap<>();
+        if (concreteShift.getDoctorAssignmentList() != null) {
+            for (DoctorAssignment current : concreteShift.getDoctorAssignmentList()) {
+                if (current == null || current.getTask() == null || current.getTask().getId() == null) {
+                    continue;
+                }
+                assignedByTaskId.merge(current.getTask().getId(), 1, Integer::sum);
+            }
+        }
+
+        Task selected = null;
+        int bestRemaining = Integer.MIN_VALUE;
+        int bestAssigned = Integer.MAX_VALUE;
+        for (Task task : distinctTasks) {
+            Long taskId = task.getId();
+            int required = requiredByTaskId.getOrDefault(taskId, 0);
+            int assigned = assignedByTaskId.getOrDefault(taskId, 0);
+            int remaining = required - assigned;
+
+            if (remaining > bestRemaining || (remaining == bestRemaining && assigned < bestAssigned)) {
+                bestRemaining = remaining;
+                bestAssigned = assigned;
+                selected = task;
+            }
+        }
+
+        if (selected != null) {
+            return selected;
+        }
+
+        String tasks = distinctTasks.stream()
+                .map(t -> t.getTaskType() == null ? String.valueOf(t.getId()) : t.getTaskType().name())
+                .collect(Collectors.joining(", "));
+        throw AiProtocolException.taskResolutionError(
+                "Ambiguous task resolution for doctor seniority " + doctorSeniority +
+                        " in shift template " + shiftTemplate.getId() + ". Candidate tasks: " + tasks
+        );
+    }
+
+    private List<Task> collectTasksForSeniority(Shift shiftTemplate, Seniority seniority) {
+        List<Task> candidateTasks = new ArrayList<>();
+        for (QuantityShiftSeniority qss : shiftTemplate.getQuantityShiftSeniority()) {
+            if (qss.getSeniorityMap() != null && qss.getSeniorityMap().containsKey(seniority)) {
+                candidateTasks.add(qss.getTask());
+            }
+        }
+        return candidateTasks;
     }
 
 
