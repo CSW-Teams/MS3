@@ -338,7 +338,7 @@ export class SchedulerGeneratorView extends React.Component{
       const candidateKey =
         pendingCandidate.metadata?.candidateId ?? pendingCandidate.metadata?.type;
       if (!candidateKey) {
-        toast.error("Selection data missing / Dati selezione mancanti", {
+        toast.error(t("Selection data missing"), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -356,7 +356,7 @@ export class SchedulerGeneratorView extends React.Component{
       try {
         response = await new ScheduleAPI().selectScheduleCandidate(candidateKey);
       } catch (error) {
-        toast.error("Selection failed / Selezione non riuscita", {
+        toast.error(t("Selection failed"), {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: true,
@@ -392,7 +392,7 @@ export class SchedulerGeneratorView extends React.Component{
         return;
       }
 
-      toast.error("Selection could not be saved / Impossibile salvare la selezione", {
+      toast.error(t("Selection could not be saved"), {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: true,
