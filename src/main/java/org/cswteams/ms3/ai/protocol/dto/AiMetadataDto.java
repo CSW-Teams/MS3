@@ -1,7 +1,9 @@
 package org.cswteams.ms3.ai.protocol.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AiMetadataDto {
     public String reasoning;
     @JsonProperty("algorithm")

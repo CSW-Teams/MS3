@@ -13,6 +13,13 @@ Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use o
 {
   "status": "SUCCESS | PARTIAL_SUCCESS | FAILURE",
   "metadata": {
+    "role_validation_scratchpad": [
+       {
+         "shift_id": string,
+         "role_required": string,
+         "candidate_doctor_ids": [number]
+       }
+    ],
     "reasoning": string,
     "algorithm": string,
     "generation_time": string,
@@ -52,6 +59,14 @@ Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use o
   ]
 }
 
+COGNITIVE STEP (CRITICAL):
+Before generating 'assignments', you MUST perform the following lookup in 'metadata.role_validation_scratchpad':
+1. Read `hard_coverage_requirements` for each shift.
+2. For each required role (STRUCTURED, SPECIALIST_JUNIOR, SPECIALIST_SENIOR), scan the `TOON_INPUT` doctor list (`dr[...]`).
+3. Identify all doctors whose `r:` attribute exactly matches the required role.
+4. Populate `candidate_doctor_ids` with these matching IDs only.
+5. When generating the final `assignments` list, you are STRICTLY FORBIDDEN from assigning a doctor_id that is not present in the `candidate_doctor_ids` for that specific role.
+
 Spec Computation Rulebook:
 - Metrics/spec computations are performed server-side using spec ID: ${DECISION_METRICS_SPEC_ID}.
 - Output only final metric values; do not include formulas or derivations.
@@ -64,6 +79,10 @@ Variant intent:
 
 Constraint handling (from `active_constraints`):
 - HARD constraints: must never be violated in assignments.
+- HARD coverage constraints: each row in `hard_coverage_requirements` applies independently to its own `shift_id` and must be satisfied per shift_id (never globally across multiple shifts).
+- Interpret every numeric value in `hard_coverage_requirements` as a required headcount (number of doctors) for that exact role in that exact shift.
+- Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory, non-optional, and must be met for that exact `shift_id`.
+- Any generated assignment set that is below any required minimum for a listed `shift_id` is invalid and must not be returned as a valid solution.
 - SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
 - Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).
 

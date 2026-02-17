@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.ai.broker.AgentBroker;
 import org.cswteams.ms3.ai.broker.AiBrokerRequest;
+import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
 import org.cswteams.ms3.ai.broker.domain.AiAssignment;
 import org.cswteams.ms3.ai.broker.domain.AiMetadata;
 import org.cswteams.ms3.ai.broker.domain.AiMetrics;
@@ -24,7 +25,6 @@ import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.metrics.MetricAggregationUtils;
 import org.cswteams.ms3.ai.metrics.MetricNormalizationUtils;
-import org.cswteams.ms3.ai.metrics.SentimentTransitionCounts;
 import org.cswteams.ms3.ai.priority.PriorityScaleValidationException;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
@@ -38,7 +38,6 @@ import org.cswteams.ms3.ai.protocol.dto.AiUncoveredShiftDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
-import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.toon.ToonActiveConstraint;
 import org.cswteams.ms3.control.toon.ToonBuilder;
@@ -48,7 +47,6 @@ import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
-import org.cswteams.ms3.dao.ScocciaturaDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorAssignment;
@@ -58,10 +56,8 @@ import org.cswteams.ms3.entity.DoctorUffaPrioritySnapshot;
 import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Shift;
-import org.cswteams.ms3.entity.scocciature.ContestoScocciatura;
-import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
-import org.cswteams.ms3.enums.TimeSlot;
+import org.cswteams.ms3.enums.Seniority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,12 +67,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -89,22 +83,27 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String ERROR_AI_METRICS = "AI_METRICS_FAILED";
     private static final String ERROR_NORMALIZATION = "METRICS_NORMALIZATION_FAILED";
     private static final String ERROR_DECISION = "METRICS_DECISION_FAILED";
+    private static final double METRICS_COMPARISON_TOLERANCE = 1e-6;
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
+    private static final String BASE_VARIANT_INSTRUCTION = "Return strict JSON only with top-level object {'variants': ...}. "
+            + "For object form, put the variant label as the key under variants. "
+            + "If variants is an array, each item must include a non-empty 'label' field and a 'variant' object payload. "
+            + "Return exactly one variant entry matching the requested label.";
     private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(
             new VariantDefinition(EMPATHETIC_LABEL,
                     "ai-empathetic",
                     ScheduleCandidateType.EMPATHETIC,
-                    "Maximize doctor well-being and respect expressed preferences as strict constraints."),
+                    "Use label EMPATHETIC (either as variants.EMPATHETIC or variants[0].label=EMPATHETIC)."),
             new VariantDefinition(EFFICIENT_LABEL,
                     "ai-efficient",
                     ScheduleCandidateType.EFFICIENT,
-                    "Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance."),
+                    "Use label EFFICIENT (either as variants.EFFICIENT or variants[0].label=EFFICIENT)."),
             new VariantDefinition(BALANCED_LABEL,
                     "ai-balanced",
                     ScheduleCandidateType.BALANCED,
-                    "Balance well-being and operational efficiency, allowing soft constraint tradeoffs.")
+                    "Use label BALANCED (either as variants.BALANCED or variants[0].label=BALANCED).")
     );
 
     private final ISchedulerController schedulerController;
@@ -112,11 +111,11 @@ public class AiScheduleGenerationOrchestrationService {
     private final DoctorUffaPriorityDAO doctorUffaPriorityDAO;
     private final DoctorHolidaysDAO doctorHolidaysDAO;
     private final ScheduleDAO scheduleDAO;
-    private final ScocciaturaDAO scocciaturaDAO;
     private final AgentBroker agentBroker;
     private final AiReschedulingOrchestrationService aiReschedulingOrchestrationService;
     private final DecisionAlgorithmService decisionAlgorithmService;
     private final AiScheduleConverterService aiScheduleConverterService;
+    private final AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder;
     private final ObjectMapper objectMapper;
     private final AiScheduleComparisonMapper comparisonMapper = new AiScheduleComparisonMapper();
     private final AtomicReference<TransientComparisonState> transientComparisonState = new AtomicReference<>();
@@ -127,22 +126,22 @@ public class AiScheduleGenerationOrchestrationService {
                                                     DoctorUffaPriorityDAO doctorUffaPriorityDAO,
                                                     DoctorHolidaysDAO doctorHolidaysDAO,
                                                     ScheduleDAO scheduleDAO,
-                                                    ScocciaturaDAO scocciaturaDAO,
                                                     AgentBroker agentBroker,
                                                     AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
                                                     DecisionAlgorithmService decisionAlgorithmService,
                                                     AiScheduleConverterService aiScheduleConverterService,
+                                                    AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder,
                                                     ObjectMapper objectMapper) {
         this.schedulerController = schedulerController;
         this.doctorDAO = doctorDAO;
         this.doctorUffaPriorityDAO = doctorUffaPriorityDAO;
         this.doctorHolidaysDAO = doctorHolidaysDAO;
         this.scheduleDAO = scheduleDAO;
-        this.scocciaturaDAO = scocciaturaDAO;
         this.agentBroker = agentBroker;
         this.aiReschedulingOrchestrationService = aiReschedulingOrchestrationService;
         this.decisionAlgorithmService = decisionAlgorithmService;
         this.aiScheduleConverterService = aiScheduleConverterService;
+        this.hardCoveragePromptBlockBuilder = hardCoveragePromptBlockBuilder;
         this.objectMapper = objectMapper;
     }
 
@@ -153,7 +152,6 @@ public class AiScheduleGenerationOrchestrationService {
             logger.warn("event=ai_standard_generation_empty start_date={} end_date={}", startDate, endDate);
             return null;
         }
-        standardSchedule = scheduleDAO.save(standardSchedule);
         String metricsCorrelationId = UUID.randomUUID().toString();
         MetricsErrorMetadata errorMetadata = null;
         int standardShiftCount = standardSchedule.getConcreteShifts() == null
@@ -162,12 +160,15 @@ public class AiScheduleGenerationOrchestrationService {
         logger.info("event=ai_standard_generation_completed start_date={} end_date={} shifts_count={}",
                 startDate, endDate, standardShiftCount);
 
-        ToonPayloadData toonPayloadData = buildToonPayload(startDate, endDate, standardSchedule.getConcreteShifts());
-        String toonPayload = toonPayloadData.payload;
+        String aiRequestCorrelationId = UUID.randomUUID().toString();
+        String toonPayload = buildToonPayload(startDate,
+                endDate,
+                standardSchedule.getConcreteShifts(),
+                aiRequestCorrelationId);
 
         DecisionMetricValues standardMetrics;
         try {
-            standardMetrics = buildStandardMetrics(standardSchedule, toonPayloadData.hasFeedbackSignals);
+            standardMetrics = buildStandardMetrics(standardSchedule);
         } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
             errorMetadata = buildMetricsError(errorMetadata,
                     metricsCorrelationId,
@@ -177,7 +178,7 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         CandidateData standardCandidate = buildStandardCandidate(standardSchedule, standardMetrics);
-        CandidateBatch aiBatch = requestAiCandidates(toonPayload, standardSchedule.getConcreteShifts(), toonPayloadData.hasFeedbackSignals);
+        CandidateBatch aiBatch = requestAiCandidates(toonPayload, aiRequestCorrelationId);
         if (aiBatch.errorMetadata != null) {
             errorMetadata = mergeError(errorMetadata, aiBatch.errorMetadata);
         }
@@ -286,66 +287,19 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private SelectionResult persistCandidate(TransientComparisonState state, CandidateData candidate) {
-        logger.info("event=ai_candidate_persist_start candidate_id={} candidate_type={} start_date={} end_date={}",
-                candidate == null ? null : candidate.candidateId,
-                candidate == null || candidate.type == null ? null : candidate.type.name(),
-                state == null ? null : state.startDate,
-                state == null ? null : state.endDate);
         if (schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
-            Schedule candidateSchedule = candidate.schedule;
-            if (candidateSchedule != null && candidateSchedule.getId() != null
-                    && scheduleDAO.existsById(candidateSchedule.getId())) {
-                transientComparisonState.set(null);
-                return SelectionResult.persisted(candidateSchedule.getId());
-            }
-            removeExistingSchedulesForRange(state.startDate, state.endDate);
+            return SelectionResult.duplicateRange("DUPLICATE_RANGE", "Schedule already exists for this date range.");
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);
         if (schedule == null) {
-            logger.warn("event=ai_candidate_persist_failed candidate_id={} error_code=INVALID_CANDIDATE",
-                    candidate == null ? null : candidate.candidateId);
             return SelectionResult.invalid("INVALID_CANDIDATE", "Unable to build the selected schedule.");
         }
         Schedule persisted = schedulerController.persistSchedule(schedule);
         if (persisted == null || persisted.getId() == null) {
-            logger.warn("event=ai_candidate_persist_failed candidate_id={} error_code=PERSIST_FAILED",
-                    candidate == null ? null : candidate.candidateId);
             return SelectionResult.invalid("PERSIST_FAILED", "Unable to persist selected schedule.");
         }
-        logger.info("event=ai_candidate_persist_success candidate_id={} persisted_schedule_id={}",
-                candidate.candidateId,
-                persisted.getId());
         transientComparisonState.set(null);
         return SelectionResult.persisted(persisted.getId());
-    }
-
-    private void removeExistingSchedulesForRange(LocalDate startDate, LocalDate endDate) {
-        List<Schedule> schedules = scheduleDAO.findAll();
-        for (Schedule schedule : schedules) {
-            if (schedule == null) {
-                continue;
-            }
-            LocalDate existingStart = LocalDate.ofEpochDay(schedule.getStartDate());
-            LocalDate existingEnd = LocalDate.ofEpochDay(schedule.getEndDate());
-            if (existingStart.equals(startDate) && existingEnd.equals(endDate)) {
-                detachDoctorUffaPriorities(schedule);
-                scheduleDAO.delete(schedule);
-            }
-        }
-    }
-
-    private void detachDoctorUffaPriorities(Schedule schedule) {
-        if (schedule == null || schedule.getId() == null) {
-            return;
-        }
-        List<DoctorUffaPriority> priorities = doctorUffaPriorityDAO.findBySchedule_Id(schedule.getId());
-        if (priorities == null || priorities.isEmpty()) {
-            return;
-        }
-        for (DoctorUffaPriority priority : priorities) {
-            priority.setSchedule(null);
-        }
-        doctorUffaPriorityDAO.saveAll(priorities);
     }
 
     private Schedule buildScheduleForCandidate(TransientComparisonState state, CandidateData candidate) {
@@ -356,11 +310,6 @@ public class AiScheduleGenerationOrchestrationService {
             List<ConcreteShift> concreteShifts = aiScheduleConverterService.convert(candidate.rawScheduleJson);
             return new Schedule(state.startDate.toEpochDay(), state.endDate.toEpochDay(), concreteShifts);
         } catch (AiProtocolException ex) {
-            logger.warn("event=ai_candidate_build_failed candidate_id={} error_code={} category={} message={}",
-                    candidate == null ? null : candidate.candidateId,
-                    ex.getCode(),
-                    ex.getCategory(),
-                    ex.getMessage());
             return null;
         }
     }
@@ -376,41 +325,166 @@ public class AiScheduleGenerationOrchestrationService {
         transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates, response));
     }
 
-    private ToonPayloadData buildToonPayload(LocalDate startDate, LocalDate endDate, List<ConcreteShift> concreteShifts) {
-        List<Doctor> doctors = doctorDAO.findAll();
-        List<DoctorUffaPriority> priorities = doctorUffaPriorityDAO.findAll();
-        List<DoctorHolidays> doctorHolidays = doctorHolidaysDAO.findAll();
-        List<ToonActiveConstraint> activeConstraints = new ArrayList<>();
+    private String buildToonPayload(LocalDate startDate,
+                                    LocalDate endDate,
+                                    List<ConcreteShift> concreteShifts,
+                                    String correlationId) {
+        List<ConcreteShift> scopedShifts = filterShiftsInTargetPeriod(startDate, endDate, concreteShifts);
+        List<Doctor> doctors = resolveEligibleDoctors(scopedShifts);
+        List<Long> eligibleDoctorIds = new ArrayList<>();
+        for (Doctor doctor : doctors) {
+            if (doctor != null && doctor.getId() != null) {
+                eligibleDoctorIds.add(doctor.getId());
+            }
+        }
+        List<DoctorUffaPriority> priorities = eligibleDoctorIds.isEmpty()
+                ? List.of()
+                : doctorUffaPriorityDAO.findByDoctor_IdIn(eligibleDoctorIds);
+        List<DoctorHolidays> doctorHolidays = eligibleDoctorIds.isEmpty()
+                ? List.of()
+                : doctorHolidaysDAO.findByDoctor_IdIn(eligibleDoctorIds);
+        AiActiveConstraintResolver.ResolveResult constraintResolveResult = aiReschedulingOrchestrationService
+                .resolveActiveConstraintsWithReport(doctors, scopedShifts, false);
+        List<ToonActiveConstraint> resolvedActiveConstraints = constraintResolveResult.getResolvedConstraints();
+        int hardConstraintsCount = constraintResolveResult.getHardConstraintsCount();
+        int softConstraintsCount = constraintResolveResult.getSoftConstraintsCount();
+        int skippedConstraintsCount = constraintResolveResult.getSkippedConstraints();
         List<ToonFeedback> feedbacks = new ArrayList<>();
-        int shiftCount = concreteShifts == null ? 0 : concreteShifts.size();
-        logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} feedbacks_count={}",
+        logger.info("event=toon_payload_build_requested start_date={} end_date={} shifts_count={} doctors_count={} priorities_count={} holidays_count={} constraints_count={} constraints_resolved_count={} constraints_skipped_count={} constraints_hard_count={} constraints_soft_count={} feedbacks_count={}",
                 startDate,
                 endDate,
-                shiftCount,
+                scopedShifts.size(),
                 doctors.size(),
                 priorities.size(),
                 doctorHolidays.size(),
-                activeConstraints.size(),
+                resolvedActiveConstraints.size() + skippedConstraintsCount,
+                resolvedActiveConstraints.size(),
+                skippedConstraintsCount,
+                hardConstraintsCount,
+                softConstraintsCount,
                 feedbacks.size());
 
         AiReschedulingToonRequest request = aiReschedulingOrchestrationService.buildToonRequestContext(
                 startDate,
                 endDate,
                 MODE_GENERATE,
-                concreteShifts,
+                scopedShifts,
                 doctors,
                 priorities,
                 doctorHolidays,
-                activeConstraints,
+                resolvedActiveConstraints,
                 feedbacks
         );
 
         ToonRequestContext context = request.getToonRequestContext();
-        int resolvedFeedbackCount = context.getFeedbacks() == null ? 0 : context.getFeedbacks().size();
-        logger.info("event=toon_payload_feedbacks_resolved count={}", resolvedFeedbackCount);
         ToonBuilder builder = new ToonBuilder();
-        String payload = builder.build(context);
-        return new ToonPayloadData(payload, resolvedFeedbackCount > 0);
+        String toonPayload = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+        String hardCoverageBlock = hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
+        int generatedHardCoverageRows = countHardCoverageRows(hardCoverageBlock);
+        logger.info("event=hard_coverage_block_built correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={} hard_coverage_block_length={} hard_coverage_block_checksum={}",
+                correlationId,
+                scopedShifts.size(),
+                generatedHardCoverageRows,
+                hardCoverageBlock == null ? 0 : hardCoverageBlock.length(),
+                hardCoverageBlock == null ? "0" : Integer.toHexString(hardCoverageBlock.hashCode()));
+        if (!scopedShifts.isEmpty() && generatedHardCoverageRows == 0) {
+            logger.error("event=hard_coverage_block_empty_with_scoped_shifts correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={}",
+                    correlationId,
+                    scopedShifts.size(),
+                    generatedHardCoverageRows);
+        }
+        return toonPayload + "\n" + hardCoverageBlock;
+    }
+
+    private int countHardCoverageRows(String hardCoverageBlock) {
+        if (hardCoverageBlock == null || hardCoverageBlock.isBlank()) {
+            return 0;
+        }
+        String normalized = hardCoverageBlock.trim();
+        String[] lines = normalized.split("\\R");
+        if (lines.length <= 1) {
+            return 0;
+        }
+        return lines.length - 1;
+    }
+
+
+    private List<ConcreteShift> filterShiftsInTargetPeriod(LocalDate startDate,
+                                                           LocalDate endDate,
+                                                           List<ConcreteShift> concreteShifts) {
+        if (concreteShifts == null || concreteShifts.isEmpty()) {
+            return List.of();
+        }
+        long startEpoch = startDate == null ? Long.MIN_VALUE : startDate.toEpochDay();
+        long endEpoch = endDate == null ? Long.MAX_VALUE : endDate.toEpochDay();
+        List<ConcreteShift> scopedShifts = new ArrayList<>();
+        for (ConcreteShift concreteShift : concreteShifts) {
+            if (concreteShift == null) {
+                continue;
+            }
+            long shiftDate = concreteShift.getDate();
+            if (shiftDate >= startEpoch && shiftDate <= endEpoch) {
+                scopedShifts.add(concreteShift);
+            }
+        }
+        return scopedShifts;
+    }
+
+    private List<Doctor> resolveEligibleDoctors(List<ConcreteShift> scopedShifts) {
+        if (scopedShifts == null || scopedShifts.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, Doctor> doctorsById = new LinkedHashMap<>();
+        List<Doctor> assignedDoctors = extractAssignedDoctors(scopedShifts);
+        for (Doctor doctor : assignedDoctors) {
+            if (doctor != null && doctor.getId() != null) {
+                doctorsById.put(doctor.getId(), doctor);
+            }
+        }
+        List<Seniority> requiredSeniorities = new ArrayList<>();
+        for (ConcreteShift concreteShift : scopedShifts) {
+            if (concreteShift == null || concreteShift.getShift() == null || concreteShift.getShift().getQuantityShiftSeniority() == null) {
+                continue;
+            }
+            for (QuantityShiftSeniority quantityShiftSeniority : concreteShift.getShift().getQuantityShiftSeniority()) {
+                if (quantityShiftSeniority == null || quantityShiftSeniority.getSeniorityMap() == null) {
+                    continue;
+                }
+                for (Map.Entry<Seniority, Integer> entry : quantityShiftSeniority.getSeniorityMap().entrySet()) {
+                    if (entry.getKey() != null && entry.getValue() != null && entry.getValue() > 0 && !requiredSeniorities.contains(entry.getKey())) {
+                        requiredSeniorities.add(entry.getKey());
+                    }
+                }
+            }
+        }
+        if (!requiredSeniorities.isEmpty()) {
+            List<Doctor> doctorsBySeniority = doctorDAO.findBySeniorities(requiredSeniorities);
+            for (Doctor doctor : doctorsBySeniority) {
+                if (doctor != null && doctor.getId() != null) {
+                    doctorsById.put(doctor.getId(), doctor);
+                }
+            }
+        }
+        return new ArrayList<>(doctorsById.values());
+    }
+
+    private List<Doctor> extractAssignedDoctors(List<ConcreteShift> scopedShifts) {
+        List<Doctor> doctors = new ArrayList<>();
+        for (ConcreteShift concreteShift : scopedShifts) {
+            if (concreteShift == null || concreteShift.getDoctorAssignmentList() == null) {
+                continue;
+            }
+            for (DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
+                if (assignment == null || assignment.getDoctor() == null || assignment.getDoctor().getId() == null) {
+                    continue;
+                }
+                if (assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_DUTY
+                        || assignment.getConcreteShiftDoctorStatus() == ConcreteShiftDoctorStatus.ON_CALL) {
+                    doctors.add(assignment.getDoctor());
+                }
+            }
+        }
+        return doctors;
     }
 
     private CandidateData buildStandardCandidate(Schedule schedule, DecisionMetricValues metrics) {
@@ -426,192 +500,91 @@ public class AiScheduleGenerationOrchestrationService {
         );
     }
 
-    private CandidateBatch requestAiCandidates(String toonPayload,
-                                               List<ConcreteShift> referenceShifts,
-                                               boolean hasFeedbackSignals) {
-        String instructions = buildMultiVariantInstructions(referenceShifts);
-        String correlationId = UUID.randomUUID().toString();
-        AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
-        logger.info("event=ai_broker_request_prepared correlation_id={} payload_length={} instructions_length={}",
-                correlationId,
-                toonPayload == null ? 0 : toonPayload.length(),
-                instructions == null ? 0 : instructions.length());
-        // Transport-level failures (timeouts/network/rate limits) are handled exclusively by AgentBrokerImpl.
-        // Orchestration focuses on schema validation, metrics evaluation, and system-level decision logic.
-        AiScheduleVariantsResponse response = agentBroker.requestSchedule(request);
-        logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
-                correlationId,
-                response == null || response.getVariants() == null ? 0 : response.getVariants().size());
-        Map<String, Integer> shiftRequirements = buildShiftRequirementsByShiftId(referenceShifts);
-        Map<String, List<AiAssignment>> fallbackAssignmentsByShift = buildFallbackAssignmentsByShiftId(referenceShifts);
-        Map<String, TimeSlot> shiftSlots = buildShiftSlotsByShiftId(referenceShifts);
-        Map<String, ConcreteShift> shiftsById = buildShiftMapByShiftId(referenceShifts);
-        Map<Integer, DoctorUffaPriority> prioritiesByDoctorId = buildPrioritiesByDoctorId();
-        ControllerScocciatura controllerScocciatura = buildControllerScocciatura();
-        List<CandidateData> candidates = new ArrayList<>();
-        MetricsErrorMetadata errorMetadata = null;
+    private CandidateBatch requestAiCandidates(String toonPayload, String batchCorrelationId) {
+        Map<String, AiScheduleResponse> aggregatedVariants = new LinkedHashMap<>();
+
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
-            AiScheduleResponse variant = response.getVariant(definition.label);
+            String instructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
+            String correlationId = UUID.randomUUID().toString();
+            AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
+            logger.info("event=ai_broker_request_prepared correlation_id={} label={} payload_length={} instructions_length={}",
+                    correlationId,
+                    definition.label,
+                    toonPayload == null ? 0 : toonPayload.length(),
+                    instructions.length());
+
+            AiTokenBudgetGuardResult budgetGuard = agentBroker.previewTokenBudget(request);
+            if (!budgetGuard.isAllowed()) {
+                logger.warn("event=ai_variant_deferred correlation_id={} label={} projected_tpm={} budget_limit={}",
+                        correlationId,
+                        definition.label,
+                        budgetGuard.getProjectedTpm(),
+                        budgetGuard.getBudgetLimit());
+                aggregatedVariants.put(definition.label, buildDeferredResponse(definition.label, budgetGuard));
+                continue;
+            }
+
+            AiScheduleVariantsResponse singleResponse = agentBroker.requestSchedule(request);
+            AiScheduleResponse variant = singleResponse == null ? null : singleResponse.getVariant(definition.label);
             if (variant == null) {
                 throw AiProtocolException.schemaMismatch(
                         "AI response missing variant " + definition.label,
                         null
                 );
             }
-            variant = completeAiVariantAssignments(variant, definition.label, shiftRequirements, fallbackAssignmentsByShift);
+            aggregatedVariants.put(definition.label, variant);
+        }
+
+        logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
+                batchCorrelationId,
+                aggregatedVariants.size());
+
+        List<CandidateData> candidates = new ArrayList<>();
+        MetricsErrorMetadata errorMetadata = null;
+        for (VariantDefinition definition : VARIANT_DEFINITIONS) {
+            AiScheduleResponse variant = aggregatedVariants.get(definition.label);
+            if (variant == null) {
+                throw AiProtocolException.schemaMismatch(
+                        "AI response missing variant " + definition.label,
+                        null
+                );
+            }
+            AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
+            String rawJson = serializeResponse(responseDto);
             DecisionMetricValues metrics;
             try {
-                metrics = buildAiMetrics(
-                        variant,
-                        shiftRequirements,
-                        shiftSlots,
-                        shiftsById,
-                        prioritiesByDoctorId,
-                        controllerScocciatura,
-                        hasFeedbackSignals
-                );
-            } catch (IllegalArgumentException | PriorityScaleValidationException ex) {
+                metrics = buildAiMetrics(variant, rawJson, definition.candidateId, batchCorrelationId);
+            } catch (AiProtocolException | IllegalArgumentException | PriorityScaleValidationException ex) {
                 errorMetadata = buildMetricsError(errorMetadata,
-                        correlationId,
+                        batchCorrelationId,
                         ERROR_AI_METRICS,
                         ex);
                 metrics = fallbackMetrics();
             }
-            AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
-            String rawJson = serializeResponse(responseDto);
             candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics, null));
         }
         return new CandidateBatch(Collections.unmodifiableList(candidates), errorMetadata);
     }
 
-    private Map<String, List<AiAssignment>> buildFallbackAssignmentsByShiftId(List<ConcreteShift> referenceShifts) {
-        Map<String, List<AiAssignment>> fallback = new HashMap<>();
-        if (referenceShifts == null) {
-            return fallback;
-        }
-        for (ConcreteShift shift : referenceShifts) {
-            if (shift == null) {
-                continue;
-            }
-            String shiftId = ToonBuilder.shiftIdFor(shift);
-            List<AiAssignment> assignments = new ArrayList<>();
-            if (shift.getDoctorAssignmentList() != null) {
-                for (DoctorAssignment assignment : shift.getDoctorAssignmentList()) {
-                    if (assignment == null || assignment.getDoctor() == null || assignment.getDoctor().getId() == null) {
-                        continue;
-                    }
-                    if (assignment.getConcreteShiftDoctorStatus() != ConcreteShiftDoctorStatus.ON_CALL
-                            && assignment.getConcreteShiftDoctorStatus() != ConcreteShiftDoctorStatus.ON_DUTY) {
-                        continue;
-                    }
-                    assignments.add(new AiAssignment(
-                            shiftId,
-                            assignment.getDoctor().getId().intValue(),
-                            assignment.getDoctor().getSeniority(),
-                            false,
-                            null
-                    ));
-                }
-            }
-            fallback.put(shiftId, assignments);
-        }
-        return fallback;
+    private AiScheduleResponse buildDeferredResponse(String label, AiTokenBudgetGuardResult budgetGuard) {
+        String reasoning = "Deferred due to token budget guard for label " + label
+                + ". projected_tpm=" + budgetGuard.getProjectedTpm()
+                + ", budget_limit=" + budgetGuard.getBudgetLimit();
+        AiMetrics metrics = new AiMetrics(0.0, new AiUffaBalance(new AiStdDev(0.0, 0.0)), 0);
+        AiMetadata metadata = new AiMetadata(reasoning, "token-budget-guard", 0.0, metrics);
+        return new AiScheduleResponse(AiStatus.PARTIAL_SUCCESS,
+                metadata,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList());
     }
 
-    private AiScheduleResponse completeAiVariantAssignments(AiScheduleResponse variant,
-                                                            String label,
-                                                            Map<String, Integer> shiftRequirements,
-                                                            Map<String, List<AiAssignment>> fallbackAssignmentsByShift) {
-        if (variant == null) {
-            return null;
-        }
-        Map<String, List<AiAssignment>> assignmentsByShift = new LinkedHashMap<>();
-        if (variant.getAssignments() != null) {
-            for (AiAssignment assignment : variant.getAssignments()) {
-                if (assignment == null || assignment.getShiftId() == null || assignment.getShiftId().trim().isEmpty()) {
-                    continue;
-                }
-                String shiftId = assignment.getShiftId().trim();
-                assignmentsByShift.computeIfAbsent(shiftId, ignored -> new ArrayList<>()).add(assignment);
-            }
-        }
-
-        int initialAssignments = assignmentsByShift.values().stream().mapToInt(List::size).sum();
-        int addedAssignments = 0;
-        List<AiUncoveredShift> uncovered = new ArrayList<>();
-
-        for (Map.Entry<String, Integer> entry : shiftRequirements.entrySet()) {
-            String shiftId = entry.getKey();
-            int required = entry.getValue() == null ? 0 : entry.getValue();
-            List<AiAssignment> current = assignmentsByShift.computeIfAbsent(shiftId, ignored -> new ArrayList<>());
-            Set<Integer> alreadyAssignedDoctors = new HashSet<>();
-            for (AiAssignment assignment : current) {
-                if (assignment.getDoctorId() != null) {
-                    alreadyAssignedDoctors.add(assignment.getDoctorId());
-                }
-            }
-            List<AiAssignment> fallback = fallbackAssignmentsByShift.getOrDefault(shiftId, List.of());
-            for (AiAssignment candidate : fallback) {
-                if (current.size() >= required) {
-                    break;
-                }
-                if (candidate == null || candidate.getDoctorId() == null) {
-                    continue;
-                }
-                if (alreadyAssignedDoctors.contains(candidate.getDoctorId())) {
-                    continue;
-                }
-                current.add(candidate);
-                alreadyAssignedDoctors.add(candidate.getDoctorId());
-                addedAssignments++;
-            }
-            if (current.size() < required) {
-                uncovered.add(new AiUncoveredShift(shiftId, "Missing assignments: required=" + required + ", assigned=" + current.size()));
-            }
-        }
-
-        List<AiAssignment> completedAssignments = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : shiftRequirements.entrySet()) {
-            String shiftId = entry.getKey();
-            int required = entry.getValue() == null ? 0 : entry.getValue();
-            List<AiAssignment> current = assignmentsByShift.getOrDefault(shiftId, List.of());
-            int limit = Math.min(required, current.size());
-            for (int i = 0; i < limit; i++) {
-                completedAssignments.add(current.get(i));
-            }
-        }
-
-        int finalAssignments = completedAssignments.size();
-        AiStatus status = uncovered.isEmpty() ? AiStatus.SUCCESS : AiStatus.PARTIAL_SUCCESS;
-        logger.info("event=ai_variant_completion_applied label={} initial_assignments={} added_assignments={} final_assignments={} uncovered_count={} final_status={}",
-                label,
-                initialAssignments,
-                addedAssignments,
-                finalAssignments,
-                uncovered.size(),
-                status);
-
-        return new AiScheduleResponse(
-                status,
-                variant.getMetadata(),
-                completedAssignments,
-                uncovered,
-                variant.getUffaDelta()
-        );
-    }
-
-    private DecisionMetricValues buildStandardMetrics(Schedule schedule, boolean hasFeedbackSignals) {
+    private DecisionMetricValues buildStandardMetrics(Schedule schedule) {
         double coverage = computeCoverage(schedule.getConcreteShifts());
         PriorityDeltaStats deltaStats = computePriorityDeltaStats(
                 schedule.getDoctorUffaPrioritiesSnapshot(),
                 schedule.getDoctorUffaPriorityList()
         );
-        SentimentTransitionCounts sentimentTransitionCounts = hasFeedbackSignals
-                ? computeSentimentTransitionsFromPriorities(
-                        schedule.getDoctorUffaPrioritiesSnapshot(),
-                        schedule.getDoctorUffaPriorityList()
-                )
-                : zeroSentimentTransitionCounts();
         double uffaBalance = computeUffaBalanceImprovement(
                 schedule.getDoctorUffaPrioritiesSnapshot(),
                 schedule.getDoctorUffaPriorityList()
@@ -625,207 +598,93 @@ public class AiScheduleGenerationOrchestrationService {
                 coverage,
                 uffaBalance,
                 0.0,
-                sentimentTransitionCounts,
                 deltaStats.mean,
                 deltaStats.variance
         );
     }
 
     private DecisionMetricValues buildAiMetrics(AiScheduleResponse response,
-                                                Map<String, Integer> shiftRequirements,
-                                                Map<String, TimeSlot> shiftSlots,
-                                                Map<String, ConcreteShift> shiftsById,
-                                                Map<Integer, DoctorUffaPriority> prioritiesByDoctorId,
-                                                ControllerScocciatura controllerScocciatura,
-                                                boolean hasFeedbackSignals) {
-        AiMetadata metadata = response.getMetadata();
-        AiMetrics metrics = metadata != null ? metadata.getMetrics() : null;
-        Double coverage = metrics != null ? metrics.getCoveragePercent() : null;
-        if (coverage == null) {
-            coverage = computeCoverageFromAiResponse(response, shiftRequirements);
-        }
-        Double uffaBalance = resolveUffaBalanceImprovement(metrics);
-        if (!hasUffaBalanceMetric(metrics)) {
-            uffaBalance = computeUffaBalanceFromAiResponse(response, shiftSlots);
-        }
-        List<AiUffaDelta> effectiveUffaDeltas = resolveEffectiveUffaDeltas(
-                response,
-                shiftsById,
-                prioritiesByDoctorId,
-                controllerScocciatura
-        );
-        PriorityDeltaStats deltaStats = computeUffaDeltaStats(effectiveUffaDeltas);
-        SentimentTransitionCounts sentimentTransitionCounts = hasFeedbackSignals
-                ? computeSentimentTransitionsFromUffaDelta(effectiveUffaDeltas)
-                : zeroSentimentTransitionCounts();
-        logger.info("event=metrics_ai_calculated coverage={} uffa_balance={} delta_mean={} delta_variance={}",
-                coverage,
-                uffaBalance,
-                deltaStats.mean,
-                deltaStats.variance);
+                                                String rawJson,
+                                                String candidateId,
+                                                String correlationId) {
+        DecisionMetricValues aiProvided = buildAiProvidedMetrics(response);
+        DecisionMetricValues serverComputed = buildAiMetricsFromAssignments(response, rawJson);
+        compareAiMetrics(aiProvided, serverComputed, candidateId, correlationId);
+        logger.info("event=metrics_ai_calculated candidate_id={} coverage={} uffa_balance={} delta_mean={} delta_variance={}",
+                candidateId,
+                serverComputed.getCoverage(),
+                serverComputed.getUffaBalance(),
+                serverComputed.getUpDelta(),
+                serverComputed.getVarianceDelta());
+        return serverComputed;
+    }
+
+    private DecisionMetricValues buildAiMetricsFromAssignments(AiScheduleResponse response, String rawJson) {
+        List<ConcreteShift> concreteShifts = aiScheduleConverterService.convert(rawJson);
+        double coverage = computeCoverage(concreteShifts);
+        double uffaBalance = 0.0;
+        PriorityDeltaStats deltaStats = computeUffaDeltaStats(response.getUffaDelta());
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
                 0.0,
-                sentimentTransitionCounts,
                 deltaStats.mean,
                 deltaStats.variance
         );
     }
 
-    private List<AiUffaDelta> resolveEffectiveUffaDeltas(AiScheduleResponse response,
-                                                         Map<String, ConcreteShift> shiftsById,
-                                                         Map<Integer, DoctorUffaPriority> prioritiesByDoctorId,
-                                                         ControllerScocciatura controllerScocciatura) {
-        if (response != null && response.getUffaDelta() != null && !response.getUffaDelta().isEmpty()) {
-            return response.getUffaDelta();
+    private DecisionMetricValues buildAiProvidedMetrics(AiScheduleResponse response) {
+        if (response == null) {
+            return null;
         }
-        List<AiUffaDelta> estimated = estimateUffaDeltaFromAssignments(
-                response,
-                shiftsById,
-                prioritiesByDoctorId,
-                controllerScocciatura
+        AiMetadata metadata = response.getMetadata();
+        AiMetrics metrics = metadata != null ? metadata.getMetrics() : null;
+        if (metrics == null) {
+            return null;
+        }
+        Double coverage = metrics.getCoveragePercent() != null ? metrics.getCoveragePercent() : 0.0;
+        Double uffaBalance = resolveUffaBalanceImprovement(metrics);
+        PriorityDeltaStats deltaStats = computeUffaDeltaStats(response.getUffaDelta());
+        return new DecisionMetricValues(
+                coverage,
+                uffaBalance,
+                0.0,
+                deltaStats.mean,
+                deltaStats.variance
         );
-        if (!estimated.isEmpty()) {
-            logger.info("event=metrics_ai_uffa_delta_estimated entries={}", estimated.size());
-            return estimated;
-        }
-        return List.of();
     }
 
-    private List<AiUffaDelta> estimateUffaDeltaFromAssignments(AiScheduleResponse response,
-                                                               Map<String, ConcreteShift> shiftsById,
-                                                               Map<Integer, DoctorUffaPriority> prioritiesByDoctorId,
-                                                               ControllerScocciatura controllerScocciatura) {
-        if (response == null || response.getAssignments() == null || response.getAssignments().isEmpty()) {
-            return List.of();
+    private void compareAiMetrics(DecisionMetricValues aiProvided,
+                                  DecisionMetricValues serverComputed,
+                                  String candidateId,
+                                  String correlationId) {
+        if (aiProvided == null) {
+            logger.warn("event=metrics_ai_missing candidate_id={} correlation_id={}",
+                    candidateId,
+                    correlationId);
+            return;
         }
-        if (shiftsById == null || shiftsById.isEmpty()) {
-            return List.of();
-        }
-        if (prioritiesByDoctorId == null || prioritiesByDoctorId.isEmpty()) {
-            return List.of();
-        }
-        if (controllerScocciatura == null) {
-            return List.of();
-        }
-        Map<Integer, Integer> pointsByDoctor = new HashMap<>();
-        for (AiAssignment assignment : response.getAssignments()) {
-            if (assignment == null || assignment.getDoctorId() == null || assignment.getShiftId() == null) {
-                continue;
-            }
-            ConcreteShift concreteShift = shiftsById.get(assignment.getShiftId());
-            if (concreteShift == null) {
-                continue;
-            }
-            DoctorUffaPriority priority = prioritiesByDoctorId.get(assignment.getDoctorId());
-            if (priority == null) {
-                continue;
-            }
-            try {
-                int delta = controllerScocciatura.calcolaUffaComplessivoUtenteAssegnazione(
-                        new ContestoScocciatura(priority, concreteShift)
-                );
-                pointsByDoctor.put(
-                        assignment.getDoctorId(),
-                        pointsByDoctor.getOrDefault(assignment.getDoctorId(), 0) + delta
-                );
-            } catch (RuntimeException ex) {
-                logger.info("event=metrics_ai_uffa_delta_estimation_skipped doctor_id={} shift_id={} reason={}",
-                        assignment.getDoctorId(),
-                        assignment.getShiftId(),
-                        ex.getMessage());
-            }
-        }
-        if (pointsByDoctor.isEmpty()) {
-            return List.of();
-        }
-        List<AiUffaDelta> result = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> entry : pointsByDoctor.entrySet()) {
-            result.add(new AiUffaDelta(entry.getKey(), AiUffaQueue.GEN, entry.getValue()));
-        }
-        return result;
-    }
-
-    private SentimentTransitionCounts computeSentimentTransitionsFromPriorities(List<DoctorUffaPrioritySnapshot> snapshots,
-                                                                                List<DoctorUffaPriority> current) {
-        if (snapshots == null || current == null || snapshots.isEmpty() || current.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        Map<Long, Integer> previousSentiment = new HashMap<>();
-        for (DoctorUffaPrioritySnapshot snapshot : snapshots) {
-            if (snapshot.getDoctor() == null || snapshot.getDoctor().getId() == null) {
-                continue;
-            }
-            previousSentiment.put(snapshot.getDoctor().getId(), signSentiment(snapshot.getGeneralPriority()));
-        }
-        Map<Long, Integer> currentSentiment = new HashMap<>();
-        for (DoctorUffaPriority priority : current) {
-            if (priority.getDoctor() == null || priority.getDoctor().getId() == null) {
-                continue;
-            }
-            currentSentiment.put(priority.getDoctor().getId(), signSentiment(priority.getGeneralPriority()));
-        }
-        if (previousSentiment.isEmpty() || currentSentiment.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        try {
-            return MetricAggregationUtils.countSentimentTransitions(previousSentiment, currentSentiment);
-        } catch (IllegalArgumentException ex) {
-            logger.info("event=metrics_sentiment_transitions_fallback reason={}", ex.getMessage());
-            return zeroSentimentTransitionCounts();
+        boolean coverageMismatch = !approximatelyEqual(aiProvided.getCoverage(), serverComputed.getCoverage());
+        boolean uffaBalanceMismatch = !approximatelyEqual(aiProvided.getUffaBalance(), serverComputed.getUffaBalance());
+        if (coverageMismatch || uffaBalanceMismatch) {
+            logger.warn("event=metrics_ai_mismatch candidate_id={} correlation_id={} coverage_ai={} coverage_server={} uffa_balance_ai={} uffa_balance_server={}",
+                    candidateId,
+                    correlationId,
+                    aiProvided.getCoverage(),
+                    serverComputed.getCoverage(),
+                    aiProvided.getUffaBalance(),
+                    serverComputed.getUffaBalance());
         }
     }
 
-    private SentimentTransitionCounts computeSentimentTransitionsFromUffaDelta(List<AiUffaDelta> deltas) {
-        if (deltas == null || deltas.isEmpty()) {
-            return zeroSentimentTransitionCounts();
+    private boolean approximatelyEqual(Double left, Double right) {
+        if (left == null && right == null) {
+            return true;
         }
-        Map<Long, Integer> previousSentiment = new HashMap<>();
-        Map<Long, Integer> currentSentiment = new HashMap<>();
-        for (AiUffaDelta delta : deltas) {
-            if (delta == null || delta.getDoctorId() == null || delta.getPoints() == null) {
-                continue;
-            }
-            long doctorId = delta.getDoctorId().longValue();
-            previousSentiment.put(doctorId, 0);
-            currentSentiment.put(doctorId, signSentiment(delta.getPoints()));
-        }
-        if (currentSentiment.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        try {
-            return MetricAggregationUtils.countSentimentTransitions(previousSentiment, currentSentiment);
-        } catch (IllegalArgumentException ex) {
-            logger.info("event=metrics_sentiment_transitions_fallback reason={}", ex.getMessage());
-            return zeroSentimentTransitionCounts();
-        }
-    }
-
-    private int signSentiment(Number value) {
-        if (value == null) {
-            return 0;
-        }
-        double numeric = value.doubleValue();
-        if (numeric > 0) {
-            return 1;
-        }
-        if (numeric < 0) {
-            return -1;
-        }
-        return 0;
-    }
-
-    private SentimentTransitionCounts zeroSentimentTransitionCounts() {
-        return new SentimentTransitionCounts(0, 0, 0, 0, 0, 0);
-    }
-
-    private boolean hasUffaBalanceMetric(AiMetrics metrics) {
-        if (metrics == null || metrics.getUffaBalance() == null || metrics.getUffaBalance().getNightShiftStdDev() == null) {
+        if (left == null || right == null) {
             return false;
         }
-        AiStdDev stdDev = metrics.getUffaBalance().getNightShiftStdDev();
-        return stdDev.getInitial() != null && stdDev.getFinalValue() != null;
+        return Math.abs(left - right) <= METRICS_COMPARISON_TOLERANCE;
     }
 
     private double resolveUffaBalanceImprovement(AiMetrics metrics) {
@@ -838,185 +697,6 @@ public class AiScheduleGenerationOrchestrationService {
             return 0.0;
         }
         return stdDev.getInitial() - stdDev.getFinalValue();
-    }
-
-    private double computeCoverageFromAiResponse(AiScheduleResponse response, Map<String, Integer> shiftRequirements) {
-        if (response == null) {
-            return 0.0;
-        }
-
-        Map<String, Integer> assignedByShift = new HashMap<>();
-        if (response.getAssignments() != null) {
-            for (AiAssignment assignment : response.getAssignments()) {
-                if (assignment == null || assignment.getShiftId() == null || assignment.getShiftId().trim().isEmpty()) {
-                    continue;
-                }
-                String shiftId = assignment.getShiftId().trim();
-                assignedByShift.put(shiftId, assignedByShift.getOrDefault(shiftId, 0) + 1);
-            }
-        }
-
-        if (shiftRequirements == null || shiftRequirements.isEmpty()) {
-            logger.info("event=metrics_ai_coverage_fallback_missing_requirements assignments_count={}",
-                    assignedByShift.values().stream().mapToInt(Integer::intValue).sum());
-            return 0.0;
-        }
-
-        int totalRequired = 0;
-        int totalAssigned = 0;
-        for (Map.Entry<String, Integer> entry : shiftRequirements.entrySet()) {
-            int required = entry.getValue() == null ? 0 : entry.getValue();
-            totalRequired += required;
-            int assigned = assignedByShift.getOrDefault(entry.getKey(), 0);
-            totalAssigned += Math.min(required, assigned);
-        }
-
-        if (totalRequired <= 0) {
-            logger.info("event=metrics_ai_coverage_fallback_zero_requirement assignments_count={}",
-                    assignedByShift.values().stream().mapToInt(Integer::intValue).sum());
-            return 0.0;
-        }
-
-        double coverage = (double) totalAssigned / totalRequired;
-        logger.info("event=metrics_ai_coverage_fallback computed_coverage={} total_assigned={} total_required={} unique_shift_assignments={}",
-                coverage,
-                totalAssigned,
-                totalRequired,
-                assignedByShift.size());
-        return coverage;
-    }
-
-    private Map<String, Integer> buildShiftRequirementsByShiftId(List<ConcreteShift> referenceShifts) {
-        Map<String, Integer> requirements = new HashMap<>();
-        if (referenceShifts == null) {
-            return requirements;
-        }
-        for (ConcreteShift shift : referenceShifts) {
-            if (shift == null) {
-                continue;
-            }
-            String shiftId = ToonBuilder.shiftIdFor(shift);
-            int required = computeShiftRequirement(shift.getShift());
-            requirements.put(shiftId, required);
-        }
-        return requirements;
-    }
-
-    private Map<String, TimeSlot> buildShiftSlotsByShiftId(List<ConcreteShift> referenceShifts) {
-        Map<String, TimeSlot> slots = new HashMap<>();
-        if (referenceShifts == null) {
-            return slots;
-        }
-        for (ConcreteShift shift : referenceShifts) {
-            if (shift == null || shift.getShift() == null || shift.getShift().getTimeSlot() == null) {
-                continue;
-            }
-            slots.put(ToonBuilder.shiftIdFor(shift), shift.getShift().getTimeSlot());
-        }
-        return slots;
-    }
-
-    private Map<String, ConcreteShift> buildShiftMapByShiftId(List<ConcreteShift> referenceShifts) {
-        Map<String, ConcreteShift> shifts = new HashMap<>();
-        if (referenceShifts == null) {
-            return shifts;
-        }
-        for (ConcreteShift shift : referenceShifts) {
-            if (shift == null) {
-                continue;
-            }
-            shifts.put(ToonBuilder.shiftIdFor(shift), shift);
-        }
-        return shifts;
-    }
-
-    private Map<Integer, DoctorUffaPriority> buildPrioritiesByDoctorId() {
-        Map<Integer, DoctorUffaPriority> priorities = new HashMap<>();
-        List<DoctorUffaPriority> allPriorities = doctorUffaPriorityDAO.findAll();
-        if (allPriorities == null) {
-            return priorities;
-        }
-        for (DoctorUffaPriority priority : allPriorities) {
-            if (priority == null || priority.getDoctor() == null || priority.getDoctor().getId() == null) {
-                continue;
-            }
-            priorities.put(priority.getDoctor().getId().intValue(), priority);
-        }
-        return priorities;
-    }
-
-    private ControllerScocciatura buildControllerScocciatura() {
-        List<Scocciatura> scocciature = scocciaturaDAO.findAll();
-        if (scocciature == null || scocciature.isEmpty()) {
-            return null;
-        }
-        try {
-            return new ControllerScocciatura(scocciature);
-        } catch (RuntimeException ex) {
-            logger.info("event=metrics_ai_uffa_delta_estimation_unavailable reason={}", ex.getMessage());
-            return null;
-        }
-    }
-
-    private double computeUffaBalanceFromAiResponse(AiScheduleResponse response, Map<String, TimeSlot> shiftSlots) {
-        if (response == null || response.getAssignments() == null || response.getAssignments().isEmpty()
-                || shiftSlots == null || shiftSlots.isEmpty()) {
-            return 0.0;
-        }
-        Map<Integer, Integer> allAssignmentsByDoctor = new HashMap<>();
-        Map<Integer, Integer> nightAssignmentsByDoctor = new HashMap<>();
-        for (AiAssignment assignment : response.getAssignments()) {
-            if (assignment == null || assignment.getDoctorId() == null) {
-                continue;
-            }
-            Integer doctorId = assignment.getDoctorId();
-            allAssignmentsByDoctor.put(doctorId, allAssignmentsByDoctor.getOrDefault(doctorId, 0) + 1);
-            TimeSlot slot = shiftSlots.get(assignment.getShiftId());
-            if (slot == TimeSlot.NIGHT) {
-                nightAssignmentsByDoctor.put(doctorId, nightAssignmentsByDoctor.getOrDefault(doctorId, 0) + 1);
-            }
-        }
-        if (allAssignmentsByDoctor.isEmpty()) {
-            return 0.0;
-        }
-        List<Integer> nightLoads = new ArrayList<>();
-        for (Integer doctorId : allAssignmentsByDoctor.keySet()) {
-            nightLoads.add(nightAssignmentsByDoctor.getOrDefault(doctorId, 0));
-        }
-        double stdDev = computeStdDev(nightLoads);
-        double value = -stdDev;
-        logger.info("event=metrics_ai_uffa_balance_fallback value={} night_assignments_doctors={}",
-                value,
-                nightAssignmentsByDoctor.size());
-        return value;
-    }
-
-    private PriorityDeltaStats computeLoadDeltaStatsFromAssignments(AiScheduleResponse response) {
-        if (response == null || response.getAssignments() == null || response.getAssignments().isEmpty()) {
-            return new PriorityDeltaStats(0.0, 0.0);
-        }
-        Map<Integer, Integer> loads = new HashMap<>();
-        for (AiAssignment assignment : response.getAssignments()) {
-            if (assignment == null || assignment.getDoctorId() == null) {
-                continue;
-            }
-            Integer doctorId = assignment.getDoctorId();
-            loads.put(doctorId, loads.getOrDefault(doctorId, 0) + 1);
-        }
-        if (loads.isEmpty()) {
-            return new PriorityDeltaStats(0.0, 0.0);
-        }
-        List<Double> values = new ArrayList<>();
-        for (Integer load : loads.values()) {
-            values.add(load.doubleValue());
-        }
-        double mean = MetricAggregationUtils.mean(values);
-        double variance = MetricAggregationUtils.variance(values);
-        logger.info("event=metrics_ai_delta_fallback mean={} variance={} doctors_count={}",
-                mean,
-                variance,
-                loads.size());
-        return new PriorityDeltaStats(mean, variance);
     }
 
     private PriorityDeltaStats computePriorityDeltaStats(List<DoctorUffaPrioritySnapshot> snapshots,
@@ -1462,10 +1142,10 @@ public class AiScheduleGenerationOrchestrationService {
 
         for (CandidateData candidate : candidates) {
             DecisionMetricValues metrics = candidate.rawMetrics;
-            // Coverage is already a bounded ratio [0,1], so keep its absolute meaning.
-            double coverage = clampUnit(metrics.getCoverage());
+            double coverage = MetricNormalizationUtils.normalizeRange(metrics.getCoverage(), minCoverage, maxCoverage,
+                    false);
             double uffaBalance = MetricNormalizationUtils.normalizeRange(metrics.getUffaBalance(), minUffaBalance,
-                    maxUffaBalance, true);
+                    maxUffaBalance, false);
             double sentiment = MetricNormalizationUtils.normalizeRange(metrics.getSentimentTransitions(), minSentiment,
                     maxSentiment, false);
             double upDelta = MetricNormalizationUtils.normalizeRange(metrics.getUpDelta(), minUpDelta, maxUpDelta,
@@ -1497,30 +1177,6 @@ public class AiScheduleGenerationOrchestrationService {
         return normalized;
     }
 
-    private double clampUnit(Double value) {
-        if (value == null || value.isNaN() || value.isInfinite()) {
-            return 0.0;
-        }
-        if (value < 0.0) {
-            return 0.0;
-        }
-        if (value > 1.0) {
-            return 1.0;
-        }
-        return value;
-    }
-
-    private String buildMultiVariantInstructions(List<ConcreteShift> referenceShifts) {
-        int expectedAssignments = referenceShifts == null ? 0 : referenceShifts.size();
-        StringBuilder builder = new StringBuilder("Generate three schedule variants in a single JSON response.\n");
-        builder.append("Use the labels EMPATHETIC, EFFICIENT, BALANCED under the \"variants\" object.\n");
-        for (VariantDefinition definition : VARIANT_DEFINITIONS) {
-            builder.append("- ").append(definition.label).append(": ").append(definition.intent).append("\n");
-        }
-        builder.append("Return only the JSON object, no extra text.");
-        return builder.toString();
-    }
-
     private MetricsErrorMetadata buildMetricsError(MetricsErrorMetadata existing,
                                                    String correlationId,
                                                    String errorCode,
@@ -1545,23 +1201,23 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private DecisionMetricValues fallbackMetrics() {
-        return new DecisionMetricValues(0.0, 0.0, 0.0, zeroSentimentTransitionCounts(), 0.0, 0.0);
+        return new DecisionMetricValues(0.0, 0.0, 0.0, 0.0, 0.0);
     }
 
     private static class VariantDefinition {
         private final String label;
         private final String candidateId;
         private final ScheduleCandidateType type;
-        private final String intent;
+        private final String variantInstruction;
 
         private VariantDefinition(String label,
                                   String candidateId,
                                   ScheduleCandidateType type,
-                                  String intent) {
+                                  String variantInstruction) {
             this.label = Objects.requireNonNull(label, "label");
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.type = Objects.requireNonNull(type, "type");
-            this.intent = Objects.requireNonNull(intent, "intent");
+            this.variantInstruction = Objects.requireNonNull(variantInstruction, "variantInstruction");
         }
     }
 
@@ -1686,16 +1342,6 @@ public class AiScheduleGenerationOrchestrationService {
                 }
             }
             return null;
-        }
-    }
-
-    private static class ToonPayloadData {
-        private final String payload;
-        private final boolean hasFeedbackSignals;
-
-        private ToonPayloadData(String payload, boolean hasFeedbackSignals) {
-            this.payload = payload;
-            this.hasFeedbackSignals = hasFeedbackSignals;
         }
     }
 

@@ -40,11 +40,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -80,7 +82,6 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-        when(scheduleDAO.save(transientSchedule)).thenReturn(transientSchedule);
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
@@ -106,10 +107,12 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
                 new ObjectMapper()
         );
 
         assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+        verify(schedulerController, never()).persistSchedule(any(Schedule.class));
 
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
@@ -117,6 +120,134 @@ class AiScheduleGenerationOrchestrationServiceTest {
         String toonPayload = requestCaptor.getAllValues().get(0).getToonPayload();
         assertTrue(toonPayload.startsWith("ctx:{p:\""));
         assertTrue(toonPayload.contains("REST_PERIOD"));
+        assertTrue(toonPayload.contains("hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:"));
+        assertTrue(toonPayload.contains("S_1001_20260914,1,0,0,1"));
+    }
+
+    @Test
+    void generateScheduleComparisonSerializesSingleShiftWithMultipleSeniorityMinima() {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift shift = makeShift(2001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1)),
+                quantity(Map.of(Seniority.SPECIALIST_SENIOR, 2))
+        ));
+
+        String toonPayload = generateScheduleComparisonAndCaptureToonPayload(date, date, List.of(
+                new ConcreteShift(date.toEpochDay(), shift)
+        ));
+
+        assertTrue(toonPayload.contains("hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:"));
+        assertTrue(toonPayload.contains("S_2001_20260914,1,0,2,3"));
+    }
+
+    @Test
+    void generateScheduleComparisonSerializesOneHardCoverageRowPerShiftInDeterministicOrder() {
+        LocalDate firstDay = LocalDate.of(2026, 9, 14);
+        LocalDate secondDay = LocalDate.of(2026, 9, 15);
+
+        Shift firstShift = makeShift(3002L, TimeSlot.AFTERNOON, LocalTime.of(13, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.SPECIALIST_JUNIOR, 1, Seniority.SPECIALIST_SENIOR, 1))
+        ));
+        Shift secondShift = makeShift(3001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 2))
+        ));
+
+        String toonPayload = generateScheduleComparisonAndCaptureToonPayload(firstDay, secondDay, List.of(
+                new ConcreteShift(secondDay.toEpochDay(), firstShift),
+                new ConcreteShift(firstDay.toEpochDay(), secondShift)
+        ));
+
+        String expectedBlock = "hard_coverage_requirements[2]{shift_id,structured,specialist_junior,specialist_senior,total}:\n"
+                + "S_3001_20260914,2,0,0,2\n"
+                + "S_3002_20260915,0,1,1,2\n";
+        assertTrue(toonPayload.contains(expectedBlock));
+        assertTrue(toonPayload.contains("S_3001_20260914"));
+        assertTrue(toonPayload.contains("S_3002_20260915"));
+    }
+
+    @Test
+    void generateScheduleComparisonSerializesAbsentOrZeroSeniorityMinimaAsZeroes() {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift absentMinimaShift = makeShift(4001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of());
+        Shift zeroMinimaShift = makeShift(4002L, TimeSlot.AFTERNOON, LocalTime.of(13, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(
+                        Seniority.STRUCTURED, 0,
+                        Seniority.SPECIALIST_JUNIOR, 0,
+                        Seniority.SPECIALIST_SENIOR, -3
+                ))
+        ));
+
+        String toonPayload = generateScheduleComparisonAndCaptureToonPayload(date, date, List.of(
+                new ConcreteShift(date.toEpochDay(), zeroMinimaShift),
+                new ConcreteShift(date.toEpochDay(), absentMinimaShift)
+        ));
+
+        String expectedBlock = "hard_coverage_requirements[2]{shift_id,structured,specialist_junior,specialist_senior,total}:\n"
+                + "S_4001_20260914,0,0,0,0\n"
+                + "S_4002_20260914,0,0,0,0\n";
+        assertTrue(toonPayload.contains(expectedBlock));
+    }
+
+    private String generateScheduleComparisonAndCaptureToonPayload(LocalDate startDate,
+                                                                    LocalDate endDate,
+                                                                    List<ConcreteShift> concreteShifts) {
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        doctorPriority.setGeneralPriority(3);
+        doctorPriority.setNightPriority(4);
+        doctorPriority.setLongShiftPriority(5);
+
+        Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+                .thenReturn(List.of());
+        when(agentBroker.previewTokenBudget(any()))
+                .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
+        when(aiScheduleConverterService.convert(any())).thenReturn(concreteShifts);
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("standard", List.of()));
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                scheduleDAO,
+                agentBroker,
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+        verify(schedulerController, never()).persistSchedule(any(Schedule.class));
+
+        ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
+        verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
+        List<AiBrokerRequest> capturedRequests = requestCaptor.getAllValues();
+        assertEquals(1, capturedRequests.size());
+        return capturedRequests.get(0).getToonPayload();
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {
@@ -134,12 +265,23 @@ class AiScheduleGenerationOrchestrationServiceTest {
         return doctor;
     }
 
+    private QuantityShiftSeniority quantity(Map<Seniority, Integer> seniorityMap) {
+        return new QuantityShiftSeniority(seniorityMap, new Task(TaskEnum.CLINIC));
+    }
+
     private Shift makeShift(Long id, TimeSlot timeSlot, LocalTime startTime, Duration duration) {
+        return makeShift(id, timeSlot, startTime, duration, List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1))
+        ));
+    }
+
+    private Shift makeShift(Long id,
+                            TimeSlot timeSlot,
+                            LocalTime startTime,
+                            Duration duration,
+                            List<QuantityShiftSeniority> quantities) {
         Task task = new Task(TaskEnum.CLINIC);
         MedicalService service = new MedicalService(List.of(task), "Ward");
-        QuantityShiftSeniority quantity = new QuantityShiftSeniority(Map.of(
-                Seniority.STRUCTURED, 1
-        ), task);
         return new Shift(
                 id,
                 timeSlot,
@@ -147,7 +289,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 duration,
                 Set.of(DayOfWeek.MONDAY),
                 service,
-                List.of(quantity),
+                quantities,
                 List.of()
         );
     }

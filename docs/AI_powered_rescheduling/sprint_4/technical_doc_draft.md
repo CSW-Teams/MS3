@@ -10,34 +10,34 @@
 
 **Textual walkthrough of the orchestration sequence**
 
-1. **Planner trigger**: Planner invokes schedule generation/regeneration from the existing UI entrypoints. The backend orchestration service starts from the baseline schedule generation flow (Story 1). 
-2. **Baseline schedule generation**: The standard schedule is generated using the existing pipeline; this is always produced first and is the fallback when AI variants fail. 
-3. **TOON context build**: The orchestration collects data for the TOON request context (period, shifts, doctors, priorities, blocks, active constraints, feedbacks) per Story 2.2–2.3 and Story 5.2. 
-4. **Preflight validation (TOON)**: Validate required fields and referential integrity before serialization. If validation fails, the AI call is blocked and a structured error response is returned. 
-5. **TOON serialization**: Serialize the validated context into `.toon` via the TOON builder. 
-6. **Post-serialization validation (GDPR guardrails)**: Verify schema sections, ordering, and PII/guardrails (Story 2.5, 2.6). 
-7. **AI broker call**: Broker sends the TOON payload to the configured AI provider (Gemma or Llama‑70B) using a JSON wrapper. Timeouts/retries are applied at broker level (Story 2.8). 
-8. **AI JSON response parse/validate**: Parse JSON response strictly, validate schema + semantics; treat `PARTIAL_SUCCESS` and `FAILURE` as errors (Story 2.7). 
-9. **Variant extraction**: A single AI call returns three variants (Empatica, Efficiente, Bilanciata) plus metadata. 
-10. **Metrics computation & normalization**: Compute metrics aligned with GQM+Strategy (Story 3). Normalize values to [0,1] for weighted decisioning. 
-11. **Decision algorithm**: Use the priority scale weights to choose the preferred schedule (Story 3.4–3.5), with deterministic tie-breaks. 
-12. **Comparison payload build**: Produce the comparison response (baseline + 3 AI variants) with raw + normalized metrics and decision outcome (Story 3.6). 
-13. **API response**: Return comparison payload and status (`success` / `partial` / `failure`) consistent with UI states (Story 4). 
-14. **Selection endpoint**: Planner selects a candidate via `/api/comparison/selection` or legacy `/api/schedule/selection`; only the selected schedule is persisted (Story 5.4). 
-15. **Audit logging**: Record selection outcomes and correlation IDs for traceability (Story 5.6). 
+1. **Planner trigger**: Planner invokes schedule generation/regeneration from the existing UI entrypoints. The backend orchestration service starts from the baseline schedule generation flow (Story 1).
+2. **Baseline schedule generation**: The standard schedule is generated using the existing pipeline; this is always produced first and is the fallback when AI variants fail.
+3. **TOON context build**: The orchestration collects data for the TOON request context (period, shifts, doctors, priorities, blocks, active constraints, feedbacks) per Story 2.2–2.3 and Story 5.2.
+4. **Preflight validation (TOON)**: Validate required fields and referential integrity before serialization. If validation fails, the AI call is blocked and a structured error response is returned.
+5. **TOON serialization**: Serialize the validated context into `.toon` via the TOON builder.
+6. **Post-serialization validation (GDPR guardrails)**: Verify schema sections, ordering, and PII/guardrails (Story 2.5, 2.6).
+7. **AI broker call**: Broker sends the TOON payload to the configured AI provider (Gemma or Llama‑70B) using a JSON wrapper. Timeouts/retries are applied at broker level (Story 2.8).
+8. **AI JSON response parse/validate**: Parse JSON response strictly, validate schema + semantics; treat `PARTIAL_SUCCESS` and `FAILURE` as errors (Story 2.7).
+9. **Variant extraction**: A single AI call returns three variants (Empatica, Efficiente, Bilanciata) plus metadata.
+10. **Metrics computation & normalization**: Compute metrics aligned with GQM+Strategy (Story 3). Normalize values to [0,1] for weighted decisioning.
+11. **Decision algorithm**: Use the priority scale weights to choose the preferred schedule (Story 3.4–3.5), with deterministic tie-breaks.
+12. **Comparison payload build**: Produce the comparison response with exactly **4 candidates** (1 standard + 3 AI variants), raw + normalized metrics, and decision outcome (Story 3.6).
+13. **API response (`POST /schedule/generation/ai`)**: Return comparison payload and status (`success` / `partial` / `failure`) consistent with UI states (Story 4); **no schedule is persisted in this step**.
+14. **Selection endpoint (`POST /schedule/selection`)**: Planner confirms one candidate; persistence happens only here and includes duplicate-range checks before write (Story 5.4).
+15. **Audit logging**: Record selection outcomes and correlation IDs for traceability (Story 5.6).
 
 ---
 
 ## 6.1.b AI protocol section (TOON/JSON, retries/timeouts, error taxonomy)
 
 ### Protocol overview
-- **Mode**: Direct prompting with context, no MCP/RLM (Story 2). 
-- **Input**: `.toon` file generated by the backend (structured, token-efficient). 
-- **Output**: Strict **JSON only**, conforming to the schema defined in Story 2.3. 
-- **Provider-agnostic**: Protocol is the same regardless of AI provider. 
+- **Mode**: Direct prompting with context, no MCP/RLM (Story 2).
+- **Input**: `.toon` file generated by the backend (structured, token-efficient).
+- **Output**: Strict **JSON only**, conforming to the schema defined in Story 2.3.
+- **Provider-agnostic**: Protocol is the same regardless of AI provider.
 
 ### TOON request (system → agent)
-- **Structure**: Session metadata + context blocks for shifts, doctors, constraints, blocks, feedbacks. 
+- **Structure**: Session metadata + context blocks for shifts, doctors, constraints, blocks, feedbacks.
 - **Key fields** (non-exhaustive):
   - `period`, `mode` (rebalance/optimize)
   - `shifts[]` with IDs, slot, date, duration, role requirements
@@ -45,19 +45,19 @@
   - `blocks[]` unavailability/preferences
   - `active_constraints[]` with type, entity, reason, params
   - `feedbacks[]` structured category + rating + limited text
-- **Pseudonymization**: Doctor IDs are request-scoped and consistent across references (Story 5.2). 
+- **Pseudonymization**: Doctor IDs are request-scoped and consistent across references (Story 5.2).
 
 ### JSON response (agent → system)
-- **Root**: `status`, `metadata`, `assignments`, `uncovered_shifts`, `uffa_delta`. 
-- **Status policy**: Only `SUCCESS` is accepted; `PARTIAL_SUCCESS` and `FAILURE` are treated as errors. 
-- **Schema constraints**: Strict parsing with semantic checks (required fields, ranges, duplicates). 
+- **Root**: `status`, `metadata`, `assignments`, `uncovered_shifts`, `uffa_delta`.
+- **Status policy**: Only `SUCCESS` is accepted; `PARTIAL_SUCCESS` and `FAILURE` are treated as errors.
+- **Schema constraints**: Strict parsing with semantic checks (required fields, ranges, duplicates).
 
 ### Timeouts & retries
-- **Connect timeout**: 5s 
-- **Read timeout**: 60s 
-- **Total timeout**: 90s 
-- **Retries**: 3 attempts, configurable backoff (default 0ms). 
-- **Retry ownership**: Transport failures handled at broker layer; orchestrator handles domain/metrics errors (Story 5.5). 
+- **Connect timeout**: 5s
+- **Read timeout**: 60s
+- **Total timeout**: 90s
+- **Retries**: 3 attempts, configurable backoff (default 0ms).
+- **Retry ownership**: Transport failures handled at broker layer; orchestrator handles domain/metrics errors (Story 5.5).
 
 ### Error taxonomy (aligned with Story 2.4)
 **Transport/Network**
@@ -80,102 +80,106 @@
 - Metrics computation failures
 
 ### Fallback strategy
-- If AI variants fail, return the baseline schedule and mark status `partial` or `failure` with structured error metadata (Story 5.5). 
+- If AI variants fail, return the baseline schedule and mark status `partial` or `failure` with structured error metadata (Story 5.5).
 
 ---
 
 ## 6.1.c Metrics + decision algorithm summary
 
 ### Metrics foundation (GQM+Strategy)
-- **Business goal**: Reduce burnout, improve retention (Story 3.1). 
-- **Software goal**: Improve scheduling satisfaction (Story 3.1). 
-- **Operational goal**: Produce 3 valid AI schedules per cycle (Story 3.1). 
+- **Business goal**: Reduce burnout, improve retention (Story 3.1).
+- **Software goal**: Improve scheduling satisfaction (Story 3.1).
+- **Operational goal**: Produce 3 valid AI schedules per cycle (Story 3.1).
 
 ### Decision metrics catalog (Story 3)
-- **Coverage**: Completion of required shifts (raw + normalized). 
-- **UFFA balance**: Variance improvement in fairness points. 
-- **Sentiment transitions**: Counts of positive/negative shifts in feedback sentiment. 
-- **UP delta**: Normalized improvement in Uffa Points. 
-- **Variance delta**: Change in per-doctor UP variance. 
+- **Coverage**: Completion of required shifts (raw + normalized).
+- **UFFA balance**: Variance improvement in fairness points.
+- **Sentiment transitions**: Counts of positive/negative shifts in feedback sentiment.
+- **UP delta**: Normalized improvement in Uffa Points.
+- **Variance delta**: Change in per-doctor UP variance.
 
 ### Normalization
-- All decision metrics are normalized to **[0,1]** and treated as **higher-is-better** for aggregation. 
-- Normalization uses min/max-based scaling and checks for valid bounds (Story 3.3). 
+- All decision metrics are normalized to **[0,1]** and treated as **higher-is-better** for aggregation.
+- Normalization uses min/max-based scaling and checks for valid bounds (Story 3.3).
 
 ### Priority scale (weights)
-- Configurable `PriorityDimension -> weight` with defaults and overrides (Story 3.4). 
-- Validation rules: non-negative, all dimensions present, sum = 1.0. 
+- Configurable `PriorityDimension -> weight` with defaults and overrides (Story 3.4).
+- Validation rules: non-negative, all dimensions present, sum = 1.0.
 
 ### Decision algorithm
-- **Scoring**: Weighted sum across dimensions (Story 3.5). 
-- **Tie-break**: Lexicographic order 
-  `COVERAGE → UFFA_BALANCE → SENTIMENT_TRANSITIONS → UP_DELTA → VARIANCE_DELTA`. 
-- **Determinism**: Consistent results for identical inputs. 
+- **Scoring**: Weighted sum across dimensions (Story 3.5).
+- **Tie-break**: Lexicographic order
+  `COVERAGE → UFFA_BALANCE → SENTIMENT_TRANSITIONS → UP_DELTA → VARIANCE_DELTA`.
+- **Determinism**: Consistent results for identical inputs.
 
 ### Comparison payload
-- Output includes baseline + 3 AI candidates with **raw and normalized metrics**, metadata, and selection outcome (Story 3.6). 
+- Output includes baseline + 3 AI candidates with **raw and normalized metrics**, metadata, and selection outcome (Story 3.6).
 
 ---
 
 ## 6.1.d UI comparison/selection flow notes
 
 ### Comparison UI flow (Story 4)
-- **Loading state**: Blocking modal with progress spinner during AI generation. 
-- **Results view**: 2×2 comparison grid for four candidates (baseline + 3 AI variants). 
-- **Metrics**: Display decision metrics only; labels follow Story 3 naming. 
-- **Missing data**: Placeholder values shown when metrics are unavailable. 
+- **Loading state**: Blocking modal with progress spinner during AI generation.
+- **Results view**: 2×2 comparison grid for four candidates (baseline + 3 AI variants).
+- **Metrics**: Display decision metrics only; labels follow Story 3 naming.
+- **Missing data**: Placeholder values shown when metrics are unavailable.
 
 ### Selection flow
-1. Planner selects a candidate from the comparison grid. 
-2. Confirmation modal is shown with bilingual copy (EN/IT). 
-3. On confirm, UI calls selection endpoint; once accepted, selection is locked. 
-4. Success message uses existing toast pattern. 
+1. Planner triggers `POST /schedule/generation/ai` and receives four comparison candidates (standard + 3 AI), without persistence.
+2. Planner inspects metrics in the comparison grid and selects one candidate.
+3. Confirmation modal is shown with bilingual copy (EN/IT).
+4. On confirm, UI calls `POST /schedule/selection`; backend runs duplicate-range checks and persists the chosen candidate only if validation passes.
+5. Once accepted, selection is locked and success message uses existing toast pattern.
+
+### Sequence reference
+- See `docs/scheduling_flow/ai_generation_selection_flow.md` for the backend/frontend sequence diagram and the authoritative endpoint contract.
 
 ### Error handling
-- **Generation failure**: Show error or warning message with details (e.g., uncovered shifts). 
-- **Partial success**: Present warning with fallback and allow selection if candidates exist. 
-- **Selection failure**: Show error toast; no persistence occurs. 
+- **Generation failure**: Show error or warning message with details (e.g., uncovered shifts).
+- **Partial success**: Present warning with fallback and allow selection if candidates exist.
+- **Selection failure**: Show error toast; no persistence occurs.
 
 ---
 
 ## 6.1.e Glossary + data minimization notes
 
 ### Glossary
-- **TOON**: Token-optimized, hierarchical input format used to send schedule context to the AI agent. 
-- **JSON response**: Strict schema response used to ingest AI schedule proposals. 
-- **Baseline schedule**: Standard schedule generated by existing algorithm, always produced and used as fallback. 
-- **AI variants**: Empatica (doctor-oriented), Efficiente (organization-oriented), Bilanciata (balanced). 
-- **Priority scale**: Weighted configuration for decision algorithm dimensions. 
-- **Decision algorithm**: Weighted sum + tie-breaker used to select preferred schedule. 
+- **TOON**: Token-optimized, hierarchical input format used to send schedule context to the AI agent.
+- **JSON response**: Strict schema response used to ingest AI schedule proposals.
+- **Baseline schedule**: Standard schedule generated by existing algorithm, always produced and used as fallback.
+- **AI variants**: Empatica (doctor-oriented), Efficiente (organization-oriented), Bilanciata (balanced).
+- **Priority scale**: Weighted configuration for decision algorithm dimensions.
+- **Decision algorithm**: Weighted sum + tie-breaker used to select preferred schedule.
 
 ### Data minimization (GDPR)
 **Transmitted data (allowed)**
-- Schedule window (period). 
-- Shift IDs, slots, dates, durations, role requirements. 
-- Pseudonymized doctor IDs and role/seniority. 
-- Fairness priorities (Uffa points) and limited history required for metrics. 
-- Unavailability blocks, anonymized feedback category/rating, optional short comments. 
-- Active constraints (hard/soft) with minimal parameters. 
+- Schedule window (period).
+- Shift IDs, slots, dates, durations, role requirements.
+- Pseudonymized doctor IDs and role/seniority.
+- Fairness priorities (Uffa points) and limited history required for metrics.
+- Unavailability blocks, anonymized feedback category/rating, optional short comments.
+- Active constraints (hard/soft) with minimal parameters.
 
 **Not transmitted**
-- Names, emails, phone numbers, staff IDs, or other direct identifiers. 
-- Medical or sensitive personal attributes (pregnancy, disability, health details). 
-- Full historical schedules beyond the current period. 
-- Raw database primary keys not required for scheduling. 
+- Names, emails, phone numbers, staff IDs, or other direct identifiers.
+- Medical or sensitive personal attributes (pregnancy, disability, health details).
+- Full historical schedules beyond the current period.
+- Raw database primary keys not required for scheduling.
 
 **Redaction rules**
-- Doctor identifiers are **request-scoped** pseudonyms. 
-- Feedback is constrained to structured categories + ratings; free text is limited to scheduling context. 
-- Time precision is reduced to slot/date boundaries where possible. 
-- Constraints include only machine-actionable parameters. 
+- Doctor identifiers are **request-scoped** pseudonyms.
+- Feedback is constrained to structured categories + ratings; free text is limited to scheduling context.
+- Time precision is reduced to slot/date boundaries where possible.
+- Constraints include only machine-actionable parameters.
 
 **Compliance note**: All payloads are minimized to the scheduling window; only data required for scheduling feasibility and fairness is transmitted (Story 2.5).
 
 ---
 
 ## References
-- Sprint 4 Roadmap (Story 6.1 requirements) 
-- Story 2: AI protocol + TOON/JSON schema 
-- Story 3: Metrics + decision algorithm 
-- Story 4: UI comparison/selection flow 
+- Sprint 4 Roadmap (Story 6.1 requirements)
+- Story 2: AI protocol + TOON/JSON schema
+- Story 3: Metrics + decision algorithm
+- Story 4: UI comparison/selection flow
 - Story 5: Backend orchestration plan
