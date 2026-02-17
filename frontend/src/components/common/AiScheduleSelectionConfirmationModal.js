@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Button, Modal, Typography } from '@mui/material';
+import { t } from 'i18next';
 
 const modalStyle = {
   position: 'absolute',
@@ -32,7 +33,7 @@ function AiScheduleSelectionConfirmationModal({
   scheduleId,
   isSubmitting,
 }) {
-  const resolvedCandidateLabel = candidateLabel || 'Schedule / Schedulazione';
+  const resolvedCandidateLabel = candidateLabel || "Schedule";
   const resolvedScheduleId = scheduleId ?? '—';
 
   return (
@@ -44,25 +45,23 @@ function AiScheduleSelectionConfirmationModal({
     >
       <Box sx={modalStyle}>
         <Typography id="ai-selection-confirmation-title" variant="h6" component="h2">
-          Confirm schedule selection / Conferma selezione schedulazione
+          {t("Confirm schedule selection")}
         </Typography>
         <Typography id="ai-selection-confirmation-description" variant="body1">
-          You are about to finalize this schedule. This choice will lock the selection for this
-          comparison and cannot be changed. / Stai per finalizzare questa schedulazione. Questa
-          scelta bloccherà la selezione per questo confronto e non potrà essere modificata.
+          {t("You are about to finalize this schedule. This choice will lock the selection for this comparison and cannot be changed.")}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {`Candidate / Candidato: ${resolvedCandidateLabel}`}
+          {t("Candidate")}: {t(resolvedCandidateLabel)}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {`Schedule ID / ID schedulazione: ${resolvedScheduleId}`}
+          {t("Schedule ID")}: {resolvedScheduleId}
         </Typography>
         <Box sx={actionsStyle}>
           <Button onClick={onCancel} variant="outlined" disabled={isSubmitting}>
-            Cancel / Annulla
+            {t("Cancel")}
           </Button>
           <Button onClick={onConfirm} variant="contained" disabled={isSubmitting}>
-            Confirm selection / Conferma selezione
+            {t("Confirm selection")}
           </Button>
         </Box>
       </Box>

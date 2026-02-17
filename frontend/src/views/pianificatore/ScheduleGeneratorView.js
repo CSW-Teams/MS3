@@ -24,25 +24,21 @@ import AiScheduleSelectionConfirmationModal from "../../components/common/AiSche
 
 const resolveCandidateLabel = (metadata) => {
   if (!metadata?.type) {
-    return t('Schedule');
+    return 'Schedule';
   }
-  const normalizedType = String(metadata.type).toLowerCase();
-  switch (normalizedType) {
+  switch (metadata.type.toLowerCase()) {
     case 'standard':
-      return t('Standard');
+      return 'Standard';
     case 'empathetic':
-      return t('Empathetic');
+      return 'Empathetic';
     case 'efficient':
-      return t('Efficient');
+      return 'Efficient';
     case 'balanced':
-      return t('Balanced');
+      return 'Balanced';
     default:
       return metadata.type;
   }
 };
-
-const resolveSelectionKey = (candidate) =>
-  candidate?.metadata?.candidateId ?? candidate?.metadata?.type ?? null;
 
 /**
  * @see docs/scheduling_flow/README.md
@@ -245,13 +241,12 @@ export class SchedulerGeneratorView extends React.Component{
       let response;
       try {
         response = await assegnazioneTurnoAPI.postGenerationScheduleAi(dataInizio, dataFine);
+        await this.componentDidMount(); // Ricarica gli schedule dopo la generazione
+
         switch (response.status) {
           case 200:
           case 202: {
             const comparisonCandidates = response.body?.candidates ?? [];
-            if (comparisonCandidates.length === 0) {
-              await this.componentDidMount();
-            }
             this.setState({
               generationStatus: 'success',
               generationMessage: t("Schedule successfully created."),
@@ -261,7 +256,6 @@ export class SchedulerGeneratorView extends React.Component{
             break;
           }
           case 206:
-            await this.componentDidMount();
             this.setState({
               generationStatus: 'partial',
               generationMessage: t("Schedule generated with warnings."),
@@ -341,7 +335,8 @@ export class SchedulerGeneratorView extends React.Component{
       if (!pendingCandidate || selectionLocked || isSelectionSubmitting) {
         return;
       }
-      const candidateKey = resolveSelectionKey(pendingCandidate);
+      const candidateKey =
+        pendingCandidate.metadata?.candidateId ?? pendingCandidate.metadata?.type;
       if (!candidateKey) {
         toast.error("Selection data missing / Dati selezione mancanti", {
           position: "top-center",
@@ -376,7 +371,6 @@ export class SchedulerGeneratorView extends React.Component{
       }
 
       if (response.status === 202) {
-        await this.componentDidMount();
         this.setState({
           selectionLocked: true,
           selectedCandidateKey: candidateKey,

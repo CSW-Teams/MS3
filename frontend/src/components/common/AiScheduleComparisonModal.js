@@ -46,7 +46,6 @@ const formatMetric = (value, placeholder) => {
 const metricLabels = [
   { key: 'coverage', labelKey: 'Coverage' },
   { key: 'uffaBalance', labelKey: 'UFFA balance' },
-  { key: 'sentimentTransitions', labelKey: 'Sentiment transitions' },
   { key: 'upDelta', labelKey: 'UP delta' },
   { key: 'varianceDelta', labelKey: 'Variance delta' },
 ];
@@ -55,8 +54,7 @@ const resolveCandidateLabel = (metadata) => {
   if (!metadata?.type) {
     return t('Schedule');
   }
-  const normalizedType = String(metadata.type).toLowerCase();
-  switch (normalizedType) {
+  switch (metadata.type.toLowerCase()) {
     case 'standard':
       return t('Standard');
     case 'empathetic':
@@ -75,6 +73,11 @@ const resolveSelectionKey = (candidate) =>
 
 const resolveMetrics = (candidate) =>
   candidate?.metrics?.normalized || candidate?.metrics?.raw || {};
+
+const resolveSentimentTransitionCounts = (candidate) =>
+  candidate?.metrics?.raw?.sentimentTransitionCounts ||
+  candidate?.metrics?.normalized?.sentimentTransitionCounts ||
+  {};
 
 const downloadJson = (data, filename) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -106,13 +109,13 @@ function AiScheduleComparisonModal({
     <Modal
       open={isOpen}
       onClose={onClose}
-      aria-labelledby="schedule-comparison"
-      aria-describedby="schedule-comparison-metrics"
+      aria-labelledby="ai-schedule-comparison"
+      aria-describedby="ai-schedule-comparison-metrics"
     >
       <Box sx={modalStyle}>
         {candidates.length === 0 ? (
           <Typography variant="h6" component="div" align="center" sx={{ mt: 2 }}>
-            {t('No schedules available for comparison. / Nessuna schedulazione disponibile per il confronto.')}
+            {t('No AI-generated schedules available for comparison.')}
           </Typography>
         ) : (
           <React.Fragment>
@@ -121,7 +124,7 @@ function AiScheduleComparisonModal({
                 variant="outlined"
                 disabled={downloadDisabled}
                 onClick={() =>
-                  downloadJson(downloadableCandidates, 'schedule-comparison.json')
+                  downloadJson(downloadableCandidates, 'ai-schedules.json')
                 }
               >
                 {t('Download')}
@@ -131,6 +134,7 @@ function AiScheduleComparisonModal({
               {cards.map((candidate, cardIndex) => {
                 const metadata = candidate?.metadata;
                 const metrics = resolveMetrics(candidate);
+                const sentimentTransitionCounts = resolveSentimentTransitionCounts(candidate);
                 const scheduleId = metadata?.scheduleId ?? placeholder;
                 const selectionKey = resolveSelectionKey(candidate);
                 const isSelected = selectionKey && selectionKey === selectedCandidateKey;
@@ -139,6 +143,14 @@ function AiScheduleComparisonModal({
                   label: t(metric.labelKey),
                   value: metrics?.[metric.key],
                 }));
+                const sentimentTransitions = [
+                    { label: 'N → 0', key: 'negativeToNeutral' },
+                    { label: 'N → P', key: 'negativeToPositive' },
+                    { label: '0 → P', key: 'neutralToPositive' },
+                    { label: '0 → N', key: 'neutralToNegative' },
+                    { label: 'P → N', key: 'positiveToNegative' },
+                    { label: 'P → 0', key: 'positiveToNeutral' },
+                ];
 
                 return (
                   <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
@@ -159,6 +171,19 @@ function AiScheduleComparisonModal({
                             {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
                           </Typography>
                         ))}
+                                                <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                    <Typography variant="subtitle1" component="div" gutterBottom>
+                                                        {t("Sentiment Transition")}
+                                                    </Typography>
+                                                    {sentimentTransitions.map((transition) => (
+                                                        <Box key={transition.key} sx={{ display: 'flex', gap: 1 }}>
+                                                            <Typography variant="body2">{transition.label}:</Typography>
+                                                            <Typography variant="body2">
+                                                                {formatMetric(sentimentTransitionCounts?.[transition.key], placeholder)}
+                                                            </Typography>
+                                                        </Box>
+                                                    ))}
+                                                </Box>
                         <Button
                           variant={isSelected ? 'contained' : 'outlined'}
                           disabled={!isSelectable || (selectionLocked && !isSelected)}
