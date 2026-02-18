@@ -248,6 +248,42 @@ Constraint handling (from `active_constraints`):
 - SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
 - Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).
 
+HOLIDAY SEMANTICS (NORMATIVE):
+- Meaning of holiday attachment:
+  - A doctor holiday row in `dr[].h[]{s,e,...}` is a doctor-unavailability interval attached to that doctor only.
+  - The planner MUST interpret the doctor as unavailable for assignment during the holiday interval.
+- Interval boundary convention:
+  - Holiday dates `s` and `e` are inclusive calendar boundaries.
+  - A shift is considered inside the holiday interval when `shift.d` is on or after `s` and on or before `e`.
+- Overlap rule (full vs partial):
+  - Any overlap blocks assignment.
+  - For day-based shift records (`sh[].d`), overlap exists if `sh[].d` falls within `[s,e]` (inclusive).
+  - Do not require full interval containment; one overlapping shift date is sufficient to make that doctor ineligible for that shift.
+- Precedence vs other hard constraints:
+  - Holiday unavailability is a HARD exclusion and MUST be enforced before any SOFT scoring.
+  - Holiday exclusion has the same hard-precedence level as other HARD constraints: violating assignments are forbidden.
+  - If holiday exclusion makes coverage impossible, return `PARTIAL_SUCCESS` (or `FAILURE` for globally invalid input) and report uncovered shifts.
+- Reporting requirements (`violation_note` / `uncovered_shifts`):
+  - Never assign a doctor to a holiday-overlapping shift just to satisfy coverage.
+  - Do NOT represent holiday exclusions as SOFT violations; therefore do not use `is_forced=true` for holiday conflicts.
+  - `violation_note` may mention holidays only for explanatory context on otherwise valid assignment rows (e.g., why alternatives were limited), never to justify a holiday-violating assignment.
+  - When a shift remains uncovered due to holiday-driven candidate exhaustion, add an `uncovered_shifts` row with a reason explicitly naming holiday unavailability (for example: `"No eligible doctor: remaining candidates excluded by holiday interval"`).
+- Interaction with `ConstraintHoliday` in `ac[...]`:
+  - If `ac[]` contains holiday-related entries (e.g., reason code `ConstraintHoliday`), treat them as policy signals aligned with doctor holiday unavailability.
+  - `t=HARD` + holiday semantics => strict prohibition; no assignment may violate.
+  - `t=SOFT` + holiday semantics does NOT permit assigning a doctor during an overlapping `dr[].h[]` holiday interval; `dr[].h[]` overlap remains hard-unavailable.
+  - If historical-holiday metadata is present in `ac[].p` (such as prior-year references), use it only as optional tie-break/scoring context when it does not conflict with hard availability from `dr[].h[]`.
+
+Holiday examples (single shift, single doctor):
+- Example A (INVALID assignment):
+  - Shift: `sh[1]{i:"S_101_20250110",s:MORNING,d:2025-01-10,u:480,rs:1,rj:0}`
+  - Doctor: `dr[1]-i:7,r:STRUCTURED,...,h[1]{id:90,s:2025-01-10,e:2025-01-12}`
+  - Result: Doctor 7 MUST NOT be assigned to `S_101_20250110` because `d=2025-01-10` overlaps inclusive holiday interval `[2025-01-10,2025-01-12]`.
+- Example B (VALID assignment):
+  - Shift: `sh[1]{i:"S_102_20250113",s:MORNING,d:2025-01-13,u:480,rs:1,rj:0}`
+  - Doctor: `dr[1]-i:7,r:STRUCTURED,...,h[1]{id:90,s:2025-01-10,e:2025-01-12}`
+  - Result: Doctor 7 MAY be assigned because `d=2025-01-13` is outside holiday interval `[2025-01-10,2025-01-12]`.
+
 Hard validation constraints (must match parser/validator expectations):
 - Response is a single JSON object.
 - Required top-level section: "variants".
