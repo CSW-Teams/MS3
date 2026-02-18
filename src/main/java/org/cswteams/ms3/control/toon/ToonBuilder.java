@@ -88,7 +88,7 @@ public class ToonBuilder {
                 .append(context.getPeriodEnd().format(DATE_FORMATTER))
                 .append("\",m:\"")
                 .append(context.getMode())
-                .append("\"}\n");
+                .append("\",hv:2}\n");
 
         appendShiftsCompact(builder, context.getConcreteShifts());
         appendDoctorsCompact(builder, context.getDoctors(), context.getDoctorUffaPriorities(), context.getDoctorHolidays());
@@ -267,13 +267,19 @@ public class ToonBuilder {
                     .append(priority.getNightPriority()).append(",")
                     .append(priority.getLongShiftPriority()).append("\n");
 
-            List<String> holidayTokens = resolveHolidayTokens(holidaysMap.get(doctor.getId()));
-            if (holidayTokens.isEmpty()) {
-                builder.append(" h:[]\n");
-            } else {
-                builder.append(" h:[")
-                        .append(holidayTokens.stream().map(token -> "\"" + token + "\"").collect(Collectors.joining(",")))
-                        .append("]\n");
+            List<CompactHolidayRow> holidayRows = resolveCompactHolidayRows(holidaysMap.get(doctor.getId()));
+            builder.append(" h[").append(holidayRows.size()).append("]{id,s,e,tz?}:\n");
+            for (CompactHolidayRow holidayRow : holidayRows) {
+                builder.append("  -")
+                        .append(holidayRow.id == null ? "" : holidayRow.id).append(",")
+                        .append(holidayRow.start.format(DATE_FORMATTER)).append(",")
+                        .append(holidayRow.end.format(DATE_FORMATTER));
+                if (holidayRow.timezone != null && !holidayRow.timezone.trim().isEmpty()) {
+                    builder.append(",\"")
+                            .append(escapeCompactString(holidayRow.timezone.trim()))
+                            .append("\"");
+                }
+                builder.append("\n");
             }
 
             appendBlocksCompact(builder, doctor);
@@ -411,6 +417,20 @@ public class ToonBuilder {
         }
     }
 
+    private static final class CompactHolidayRow {
+        private final Long id;
+        private final LocalDate start;
+        private final LocalDate end;
+        private final String timezone;
+
+        private CompactHolidayRow(Long id, LocalDate start, LocalDate end, String timezone) {
+            this.id = id;
+            this.start = start;
+            this.end = end;
+            this.timezone = timezone;
+        }
+    }
+
     private String renderFeedbackComment(String comment) {
         if (comment == null) {
             return "\"\"";
@@ -441,6 +461,36 @@ public class ToonBuilder {
             }
         }
         return new ArrayList<>(tokens);
+    }
+
+    private List<CompactHolidayRow> resolveCompactHolidayRows(DoctorHolidays doctorHolidays) {
+        if (doctorHolidays == null || doctorHolidays.getHolidayMap() == null) {
+            return List.of();
+        }
+        List<CompactHolidayRow> rows = new ArrayList<>();
+        for (Holiday holiday : doctorHolidays.getHolidayMap().keySet()) {
+            if (holiday == null) {
+                continue;
+            }
+            rows.add(new CompactHolidayRow(
+                    holiday.getId(),
+                    holiday.getStartDate(),
+                    holiday.getEndDate(),
+                    holiday.getLocation()
+            ));
+        }
+        rows.sort(Comparator
+                .comparing((CompactHolidayRow row) -> row.start)
+                .thenComparing(row -> row.id == null ? Long.MAX_VALUE : row.id)
+                .thenComparing(row -> row.end)
+                .thenComparing(row -> row.timezone == null ? "" : row.timezone));
+        return rows;
+    }
+
+    private String escapeCompactString(String value) {
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
     }
 
     private String mapSeniority(Seniority seniority) {

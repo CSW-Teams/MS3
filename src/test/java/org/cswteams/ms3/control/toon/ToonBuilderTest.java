@@ -254,6 +254,22 @@ class ToonBuilderTest {
                 Map.of()
         );
 
+        Holiday laterHoliday = new Holiday();
+        laterHoliday.setId(200L);
+        laterHoliday.setStartDate(periodStart.plusDays(2));
+        laterHoliday.setEndDate(periodStart.plusDays(2));
+
+        Holiday earlierHoliday = new Holiday();
+        earlierHoliday.setId(100L);
+        earlierHoliday.setStartDate(periodStart);
+        earlierHoliday.setEndDate(periodStart.plusDays(1));
+        earlierHoliday.setLocation("Europe/Rome");
+
+        DoctorHolidays doctorHolidays = new DoctorHolidays(doctor, new HashMap<>(Map.of(
+                laterHoliday, true,
+                earlierHoliday, true
+        )));
+
         ToonRequestContext context = new ToonRequestContext(
                 periodStart,
                 periodEnd,
@@ -261,7 +277,7 @@ class ToonBuilderTest {
                 List.of(concreteShift),
                 List.of(doctor),
                 List.of(priority),
-                List.of(),
+                List.of(doctorHolidays),
                 List.of(emptyParamsConstraint),
                 List.of()
         );
@@ -275,12 +291,15 @@ class ToonBuilderTest {
         assertFalse(compact.contains("feedbacks["));
         assertFalse(compact.contains("fb["));
 
-        assertTrue(compact.contains("ctx:{p:\"2026-05-20/2026-05-22\",m:\"generate\"}"));
+        assertTrue(compact.contains("ctx:{p:\"2026-05-20/2026-05-22\",m:\"generate\",hv:2}"));
         assertTrue(compact.contains("sh[1]{i,s,d,u,rs,rj}:"));
         assertTrue(compact.contains(shiftId + ",NIGHT,2026-05-20,720,1,0"));
         assertTrue(compact.contains("-i:10"));
         assertTrue(compact.contains("r:STRUCTURED"));
         assertTrue(compact.contains("pr:11,13,7"));
+        assertTrue(compact.contains("h[2]{id,s,e,tz?}:"));
+        assertTrue(compact.contains("-100,2026-05-20,2026-05-21,\"Europe/Rome\""));
+        assertTrue(compact.contains("-200,2026-05-22,2026-05-22"));
         assertTrue(compact.contains("b[2]{s,e,t}:"));
         assertTrue(compact.contains("-2026-05-20,2026-05-21,[\"MORNING\",\"NIGHT\"]"));
         assertTrue(compact.contains("-2026-05-22,2026-05-22,[\"AFTERNOON\"]"));
