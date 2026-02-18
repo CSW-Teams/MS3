@@ -7,6 +7,145 @@ Output contract:
 - If user instructions request a single label, return exactly that one label only.
 - Every returned label must map to the same canonical variant_schema below.
 
+TOON_INPUT DSL LEGEND (NORMATIVE):
+- This legend defines the complete COMPACT-mode TOON_INPUT grammar currently emitted by ToonBuilder.
+- Parser rule (strict): No semantic inference beyond this legend; unknown fields must be ignored unless marked required.
+- Missing required fields make the corresponding record invalid and unusable for reasoning.
+- Missing optional fields must be treated as absent only; do not synthesize defaults unless explicitly stated below.
+
+1) Context header
+- Token: ctx:{p,m}
+  - p (required)
+    - Datatype: string
+    - Format: "YYYY-MM-DD/YYYY-MM-DD"
+    - Meaning: scheduling period start/end (inclusive).
+    - Missing/unknown handling: if missing or malformed, treat TOON_INPUT context as invalid.
+  - m (required)
+    - Datatype: string
+    - Allowed values: execution mode label provided by backend (consume as opaque string).
+    - Meaning: payload mode metadata for the planning run.
+    - Missing/unknown handling: if missing, context invalid; if unknown value, keep as opaque and continue.
+
+2) Shift catalog
+- Token: sh[n]{i,s,d,u,rs,rj}
+  - n
+    - Datatype: integer >= 0
+    - Meaning: declared number of shift rows that follow.
+    - Missing/unknown handling: if absent/mismatched with rows, parse rows conservatively and use parsed rows only.
+  - i (required)
+    - Datatype: string
+    - Format: shift identifier (e.g., S_<id>_<yyyymmdd>).
+    - Meaning: unique shift key.
+    - Missing/unknown handling: row invalid.
+  - s (required)
+    - Datatype: enum string
+    - Allowed values: MORNING | AFTERNOON | NIGHT.
+    - Meaning: shift slot.
+    - Missing/unknown handling: row invalid.
+  - d (required)
+    - Datatype: date string
+    - Format: YYYY-MM-DD.
+    - Meaning: shift calendar date.
+    - Missing/unknown handling: row invalid.
+  - u (required)
+    - Datatype: integer >= 0
+    - Meaning: shift duration in minutes.
+    - Missing/unknown handling: row invalid.
+  - rs (required)
+    - Datatype: integer >= 0
+    - Meaning: minimum required STRUCTURED doctors for the shift.
+    - Missing/unknown handling: row invalid.
+  - rj (required)
+    - Datatype: integer >= 0
+    - Meaning: minimum required SPECIALIST_JUNIOR doctors for the shift.
+    - Missing/unknown handling: row invalid.
+
+3) Doctor entries
+- Token: dr[n]
+  - n
+    - Datatype: integer >= 0
+    - Meaning: declared number of doctor entries.
+    - Missing/unknown handling: if absent/mismatched with entries, parse entries conservatively and use parsed entries only.
+  - Entry fields:
+    - -i (required)
+      - Datatype: integer > 0
+      - Meaning: doctor pseudonymous numeric identifier.
+      - Missing/unknown handling: entry invalid.
+    - r (required)
+      - Datatype: enum string
+      - Allowed values: STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR.
+      - Meaning: doctor role/seniority used for role matching.
+      - Missing/unknown handling: entry invalid.
+    - pr (required)
+      - Datatype: 3-item integer tuple "general,night,long"
+      - Meaning: UFFA priorities in fixed order [general, night, long-shift].
+      - Missing/unknown handling: entry invalid.
+    - h (required)
+      - Datatype: array of string tokens
+      - Allowed values: any backend-issued holiday token (e.g., "HOLIDAY_12"); [] allowed.
+      - Meaning: holidays already taken by the doctor.
+      - Missing/unknown handling: entry invalid.
+    - b[n]{s,e,t} (optional)
+      - n datatype: integer >= 0; declared block count.
+      - s (required per block): date string YYYY-MM-DD (block start).
+      - e (required per block): date string YYYY-MM-DD (block end).
+      - t (required per block): array of enum strings, each in MORNING | AFTERNOON | NIGHT.
+      - Meaning: blocked date range and disallowed slots for that doctor.
+      - Missing/unknown handling: if b is absent, interpret as no blocks; if block is malformed, ignore that malformed block only.
+
+4) Active constraints
+- Token: ac[n]{t,e,i,r,p}
+  - n
+    - Datatype: integer >= 0
+    - Meaning: declared number of active constraints.
+    - Missing/unknown handling: parse available rows only.
+  - t (required)
+    - Datatype: enum string
+    - Allowed values: HARD | SOFT.
+    - Meaning: constraint severity.
+    - Missing/unknown handling: row invalid.
+  - e (required)
+    - Datatype: enum string
+    - Allowed values: DOCTOR | SHIFT | GLOBAL.
+    - Meaning: constrained entity type.
+    - Missing/unknown handling: row invalid.
+  - i (required)
+    - Datatype: integer or string identifier (opaque ID).
+    - Meaning: constrained entity identifier.
+    - Missing/unknown handling: row invalid.
+  - r (required)
+    - Datatype: string
+    - Allowed values: backend-issued reason code/text (opaque).
+    - Meaning: machine-readable reason/category.
+    - Missing/unknown handling: row invalid.
+  - p (optional)
+    - Datatype: object map<string,string> in compact form {k:"v",...}.
+    - Meaning: additional typed parameters for the constraint.
+    - Missing/unknown handling: if absent, treat as empty map; unknown keys ignored.
+
+5) Feedbacks (if present)
+- Token: fb[n]{s,d,r,v,c}
+  - Present only when feedback rows exist.
+  - n datatype: integer >= 0.
+  - s (required): string shift_id.
+  - d (required): integer doctor_id.
+  - r (required): string reason_code.
+  - v (required): string/enum severity label (opaque if unknown).
+  - c (required): quoted string comment (may be empty string).
+  - Meaning: historical/planner feedback signals.
+  - Missing/unknown handling: malformed rows ignored; unknown severity/reason values kept as opaque strings.
+
+6) Appended hard coverage block
+- Token: hard_coverage_requirements[n]{shift_id,structured,specialist_junior,specialist_senior,total}
+  - n datatype: integer >= 0.
+  - shift_id (required): string matching shift identifier domain.
+  - structured (required): integer >= 0 required STRUCTURED headcount.
+  - specialist_junior (required): integer >= 0 required SPECIALIST_JUNIOR headcount.
+  - specialist_senior (required): integer >= 0 required SPECIALIST_SENIOR headcount.
+  - total (required): integer >= 0 required total headcount.
+  - Meaning: per-shift mandatory minimum role coverage.
+  - Missing/unknown handling: if any required field is missing for a row, treat that row as invalid and do not claim valid hard coverage for that shift.
+
 variant_schema:
 Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use only exact enum names.
 
