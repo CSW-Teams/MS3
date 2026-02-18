@@ -31,6 +31,7 @@ public final class AiPromptTemplate {
             builder.append("Instructions:\n").append(instructions.trim()).append("\n\n");
         }
         builder.append("Vocabulary rule: TOON_INPUT doctors[*].role uses the same enum naming as assignments[*].role_covered (STRUCTURED, SPECIALIST_JUNIOR, SPECIALIST_SENIOR).\n\n");
+        builder.append("Holiday rule: in COMPACT mode doctor holidays use `h[n]{id,s,e,tz?}` rows (id optional, s/e inclusive dates, tz optional quoted metadata).\n\n");
         builder.append("TOON_INPUT:\n").append(toonPayload == null ? "" : toonPayload);
         return builder.toString();
     }

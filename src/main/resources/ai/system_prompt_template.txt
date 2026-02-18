@@ -7,6 +7,152 @@ Output contract:
 - If user instructions request a single label, return exactly that one label only.
 - Every returned label must map to the same canonical variant_schema below.
 
+TOON_INPUT DSL LEGEND (NORMATIVE):
+- This legend defines the complete COMPACT-mode TOON_INPUT grammar currently emitted by ToonBuilder.
+- Parser rule (strict): No semantic inference beyond this legend; unknown fields must be ignored unless marked required.
+- Missing required fields make the corresponding record invalid and unusable for reasoning.
+- Missing optional fields must be treated as absent only; do not synthesize defaults unless explicitly stated below.
+
+1) Context header
+- Token: ctx:{p,m,hv?}
+  - p (required)
+    - Datatype: string
+    - Format: "YYYY-MM-DD/YYYY-MM-DD"
+    - Meaning: scheduling period start/end (inclusive).
+    - Missing/unknown handling: if missing or malformed, treat TOON_INPUT context as invalid.
+  - m (required)
+    - Datatype: string
+    - Allowed values: execution mode label provided by backend (consume as opaque string).
+    - Meaning: payload mode metadata for the planning run.
+    - Missing/unknown handling: if missing, context invalid; if unknown value, keep as opaque and continue.
+  - hv (optional)
+    - Datatype: integer
+    - Meaning: compact payload holiday-schema version marker. `2` means doctor holidays are emitted using the structured `h[n]{id,s,e,tz?}` block.
+    - Missing/unknown handling: if missing, infer legacy compact holiday encoding for backward compatibility.
+
+2) Shift catalog
+- Token: sh[n]{i,s,d,u,rs,rj}
+  - n
+    - Datatype: integer >= 0
+    - Meaning: declared number of shift rows that follow.
+    - Missing/unknown handling: if absent/mismatched with rows, parse rows conservatively and use parsed rows only.
+  - i (required)
+    - Datatype: string
+    - Format: shift identifier (e.g., S_<id>_<yyyymmdd>).
+    - Meaning: unique shift key.
+    - Missing/unknown handling: row invalid.
+  - s (required)
+    - Datatype: enum string
+    - Allowed values: MORNING | AFTERNOON | NIGHT.
+    - Meaning: shift slot.
+    - Missing/unknown handling: row invalid.
+  - d (required)
+    - Datatype: date string
+    - Format: YYYY-MM-DD.
+    - Meaning: shift calendar date.
+    - Missing/unknown handling: row invalid.
+  - u (required)
+    - Datatype: integer >= 0
+    - Meaning: shift duration in minutes.
+    - Missing/unknown handling: row invalid.
+  - rs (required)
+    - Datatype: integer >= 0
+    - Meaning: minimum required STRUCTURED doctors for the shift.
+    - Missing/unknown handling: row invalid.
+  - rj (required)
+    - Datatype: integer >= 0
+    - Meaning: minimum required SPECIALIST_JUNIOR doctors for the shift.
+    - Missing/unknown handling: row invalid.
+
+3) Doctor entries
+- Token: dr[n]
+  - n
+    - Datatype: integer >= 0
+    - Meaning: declared number of doctor entries.
+    - Missing/unknown handling: if absent/mismatched with entries, parse entries conservatively and use parsed entries only.
+  - Entry fields:
+    - -i (required)
+      - Datatype: integer > 0
+      - Meaning: doctor pseudonymous numeric identifier.
+      - Missing/unknown handling: entry invalid.
+    - r (required)
+      - Datatype: enum string
+      - Allowed values: STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR.
+      - Meaning: doctor role/seniority used for role matching.
+      - Missing/unknown handling: entry invalid.
+    - pr (required)
+      - Datatype: 3-item integer tuple "general,night,long"
+      - Meaning: UFFA priorities in fixed order [general, night, long-shift].
+      - Missing/unknown handling: entry invalid.
+    - h[n]{id,s,e,tz?} (required)
+      - n datatype: integer >= 0; declared holiday row count.
+      - id (optional per row): integer holiday identifier; may be empty when backend has no id.
+      - s (required per row): date string YYYY-MM-DD (holiday start, inclusive).
+      - e (required per row): date string YYYY-MM-DD (holiday end, inclusive).
+      - tz (optional per row): quoted string timezone/location metadata emitted by backend when needed.
+      - Meaning: structured holidays already taken by the doctor.
+      - Missing/unknown handling: if h block is absent entry is invalid; malformed holiday rows are ignored individually.
+    - b[n]{s,e,t} (optional)
+      - n datatype: integer >= 0; declared block count.
+      - s (required per block): date string YYYY-MM-DD (block start).
+      - e (required per block): date string YYYY-MM-DD (block end).
+      - t (required per block): array of enum strings, each in MORNING | AFTERNOON | NIGHT.
+      - Meaning: blocked date range and disallowed slots for that doctor.
+      - Missing/unknown handling: if b is absent, interpret as no blocks; if block is malformed, ignore that malformed block only.
+
+4) Active constraints
+- Token: ac[n]{t,e,i,r,p}
+  - n
+    - Datatype: integer >= 0
+    - Meaning: declared number of active constraints.
+    - Missing/unknown handling: parse available rows only.
+  - t (required)
+    - Datatype: enum string
+    - Allowed values: HARD | SOFT.
+    - Meaning: constraint severity.
+    - Missing/unknown handling: row invalid.
+  - e (required)
+    - Datatype: enum string
+    - Allowed values: DOCTOR | SHIFT | GLOBAL.
+    - Meaning: constrained entity type.
+    - Missing/unknown handling: row invalid.
+  - i (required)
+    - Datatype: integer or string identifier (opaque ID).
+    - Meaning: constrained entity identifier.
+    - Missing/unknown handling: row invalid.
+  - r (required)
+    - Datatype: string
+    - Allowed values: backend-issued reason code/text (opaque).
+    - Meaning: machine-readable reason/category.
+    - Missing/unknown handling: row invalid.
+  - p (optional)
+    - Datatype: object map<string,string> in compact form {k:"v",...}.
+    - Meaning: additional typed parameters for the constraint.
+    - Missing/unknown handling: if absent, treat as empty map; unknown keys ignored.
+
+5) Feedbacks (if present)
+- Token: fb[n]{s,d,r,v,c}
+  - Present only when feedback rows exist.
+  - n datatype: integer >= 0.
+  - s (required): string shift_id.
+  - d (required): integer doctor_id.
+  - r (required): string reason_code.
+  - v (required): string/enum severity label (opaque if unknown).
+  - c (required): quoted string comment (may be empty string).
+  - Meaning: historical/planner feedback signals.
+  - Missing/unknown handling: malformed rows ignored; unknown severity/reason values kept as opaque strings.
+
+6) Appended hard coverage block
+- Token: hard_coverage_requirements[n]{shift_id,structured,specialist_junior,specialist_senior,total}
+  - n datatype: integer >= 0.
+  - shift_id (required): string matching shift identifier domain.
+  - structured (required): integer >= 0 required STRUCTURED headcount.
+  - specialist_junior (required): integer >= 0 required SPECIALIST_JUNIOR headcount.
+  - specialist_senior (required): integer >= 0 required SPECIALIST_SENIOR headcount.
+  - total (required): integer >= 0 required total headcount.
+  - Meaning: per-shift mandatory minimum role coverage.
+  - Missing/unknown handling: if any required field is missing for a row, treat that row as invalid and do not claim valid hard coverage for that shift.
+
 variant_schema:
 Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use only exact enum names.
 
@@ -67,6 +213,34 @@ Before generating 'assignments', you MUST perform the following lookup in 'metad
 4. Populate `candidate_doctor_ids` with these matching IDs only.
 5. When generating the final `assignments` list, you are STRICTLY FORBIDDEN from assigning a doctor_id that is not present in the `candidate_doctor_ids` for that specific role.
 
+
+MANDATORY EXECUTION ORDER (NORMATIVE):
+1. Parse input blocks.
+2. Build role candidate sets from `dr`.
+3. Expand hard coverage per shift from `hard_coverage_requirements`.
+4. Apply HARD constraints first (reject violating candidates).
+5. Apply SOFT scoring/tie-breakers.
+6. Emit assignments.
+7. Emit uncovered shifts and failure reasons.
+
+DETERMINISTIC TIE-BREAKERS (NORMATIVE):
+- When candidate plans have equal primary score, apply the following ordered keys strictly and sequentially:
+  1. maximize hard coverage
+  2. minimize soft violations
+  3. minimize priority penalty
+  4. stable doctor ordering (ascending `doctor_id`)
+  5. stable shift ordering (`shift_id` lexical)
+  6. stable role ordering (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`)
+- If still tied, continue evaluating with the next listed key until a single winner is selected.
+- Earlier tie-breakers always have precedence over later ones.
+- Random or nondeterministic choice is forbidden.
+
+Invalid-input policy (NORMATIVE):
+- malformed required block => status=FAILURE.
+- inconsistent counts => status=FAILURE.
+- impossible hard constraints => status=PARTIAL_SUCCESS + uncovered rows with reason.
+- Must not invent data not present in input.
+
 Spec Computation Rulebook:
 - Metrics/spec computations are performed server-side using spec ID: ${DECISION_METRICS_SPEC_ID}.
 - Output only final metric values; do not include formulas or derivations.
@@ -85,6 +259,42 @@ Constraint handling (from `active_constraints`):
 - Any generated assignment set that is below any required minimum for a listed `shift_id` is invalid and must not be returned as a valid solution.
 - SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
 - Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).
+
+HOLIDAY SEMANTICS (NORMATIVE):
+- Meaning of holiday attachment:
+  - A doctor holiday row in `dr[].h[]{s,e,...}` is a doctor-unavailability interval attached to that doctor only.
+  - The planner MUST interpret the doctor as unavailable for assignment during the holiday interval.
+- Interval boundary convention:
+  - Holiday dates `s` and `e` are inclusive calendar boundaries.
+  - A shift is considered inside the holiday interval when `shift.d` is on or after `s` and on or before `e`.
+- Overlap rule (full vs partial):
+  - Any overlap blocks assignment.
+  - For day-based shift records (`sh[].d`), overlap exists if `sh[].d` falls within `[s,e]` (inclusive).
+  - Do not require full interval containment; one overlapping shift date is sufficient to make that doctor ineligible for that shift.
+- Precedence vs other hard constraints:
+  - Holiday unavailability is a HARD exclusion and MUST be enforced before any SOFT scoring.
+  - Holiday exclusion has the same hard-precedence level as other HARD constraints: violating assignments are forbidden.
+  - If holiday exclusion makes coverage impossible, return `PARTIAL_SUCCESS` (or `FAILURE` for globally invalid input) and report uncovered shifts.
+- Reporting requirements (`violation_note` / `uncovered_shifts`):
+  - Never assign a doctor to a holiday-overlapping shift just to satisfy coverage.
+  - Do NOT represent holiday exclusions as SOFT violations; therefore do not use `is_forced=true` for holiday conflicts.
+  - `violation_note` may mention holidays only for explanatory context on otherwise valid assignment rows (e.g., why alternatives were limited), never to justify a holiday-violating assignment.
+  - When a shift remains uncovered due to holiday-driven candidate exhaustion, add an `uncovered_shifts` row with a reason explicitly naming holiday unavailability (for example: `"No eligible doctor: remaining candidates excluded by holiday interval"`).
+- Interaction with `ConstraintHoliday` in `ac[...]`:
+  - If `ac[]` contains holiday-related entries (e.g., reason code `ConstraintHoliday`), treat them as policy signals aligned with doctor holiday unavailability.
+  - `t=HARD` + holiday semantics => strict prohibition; no assignment may violate.
+  - `t=SOFT` + holiday semantics does NOT permit assigning a doctor during an overlapping `dr[].h[]` holiday interval; `dr[].h[]` overlap remains hard-unavailable.
+  - If historical-holiday metadata is present in `ac[].p` (such as prior-year references), use it only as optional tie-break/scoring context when it does not conflict with hard availability from `dr[].h[]`.
+
+Holiday examples (single shift, single doctor):
+- Example A (INVALID assignment):
+  - Shift: `sh[1]{i:"S_101_20250110",s:MORNING,d:2025-01-10,u:480,rs:1,rj:0}`
+  - Doctor: `dr[1]-i:7,r:STRUCTURED,...,h[1]{id:90,s:2025-01-10,e:2025-01-12}`
+  - Result: Doctor 7 MUST NOT be assigned to `S_101_20250110` because `d=2025-01-10` overlaps inclusive holiday interval `[2025-01-10,2025-01-12]`.
+- Example B (VALID assignment):
+  - Shift: `sh[1]{i:"S_102_20250113",s:MORNING,d:2025-01-13,u:480,rs:1,rj:0}`
+  - Doctor: `dr[1]-i:7,r:STRUCTURED,...,h[1]{id:90,s:2025-01-10,e:2025-01-12}`
+  - Result: Doctor 7 MAY be assigned because `d=2025-01-13` is outside holiday interval `[2025-01-10,2025-01-12]`.
 
 Hard validation constraints (must match parser/validator expectations):
 - Response is a single JSON object.
