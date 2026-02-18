@@ -91,7 +91,7 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
       - e (required per row): date string YYYY-MM-DD (holiday end, inclusive).
       - tz (optional per row): quoted string timezone/location metadata emitted by backend when needed.
       - Meaning: structured holidays already taken by the doctor.
-      - Missing/unknown handling: if h block is absent entry is invalid; malformed holiday rows are ignored individually.
+      - Missing/unknown handling: if h block is absent entry is invalid; holiday rows with null/missing `s` or `e`, or with `e < s`, are ignored individually.
     - b[n]{s,e,t} (optional)
       - n datatype: integer >= 0; declared block count.
       - s (required per block): date string YYYY-MM-DD (block start).
