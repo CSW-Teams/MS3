@@ -14,7 +14,7 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
 - Missing optional fields must be treated as absent only; do not synthesize defaults unless explicitly stated below.
 
 1) Context header
-- Token: ctx:{p,m}
+- Token: ctx:{p,m,hv?}
   - p (required)
     - Datatype: string
     - Format: "YYYY-MM-DD/YYYY-MM-DD"
@@ -25,6 +25,10 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
     - Allowed values: execution mode label provided by backend (consume as opaque string).
     - Meaning: payload mode metadata for the planning run.
     - Missing/unknown handling: if missing, context invalid; if unknown value, keep as opaque and continue.
+  - hv (optional)
+    - Datatype: integer
+    - Meaning: compact payload holiday-schema version marker. `2` means doctor holidays are emitted using the structured `h[n]{id,s,e,tz?}` block.
+    - Missing/unknown handling: if missing, infer legacy compact holiday encoding for backward compatibility.
 
 2) Shift catalog
 - Token: sh[n]{i,s,d,u,rs,rj}
@@ -80,11 +84,14 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
       - Datatype: 3-item integer tuple "general,night,long"
       - Meaning: UFFA priorities in fixed order [general, night, long-shift].
       - Missing/unknown handling: entry invalid.
-    - h (required)
-      - Datatype: array of string tokens
-      - Allowed values: any backend-issued holiday token (e.g., "HOLIDAY_12"); [] allowed.
-      - Meaning: holidays already taken by the doctor.
-      - Missing/unknown handling: entry invalid.
+    - h[n]{id,s,e,tz?} (required)
+      - n datatype: integer >= 0; declared holiday row count.
+      - id (optional per row): integer holiday identifier; may be empty when backend has no id.
+      - s (required per row): date string YYYY-MM-DD (holiday start, inclusive).
+      - e (required per row): date string YYYY-MM-DD (holiday end, inclusive).
+      - tz (optional per row): quoted string timezone/location metadata emitted by backend when needed.
+      - Meaning: structured holidays already taken by the doctor.
+      - Missing/unknown handling: if h block is absent entry is invalid; malformed holiday rows are ignored individually.
     - b[n]{s,e,t} (optional)
       - n datatype: integer >= 0; declared block count.
       - s (required per block): date string YYYY-MM-DD (block start).
