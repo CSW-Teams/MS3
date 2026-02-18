@@ -311,6 +311,50 @@ class ToonBuilderTest {
     }
 
     @Test
+    void compactShiftRequirementsKeepSeniorCountsOutOfRj() {
+        LocalDate periodStart = LocalDate.of(2026, 9, 1);
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+
+        Task task = new Task(TaskEnum.CLINIC);
+        MedicalService service = new MedicalService(List.of(task), "Ward");
+        QuantityShiftSeniority quantity = new QuantityShiftSeniority(Map.of(
+                Seniority.STRUCTURED, 1,
+                Seniority.SPECIALIST_JUNIOR, 2,
+                Seniority.SPECIALIST_SENIOR, 3
+        ), task);
+
+        Shift shift = new Shift(
+                201L,
+                TimeSlot.MORNING,
+                LocalTime.of(8, 0),
+                Duration.ofMinutes(360),
+                Set.of(DayOfWeek.TUESDAY),
+                service,
+                List.of(quantity),
+                List.of()
+        );
+
+        ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
+
+        ToonRequestContext context = new ToonRequestContext(
+                periodStart,
+                periodStart,
+                "generate",
+                List.of(concreteShift),
+                List.of(doctor),
+                List.of(new DoctorUffaPriority(doctor)),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        ToonBuilder builder = new ToonBuilder();
+        String compact = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+
+        assertTrue(compact.contains("S_201_20260901,MORNING,2026-09-01,360,1,2"));
+    }
+
+    @Test
     void buildsCompactPayloadWithStableSectionOrderAndExplicitHolidaySchema() {
         LocalDate periodStart = LocalDate.of(2026, 8, 10);
         LocalDate periodEnd = LocalDate.of(2026, 8, 12);

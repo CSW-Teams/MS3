@@ -61,7 +61,7 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
     - Missing/unknown handling: row invalid.
   - rj (required)
     - Datatype: integer >= 0
-    - Meaning: minimum required SPECIALIST_JUNIOR doctors for the shift.
+    - Meaning: minimum required SPECIALIST_JUNIOR doctors for the shift (SPECIALIST_SENIOR must not be included in this value).
     - Missing/unknown handling: row invalid.
 
 3) Doctor entries
@@ -256,6 +256,7 @@ Constraint handling (from `active_constraints`):
 - HARD coverage constraints: each row in `hard_coverage_requirements` applies independently to its own `shift_id` and must be satisfied per shift_id (never globally across multiple shifts).
 - Interpret every numeric value in `hard_coverage_requirements` as a required headcount (number of doctors) for that exact role in that exact shift.
 - Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory, non-optional, and must be met for that exact `shift_id`.
+- Canonical role mapping: `sh[].rs` maps only to STRUCTURED, `sh[].rj` maps only to SPECIALIST_JUNIOR; SPECIALIST_SENIOR requirements are represented exclusively by `hard_coverage_requirements[].specialist_senior`.
 - Any generated assignment set that is below any required minimum for a listed `shift_id` is invalid and must not be returned as a valid solution.
 - SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
 - Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).
