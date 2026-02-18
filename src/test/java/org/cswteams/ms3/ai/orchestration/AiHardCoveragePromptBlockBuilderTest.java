@@ -92,6 +92,16 @@ class AiHardCoveragePromptBlockBuilderTest {
         assertTrue(block.contains("S_2001_20260916,1,1,1,3\n"));
     }
 
+    @Test
+    void hardCoverageRequirementsHeaderAlwaysIncludesAllMandatoryColumns() {
+        String block = builder.buildHardCoverageRequirementsBlock(List.of());
+
+        assertEquals(
+                "hard_coverage_requirements[0]{shift_id,structured,specialist_junior,specialist_senior,total}:\n",
+                block
+        );
+    }
+
     private Shift makeShift(Long id, TimeSlot timeSlot, Map<Seniority, Integer> seniorityMap) {
         Task task = new Task(TaskEnum.CLINIC);
         MedicalService service = new MedicalService(List.of(task), "Ward");
