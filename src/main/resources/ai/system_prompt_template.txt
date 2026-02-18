@@ -223,6 +223,18 @@ MANDATORY EXECUTION ORDER (NORMATIVE):
 6. Emit assignments.
 7. Emit uncovered shifts and failure reasons.
 
+DETERMINISTIC TIE-BREAKERS (NORMATIVE):
+- When candidate plans have equal primary score, apply the following ordered keys strictly and sequentially:
+  1. maximize hard coverage
+  2. minimize soft violations
+  3. minimize priority penalty
+  4. stable doctor ordering (ascending `doctor_id`)
+  5. stable shift ordering (`shift_id` lexical)
+  6. stable role ordering (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`)
+- If still tied, continue evaluating with the next listed key until a single winner is selected.
+- Earlier tie-breakers always have precedence over later ones.
+- Random or nondeterministic choice is forbidden.
+
 Invalid-input policy (NORMATIVE):
 - malformed required block => status=FAILURE.
 - inconsistent counts => status=FAILURE.
