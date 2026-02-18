@@ -131,7 +131,7 @@ public class ToonBuilder {
                 for (Map.Entry<Seniority, Integer> entry : quantity.getSeniorityMap().entrySet()) {
                     if (entry.getKey() == Seniority.STRUCTURED) {
                         reqStructured += entry.getValue();
-                    } else {
+                    } else if (entry.getKey() == Seniority.SPECIALIST_JUNIOR) {
                         reqJunior += entry.getValue();
                     }
                 }
