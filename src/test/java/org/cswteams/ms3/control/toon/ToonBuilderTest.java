@@ -311,6 +311,99 @@ class ToonBuilderTest {
     }
 
     @Test
+    void buildsCompactPayloadWithStableSectionOrderAndExplicitHolidaySchema() {
+        LocalDate periodStart = LocalDate.of(2026, 8, 10);
+        LocalDate periodEnd = LocalDate.of(2026, 8, 12);
+
+        Doctor seniorDoctor = newDoctor(20L, Seniority.SPECIALIST_SENIOR);
+        Doctor structuredDoctor = newDoctor(10L, Seniority.STRUCTURED);
+
+        DoctorUffaPriority seniorPriority = new DoctorUffaPriority(seniorDoctor);
+        seniorPriority.setGeneralPriority(8);
+        seniorPriority.setNightPriority(6);
+        seniorPriority.setLongShiftPriority(4);
+
+        DoctorUffaPriority structuredPriority = new DoctorUffaPriority(structuredDoctor);
+        structuredPriority.setGeneralPriority(3);
+        structuredPriority.setNightPriority(2);
+        structuredPriority.setLongShiftPriority(1);
+
+        Holiday holidayWithoutId = new Holiday();
+        holidayWithoutId.setStartDate(periodStart.plusDays(1));
+        holidayWithoutId.setEndDate(periodStart.plusDays(1));
+
+        Holiday holidayWithTimezone = new Holiday();
+        holidayWithTimezone.setId(15L);
+        holidayWithTimezone.setStartDate(periodStart);
+        holidayWithTimezone.setEndDate(periodStart.plusDays(2));
+        holidayWithTimezone.setLocation("Europe/Rome");
+
+        DoctorHolidays structuredHolidays = new DoctorHolidays(structuredDoctor, new HashMap<>(Map.of(
+                holidayWithoutId, true,
+                holidayWithTimezone, true
+        )));
+
+        DoctorHolidays seniorHolidays = new DoctorHolidays(seniorDoctor, new HashMap<>(Map.of()));
+
+        ConcreteShift morningShift = new ConcreteShift(periodStart.toEpochDay(), makeShift(
+                301L,
+                TimeSlot.MORNING,
+                LocalTime.of(8, 0),
+                Duration.ofMinutes(360)
+        ));
+
+        ConcreteShift afternoonShift = new ConcreteShift(periodStart.toEpochDay(), makeShift(
+                302L,
+                TimeSlot.AFTERNOON,
+                LocalTime.of(14, 0),
+                Duration.ofMinutes(360)
+        ));
+
+        ToonActiveConstraint hardConstraint = new ToonActiveConstraint(
+                ToonConstraintType.HARD,
+                ToonConstraintEntityType.GLOBAL,
+                "ALL",
+                "STABLE_ORDER",
+                Map.of("level", "strict")
+        );
+
+        ToonRequestContext context = new ToonRequestContext(
+                periodStart,
+                periodEnd,
+                "generate",
+                List.of(afternoonShift, morningShift),
+                List.of(seniorDoctor, structuredDoctor),
+                List.of(seniorPriority, structuredPriority),
+                List.of(structuredHolidays, seniorHolidays),
+                List.of(hardConstraint),
+                List.of()
+        );
+
+        ToonBuilder builder = new ToonBuilder();
+        String compact = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+
+        String expectedSnapshot = "ctx:{p:\"2026-08-10/2026-08-12\",m:\"generate\",hv:2}\n"
+                + "sh[2]{i,s,d,u,rs,rj}:\n"
+                + "S_302_20260810,AFTERNOON,2026-08-10,360,1,0\n"
+                + "S_301_20260810,MORNING,2026-08-10,360,1,0\n"
+                + "dr[2]:\n"
+                + "-i:10\n"
+                + " r:STRUCTURED\n"
+                + " pr:3,2,1\n"
+                + " h[2]{id,s,e,tz?}:\n"
+                + "  -15,2026-08-10,2026-08-12,\"Europe/Rome\"\n"
+                + "  -,2026-08-11,2026-08-11\n"
+                + "-i:20\n"
+                + " r:SPECIALIST_SENIOR\n"
+                + " pr:8,6,4\n"
+                + " h[0]{id,s,e,tz?}:\n"
+                + "ac[1]{t,e,i,r,p}:\n"
+                + "HARD,GLOBAL,ALL,STABLE_ORDER,{level:\"strict\"}\n";
+
+        assertEquals(expectedSnapshot, compact);
+    }
+
+    @Test
     void includesAllMappedConstraintsInActiveConstraintsSection() {
         LocalDate periodStart = LocalDate.of(2026, 6, 1);
         LocalDate periodEnd = LocalDate.of(2026, 6, 1);
