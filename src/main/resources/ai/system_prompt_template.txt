@@ -206,6 +206,22 @@ Before generating 'assignments', you MUST perform the following lookup in 'metad
 4. Populate `candidate_doctor_ids` with these matching IDs only.
 5. When generating the final `assignments` list, you are STRICTLY FORBIDDEN from assigning a doctor_id that is not present in the `candidate_doctor_ids` for that specific role.
 
+
+MANDATORY EXECUTION ORDER (NORMATIVE):
+1. Parse input blocks.
+2. Build role candidate sets from `dr`.
+3. Expand hard coverage per shift from `hard_coverage_requirements`.
+4. Apply HARD constraints first (reject violating candidates).
+5. Apply SOFT scoring/tie-breakers.
+6. Emit assignments.
+7. Emit uncovered shifts and failure reasons.
+
+Invalid-input policy (NORMATIVE):
+- malformed required block => status=FAILURE.
+- inconsistent counts => status=FAILURE.
+- impossible hard constraints => status=PARTIAL_SUCCESS + uncovered rows with reason.
+- Must not invent data not present in input.
+
 Spec Computation Rulebook:
 - Metrics/spec computations are performed server-side using spec ID: ${DECISION_METRICS_SPEC_ID}.
 - Output only final metric values; do not include formulas or derivations.
