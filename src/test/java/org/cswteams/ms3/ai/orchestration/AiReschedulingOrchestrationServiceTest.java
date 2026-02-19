@@ -224,7 +224,7 @@ class AiReschedulingOrchestrationServiceTest {
                 ToonConstraintEntityType.DOCTOR,
                 String.valueOf(doctor.getId()),
                 "MAX_CONSECUTIVE_DAYS",
-                Map.of("maxDays", 5)
+                Map.of("maxDays", "5")
         );
 
         RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
@@ -262,8 +262,8 @@ class AiReschedulingOrchestrationServiceTest {
 
         assertEquals(1, generateRequest.getToonRequestContext().getActiveConstraints().size());
         assertEquals(1, regenerateRequest.getToonRequestContext().getActiveConstraints().size());
-        assertEquals("MAX_CONSECUTIVE_DAYS", generateRequest.getToonRequestContext().getActiveConstraints().get(0).getConstraintCode());
-        assertEquals("MAX_CONSECUTIVE_DAYS", regenerateRequest.getToonRequestContext().getActiveConstraints().get(0).getConstraintCode());
+        assertEquals("MAX_CONSECUTIVE_DAYS", generateRequest.getToonRequestContext().getActiveConstraints().get(0).getReason());
+        assertEquals("MAX_CONSECUTIVE_DAYS", regenerateRequest.getToonRequestContext().getActiveConstraints().get(0).getReason());
     }
 
 

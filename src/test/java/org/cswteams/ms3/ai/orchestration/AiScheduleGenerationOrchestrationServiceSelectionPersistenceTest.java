@@ -2,6 +2,7 @@ package org.cswteams.ms3.ai.orchestration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.ai.broker.AgentBroker;
+import org.cswteams.ms3.ai.broker.AiBrokerProperties;
 import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
@@ -110,7 +111,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
 
         assertEquals(AiScheduleGenerationOrchestrationService.SelectionResult.Status.INVALID_SELECTION, result.getStatus());
         assertEquals("INVALID_CANDIDATE_SELECTION", result.getErrorCode());
-        assertEquals("Selected candidate is invalid in the active comparison state.", result.getMessage());
+        assertEquals("Selected candidate is invalid in the active comparison state.", result.getErrorMessage());
         verify(ctx.schedulerController, never()).persistSchedule(any(Schedule.class));
     }
 
@@ -181,6 +182,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
         RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
                 new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
@@ -205,6 +207,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                 holidayDAO,
                 scheduleDAO,
                 agentBroker,
+                aiBrokerProperties,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,
@@ -218,7 +221,8 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                 transientSchedule,
                 convertedShift,
                 startDate,
-                endDate);
+                endDate,
+                aiBrokerProperties);
     }
 
     private static class TestContext {
@@ -229,6 +233,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         private final ConcreteShift convertedShift;
         private final LocalDate startDate;
         private final LocalDate endDate;
+        private final AiBrokerProperties aiBrokerProperties;
 
         private TestContext(AiScheduleGenerationOrchestrationService service,
                             ISchedulerController schedulerController,
@@ -236,7 +241,8 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                             Schedule transientSchedule,
                             ConcreteShift convertedShift,
                             LocalDate startDate,
-                            LocalDate endDate) {
+                            LocalDate endDate,
+                            AiBrokerProperties aiBrokerProperties) {
             this.service = service;
             this.schedulerController = schedulerController;
             this.aiScheduleConverterService = aiScheduleConverterService;
@@ -244,6 +250,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
             this.convertedShift = convertedShift;
             this.startDate = startDate;
             this.endDate = endDate;
+            this.aiBrokerProperties = aiBrokerProperties;
         }
     }
 }

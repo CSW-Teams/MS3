@@ -58,6 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -167,7 +168,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
     }
 
     @Test
-    void violatedConstraintsAreEmbeddedInRetryPromptPayload() {
+    void violatedConstraintsAreEmbeddedInRetryPromptPayload() throws ViolatedConstraintException {
         RetryFixture fixture = new RetryFixture();
         fixture.aiBrokerProperties.setScheduleValidationMaxRetries(1);
         fixture.mockBrokerByReasoning(Map.of(
@@ -178,11 +179,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
 
         Constraint constraint = mock(Constraint.class);
         when(constraint.getId()).thenReturn(77L);
-        try {
-            when(constraint.verifyConstraint(any())).thenThrow(new ViolatedConstraintException("rest window violated"));
-        } catch (ViolatedConstraintException ex) {
-            throw new IllegalStateException(ex);
-        }
+        doThrow(new ViolatedConstraintException("rest window violated")).when(constraint).verifyConstraint(any());
         when(fixture.constraintDAO.findAll()).thenReturn(List.of(constraint));
 
         Doctor assignedDoctor = fixture.newDoctor(42L, Seniority.STRUCTURED);

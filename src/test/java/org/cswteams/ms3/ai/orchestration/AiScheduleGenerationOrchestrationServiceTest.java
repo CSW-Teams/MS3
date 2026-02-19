@@ -106,7 +106,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(agentBroker.previewTokenBudget(any()))
                 .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
         when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of(
-                new ToonActiveConstraint(ToonConstraintType.HARD, ToonConstraintEntityType.DOCTOR, String.valueOf(doctor.getId()), "REST_PERIOD", Map.of("hours", 11))
+                new ToonActiveConstraint(ToonConstraintType.HARD, ToonConstraintEntityType.DOCTOR, String.valueOf(doctor.getId()), "REST_PERIOD", Map.of("hours", "11"))
         ));
         when(aiScheduleConverterService.convert(any())).thenReturn(List.of(concreteShift));
         when(decisionAlgorithmService.selectPreferredWithAudit(any()))
