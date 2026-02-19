@@ -197,12 +197,12 @@ public class AgentBrokerImplTest {
         AiTokenEstimator oversizedEstimator = new AiTokenEstimator() {
             @Override
             public int estimateInputTokens(AiBrokerRequest request) {
-                return 12000;
+                return 9000;
             }
 
             @Override
             public int estimateExpectedOutputTokens(AiBrokerRequest request) {
-                return 200;
+                return 2000;
             }
         };
 
@@ -227,6 +227,52 @@ public class AgentBrokerImplTest {
         assertEquals(AiProtocolException.ErrorCode.TRANSPORT_FAILURE, exception.getCode());
         assertTrue(broker.recordedSleeps.isEmpty());
         verify(gemmaAdapter, times(1)).execute(request);
+    }
+
+    @Test
+    public void requestSchedule_shouldRejectOversizedPayloadBeforeAny429Retry() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(3);
+        properties.setRetryBackoff(Duration.ofMillis(50));
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+
+        AiTokenEstimator budgetExceededEstimator = new AiTokenEstimator() {
+            @Override
+            public int estimateInputTokens(AiBrokerRequest request) {
+                return 10000;
+            }
+
+            @Override
+            public int estimateExpectedOutputTokens(AiBrokerRequest request) {
+                return 6000;
+            }
+        };
+
+        RecordingBroker broker = new RecordingBroker(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser(),
+                budgetExceededEstimator,
+                new AiTokenUsageTracker(),
+                () -> 0D
+        );
+
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(AiBrokerRequest.forToon("payload"));
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
+
+        assertEquals(AiProtocolException.ErrorCode.TOKEN_BUDGET_EXCEEDED, exception.getCode());
+        assertTrue(broker.recordedSleeps.isEmpty());
+        verify(gemmaAdapter, never()).execute(any(AiBrokerRequest.class));
     }
 
     @Test
