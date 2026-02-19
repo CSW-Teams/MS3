@@ -5,6 +5,7 @@ import org.cswteams.ms3.ai.broker.AgentBroker;
 import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
+import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.audit.selection.AuditedSelectionResult;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.dao.ConstraintDAO;
@@ -94,6 +95,23 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                 verify(ctx.aiScheduleConverterService, times(1)).convert(any());
             }
         }
+    }
+
+    @Test
+    void persistSelectedCandidateReturnsDeterministicErrorWhenCachedCandidateIsInvalid() {
+        TestContext ctx = buildContext();
+        when(ctx.schedulerController.alreadyExistsAnotherSchedule(ctx.startDate, ctx.endDate)).thenReturn(false);
+        when(ctx.aiScheduleConverterService.convert(any()))
+                .thenThrow(AiProtocolException.schemaMismatch("forced-invalid-candidate", null));
+
+        ctx.service.generateScheduleComparison(ctx.startDate, ctx.endDate);
+        AiScheduleGenerationOrchestrationService.SelectionResult result =
+                ctx.service.persistSelectedCandidate("ai-empathetic");
+
+        assertEquals(AiScheduleGenerationOrchestrationService.SelectionResult.Status.INVALID_SELECTION, result.getStatus());
+        assertEquals("INVALID_CANDIDATE_SELECTION", result.getErrorCode());
+        assertEquals("Selected candidate is invalid in the active comparison state.", result.getMessage());
+        verify(ctx.schedulerController, never()).persistSchedule(any(Schedule.class));
     }
 
     @Test
