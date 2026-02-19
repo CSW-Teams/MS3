@@ -180,17 +180,8 @@ class AiActiveConstraintResolverTest {
     }
 
     private Doctor newDoctor(Long id) {
-        Doctor doctor = new Doctor(
-                "Mario",
-                "Rossi",
-                "TAXCODEX00000000",
-                LocalDate.of(1980, 1, 1),
-                "doctor@example.com",
-                "secret",
-                Seniority.STRUCTURED,
-                Set.of(SystemActor.DOCTOR)
-        );
-        doctor.setId(id);
+        Doctor doctor = mock(Doctor.class);
+        when(doctor.getId()).thenReturn(id);
         return doctor;
     }
 
