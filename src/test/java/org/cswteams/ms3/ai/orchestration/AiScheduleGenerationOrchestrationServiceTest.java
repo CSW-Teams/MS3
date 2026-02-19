@@ -2,6 +2,7 @@ package org.cswteams.ms3.ai.orchestration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.ai.broker.AgentBroker;
+import org.cswteams.ms3.ai.broker.AiBrokerProperties;
 import org.cswteams.ms3.ai.broker.AiBrokerRequest;
 import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
 import org.cswteams.ms3.ai.broker.domain.AiMetadata;
@@ -50,6 +51,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
@@ -110,6 +112,8 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(decisionAlgorithmService.selectPreferredWithAudit(any()))
                 .thenReturn(new AuditedSelectionResult("standard", List.of()));
 
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
+
         AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
                 schedulerController,
                 doctorDAO,
@@ -119,6 +123,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 holidayDAO,
                 scheduleDAO,
                 agentBroker,
+                aiBrokerProperties,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,
@@ -260,9 +265,16 @@ class AiScheduleGenerationOrchestrationServiceTest {
             return new AiScheduleVariantsResponse(Map.of("BALANCED", aiVariantResponse("balanced")));
         });
 
-        when(aiScheduleConverterService.convert(any()))
-                .thenThrow(AiProtocolException.invalidFormat("first invalid candidate"))
-                .thenReturn(List.of(concreteShift));
+        when(aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson != null && rawJson.contains("retry-empathetic")) {
+                throw AiProtocolException.invalidFormat("empathetic candidate remains invalid");
+            }
+            return List.of(concreteShift);
+        });
+
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
+        aiBrokerProperties.setScheduleValidationMaxRetries(1);
 
         AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
                 schedulerController,
@@ -273,6 +285,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 holidayDAO,
                 scheduleDAO,
                 agentBroker,
+                aiBrokerProperties,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,
@@ -280,7 +293,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 new ObjectMapper()
         );
 
-        assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+        var response = assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
 
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, times(4)).requestSchedule(requestCaptor.capture());
@@ -292,6 +305,17 @@ class AiScheduleGenerationOrchestrationServiceTest {
         assertTrue(requests.get(1).getInstructions().contains("Validation failures (prompt-safe):"));
         assertTrue(requests.get(2).getInstructions().contains("Use label EFFICIENT"));
         assertTrue(requests.get(3).getInstructions().contains("Use label BALANCED"));
+
+        var empatheticCandidate = response.getCandidates().stream()
+                .filter(candidate -> "EMPATHETIC".equals(candidate.getMetadata().getType()))
+                .findFirst()
+                .orElseThrow();
+
+        assertFalse(empatheticCandidate.getMetadata().isValid());
+        assertTrue(empatheticCandidate.getMetadata().isMaxRetriesReached());
+        assertTrue(empatheticCandidate.getMetadata().getValidationCode().contains("CONVERSION_FAILED"));
+        assertTrue(empatheticCandidate.getMetadata().getValidationViolations().isEmpty());
+        assertTrue(empatheticCandidate.getRawScheduleText().contains("retry-empathetic"));
     }
 
     private AiScheduleResponse aiVariantResponse(String reasoning) {
@@ -346,6 +370,8 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(decisionAlgorithmService.selectPreferredWithAudit(any()))
                 .thenReturn(new AuditedSelectionResult("standard", List.of()));
 
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
+
         AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
                 schedulerController,
                 doctorDAO,
@@ -355,6 +381,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 holidayDAO,
                 scheduleDAO,
                 agentBroker,
+                aiBrokerProperties,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,

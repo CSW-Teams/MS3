@@ -81,6 +81,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -232,7 +233,9 @@ public class AiScheduleGenerationOrchestrationService {
                     metrics,
                     candidate.validation.valid,
                     candidate.validation.code,
-                    candidate.validation.message
+                    candidate.validation.message,
+                    candidate.validation.maxRetriesReached,
+                    candidate.validation.violationMessages()
             ));
         }
 
@@ -539,6 +542,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                LocalDate endDate,
                                                List<ConcreteShift> referenceShifts) {
         Map<String, AiScheduleResponse> aggregatedVariants = new LinkedHashMap<>();
+        Map<String, CandidateValidationData> validationByLabel = new LinkedHashMap<>();
         Map<String, Integer> shiftRequirements = buildShiftRequirementsByShiftId(referenceShifts);
 
         int variantMaxAttempts = aiBrokerProperties.getScheduleValidationMaxRetries() + 1;
@@ -547,6 +551,7 @@ public class AiScheduleGenerationOrchestrationService {
             String baseInstructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
             String attemptInstructions = baseInstructions;
             AiScheduleResponse selectedVariant = null;
+            CandidateValidationData lastValidation = CandidateValidationData.valid();
 
             for (int attempt = 1; attempt <= variantMaxAttempts; attempt++) {
                 String correlationId = UUID.randomUUID().toString();
@@ -586,6 +591,7 @@ public class AiScheduleGenerationOrchestrationService {
                         batchCorrelationId,
                         startDate,
                         endDate);
+                lastValidation = validation;
                 if (validation.valid) {
                     break;
                 }
@@ -602,6 +608,10 @@ public class AiScheduleGenerationOrchestrationService {
                 }
             }
 
+            if (!lastValidation.valid && variantMaxAttempts > 0) {
+                lastValidation = lastValidation.withMaxRetriesReached(true);
+            }
+
             if (selectedVariant == null) {
                 throw AiProtocolException.schemaMismatch(
                         "AI response missing variant " + definition.label,
@@ -609,6 +619,7 @@ public class AiScheduleGenerationOrchestrationService {
                 );
             }
             aggregatedVariants.put(definition.label, selectedVariant);
+            validationByLabel.put(definition.label, lastValidation);
         }
 
         logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
@@ -627,11 +638,14 @@ public class AiScheduleGenerationOrchestrationService {
             }
             AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
             String rawJson = serializeResponse(responseDto);
-            CandidateValidationData validation = validateAiCandidate(rawJson,
-                    definition.candidateId,
-                    batchCorrelationId,
-                    startDate,
-                    endDate);
+            CandidateValidationData validation = validationByLabel.get(definition.label);
+            if (validation == null) {
+                validation = validateAiCandidate(rawJson,
+                        definition.candidateId,
+                        batchCorrelationId,
+                        startDate,
+                        endDate);
+            }
             if (!validation.valid) {
                 errorMetadata = buildMetricsError(errorMetadata,
                         batchCorrelationId,
@@ -1797,12 +1811,18 @@ public class AiScheduleGenerationOrchestrationService {
 
     private static class CandidateValidationData {
         private final boolean valid;
+        private final boolean maxRetriesReached;
         private final String code;
         private final String message;
         private final List<ConstraintViolationDetail> violatedConstraints;
 
-        private CandidateValidationData(boolean valid, String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
+        private CandidateValidationData(boolean valid,
+                                        boolean maxRetriesReached,
+                                        String code,
+                                        String message,
+                                        List<ConstraintViolationDetail> violatedConstraints) {
             this.valid = valid;
+            this.maxRetriesReached = maxRetriesReached;
             this.code = code;
             this.message = message;
             this.violatedConstraints = violatedConstraints == null
@@ -1811,7 +1831,7 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         private static CandidateValidationData valid() {
-            return new CandidateValidationData(true, null, null, Collections.emptyList());
+            return new CandidateValidationData(true, false, null, null, Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code, String message) {
@@ -1819,7 +1839,17 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         private static CandidateValidationData invalid(String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
-            return new CandidateValidationData(false, code, message, violatedConstraints);
+            return new CandidateValidationData(false, false, code, message, violatedConstraints);
+        }
+
+        private CandidateValidationData withMaxRetriesReached(boolean reached) {
+            return new CandidateValidationData(valid, reached, code, message, violatedConstraints);
+        }
+
+        private List<String> violationMessages() {
+            return violatedConstraints.stream()
+                    .map(violation -> violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
+                    .collect(Collectors.toList());
         }
     }
 

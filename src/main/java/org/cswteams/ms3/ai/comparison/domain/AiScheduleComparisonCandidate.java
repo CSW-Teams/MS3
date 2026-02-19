@@ -2,6 +2,8 @@ package org.cswteams.ms3.ai.comparison.domain;
 
 import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class AiScheduleComparisonCandidate {
@@ -15,6 +17,8 @@ public class AiScheduleComparisonCandidate {
     private final boolean valid;
     private final String validationCode;
     private final String validationMessage;
+    private final boolean maxRetriesReached;
+    private final List<String> validationViolations;
 
     public AiScheduleComparisonCandidate(String candidateId,
                                          Long scheduleId,
@@ -22,7 +26,7 @@ public class AiScheduleComparisonCandidate {
                                          String rawScheduleText,
                                          DecisionMetricValues rawMetrics,
                                          AiScheduleCandidateMetrics normalizedMetrics) {
-        this(candidateId, scheduleId, type, rawScheduleText, rawMetrics, normalizedMetrics, true, null, null);
+        this(candidateId, scheduleId, type, rawScheduleText, rawMetrics, normalizedMetrics, true, null, null, false, Collections.emptyList());
     }
 
     public AiScheduleComparisonCandidate(String candidateId,
@@ -33,7 +37,9 @@ public class AiScheduleComparisonCandidate {
                                          AiScheduleCandidateMetrics normalizedMetrics,
                                          boolean valid,
                                          String validationCode,
-                                         String validationMessage) {
+                                         String validationMessage,
+                                         boolean maxRetriesReached,
+                                         List<String> validationViolations) {
         this.candidateId = candidateId;
         this.scheduleId = scheduleId;
         this.type = Objects.requireNonNull(type, "type");
@@ -43,6 +49,8 @@ public class AiScheduleComparisonCandidate {
         this.valid = valid;
         this.validationCode = validationCode;
         this.validationMessage = validationMessage;
+        this.maxRetriesReached = maxRetriesReached;
+        this.validationViolations = validationViolations == null ? Collections.emptyList() : Collections.unmodifiableList(validationViolations);
     }
 
     public String getCandidateId() {
@@ -80,4 +88,14 @@ public class AiScheduleComparisonCandidate {
     public String getValidationMessage() {
         return validationMessage;
     }
+
+    public boolean isMaxRetriesReached() {
+        return maxRetriesReached;
+    }
+
+    public List<String> getValidationViolations() {
+        return validationViolations;
+    }
 }
+
+
