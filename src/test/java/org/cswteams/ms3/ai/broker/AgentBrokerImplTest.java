@@ -113,8 +113,40 @@ public class AgentBrokerImplTest {
         AiScheduleVariantsResponse response = broker.requestSchedule(request);
 
         assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
-        assertEquals(Arrays.asList(Duration.ofMillis(4000), Duration.ofMillis(8000)), broker.recordedSleeps);
+        assertEquals(Arrays.asList(Duration.ofMinutes(1), Duration.ofMinutes(1)), broker.recordedSleeps);
         verify(gemmaAdapter, times(3)).execute(request);
+    }
+
+    @Test
+    public void requestSchedule_shouldKeepExponentialRateLimitBackoffForNonGemmaProvider() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.LLAMA_70B);
+        properties.setMaxRetries(2);
+        properties.setRetryBackoff(Duration.ofMillis(100));
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter llamaAdapter = mock(AgentProviderAdapter.class);
+        when(llamaAdapter.provider()).thenReturn(AgentProvider.LLAMA_70B);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(llamaAdapter.execute(request))
+                .thenThrow(AiProtocolException.transportFailure("HTTP 429 Too Many Requests", null))
+                .thenThrow(AiProtocolException.transportFailure("status=429", null))
+                .thenReturn(validJson());
+
+        RecordingBroker broker = new RecordingBroker(
+                properties,
+                Arrays.asList(llamaAdapter),
+                new AiScheduleJsonParser(),
+                new AiTokenEstimator(),
+                new AiTokenUsageTracker(),
+                () -> 0D
+        );
+
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
+
+        assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
+        assertEquals(Arrays.asList(Duration.ofMillis(4000), Duration.ofMillis(8000)), broker.recordedSleeps);
+        verify(llamaAdapter, times(3)).execute(request);
     }
 
     @Test
