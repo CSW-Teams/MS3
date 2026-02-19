@@ -82,6 +82,7 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String METRICS_COMPUTE_STAGE = "METRICS_COMPUTE";
     private static final String ERROR_STANDARD_METRICS = "STANDARD_METRICS_FAILED";
     private static final String ERROR_AI_METRICS = "AI_METRICS_FAILED";
+    private static final String ERROR_AI_CANDIDATE_VALIDATION = "AI_CANDIDATE_VALIDATION_FAILED";
     private static final String ERROR_NORMALIZATION = "METRICS_NORMALIZATION_FAILED";
     private static final String ERROR_DECISION = "METRICS_DECISION_FAILED";
     private static final double METRICS_COMPARISON_TOLERANCE = 1e-6;
@@ -207,7 +208,10 @@ public class AiScheduleGenerationOrchestrationService {
                     candidate.type,
                     candidate.rawScheduleJson,
                     candidate.rawMetrics,
-                    metrics
+                    metrics,
+                    candidate.validation.valid,
+                    candidate.validation.code,
+                    candidate.validation.message
             ));
         }
 
@@ -290,6 +294,12 @@ public class AiScheduleGenerationOrchestrationService {
     private SelectionResult persistCandidate(TransientComparisonState state, CandidateData candidate) {
         if (schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
             return SelectionResult.duplicateRange("DUPLICATE_RANGE", "Schedule already exists for this date range.");
+        }
+        if (!candidate.validation.valid) {
+            String reason = candidate.validation.message == null
+                    ? "Selected candidate did not pass validation."
+                    : candidate.validation.message;
+            return SelectionResult.invalid("INVALID_CANDIDATE", reason);
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);
         if (schedule == null) {
@@ -497,7 +507,8 @@ public class AiScheduleGenerationOrchestrationService {
                 ScheduleCandidateType.STANDARD,
                 rawJson,
                 metrics,
-                schedule
+                schedule,
+                CandidateValidationData.valid()
         );
     }
 
@@ -555,6 +566,13 @@ public class AiScheduleGenerationOrchestrationService {
             }
             AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
             String rawJson = serializeResponse(responseDto);
+            CandidateValidationData validation = validateAiCandidate(rawJson, definition.candidateId, batchCorrelationId);
+            if (!validation.valid) {
+                errorMetadata = buildMetricsError(errorMetadata,
+                        batchCorrelationId,
+                        ERROR_AI_CANDIDATE_VALIDATION,
+                        new IllegalArgumentException(validation.code + ": " + validation.message));
+            }
             DecisionMetricValues metrics;
             try {
                 metrics = buildAiMetrics(variant, rawJson, definition.candidateId, batchCorrelationId, shiftRequirements);
@@ -565,9 +583,35 @@ public class AiScheduleGenerationOrchestrationService {
                         ex);
                 metrics = fallbackMetrics();
             }
-            candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics, null));
+            candidates.add(new CandidateData(definition.candidateId,
+                    null,
+                    definition.type,
+                    rawJson,
+                    metrics,
+                    null,
+                    validation));
         }
         return new CandidateBatch(Collections.unmodifiableList(candidates), errorMetadata);
+    }
+
+    private CandidateValidationData validateAiCandidate(String rawJson, String candidateId, String correlationId) {
+        if (rawJson == null || rawJson.trim().isEmpty()) {
+            logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason=EMPTY_RAW_JSON",
+                    correlationId,
+                    candidateId);
+            return CandidateValidationData.invalid("EMPTY_RAW_JSON", "Candidate JSON payload is empty.");
+        }
+        try {
+            aiScheduleConverterService.convert(rawJson);
+            return CandidateValidationData.valid();
+        } catch (AiProtocolException ex) {
+            logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} message={}",
+                    correlationId,
+                    candidateId,
+                    "CONVERSION_FAILED",
+                    ex.getMessage());
+            return CandidateValidationData.invalid("CONVERSION_FAILED", ex.getMessage());
+        }
     }
 
     private AiScheduleResponse buildDeferredResponse(String label, AiTokenBudgetGuardResult budgetGuard) {
@@ -1517,19 +1561,42 @@ public class AiScheduleGenerationOrchestrationService {
         private final String rawScheduleJson;
         private final DecisionMetricValues rawMetrics;
         private final Schedule schedule;
+        private final CandidateValidationData validation;
 
         private CandidateData(String candidateId,
                               Long scheduleId,
                               ScheduleCandidateType type,
                               String rawScheduleJson,
                               DecisionMetricValues rawMetrics,
-                              Schedule schedule) {
+                              Schedule schedule,
+                              CandidateValidationData validation) {
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.scheduleId = scheduleId;
             this.type = Objects.requireNonNull(type, "type");
             this.rawScheduleJson = rawScheduleJson;
             this.rawMetrics = Objects.requireNonNull(rawMetrics, "rawMetrics");
             this.schedule = schedule;
+            this.validation = Objects.requireNonNull(validation, "validation");
+        }
+    }
+
+    private static class CandidateValidationData {
+        private final boolean valid;
+        private final String code;
+        private final String message;
+
+        private CandidateValidationData(boolean valid, String code, String message) {
+            this.valid = valid;
+            this.code = code;
+            this.message = message;
+        }
+
+        private static CandidateValidationData valid() {
+            return new CandidateValidationData(true, null, null);
+        }
+
+        private static CandidateValidationData invalid(String code, String message) {
+            return new CandidateValidationData(false, code, message);
         }
     }
 
