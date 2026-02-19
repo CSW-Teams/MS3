@@ -15,6 +15,11 @@ public class AiBrokerProperties {
     private String llama70bModel = "llama3-70b-8192";
     private Duration connectTimeout = Duration.ofSeconds(5);
     private Duration readTimeout = Duration.ofSeconds(60);
+    /**
+     * End-to-end retry budget across the full request lifecycle.
+     * This timeout includes network call time and all retry waits, including GEMMA's fixed 60s
+     * backoff after HTTP 429 responses.
+     */
     private Duration totalTimeout = Duration.ofSeconds(90);
     private int maxRetries = 3;
     private Duration retryBackoff = Duration.ZERO;
