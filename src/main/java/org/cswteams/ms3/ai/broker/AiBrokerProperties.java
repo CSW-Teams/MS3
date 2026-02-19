@@ -18,6 +18,7 @@ public class AiBrokerProperties {
     private Duration totalTimeout = Duration.ofSeconds(90);
     private int maxRetries = 3;
     private Duration retryBackoff = Duration.ZERO;
+    private int scheduleValidationMaxRetries = 2;
 
     public AgentProvider getProvider() {
         return provider;
@@ -105,5 +106,16 @@ public class AiBrokerProperties {
 
     public void setRetryBackoff(Duration retryBackoff) {
         this.retryBackoff = retryBackoff;
+    }
+
+    public int getScheduleValidationMaxRetries() {
+        return scheduleValidationMaxRetries;
+    }
+
+    public void setScheduleValidationMaxRetries(int scheduleValidationMaxRetries) {
+        if (scheduleValidationMaxRetries < 0) {
+            throw new IllegalArgumentException("ai.broker.schedule-validation-max-retries must be >= 0");
+        }
+        this.scheduleValidationMaxRetries = scheduleValidationMaxRetries;
     }
 }
