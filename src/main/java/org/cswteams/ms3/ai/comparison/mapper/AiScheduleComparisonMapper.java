@@ -31,7 +31,7 @@ public class AiScheduleComparisonMapper {
                                                  boolean retryable) {
         List<AiScheduleComparisonCandidateDto> mappedCandidates = mapCandidates(candidates);
         AiScheduleDecisionOutcomeDto decisionOutcome = outcome == null ? null : new AiScheduleDecisionOutcomeDto(
-                toMetadata(outcome.getCandidateId(), outcome.getScheduleId(), outcome.getType().getLabel(), true, null, null)
+                toMetadata(outcome.getCandidateId(), outcome.getScheduleId(), outcome.getType().getLabel(), true, null, null, false, Collections.emptyList())
         );
         String generationStatus = resolveGenerationStatus(mappedCandidates, errorCode);
         return new AiScheduleComparisonResponseDto(mappedCandidates,
@@ -64,7 +64,9 @@ public class AiScheduleComparisonMapper {
                         candidate.getType().getLabel(),
                         candidate.isValid(),
                         candidate.getValidationCode(),
-                        candidate.getValidationMessage()),
+                        candidate.getValidationMessage(),
+                        candidate.isMaxRetriesReached(),
+                        candidate.getValidationViolations()),
                 candidate.getRawScheduleText(),
                 metrics
         );
@@ -75,14 +77,18 @@ public class AiScheduleComparisonMapper {
                                                       String typeLabel,
                                                       boolean valid,
                                                       String validationCode,
-                                                      String validationMessage) {
+                                                      String validationMessage,
+                                                      boolean maxRetriesReached,
+                                                      List<String> validationViolations) {
         String resolvedCandidateId = scheduleId == null ? candidateId : null;
         return new AiScheduleCandidateMetadataDto(resolvedCandidateId,
                 scheduleId,
                 typeLabel,
                 valid,
                 validationCode,
-                validationMessage);
+                validationMessage,
+                maxRetriesReached,
+                validationViolations);
     }
 
     private AiScheduleDecisionMetricValuesDto toMetricValues(DecisionMetricValues values) {
