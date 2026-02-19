@@ -167,13 +167,15 @@ public class AgentBrokerImpl implements AgentBroker {
                         dto == null || dto.variants == null ? 0 : dto.variants.size());
                 return mapVariants(dto);
             } catch (AiProtocolException ex) {
-                logger.warn("event=ai_broker_attempt_failed attempt={} correlation_id={} error_code={}",
+                logger.warn("event=ai_broker_attempt_failed provider={} attempt={} correlation_id={} error_code={}",
+                        provider,
                         attempt,
                         request.getCorrelationId(),
                         ex.getCode());
                 lastException = ex;
             } catch (RuntimeException ex) {
-                logger.warn("event=ai_broker_attempt_failed attempt={} correlation_id={} error_code=TRANSPORT_FAILURE",
+                logger.warn("event=ai_broker_attempt_failed provider={} attempt={} correlation_id={} error_code=TRANSPORT_FAILURE",
+                        provider,
                         attempt,
                         request.getCorrelationId());
                 lastException = AiProtocolException.transportFailure("AI provider call failed", ex);
@@ -181,21 +183,41 @@ public class AgentBrokerImpl implements AgentBroker {
 
             if (attempt < maxRetries) {
                 boolean rateLimited = isRateLimitedFailure(lastException);
+                String errorCode = getErrorCode(lastException);
                 if (rateLimited && estimatedTotalTokens > RATE_LIMIT_RETRY_TOKEN_CUTOFF) {
-                    logger.warn("event=ai_broker_rate_limit_retry_skipped attempt={} correlation_id={} estimated_total_tokens={} retry_token_cutoff={}",
+                    logger.warn("event=ai_broker_rate_limit_retry_skipped provider={} attempt={} correlation_id={} error_code={} estimated_total_tokens={} retry_token_cutoff={}",
+                            provider,
                             attempt,
                             request.getCorrelationId(),
+                            errorCode,
                             estimatedTotalTokens,
                             RATE_LIMIT_RETRY_TOKEN_CUTOFF);
                     break;
                 }
                 Duration retryDelay = computeRetryDelay(backoff, attempt, rateLimited, adapter.provider());
-                if (rateLimited) {
-                    logger.warn("event=ai_broker_rate_limit_backoff attempt={} correlation_id={} backoff_ms={} estimated_total_tokens={}",
+                if (rateLimited && provider == AgentProvider.GEMMA) {
+                    logger.warn("event=ai_broker_rate_limit_fixed_wait provider={} attempt={} correlation_id={} error_code={} backoff_ms={} wait_reason=rate_limit_window_reset_429 estimated_total_tokens={}",
+                            provider,
                             attempt,
                             request.getCorrelationId(),
+                            errorCode,
                             retryDelay.toMillis(),
                             estimatedTotalTokens);
+                } else if (rateLimited) {
+                    logger.warn("event=ai_broker_retry_backoff provider={} attempt={} correlation_id={} error_code={} backoff_ms={} wait_reason=rate_limit_backoff estimated_total_tokens={}",
+                            provider,
+                            attempt,
+                            request.getCorrelationId(),
+                            errorCode,
+                            retryDelay.toMillis(),
+                            estimatedTotalTokens);
+                } else {
+                    logger.info("event=ai_broker_retry_backoff provider={} attempt={} correlation_id={} error_code={} backoff_ms={} wait_reason=normal_retry_backoff",
+                            provider,
+                            attempt,
+                            request.getCorrelationId(),
+                            errorCode,
+                            retryDelay.toMillis());
                 }
                 sleep(retryDelay);
             }
@@ -310,6 +332,13 @@ public class AgentBrokerImpl implements AgentBroker {
         }
         String normalized = message.toLowerCase();
         return normalized.contains("429") || normalized.contains("too many requests") || normalized.contains("rate limit");
+    }
+
+    private static String getErrorCode(AiProtocolException exception) {
+        if (exception == null || exception.getCode() == null) {
+            return "UNKNOWN";
+        }
+        return exception.getCode().name();
     }
 
     void sleep(Duration backoff) {
