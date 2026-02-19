@@ -18,12 +18,18 @@ import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Schedule;
+import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Shift;
+import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.enums.TimeSlot;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -91,9 +97,9 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
             assertEquals(AiScheduleGenerationOrchestrationService.SelectionResult.Status.PERSISTED, result.getStatus());
             assertEquals(1000L + i, result.getScheduleId());
             if ("standard".equals(candidateId)) {
-                verify(ctx.aiScheduleConverterService, never()).convert(any());
+                verify(ctx.aiScheduleConverterService, times(3)).convert(any());
             } else {
-                verify(ctx.aiScheduleConverterService, times(1)).convert(any());
+                verify(ctx.aiScheduleConverterService, times(4)).convert(any());
             }
         }
     }
@@ -110,8 +116,8 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                 ctx.service.persistSelectedCandidate("ai-empathetic");
 
         assertEquals(AiScheduleGenerationOrchestrationService.SelectionResult.Status.INVALID_SELECTION, result.getStatus());
-        assertEquals("INVALID_CANDIDATE_SELECTION", result.getErrorCode());
-        assertEquals("Selected candidate is invalid in the active comparison state.", result.getErrorMessage());
+        assertEquals("INVALID_CANDIDATE", result.getErrorCode());
+        assertEquals("Unable to build the selected schedule.", result.getErrorMessage());
         verify(ctx.schedulerController, never()).persistSchedule(any(Schedule.class));
     }
 
@@ -132,7 +138,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         ArgumentCaptor<Schedule> standardCaptor = ArgumentCaptor.forClass(Schedule.class);
         verify(standardContext.schedulerController).persistSchedule(standardCaptor.capture());
         assertSame(standardContext.transientSchedule, standardCaptor.getValue());
-        verify(standardContext.aiScheduleConverterService, never()).convert(any());
+        verify(standardContext.aiScheduleConverterService, times(3)).convert(any());
 
         TestContext aiContext = buildContext();
         when(aiContext.schedulerController.alreadyExistsAnotherSchedule(aiContext.startDate, aiContext.endDate)).thenReturn(false);
@@ -151,7 +157,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         assertEquals(aiContext.endDate.toEpochDay(), builtAiSchedule.getEndDate());
         assertEquals(1, builtAiSchedule.getConcreteShifts().size());
         assertTrue(builtAiSchedule.getConcreteShifts().contains(aiContext.convertedShift));
-        verify(aiContext.aiScheduleConverterService, times(1)).convert(any());
+        verify(aiContext.aiScheduleConverterService, times(4)).convert(any());
     }
 
     private TestContext buildContext() {
@@ -160,7 +166,11 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
 
         Shift standardShift = mock(Shift.class);
         when(standardShift.getId()).thenReturn(2001L);
-        when(standardShift.getQuantityShiftSeniority()).thenReturn(List.of());
+        QuantityShiftSeniority standardCoverageRequirement = mock(QuantityShiftSeniority.class);
+        when(standardCoverageRequirement.getSeniorityMap()).thenReturn(new java.util.HashMap<>(Map.of(Seniority.STRUCTURED, 1)));
+        when(standardShift.getQuantityShiftSeniority()).thenReturn(List.of(standardCoverageRequirement));
+        when(standardShift.getTimeSlot()).thenReturn(TimeSlot.MORNING);
+        when(standardShift.getDuration()).thenReturn(Duration.ofHours(8));
 
         Shift convertedAiShift = mock(Shift.class);
         when(convertedAiShift.getId()).thenReturn(3001L);
@@ -194,6 +204,10 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         when(holidayDAO.findAll()).thenReturn(List.of());
         when(aiActiveConstraintResolver.resolveWithReport(any(), any(), anyBoolean()))
                 .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0));
+        Doctor eligibleDoctor = mock(Doctor.class);
+        when(eligibleDoctor.getId()).thenReturn(11L);
+        when(eligibleDoctor.getSeniority()).thenReturn(Seniority.STRUCTURED);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(eligibleDoctor));
         when(agentBroker.previewTokenBudget(any())).thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
         when(aiScheduleConverterService.convert(any())).thenReturn(List.of(convertedShift));
         when(decisionAlgorithmService.selectPreferredWithAudit(any())).thenReturn(new AuditedSelectionResult("standard", List.of()));
