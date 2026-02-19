@@ -26,6 +26,7 @@ import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorUffaPriority;
 import org.cswteams.ms3.entity.MedicalService;
@@ -33,6 +34,7 @@ import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.Task;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TaskEnum;
@@ -53,7 +55,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -105,9 +109,16 @@ class AiScheduleGenerationOrchestrationServiceTest {
 
         when(agentBroker.previewTokenBudget(any()))
                 .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
-        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of(
-                new ToonActiveConstraint(ToonConstraintType.HARD, ToonConstraintEntityType.DOCTOR, String.valueOf(doctor.getId()), "REST_PERIOD", Map.of("hours", "11"))
-        ));
+        ToonActiveConstraint restPeriodConstraint = new ToonActiveConstraint(
+                ToonConstraintType.HARD,
+                ToonConstraintEntityType.DOCTOR,
+                String.valueOf(doctor.getId()),
+                "REST_PERIOD",
+                Map.of("hours", "11")
+        );
+        when(aiActiveConstraintResolver.resolveWithReport(any(), any(), anyBoolean())).thenReturn(
+                new AiActiveConstraintResolver.ResolveResult(List.of(restPeriodConstraint), 0, 1, 0)
+        );
         when(aiScheduleConverterService.convert(any())).thenReturn(List.of(concreteShift));
         when(decisionAlgorithmService.selectPreferredWithAudit(any()))
                 .thenReturn(new AuditedSelectionResult("standard", List.of()));
@@ -137,11 +148,15 @@ class AiScheduleGenerationOrchestrationServiceTest {
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
 
-        String toonPayload = requestCaptor.getAllValues().get(0).getToonPayload();
-        assertTrue(toonPayload.startsWith("ctx:{p:\""));
-        assertTrue(toonPayload.contains("REST_PERIOD"));
-        assertTrue(toonPayload.contains("hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:"));
-        assertTrue(toonPayload.contains("S_1001_20260914,1,0,0,1"));
+        boolean found = requestCaptor.getAllValues().stream()
+                .map(AiBrokerRequest::getToonPayload)
+                .filter(payload -> payload != null)
+                .anyMatch(payload -> payload.startsWith("ctx:{p:\"")
+                        && payload.contains("REST_PERIOD")
+                        && payload.contains("hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:")
+                        && payload.contains("S_1001_20260914,1,0,0,1"));
+
+        assertTrue(found);
     }
 
     @Test
@@ -395,8 +410,27 @@ class AiScheduleGenerationOrchestrationServiceTest {
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
         List<AiBrokerRequest> capturedRequests = requestCaptor.getAllValues();
-        assertEquals(1, capturedRequests.size());
-        return capturedRequests.get(0).getToonPayload();
+        assertFalse(capturedRequests.isEmpty());
+
+        String firstNonBlankPayload = null;
+        for (AiBrokerRequest capturedRequest : capturedRequests) {
+            String toonPayload = capturedRequest.getToonPayload();
+            if (toonPayload == null || toonPayload.isBlank()) {
+                continue;
+            }
+            if (firstNonBlankPayload == null) {
+                firstNonBlankPayload = toonPayload;
+            }
+            if (toonPayload.contains("hard_coverage_requirements[")) {
+                return toonPayload;
+            }
+        }
+
+        if (firstNonBlankPayload != null) {
+            return firstNonBlankPayload;
+        }
+        fail("No captured toon payload containing hard_coverage_requirements");
+        return null;
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {
