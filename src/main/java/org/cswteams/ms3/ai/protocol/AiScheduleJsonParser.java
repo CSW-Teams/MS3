@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleVariantsResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
@@ -187,7 +186,7 @@ public class AiScheduleJsonParser {
     }
 
     private static boolean isTypeInstantiationFailure(JsonMappingException e) {
-        if (e instanceof ValueInstantiationException) {
+        if ("com.fasterxml.jackson.databind.exc.ValueInstantiationException".equals(e.getClass().getName())) {
             return true;
         }
         Throwable cause = e.getCause();
