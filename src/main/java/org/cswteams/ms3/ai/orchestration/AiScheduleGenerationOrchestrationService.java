@@ -3,6 +3,7 @@ package org.cswteams.ms3.ai.orchestration;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.ai.broker.AgentBroker;
+import org.cswteams.ms3.ai.broker.AiBrokerProperties;
 import org.cswteams.ms3.ai.broker.AiBrokerRequest;
 import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
 import org.cswteams.ms3.ai.broker.domain.AiAssignment;
@@ -100,7 +101,6 @@ public class AiScheduleGenerationOrchestrationService {
             + "For object form, put the variant label as the key under variants. "
             + "If variants is an array, each item must include a non-empty 'label' field and a 'variant' object payload. "
             + "Return exactly one variant entry matching the requested label.";
-    private static final int VARIANT_MAX_ATTEMPTS = 3;
     private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(
             new VariantDefinition(EMPATHETIC_LABEL,
                     "ai-empathetic",
@@ -124,6 +124,7 @@ public class AiScheduleGenerationOrchestrationService {
     private final HolidayDAO holidayDAO;
     private final ScheduleDAO scheduleDAO;
     private final AgentBroker agentBroker;
+    private final AiBrokerProperties aiBrokerProperties;
     private final AiReschedulingOrchestrationService aiReschedulingOrchestrationService;
     private final DecisionAlgorithmService decisionAlgorithmService;
     private final AiScheduleConverterService aiScheduleConverterService;
@@ -141,6 +142,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     HolidayDAO holidayDAO,
                                                     ScheduleDAO scheduleDAO,
                                                     AgentBroker agentBroker,
+                                                    AiBrokerProperties aiBrokerProperties,
                                                     AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
                                                     DecisionAlgorithmService decisionAlgorithmService,
                                                     AiScheduleConverterService aiScheduleConverterService,
@@ -154,6 +156,7 @@ public class AiScheduleGenerationOrchestrationService {
         this.holidayDAO = holidayDAO;
         this.scheduleDAO = scheduleDAO;
         this.agentBroker = agentBroker;
+        this.aiBrokerProperties = aiBrokerProperties;
         this.aiReschedulingOrchestrationService = aiReschedulingOrchestrationService;
         this.decisionAlgorithmService = decisionAlgorithmService;
         this.aiScheduleConverterService = aiScheduleConverterService;
@@ -538,12 +541,14 @@ public class AiScheduleGenerationOrchestrationService {
         Map<String, AiScheduleResponse> aggregatedVariants = new LinkedHashMap<>();
         Map<String, Integer> shiftRequirements = buildShiftRequirementsByShiftId(referenceShifts);
 
+        int variantMaxAttempts = aiBrokerProperties.getScheduleValidationMaxRetries() + 1;
+
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
             String baseInstructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
             String attemptInstructions = baseInstructions;
             AiScheduleResponse selectedVariant = null;
 
-            for (int attempt = 1; attempt <= VARIANT_MAX_ATTEMPTS; attempt++) {
+            for (int attempt = 1; attempt <= variantMaxAttempts; attempt++) {
                 String correlationId = UUID.randomUUID().toString();
                 AiBrokerRequest request = new AiBrokerRequest(toonPayload, attemptInstructions, correlationId);
                 logger.info("event=ai_broker_request_prepared correlation_id={} label={} attempt={} payload_length={} instructions_length={}",
@@ -585,7 +590,7 @@ public class AiScheduleGenerationOrchestrationService {
                     break;
                 }
 
-                if (attempt < VARIANT_MAX_ATTEMPTS) {
+                if (attempt < variantMaxAttempts) {
                     attemptInstructions = buildCorrectiveVariantInstruction(baseInstructions, attempt, validation);
                     logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={}",
                             correlationId,
