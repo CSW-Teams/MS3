@@ -13,6 +13,7 @@ import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -53,18 +54,16 @@ public class AiScheduleVariantsResponseDto {
         private static Map<String, AiScheduleResponseDto> deserializeFromObject(ObjectCodec codec, JsonNode variantsNode)
                 throws IOException {
             Map<String, AiScheduleResponseDto> normalized = new LinkedHashMap<>();
-            variantsNode.fields().forEachRemaining(entry -> {
+            Iterator<Map.Entry<String, JsonNode>> fields = variantsNode.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
                 String label = entry.getKey();
                 validateAllowedLabel(label);
                 if (normalized.containsKey(label)) {
                     throw AiProtocolException.schemaMismatch("AI response contains duplicate variant label: " + label, null);
                 }
-                try {
-                    normalized.put(label, codec.treeToValue(entry.getValue(), AiScheduleResponseDto.class));
-                } catch (IOException e) {
-                    throw AiProtocolException.schemaMismatch("AI response variant " + label + " cannot be deserialized", e);
-                }
-            });
+                normalized.put(label, codec.treeToValue(entry.getValue(), AiScheduleResponseDto.class));
+            }
             return normalized;
         }
 
@@ -100,11 +99,7 @@ public class AiScheduleVariantsResponseDto {
                     payloadNode = payloadObject;
                 }
 
-                try {
-                    normalized.put(label, codec.treeToValue(payloadNode, AiScheduleResponseDto.class));
-                } catch (IOException e) {
-                    throw AiProtocolException.schemaMismatch("AI response variant " + label + " cannot be deserialized", e);
-                }
+                normalized.put(label, codec.treeToValue(payloadNode, AiScheduleResponseDto.class));
             }
             return normalized;
         }
