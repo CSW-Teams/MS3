@@ -418,6 +418,21 @@ public class AiScheduleJsonParserTest {
     }
 
     @Test
+    public void parseVariants_invalidEnumStatus_shouldThrowTypeMismatch() {
+        AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
+        String json = variantsJson(validJson().replace("SUCCESS", "OK"));
+
+        try {
+            parser.parseVariants(json);
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
+            assertEquals(AiProtocolException.ErrorCode.TYPE_MISMATCH, ex.getCode());
+            assertMessageContainsAny(ex.getMessage(), "$.variants.EMPATHETIC.status", "$.status", "status");
+        }
+    }
+
+    @Test
     public void parseVariants_roleCoveredAliasJunior_shouldMapToSpecialistJunior() {
         AiScheduleJsonParser parser = new AiScheduleJsonParser(true, true);
         String json = variantsJsonWithRoleCovered("JUNIOR");
