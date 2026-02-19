@@ -814,8 +814,10 @@ public class AiScheduleGenerationOrchestrationService {
                 Long doctorId = assignment.getDoctor().getId();
                 DoctorUffaPriority doctorPriority = prioritiesByDoctorId.get(doctorId);
                 if (doctorPriority == null) {
-                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor());
+                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor(), candidateSchedule);
                     prioritiesByDoctorId.put(doctorId, doctorPriority);
+                } else if (doctorPriority.getSchedule() == null) {
+                    doctorPriority.setSchedule(candidateSchedule);
                 }
 
                 ContextConstraint context = new ContextConstraint(

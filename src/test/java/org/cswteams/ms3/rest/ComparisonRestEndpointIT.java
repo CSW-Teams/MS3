@@ -51,8 +51,7 @@ class ComparisonRestEndpointIT {
         AiScheduleComparisonCandidateDto candidate = new AiScheduleComparisonCandidateDto(metadata, "{}", metrics);
         AiScheduleDecisionOutcomeDto outcome = new AiScheduleDecisionOutcomeDto(metadata);
         AiScheduleComparisonResponseDto response = new AiScheduleComparisonResponseDto(List.of(candidate),
-                outcome,
-                AiPromptTemplate.metricsSpecId());
+                outcome);
 
         when(aiScheduleGenerationOrchestrationService.getLatestComparison()).thenReturn(response);
 

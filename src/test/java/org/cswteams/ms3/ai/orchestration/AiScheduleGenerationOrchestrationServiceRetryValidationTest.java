@@ -56,6 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.doThrow;
@@ -102,7 +103,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
 
         assertNotNull(response);
         var empathetic = response.getCandidates().stream()
-                .filter(candidate -> "EMPATHETIC".equals(candidate.getMetadata().getType()))
+                .filter(candidate -> "empathetic".equals(candidate.getMetadata().getType()))
                 .findFirst()
                 .orElseThrow();
         assertTrue(empathetic.getMetadata().isValid());
@@ -159,7 +160,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
         var response = fixture.service.generateScheduleComparison(fixture.startDate, fixture.endDate);
 
         var empathetic = response.getCandidates().stream()
-                .filter(candidate -> "EMPATHETIC".equals(candidate.getMetadata().getType()))
+                .filter(candidate -> "empathetic".equals(candidate.getMetadata().getType()))
                 .findFirst()
                 .orElseThrow();
         assertFalse(empathetic.getMetadata().isValid());
@@ -258,7 +259,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
 
         verify(fixture.agentBroker, times(3)).requestSchedule(any());
         assertFalse(response.getCandidates().stream()
-                .filter(candidate -> "EMPATHETIC".equals(candidate.getMetadata().getType()))
+                .filter(candidate -> "empathetic".equals(candidate.getMetadata().getType()))
                 .findFirst()
                 .orElseThrow()
                 .getMetadata()
@@ -319,7 +320,9 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
             when(doctorHolidaysDAO.findAll()).thenReturn(List.of());
             when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
             when(holidayDAO.findAll()).thenReturn(List.of());
-            when(agentBroker.previewTokenBudget(any())).thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
+            when(agentBroker.previewTokenBudget(any())).thenReturn(new AiTokenBudgetGuardResult(true, 0, 0, 10, 1000));
+            when(aiActiveConstraintResolver.resolveWithReport(any(), any(), anyBoolean()))
+                    .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0));
             when(decisionAlgorithmService.selectPreferredWithAudit(any()))
                     .thenReturn(new AuditedSelectionResult("standard", List.of()));
 
