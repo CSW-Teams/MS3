@@ -665,7 +665,50 @@ public class AiScheduleGenerationOrchestrationService {
         return baseInstructions
                 + " Previous attempt " + failedAttempt
                 + " was invalid (" + validation.code + ": " + validation.message + ")."
+                + buildValidationFailurePromptBlock(validation)
                 + " Regenerate the same variant label only, fix all domain/syntax issues, and return strict JSON.";
+    }
+
+    private String buildValidationFailurePromptBlock(CandidateValidationData validation) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(" Validation failures (prompt-safe):");
+        builder.append(" [");
+        builder.append("{code='").append(promptSafeText(validation.code)).append("'");
+        builder.append(", expected='Produce a schedule that satisfies conversion and domain constraints'");
+        builder.append(", actual='").append(promptSafeText(validation.message)).append("'");
+        builder.append("}");
+
+        for (ConstraintViolationDetail violation : validation.violatedConstraints) {
+            builder.append(", {constraint_id='")
+                    .append(promptSafeText(violation.constraintId))
+                    .append("', constraint_type='")
+                    .append(promptSafeText(violation.constraintType))
+                    .append("', shift_id='")
+                    .append(promptSafeText(violation.shiftId))
+                    .append("', date='")
+                    .append(promptSafeText(violation.date))
+                    .append("', doctor_id='")
+                    .append(promptSafeText(violation.doctorId))
+                    .append("', expected='")
+                    .append(promptSafeText(violation.expectedCondition))
+                    .append("', actual='")
+                    .append(promptSafeText(violation.actualCondition))
+                    .append("'}");
+        }
+
+        builder.append("]");
+        return builder.toString();
+    }
+
+    private String promptSafeText(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return "n/a";
+        }
+        return value.replace("\\", "\\\\")
+                .replace("\n", " ")
+                .replace("\r", " ")
+                .replace("'", "\\'")
+                .trim();
     }
 
     private CandidateValidationData validateAiCandidate(String rawJson,
@@ -682,9 +725,9 @@ public class AiScheduleGenerationOrchestrationService {
         try {
             List<ConcreteShift> concreteShifts = aiScheduleConverterService.convert(rawJson);
             Schedule candidateSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
-            List<String> violatedConstraints = collectViolatedConstraints(candidateSchedule);
+            List<ConstraintViolationDetail> violatedConstraints = collectViolatedConstraints(candidateSchedule);
             if (!violatedConstraints.isEmpty()) {
-                String violationMessage = String.join(" | ", violatedConstraints);
+                String violationMessage = String.join(" | ", formatViolationMessages(violatedConstraints));
                 logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} violations_count={} message={}",
                         correlationId,
                         candidateId,
@@ -704,7 +747,15 @@ public class AiScheduleGenerationOrchestrationService {
         }
     }
 
-    private List<String> collectViolatedConstraints(Schedule candidateSchedule) {
+    private List<String> formatViolationMessages(List<ConstraintViolationDetail> violations) {
+        List<String> messages = new ArrayList<>();
+        for (ConstraintViolationDetail violation : violations) {
+            messages.add(violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition);
+        }
+        return messages;
+    }
+
+    private List<ConstraintViolationDetail> collectViolatedConstraints(Schedule candidateSchedule) {
         if (candidateSchedule == null || candidateSchedule.getConcreteShifts() == null) {
             return Collections.emptyList();
         }
@@ -713,7 +764,7 @@ public class AiScheduleGenerationOrchestrationService {
             return Collections.emptyList();
         }
 
-        Set<String> violations = new java.util.LinkedHashSet<>();
+        List<ConstraintViolationDetail> violations = new ArrayList<>();
         List<Holiday> holidays = holidayDAO.findAll();
         Map<Long, DoctorHolidays> doctorHolidaysByDoctorId = new HashMap<>();
         for (DoctorHolidays doctorHolidays : doctorHolidaysDAO.findAll()) {
@@ -761,18 +812,21 @@ public class AiScheduleGenerationOrchestrationService {
                     try {
                         constraint.verifyConstraint(context);
                     } catch (ViolatedConstraintException ex) {
-                        String constraintLabel = constraint.getDescription() == null
-                                ? constraint.getClass().getSimpleName()
-                                : constraint.getDescription();
                         String message = ex.getMessage() == null ? "violated" : ex.getMessage();
-                        violations.add(constraintLabel + ": " + message);
+                        violations.add(ConstraintViolationDetail.of(
+                                constraint,
+                                concreteShift,
+                                assignment.getDoctor(),
+                                "Constraint must be satisfied",
+                                message
+                        ));
                     }
                 }
 
                 doctorPriority.addConcreteShift(concreteShift);
             }
         }
-        return new ArrayList<>(violations);
+        return violations;
     }
 
     private AiScheduleResponse buildDeferredResponse(String label, AiTokenBudgetGuardResult budgetGuard) {
@@ -1745,9 +1799,9 @@ public class AiScheduleGenerationOrchestrationService {
         private final boolean valid;
         private final String code;
         private final String message;
-        private final List<String> violatedConstraints;
+        private final List<ConstraintViolationDetail> violatedConstraints;
 
-        private CandidateValidationData(boolean valid, String code, String message, List<String> violatedConstraints) {
+        private CandidateValidationData(boolean valid, String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
             this.valid = valid;
             this.code = code;
             this.message = message;
@@ -1764,8 +1818,59 @@ public class AiScheduleGenerationOrchestrationService {
             return invalid(code, message, Collections.emptyList());
         }
 
-        private static CandidateValidationData invalid(String code, String message, List<String> violatedConstraints) {
+        private static CandidateValidationData invalid(String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
             return new CandidateValidationData(false, code, message, violatedConstraints);
+        }
+    }
+
+    private static class ConstraintViolationDetail {
+        private final String constraintId;
+        private final String constraintType;
+        private final String shiftId;
+        private final String date;
+        private final String doctorId;
+        private final String expectedCondition;
+        private final String actualCondition;
+
+        private ConstraintViolationDetail(String constraintId,
+                                          String constraintType,
+                                          String shiftId,
+                                          String date,
+                                          String doctorId,
+                                          String expectedCondition,
+                                          String actualCondition) {
+            this.constraintId = constraintId;
+            this.constraintType = constraintType;
+            this.shiftId = shiftId;
+            this.date = date;
+            this.doctorId = doctorId;
+            this.expectedCondition = expectedCondition;
+            this.actualCondition = actualCondition;
+        }
+
+        private static ConstraintViolationDetail of(Constraint constraint,
+                                                    ConcreteShift concreteShift,
+                                                    Doctor doctor,
+                                                    String expectedCondition,
+                                                    String actualCondition) {
+            String date = concreteShift == null ? null : String.valueOf(LocalDate.ofEpochDay(concreteShift.getDate()));
+            String shiftId = concreteShift == null || concreteShift.getShift() == null || concreteShift.getShift().getId() == null
+                    ? null
+                    : String.valueOf(concreteShift.getShift().getId());
+            String doctorId = doctor == null || doctor.getId() == null ? null : String.valueOf(doctor.getId());
+            String constraintId = constraint == null || constraint.getId() == null ? null : String.valueOf(constraint.getId());
+            String constraintType = constraint == null
+                    ? null
+                    : constraint.getClass().getSimpleName();
+            return new ConstraintViolationDetail(
+                    constraintId,
+                    constraintType,
+                    shiftId,
+                    date,
+                    doctorId,
+                    expectedCondition,
+                    actualCondition
+            );
         }
     }
 
