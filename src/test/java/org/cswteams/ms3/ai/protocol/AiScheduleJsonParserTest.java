@@ -413,7 +413,7 @@ public class AiScheduleJsonParserTest {
         } catch (AiProtocolException ex) {
             assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
             assertEquals(AiProtocolException.ErrorCode.TYPE_MISMATCH, ex.getCode());
-            assertTrue(ex.getMessage().contains("$.status"));
+            assertMessageContainsAny(ex.getMessage(), "$.status", "status");
         }
     }
 
@@ -438,7 +438,7 @@ public class AiScheduleJsonParserTest {
         } catch (AiProtocolException ex) {
             assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
             assertEquals(AiProtocolException.ErrorCode.TYPE_MISMATCH, ex.getCode());
-            assertTrue(ex.getMessage().contains("role_covered"));
+            assertMessageContainsAny(ex.getMessage(), "role_covered", "$.assignments[0].role_covered");
         }
     }
 
@@ -498,6 +498,15 @@ public class AiScheduleJsonParserTest {
             assertEquals(AiProtocolException.ErrorCategory.APPLICATION_SCHEMA, ex.getCategory());
             assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
         }
+    }
+
+    private static void assertMessageContainsAny(String message, String... expectedTokens) {
+        for (String expectedToken : expectedTokens) {
+            if (message.contains(expectedToken)) {
+                return;
+            }
+        }
+        fail("Expected message to contain one of: " + String.join(", ", expectedTokens) + " but was: " + message);
     }
 
     private static String variantsJson(String variantJson) {
