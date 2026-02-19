@@ -11,9 +11,11 @@ import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.toon.ToonActiveConstraint;
 import org.cswteams.ms3.control.toon.ToonConstraintEntityType;
 import org.cswteams.ms3.control.toon.ToonConstraintType;
+import org.cswteams.ms3.dao.ConstraintDAO;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
+import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
@@ -68,9 +70,11 @@ class AiScheduleGenerationOrchestrationServiceTest {
         Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), List.of(concreteShift));
 
         ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
         DoctorDAO doctorDAO = mock(DoctorDAO.class);
         DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
         DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
         ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
         AgentBroker agentBroker = mock(AgentBroker.class);
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
@@ -87,6 +91,8 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
         when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
 
         when(agentBroker.previewTokenBudget(any()))
                 .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
@@ -102,6 +108,8 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 doctorDAO,
                 doctorUffaPriorityDAO,
                 doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
                 scheduleDAO,
                 agentBroker,
                 aiReschedulingOrchestrationService,
@@ -200,9 +208,11 @@ class AiScheduleGenerationOrchestrationServiceTest {
         Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
 
         ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
         DoctorDAO doctorDAO = mock(DoctorDAO.class);
         DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
         DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
         ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
         AgentBroker agentBroker = mock(AgentBroker.class);
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
@@ -219,6 +229,8 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
         when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
         when(agentBroker.previewTokenBudget(any()))
                 .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
         when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
@@ -231,6 +243,8 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 doctorDAO,
                 doctorUffaPriorityDAO,
                 doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
                 scheduleDAO,
                 agentBroker,
                 aiReschedulingOrchestrationService,
