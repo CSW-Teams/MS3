@@ -205,7 +205,7 @@ public class AgentBrokerImplTest {
     }
 
     @Test
-    public void requestSchedule_shouldRejectPartialSuccess() {
+    public void requestSchedule_shouldAllowPartialSuccess() {
         AiBrokerProperties properties = new AiBrokerProperties();
         properties.setProvider(AgentProvider.GEMMA);
         properties.setMaxRetries(0);
@@ -222,16 +222,9 @@ public class AgentBrokerImplTest {
                 new AiScheduleJsonParser()
         );
 
-        AiProtocolException exception;
-        try {
-            broker.requestSchedule(request);
-            fail("Expected AiProtocolException");
-            return;
-        } catch (AiProtocolException ex) {
-            exception = ex;
-        }
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
 
-        assertEquals(AiProtocolException.ErrorCode.PARTIAL_SUCCESS, exception.getCode());
+        assertEquals(AiStatus.PARTIAL_SUCCESS, response.getVariant("EMPATHETIC").getStatus());
         verify(gemmaAdapter, times(1)).execute(request);
     }
 
