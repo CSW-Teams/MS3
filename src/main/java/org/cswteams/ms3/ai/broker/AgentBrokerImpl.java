@@ -32,6 +32,7 @@ public class AgentBrokerImpl implements AgentBroker {
     private static final Logger logger = LoggerFactory.getLogger(AgentBrokerImpl.class);
     private static final long RATE_LIMIT_MIN_BACKOFF_MS = 1_000L;
     private static final int RATE_LIMIT_BACKOFF_MULTIPLIER = 4;
+    private static final Duration GEMMA_RATE_LIMIT_RETRY_DELAY = Duration.ofMinutes(1);
     private static final int RATE_LIMIT_RETRY_TOKEN_CUTOFF = 10_000;
     private final AiBrokerProperties properties;
     private final Map<AgentProvider, AgentProviderAdapter> adapters;
@@ -182,7 +183,7 @@ public class AgentBrokerImpl implements AgentBroker {
                             RATE_LIMIT_RETRY_TOKEN_CUTOFF);
                     break;
                 }
-                Duration retryDelay = computeRetryDelay(backoff, attempt, rateLimited);
+                Duration retryDelay = computeRetryDelay(backoff, attempt, rateLimited, adapter.provider());
                 if (rateLimited) {
                     logger.warn("event=ai_broker_rate_limit_backoff attempt={} correlation_id={} backoff_ms={} estimated_input_tokens={}",
                             attempt,
@@ -239,9 +240,13 @@ public class AgentBrokerImpl implements AgentBroker {
         return Duration.between(start, Instant.now()).compareTo(totalTimeout) > 0;
     }
 
-    private Duration computeRetryDelay(Duration baseBackoff, int attempt, boolean rateLimited) {
+    private Duration computeRetryDelay(Duration baseBackoff, int attempt, boolean rateLimited, AgentProvider provider) {
         if (!rateLimited) {
             return normalizeBackoff(baseBackoff);
+        }
+
+        if (provider == AgentProvider.GEMMA) {
+            return GEMMA_RATE_LIMIT_RETRY_DELAY;
         }
 
         Duration normalized = normalizeBackoff(baseBackoff);
