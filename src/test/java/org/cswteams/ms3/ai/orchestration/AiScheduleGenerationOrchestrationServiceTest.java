@@ -289,6 +289,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         assertTrue(requests.get(0).getInstructions().contains("Use label EMPATHETIC"));
         assertTrue(requests.get(1).getInstructions().contains("Use label EMPATHETIC"));
         assertTrue(requests.get(1).getInstructions().contains("Previous attempt 1 was invalid"));
+        assertTrue(requests.get(1).getInstructions().contains("Validation failures (prompt-safe):"));
         assertTrue(requests.get(2).getInstructions().contains("Use label EFFICIENT"));
         assertTrue(requests.get(3).getInstructions().contains("Use label BALANCED"));
     }
