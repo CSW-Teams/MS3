@@ -100,6 +100,7 @@ public class AiScheduleGenerationOrchestrationService {
             + "For object form, put the variant label as the key under variants. "
             + "If variants is an array, each item must include a non-empty 'label' field and a 'variant' object payload. "
             + "Return exactly one variant entry matching the requested label.";
+    private static final int VARIANT_MAX_ATTEMPTS = 3;
     private static final List<VariantDefinition> VARIANT_DEFINITIONS = List.of(
             new VariantDefinition(EMPATHETIC_LABEL,
                     "ai-empathetic",
@@ -538,35 +539,71 @@ public class AiScheduleGenerationOrchestrationService {
         Map<String, Integer> shiftRequirements = buildShiftRequirementsByShiftId(referenceShifts);
 
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
-            String instructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
-            String correlationId = UUID.randomUUID().toString();
-            AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
-            logger.info("event=ai_broker_request_prepared correlation_id={} label={} payload_length={} instructions_length={}",
-                    correlationId,
-                    definition.label,
-                    toonPayload == null ? 0 : toonPayload.length(),
-                    instructions.length());
+            String baseInstructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
+            String attemptInstructions = baseInstructions;
+            AiScheduleResponse selectedVariant = null;
 
-            AiTokenBudgetGuardResult budgetGuard = agentBroker.previewTokenBudget(request);
-            if (!budgetGuard.isAllowed()) {
-                logger.warn("event=ai_variant_deferred correlation_id={} label={} projected_tpm={} budget_limit={}",
+            for (int attempt = 1; attempt <= VARIANT_MAX_ATTEMPTS; attempt++) {
+                String correlationId = UUID.randomUUID().toString();
+                AiBrokerRequest request = new AiBrokerRequest(toonPayload, attemptInstructions, correlationId);
+                logger.info("event=ai_broker_request_prepared correlation_id={} label={} attempt={} payload_length={} instructions_length={}",
                         correlationId,
                         definition.label,
-                        budgetGuard.getProjectedTpm(),
-                        budgetGuard.getBudgetLimit());
-                aggregatedVariants.put(definition.label, buildDeferredResponse(definition.label, budgetGuard));
-                continue;
+                        attempt,
+                        toonPayload == null ? 0 : toonPayload.length(),
+                        attemptInstructions.length());
+
+                AiTokenBudgetGuardResult budgetGuard = agentBroker.previewTokenBudget(request);
+                if (!budgetGuard.isAllowed()) {
+                    logger.warn("event=ai_variant_deferred correlation_id={} label={} attempt={} projected_tpm={} budget_limit={}",
+                            correlationId,
+                            definition.label,
+                            attempt,
+                            budgetGuard.getProjectedTpm(),
+                            budgetGuard.getBudgetLimit());
+                    selectedVariant = buildDeferredResponse(definition.label, budgetGuard);
+                    break;
+                }
+
+                AiScheduleVariantsResponse singleResponse = agentBroker.requestSchedule(request);
+                AiScheduleResponse variant = singleResponse == null ? null : singleResponse.getVariant(definition.label);
+                if (variant == null) {
+                    throw AiProtocolException.schemaMismatch(
+                            "AI response missing variant " + definition.label,
+                            null
+                    );
+                }
+                selectedVariant = variant;
+
+                String rawJson = serializeResponse(buildAiResponseDto(variant));
+                CandidateValidationData validation = validateAiCandidate(rawJson,
+                        definition.candidateId,
+                        batchCorrelationId,
+                        startDate,
+                        endDate);
+                if (validation.valid) {
+                    break;
+                }
+
+                if (attempt < VARIANT_MAX_ATTEMPTS) {
+                    attemptInstructions = buildCorrectiveVariantInstruction(baseInstructions, attempt, validation);
+                    logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={}",
+                            correlationId,
+                            definition.label,
+                            attempt,
+                            attempt + 1,
+                            validation.code,
+                            validation.message);
+                }
             }
 
-            AiScheduleVariantsResponse singleResponse = agentBroker.requestSchedule(request);
-            AiScheduleResponse variant = singleResponse == null ? null : singleResponse.getVariant(definition.label);
-            if (variant == null) {
+            if (selectedVariant == null) {
                 throw AiProtocolException.schemaMismatch(
                         "AI response missing variant " + definition.label,
                         null
                 );
             }
-            aggregatedVariants.put(definition.label, variant);
+            aggregatedVariants.put(definition.label, selectedVariant);
         }
 
         logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
@@ -615,6 +652,15 @@ public class AiScheduleGenerationOrchestrationService {
                     validation));
         }
         return new CandidateBatch(Collections.unmodifiableList(candidates), errorMetadata);
+    }
+
+    private String buildCorrectiveVariantInstruction(String baseInstructions,
+                                                     int failedAttempt,
+                                                     CandidateValidationData validation) {
+        return baseInstructions
+                + " Previous attempt " + failedAttempt
+                + " was invalid (" + validation.code + ": " + validation.message + ")."
+                + " Regenerate the same variant label only, fix all domain/syntax issues, and return strict JSON.";
     }
 
     private CandidateValidationData validateAiCandidate(String rawJson,
