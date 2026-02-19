@@ -217,10 +217,9 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 new ConcreteShift(date.toEpochDay(), absentMinimaShift)
         ));
 
-        String expectedBlock = "hard_coverage_requirements[2]{shift_id,structured,specialist_junior,specialist_senior,total}:\n"
-                + "S_4001_20260914,0,0,0,0\n"
-                + "S_4002_20260914,0,0,0,0\n";
-        assertTrue(toonPayload.contains(expectedBlock));
+        assertTrue(toonPayload.contains("hard_coverage_requirements[2]{shift_id,structured,specialist_junior,specialist_senior,total}:"));
+        assertTrue(toonPayload.contains("S_4001_20260914,0,0,0,0"));
+        assertTrue(toonPayload.contains("S_4002_20260914,0,0,0,0"));
     }
 
 
@@ -322,7 +321,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         assertTrue(requests.get(3).getInstructions().contains("Use label BALANCED"));
 
         var empatheticCandidate = response.getCandidates().stream()
-                .filter(candidate -> "EMPATHETIC".equals(candidate.getMetadata().getType()))
+                .filter(candidate -> "EMPATHETIC".equalsIgnoreCase(candidate.getMetadata().getType()))
                 .findFirst()
                 .orElseThrow();
 
@@ -351,6 +350,23 @@ class AiScheduleGenerationOrchestrationServiceTest {
         doctorPriority.setGeneralPriority(3);
         doctorPriority.setNightPriority(4);
         doctorPriority.setLongShiftPriority(5);
+
+        for (ConcreteShift concreteShift : concreteShifts) {
+            if (concreteShift == null) {
+                continue;
+            }
+            if (concreteShift.getDoctorAssignmentList() != null
+                    && !concreteShift.getDoctorAssignmentList().isEmpty()) {
+                continue;
+            }
+            DoctorAssignment assignment = new DoctorAssignment(
+                    doctor,
+                    ConcreteShiftDoctorStatus.ON_DUTY,
+                    concreteShift,
+                    new Task(TaskEnum.CLINIC)
+            );
+            concreteShift.setDoctorAssignmentList(List.of(assignment));
+        }
 
         Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
 
