@@ -94,6 +94,8 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String ERROR_AI_CANDIDATE_VALIDATION = "AI_CANDIDATE_VALIDATION_FAILED";
     private static final String ERROR_NORMALIZATION = "METRICS_NORMALIZATION_FAILED";
     private static final String ERROR_DECISION = "METRICS_DECISION_FAILED";
+    private static final String INVALID_CANDIDATE_SELECTION_ERROR_CODE = "INVALID_CANDIDATE_SELECTION";
+    private static final String INVALID_CANDIDATE_SELECTION_ERROR_MESSAGE = "Selected candidate is invalid in the active comparison state.";
     private static final double METRICS_COMPARISON_TOLERANCE = 1e-6;
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
@@ -320,10 +322,10 @@ public class AiScheduleGenerationOrchestrationService {
             return SelectionResult.duplicateRange("DUPLICATE_RANGE", "Schedule already exists for this date range.");
         }
         if (!candidate.validation.valid) {
-            String reason = candidate.validation.message == null
-                    ? "Selected candidate did not pass validation."
-                    : candidate.validation.message;
-            return SelectionResult.invalid("INVALID_CANDIDATE", reason);
+            return SelectionResult.invalid(
+                    INVALID_CANDIDATE_SELECTION_ERROR_CODE,
+                    INVALID_CANDIDATE_SELECTION_ERROR_MESSAGE
+            );
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);
         if (schedule == null) {
