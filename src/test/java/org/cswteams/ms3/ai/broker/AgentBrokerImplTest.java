@@ -199,6 +199,40 @@ public class AgentBrokerImplTest {
     }
 
     @Test
+    public void requestSchedule_shouldCountRetrySleepAgainstTotalTimeout() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.LLAMA_70B);
+        properties.setMaxRetries(1);
+        properties.setRetryBackoff(Duration.ofMillis(25));
+        properties.setTotalTimeout(Duration.ofMillis(5));
+
+        AgentProviderAdapter llamaAdapter = mock(AgentProviderAdapter.class);
+        when(llamaAdapter.provider()).thenReturn(AgentProvider.LLAMA_70B);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(llamaAdapter.execute(request))
+                .thenThrow(AiProtocolException.transportFailure("temporary failure", null))
+                .thenReturn(validJson());
+
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                Arrays.asList(llamaAdapter),
+                new AiScheduleJsonParser()
+        );
+
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(request);
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
+
+        assertEquals(AiProtocolException.ErrorCode.TIMEOUT, exception.getCode());
+        verify(llamaAdapter, times(1)).execute(request);
+    }
+
+    @Test
     public void requestSchedule_shouldSurfaceTimeouts() {
         AiBrokerProperties properties = new AiBrokerProperties();
         properties.setProvider(AgentProvider.GEMMA);

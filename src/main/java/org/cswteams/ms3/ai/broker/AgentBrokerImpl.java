@@ -143,6 +143,8 @@ public class AgentBrokerImpl implements AgentBroker {
         AiProtocolException lastException = null;
 
         for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            // The total timeout is an end-to-end budget: provider call time and all retry waits
+            // (including GEMMA's mandatory 60s 429 delay) consume the same timer window.
             if (isTotalTimeoutExceeded(start, totalTimeout)) {
                 logger.warn("event=ai_broker_timeout_exceeded attempt={} correlation_id={}", attempt, request.getCorrelationId());
                 throw AiProtocolException.timeout("AI broker total timeout exceeded", lastException);
