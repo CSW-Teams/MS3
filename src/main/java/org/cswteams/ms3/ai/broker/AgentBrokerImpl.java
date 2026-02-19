@@ -211,7 +211,7 @@ public class AgentBrokerImpl implements AgentBroker {
                 throw AiProtocolException.schemaMismatch("AI response variant " + entry.getKey() + " is null", null);
             }
             if (variant.status == AiStatus.PARTIAL_SUCCESS) {
-                throw AiProtocolException.partialSuccess("AI response marked PARTIAL_SUCCESS for variant " + entry.getKey());
+                logger.warn("event=ai_broker_variant_partial_success variant_label={}", entry.getKey());
             }
             if (variant.status == AiStatus.FAILURE) {
                 throw AiProtocolException.businessFailure("AI response marked FAILURE for variant " + entry.getKey());

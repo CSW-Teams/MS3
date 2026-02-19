@@ -587,12 +587,23 @@ public class AiScheduleGenerationOrchestrationService {
                 }
                 selectedVariant = variant;
 
+                CandidateValidationData partialSuccessWarning = null;
+                if (variant.getStatus() == AiStatus.PARTIAL_SUCCESS) {
+                    partialSuccessWarning = CandidateValidationData.validWithWarning(
+                            "PARTIAL_SUCCESS",
+                            "AI returned a PARTIAL_SUCCESS variant; review uncovered shifts before final selection."
+                    );
+                }
+
                 String rawJson = serializeResponse(buildAiResponseDto(variant));
                 CandidateValidationData validation = validateAiCandidate(rawJson,
                         definition.candidateId,
                         batchCorrelationId,
                         startDate,
                         endDate);
+                if (partialSuccessWarning != null && validation.valid) {
+                    validation = validation.withWarning(partialSuccessWarning.code, partialSuccessWarning.message);
+                }
                 lastValidation = validation;
                 if (validation.valid) {
                     break;
@@ -1838,6 +1849,10 @@ public class AiScheduleGenerationOrchestrationService {
             return new CandidateValidationData(true, false, null, null, Collections.emptyList());
         }
 
+        private static CandidateValidationData validWithWarning(String code, String message) {
+            return new CandidateValidationData(true, false, code, message, Collections.emptyList());
+        }
+
         private static CandidateValidationData invalid(String code, String message) {
             return invalid(code, message, Collections.emptyList());
         }
@@ -1848,6 +1863,10 @@ public class AiScheduleGenerationOrchestrationService {
 
         private CandidateValidationData withMaxRetriesReached(boolean reached) {
             return new CandidateValidationData(valid, reached, code, message, violatedConstraints);
+        }
+
+        private CandidateValidationData withWarning(String warningCode, String warningMessage) {
+            return new CandidateValidationData(valid, maxRetriesReached, warningCode, warningMessage, violatedConstraints);
         }
 
         private List<String> violationMessages() {

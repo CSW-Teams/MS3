@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Card, CardContent, Grid, Modal, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, Grid, Modal, Typography } from '@mui/material';
 import { t } from 'i18next';
 
 const modalStyle = {
@@ -139,6 +139,9 @@ function AiScheduleComparisonModal({
                 const selectionKey = resolveSelectionKey(candidate);
                 const isSelected = selectionKey && selectionKey === selectedCandidateKey;
                 const isSelectable = Boolean(candidate && selectionKey && onSelectCandidate);
+                const warningMessage = metadata?.validationCode === 'PARTIAL_SUCCESS'
+                  ? (metadata?.validationMessage || t('Generated with warnings.'))
+                  : null;
                 const values = metricLabels.map((metric) => ({
                   label: t(metric.labelKey),
                   value: metrics?.[metric.key],
@@ -162,6 +165,11 @@ function AiScheduleComparisonModal({
                         <Typography variant="body2" color="text.secondary">
                           {`${t('Schedule ID')}: ${scheduleId}`}
                         </Typography>
+                        {warningMessage && (
+                          <Alert severity="warning" sx={{ width: '100%' }}>
+                            {warningMessage}
+                          </Alert>
+                        )}
                         {values.map((metric) => (
                           <Typography
                             key={`ai-comparison-metric-${cardIndex}-${metric.label}`}
