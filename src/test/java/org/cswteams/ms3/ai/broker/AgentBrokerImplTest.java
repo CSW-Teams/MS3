@@ -118,6 +118,37 @@ public class AgentBrokerImplTest {
     }
 
     @Test
+    public void requestSchedule_shouldApplyFixedRateLimitDelayWithoutJitterForGemma() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(1);
+        properties.setRetryBackoff(Duration.ofMillis(100));
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(gemmaAdapter.execute(request))
+                .thenThrow(AiProtocolException.transportFailure("HTTP 429 Too Many Requests", null))
+                .thenReturn(validJson());
+
+        RecordingBroker broker = new RecordingBroker(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser(),
+                new AiTokenEstimator(),
+                new AiTokenUsageTracker(),
+                () -> 0.95D
+        );
+
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
+
+        assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
+        assertEquals(Arrays.asList(Duration.ofMinutes(1)), broker.recordedSleeps);
+        verify(gemmaAdapter, times(2)).execute(request);
+    }
+
+    @Test
     public void requestSchedule_shouldKeepExponentialRateLimitBackoffForNonGemmaProvider() {
         AiBrokerProperties properties = new AiBrokerProperties();
         properties.setProvider(AgentProvider.LLAMA_70B);
@@ -139,13 +170,13 @@ public class AgentBrokerImplTest {
                 new AiScheduleJsonParser(),
                 new AiTokenEstimator(),
                 new AiTokenUsageTracker(),
-                () -> 0D
+                () -> 0.5D
         );
 
         AiScheduleVariantsResponse response = broker.requestSchedule(request);
 
         assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
-        assertEquals(Arrays.asList(Duration.ofMillis(4000), Duration.ofMillis(8000)), broker.recordedSleeps);
+        assertEquals(Arrays.asList(Duration.ofMillis(6000), Duration.ofMillis(12000)), broker.recordedSleeps);
         verify(llamaAdapter, times(3)).execute(request);
     }
 
