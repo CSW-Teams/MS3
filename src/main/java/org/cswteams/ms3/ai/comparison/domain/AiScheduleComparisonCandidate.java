@@ -2,6 +2,7 @@ package org.cswteams.ms3.ai.comparison.domain;
 
 import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -15,10 +16,11 @@ public class AiScheduleComparisonCandidate {
     private final DecisionMetricValues rawMetrics;
     private final AiScheduleCandidateMetrics normalizedMetrics;
     private final boolean valid;
+    private final int attemptCount;
     private final String validationCode;
     private final String validationMessage;
     private final boolean maxRetriesReached;
-    private final List<String> validationViolations;
+    private final List<String> validationErrors;
 
     public AiScheduleComparisonCandidate(String candidateId,
                                          Long scheduleId,
@@ -26,7 +28,7 @@ public class AiScheduleComparisonCandidate {
                                          String rawScheduleText,
                                          DecisionMetricValues rawMetrics,
                                          AiScheduleCandidateMetrics normalizedMetrics) {
-        this(candidateId, scheduleId, type, rawScheduleText, rawMetrics, normalizedMetrics, true, null, null, false, Collections.emptyList());
+        this(candidateId, scheduleId, type, rawScheduleText, rawMetrics, normalizedMetrics, true, 1, null, null, false, Collections.emptyList());
     }
 
     public AiScheduleComparisonCandidate(String candidateId,
@@ -40,6 +42,32 @@ public class AiScheduleComparisonCandidate {
                                          String validationMessage,
                                          boolean maxRetriesReached,
                                          List<String> validationViolations) {
+        this(candidateId,
+                scheduleId,
+                type,
+                rawScheduleText,
+                rawMetrics,
+                normalizedMetrics,
+                valid,
+                1,
+                validationCode,
+                validationMessage,
+                maxRetriesReached,
+                validationViolations);
+    }
+
+    public AiScheduleComparisonCandidate(String candidateId,
+                                         Long scheduleId,
+                                         ScheduleCandidateType type,
+                                         String rawScheduleText,
+                                         DecisionMetricValues rawMetrics,
+                                         AiScheduleCandidateMetrics normalizedMetrics,
+                                         boolean valid,
+                                         int attemptCount,
+                                         String validationCode,
+                                         String validationMessage,
+                                         boolean maxRetriesReached,
+                                         List<String> validationErrors) {
         this.candidateId = candidateId;
         this.scheduleId = scheduleId;
         this.type = Objects.requireNonNull(type, "type");
@@ -47,10 +75,13 @@ public class AiScheduleComparisonCandidate {
         this.rawMetrics = rawMetrics;
         this.normalizedMetrics = normalizedMetrics;
         this.valid = valid;
+        this.attemptCount = attemptCount;
         this.validationCode = validationCode;
         this.validationMessage = validationMessage;
         this.maxRetriesReached = maxRetriesReached;
-        this.validationViolations = validationViolations == null ? Collections.emptyList() : Collections.unmodifiableList(validationViolations);
+        this.validationErrors = validationErrors == null
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(new ArrayList<>(validationErrors));
     }
 
     public String getCandidateId() {
@@ -81,6 +112,10 @@ public class AiScheduleComparisonCandidate {
         return valid;
     }
 
+    public int getAttemptCount() {
+        return attemptCount;
+    }
+
     public String getValidationCode() {
         return validationCode;
     }
@@ -94,8 +129,11 @@ public class AiScheduleComparisonCandidate {
     }
 
     public List<String> getValidationViolations() {
-        return validationViolations;
+        return validationErrors;
+    }
+
+    public List<String> getValidationErrors() {
+        return validationErrors;
     }
 }
-
 

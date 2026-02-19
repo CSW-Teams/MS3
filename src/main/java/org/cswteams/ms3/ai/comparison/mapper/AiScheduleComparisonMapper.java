@@ -68,7 +68,11 @@ public class AiScheduleComparisonMapper {
                         candidate.isMaxRetriesReached(),
                         candidate.getValidationViolations()),
                 candidate.getRawScheduleText(),
-                metrics
+                metrics,
+                candidate.isValid(),
+                candidate.getAttemptCount(),
+                candidate.isMaxRetriesReached(),
+                candidate.getValidationErrors()
         );
     }
 
