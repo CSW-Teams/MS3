@@ -5,6 +5,7 @@ import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.enums.TimeSlot;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,7 +20,12 @@ public class AiHardCoveragePromptBlockBuilder {
         List<ConcreteShift> ordered = new ArrayList<>(concreteShifts == null ? List.of() : concreteShifts);
         ordered.sort(Comparator
                 .comparingLong(ConcreteShift::getDate)
-                .thenComparing(shift -> shift.getShift().getTimeSlot().name())
+                .thenComparing(shift -> {
+                    Shift concreteShift = shift.getShift();
+                    return concreteShift == null || concreteShift.getTimeSlot() == null
+                            ? TimeSlot.MORNING
+                            : concreteShift.getTimeSlot();
+                })
                 .thenComparing(shift -> shift.getShift().getId() == null ? 0L : shift.getShift().getId()));
 
         StringBuilder block = new StringBuilder();

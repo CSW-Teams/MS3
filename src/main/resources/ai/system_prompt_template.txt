@@ -61,7 +61,7 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
     - Missing/unknown handling: row invalid.
   - rj (required)
     - Datatype: integer >= 0
-    - Meaning: minimum required SPECIALIST_JUNIOR doctors for the shift.
+    - Meaning: minimum required SPECIALIST_JUNIOR doctors for the shift (SPECIALIST_SENIOR must not be included in this value).
     - Missing/unknown handling: row invalid.
 
 3) Doctor entries
@@ -91,7 +91,7 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
       - e (required per row): date string YYYY-MM-DD (holiday end, inclusive).
       - tz (optional per row): quoted string timezone/location metadata emitted by backend when needed.
       - Meaning: structured holidays already taken by the doctor.
-      - Missing/unknown handling: if h block is absent entry is invalid; malformed holiday rows are ignored individually.
+      - Missing/unknown handling: if h block is absent entry is invalid; holiday rows with null/missing `s` or `e`, or with `e < s`, are ignored individually.
     - b[n]{s,e,t} (optional)
       - n datatype: integer >= 0; declared block count.
       - s (required per block): date string YYYY-MM-DD (block start).
@@ -152,6 +152,15 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
   - total (required): integer >= 0 required total headcount.
   - Meaning: per-shift mandatory minimum role coverage.
   - Missing/unknown handling: if any required field is missing for a row, treat that row as invalid and do not claim valid hard coverage for that shift.
+
+STRICT PRECEDENCE FOR COVERAGE SIGNALS (NORMATIVE):
+- `hard_coverage_requirements` is authoritative for role-level mandatory coverage.
+- `sh` is contextual/summary metadata and must not override role-specific counts.
+- If any conflict exists between `sh` and `hard_coverage_requirements`, obey `hard_coverage_requirements` and explicitly mark the inconsistency in `metadata.reasoning`.
+
+Compact conflict example (required behavior):
+- Input conflict: `sh{... rs:2,rj:0 ...}` but `hard_coverage_requirements{shift_id:"S1",structured:1,specialist_junior:1,specialist_senior:0,total:2}`.
+- Required model behavior: plan to satisfy STRUCTURED=1 and SPECIALIST_JUNIOR=1 for `S1`, do not treat `rj:0` as overriding, and note the mismatch in reasoning.
 
 variant_schema:
 Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use only exact enum names.
@@ -256,6 +265,7 @@ Constraint handling (from `active_constraints`):
 - HARD coverage constraints: each row in `hard_coverage_requirements` applies independently to its own `shift_id` and must be satisfied per shift_id (never globally across multiple shifts).
 - Interpret every numeric value in `hard_coverage_requirements` as a required headcount (number of doctors) for that exact role in that exact shift.
 - Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory, non-optional, and must be met for that exact `shift_id`.
+- Canonical role mapping: `sh[].rs` maps only to STRUCTURED, `sh[].rj` maps only to SPECIALIST_JUNIOR; SPECIALIST_SENIOR requirements are represented exclusively by `hard_coverage_requirements[].specialist_senior`.
 - Any generated assignment set that is below any required minimum for a listed `shift_id` is invalid and must not be returned as a valid solution.
 - SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
 - Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).

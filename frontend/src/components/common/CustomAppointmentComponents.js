@@ -12,6 +12,7 @@ import { SchedulableType } from "../../API/Schedulable";
 import Button from "@mui/material/Button";
 import { t } from "i18next";
 import partyImage from '../../images/party-icon.svg';
+import {toast, ToastContainer} from "react-toastify";
 
 import {
   Dialog,
@@ -19,12 +20,14 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Rating,
 } from '@mui/material';
 import {
   RichiestaRimozioneDaTurnoAPI
 } from "../../API/RichiestaRimozioneDaTurnoAPI";
 import {panic} from "./Panic";
 import {teal, yellow} from "@material-ui/core/colors";
+import { ScheduleFeedbackAPI } from "../../API/ScheduleFeedbackAPI";
 
 
 // AppointmentContent di SingleScheduleView
@@ -80,9 +83,12 @@ export const Content = ({
   );
 
   const [isConfirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [isFeedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [justification, setJustification] = useState('');
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [retiredUser, setRetiredUser] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackText, setFeedbackText] = useState('');
 
   useEffect(() => {
     const checkPendingRequest = async () => {
@@ -116,8 +122,89 @@ export const Content = ({
     setConfirmationDialogOpen(false);
   };
 
+  const openFeedbackDialog = () => {
+    setFeedbackDialogOpen(true);
+  };
+
+  const closeFeedbackDialog = () => {
+    setFeedbackDialogOpen(false);
+    setFeedbackRating(0);
+    setFeedbackText('');
+  };
+
   const handleRetireButtonClick = () => {
     openConfirmationDialog();
+  };
+
+  const handleInsertFeedbackButtonClick = () => {
+    openFeedbackDialog();
+  };
+
+  const saveFeedback = async () => {
+    const api = new ScheduleFeedbackAPI();
+
+    const payload = {
+      concreteShiftIds: [appointmentData.id],
+      score: feedbackRating,
+      comment: feedbackText
+    };
+
+    try {
+      if (!payload.score) {
+        toast.warning(t("Please provide a score for your feedback"), {
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                      });
+        return
+      }
+      else if (!payload.comment){
+        toast.warning(t("Please provide a text for your feedback"), {
+                                position: "top-center",
+                                autoClose: 5000,
+                                hideProgressBar: true,
+                                closeOnClick: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                progress: undefined,
+                                theme: "colored",
+                              });
+        return
+      }
+      const response = await api.postFeedback(payload);
+      if (response.status === 201){
+        toast.success(t("Feedback successfully inserted"), {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+              });
+      } else {
+        toast.error(t("An error occurred while inserting a feedback"), {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+              });
+      }
+      closeFeedbackDialog();
+    } catch (error) {
+      console.error("Errore invio feedback", error);
+      alert("Errore durante l'invio del feedback.");
+    }
   };
 
   const retireFromShiftButton = view!=="global" && (
@@ -126,6 +213,14 @@ export const Content = ({
       onClick={handleRetireButtonClick}
     >
       Ritirati dal turno
+    </Button>
+  );
+
+  const insertFeedbackForShiftButton = (<Button
+    style={{marginTop: '20px'}}
+    onClick={handleInsertFeedbackButtonClick}
+    >
+      Lascia un feedback
     </Button>
   );
   // contents of tooltip may vary depending on the type of the corresponding schedulable
@@ -237,6 +332,7 @@ export const Content = ({
             ) }
           </Grid>
           {retireFromShiftButton}
+          {insertFeedbackForShiftButton}
           {view === 'global' && actor === 'PIANIFICATORE' && hasPendingRequest === true && (
             <div style={{ color: 'red', marginTop: '10px' }}>
               <p>Attenzione: {retiredUser} ha richiesto di ritirarsi da questo turno.</p>
@@ -269,6 +365,41 @@ export const Content = ({
               </Button>
               <Button onClick={handleConfirmRetirement} color="primary">
                 Conferma
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={isFeedbackDialogOpen}
+            onClose={closeFeedbackDialog}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>Lascia un feedback</DialogTitle>
+            <DialogContent>
+              <Rating
+                name="feedback-rating"
+                max={6}
+                value={feedbackRating}
+                onChange={(event, newValue) => setFeedbackRating(newValue || 0)}
+              />
+              <TextField
+                id={"feedback-text"}
+                margin={"normal"}
+                label="Feedback"
+                fullWidth
+                multiline
+                minRows={3}
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeFeedbackDialog} color="primary">
+                Annulla
+              </Button>
+              <Button onClick={saveFeedback} color="primary">
+                Salva
               </Button>
             </DialogActions>
           </Dialog>

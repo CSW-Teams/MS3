@@ -2,21 +2,31 @@ package org.cswteams.ms3.ai.orchestration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.ai.broker.AgentBroker;
+import org.cswteams.ms3.ai.broker.AiBrokerProperties;
 import org.cswteams.ms3.ai.broker.AiBrokerRequest;
 import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
+import org.cswteams.ms3.ai.broker.domain.AiMetadata;
+import org.cswteams.ms3.ai.broker.domain.AiMetrics;
+import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
+import org.cswteams.ms3.ai.broker.domain.AiScheduleVariantsResponse;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
+import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
+import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.audit.selection.AuditedSelectionResult;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
 import org.cswteams.ms3.control.toon.ToonActiveConstraint;
 import org.cswteams.ms3.control.toon.ToonConstraintEntityType;
 import org.cswteams.ms3.control.toon.ToonConstraintType;
+import org.cswteams.ms3.dao.ConstraintDAO;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
+import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorUffaPriority;
 import org.cswteams.ms3.entity.MedicalService;
@@ -24,6 +34,7 @@ import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.Task;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TaskEnum;
@@ -42,11 +53,15 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,9 +83,11 @@ class AiScheduleGenerationOrchestrationServiceTest {
         Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), List.of(concreteShift));
 
         ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
         DoctorDAO doctorDAO = mock(DoctorDAO.class);
         DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
         DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
         ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
         AgentBroker agentBroker = mock(AgentBroker.class);
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
@@ -87,23 +104,37 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
         when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
 
         when(agentBroker.previewTokenBudget(any()))
                 .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
-        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of(
-                new ToonActiveConstraint(ToonConstraintType.HARD, ToonConstraintEntityType.DOCTOR, String.valueOf(doctor.getId()), "REST_PERIOD", Map.of("hours", 11))
-        ));
+        ToonActiveConstraint restPeriodConstraint = new ToonActiveConstraint(
+                ToonConstraintType.HARD,
+                ToonConstraintEntityType.DOCTOR,
+                String.valueOf(doctor.getId()),
+                "REST_PERIOD",
+                Map.of("hours", "11")
+        );
+        when(aiActiveConstraintResolver.resolveWithReport(any(), any(), anyBoolean())).thenReturn(
+                new AiActiveConstraintResolver.ResolveResult(List.of(restPeriodConstraint), 0, 1, 0)
+        );
         when(aiScheduleConverterService.convert(any())).thenReturn(List.of(concreteShift));
         when(decisionAlgorithmService.selectPreferredWithAudit(any()))
                 .thenReturn(new AuditedSelectionResult("standard", List.of()));
+
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
 
         AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
                 schedulerController,
                 doctorDAO,
                 doctorUffaPriorityDAO,
                 doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
                 scheduleDAO,
                 agentBroker,
+                aiBrokerProperties,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,
@@ -117,11 +148,15 @@ class AiScheduleGenerationOrchestrationServiceTest {
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
 
-        String toonPayload = requestCaptor.getAllValues().get(0).getToonPayload();
-        assertTrue(toonPayload.startsWith("ctx:{p:\""));
-        assertTrue(toonPayload.contains("REST_PERIOD"));
-        assertTrue(toonPayload.contains("hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:"));
-        assertTrue(toonPayload.contains("S_1001_20260914,1,0,0,1"));
+        boolean found = requestCaptor.getAllValues().stream()
+                .map(AiBrokerRequest::getToonPayload)
+                .filter(payload -> payload != null)
+                .anyMatch(payload -> payload.startsWith("ctx:{p:\"")
+                        && payload.contains("REST_PERIOD")
+                        && payload.contains("hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:")
+                        && payload.contains("S_1001_20260914,1,0,0,1"));
+
+        assertTrue(found);
     }
 
     @Test
@@ -182,27 +217,33 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 new ConcreteShift(date.toEpochDay(), absentMinimaShift)
         ));
 
-        String expectedBlock = "hard_coverage_requirements[2]{shift_id,structured,specialist_junior,specialist_senior,total}:\n"
-                + "S_4001_20260914,0,0,0,0\n"
-                + "S_4002_20260914,0,0,0,0\n";
-        assertTrue(toonPayload.contains(expectedBlock));
+        assertTrue(toonPayload.contains("hard_coverage_requirements[2]{shift_id,structured,specialist_junior,specialist_senior,total}:"));
+        assertTrue(toonPayload.contains("S_4001_20260914,0,0,0,0"));
+        assertTrue(toonPayload.contains("S_4002_20260914,0,0,0,0"));
     }
 
-    private String generateScheduleComparisonAndCaptureToonPayload(LocalDate startDate,
-                                                                    LocalDate endDate,
-                                                                    List<ConcreteShift> concreteShifts) {
+
+    @Test
+    void generateScheduleComparisonRetriesInvalidVariantIndependently() {
+        LocalDate startDate = LocalDate.of(2026, 9, 14);
+        LocalDate endDate = LocalDate.of(2026, 9, 14);
+
         Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
         DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
         doctorPriority.setGeneralPriority(3);
         doctorPriority.setNightPriority(4);
         doctorPriority.setLongShiftPriority(5);
 
-        Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
+        Shift shift = makeShift(1001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360));
+        ConcreteShift concreteShift = new ConcreteShift(startDate.toEpochDay(), shift);
+        Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), List.of(concreteShift));
 
         ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
         DoctorDAO doctorDAO = mock(DoctorDAO.class);
         DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
         DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
         ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
         AgentBroker agentBroker = mock(AgentBroker.class);
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
@@ -219,6 +260,140 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
         when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
+        when(agentBroker.previewTokenBudget(any()))
+                .thenReturn(new AiTokenBudgetGuardResult(true, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("standard", List.of()));
+
+        when(agentBroker.requestSchedule(any())).thenAnswer(invocation -> {
+            AiBrokerRequest request = invocation.getArgument(0);
+            if (request.getInstructions().contains("Use label EMPATHETIC")) {
+                return new AiScheduleVariantsResponse(Map.of("EMPATHETIC", aiVariantResponse("retry-empathetic")));
+            }
+            if (request.getInstructions().contains("Use label EFFICIENT")) {
+                return new AiScheduleVariantsResponse(Map.of("EFFICIENT", aiVariantResponse("efficient")));
+            }
+            return new AiScheduleVariantsResponse(Map.of("BALANCED", aiVariantResponse("balanced")));
+        });
+
+        when(aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson != null && rawJson.contains("retry-empathetic")) {
+                throw AiProtocolException.invalidFormat("empathetic candidate remains invalid");
+            }
+            return List.of(concreteShift);
+        });
+
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
+        aiBrokerProperties.setScheduleValidationMaxRetries(1);
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                aiBrokerProperties,
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        var response = assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+
+        ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
+        verify(agentBroker, times(4)).requestSchedule(requestCaptor.capture());
+        List<AiBrokerRequest> requests = requestCaptor.getAllValues();
+
+        assertTrue(requests.get(0).getInstructions().contains("Use label EMPATHETIC"));
+        assertTrue(requests.get(1).getInstructions().contains("Use label EMPATHETIC"));
+        assertTrue(requests.get(1).getInstructions().contains("Previous attempt 1 was invalid"));
+        assertTrue(requests.get(1).getInstructions().contains("Validation failures (prompt-safe):"));
+        assertTrue(requests.get(2).getInstructions().contains("Use label EFFICIENT"));
+        assertTrue(requests.get(3).getInstructions().contains("Use label BALANCED"));
+
+        var empatheticCandidate = response.getCandidates().stream()
+                .filter(candidate -> "EMPATHETIC".equalsIgnoreCase(candidate.getMetadata().getType()))
+                .findFirst()
+                .orElseThrow();
+
+        assertFalse(empatheticCandidate.getMetadata().isValid());
+        assertTrue(empatheticCandidate.getMetadata().isMaxRetriesReached());
+        assertTrue(empatheticCandidate.getMetadata().getValidationCode().contains("CONVERSION_FAILED"));
+        assertTrue(empatheticCandidate.getMetadata().getValidationViolations().isEmpty());
+        assertTrue(empatheticCandidate.getRawScheduleText().contains("retry-empathetic"));
+    }
+
+    private AiScheduleResponse aiVariantResponse(String reasoning) {
+        return new AiScheduleResponse(
+                AiStatus.SUCCESS,
+                new AiMetadata(reasoning, 0.9, new AiMetrics(100.0, null, 0)),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+    }
+
+    private String generateScheduleComparisonAndCaptureToonPayload(LocalDate startDate,
+                                                                    LocalDate endDate,
+                                                                    List<ConcreteShift> concreteShifts) {
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        doctorPriority.setGeneralPriority(3);
+        doctorPriority.setNightPriority(4);
+        doctorPriority.setLongShiftPriority(5);
+
+        for (ConcreteShift concreteShift : concreteShifts) {
+            if (concreteShift == null) {
+                continue;
+            }
+            if (concreteShift.getDoctorAssignmentList() != null
+                    && !concreteShift.getDoctorAssignmentList().isEmpty()) {
+                continue;
+            }
+            DoctorAssignment assignment = new DoctorAssignment(
+                    doctor,
+                    ConcreteShiftDoctorStatus.ON_DUTY,
+                    concreteShift,
+                    new Task(TaskEnum.CLINIC)
+            );
+            concreteShift.setDoctorAssignmentList(List.of(assignment));
+        }
+
+        Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+                .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
         when(agentBroker.previewTokenBudget(any()))
                 .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
         when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
@@ -226,13 +401,18 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(decisionAlgorithmService.selectPreferredWithAudit(any()))
                 .thenReturn(new AuditedSelectionResult("standard", List.of()));
 
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
+
         AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
                 schedulerController,
                 doctorDAO,
                 doctorUffaPriorityDAO,
                 doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
                 scheduleDAO,
                 agentBroker,
+                aiBrokerProperties,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,
@@ -246,8 +426,27 @@ class AiScheduleGenerationOrchestrationServiceTest {
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
         List<AiBrokerRequest> capturedRequests = requestCaptor.getAllValues();
-        assertEquals(1, capturedRequests.size());
-        return capturedRequests.get(0).getToonPayload();
+        assertFalse(capturedRequests.isEmpty());
+
+        String firstNonBlankPayload = null;
+        for (AiBrokerRequest capturedRequest : capturedRequests) {
+            String toonPayload = capturedRequest.getToonPayload();
+            if (toonPayload == null || toonPayload.isBlank()) {
+                continue;
+            }
+            if (firstNonBlankPayload == null) {
+                firstNonBlankPayload = toonPayload;
+            }
+            if (toonPayload.contains("hard_coverage_requirements[")) {
+                return toonPayload;
+            }
+        }
+
+        if (firstNonBlankPayload != null) {
+            return firstNonBlankPayload;
+        }
+        fail("No captured toon payload containing hard_coverage_requirements");
+        return null;
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {

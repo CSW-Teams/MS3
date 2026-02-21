@@ -311,6 +311,143 @@ class ToonBuilderTest {
     }
 
     @Test
+    void compactShiftRequirementsKeepSeniorCountsOutOfRj() {
+        LocalDate periodStart = LocalDate.of(2026, 9, 1);
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+
+        Task task = new Task(TaskEnum.CLINIC);
+        MedicalService service = new MedicalService(List.of(task), "Ward");
+        QuantityShiftSeniority quantity = new QuantityShiftSeniority(Map.of(
+                Seniority.STRUCTURED, 1,
+                Seniority.SPECIALIST_JUNIOR, 2,
+                Seniority.SPECIALIST_SENIOR, 3
+        ), task);
+
+        Shift shift = new Shift(
+                201L,
+                TimeSlot.MORNING,
+                LocalTime.of(8, 0),
+                Duration.ofMinutes(360),
+                Set.of(DayOfWeek.TUESDAY),
+                service,
+                List.of(quantity),
+                List.of()
+        );
+
+        ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
+
+        ToonRequestContext context = new ToonRequestContext(
+                periodStart,
+                periodStart,
+                "generate",
+                List.of(concreteShift),
+                List.of(doctor),
+                List.of(new DoctorUffaPriority(doctor)),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        ToonBuilder builder = new ToonBuilder();
+        String compact = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+
+        assertTrue(compact.contains("S_201_20260901,MORNING,2026-09-01,360,1,2"));
+    }
+
+    @Test
+    void buildsCompactPayloadWithStableSectionOrderAndExplicitHolidaySchema() {
+        LocalDate periodStart = LocalDate.of(2026, 8, 10);
+        LocalDate periodEnd = LocalDate.of(2026, 8, 12);
+
+        Doctor seniorDoctor = newDoctor(20L, Seniority.SPECIALIST_SENIOR);
+        Doctor structuredDoctor = newDoctor(10L, Seniority.STRUCTURED);
+
+        DoctorUffaPriority seniorPriority = new DoctorUffaPriority(seniorDoctor);
+        seniorPriority.setGeneralPriority(8);
+        seniorPriority.setNightPriority(6);
+        seniorPriority.setLongShiftPriority(4);
+
+        DoctorUffaPriority structuredPriority = new DoctorUffaPriority(structuredDoctor);
+        structuredPriority.setGeneralPriority(3);
+        structuredPriority.setNightPriority(2);
+        structuredPriority.setLongShiftPriority(1);
+
+        Holiday holidayWithoutId = new Holiday();
+        holidayWithoutId.setStartDate(periodStart.plusDays(1));
+        holidayWithoutId.setEndDate(periodStart.plusDays(1));
+
+        Holiday holidayWithTimezone = new Holiday();
+        holidayWithTimezone.setId(15L);
+        holidayWithTimezone.setStartDate(periodStart);
+        holidayWithTimezone.setEndDate(periodStart.plusDays(2));
+        holidayWithTimezone.setLocation("Europe/Rome");
+
+        DoctorHolidays structuredHolidays = new DoctorHolidays(structuredDoctor, new HashMap<>(Map.of(
+                holidayWithoutId, true,
+                holidayWithTimezone, true
+        )));
+
+        DoctorHolidays seniorHolidays = new DoctorHolidays(seniorDoctor, new HashMap<>(Map.of()));
+
+        ConcreteShift morningShift = new ConcreteShift(periodStart.toEpochDay(), makeShift(
+                301L,
+                TimeSlot.MORNING,
+                LocalTime.of(8, 0),
+                Duration.ofMinutes(360)
+        ));
+
+        ConcreteShift afternoonShift = new ConcreteShift(periodStart.toEpochDay(), makeShift(
+                302L,
+                TimeSlot.AFTERNOON,
+                LocalTime.of(14, 0),
+                Duration.ofMinutes(360)
+        ));
+
+        ToonActiveConstraint hardConstraint = new ToonActiveConstraint(
+                ToonConstraintType.HARD,
+                ToonConstraintEntityType.DOCTOR,
+                String.valueOf(structuredDoctor.getId()),
+                "STABLE_ORDER",
+                Map.of("level", "strict")
+        );
+
+        ToonRequestContext context = new ToonRequestContext(
+                periodStart,
+                periodEnd,
+                "generate",
+                List.of(afternoonShift, morningShift),
+                List.of(seniorDoctor, structuredDoctor),
+                List.of(seniorPriority, structuredPriority),
+                List.of(structuredHolidays, seniorHolidays),
+                List.of(hardConstraint),
+                List.of()
+        );
+
+        ToonBuilder builder = new ToonBuilder();
+        String compact = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+
+        String expectedSnapshot = "ctx:{p:\"2026-08-10/2026-08-12\",m:\"generate\",hv:2}\n"
+                + "sh[2]{i,s,d,u,rs,rj}:\n"
+                + "S_302_20260810,AFTERNOON,2026-08-10,360,1,0\n"
+                + "S_301_20260810,MORNING,2026-08-10,360,1,0\n"
+                + "dr[2]:\n"
+                + "-i:10\n"
+                + " r:STRUCTURED\n"
+                + " pr:3,2,1\n"
+                + " h[2]{id,s,e,tz?}:\n"
+                + "  -15,2026-08-10,2026-08-12,\"Europe/Rome\"\n"
+                + "  -,2026-08-11,2026-08-11\n"
+                + "-i:20\n"
+                + " r:SPECIALIST_SENIOR\n"
+                + " pr:8,6,4\n"
+                + " h[0]{id,s,e,tz?}:\n"
+                + "ac[1]{t,e,i,r,p}:\n"
+                + "HARD,DOCTOR,10,STABLE_ORDER,{level:\"strict\"}\n";
+
+        assertEquals(expectedSnapshot, compact);
+    }
+
+    @Test
     void includesAllMappedConstraintsInActiveConstraintsSection() {
         LocalDate periodStart = LocalDate.of(2026, 6, 1);
         LocalDate periodEnd = LocalDate.of(2026, 6, 1);
@@ -401,6 +538,96 @@ class ToonBuilderTest {
         assertTrue(compact.contains("r:SPECIALIST_JUNIOR"));
         assertTrue(compact.contains("r:SPECIALIST_SENIOR"));
         assertFalse(compact.contains("r:JUNIOR"));
+    }
+
+
+    @Test
+    void compactCtxAndShiftSchemaExposeSerializerSemantics() {
+        LocalDate day = LocalDate.of(2026, 9, 3);
+        Doctor doctor = newDoctor(11L, Seniority.STRUCTURED);
+
+        Task task = new Task(TaskEnum.CLINIC);
+        MedicalService service = new MedicalService(List.of(task), "Ward");
+        QuantityShiftSeniority quantity = new QuantityShiftSeniority(Map.of(
+                Seniority.STRUCTURED, 2,
+                Seniority.SPECIALIST_JUNIOR, 1,
+                Seniority.SPECIALIST_SENIOR, 4
+        ), task);
+
+        Shift shift = new Shift(
+                501L,
+                TimeSlot.NIGHT,
+                LocalTime.of(20, 0),
+                Duration.ofMinutes(720),
+                Set.of(DayOfWeek.THURSDAY),
+                service,
+                List.of(quantity),
+                List.of()
+        );
+
+        String compact = new ToonBuilder().build(new ToonRequestContext(
+                day,
+                day,
+                "generate",
+                List.of(new ConcreteShift(day.toEpochDay(), shift)),
+                List.of(doctor),
+                List.of(new DoctorUffaPriority(doctor)),
+                List.of(),
+                List.of(),
+                List.of()
+        ), ToonBuilder.SerializationMode.COMPACT);
+
+        assertTrue(compact.startsWith("ctx:{p:\"2026-09-03/2026-09-03\",m:\"generate\",hv:2}"));
+        assertTrue(compact.contains("sh[1]{i,s,d,u,rs,rj}:"));
+        assertTrue(compact.contains("S_501_20260903,NIGHT,2026-09-03,720,2,1"));
+        assertFalse(compact.contains("S_501_20260903,NIGHT,2026-09-03,720,2,5"));
+    }
+
+    @Test
+    void compactDoctorHolidayRowsAreStructuredAndDeterministicallyOrdered() {
+        LocalDate day = LocalDate.of(2026, 10, 1);
+        Doctor doctor = newDoctor(42L, Seniority.STRUCTURED);
+
+        Holiday nullIdEarlier = new Holiday();
+        nullIdEarlier.setStartDate(day);
+        nullIdEarlier.setEndDate(day.plusDays(1));
+
+        Holiday id5Earlier = new Holiday();
+        id5Earlier.setId(5L);
+        id5Earlier.setStartDate(day);
+        id5Earlier.setEndDate(day.plusDays(2));
+
+        Holiday id2Later = new Holiday();
+        id2Later.setId(2L);
+        id2Later.setStartDate(day.plusDays(1));
+        id2Later.setEndDate(day.plusDays(1));
+        id2Later.setLocation("Europe/Rome");
+
+        DoctorHolidays doctorHolidays = new DoctorHolidays(doctor, new HashMap<>(Map.of(
+                id2Later, true,
+                nullIdEarlier, true,
+                id5Earlier, true
+        )));
+
+        String compact = new ToonBuilder().build(new ToonRequestContext(
+                day,
+                day.plusDays(1),
+                "generate",
+                List.of(new ConcreteShift(day.toEpochDay(), makeShift(502L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360)))),
+                List.of(doctor),
+                List.of(new DoctorUffaPriority(doctor)),
+                List.of(doctorHolidays),
+                List.of(),
+                List.of()
+        ), ToonBuilder.SerializationMode.COMPACT);
+
+        String expectedHolidayBlock = " h[3]{id,s,e,tz?}:\n"
+                + "  -5,2026-10-01,2026-10-03\n"
+                + "  -,2026-10-01,2026-10-02\n"
+                + "  -2,2026-10-02,2026-10-02,\"Europe/Rome\"\n";
+
+        assertTrue(compact.contains("dr[1]:\n"));
+        assertTrue(compact.contains(expectedHolidayBlock));
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {

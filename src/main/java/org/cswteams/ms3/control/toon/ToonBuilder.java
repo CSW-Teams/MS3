@@ -131,7 +131,7 @@ public class ToonBuilder {
                 for (Map.Entry<Seniority, Integer> entry : quantity.getSeniorityMap().entrySet()) {
                     if (entry.getKey() == Seniority.STRUCTURED) {
                         reqStructured += entry.getValue();
-                    } else {
+                    } else if (entry.getKey() == Seniority.SPECIALIST_JUNIOR) {
                         reqJunior += entry.getValue();
                     }
                 }
@@ -467,9 +467,37 @@ public class ToonBuilder {
         if (doctorHolidays == null || doctorHolidays.getHolidayMap() == null) {
             return List.of();
         }
+        Long doctorId = doctorHolidays.getDoctor() == null ? null : doctorHolidays.getDoctor().getId();
+        List<Holiday> orderedHolidays = new ArrayList<>(doctorHolidays.getHolidayMap().keySet());
+        orderedHolidays.sort(Comparator
+                .comparing((Holiday holiday) -> holiday == null ? null : holiday.getStartDate(), Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(holiday -> holiday == null || holiday.getId() == null ? Long.MAX_VALUE : holiday.getId())
+                .thenComparing(holiday -> holiday == null ? null : holiday.getEndDate(), Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(holiday -> holiday == null || holiday.getLocation() == null ? "" : holiday.getLocation()));
         List<CompactHolidayRow> rows = new ArrayList<>();
-        for (Holiday holiday : doctorHolidays.getHolidayMap().keySet()) {
+        for (Holiday holiday : orderedHolidays) {
             if (holiday == null) {
+                logger.warn("event=toon_compact_holiday_row_skipped reason=NULL_HOLIDAY doctor_id={} holiday_id={} start={} end={}",
+                        doctorId,
+                        null,
+                        null,
+                        null);
+                continue;
+            }
+            if (holiday.getStartDate() == null || holiday.getEndDate() == null) {
+                logger.warn("event=toon_compact_holiday_row_skipped reason=NULL_START_OR_END doctor_id={} holiday_id={} start={} end={}",
+                        doctorId,
+                        holiday.getId(),
+                        holiday.getStartDate(),
+                        holiday.getEndDate());
+                continue;
+            }
+            if (holiday.getEndDate().isBefore(holiday.getStartDate())) {
+                logger.warn("event=toon_compact_holiday_row_skipped reason=END_BEFORE_START doctor_id={} holiday_id={} start={} end={}",
+                        doctorId,
+                        holiday.getId(),
+                        holiday.getStartDate(),
+                        holiday.getEndDate());
                 continue;
             }
             rows.add(new CompactHolidayRow(

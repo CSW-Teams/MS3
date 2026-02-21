@@ -195,6 +195,9 @@ public class SchemasInitializer {
             tableScript = new ClassPathResource("db/tenant/tables/create_waiver_table.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 
+            tableScript = new ClassPathResource("db/tenant/tables/create_feedback_tables.sql");
+            ScriptUtils.executeSqlScript(connection, tableScript);
+
             tableScript = new ClassPathResource("db/tenant/sequences/create_sequence.sql");
             ScriptUtils.executeSqlScript(connection, tableScript);
 

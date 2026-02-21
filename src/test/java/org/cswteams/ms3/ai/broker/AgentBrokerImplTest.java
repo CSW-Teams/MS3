@@ -113,8 +113,71 @@ public class AgentBrokerImplTest {
         AiScheduleVariantsResponse response = broker.requestSchedule(request);
 
         assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
-        assertEquals(Arrays.asList(Duration.ofMillis(4000), Duration.ofMillis(8000)), broker.recordedSleeps);
+        assertEquals(Arrays.asList(Duration.ofMinutes(1), Duration.ofMinutes(1)), broker.recordedSleeps);
         verify(gemmaAdapter, times(3)).execute(request);
+    }
+
+    @Test
+    public void requestSchedule_shouldApplyFixedRateLimitDelayWithoutJitterForGemma() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(1);
+        properties.setRetryBackoff(Duration.ofMillis(100));
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(gemmaAdapter.execute(request))
+                .thenThrow(AiProtocolException.transportFailure("HTTP 429 Too Many Requests", null))
+                .thenReturn(validJson());
+
+        RecordingBroker broker = new RecordingBroker(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser(),
+                new AiTokenEstimator(),
+                new AiTokenUsageTracker(),
+                () -> 0.95D
+        );
+
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
+
+        assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
+        assertEquals(Arrays.asList(Duration.ofMinutes(1)), broker.recordedSleeps);
+        verify(gemmaAdapter, times(2)).execute(request);
+    }
+
+    @Test
+    public void requestSchedule_shouldKeepExponentialRateLimitBackoffForNonGemmaProvider() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.LLAMA_70B);
+        properties.setMaxRetries(2);
+        properties.setRetryBackoff(Duration.ofMillis(100));
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter llamaAdapter = mock(AgentProviderAdapter.class);
+        when(llamaAdapter.provider()).thenReturn(AgentProvider.LLAMA_70B);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(llamaAdapter.execute(request))
+                .thenThrow(AiProtocolException.transportFailure("HTTP 429 Too Many Requests", null))
+                .thenThrow(AiProtocolException.transportFailure("status=429", null))
+                .thenReturn(validJson());
+
+        RecordingBroker broker = new RecordingBroker(
+                properties,
+                Arrays.asList(llamaAdapter),
+                new AiScheduleJsonParser(),
+                new AiTokenEstimator(),
+                new AiTokenUsageTracker(),
+                () -> 0.5D
+        );
+
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
+
+        assertEquals(AiStatus.SUCCESS, response.getVariant("EMPATHETIC").getStatus());
+        assertEquals(Arrays.asList(Duration.ofMillis(6000), Duration.ofMillis(12000)), broker.recordedSleeps);
+        verify(llamaAdapter, times(3)).execute(request);
     }
 
     @Test
@@ -134,12 +197,12 @@ public class AgentBrokerImplTest {
         AiTokenEstimator oversizedEstimator = new AiTokenEstimator() {
             @Override
             public int estimateInputTokens(AiBrokerRequest request) {
-                return 12000;
+                return 9000;
             }
 
             @Override
             public int estimateExpectedOutputTokens(AiBrokerRequest request) {
-                return 200;
+                return 2000;
             }
         };
 
@@ -164,6 +227,86 @@ public class AgentBrokerImplTest {
         assertEquals(AiProtocolException.ErrorCode.TRANSPORT_FAILURE, exception.getCode());
         assertTrue(broker.recordedSleeps.isEmpty());
         verify(gemmaAdapter, times(1)).execute(request);
+    }
+
+    @Test
+    public void requestSchedule_shouldRejectOversizedPayloadBeforeAny429Retry() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.GEMMA);
+        properties.setMaxRetries(3);
+        properties.setRetryBackoff(Duration.ofMillis(50));
+        properties.setTotalTimeout(Duration.ZERO);
+
+        AgentProviderAdapter gemmaAdapter = mock(AgentProviderAdapter.class);
+        when(gemmaAdapter.provider()).thenReturn(AgentProvider.GEMMA);
+
+        AiTokenEstimator budgetExceededEstimator = new AiTokenEstimator() {
+            @Override
+            public int estimateInputTokens(AiBrokerRequest request) {
+                return 10000;
+            }
+
+            @Override
+            public int estimateExpectedOutputTokens(AiBrokerRequest request) {
+                return 6000;
+            }
+        };
+
+        RecordingBroker broker = new RecordingBroker(
+                properties,
+                Arrays.asList(gemmaAdapter),
+                new AiScheduleJsonParser(),
+                budgetExceededEstimator,
+                new AiTokenUsageTracker(),
+                () -> 0D
+        );
+
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(AiBrokerRequest.forToon("payload"));
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
+
+        assertEquals(AiProtocolException.ErrorCode.TOKEN_BUDGET_EXCEEDED, exception.getCode());
+        assertTrue(broker.recordedSleeps.isEmpty());
+        verify(gemmaAdapter, never()).execute(any(AiBrokerRequest.class));
+    }
+
+    @Test
+    public void requestSchedule_shouldCountRetrySleepAgainstTotalTimeout() {
+        AiBrokerProperties properties = new AiBrokerProperties();
+        properties.setProvider(AgentProvider.LLAMA_70B);
+        properties.setMaxRetries(1);
+        properties.setRetryBackoff(Duration.ofMillis(25));
+        properties.setTotalTimeout(Duration.ofMillis(5));
+
+        AgentProviderAdapter llamaAdapter = mock(AgentProviderAdapter.class);
+        when(llamaAdapter.provider()).thenReturn(AgentProvider.LLAMA_70B);
+        AiBrokerRequest request = AiBrokerRequest.forToon("payload");
+        when(llamaAdapter.execute(request))
+                .thenThrow(AiProtocolException.transportFailure("temporary failure", null))
+                .thenReturn(validJson());
+
+        AgentBrokerImpl broker = new AgentBrokerImpl(
+                properties,
+                Arrays.asList(llamaAdapter),
+                new AiScheduleJsonParser()
+        );
+
+        AiProtocolException exception;
+        try {
+            broker.requestSchedule(request);
+            fail("Expected AiProtocolException");
+            return;
+        } catch (AiProtocolException ex) {
+            exception = ex;
+        }
+
+        assertEquals(AiProtocolException.ErrorCode.TIMEOUT, exception.getCode());
+        verify(llamaAdapter, times(1)).execute(request);
     }
 
     @Test
@@ -205,7 +348,7 @@ public class AgentBrokerImplTest {
     }
 
     @Test
-    public void requestSchedule_shouldRejectPartialSuccess() {
+    public void requestSchedule_shouldAllowPartialSuccess() {
         AiBrokerProperties properties = new AiBrokerProperties();
         properties.setProvider(AgentProvider.GEMMA);
         properties.setMaxRetries(0);
@@ -222,16 +365,9 @@ public class AgentBrokerImplTest {
                 new AiScheduleJsonParser()
         );
 
-        AiProtocolException exception;
-        try {
-            broker.requestSchedule(request);
-            fail("Expected AiProtocolException");
-            return;
-        } catch (AiProtocolException ex) {
-            exception = ex;
-        }
+        AiScheduleVariantsResponse response = broker.requestSchedule(request);
 
-        assertEquals(AiProtocolException.ErrorCode.PARTIAL_SUCCESS, exception.getCode());
+        assertEquals(AiStatus.PARTIAL_SUCCESS, response.getVariant("EMPATHETIC").getStatus());
         verify(gemmaAdapter, times(1)).execute(request);
     }
 

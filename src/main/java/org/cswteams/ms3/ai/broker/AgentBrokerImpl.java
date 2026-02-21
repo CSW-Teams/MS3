@@ -32,6 +32,9 @@ public class AgentBrokerImpl implements AgentBroker {
     private static final Logger logger = LoggerFactory.getLogger(AgentBrokerImpl.class);
     private static final long RATE_LIMIT_MIN_BACKOFF_MS = 1_000L;
     private static final int RATE_LIMIT_BACKOFF_MULTIPLIER = 4;
+    private static final Duration GEMMA_RATE_LIMIT_RETRY_DELAY = Duration.ofMinutes(1);
+    // 429 retries are skipped for oversized requests to avoid prolonged waits for payloads unlikely
+    // to succeed within provider token constraints.
     private static final int RATE_LIMIT_RETRY_TOKEN_CUTOFF = 10_000;
     private final AiBrokerProperties properties;
     private final Map<AgentProvider, AgentProviderAdapter> adapters;
@@ -114,7 +117,7 @@ public class AgentBrokerImpl implements AgentBroker {
         if (adapter == null) {
             throw AiProtocolException.businessFailure("No adapter configured for provider " + provider);
         }
-        return executeWithRetry(adapter, request);
+        return executeWithRetry(adapter, request, budgetGuard);
     }
 
     private void enforceTokenBudget(AgentProvider provider,
@@ -133,15 +136,19 @@ public class AgentBrokerImpl implements AgentBroker {
         throw AiProtocolException.tokenBudgetExceeded("AI token budget exceeded for rolling 60-second window");
     }
 
-    private AiScheduleVariantsResponse executeWithRetry(AgentProviderAdapter adapter, AiBrokerRequest request) {
+    private AiScheduleVariantsResponse executeWithRetry(AgentProviderAdapter adapter,
+                                                        AiBrokerRequest request,
+                                                        AiTokenBudgetGuardResult budgetGuard) {
         Instant start = Instant.now();
         Duration totalTimeout = properties.getTotalTimeout();
         int maxRetries = properties.getMaxRetries();
         Duration backoff = properties.getRetryBackoff();
-        int estimatedInputTokens = tokenEstimator.estimateInputTokens(request);
+        int estimatedTotalTokens = budgetGuard.getEstimatedInputTokens() + budgetGuard.getEstimatedOutputTokens();
         AiProtocolException lastException = null;
 
         for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            // The total timeout is an end-to-end budget: provider call time and all retry waits
+            // (including GEMMA's 60s 429 delay when retry is allowed) consume the same timer window.
             if (isTotalTimeoutExceeded(start, totalTimeout)) {
                 logger.warn("event=ai_broker_timeout_exceeded attempt={} correlation_id={}", attempt, request.getCorrelationId());
                 throw AiProtocolException.timeout("AI broker total timeout exceeded", lastException);
@@ -174,21 +181,21 @@ public class AgentBrokerImpl implements AgentBroker {
 
             if (attempt < maxRetries) {
                 boolean rateLimited = isRateLimitedFailure(lastException);
-                if (rateLimited && estimatedInputTokens > RATE_LIMIT_RETRY_TOKEN_CUTOFF) {
-                    logger.warn("event=ai_broker_rate_limit_retry_skipped attempt={} correlation_id={} estimated_input_tokens={} retry_token_cutoff={}",
+                if (rateLimited && estimatedTotalTokens > RATE_LIMIT_RETRY_TOKEN_CUTOFF) {
+                    logger.warn("event=ai_broker_rate_limit_retry_skipped attempt={} correlation_id={} estimated_total_tokens={} retry_token_cutoff={}",
                             attempt,
                             request.getCorrelationId(),
-                            estimatedInputTokens,
+                            estimatedTotalTokens,
                             RATE_LIMIT_RETRY_TOKEN_CUTOFF);
                     break;
                 }
-                Duration retryDelay = computeRetryDelay(backoff, attempt, rateLimited);
+                Duration retryDelay = computeRetryDelay(backoff, attempt, rateLimited, adapter.provider());
                 if (rateLimited) {
-                    logger.warn("event=ai_broker_rate_limit_backoff attempt={} correlation_id={} backoff_ms={} estimated_input_tokens={}",
+                    logger.warn("event=ai_broker_rate_limit_backoff attempt={} correlation_id={} backoff_ms={} estimated_total_tokens={}",
                             attempt,
                             request.getCorrelationId(),
                             retryDelay.toMillis(),
-                            estimatedInputTokens);
+                            estimatedTotalTokens);
                 }
                 sleep(retryDelay);
             }
@@ -211,7 +218,7 @@ public class AgentBrokerImpl implements AgentBroker {
                 throw AiProtocolException.schemaMismatch("AI response variant " + entry.getKey() + " is null", null);
             }
             if (variant.status == AiStatus.PARTIAL_SUCCESS) {
-                throw AiProtocolException.partialSuccess("AI response marked PARTIAL_SUCCESS for variant " + entry.getKey());
+                logger.warn("event=ai_broker_variant_partial_success variant_label={}", entry.getKey());
             }
             if (variant.status == AiStatus.FAILURE) {
                 throw AiProtocolException.businessFailure("AI response marked FAILURE for variant " + entry.getKey());
@@ -239,9 +246,13 @@ public class AgentBrokerImpl implements AgentBroker {
         return Duration.between(start, Instant.now()).compareTo(totalTimeout) > 0;
     }
 
-    private Duration computeRetryDelay(Duration baseBackoff, int attempt, boolean rateLimited) {
+    private Duration computeRetryDelay(Duration baseBackoff, int attempt, boolean rateLimited, AgentProvider provider) {
         if (!rateLimited) {
             return normalizeBackoff(baseBackoff);
+        }
+
+        if (provider == AgentProvider.GEMMA) {
+            return GEMMA_RATE_LIMIT_RETRY_DELAY;
         }
 
         Duration normalized = normalizeBackoff(baseBackoff);

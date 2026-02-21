@@ -69,6 +69,11 @@ public class AiScheduleJsonParser {
             }
             throw AiProtocolException.schemaMismatch("Type mismatch in AI JSON response", e);
         } catch (JsonMappingException e) {
+            if (failOnTypeMismatch && isTypeInstantiationFailure(e)) {
+                String path = buildJsonPath(e);
+                String detail = e.getOriginalMessage() == null ? "Type mismatch" : e.getOriginalMessage();
+                throw AiProtocolException.typeMismatch("Type mismatch at " + path + ": " + detail, e);
+            }
             throw AiProtocolException.schemaMismatch("Schema mismatch in AI JSON response", e);
         } catch (IOException e) {
             throw AiProtocolException.invalidJson("Malformed or non-JSON response from AI", e);
@@ -97,6 +102,11 @@ public class AiScheduleJsonParser {
             }
             throw AiProtocolException.schemaMismatch("Type mismatch in AI JSON response", e);
         } catch (JsonMappingException e) {
+            if (failOnTypeMismatch && isTypeInstantiationFailure(e)) {
+                String path = buildJsonPath(e);
+                String detail = e.getOriginalMessage() == null ? "Type mismatch" : e.getOriginalMessage();
+                throw AiProtocolException.typeMismatch("Type mismatch at " + path + ": " + detail, e);
+            }
             throw AiProtocolException.schemaMismatch("Schema mismatch in AI JSON response", e);
         } catch (IOException e) {
             throw AiProtocolException.invalidJson("Malformed or non-JSON response from AI", e);
@@ -173,5 +183,19 @@ public class AiScheduleJsonParser {
                 );
             }
         }
+    }
+
+    private static boolean isTypeInstantiationFailure(JsonMappingException e) {
+        if ("com.fasterxml.jackson.databind.exc.ValueInstantiationException".equals(e.getClass().getName())) {
+            return true;
+        }
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            if (cause instanceof IllegalArgumentException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 }

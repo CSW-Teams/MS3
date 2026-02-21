@@ -38,6 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -142,6 +144,8 @@ class AiReschedulingOrchestrationServiceTest {
         when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
+                .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0));
         AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
 
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
@@ -191,6 +195,8 @@ class AiReschedulingOrchestrationServiceTest {
         when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of(request));
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
+                .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0));
         AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
 
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
@@ -224,15 +230,15 @@ class AiReschedulingOrchestrationServiceTest {
                 ToonConstraintEntityType.DOCTOR,
                 String.valueOf(doctor.getId()),
                 "MAX_CONSECUTIVE_DAYS",
-                Map.of("maxDays", 5)
+                Map.of("maxDays", "5")
         );
 
         RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
         when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
-        when(aiActiveConstraintResolver.resolve(List.of(doctor), List.of(concreteShift)))
-                .thenReturn(List.of(resolvedConstraint));
+        when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
+                .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(resolvedConstraint), 0, 0, 1));
 
         AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
 
@@ -262,8 +268,8 @@ class AiReschedulingOrchestrationServiceTest {
 
         assertEquals(1, generateRequest.getToonRequestContext().getActiveConstraints().size());
         assertEquals(1, regenerateRequest.getToonRequestContext().getActiveConstraints().size());
-        assertEquals("MAX_CONSECUTIVE_DAYS", generateRequest.getToonRequestContext().getActiveConstraints().get(0).getConstraintCode());
-        assertEquals("MAX_CONSECUTIVE_DAYS", regenerateRequest.getToonRequestContext().getActiveConstraints().get(0).getConstraintCode());
+        assertEquals("MAX_CONSECUTIVE_DAYS", generateRequest.getToonRequestContext().getActiveConstraints().get(0).getReason());
+        assertEquals("MAX_CONSECUTIVE_DAYS", regenerateRequest.getToonRequestContext().getActiveConstraints().get(0).getReason());
     }
 
 

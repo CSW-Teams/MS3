@@ -1,5 +1,6 @@
 package org.cswteams.ms3.ai.orchestration;
 
+import org.cswteams.ms3.ai.broker.AiPromptTemplate;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.QuantityShiftSeniority;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AiHardCoveragePromptBlockBuilderTest {
 
@@ -57,7 +59,7 @@ class AiHardCoveragePromptBlockBuilderTest {
                 Duration.ofHours(6),
                 Set.of(DayOfWeek.MONDAY),
                 new MedicalService(List.of(new Task(TaskEnum.CLINIC)), "Ward"),
-                null,
+                List.of(),
                 List.of()
         );
         ConcreteShift concreteShift = new ConcreteShift(day.toEpochDay(), shift);
@@ -67,6 +69,35 @@ class AiHardCoveragePromptBlockBuilderTest {
         assertEquals(
                 "hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:\n"
                         + "S_1001_20260914,0,0,0,0\n",
+                block
+        );
+    }
+
+    @Test
+    void hardCoverageSchemaMatchesSystemPromptContract() {
+        LocalDate day = LocalDate.of(2026, 9, 16);
+        ConcreteShift concreteShift = new ConcreteShift(day.toEpochDay(), makeShift(
+                2001L,
+                TimeSlot.NIGHT,
+                Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1, Seniority.SPECIALIST_SENIOR, 1)
+        ));
+
+        String block = builder.buildHardCoverageRequirementsBlock(List.of(concreteShift));
+        String systemPrompt = AiPromptTemplate.systemPrompt();
+
+        String expectedHeader = "hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:\n";
+        assertTrue(systemPrompt.contains("hard_coverage_requirements[n]{shift_id,structured,specialist_junior,specialist_senior,total}"));
+        assertTrue(systemPrompt.contains("Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory"));
+        assertTrue(block.startsWith(expectedHeader));
+        assertTrue(block.contains("S_2001_20260916,1,1,1,3\n"));
+    }
+
+    @Test
+    void hardCoverageRequirementsHeaderAlwaysIncludesAllMandatoryColumns() {
+        String block = builder.buildHardCoverageRequirementsBlock(List.of());
+
+        assertEquals(
+                "hard_coverage_requirements[0]{shift_id,structured,specialist_junior,specialist_senior,total}:\n",
                 block
         );
     }

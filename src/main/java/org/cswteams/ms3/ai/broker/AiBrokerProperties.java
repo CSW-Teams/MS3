@@ -15,9 +15,15 @@ public class AiBrokerProperties {
     private String llama70bModel = "llama3-70b-8192";
     private Duration connectTimeout = Duration.ofSeconds(5);
     private Duration readTimeout = Duration.ofSeconds(60);
+    /**
+     * End-to-end retry budget across the full request lifecycle.
+     * This timeout includes network call time and all retry waits, including GEMMA's fixed 60s
+     * backoff after HTTP 429 responses.
+     */
     private Duration totalTimeout = Duration.ofSeconds(90);
     private int maxRetries = 3;
     private Duration retryBackoff = Duration.ZERO;
+    private int scheduleValidationMaxRetries = 2;
 
     public AgentProvider getProvider() {
         return provider;
@@ -105,5 +111,16 @@ public class AiBrokerProperties {
 
     public void setRetryBackoff(Duration retryBackoff) {
         this.retryBackoff = retryBackoff;
+    }
+
+    public int getScheduleValidationMaxRetries() {
+        return scheduleValidationMaxRetries;
+    }
+
+    public void setScheduleValidationMaxRetries(int scheduleValidationMaxRetries) {
+        if (scheduleValidationMaxRetries < 0) {
+            throw new IllegalArgumentException("ai.broker.schedule-validation-max-retries must be >= 0");
+        }
+        this.scheduleValidationMaxRetries = scheduleValidationMaxRetries;
     }
 }
