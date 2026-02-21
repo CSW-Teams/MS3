@@ -3,6 +3,7 @@ package org.cswteams.ms3.ai.protocol;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetadataDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetricsDto;
+import org.cswteams.ms3.ai.protocol.dto.AiRoleValidationScratchpadItemDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
@@ -83,6 +84,42 @@ public class AiScheduleSemanticValidatorTest {
         assertHasPath(ex, "$.assignments");
     }
 
+    @Test
+    public void validate_scratchpadEmptyShiftId_shouldReportError() {
+        AiScheduleResponseDto dto = validDto();
+        dto.metadata.roleValidationScratchpad.get(0).shiftId = " ";
+
+        AiProtocolException ex = expectSchemaMismatch(dto);
+        assertHasPath(ex, "$.metadata.role_validation_scratchpad[0].shift_id");
+    }
+
+    @Test
+    public void validate_scratchpadInvalidRole_shouldReportError() {
+        AiScheduleResponseDto dto = validDto();
+        dto.metadata.roleValidationScratchpad.get(0).roleRequired = "JUNIOR";
+
+        AiProtocolException ex = expectSchemaMismatch(dto);
+        assertHasPath(ex, "$.metadata.role_validation_scratchpad[0].role_required");
+    }
+
+    @Test
+    public void validate_scratchpadDuplicateCandidateIds_shouldReportError() {
+        AiScheduleResponseDto dto = validDto();
+        dto.metadata.roleValidationScratchpad.get(0).candidateDoctorIds.add(200);
+
+        AiProtocolException ex = expectSchemaMismatch(dto);
+        assertHasPath(ex, "$.metadata.role_validation_scratchpad[0].candidate_doctor_ids[1]");
+    }
+
+    @Test
+    public void validate_scratchpadNegativeCandidateId_shouldReportError() {
+        AiScheduleResponseDto dto = validDto();
+        dto.metadata.roleValidationScratchpad.get(0).candidateDoctorIds.set(0, -1);
+
+        AiProtocolException ex = expectSchemaMismatch(dto);
+        assertHasPath(ex, "$.metadata.role_validation_scratchpad[0].candidate_doctor_ids[0]");
+    }
+
     private AiProtocolException expectSchemaMismatch(AiScheduleResponseDto dto) {
         try {
             validator.validate(dto);
@@ -111,6 +148,11 @@ public class AiScheduleSemanticValidatorTest {
         metrics.coveragePercent = 0.9;
         metrics.softViolationsCount = 0;
         metadata.metrics = metrics;
+        AiRoleValidationScratchpadItemDto scratchpadItem = new AiRoleValidationScratchpadItemDto();
+        scratchpadItem.shiftId = "S_101_20260520";
+        scratchpadItem.roleRequired = "STRUCTURED";
+        scratchpadItem.candidateDoctorIds.add(200);
+        metadata.roleValidationScratchpad.add(scratchpadItem);
         dto.metadata = metadata;
 
         dto.assignments = new ArrayList<>();

@@ -5,6 +5,7 @@ import org.cswteams.ms3.ai.protocol.AiScheduleSemanticValidator;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetadataDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetricsDto;
+import org.cswteams.ms3.ai.protocol.dto.AiRoleValidationScratchpadItemDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
@@ -118,6 +119,39 @@ public class AiScheduleConverterServiceTest {
         } catch (AiProtocolException ex) {
             assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
             assertTrue(ex.getDetails().stream().anyMatch(d -> "$.assignments[0].role_covered".equals(d.getPath())));
+        }
+    }
+
+    @Test
+    public void convert_scratchpadCandidateWrongRole_shouldFailFastWithSchemaMismatch() {
+        AiScheduleJsonParser jsonParser = mock(AiScheduleJsonParser.class);
+        AiScheduleSemanticValidator semanticValidator = mock(AiScheduleSemanticValidator.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        ShiftDAO shiftDAO = mock(ShiftDAO.class);
+
+        AiScheduleResponseDto dto = validDto();
+        AiRoleValidationScratchpadItemDto scratchpadItem = new AiRoleValidationScratchpadItemDto();
+        scratchpadItem.shiftId = "S_101_20260520";
+        scratchpadItem.roleRequired = "STRUCTURED";
+        scratchpadItem.candidateDoctorIds.add(99);
+        dto.metadata.roleValidationScratchpad.add(scratchpadItem);
+
+        Doctor seniorDoctor = mock(Doctor.class);
+        when(seniorDoctor.getId()).thenReturn(99L);
+        when(seniorDoctor.getSeniority()).thenReturn(Seniority.SPECIALIST_SENIOR);
+
+        when(jsonParser.parse("payload")).thenReturn(dto);
+        doNothing().when(semanticValidator).validate(dto);
+        when(doctorDAO.findAllById(Set.of(99L))).thenReturn(List.of(seniorDoctor));
+
+        AiScheduleConverterService service = new AiScheduleConverterService(jsonParser, semanticValidator, doctorDAO, shiftDAO);
+
+        try {
+            service.convert("payload");
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
+            assertTrue(ex.getDetails().stream().anyMatch(d -> "$.metadata.role_validation_scratchpad[0].candidate_doctor_ids[0]".equals(d.getPath())));
         }
     }
 
