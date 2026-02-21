@@ -123,6 +123,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     private ScheduleDAO scheduleDAO;
 
     @Autowired
+    private ScheduleFeedbackDAO scheduleFeedbackDAO;
+
+    @Autowired
     private SystemUserDAO systemUserDAO;
 
     @Value("${ms3.seed.doctors.enabled:false}")
@@ -150,7 +153,9 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         for (String tenant : tenantSchemas) {
             changeSchema(tenant.toLowerCase());
-            registerHolidays();
+            if (holidayDAO.count() == 0) {
+                registerHolidays();
+            }
         }
 
         changeSchema(DEFAULT_SCHEMA);
@@ -159,10 +164,13 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         try {
             for (String tenant : tenantSchemas) {
                 changeSchema(tenant.toLowerCase());
-                populateTenantDB(tenant);
+                if (!isTenantBootstrapped()) {
+                    populateTenantDB(tenant);
+                    registerConstraints();
+                    registerScocciature();
+                }
                 seedDoctorsForTenant(tenant, doctorSeedData);
-                registerConstraints();
-                registerScocciature();
+                seedReferenceScheduleAndFeedback(tenant);
             }
         } catch (ShiftException e) {
             e.printStackTrace();
@@ -173,6 +181,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
 
         //   }
 
+    }
+
+    private boolean isTenantBootstrapped() {
+        return !constraintDAO.findAll().isEmpty()
+                || permanentConditionDAO.count() > 0
+                || temporaryConditionDAO.count() > 0
+                || taskDAO.count() > 0
+                || shiftDAO.count() > 0;
     }
 
     private void changeSchema(String tenant) {
@@ -349,6 +365,148 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         }
         com.fasterxml.jackson.databind.JsonNode valueNode = node.get(fieldName);
         return valueNode == null || valueNode.isNull() ? null : valueNode.asText();
+    }
+
+    private void seedReferenceScheduleAndFeedback(String tenant) {
+        if (!"a".equalsIgnoreCase(tenant)) {
+            return;
+        }
+
+        Schedule schedule = findScheduleByPeriod(20507L, 20509L);
+        if (schedule == null) {
+            schedule = createReferenceSchedule();
+        }
+        if (schedule == null) {
+            return;
+        }
+        seedReferenceFeedback(schedule);
+    }
+
+    private Schedule findScheduleByPeriod(long startDate, long endDate) {
+        for (Schedule schedule : scheduleDAO.findAll()) {
+            if (schedule.getStartDate() == startDate && schedule.getEndDate() == endDate) {
+                return schedule;
+            }
+        }
+        return null;
+    }
+
+    private Schedule createReferenceSchedule() {
+        Map<Long, Shift> shiftsById = loadReferenceShifts();
+        if (shiftsById.size() != 3) {
+            return null;
+        }
+
+        List<ConcreteShift> concreteShifts = new ArrayList<>();
+        concreteShifts.add(buildReferenceConcreteShift(20507L, shiftsById.get(73L), new long[]{39, 49, 18, 21, 17, 16, 69, 10, 14, 7, 64, 59}));
+        concreteShifts.add(buildReferenceConcreteShift(20507L, shiftsById.get(76L), new long[]{11, 8, 44, 2, 34, 65, 29, 3, 50, 19, 12, 71}));
+        concreteShifts.add(buildReferenceConcreteShift(20507L, shiftsById.get(79L), new long[]{20, 4, 18, 23, 3, 59, 11, 8, 14, 9, 12, 16}));
+        concreteShifts.add(buildReferenceConcreteShift(20508L, shiftsById.get(73L), new long[]{5, 34, 44, 13, 64, 47, 2, 10, 62, 1, 17, 50}));
+        concreteShifts.add(buildReferenceConcreteShift(20508L, shiftsById.get(76L), new long[]{9, 3, 18, 24, 4, 59, 20, 8, 16, 23, 12, 14}));
+        concreteShifts.add(buildReferenceConcreteShift(20508L, shiftsById.get(79L), new long[]{24, 4, 38, 20, 17, 56, 22, 10, 53, 19, 31, 50}));
+        concreteShifts.add(buildReferenceConcreteShift(20509L, shiftsById.get(73L), new long[]{23, 49, 44, 15, 34, 65, 6, 67, 47, 9, 37, 62}));
+        concreteShifts.add(buildReferenceConcreteShift(20509L, shiftsById.get(79L), new long[]{22, 35, 65, 29, 55, 41, 11, 49, 71, 24, 70, 56}));
+
+        for (ConcreteShift concreteShift : concreteShifts) {
+            if (concreteShift == null) {
+                return null;
+            }
+        }
+
+        return scheduleDAO.saveAndFlush(new Schedule(20507L, 20509L, concreteShifts, new ArrayList<>()));
+    }
+
+    private Map<Long, Shift> loadReferenceShifts() {
+        Map<Long, Shift> shiftsById = new HashMap<>();
+        for (Long shiftId : Arrays.asList(73L, 76L, 79L)) {
+            Optional<Shift> shiftOptional = shiftDAO.findById(shiftId);
+            if (!shiftOptional.isPresent()) {
+                return Collections.emptyMap();
+            }
+            shiftsById.put(shiftId, shiftOptional.get());
+        }
+        return shiftsById;
+    }
+
+    private ConcreteShift buildReferenceConcreteShift(long date, Shift shift, long[] doctorIds) {
+        if (shift == null || doctorIds == null || doctorIds.length != 12) {
+            return null;
+        }
+
+        List<Task> tasks = new ArrayList<>(shift.getMedicalService().getTasks());
+        if (tasks.isEmpty()) {
+            return null;
+        }
+        Task firstTask = tasks.get(0);
+        Task secondTask = tasks.size() > 1 ? tasks.get(1) : firstTask;
+
+        ConcreteShift concreteShift = new ConcreteShift(date, shift);
+        List<DoctorAssignment> assignments = new ArrayList<>();
+        for (int i = 0; i < doctorIds.length; i++) {
+            Doctor doctor = doctorDAO.findById(doctorIds[i]);
+            if (doctor == null) {
+                return null;
+            }
+            ConcreteShiftDoctorStatus status = i < 6
+                    ? ConcreteShiftDoctorStatus.ON_DUTY
+                    : ConcreteShiftDoctorStatus.ON_CALL;
+            Task task = i < 6 ? firstTask : secondTask;
+            assignments.add(new DoctorAssignment(doctor, status, concreteShift, task));
+        }
+        concreteShift.setDoctorAssignmentList(assignments);
+        return concreteShift;
+    }
+
+    private void seedReferenceFeedback(Schedule schedule) {
+        Doctor doctor = doctorDAO.findById(5L);
+        if (doctor == null) {
+            return;
+        }
+
+        ConcreteShift feedbackShift = findConcreteShift(schedule, 20507L, 73L);
+        if (feedbackShift == null) {
+            return;
+        }
+
+        for (ScheduleFeedback feedback : scheduleFeedbackDAO.findAll()) {
+            if (!Objects.equals(feedback.getDoctor().getId(), doctor.getId())) {
+                continue;
+            }
+            if (feedback.getScore() != 3) {
+                continue;
+            }
+            if (!"Turno equilibrato ma molto ravvicinato al precedente; preferirei maggiore alternanza serale/notturna.".equals(feedback.getComment())) {
+                continue;
+            }
+            for (ConcreteShift concreteShift : feedback.getConcreteShifts()) {
+                if (Objects.equals(concreteShift.getId(), feedbackShift.getId())) {
+                    return;
+                }
+            }
+        }
+
+        ScheduleFeedback scheduleFeedback = new ScheduleFeedback(
+                doctor,
+                Collections.singletonList(feedbackShift),
+                "Turno equilibrato ma molto ravvicinato al precedente; preferirei maggiore alternanza serale/notturna.",
+                3,
+                1771690337651L
+        );
+        scheduleFeedbackDAO.saveAndFlush(scheduleFeedback);
+    }
+
+    private ConcreteShift findConcreteShift(Schedule schedule, long date, long shiftId) {
+        if (schedule.getConcreteShifts() == null) {
+            return null;
+        }
+        for (ConcreteShift concreteShift : schedule.getConcreteShifts()) {
+            if (concreteShift.getDate() == date
+                    && concreteShift.getShift() != null
+                    && Objects.equals(concreteShift.getShift().getId(), shiftId)) {
+                return concreteShift;
+            }
+        }
+        return null;
     }
 
 

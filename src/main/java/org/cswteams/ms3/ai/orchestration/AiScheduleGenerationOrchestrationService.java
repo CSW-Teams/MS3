@@ -327,7 +327,15 @@ public class AiScheduleGenerationOrchestrationService {
                     INVALID_CANDIDATE_SELECTION_ERROR_MESSAGE
             );
         }
-        Schedule schedule = buildScheduleForCandidate(state, candidate);
+        Schedule schedule;
+        if (candidate.type == ScheduleCandidateType.STANDARD) {
+            schedule = candidate.schedule;
+            if (schedule == null) {
+                schedule = buildScheduleForCandidate(state, candidate);
+            }
+        } else {
+            schedule = buildScheduleForCandidate(state, candidate);
+        }
         if (schedule == null) {
             return SelectionResult.invalid("INVALID_CANDIDATE", "Unable to build the selected schedule.");
         }

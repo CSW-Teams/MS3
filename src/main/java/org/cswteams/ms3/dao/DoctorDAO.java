@@ -13,8 +13,17 @@ import java.util.List;
 public interface DoctorDAO extends JpaRepository<Doctor,Long> {
 
      Doctor findById(long id);
-     Doctor findByEmailAndPassword(String email, String password);
-     Doctor findByEmail(String email);
+
+     @Query("SELECT d FROM Doctor d " +
+             "WHERE d.email = :email " +
+             "AND d.password = :password " +
+             "AND d.id = (SELECT MIN(d2.id) FROM Doctor d2 WHERE d2.email = :email AND d2.password = :password)")
+     Doctor findByEmailAndPassword(@Param("email") String email, @Param("password") String password);
+
+     @Query("SELECT d FROM Doctor d " +
+             "WHERE d.email = :email " +
+             "AND d.id = (SELECT MIN(d2.id) FROM Doctor d2 WHERE d2.email = :email)")
+     Doctor findByEmail(@Param("email") String email);
 
      @Query("SELECT d FROM Doctor d WHERE d.seniority IN :seniorities")
      List<Doctor> findBySeniorities(@Param("seniorities") List<Seniority> seniorities);
