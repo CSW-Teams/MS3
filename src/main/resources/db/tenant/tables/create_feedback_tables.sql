@@ -2,6 +2,7 @@ create table schedule_feedback (
                                    id bigint not null,
                                    comment varchar(255),
                                    score integer not null,
+                                   category varchar(255),
                                    timestamp bigint not null,
                                    doctor_id bigint not null,
                                    primary key (id),

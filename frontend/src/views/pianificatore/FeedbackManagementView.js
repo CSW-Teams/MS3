@@ -40,7 +40,8 @@ export default class FeedbackManagementView extends React.Component{
         name: item.doctorName,
         lastname: item.doctorLastname,
         feedback_rating: item.score,
-        feedback_text: item.comment
+        feedback_text: item.comment,
+        category: item.category
       }));
 
       this.setState({ feedbacks: formattedFeedbacks });
@@ -122,7 +123,9 @@ export default class FeedbackManagementView extends React.Component{
                       <th scope='col'
                           onClick={() => this.setOrderBy("lastname")}>{t("Surname")} {this.getSortIcon("lastname")}</th>
                       <th scope='col'
-                          onClick={() => this.setOrderBy("feedback rating")}>{t("Feedback rating")} {this.getSortIcon("Feedback rating")}</th>
+                          onClick={() => this.setOrderBy("feedback rating")}>{t("Feedback rating")} {this.getSortIcon("feedback rating")}</th>
+                      <th scope='col'
+                          onClick={() => this.setOrderBy("category")}>{t("Category")} {this.getSortIcon("category")}</th>
                       <th scope='col'
                           onClick={() => this.setOrderBy("feedback text")}>{t("Text")} {this.getSortIcon("Text")}</th>
                     </tr>
@@ -133,6 +136,7 @@ export default class FeedbackManagementView extends React.Component{
                         <td>{data.name}</td>
                         <td>{data.lastname}</td>
                         <td>{data.feedback_rating}</td>
+                        <td>{t(data.category)}</td>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <Button

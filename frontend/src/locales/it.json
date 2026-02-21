@@ -461,5 +461,14 @@
   "Feedback successfully inserted": "Feedback inserito con successo",
   "An error occurred while inserting a feedback": "Qualcosa è andato storto nell'inserimento del feedback",
   "Please provide a score for your feedback": "Per inserire un feedback è necessario un punteggio",
-  "Please provide a text for your feedback": "Per inserire un feedback è necessario inserire un testo"
+  "Please provide a text for your feedback": "Per inserire un feedback è necessario inserire un testo",
+  "REPEATED_WEEKDAY": "Giorno della settimana ripetuto",
+  "REPEATED_TIME_SLOT": "Fascia oraria ripetuta",
+  "CONSECUTIVE_SHIFTS": "Turni consecutivi",
+  "WORKLOAD_IMBALANCE": "Carico di lavoro non bilanciato",
+  "PREFERENCE_VIOLATION": "Preferenza non rispettata",
+  "OTHER": "altro",
+  "Feedbacks provided": "Feedbacks ricevuti",
+  "Feedback rating": "Voto Feedback",
+  "Text": "Commento"
 }

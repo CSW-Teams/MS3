@@ -21,6 +21,10 @@ import {
   DialogActions,
   TextField,
   Rating,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
 } from '@mui/material';
 import {
   RichiestaRimozioneDaTurnoAPI
@@ -89,6 +93,7 @@ export const Content = ({
   const [retiredUser, setRetiredUser] = useState('');
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackCategory, setFeedbackCategory] = useState('');
 
   useEffect(() => {
     const checkPendingRequest = async () => {
@@ -130,6 +135,7 @@ export const Content = ({
     setFeedbackDialogOpen(false);
     setFeedbackRating(0);
     setFeedbackText('');
+    setFeedbackCategory('');
   };
 
   const handleRetireButtonClick = () => {
@@ -146,7 +152,8 @@ export const Content = ({
     const payload = {
       concreteShiftIds: [appointmentData.id],
       score: feedbackRating,
-      comment: feedbackText
+      comment: feedbackText,
+      category: feedbackCategory
     };
 
     try {
@@ -165,6 +172,19 @@ export const Content = ({
       }
       else if (!payload.comment){
         toast.warning(t("Please provide a text for your feedback"), {
+                                position: "top-center",
+                                autoClose: 5000,
+                                hideProgressBar: true,
+                                closeOnClick: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                progress: undefined,
+                                theme: "colored",
+                              });
+        return
+      }
+      else if (!payload.category){
+        toast.warning(t("Please provide a category for your feedback"), {
                                 position: "top-center",
                                 autoClose: 5000,
                                 hideProgressBar: true,
@@ -383,6 +403,23 @@ export const Content = ({
                 value={feedbackRating}
                 onChange={(event, newValue) => setFeedbackRating(newValue || 0)}
               />
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="feedback-category-label">Categoria</InputLabel>
+                <Select
+                  labelId="feedback-category-label"
+                  id="feedback-category"
+                  value={feedbackCategory}
+                  label="Categoria"
+                  onChange={(e) => setFeedbackCategory(e.target.value)}
+                >
+                  <MenuItem value={"REPEATED_WEEKDAY"}>Giorno della settimana ripetuto</MenuItem>
+                  <MenuItem value={"REPEATED_TIME_SLOT"}>Fascia oraria ripetuta</MenuItem>
+                  <MenuItem value={"CONSECUTIVE_SHIFTS"}>Turni consecutivi</MenuItem>
+                  <MenuItem value={"WORKLOAD_IMBALANCE"}>Carico di lavoro non bilanciato</MenuItem>
+                  <MenuItem value={"PREFERENCE_VIOLATION"}>Preferenza non rispettata</MenuItem>
+                  <MenuItem value={"OTHER"}>Altro</MenuItem>
+                </Select>
+              </FormControl>
               <TextField
                 id={"feedback-text"}
                 margin={"normal"}
