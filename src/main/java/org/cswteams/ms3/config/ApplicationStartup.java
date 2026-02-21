@@ -379,7 +379,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         if (schedule == null) {
             return;
         }
-        seedReferenceFeedback(schedule);
+        seedReferenceFeedback();
     }
 
     private Schedule findScheduleByPeriod(long startDate, long endDate) {
@@ -457,13 +457,14 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         return concreteShift;
     }
 
-    private void seedReferenceFeedback(Schedule schedule) {
+    private void seedReferenceFeedback() {
         Doctor doctor = doctorDAO.findById(5L);
         if (doctor == null) {
             return;
         }
 
-        ConcreteShift feedbackShift = findConcreteShift(schedule, 20507L, 73L);
+        List<ConcreteShift> candidateShifts = concreteShiftDAO.findByDateAndShift_IdAndDoctorAssignmentList_Doctor_Id(20507L, 73L, doctor.getId());
+        ConcreteShift feedbackShift = candidateShifts.isEmpty() ? null : candidateShifts.get(0);
         if (feedbackShift == null) {
             return;
         }
@@ -493,20 +494,6 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 1771690337651L
         );
         scheduleFeedbackDAO.saveAndFlush(scheduleFeedback);
-    }
-
-    private ConcreteShift findConcreteShift(Schedule schedule, long date, long shiftId) {
-        if (schedule.getConcreteShifts() == null) {
-            return null;
-        }
-        for (ConcreteShift concreteShift : schedule.getConcreteShifts()) {
-            if (concreteShift.getDate() == date
-                    && concreteShift.getShift() != null
-                    && Objects.equals(concreteShift.getShift().getId(), shiftId)) {
-                return concreteShift;
-            }
-        }
-        return null;
     }
 
 
