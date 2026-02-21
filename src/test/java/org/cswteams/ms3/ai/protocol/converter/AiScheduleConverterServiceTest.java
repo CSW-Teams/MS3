@@ -55,7 +55,7 @@ public class AiScheduleConverterServiceTest {
                 "mario.rossi@example.com",
                 "pwd",
                 Seniority.STRUCTURED,
-                Set.of(SystemActor.USER)
+                Set.of(SystemActor.DOCTOR)
         );
 
         Shift shiftTemplate = mock(Shift.class);
@@ -98,7 +98,7 @@ public class AiScheduleConverterServiceTest {
                 "mario.rossi@example.com",
                 "pwd",
                 Seniority.STRUCTURED,
-                Set.of(SystemActor.USER)
+                Set.of(SystemActor.DOCTOR)
         );
 
         Shift shiftTemplate = mock(Shift.class);

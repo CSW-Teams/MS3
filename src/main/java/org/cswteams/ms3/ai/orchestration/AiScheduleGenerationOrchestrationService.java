@@ -3,6 +3,7 @@ package org.cswteams.ms3.ai.orchestration;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.ai.broker.AgentBroker;
+import org.cswteams.ms3.ai.broker.AiBrokerProperties;
 import org.cswteams.ms3.ai.broker.AiBrokerRequest;
 import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
 import org.cswteams.ms3.ai.broker.domain.AiAssignment;
@@ -44,9 +45,11 @@ import org.cswteams.ms3.control.toon.ToonActiveConstraint;
 import org.cswteams.ms3.control.toon.ToonBuilder;
 import org.cswteams.ms3.control.toon.ToonFeedback;
 import org.cswteams.ms3.control.toon.ToonRequestContext;
+import org.cswteams.ms3.dao.ConstraintDAO;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
+import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
@@ -54,11 +57,15 @@ import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.DoctorHolidays;
 import org.cswteams.ms3.entity.DoctorUffaPriority;
 import org.cswteams.ms3.entity.DoctorUffaPrioritySnapshot;
+import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Schedule;
 import org.cswteams.ms3.entity.Shift;
+import org.cswteams.ms3.entity.constraint.Constraint;
+import org.cswteams.ms3.entity.constraint.ContextConstraint;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +79,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -82,8 +91,11 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String METRICS_COMPUTE_STAGE = "METRICS_COMPUTE";
     private static final String ERROR_STANDARD_METRICS = "STANDARD_METRICS_FAILED";
     private static final String ERROR_AI_METRICS = "AI_METRICS_FAILED";
+    private static final String ERROR_AI_CANDIDATE_VALIDATION = "AI_CANDIDATE_VALIDATION_FAILED";
     private static final String ERROR_NORMALIZATION = "METRICS_NORMALIZATION_FAILED";
     private static final String ERROR_DECISION = "METRICS_DECISION_FAILED";
+    private static final String INVALID_CANDIDATE_SELECTION_ERROR_CODE = "INVALID_CANDIDATE_SELECTION";
+    private static final String INVALID_CANDIDATE_SELECTION_ERROR_MESSAGE = "Selected candidate is invalid in the active comparison state.";
     private static final double METRICS_COMPARISON_TOLERANCE = 1e-6;
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
@@ -111,8 +123,11 @@ public class AiScheduleGenerationOrchestrationService {
     private final DoctorDAO doctorDAO;
     private final DoctorUffaPriorityDAO doctorUffaPriorityDAO;
     private final DoctorHolidaysDAO doctorHolidaysDAO;
+    private final ConstraintDAO constraintDAO;
+    private final HolidayDAO holidayDAO;
     private final ScheduleDAO scheduleDAO;
     private final AgentBroker agentBroker;
+    private final AiBrokerProperties aiBrokerProperties;
     private final AiReschedulingOrchestrationService aiReschedulingOrchestrationService;
     private final DecisionAlgorithmService decisionAlgorithmService;
     private final AiScheduleConverterService aiScheduleConverterService;
@@ -126,8 +141,11 @@ public class AiScheduleGenerationOrchestrationService {
                                                     DoctorDAO doctorDAO,
                                                     DoctorUffaPriorityDAO doctorUffaPriorityDAO,
                                                     DoctorHolidaysDAO doctorHolidaysDAO,
+                                                    ConstraintDAO constraintDAO,
+                                                    HolidayDAO holidayDAO,
                                                     ScheduleDAO scheduleDAO,
                                                     AgentBroker agentBroker,
+                                                    AiBrokerProperties aiBrokerProperties,
                                                     AiReschedulingOrchestrationService aiReschedulingOrchestrationService,
                                                     DecisionAlgorithmService decisionAlgorithmService,
                                                     AiScheduleConverterService aiScheduleConverterService,
@@ -137,8 +155,11 @@ public class AiScheduleGenerationOrchestrationService {
         this.doctorDAO = doctorDAO;
         this.doctorUffaPriorityDAO = doctorUffaPriorityDAO;
         this.doctorHolidaysDAO = doctorHolidaysDAO;
+        this.constraintDAO = constraintDAO;
+        this.holidayDAO = holidayDAO;
         this.scheduleDAO = scheduleDAO;
         this.agentBroker = agentBroker;
+        this.aiBrokerProperties = aiBrokerProperties;
         this.aiReschedulingOrchestrationService = aiReschedulingOrchestrationService;
         this.decisionAlgorithmService = decisionAlgorithmService;
         this.aiScheduleConverterService = aiScheduleConverterService;
@@ -179,7 +200,11 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         CandidateData standardCandidate = buildStandardCandidate(standardSchedule, standardMetrics);
-        CandidateBatch aiBatch = requestAiCandidates(toonPayload, aiRequestCorrelationId, standardSchedule.getConcreteShifts());
+        CandidateBatch aiBatch = requestAiCandidates(toonPayload,
+                aiRequestCorrelationId,
+                startDate,
+                endDate,
+                standardSchedule.getConcreteShifts());
         if (aiBatch.errorMetadata != null) {
             errorMetadata = mergeError(errorMetadata, aiBatch.errorMetadata);
         }
@@ -207,7 +232,12 @@ public class AiScheduleGenerationOrchestrationService {
                     candidate.type,
                     candidate.rawScheduleJson,
                     candidate.rawMetrics,
-                    metrics
+                    metrics,
+                    candidate.validation.valid,
+                    candidate.validation.code,
+                    candidate.validation.message,
+                    candidate.validation.maxRetriesReached,
+                    candidate.validation.violationMessages()
             ));
         }
 
@@ -290,6 +320,12 @@ public class AiScheduleGenerationOrchestrationService {
     private SelectionResult persistCandidate(TransientComparisonState state, CandidateData candidate) {
         if (schedulerController.alreadyExistsAnotherSchedule(state.startDate, state.endDate)) {
             return SelectionResult.duplicateRange("DUPLICATE_RANGE", "Schedule already exists for this date range.");
+        }
+        if (!candidate.validation.valid) {
+            return SelectionResult.invalid(
+                    INVALID_CANDIDATE_SELECTION_ERROR_CODE,
+                    INVALID_CANDIDATE_SELECTION_ERROR_MESSAGE
+            );
         }
         Schedule schedule = buildScheduleForCandidate(state, candidate);
         if (schedule == null) {
@@ -497,46 +533,106 @@ public class AiScheduleGenerationOrchestrationService {
                 ScheduleCandidateType.STANDARD,
                 rawJson,
                 metrics,
-                schedule
+                schedule,
+                CandidateValidationData.valid()
         );
     }
 
     private CandidateBatch requestAiCandidates(String toonPayload,
                                                String batchCorrelationId,
+                                               LocalDate startDate,
+                                               LocalDate endDate,
                                                List<ConcreteShift> referenceShifts) {
         Map<String, AiScheduleResponse> aggregatedVariants = new LinkedHashMap<>();
+        Map<String, CandidateValidationData> validationByLabel = new LinkedHashMap<>();
         Map<String, Integer> shiftRequirements = buildShiftRequirementsByShiftId(referenceShifts);
 
-        for (VariantDefinition definition : VARIANT_DEFINITIONS) {
-            String instructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
-            String correlationId = UUID.randomUUID().toString();
-            AiBrokerRequest request = new AiBrokerRequest(toonPayload, instructions, correlationId);
-            logger.info("event=ai_broker_request_prepared correlation_id={} label={} payload_length={} instructions_length={}",
-                    correlationId,
-                    definition.label,
-                    toonPayload == null ? 0 : toonPayload.length(),
-                    instructions.length());
+        int variantMaxAttempts = aiBrokerProperties.getScheduleValidationMaxRetries() + 1;
 
-            AiTokenBudgetGuardResult budgetGuard = agentBroker.previewTokenBudget(request);
-            if (!budgetGuard.isAllowed()) {
-                logger.warn("event=ai_variant_deferred correlation_id={} label={} projected_tpm={} budget_limit={}",
+        for (VariantDefinition definition : VARIANT_DEFINITIONS) {
+            String baseInstructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
+            String attemptInstructions = baseInstructions;
+            AiScheduleResponse selectedVariant = null;
+            CandidateValidationData lastValidation = CandidateValidationData.valid();
+
+            for (int attempt = 1; attempt <= variantMaxAttempts; attempt++) {
+                String correlationId = UUID.randomUUID().toString();
+                AiBrokerRequest request = new AiBrokerRequest(toonPayload, attemptInstructions, correlationId);
+                logger.info("event=ai_broker_request_prepared correlation_id={} label={} attempt={} payload_length={} instructions_length={}",
                         correlationId,
                         definition.label,
-                        budgetGuard.getProjectedTpm(),
-                        budgetGuard.getBudgetLimit());
-                aggregatedVariants.put(definition.label, buildDeferredResponse(definition.label, budgetGuard));
-                continue;
+                        attempt,
+                        toonPayload == null ? 0 : toonPayload.length(),
+                        attemptInstructions.length());
+
+                AiTokenBudgetGuardResult budgetGuard = agentBroker.previewTokenBudget(request);
+                if (!budgetGuard.isAllowed()) {
+                    logger.warn("event=ai_variant_deferred correlation_id={} label={} attempt={} projected_tpm={} budget_limit={}",
+                            correlationId,
+                            definition.label,
+                            attempt,
+                            budgetGuard.getProjectedTpm(),
+                            budgetGuard.getBudgetLimit());
+                    selectedVariant = buildDeferredResponse(definition.label, budgetGuard);
+                    break;
+                }
+
+                AiScheduleVariantsResponse singleResponse = agentBroker.requestSchedule(request);
+                AiScheduleResponse variant = singleResponse == null ? null : singleResponse.getVariant(definition.label);
+                if (variant == null) {
+                    throw AiProtocolException.schemaMismatch(
+                            "AI response missing variant " + definition.label,
+                            null
+                    );
+                }
+                selectedVariant = variant;
+
+                CandidateValidationData partialSuccessWarning = null;
+                if (variant.getStatus() == AiStatus.PARTIAL_SUCCESS) {
+                    partialSuccessWarning = CandidateValidationData.validWithWarning(
+                            "PARTIAL_SUCCESS",
+                            "AI returned a PARTIAL_SUCCESS variant; review uncovered shifts before final selection."
+                    );
+                }
+
+                String rawJson = serializeResponse(buildAiResponseDto(variant));
+                CandidateValidationData validation = validateAiCandidate(rawJson,
+                        definition.candidateId,
+                        batchCorrelationId,
+                        startDate,
+                        endDate);
+                if (partialSuccessWarning != null && validation.valid) {
+                    validation = validation.withWarning(partialSuccessWarning.code, partialSuccessWarning.message);
+                }
+                lastValidation = validation;
+                if (validation.valid) {
+                    break;
+                }
+
+                if (attempt < variantMaxAttempts) {
+                    attemptInstructions = buildCorrectiveVariantInstruction(baseInstructions, attempt, validation);
+                    logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={}",
+                            correlationId,
+                            definition.label,
+                            attempt,
+                            attempt + 1,
+                            validation.code,
+                            validation.message);
+                }
             }
 
-            AiScheduleVariantsResponse singleResponse = agentBroker.requestSchedule(request);
-            AiScheduleResponse variant = singleResponse == null ? null : singleResponse.getVariant(definition.label);
-            if (variant == null) {
+            if (!lastValidation.valid && variantMaxAttempts > 0) {
+                lastValidation = lastValidation.withMaxRetriesReached(true);
+            }
+
+            if (selectedVariant == null) {
                 throw AiProtocolException.schemaMismatch(
                         "AI response missing variant " + definition.label,
                         null
                 );
             }
-            aggregatedVariants.put(definition.label, variant);
+            aggregatedVariants.put(definition.label, selectedVariant);
+            validationByLabel.put(definition.label, lastValidation);
         }
 
         logger.info("event=ai_broker_response_received correlation_id={} variants_count={}",
@@ -555,6 +651,20 @@ public class AiScheduleGenerationOrchestrationService {
             }
             AiScheduleResponseDto responseDto = buildAiResponseDto(variant);
             String rawJson = serializeResponse(responseDto);
+            CandidateValidationData validation = validationByLabel.get(definition.label);
+            if (validation == null) {
+                validation = validateAiCandidate(rawJson,
+                        definition.candidateId,
+                        batchCorrelationId,
+                        startDate,
+                        endDate);
+            }
+            if (!validation.valid) {
+                errorMetadata = buildMetricsError(errorMetadata,
+                        batchCorrelationId,
+                        ERROR_AI_CANDIDATE_VALIDATION,
+                        new IllegalArgumentException(validation.code + ": " + validation.message));
+            }
             DecisionMetricValues metrics;
             try {
                 metrics = buildAiMetrics(variant, rawJson, definition.candidateId, batchCorrelationId, shiftRequirements);
@@ -565,9 +675,187 @@ public class AiScheduleGenerationOrchestrationService {
                         ex);
                 metrics = fallbackMetrics();
             }
-            candidates.add(new CandidateData(definition.candidateId, null, definition.type, rawJson, metrics, null));
+            candidates.add(new CandidateData(definition.candidateId,
+                    null,
+                    definition.type,
+                    rawJson,
+                    metrics,
+                    null,
+                    validation));
         }
         return new CandidateBatch(Collections.unmodifiableList(candidates), errorMetadata);
+    }
+
+    private String buildCorrectiveVariantInstruction(String baseInstructions,
+                                                     int failedAttempt,
+                                                     CandidateValidationData validation) {
+        return baseInstructions
+                + " Previous attempt " + failedAttempt
+                + " was invalid (" + validation.code + ": " + validation.message + ")."
+                + buildValidationFailurePromptBlock(validation)
+                + " Regenerate the same variant label only, fix all domain/syntax issues, and return strict JSON.";
+    }
+
+    private String buildValidationFailurePromptBlock(CandidateValidationData validation) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(" Validation failures (prompt-safe):");
+        builder.append(" [");
+        builder.append("{code='").append(promptSafeText(validation.code)).append("'");
+        builder.append(", expected='Produce a schedule that satisfies conversion and domain constraints'");
+        builder.append(", actual='").append(promptSafeText(validation.message)).append("'");
+        builder.append("}");
+
+        for (ConstraintViolationDetail violation : validation.violatedConstraints) {
+            builder.append(", {constraint_id='")
+                    .append(promptSafeText(violation.constraintId))
+                    .append("', constraint_type='")
+                    .append(promptSafeText(violation.constraintType))
+                    .append("', shift_id='")
+                    .append(promptSafeText(violation.shiftId))
+                    .append("', date='")
+                    .append(promptSafeText(violation.date))
+                    .append("', doctor_id='")
+                    .append(promptSafeText(violation.doctorId))
+                    .append("', expected='")
+                    .append(promptSafeText(violation.expectedCondition))
+                    .append("', actual='")
+                    .append(promptSafeText(violation.actualCondition))
+                    .append("'}");
+        }
+
+        builder.append("]");
+        return builder.toString();
+    }
+
+    private String promptSafeText(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return "n/a";
+        }
+        return value.replace("\\", "\\\\")
+                .replace("\n", " ")
+                .replace("\r", " ")
+                .replace("'", "\\'")
+                .trim();
+    }
+
+    private CandidateValidationData validateAiCandidate(String rawJson,
+                                                        String candidateId,
+                                                        String correlationId,
+                                                        LocalDate startDate,
+                                                        LocalDate endDate) {
+        if (rawJson == null || rawJson.trim().isEmpty()) {
+            logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason=EMPTY_RAW_JSON",
+                    correlationId,
+                    candidateId);
+            return CandidateValidationData.invalid("EMPTY_RAW_JSON", "Candidate JSON payload is empty.");
+        }
+        try {
+            List<ConcreteShift> concreteShifts = aiScheduleConverterService.convert(rawJson);
+            Schedule candidateSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
+            List<ConstraintViolationDetail> violatedConstraints = collectViolatedConstraints(candidateSchedule);
+            if (!violatedConstraints.isEmpty()) {
+                String violationMessage = String.join(" | ", formatViolationMessages(violatedConstraints));
+                logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} violations_count={} message={}",
+                        correlationId,
+                        candidateId,
+                        "DOMAIN_CONSTRAINTS_VIOLATED",
+                        violatedConstraints.size(),
+                        violationMessage);
+                return CandidateValidationData.invalid("DOMAIN_CONSTRAINTS_VIOLATED", violationMessage, violatedConstraints);
+            }
+            return CandidateValidationData.valid();
+        } catch (AiProtocolException ex) {
+            logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} message={}",
+                    correlationId,
+                    candidateId,
+                    "CONVERSION_FAILED",
+                    ex.getMessage());
+            return CandidateValidationData.invalid("CONVERSION_FAILED", ex.getMessage());
+        }
+    }
+
+    private List<String> formatViolationMessages(List<ConstraintViolationDetail> violations) {
+        List<String> messages = new ArrayList<>();
+        for (ConstraintViolationDetail violation : violations) {
+            messages.add(violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition);
+        }
+        return messages;
+    }
+
+    private List<ConstraintViolationDetail> collectViolatedConstraints(Schedule candidateSchedule) {
+        if (candidateSchedule == null || candidateSchedule.getConcreteShifts() == null) {
+            return Collections.emptyList();
+        }
+        List<Constraint> constraints = constraintDAO.findAll();
+        if (constraints.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ConstraintViolationDetail> violations = new ArrayList<>();
+        List<Holiday> holidays = holidayDAO.findAll();
+        Map<Long, DoctorHolidays> doctorHolidaysByDoctorId = new HashMap<>();
+        for (DoctorHolidays doctorHolidays : doctorHolidaysDAO.findAll()) {
+            if (doctorHolidays == null || doctorHolidays.getDoctor() == null || doctorHolidays.getDoctor().getId() == null) {
+                continue;
+            }
+            doctorHolidaysByDoctorId.put(doctorHolidays.getDoctor().getId(), doctorHolidays);
+        }
+
+        Map<Long, DoctorUffaPriority> prioritiesByDoctorId = new HashMap<>();
+        for (DoctorUffaPriority priority : doctorUffaPriorityDAO.findAll()) {
+            if (priority == null || priority.getDoctor() == null || priority.getDoctor().getId() == null) {
+                continue;
+            }
+            prioritiesByDoctorId.put(priority.getDoctor().getId(), priority);
+        }
+
+        for (ConcreteShift concreteShift : candidateSchedule.getConcreteShifts()) {
+            if (concreteShift == null || concreteShift.getDoctorAssignmentList() == null) {
+                continue;
+            }
+            for (DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
+                if (assignment == null || assignment.getDoctor() == null || assignment.getDoctor().getId() == null) {
+                    continue;
+                }
+                if (assignment.getConcreteShiftDoctorStatus() != ConcreteShiftDoctorStatus.ON_DUTY
+                        && assignment.getConcreteShiftDoctorStatus() != ConcreteShiftDoctorStatus.ON_CALL) {
+                    continue;
+                }
+
+                Long doctorId = assignment.getDoctor().getId();
+                DoctorUffaPriority doctorPriority = prioritiesByDoctorId.get(doctorId);
+                if (doctorPriority == null) {
+                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor(), candidateSchedule);
+                    prioritiesByDoctorId.put(doctorId, doctorPriority);
+                } else if (doctorPriority.getSchedule() == null) {
+                    doctorPriority.setSchedule(candidateSchedule);
+                }
+
+                ContextConstraint context = new ContextConstraint(
+                        doctorPriority,
+                        concreteShift,
+                        doctorHolidaysByDoctorId.get(doctorId),
+                        holidays
+                );
+                for (Constraint constraint : constraints) {
+                    try {
+                        constraint.verifyConstraint(context);
+                    } catch (ViolatedConstraintException ex) {
+                        String message = ex.getMessage() == null ? "violated" : ex.getMessage();
+                        violations.add(ConstraintViolationDetail.of(
+                                constraint,
+                                concreteShift,
+                                assignment.getDoctor(),
+                                "Constraint must be satisfied",
+                                message
+                        ));
+                    }
+                }
+
+                doctorPriority.addConcreteShift(concreteShift);
+            }
+        }
+        return violations;
     }
 
     private AiScheduleResponse buildDeferredResponse(String label, AiTokenBudgetGuardResult budgetGuard) {
@@ -1517,19 +1805,125 @@ public class AiScheduleGenerationOrchestrationService {
         private final String rawScheduleJson;
         private final DecisionMetricValues rawMetrics;
         private final Schedule schedule;
+        private final CandidateValidationData validation;
 
         private CandidateData(String candidateId,
                               Long scheduleId,
                               ScheduleCandidateType type,
                               String rawScheduleJson,
                               DecisionMetricValues rawMetrics,
-                              Schedule schedule) {
+                              Schedule schedule,
+                              CandidateValidationData validation) {
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.scheduleId = scheduleId;
             this.type = Objects.requireNonNull(type, "type");
             this.rawScheduleJson = rawScheduleJson;
             this.rawMetrics = Objects.requireNonNull(rawMetrics, "rawMetrics");
             this.schedule = schedule;
+            this.validation = Objects.requireNonNull(validation, "validation");
+        }
+    }
+
+    private static class CandidateValidationData {
+        private final boolean valid;
+        private final boolean maxRetriesReached;
+        private final String code;
+        private final String message;
+        private final List<ConstraintViolationDetail> violatedConstraints;
+
+        private CandidateValidationData(boolean valid,
+                                        boolean maxRetriesReached,
+                                        String code,
+                                        String message,
+                                        List<ConstraintViolationDetail> violatedConstraints) {
+            this.valid = valid;
+            this.maxRetriesReached = maxRetriesReached;
+            this.code = code;
+            this.message = message;
+            this.violatedConstraints = violatedConstraints == null
+                    ? Collections.emptyList()
+                    : Collections.unmodifiableList(new ArrayList<>(violatedConstraints));
+        }
+
+        private static CandidateValidationData valid() {
+            return new CandidateValidationData(true, false, null, null, Collections.emptyList());
+        }
+
+        private static CandidateValidationData validWithWarning(String code, String message) {
+            return new CandidateValidationData(true, false, code, message, Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code, String message) {
+            return invalid(code, message, Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
+            return new CandidateValidationData(false, false, code, message, violatedConstraints);
+        }
+
+        private CandidateValidationData withMaxRetriesReached(boolean reached) {
+            return new CandidateValidationData(valid, reached, code, message, violatedConstraints);
+        }
+
+        private CandidateValidationData withWarning(String warningCode, String warningMessage) {
+            return new CandidateValidationData(valid, maxRetriesReached, warningCode, warningMessage, violatedConstraints);
+        }
+
+        private List<String> violationMessages() {
+            return violatedConstraints.stream()
+                    .map(violation -> violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    private static class ConstraintViolationDetail {
+        private final String constraintId;
+        private final String constraintType;
+        private final String shiftId;
+        private final String date;
+        private final String doctorId;
+        private final String expectedCondition;
+        private final String actualCondition;
+
+        private ConstraintViolationDetail(String constraintId,
+                                          String constraintType,
+                                          String shiftId,
+                                          String date,
+                                          String doctorId,
+                                          String expectedCondition,
+                                          String actualCondition) {
+            this.constraintId = constraintId;
+            this.constraintType = constraintType;
+            this.shiftId = shiftId;
+            this.date = date;
+            this.doctorId = doctorId;
+            this.expectedCondition = expectedCondition;
+            this.actualCondition = actualCondition;
+        }
+
+        private static ConstraintViolationDetail of(Constraint constraint,
+                                                    ConcreteShift concreteShift,
+                                                    Doctor doctor,
+                                                    String expectedCondition,
+                                                    String actualCondition) {
+            String date = concreteShift == null ? null : String.valueOf(LocalDate.ofEpochDay(concreteShift.getDate()));
+            String shiftId = concreteShift == null || concreteShift.getShift() == null || concreteShift.getShift().getId() == null
+                    ? null
+                    : String.valueOf(concreteShift.getShift().getId());
+            String doctorId = doctor == null || doctor.getId() == null ? null : String.valueOf(doctor.getId());
+            String constraintId = constraint == null || constraint.getId() == null ? null : String.valueOf(constraint.getId());
+            String constraintType = constraint == null
+                    ? null
+                    : constraint.getClass().getSimpleName();
+            return new ConstraintViolationDetail(
+                    constraintId,
+                    constraintType,
+                    shiftId,
+                    date,
+                    doctorId,
+                    expectedCondition,
+                    actualCondition
+            );
         }
     }
 

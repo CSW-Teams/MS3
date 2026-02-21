@@ -59,7 +59,7 @@ class AiHardCoveragePromptBlockBuilderTest {
                 Duration.ofHours(6),
                 Set.of(DayOfWeek.MONDAY),
                 new MedicalService(List.of(new Task(TaskEnum.CLINIC)), "Ward"),
-                null,
+                List.of(),
                 List.of()
         );
         ConcreteShift concreteShift = new ConcreteShift(day.toEpochDay(), shift);

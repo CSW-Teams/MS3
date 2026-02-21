@@ -457,10 +457,5 @@
   "Sentiment transitions": "Transizioni sentimento",
   "UP delta": "Delta UFFA",
   "Variance delta": "Delta varianza",
-  "N/A": "N/D",
-  "Download": "Scarica",
-  "Feedback successfully inserted": "Feedback inserito con successo",
-  "An error occurred while inserting a feedback": "Qualcosa è andato storto nell'inserimento del feedback",
-  "Please provide a score for your feedback": "Per inserire un feedback è necessario un punteggio",
-  "Please provide a text for your feedback": "Per inserire un feedback è necessario inserire un testo"
+  "N/A": "N/D"
 }

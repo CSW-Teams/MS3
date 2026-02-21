@@ -1,0 +1,30 @@
+{
+  "status": "SUCCESS",
+  "metadata": {
+    "reasoning": "Simulated AI schedule for parser/validator regression checks.",
+    "algorithm": "simulated_v1",
+    "generation_time": "2026-01-10T10:00:00Z",
+    "optimality_score": 0.87,
+    "metrics": {
+      "coverage_percent": 0.95,
+      "soft_violations_count": 1
+    }
+  },
+  "assignments": [
+    {
+      "shift_id": "S_101_20260111",
+      "doctor_id": 21,
+      "role_covered": "STRUCTURED",
+      "is_forced": false
+    },
+    {
+      "shift_id": "S_102_20260111",
+      "doctor_id": 34,
+      "role_covered": "SPECIALIST_JUNIOR",
+      "is_forced": true,
+      "violation_note": "Temporary weekend override"
+    }
+  ],
+  "uncovered_shifts": [],
+  "uffa_delta": []
+}

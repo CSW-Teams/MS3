@@ -2,24 +2,34 @@ package org.cswteams.ms3.ai.orchestration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cswteams.ms3.ai.broker.AgentBroker;
+import org.cswteams.ms3.ai.broker.AiBrokerProperties;
 import org.cswteams.ms3.ai.broker.AiTokenBudgetGuardResult;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
+import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.audit.selection.AuditedSelectionResult;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
+import org.cswteams.ms3.dao.ConstraintDAO;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
+import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Schedule;
+import org.cswteams.ms3.entity.Doctor;
+import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Shift;
+import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.enums.TimeSlot;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -87,11 +97,28 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
             assertEquals(AiScheduleGenerationOrchestrationService.SelectionResult.Status.PERSISTED, result.getStatus());
             assertEquals(1000L + i, result.getScheduleId());
             if ("standard".equals(candidateId)) {
-                verify(ctx.aiScheduleConverterService, never()).convert(any());
+                verify(ctx.aiScheduleConverterService, times(3)).convert(any());
             } else {
-                verify(ctx.aiScheduleConverterService, times(1)).convert(any());
+                verify(ctx.aiScheduleConverterService, times(4)).convert(any());
             }
         }
+    }
+
+    @Test
+    void persistSelectedCandidateReturnsDeterministicErrorWhenCachedCandidateIsInvalid() {
+        TestContext ctx = buildContext();
+        when(ctx.schedulerController.alreadyExistsAnotherSchedule(ctx.startDate, ctx.endDate)).thenReturn(false);
+        when(ctx.aiScheduleConverterService.convert(any()))
+                .thenThrow(AiProtocolException.schemaMismatch("forced-invalid-candidate", null));
+
+        ctx.service.generateScheduleComparison(ctx.startDate, ctx.endDate);
+        AiScheduleGenerationOrchestrationService.SelectionResult result =
+                ctx.service.persistSelectedCandidate("ai-empathetic");
+
+        assertEquals(AiScheduleGenerationOrchestrationService.SelectionResult.Status.INVALID_SELECTION, result.getStatus());
+        assertEquals("INVALID_CANDIDATE", result.getErrorCode());
+        assertEquals("Unable to build the selected schedule.", result.getErrorMessage());
+        verify(ctx.schedulerController, never()).persistSchedule(any(Schedule.class));
     }
 
     @Test
@@ -111,7 +138,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         ArgumentCaptor<Schedule> standardCaptor = ArgumentCaptor.forClass(Schedule.class);
         verify(standardContext.schedulerController).persistSchedule(standardCaptor.capture());
         assertSame(standardContext.transientSchedule, standardCaptor.getValue());
-        verify(standardContext.aiScheduleConverterService, never()).convert(any());
+        verify(standardContext.aiScheduleConverterService, times(3)).convert(any());
 
         TestContext aiContext = buildContext();
         when(aiContext.schedulerController.alreadyExistsAnotherSchedule(aiContext.startDate, aiContext.endDate)).thenReturn(false);
@@ -130,7 +157,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         assertEquals(aiContext.endDate.toEpochDay(), builtAiSchedule.getEndDate());
         assertEquals(1, builtAiSchedule.getConcreteShifts().size());
         assertTrue(builtAiSchedule.getConcreteShifts().contains(aiContext.convertedShift));
-        verify(aiContext.aiScheduleConverterService, times(1)).convert(any());
+        verify(aiContext.aiScheduleConverterService, times(4)).convert(any());
     }
 
     private TestContext buildContext() {
@@ -139,7 +166,11 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
 
         Shift standardShift = mock(Shift.class);
         when(standardShift.getId()).thenReturn(2001L);
-        when(standardShift.getQuantityShiftSeniority()).thenReturn(List.of());
+        QuantityShiftSeniority standardCoverageRequirement = mock(QuantityShiftSeniority.class);
+        when(standardCoverageRequirement.getSeniorityMap()).thenReturn(new java.util.HashMap<>(Map.of(Seniority.STRUCTURED, 1)));
+        when(standardShift.getQuantityShiftSeniority()).thenReturn(List.of(standardCoverageRequirement));
+        when(standardShift.getTimeSlot()).thenReturn(TimeSlot.MORNING);
+        when(standardShift.getDuration()).thenReturn(Duration.ofHours(8));
 
         Shift convertedAiShift = mock(Shift.class);
         when(convertedAiShift.getId()).thenReturn(3001L);
@@ -150,15 +181,18 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), List.of(standardConcreteShift));
 
         ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
         DoctorDAO doctorDAO = mock(DoctorDAO.class);
         DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
         DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
         ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
         AgentBroker agentBroker = mock(AgentBroker.class);
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
         RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
                 new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
@@ -166,8 +200,14 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
         when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
         when(aiActiveConstraintResolver.resolveWithReport(any(), any(), anyBoolean()))
                 .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0));
+        Doctor eligibleDoctor = mock(Doctor.class);
+        when(eligibleDoctor.getId()).thenReturn(11L);
+        when(eligibleDoctor.getSeniority()).thenReturn(Seniority.STRUCTURED);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(eligibleDoctor));
         when(agentBroker.previewTokenBudget(any())).thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
         when(aiScheduleConverterService.convert(any())).thenReturn(List.of(convertedShift));
         when(decisionAlgorithmService.selectPreferredWithAudit(any())).thenReturn(new AuditedSelectionResult("standard", List.of()));
@@ -177,8 +217,11 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                 doctorDAO,
                 doctorUffaPriorityDAO,
                 doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
                 scheduleDAO,
                 agentBroker,
+                aiBrokerProperties,
                 aiReschedulingOrchestrationService,
                 decisionAlgorithmService,
                 aiScheduleConverterService,
@@ -192,7 +235,8 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                 transientSchedule,
                 convertedShift,
                 startDate,
-                endDate);
+                endDate,
+                aiBrokerProperties);
     }
 
     private static class TestContext {
@@ -203,6 +247,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         private final ConcreteShift convertedShift;
         private final LocalDate startDate;
         private final LocalDate endDate;
+        private final AiBrokerProperties aiBrokerProperties;
 
         private TestContext(AiScheduleGenerationOrchestrationService service,
                             ISchedulerController schedulerController,
@@ -210,7 +255,8 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                             Schedule transientSchedule,
                             ConcreteShift convertedShift,
                             LocalDate startDate,
-                            LocalDate endDate) {
+                            LocalDate endDate,
+                            AiBrokerProperties aiBrokerProperties) {
             this.service = service;
             this.schedulerController = schedulerController;
             this.aiScheduleConverterService = aiScheduleConverterService;
@@ -218,6 +264,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
             this.convertedShift = convertedShift;
             this.startDate = startDate;
             this.endDate = endDate;
+            this.aiBrokerProperties = aiBrokerProperties;
         }
     }
 }

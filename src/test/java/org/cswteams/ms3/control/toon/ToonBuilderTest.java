@@ -405,8 +405,8 @@ class ToonBuilderTest {
 
         ToonActiveConstraint hardConstraint = new ToonActiveConstraint(
                 ToonConstraintType.HARD,
-                ToonConstraintEntityType.GLOBAL,
-                "ALL",
+                ToonConstraintEntityType.DOCTOR,
+                String.valueOf(structuredDoctor.getId()),
                 "STABLE_ORDER",
                 Map.of("level", "strict")
         );
@@ -442,7 +442,7 @@ class ToonBuilderTest {
                 + " pr:8,6,4\n"
                 + " h[0]{id,s,e,tz?}:\n"
                 + "ac[1]{t,e,i,r,p}:\n"
-                + "HARD,GLOBAL,ALL,STABLE_ORDER,{level:\"strict\"}\n";
+                + "HARD,DOCTOR,10,STABLE_ORDER,{level:\"strict\"}\n";
 
         assertEquals(expectedSnapshot, compact);
     }
