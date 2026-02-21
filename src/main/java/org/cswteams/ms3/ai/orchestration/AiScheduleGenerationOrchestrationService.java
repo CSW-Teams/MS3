@@ -84,6 +84,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AiScheduleGenerationOrchestrationService {
@@ -101,6 +103,9 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
+    private static final int ROLE_MISMATCH_LOG_LIMIT = 5;
+    private static final Pattern SCRATCHPAD_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority=([A-Z_]+)\\s+but\\s+role_required=([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ASSIGNMENT_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority\\s+([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
     private static final String BASE_VARIANT_INSTRUCTION = "Return strict JSON only with top-level object {'variants': ...}. "
             + "For object form, put the variant label as the key under variants. "
             + "If variants is an array, each item must include a non-empty 'label' field and a 'variant' object payload. "
@@ -610,6 +615,8 @@ public class AiScheduleGenerationOrchestrationService {
                     break;
                 }
 
+                logRoleMismatchDiagnostics(batchCorrelationId, definition.label, definition.candidateId, validation);
+
                 if (attempt < variantMaxAttempts) {
                     attemptInstructions = buildCorrectiveVariantInstruction(baseInstructions, attempt, validation);
                     logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={}",
@@ -745,6 +752,58 @@ public class AiScheduleGenerationOrchestrationService {
                 .replace("\r", " ")
                 .replace("'", "\\'")
                 .trim();
+    }
+
+    private void logRoleMismatchDiagnostics(String correlationId,
+                                            String variantId,
+                                            String candidateId,
+                                            CandidateValidationData validation) {
+        List<RoleMismatchDetail> mismatches = extractRoleMismatchDetails(validation);
+        if (mismatches.isEmpty()) {
+            return;
+        }
+        List<RoleMismatchDetail> sampled = mismatches.subList(0, Math.min(ROLE_MISMATCH_LOG_LIMIT, mismatches.size()));
+        logger.warn("event=ai_candidate_role_mismatch_validation_failed correlation_id={} variant_id={} candidate_id={} role_mismatch_count={} mismatch_sample={}",
+                correlationId,
+                variantId,
+                candidateId,
+                mismatches.size(),
+                sampled);
+    }
+
+    private List<RoleMismatchDetail> extractRoleMismatchDetails(CandidateValidationData validation) {
+        if (validation == null || validation.protocolValidationDetails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<RoleMismatchDetail> mismatches = new ArrayList<>();
+        for (ProtocolValidationDetail detail : validation.protocolValidationDetails) {
+            if (detail == null || detail.path == null || detail.message == null) {
+                continue;
+            }
+            String expected = null;
+            String actual = null;
+
+            Matcher scratchpadMatcher = SCRATCHPAD_ROLE_MISMATCH_PATTERN.matcher(detail.message);
+            if (scratchpadMatcher.matches()) {
+                actual = scratchpadMatcher.group(1);
+                expected = scratchpadMatcher.group(2);
+            } else if (detail.path.contains("$.assignments[") && detail.path.endsWith(".role_covered")) {
+                Matcher assignmentMatcher = ASSIGNMENT_ROLE_MISMATCH_PATTERN.matcher(detail.message);
+                if (assignmentMatcher.matches()) {
+                    expected = assignmentMatcher.group(1);
+                    actual = "assigned role mismatch";
+                }
+            }
+
+            if (expected != null || actual != null) {
+                mismatches.add(new RoleMismatchDetail(detail.path, safeText(expected), safeText(actual)));
+            }
+        }
+        return mismatches;
+    }
+
+    private String safeText(String value) {
+        return value == null || value.trim().isEmpty() ? "n/a" : value;
     }
 
     private CandidateValidationData validateAiCandidate(String rawJson,
@@ -1934,9 +1993,31 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         private List<String> violationMessages() {
-            return violatedConstraints.stream()
+            List<String> messages = violatedConstraints.stream()
                     .map(violation -> violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
                     .collect(Collectors.toList());
+            messages.addAll(protocolValidationDetails.stream()
+                    .map(detail -> detail.path + ": " + detail.message)
+                    .collect(Collectors.toList()));
+            return messages;
+        }
+    }
+
+    private static class RoleMismatchDetail {
+        private final String path;
+        private final String expectedSeniority;
+        private final String actualSeniorityOrAssignedRole;
+
+        private RoleMismatchDetail(String path, String expectedSeniority, String actualSeniorityOrAssignedRole) {
+            this.path = path;
+            this.expectedSeniority = expectedSeniority;
+            this.actualSeniorityOrAssignedRole = actualSeniorityOrAssignedRole;
+        }
+
+        @Override
+        public String toString() {
+            return "{path='" + path + "', expected_seniority='" + expectedSeniority
+                    + "', actual='" + actualSeniorityOrAssignedRole + "'}";
         }
     }
 

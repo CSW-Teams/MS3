@@ -153,7 +153,7 @@ public class AiScheduleConverterService {
             if (!doctor.getSeniority().equals(aiAssignment.roleCovered)) {
                 validationErrors.add(new ValidationError(
                         "$.assignments[" + index + "].role_covered",
-                        "must match doctor's seniority " + doctor.getSeniority()
+                        "expected seniority=" + doctor.getSeniority() + " but assigned role=" + aiAssignment.roleCovered
                 ));
             }
 

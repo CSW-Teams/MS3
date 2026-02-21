@@ -1,6 +1,10 @@
 package org.cswteams.ms3.ai.orchestration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import org.cswteams.ms3.ai.broker.AgentBroker;
 import org.cswteams.ms3.ai.broker.AiBrokerProperties;
 import org.cswteams.ms3.ai.broker.AiBrokerRequest;
@@ -54,6 +58,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -330,6 +335,134 @@ class AiScheduleGenerationOrchestrationServiceTest {
         assertTrue(empatheticCandidate.getMetadata().getValidationCode().contains("CONVERSION_FAILED"));
         assertTrue(empatheticCandidate.getMetadata().getValidationViolations().isEmpty());
         assertTrue(empatheticCandidate.getRawScheduleText().contains("retry-empathetic"));
+    }
+
+    @Test
+    void generateScheduleComparisonWhenAiReturnsWrongRoleLogsDiagnosticsAndPublishesValidationMetadata() {
+        LocalDate startDate = LocalDate.of(2026, 9, 14);
+        LocalDate endDate = LocalDate.of(2026, 9, 14);
+
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        doctorPriority.setGeneralPriority(3);
+        doctorPriority.setNightPriority(4);
+        doctorPriority.setLongShiftPriority(5);
+
+        Shift shift = makeShift(1001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360));
+        ConcreteShift concreteShift = new ConcreteShift(startDate.toEpochDay(), shift);
+        Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), List.of(concreteShift));
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+                .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
+        when(agentBroker.previewTokenBudget(any())).thenReturn(new AiTokenBudgetGuardResult(true, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("standard", List.of()));
+        when(agentBroker.requestSchedule(any())).thenAnswer(invocation -> {
+            AiBrokerRequest request = invocation.getArgument(0);
+            if (request.getInstructions().contains("Use label EMPATHETIC")) {
+                return new AiScheduleVariantsResponse(Map.of("EMPATHETIC", aiVariantResponse("wrong-role")));
+            }
+            if (request.getInstructions().contains("Use label EFFICIENT")) {
+                return new AiScheduleVariantsResponse(Map.of("EFFICIENT", aiVariantResponse("efficient")));
+            }
+            return new AiScheduleVariantsResponse(Map.of("BALANCED", aiVariantResponse("balanced")));
+        });
+
+        List<org.cswteams.ms3.ai.protocol.ValidationError> roleMismatchDetails = List.of(
+                new org.cswteams.ms3.ai.protocol.ValidationError(
+                        "$.metadata.role_validation_scratchpad[0].candidate_doctor_ids[0]",
+                        "doctor_id=10 has seniority=STRUCTURED but role_required=SPECIALIST_JUNIOR"
+                )
+        );
+        when(aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson != null && rawJson.contains("wrong-role")) {
+                throw AiProtocolException.schemaMismatch(
+                        "AI role_validation_scratchpad contains doctor IDs with mismatched roles",
+                        roleMismatchDetails,
+                        null
+                );
+            }
+            return List.of(concreteShift);
+        });
+
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
+        aiBrokerProperties.setScheduleValidationMaxRetries(0);
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                aiBrokerProperties,
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        Logger serviceLogger = (Logger) org.slf4j.LoggerFactory.getLogger(AiScheduleGenerationOrchestrationService.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        serviceLogger.addAppender(appender);
+
+        try {
+            var response = assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+
+            var empatheticCandidate = response.getCandidates().stream()
+                    .filter(candidate -> "EMPATHETIC".equalsIgnoreCase(candidate.getMetadata().getType()))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertFalse(empatheticCandidate.getMetadata().isValid());
+            assertEquals("CONVERSION_FAILED", empatheticCandidate.getMetadata().getValidationCode());
+            assertTrue(empatheticCandidate.getMetadata().getValidationViolations().stream()
+                    .anyMatch(message -> message.contains("role_validation_scratchpad")
+                            && message.contains("role_required=SPECIALIST_JUNIOR")));
+
+            ILoggingEvent mismatchLog = appender.list.stream()
+                    .filter(event -> event.getFormattedMessage().contains("event=ai_candidate_role_mismatch_validation_failed"))
+                    .findFirst()
+                    .orElse(null);
+            assertNotNull(mismatchLog);
+            assertEquals(Level.WARN, mismatchLog.getLevel());
+            String logMessage = mismatchLog.getFormattedMessage();
+            assertTrue(logMessage.contains("variant_id=EMPATHETIC"));
+            assertTrue(logMessage.contains("candidate_id=ai-empathetic"));
+            assertTrue(logMessage.contains("role_mismatch_count=1"));
+            assertTrue(logMessage.contains("expected_seniority='SPECIALIST_JUNIOR'"));
+            assertTrue(logMessage.contains("actual='STRUCTURED'"));
+        } finally {
+            serviceLogger.detachAppender(appender);
+        }
     }
 
     private AiScheduleResponse aiVariantResponse(String reasoning) {
