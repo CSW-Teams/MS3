@@ -38,6 +38,7 @@ import org.cswteams.ms3.ai.protocol.dto.AiUffaBalanceDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaDeltaDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUncoveredShiftDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
+import org.cswteams.ms3.ai.protocol.ValidationError;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
@@ -723,6 +724,14 @@ public class AiScheduleGenerationOrchestrationService {
                     .append("'}");
         }
 
+        for (ProtocolValidationDetail detail : validation.protocolValidationDetails) {
+            builder.append(", {path='")
+                    .append(promptSafeText(detail.path))
+                    .append("', message='")
+                    .append(promptSafeText(detail.message))
+                    .append("'}");
+        }
+
         builder.append("]");
         return builder.toString();
     }
@@ -765,13 +774,31 @@ public class AiScheduleGenerationOrchestrationService {
             }
             return CandidateValidationData.valid();
         } catch (AiProtocolException ex) {
+            List<ProtocolValidationDetail> protocolValidationDetails = extractProtocolValidationDetails(ex.getDetails());
             logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} message={}",
                     correlationId,
                     candidateId,
                     "CONVERSION_FAILED",
                     ex.getMessage());
-            return CandidateValidationData.invalid("CONVERSION_FAILED", ex.getMessage());
+            return CandidateValidationData.invalid("CONVERSION_FAILED",
+                    ex.getMessage(),
+                    Collections.emptyList(),
+                    protocolValidationDetails);
         }
+    }
+
+    private List<ProtocolValidationDetail> extractProtocolValidationDetails(List<ValidationError> details) {
+        if (details == null || details.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ProtocolValidationDetail> protocolValidationDetails = new ArrayList<>();
+        for (ValidationError detail : details) {
+            if (detail == null) {
+                continue;
+            }
+            protocolValidationDetails.add(new ProtocolValidationDetail(detail.getPath(), detail.getMessage()));
+        }
+        return protocolValidationDetails;
     }
 
     private List<String> formatViolationMessages(List<ConstraintViolationDetail> violations) {
@@ -1830,12 +1857,14 @@ public class AiScheduleGenerationOrchestrationService {
         private final String code;
         private final String message;
         private final List<ConstraintViolationDetail> violatedConstraints;
+        private final List<ProtocolValidationDetail> protocolValidationDetails;
 
         private CandidateValidationData(boolean valid,
                                         boolean maxRetriesReached,
                                         String code,
                                         String message,
-                                        List<ConstraintViolationDetail> violatedConstraints) {
+                                        List<ConstraintViolationDetail> violatedConstraints,
+                                        List<ProtocolValidationDetail> protocolValidationDetails) {
             this.valid = valid;
             this.maxRetriesReached = maxRetriesReached;
             this.code = code;
@@ -1843,36 +1872,81 @@ public class AiScheduleGenerationOrchestrationService {
             this.violatedConstraints = violatedConstraints == null
                     ? Collections.emptyList()
                     : Collections.unmodifiableList(new ArrayList<>(violatedConstraints));
+            this.protocolValidationDetails = protocolValidationDetails == null
+                    ? Collections.emptyList()
+                    : Collections.unmodifiableList(new ArrayList<>(protocolValidationDetails));
         }
 
         private static CandidateValidationData valid() {
-            return new CandidateValidationData(true, false, null, null, Collections.emptyList());
+            return new CandidateValidationData(true,
+                    false,
+                    null,
+                    null,
+                    Collections.emptyList(),
+                    Collections.emptyList());
         }
 
         private static CandidateValidationData validWithWarning(String code, String message) {
-            return new CandidateValidationData(true, false, code, message, Collections.emptyList());
+            return new CandidateValidationData(true,
+                    false,
+                    code,
+                    message,
+                    Collections.emptyList(),
+                    Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code, String message) {
-            return invalid(code, message, Collections.emptyList());
+            return invalid(code, message, Collections.emptyList(), Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
-            return new CandidateValidationData(false, false, code, message, violatedConstraints);
+            return invalid(code, message, violatedConstraints, Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code,
+                                                       String message,
+                                                       List<ConstraintViolationDetail> violatedConstraints,
+                                                       List<ProtocolValidationDetail> protocolValidationDetails) {
+            return new CandidateValidationData(false,
+                    false,
+                    code,
+                    message,
+                    violatedConstraints,
+                    protocolValidationDetails);
         }
 
         private CandidateValidationData withMaxRetriesReached(boolean reached) {
-            return new CandidateValidationData(valid, reached, code, message, violatedConstraints);
+            return new CandidateValidationData(valid,
+                    reached,
+                    code,
+                    message,
+                    violatedConstraints,
+                    protocolValidationDetails);
         }
 
         private CandidateValidationData withWarning(String warningCode, String warningMessage) {
-            return new CandidateValidationData(valid, maxRetriesReached, warningCode, warningMessage, violatedConstraints);
+            return new CandidateValidationData(valid,
+                    maxRetriesReached,
+                    warningCode,
+                    warningMessage,
+                    violatedConstraints,
+                    protocolValidationDetails);
         }
 
         private List<String> violationMessages() {
             return violatedConstraints.stream()
                     .map(violation -> violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
                     .collect(Collectors.toList());
+        }
+    }
+
+    private static class ProtocolValidationDetail {
+        private final String path;
+        private final String message;
+
+        private ProtocolValidationDetail(String path, String message) {
+            this.path = path;
+            this.message = message;
         }
     }
 

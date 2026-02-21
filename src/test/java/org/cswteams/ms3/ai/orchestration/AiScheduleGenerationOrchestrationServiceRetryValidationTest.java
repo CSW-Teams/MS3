@@ -10,6 +10,7 @@ import org.cswteams.ms3.ai.broker.domain.AiMetrics;
 import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
 import org.cswteams.ms3.ai.broker.domain.AiScheduleVariantsResponse;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
+import org.cswteams.ms3.ai.protocol.ValidationError;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
@@ -209,6 +210,38 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
         assertTrue(retryInstructions.contains("constraint_id='77'"));
         assertTrue(retryInstructions.contains("doctor_id='42'"));
         assertTrue(retryInstructions.contains("actual='rest window violated'"));
+    }
+
+    @Test
+    void conversionValidationDetailsAreEmbeddedInRetryPromptPayload() {
+        RetryFixture fixture = new RetryFixture();
+        fixture.aiBrokerProperties.setScheduleValidationMaxRetries(1);
+        fixture.mockBrokerByReasoning(Map.of(
+                "EMPATHETIC", List.of("role-mismatch-empathetic", "fixed-empathetic"),
+                "EFFICIENT", List.of("ok-efficient"),
+                "BALANCED", List.of("ok-balanced")
+        ));
+        when(fixture.aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson.contains("role-mismatch-empathetic")) {
+                throw AiProtocolException.schemaMismatch(
+                        "Schema mismatch during conversion",
+                        List.of(new ValidationError("$.assignments[0].role_covered", "must match shift requested role")),
+                        null
+                );
+            }
+            return List.of(fixture.convertedShift);
+        });
+
+        fixture.service.generateScheduleComparison(fixture.startDate, fixture.endDate);
+
+        ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
+        verify(fixture.agentBroker, times(4)).requestSchedule(requestCaptor.capture());
+        String retryInstructions = requestCaptor.getAllValues().get(1).getInstructions();
+
+        assertTrue(retryInstructions.contains("Validation failures (prompt-safe):"));
+        assertTrue(retryInstructions.contains("path='$.assignments[0].role_covered'"));
+        assertTrue(retryInstructions.contains("message='must match shift requested role'"));
     }
 
 
