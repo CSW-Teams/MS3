@@ -44,6 +44,8 @@
   "Requests Received": "Richieste Ricevute",
   "Requests Sent": "Richieste Inviate",
 
+  "Visualize Feedbacks": "Visualizza Feedback",
+
   "Authentication Failed. Server not online": "Autenticazione Fallita. I server non sono attualmente in servizio, riprova più tardi.",
   "Authentication Failed": "Autenticazione Fallita: ",
   "Invalid Credentials": "Credenziali di accesso non valide. Verifica i dati inseriti e riprova",
@@ -240,6 +242,7 @@
   "Doctors on Duty": "Medici di Guardia",
   "Doctors on Call": "Medici Reperibili",
   "Close":  "Chiudi",
+  "Show": "Mostra",
   "Filter": "Filtra",
   "Weekly": "Settimanale",
   "Daily": "Giornaliero",
@@ -442,14 +445,11 @@
   "Create new shift": "Crea un nuovo turno",
   "Shift start time": "Orario di inizio del turno",
 
-  "Cancel": "Cancella",
   "Add shift": "Aggiungi turno",
 
   "No time slot selected": "Nessuna fascia oraria selezionata",
   "No day of the week selected": "Nessuna giorno della settimana selezionato",
 
-  "Schedule": "Schedulazione",
-  "Schedule ID": "ID schedulazione",
   "Select schedule": "Seleziona schedulazione",
   "Selected": "Selezionato",
   "Coverage": "Copertura",
@@ -457,10 +457,10 @@
   "Sentiment transitions": "Transizioni sentimento",
   "UP delta": "Delta UFFA",
   "Variance delta": "Delta varianza",
-  "Standard": "Standard",
-  "Empathetic": "Empatica",
-  "Efficient": "Efficiente",
-  "Balanced": "Bilanciata",
   "N/A": "N/D",
-  "Download": "Scarica"
+  "Download": "Scarica",
+  "Feedback successfully inserted": "Feedback inserito con successo",
+  "An error occurred while inserting a feedback": "Qualcosa è andato storto nell'inserimento del feedback",
+  "Please provide a score for your feedback": "Per inserire un feedback è necessario un punteggio",
+  "Please provide a text for your feedback": "Per inserire un feedback è necessario inserire un testo"
 }
