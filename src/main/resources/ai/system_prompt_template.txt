@@ -153,6 +153,21 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
   - Meaning: per-shift mandatory minimum role coverage.
   - Missing/unknown handling: if any required field is missing for a row, treat that row as invalid and do not claim valid hard coverage for that shift.
 
+7) Appended role validation scratchpad block
+- Token: role_validation_scratchpad[n]{shift_id,required_role,required_count,candidate_doctor_ids}
+  - n datatype: integer >= 0.
+  - shift_id (required): string shift identifier.
+  - required_role (required): enum string in STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR.
+  - required_count (optional): integer >= 0 role count hint emitted by backend.
+  - candidate_doctor_ids (required): array of integer doctor IDs pre-filtered by backend for the `(shift_id, required_role)` pair.
+  - Meaning: authoritative backend-preprocessed candidate allowlist for role validation.
+  - Missing/unknown handling: malformed rows are unusable for reasoning.
+
+STRICT PRECEDENCE FOR ROLE MATCHING (NORMATIVE):
+- `role_validation_scratchpad` is authoritative whenever present.
+- Backend-provided scratchpad entries override any role-candidate inference from `dr`.
+- If an inference from `dr` conflicts with scratchpad candidates, obey scratchpad and record the mismatch in `metadata.reasoning`.
+
 STRICT PRECEDENCE FOR COVERAGE SIGNALS (NORMATIVE):
 - `hard_coverage_requirements` is authoritative for role-level mandatory coverage.
 - `sh` is contextual/summary metadata and must not override role-specific counts.
@@ -216,11 +231,9 @@ Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use o
 
 COGNITIVE STEP (CRITICAL):
 Before generating 'assignments', you MUST perform the following lookup in 'metadata.role_validation_scratchpad':
-1. Read `hard_coverage_requirements` for each shift.
-2. For each required role (STRUCTURED, SPECIALIST_JUNIOR, SPECIALIST_SENIOR), scan the `TOON_INPUT` doctor list (`dr[...]`).
-3. Identify all doctors whose `r:` attribute exactly matches the required role.
-4. Populate `candidate_doctor_ids` with these matching IDs only.
-5. When generating the final `assignments` list, you are STRICTLY FORBIDDEN from assigning a doctor_id that is not present in the `candidate_doctor_ids` for that specific role.
+1. Read the provided preprocessed `role_validation_scratchpad` rows.
+2. For each `(shift_id, role_required)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
+3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, role_required)` pair.
 
 
 MANDATORY EXECUTION ORDER (NORMATIVE):
