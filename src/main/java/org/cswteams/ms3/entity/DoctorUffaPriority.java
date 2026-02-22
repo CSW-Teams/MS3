@@ -109,6 +109,9 @@ public class DoctorUffaPriority {
 
         if (assegnazioniTurnoCache == null){
             this.assegnazioniTurnoCache = new ArrayList<>();
+            if (schedule == null || schedule.getConcreteShifts() == null) {
+                return assegnazioniTurnoCache;
+            }
             for (ConcreteShift concreteShift: schedule.getConcreteShifts()){
                 for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()) {
                     if (da.getDoctor().getId() == this.doctor.getId()){
