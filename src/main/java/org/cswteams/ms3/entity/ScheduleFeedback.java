@@ -37,6 +37,7 @@ public class ScheduleFeedback {
 
     private long timestamp;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private FeedbackCategory category;
 
