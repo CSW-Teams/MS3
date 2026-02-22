@@ -144,6 +144,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 decisionAlgorithmService,
                 aiScheduleConverterService,
                 new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
                 new ObjectMapper()
         );
 
@@ -309,6 +310,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 decisionAlgorithmService,
                 aiScheduleConverterService,
                 new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
                 new ObjectMapper()
         );
 
@@ -426,6 +428,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 decisionAlgorithmService,
                 aiScheduleConverterService,
                 new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
                 new ObjectMapper()
         );
 
@@ -550,6 +553,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 decisionAlgorithmService,
                 aiScheduleConverterService,
                 new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
                 new ObjectMapper()
         );
 

@@ -138,6 +138,7 @@ public class AiScheduleGenerationOrchestrationService {
     private final DecisionAlgorithmService decisionAlgorithmService;
     private final AiScheduleConverterService aiScheduleConverterService;
     private final AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder;
+    private final AiRoleValidationScratchpadPromptBlockBuilder roleValidationScratchpadPromptBlockBuilder;
     private final ObjectMapper objectMapper;
     private final AiScheduleComparisonMapper comparisonMapper = new AiScheduleComparisonMapper();
     private final AtomicReference<TransientComparisonState> transientComparisonState = new AtomicReference<>();
@@ -156,6 +157,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     DecisionAlgorithmService decisionAlgorithmService,
                                                     AiScheduleConverterService aiScheduleConverterService,
                                                     AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder,
+                                                    AiRoleValidationScratchpadPromptBlockBuilder roleValidationScratchpadPromptBlockBuilder,
                                                     ObjectMapper objectMapper) {
         this.schedulerController = schedulerController;
         this.doctorDAO = doctorDAO;
@@ -170,6 +172,7 @@ public class AiScheduleGenerationOrchestrationService {
         this.decisionAlgorithmService = decisionAlgorithmService;
         this.aiScheduleConverterService = aiScheduleConverterService;
         this.hardCoveragePromptBlockBuilder = hardCoveragePromptBlockBuilder;
+        this.roleValidationScratchpadPromptBlockBuilder = roleValidationScratchpadPromptBlockBuilder;
         this.objectMapper = objectMapper;
     }
 
@@ -423,6 +426,8 @@ public class AiScheduleGenerationOrchestrationService {
         ToonBuilder builder = new ToonBuilder();
         String toonPayload = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
         String hardCoverageBlock = hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
+        String roleValidationScratchpadBlock = roleValidationScratchpadPromptBlockBuilder
+                .buildRoleValidationScratchpadBlock(scopedShifts, doctors);
         int generatedHardCoverageRows = countHardCoverageRows(hardCoverageBlock);
         logger.info("event=hard_coverage_block_built correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={} hard_coverage_block_length={} hard_coverage_block_checksum={}",
                 correlationId,
@@ -436,7 +441,7 @@ public class AiScheduleGenerationOrchestrationService {
                     scopedShifts.size(),
                     generatedHardCoverageRows);
         }
-        return toonPayload + "\n" + hardCoverageBlock;
+        return toonPayload + "\n" + hardCoverageBlock + roleValidationScratchpadBlock;
     }
 
     private int countHardCoverageRows(String hardCoverageBlock) {
