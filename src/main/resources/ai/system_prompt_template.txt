@@ -153,7 +153,7 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
   - Meaning: per-shift mandatory minimum role coverage.
   - Missing/unknown handling: if any required field is missing for a row, treat that row as invalid and do not claim valid hard coverage for that shift.
 
-7) Appended role validation scratchpad block
+7) Appended role validation scratchpad input block
 - Token: role_validation_scratchpad[n]{shift_id,required_role,required_count,candidate_doctor_ids}
   - n datatype: integer >= 0.
   - shift_id (required): string shift identifier.
@@ -179,17 +179,11 @@ Compact conflict example (required behavior):
 
 variant_schema:
 Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use only exact enum names.
+Do not echo or mirror internal input artifacts (including `role_validation_scratchpad`) in `metadata` or anywhere in output JSON.
 
 {
   "status": "SUCCESS | PARTIAL_SUCCESS | FAILURE",
   "metadata": {
-    "role_validation_scratchpad": [
-       {
-         "shift_id": string,
-         "role_required": string,
-         "candidate_doctor_ids": [number]
-       }
-    ],
     "reasoning": string,
     "algorithm": string,
     "generation_time": string,
@@ -230,10 +224,11 @@ Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use o
 }
 
 COGNITIVE STEP (CRITICAL):
-Before generating 'assignments', you MUST perform the following lookup in 'metadata.role_validation_scratchpad':
-1. Read the provided preprocessed `role_validation_scratchpad` rows.
+Before generating 'assignments', you MUST perform the following lookup using the provided TOON input block `role_validation_scratchpad`:
+1. Use the provided `role_validation_scratchpad` input rows.
 2. For each `(shift_id, role_required)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
 3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, role_required)` pair.
+4. Never echo `role_validation_scratchpad` rows or any other internal input artifact in output metadata.
 
 
 MANDATORY EXECUTION ORDER (NORMATIVE):
