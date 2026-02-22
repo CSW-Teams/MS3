@@ -107,14 +107,14 @@ public class AiScheduleConverterService {
                 String path = "$.metadata.role_validation_scratchpad[" + scratchpadIndex + "].candidate_doctor_ids[" + candidateIndex + "]";
                 if (knownSeniority == null) {
                     throw AiProtocolException.schemaMismatch(
-                            "AI role_validation_scratchpad contains unknown doctor IDs",
+                            "AI response violates the backend-provided role_validation_scratchpad contract: candidate_doctor_ids contain unknown doctor IDs",
                             List.of(new ValidationError(path, "doctor_id=" + candidateId + " is not available in current run context")),
                             null
                     );
                 }
                 if (knownSeniority != roleRequired) {
                     throw AiProtocolException.schemaMismatch(
-                            "AI role_validation_scratchpad contains doctor IDs with mismatched roles",
+                            "AI response violates the backend-provided role_validation_scratchpad contract: candidate_doctor_ids do not match role_required",
                             List.of(new ValidationError(path,
                                     "doctor_id=" + candidateId + " has seniority=" + knownSeniority + " but role_required=" + roleRequired)),
                             null

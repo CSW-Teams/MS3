@@ -725,6 +725,7 @@ public class AiScheduleGenerationOrchestrationService {
         return baseInstructions
                 + " Previous attempt " + failedAttempt
                 + " was invalid (" + validation.code + ": " + validation.message + ")."
+                + " Treat role_validation_scratchpad semantics as a backend-authoritative contract: each candidate_doctor_ids entry must reference an in-context doctor whose seniority exactly matches role_required."
                 + buildValidationFailurePromptBlock(validation)
                 + " Regenerate the same variant label only, fix all domain/syntax issues, and return strict JSON.";
     }
