@@ -2,6 +2,7 @@ package org.cswteams.ms3.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnTransformer;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -39,6 +40,8 @@ public class ScheduleFeedback {
 
     @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "feedback_category_enum")
+    @ColumnTransformer(write = "?::feedback_category_enum")
     private FeedbackCategory category;
 
     public ScheduleFeedback() {

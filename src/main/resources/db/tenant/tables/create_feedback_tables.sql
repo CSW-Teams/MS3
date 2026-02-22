@@ -1,17 +1,11 @@
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'feedback_category_enum') THEN
-        CREATE TYPE feedback_category_enum AS ENUM (
-            'REPEATED_WEEKDAY',
-            'REPEATED_TIME_SLOT',
-            'CONSECUTIVE_SHIFTS',
-            'WORKLOAD_IMBALANCE',
-            'PREFERENCE_VIOLATION',
-            'OTHER'
-        );
-    END IF;
-END
-$$;
+create type feedback_category_enum as enum (
+    'REPEATED_WEEKDAY',
+    'REPEATED_TIME_SLOT',
+    'CONSECUTIVE_SHIFTS',
+    'WORKLOAD_IMBALANCE',
+    'PREFERENCE_VIOLATION',
+    'OTHER'
+);
 
 create table schedule_feedback (
                                    id bigint not null,

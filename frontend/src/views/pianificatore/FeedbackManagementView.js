@@ -36,13 +36,19 @@ export default class FeedbackManagementView extends React.Component{
       let api = new ScheduleFeedbackAPI();
       const rawData = await api.getFeedbacks(); // Chiamata al Backend
 
-      const formattedFeedbacks = rawData.map(item => ({
-        name: item.doctorName,
-        lastname: item.doctorLastname,
-        feedback_rating: item.score,
-        feedback_text: item.comment,
-        category: item.category
-      }));
+      const formattedFeedbacks = rawData.map(item => {
+        const doctorName = item.doctorName ?? item.name ?? item.doctor?.name ?? null;
+        const doctorLastname = item.doctorLastname ?? item.lastname ?? item.doctor?.lastname ?? null;
+        const authorFallback = item.doctorId != null ? `#${item.doctorId}` : t("Unknown");
+
+        return {
+          name: doctorName || authorFallback,
+          lastname: doctorLastname || "",
+          feedback_rating: item.score,
+          feedback_text: item.comment,
+          category: item.category,
+        };
+      });
 
       this.setState({ feedbacks: formattedFeedbacks });
 
