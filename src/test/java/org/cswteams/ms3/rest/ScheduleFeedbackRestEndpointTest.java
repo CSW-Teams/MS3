@@ -7,6 +7,7 @@ import org.cswteams.ms3.control.logout.JwtBlacklistService;
 import org.cswteams.ms3.control.scheduleFeedback.IScheduleFeedbackController;
 import org.cswteams.ms3.dto.login.CustomUserDetails;
 import org.cswteams.ms3.dto.scheduleFeedback.ScheduleFeedbackDTO;
+import org.cswteams.ms3.entity.enums.FeedbackCategory;
 import org.cswteams.ms3.utils.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,6 +69,7 @@ public class ScheduleFeedbackRestEndpointTest {
         dto.setComment("Good");
         dto.setScore(5);
         dto.setConcreteShiftIds(Collections.singletonList(1L));
+        dto.setCategory(FeedbackCategory.OTHER);
 
         when(scheduleFeedbackController.addFeedback(any(ScheduleFeedbackDTO.class), any())).thenReturn(dto);
 
@@ -116,6 +118,7 @@ public class ScheduleFeedbackRestEndpointTest {
         dto.setComment("Updated");
         dto.setScore(4);
         dto.setConcreteShiftIds(Collections.singletonList(1L));
+        dto.setCategory(FeedbackCategory.REPEATED_TIME_SLOT);
 
         when(scheduleFeedbackController.updateFeedback(any(ScheduleFeedbackDTO.class), any())).thenReturn(dto);
 
