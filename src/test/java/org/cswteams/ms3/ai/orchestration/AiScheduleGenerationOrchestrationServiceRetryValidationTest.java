@@ -373,6 +373,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
                     decisionAlgorithmService,
                     aiScheduleConverterService,
                     new AiHardCoveragePromptBlockBuilder(),
+                    new AiRoleValidationScratchpadPromptBlockBuilder(),
                     new ObjectMapper()
             );
         }
