@@ -166,6 +166,31 @@ class AiScheduleGenerationOrchestrationServiceTest {
     }
 
     @Test
+    void generateScheduleComparisonAppendsRoleValidationScratchpadWithBackendFilteredDoctorIds() {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift shift = makeShift(1101L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1))
+        ));
+
+        String toonPayload = generateScheduleComparisonAndCaptureToonPayloadWithDoctors(date, date, List.of(
+                new ConcreteShift(date.toEpochDay(), shift)
+        ), List.of(
+                newDoctor(10L, Seniority.STRUCTURED),
+                newDoctor(20L, Seniority.SPECIALIST_JUNIOR),
+                newDoctor(30L, Seniority.SPECIALIST_SENIOR)
+        ));
+
+        int hardCoverageIndex = toonPayload.indexOf("hard_coverage_requirements[");
+        int roleValidationIndex = toonPayload.indexOf("role_validation_scratchpad[");
+        assertTrue(hardCoverageIndex > 0);
+        assertTrue(roleValidationIndex > hardCoverageIndex);
+        assertTrue(toonPayload.contains("role_validation_scratchpad[2]{shift_id,required_role,required_count,candidate_doctor_ids}:"));
+        assertTrue(toonPayload.contains("S_1101_20260914,STRUCTURED,1,[10]"));
+        assertTrue(toonPayload.contains("S_1101_20260914,SPECIALIST_JUNIOR,1,[20]"));
+        assertFalse(toonPayload.contains("S_1101_20260914,SPECIALIST_SENIOR"));
+    }
+
+    @Test
     void generateScheduleComparisonSerializesSingleShiftWithMultipleSeniorityMinima() {
         LocalDate date = LocalDate.of(2026, 9, 14);
         Shift shift = makeShift(2001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
@@ -481,8 +506,21 @@ class AiScheduleGenerationOrchestrationServiceTest {
     private String generateScheduleComparisonAndCaptureToonPayload(LocalDate startDate,
                                                                     LocalDate endDate,
                                                                     List<ConcreteShift> concreteShifts) {
-        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
-        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        return generateScheduleComparisonAndCaptureToonPayloadWithDoctors(startDate,
+                endDate,
+                concreteShifts,
+                List.of(newDoctor(10L, Seniority.STRUCTURED)));
+    }
+
+    private String generateScheduleComparisonAndCaptureToonPayloadWithDoctors(LocalDate startDate,
+                                                                               LocalDate endDate,
+                                                                               List<ConcreteShift> concreteShifts,
+                                                                               List<Doctor> doctors) {
+        List<Doctor> effectiveDoctors = doctors == null || doctors.isEmpty()
+                ? List.of(newDoctor(10L, Seniority.STRUCTURED))
+                : doctors;
+        Doctor primaryDoctor = effectiveDoctors.get(0);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(primaryDoctor);
         doctorPriority.setGeneralPriority(3);
         doctorPriority.setNightPriority(4);
         doctorPriority.setLongShiftPriority(5);
@@ -496,7 +534,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 continue;
             }
             DoctorAssignment assignment = new DoctorAssignment(
-                    doctor,
+                    primaryDoctor,
                     ConcreteShiftDoctorStatus.ON_DUTY,
                     concreteShift,
                     new Task(TaskEnum.CLINIC)
@@ -523,9 +561,9 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
-        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
-        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(doctorDAO.findBySeniorities(any())).thenReturn(effectiveDoctors);
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(primaryDoctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(primaryDoctor.getId()))).thenReturn(List.of());
         when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());

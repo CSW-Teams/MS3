@@ -429,31 +429,51 @@ public class AiScheduleGenerationOrchestrationService {
         String roleValidationScratchpadBlock = roleValidationScratchpadPromptBlockBuilder
                 .buildRoleValidationScratchpadBlock(scopedShifts, doctors);
         int generatedHardCoverageRows = countHardCoverageRows(hardCoverageBlock);
+        int generatedRoleValidationScratchpadRows = countBlockRows(roleValidationScratchpadBlock);
+        String roleValidationScratchpadSampleRow = extractFirstDataRow(roleValidationScratchpadBlock);
         logger.info("event=hard_coverage_block_built correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={} hard_coverage_block_length={} hard_coverage_block_checksum={}",
                 correlationId,
                 scopedShifts.size(),
                 generatedHardCoverageRows,
                 hardCoverageBlock == null ? 0 : hardCoverageBlock.length(),
                 hardCoverageBlock == null ? "0" : Integer.toHexString(hardCoverageBlock.hashCode()));
+        logger.info("event=role_validation_scratchpad_block_built correlation_id={} scoped_shifts_count={} role_validation_scratchpad_rows_count={} role_validation_scratchpad_block_length={} role_validation_scratchpad_block_checksum={} role_validation_scratchpad_sample_row={}",
+                correlationId,
+                scopedShifts.size(),
+                generatedRoleValidationScratchpadRows,
+                roleValidationScratchpadBlock == null ? 0 : roleValidationScratchpadBlock.length(),
+                roleValidationScratchpadBlock == null ? "0" : Integer.toHexString(roleValidationScratchpadBlock.hashCode()),
+                roleValidationScratchpadSampleRow == null ? "none" : roleValidationScratchpadSampleRow);
         if (!scopedShifts.isEmpty() && generatedHardCoverageRows == 0) {
             logger.error("event=hard_coverage_block_empty_with_scoped_shifts correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={}",
                     correlationId,
                     scopedShifts.size(),
                     generatedHardCoverageRows);
         }
-        return toonPayload + "\n" + hardCoverageBlock + roleValidationScratchpadBlock;
+        String safeToonPayload = toonPayload == null ? "" : toonPayload;
+        String safeHardCoverageBlock = hardCoverageBlock == null ? "" : hardCoverageBlock;
+        String safeRoleValidationScratchpadBlock = roleValidationScratchpadBlock == null ? "" : roleValidationScratchpadBlock;
+        return safeToonPayload + "\n" + safeHardCoverageBlock + safeRoleValidationScratchpadBlock;
     }
 
     private int countHardCoverageRows(String hardCoverageBlock) {
-        if (hardCoverageBlock == null || hardCoverageBlock.isBlank()) {
+        return countBlockRows(hardCoverageBlock);
+    }
+
+    private int countBlockRows(String block) {
+        if (block == null || block.isBlank()) {
             return 0;
         }
-        String normalized = hardCoverageBlock.trim();
-        String[] lines = normalized.split("\\R");
-        if (lines.length <= 1) {
-            return 0;
+        String[] lines = block.trim().split("\\R");
+        return lines.length <= 1 ? 0 : lines.length - 1;
+    }
+
+    private String extractFirstDataRow(String block) {
+        if (block == null || block.isBlank()) {
+            return null;
         }
-        return lines.length - 1;
+        String[] lines = block.trim().split("\\R");
+        return lines.length <= 1 ? null : lines[1];
     }
 
 
