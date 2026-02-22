@@ -255,10 +255,16 @@ Spec Computation Rulebook:
 - Output only final metric values; do not include formulas or derivations.
 - Do not repeat or restate formulas in user prompt content.
 
+METRIC DEFINITIONS:
+- Coverage: The percentage of required doctor slots that are filled. A value of 1.0 means all shifts are fully staffed. This is the most critical metric.
+- UFFA Balance: A measure of fairness. A lower standard deviation in assignments (especially night shifts) is better. Avoid overloading the same doctors repeatedly.
+- UP Delta (Uffa Points Delta): The change in a doctor's "Uffa Points". A positive delta means a doctor is getting a break; a positive delta means they are being assigned more work. Aim for negative deltas for overworked doctors.
+- Variance Delta: The change in the variance of Uffa Points across all doctors. A lower variance means the workload is being distributed more evenly.
+
 Variant intent:
-- EMPATHETIC: Maximize doctor well-being and treat expressed preferences as strict constraints.
-- EFFICIENT: Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance.
-- BALANCED: Balance well-being and operational efficiency with soft-constraint tradeoffs.
+- EMPATHETIC: Your primary goal is to maximize doctor well-being. You MUST achieve 100% 'Coverage'. Then, optimize 'UP Delta' (give breaks to overworked doctors).
+- EFFICIENT: Your primary goal is maximum operational efficiency. You MUST achieve 100% 'Coverage'. Then, optimize these metrics: 1. 'UFFA Balance' (distribute work evenly), 2. 'Variance Delta' (ensure fairness in workload changes).
+- BALANCED: Your goal is a trade-off. You MUST achieve 100% 'Coverage'. Then, find the best possible combination of 'UFFA Balance', and 'UP Delta'.
 
 Constraint handling (from `active_constraints`):
 - HARD constraints: must never be violated in assignments.
