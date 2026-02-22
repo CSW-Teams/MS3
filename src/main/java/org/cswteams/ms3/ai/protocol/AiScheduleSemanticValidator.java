@@ -55,7 +55,7 @@ public class AiScheduleSemanticValidator {
         }
         if (metadata.optimalityScore == null) {
             errors.add(new ValidationError("$.metadata.optimality_score", "must not be null"));
-        } else if (!inRange(metadata.optimalityScore, 0.0, 1.0)) {
+        } else if (!inRange(metadata.optimalityScore, 0.0, 100.0)) {
             errors.add(new ValidationError("$.metadata.optimality_score", "must be between 0 and 1"));
         }
         if (metadata.metrics == null) {
