@@ -896,24 +896,35 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         SystemUser u45_1 = new SystemUser("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenanta@gmail.com", encoder.encode("passw"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR), "A");
         SystemUser u45_2 = new SystemUser("Full", "Permessi", "FLLPRM98M24G224O", LocalDate.of(1998, 8, 24), "fullpermessi.tenantb@gmail.com", encoder.encode("passw2"), Set.of(SystemActor.DOCTOR, SystemActor.PLANNER, SystemActor.CONFIGURATOR), "B");
 
-        u1_1 = systemUserDAO.saveAndFlush(u1_1);
-        u1_2 = systemUserDAO.saveAndFlush(u1_2);
-        u2 = systemUserDAO.saveAndFlush(u2);
-        u3 = systemUserDAO.saveAndFlush(u3);
-        u4 = systemUserDAO.saveAndFlush(u4);
-        u5 = systemUserDAO.saveAndFlush(u5);
-        u6_1 = systemUserDAO.saveAndFlush(u6_1);
-        u6_2 = systemUserDAO.saveAndFlush(u6_2);
-        u7 = systemUserDAO.saveAndFlush(u7);
-        u8_1 = systemUserDAO.saveAndFlush(u8_1);
-        u8_2 = systemUserDAO.saveAndFlush(u8_2);
-        u9 = systemUserDAO.saveAndFlush(u9);
-        u10_1 = systemUserDAO.saveAndFlush(u10_1);
-        u10_2 = systemUserDAO.saveAndFlush(u10_2);
-        u44_1 = systemUserDAO.saveAndFlush(u44_1);
-        u45_1 = systemUserDAO.saveAndFlush(u45_1);
-        u44_2 = systemUserDAO.saveAndFlush(u44_2);
-        u45_2 = systemUserDAO.saveAndFlush(u45_2);
+        u1_1 = savePublicSystemUserIfMissing(u1_1);
+        u1_2 = savePublicSystemUserIfMissing(u1_2);
+        u2 = savePublicSystemUserIfMissing(u2);
+        u3 = savePublicSystemUserIfMissing(u3);
+        u4 = savePublicSystemUserIfMissing(u4);
+        u5 = savePublicSystemUserIfMissing(u5);
+        u6_1 = savePublicSystemUserIfMissing(u6_1);
+        u6_2 = savePublicSystemUserIfMissing(u6_2);
+        u7 = savePublicSystemUserIfMissing(u7);
+        u8_1 = savePublicSystemUserIfMissing(u8_1);
+        u8_2 = savePublicSystemUserIfMissing(u8_2);
+        u9 = savePublicSystemUserIfMissing(u9);
+        u10_1 = savePublicSystemUserIfMissing(u10_1);
+        u10_2 = savePublicSystemUserIfMissing(u10_2);
+        u44_1 = savePublicSystemUserIfMissing(u44_1);
+        u45_1 = savePublicSystemUserIfMissing(u45_1);
+        u44_2 = savePublicSystemUserIfMissing(u44_2);
+        u45_2 = savePublicSystemUserIfMissing(u45_2);
+    }
+
+    private SystemUser savePublicSystemUserIfMissing(SystemUser candidate) {
+        if (candidate == null || candidate.getEmail() == null) {
+            return candidate;
+        }
+        SystemUser existing = systemUserDAO.findByEmail(candidate.getEmail());
+        if (existing != null) {
+            return existing;
+        }
+        return systemUserDAO.saveAndFlush(candidate);
     }
 
 
