@@ -918,7 +918,11 @@ public class AiScheduleGenerationOrchestrationService {
             if (priority == null || priority.getDoctor() == null || priority.getDoctor().getId() == null) {
                 continue;
             }
-            DoctorUffaPriority validationPriority = new DoctorUffaPriority(priority.getDoctor(), candidateSchedule);
+            // Use an empty per-doctor assignment cache for validation and fill it incrementally
+            // while iterating assignments. Binding this object to candidateSchedule would preload
+            // every assignment for that doctor and make turni-turno constraints (e.g. ubiquity)
+            // compare each assignment against itself, producing false positives.
+            DoctorUffaPriority validationPriority = new DoctorUffaPriority(priority.getDoctor());
             validationPriority.setGeneralPriority(priority.getGeneralPriority());
             validationPriority.setPartialGeneralPriority(priority.getPartialGeneralPriority());
             validationPriority.setLongShiftPriority(priority.getLongShiftPriority());
@@ -944,7 +948,7 @@ public class AiScheduleGenerationOrchestrationService {
                 Long doctorId = assignment.getDoctor().getId();
                 DoctorUffaPriority doctorPriority = prioritiesByDoctorId.get(doctorId);
                 if (doctorPriority == null) {
-                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor(), candidateSchedule);
+                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor());
                     prioritiesByDoctorId.put(doctorId, doctorPriority);
                 }
 
