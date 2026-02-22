@@ -25,7 +25,14 @@ class AiPromptTemplateTest {
         assertTrue(systemPrompt.contains("`2` means doctor holidays are emitted using the structured `h[n]{id,s,e,tz?}` block"));
         assertTrue(systemPrompt.contains("`sh[].rj` maps only to SPECIALIST_JUNIOR"));
         assertTrue(systemPrompt.contains("hard_coverage_requirements[n]{shift_id,structured,specialist_junior,specialist_senior,total}"));
+        assertTrue(systemPrompt.contains("role_validation_scratchpad[n]{shift_id,required_role,required_count,candidate_doctor_ids}"));
+        assertTrue(systemPrompt.contains("Backend-provided scratchpad entries override any role-candidate inference from `dr`"));
         assertTrue(systemPrompt.contains("Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory"));
+        assertTrue(systemPrompt.contains("Read the provided preprocessed `role_validation_scratchpad` rows."));
+        assertTrue(systemPrompt.contains("only source of truth of allowed doctor IDs"));
+        assertTrue(systemPrompt.contains("STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids`"));
+        assertTrue(!systemPrompt.contains("scan the `TOON_INPUT` doctor list (`dr[...]`)"));
+        assertTrue(!systemPrompt.contains("Populate `candidate_doctor_ids` with these matching IDs only."));
         assertTrue(systemPrompt.contains("spec ID: " + AiPromptTemplate.metricsSpecId()));
     }
 
@@ -40,9 +47,23 @@ class AiPromptTemplateTest {
                 + "Prefer BALANCED variant\n\n"
                 + "Vocabulary rule: TOON_INPUT doctors[*].role uses the same enum naming as assignments[*].role_covered (STRUCTURED, SPECIALIST_JUNIOR, SPECIALIST_SENIOR).\n\n"
                 + "Holiday rule: in COMPACT mode doctor holidays use `h[n]{id,s,e,tz?}` rows (id optional, s/e inclusive dates, tz optional quoted metadata).\n\n"
+                + "Scratchpad authority rule: if TOON_INPUT includes `role_validation_scratchpad[...]`, treat backend-provided `candidate_doctor_ids` as authoritative for each `(shift_id, role_required)` pair.\n\n"
                 + "TOON_INPUT:\n"
                 + "ctx:{p:\"2026-05-20/2026-05-22\",m:\"generate\",hv:2}";
 
         assertEquals(expectedSnapshot, userContent);
+    }
+
+    @Test
+    void buildUserContentKeepsAppendedScratchpadSectionInPayload() {
+        String toonPayload = "ctx:{p:\"2026-05-20/2026-05-22\",m:\"generate\",hv:2}\n"
+                + "role_validation_scratchpad[1]{shift_id,required_role,required_count,candidate_doctor_ids}:"
+                + "{shift_id:\"S_101_20260520\",required_role:STRUCTURED,required_count:1,candidate_doctor_ids:[11,12]}";
+
+        String userContent = AiPromptTemplate.buildUserContent("Prefer BALANCED variant", toonPayload);
+
+        assertTrue(userContent.contains("Scratchpad authority rule: if TOON_INPUT includes `role_validation_scratchpad[...]`"));
+        assertTrue(userContent.contains("role_validation_scratchpad[1]{shift_id,required_role,required_count,candidate_doctor_ids}"));
+        assertTrue(!userContent.contains("scan the `TOON_INPUT` doctor list (`dr[...]`)"));
     }
 }
