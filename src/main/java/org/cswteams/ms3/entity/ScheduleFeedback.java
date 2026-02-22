@@ -2,9 +2,7 @@ package org.cswteams.ms3.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.cswteams.ms3.config.hibernate.PostgreSQLEnumType;
+import org.hibernate.annotations.ColumnTransformer;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -15,7 +13,6 @@ import org.cswteams.ms3.entity.enums.FeedbackCategory;
 @Entity
 @Getter
 @Setter
-@TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
 @Table(name = "schedule_feedback")
 public class ScheduleFeedback {
     @Id
@@ -43,8 +40,8 @@ public class ScheduleFeedback {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Type(type = "pgsql_enum")
     @Column(columnDefinition = "feedback_category_enum")
+    @ColumnTransformer(write = "?::feedback_category_enum")
     private FeedbackCategory category;
 
     public ScheduleFeedback() {
