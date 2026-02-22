@@ -918,7 +918,14 @@ public class AiScheduleGenerationOrchestrationService {
             if (priority == null || priority.getDoctor() == null || priority.getDoctor().getId() == null) {
                 continue;
             }
-            prioritiesByDoctorId.put(priority.getDoctor().getId(), priority);
+            DoctorUffaPriority validationPriority = new DoctorUffaPriority(priority.getDoctor(), candidateSchedule);
+            validationPriority.setGeneralPriority(priority.getGeneralPriority());
+            validationPriority.setPartialGeneralPriority(priority.getPartialGeneralPriority());
+            validationPriority.setLongShiftPriority(priority.getLongShiftPriority());
+            validationPriority.setPartialLongShiftPriority(priority.getPartialLongShiftPriority());
+            validationPriority.setNightPriority(priority.getNightPriority());
+            validationPriority.setPartialNightPriority(priority.getPartialNightPriority());
+            prioritiesByDoctorId.put(priority.getDoctor().getId(), validationPriority);
         }
 
         for (ConcreteShift concreteShift : candidateSchedule.getConcreteShifts()) {
@@ -939,8 +946,6 @@ public class AiScheduleGenerationOrchestrationService {
                 if (doctorPriority == null) {
                     doctorPriority = new DoctorUffaPriority(assignment.getDoctor(), candidateSchedule);
                     prioritiesByDoctorId.put(doctorId, doctorPriority);
-                } else if (doctorPriority.getSchedule() == null) {
-                    doctorPriority.setSchedule(candidateSchedule);
                 }
 
                 ContextConstraint context = new ContextConstraint(
