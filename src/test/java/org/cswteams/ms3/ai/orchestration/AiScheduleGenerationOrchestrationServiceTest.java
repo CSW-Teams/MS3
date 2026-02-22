@@ -349,6 +349,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         assertTrue(requests.get(1).getInstructions().contains("Use label EMPATHETIC"));
         assertTrue(requests.get(1).getInstructions().contains("Previous attempt 1 was invalid"));
         assertTrue(requests.get(1).getInstructions().contains("Validation failures (prompt-safe):"));
+        assertTrue(requests.get(1).getInstructions().contains("backend-authoritative contract"));
         assertTrue(requests.get(2).getInstructions().contains("Use label EFFICIENT"));
         assertTrue(requests.get(3).getInstructions().contains("Use label BALANCED"));
 
@@ -421,14 +422,14 @@ class AiScheduleGenerationOrchestrationServiceTest {
         List<org.cswteams.ms3.ai.protocol.ValidationError> roleMismatchDetails = List.of(
                 new org.cswteams.ms3.ai.protocol.ValidationError(
                         "$.metadata.role_validation_scratchpad[0].candidate_doctor_ids[0]",
-                        "doctor_id=10 has seniority=STRUCTURED but role_required=SPECIALIST_JUNIOR"
+                        "doctor_id=10 has seniority=STRUCTURED but role_required=SPECIALIST_JUNIOR (backend-authoritative scratchpad semantics violated)"
                 )
         );
         when(aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
             String rawJson = invocation.getArgument(0);
             if (rawJson != null && rawJson.contains("wrong-role")) {
                 throw AiProtocolException.schemaMismatch(
-                        "AI role_validation_scratchpad contains doctor IDs with mismatched roles",
+                        "AI response violates the backend-provided role_validation_scratchpad contract: candidate_doctor_ids do not match role_required",
                         roleMismatchDetails,
                         null
                 );
@@ -474,6 +475,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
             assertEquals("CONVERSION_FAILED", empatheticCandidate.getMetadata().getValidationCode());
             assertTrue(empatheticCandidate.getMetadata().getValidationViolations().stream()
                     .anyMatch(message -> message.contains("role_validation_scratchpad")
+                            && message.contains("backend-authoritative scratchpad semantics")
                             && message.contains("role_required=SPECIALIST_JUNIOR")));
 
             ILoggingEvent mismatchLog = appender.list.stream()

@@ -151,6 +151,7 @@ public class AiScheduleConverterServiceTest {
             fail("Expected AiProtocolException");
         } catch (AiProtocolException ex) {
             assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
+            assertTrue(ex.getMessage().contains("backend-provided role_validation_scratchpad contract"));
             assertTrue(ex.getDetails().stream().anyMatch(d -> "$.metadata.role_validation_scratchpad[0].candidate_doctor_ids[0]".equals(d.getPath())));
         }
     }
