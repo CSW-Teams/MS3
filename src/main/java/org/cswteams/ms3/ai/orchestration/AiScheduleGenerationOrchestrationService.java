@@ -38,6 +38,7 @@ import org.cswteams.ms3.ai.protocol.dto.AiUffaBalanceDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaDeltaDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUncoveredShiftDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
+import org.cswteams.ms3.ai.protocol.ValidationError;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
@@ -83,6 +84,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AiScheduleGenerationOrchestrationService {
@@ -100,6 +103,9 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
+    private static final int ROLE_MISMATCH_LOG_LIMIT = 5;
+    private static final Pattern SCRATCHPAD_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority=([A-Z_]+)\\s+but\\s+role_required=([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ASSIGNMENT_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority\\s+([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
     private static final String BASE_VARIANT_INSTRUCTION = "Return strict JSON only with top-level object {'variants': ...}. "
             + "For object form, put the variant label as the key under variants. "
             + "If variants is an array, each item must include a non-empty 'label' field and a 'variant' object payload. "
@@ -132,6 +138,7 @@ public class AiScheduleGenerationOrchestrationService {
     private final DecisionAlgorithmService decisionAlgorithmService;
     private final AiScheduleConverterService aiScheduleConverterService;
     private final AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder;
+    private final AiRoleValidationScratchpadPromptBlockBuilder roleValidationScratchpadPromptBlockBuilder;
     private final ObjectMapper objectMapper;
     private final AiScheduleComparisonMapper comparisonMapper = new AiScheduleComparisonMapper();
     private final AtomicReference<TransientComparisonState> transientComparisonState = new AtomicReference<>();
@@ -150,6 +157,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     DecisionAlgorithmService decisionAlgorithmService,
                                                     AiScheduleConverterService aiScheduleConverterService,
                                                     AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder,
+                                                    AiRoleValidationScratchpadPromptBlockBuilder roleValidationScratchpadPromptBlockBuilder,
                                                     ObjectMapper objectMapper) {
         this.schedulerController = schedulerController;
         this.doctorDAO = doctorDAO;
@@ -164,6 +172,7 @@ public class AiScheduleGenerationOrchestrationService {
         this.decisionAlgorithmService = decisionAlgorithmService;
         this.aiScheduleConverterService = aiScheduleConverterService;
         this.hardCoveragePromptBlockBuilder = hardCoveragePromptBlockBuilder;
+        this.roleValidationScratchpadPromptBlockBuilder = roleValidationScratchpadPromptBlockBuilder;
         this.objectMapper = objectMapper;
     }
 
@@ -417,32 +426,54 @@ public class AiScheduleGenerationOrchestrationService {
         ToonBuilder builder = new ToonBuilder();
         String toonPayload = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
         String hardCoverageBlock = hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
+        String roleValidationScratchpadBlock = roleValidationScratchpadPromptBlockBuilder
+                .buildRoleValidationScratchpadBlock(scopedShifts, doctors);
         int generatedHardCoverageRows = countHardCoverageRows(hardCoverageBlock);
+        int generatedRoleValidationScratchpadRows = countBlockRows(roleValidationScratchpadBlock);
+        String roleValidationScratchpadSampleRow = extractFirstDataRow(roleValidationScratchpadBlock);
         logger.info("event=hard_coverage_block_built correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={} hard_coverage_block_length={} hard_coverage_block_checksum={}",
                 correlationId,
                 scopedShifts.size(),
                 generatedHardCoverageRows,
                 hardCoverageBlock == null ? 0 : hardCoverageBlock.length(),
                 hardCoverageBlock == null ? "0" : Integer.toHexString(hardCoverageBlock.hashCode()));
+        logger.info("event=role_validation_scratchpad_block_built correlation_id={} scoped_shifts_count={} role_validation_scratchpad_rows_count={} role_validation_scratchpad_block_length={} role_validation_scratchpad_block_checksum={} role_validation_scratchpad_sample_row={}",
+                correlationId,
+                scopedShifts.size(),
+                generatedRoleValidationScratchpadRows,
+                roleValidationScratchpadBlock == null ? 0 : roleValidationScratchpadBlock.length(),
+                roleValidationScratchpadBlock == null ? "0" : Integer.toHexString(roleValidationScratchpadBlock.hashCode()),
+                roleValidationScratchpadSampleRow == null ? "none" : roleValidationScratchpadSampleRow);
         if (!scopedShifts.isEmpty() && generatedHardCoverageRows == 0) {
             logger.error("event=hard_coverage_block_empty_with_scoped_shifts correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={}",
                     correlationId,
                     scopedShifts.size(),
                     generatedHardCoverageRows);
         }
-        return toonPayload + "\n" + hardCoverageBlock;
+        String safeToonPayload = toonPayload == null ? "" : toonPayload;
+        String safeHardCoverageBlock = hardCoverageBlock == null ? "" : hardCoverageBlock;
+        String safeRoleValidationScratchpadBlock = roleValidationScratchpadBlock == null ? "" : roleValidationScratchpadBlock;
+        return safeToonPayload + "\n" + safeHardCoverageBlock + safeRoleValidationScratchpadBlock;
     }
 
     private int countHardCoverageRows(String hardCoverageBlock) {
-        if (hardCoverageBlock == null || hardCoverageBlock.isBlank()) {
+        return countBlockRows(hardCoverageBlock);
+    }
+
+    private int countBlockRows(String block) {
+        if (block == null || block.isBlank()) {
             return 0;
         }
-        String normalized = hardCoverageBlock.trim();
-        String[] lines = normalized.split("\\R");
-        if (lines.length <= 1) {
-            return 0;
+        String[] lines = block.trim().split("\\R");
+        return lines.length <= 1 ? 0 : lines.length - 1;
+    }
+
+    private String extractFirstDataRow(String block) {
+        if (block == null || block.isBlank()) {
+            return null;
         }
-        return lines.length - 1;
+        String[] lines = block.trim().split("\\R");
+        return lines.length <= 1 ? null : lines[1];
     }
 
 
@@ -609,6 +640,8 @@ public class AiScheduleGenerationOrchestrationService {
                     break;
                 }
 
+                logRoleMismatchDiagnostics(batchCorrelationId, definition.label, definition.candidateId, validation);
+
                 if (attempt < variantMaxAttempts) {
                     attemptInstructions = buildCorrectiveVariantInstruction(baseInstructions, attempt, validation);
                     logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={}",
@@ -692,6 +725,7 @@ public class AiScheduleGenerationOrchestrationService {
         return baseInstructions
                 + " Previous attempt " + failedAttempt
                 + " was invalid (" + validation.code + ": " + validation.message + ")."
+                + " Treat role_validation_scratchpad semantics as a backend-authoritative contract: each candidate_doctor_ids entry must reference an in-context doctor whose seniority exactly matches role_required."
                 + buildValidationFailurePromptBlock(validation)
                 + " Regenerate the same variant label only, fix all domain/syntax issues, and return strict JSON.";
     }
@@ -723,6 +757,14 @@ public class AiScheduleGenerationOrchestrationService {
                     .append("'}");
         }
 
+        for (ProtocolValidationDetail detail : validation.protocolValidationDetails) {
+            builder.append(", {path='")
+                    .append(promptSafeText(detail.path))
+                    .append("', message='")
+                    .append(promptSafeText(detail.message))
+                    .append("'}");
+        }
+
         builder.append("]");
         return builder.toString();
     }
@@ -736,6 +778,58 @@ public class AiScheduleGenerationOrchestrationService {
                 .replace("\r", " ")
                 .replace("'", "\\'")
                 .trim();
+    }
+
+    private void logRoleMismatchDiagnostics(String correlationId,
+                                            String variantId,
+                                            String candidateId,
+                                            CandidateValidationData validation) {
+        List<RoleMismatchDetail> mismatches = extractRoleMismatchDetails(validation);
+        if (mismatches.isEmpty()) {
+            return;
+        }
+        List<RoleMismatchDetail> sampled = mismatches.subList(0, Math.min(ROLE_MISMATCH_LOG_LIMIT, mismatches.size()));
+        logger.warn("event=ai_candidate_role_mismatch_validation_failed correlation_id={} variant_id={} candidate_id={} role_mismatch_count={} mismatch_sample={}",
+                correlationId,
+                variantId,
+                candidateId,
+                mismatches.size(),
+                sampled);
+    }
+
+    private List<RoleMismatchDetail> extractRoleMismatchDetails(CandidateValidationData validation) {
+        if (validation == null || validation.protocolValidationDetails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<RoleMismatchDetail> mismatches = new ArrayList<>();
+        for (ProtocolValidationDetail detail : validation.protocolValidationDetails) {
+            if (detail == null || detail.path == null || detail.message == null) {
+                continue;
+            }
+            String expected = null;
+            String actual = null;
+
+            Matcher scratchpadMatcher = SCRATCHPAD_ROLE_MISMATCH_PATTERN.matcher(detail.message);
+            if (scratchpadMatcher.matches()) {
+                actual = scratchpadMatcher.group(1);
+                expected = scratchpadMatcher.group(2);
+            } else if (detail.path.contains("$.assignments[") && detail.path.endsWith(".role_covered")) {
+                Matcher assignmentMatcher = ASSIGNMENT_ROLE_MISMATCH_PATTERN.matcher(detail.message);
+                if (assignmentMatcher.matches()) {
+                    expected = assignmentMatcher.group(1);
+                    actual = "assigned role mismatch";
+                }
+            }
+
+            if (expected != null || actual != null) {
+                mismatches.add(new RoleMismatchDetail(detail.path, safeText(expected), safeText(actual)));
+            }
+        }
+        return mismatches;
+    }
+
+    private String safeText(String value) {
+        return value == null || value.trim().isEmpty() ? "n/a" : value;
     }
 
     private CandidateValidationData validateAiCandidate(String rawJson,
@@ -765,13 +859,31 @@ public class AiScheduleGenerationOrchestrationService {
             }
             return CandidateValidationData.valid();
         } catch (AiProtocolException ex) {
+            List<ProtocolValidationDetail> protocolValidationDetails = extractProtocolValidationDetails(ex.getDetails());
             logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} message={}",
                     correlationId,
                     candidateId,
                     "CONVERSION_FAILED",
                     ex.getMessage());
-            return CandidateValidationData.invalid("CONVERSION_FAILED", ex.getMessage());
+            return CandidateValidationData.invalid("CONVERSION_FAILED",
+                    ex.getMessage(),
+                    Collections.emptyList(),
+                    protocolValidationDetails);
         }
+    }
+
+    private List<ProtocolValidationDetail> extractProtocolValidationDetails(List<ValidationError> details) {
+        if (details == null || details.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ProtocolValidationDetail> protocolValidationDetails = new ArrayList<>();
+        for (ValidationError detail : details) {
+            if (detail == null) {
+                continue;
+            }
+            protocolValidationDetails.add(new ProtocolValidationDetail(detail.getPath(), detail.getMessage()));
+        }
+        return protocolValidationDetails;
     }
 
     private List<String> formatViolationMessages(List<ConstraintViolationDetail> violations) {
@@ -806,7 +918,18 @@ public class AiScheduleGenerationOrchestrationService {
             if (priority == null || priority.getDoctor() == null || priority.getDoctor().getId() == null) {
                 continue;
             }
-            prioritiesByDoctorId.put(priority.getDoctor().getId(), priority);
+            // Use an empty per-doctor assignment cache for validation and fill it incrementally
+            // while iterating assignments. Binding this object to candidateSchedule would preload
+            // every assignment for that doctor and make turni-turno constraints (e.g. ubiquity)
+            // compare each assignment against itself, producing false positives.
+            DoctorUffaPriority validationPriority = new DoctorUffaPriority(priority.getDoctor());
+            validationPriority.setGeneralPriority(priority.getGeneralPriority());
+            validationPriority.setPartialGeneralPriority(priority.getPartialGeneralPriority());
+            validationPriority.setLongShiftPriority(priority.getLongShiftPriority());
+            validationPriority.setPartialLongShiftPriority(priority.getPartialLongShiftPriority());
+            validationPriority.setNightPriority(priority.getNightPriority());
+            validationPriority.setPartialNightPriority(priority.getPartialNightPriority());
+            prioritiesByDoctorId.put(priority.getDoctor().getId(), validationPriority);
         }
 
         for (ConcreteShift concreteShift : candidateSchedule.getConcreteShifts()) {
@@ -825,10 +948,8 @@ public class AiScheduleGenerationOrchestrationService {
                 Long doctorId = assignment.getDoctor().getId();
                 DoctorUffaPriority doctorPriority = prioritiesByDoctorId.get(doctorId);
                 if (doctorPriority == null) {
-                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor(), candidateSchedule);
+                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor());
                     prioritiesByDoctorId.put(doctorId, doctorPriority);
-                } else if (doctorPriority.getSchedule() == null) {
-                    doctorPriority.setSchedule(candidateSchedule);
                 }
 
                 ContextConstraint context = new ContextConstraint(
@@ -1830,12 +1951,14 @@ public class AiScheduleGenerationOrchestrationService {
         private final String code;
         private final String message;
         private final List<ConstraintViolationDetail> violatedConstraints;
+        private final List<ProtocolValidationDetail> protocolValidationDetails;
 
         private CandidateValidationData(boolean valid,
                                         boolean maxRetriesReached,
                                         String code,
                                         String message,
-                                        List<ConstraintViolationDetail> violatedConstraints) {
+                                        List<ConstraintViolationDetail> violatedConstraints,
+                                        List<ProtocolValidationDetail> protocolValidationDetails) {
             this.valid = valid;
             this.maxRetriesReached = maxRetriesReached;
             this.code = code;
@@ -1843,36 +1966,103 @@ public class AiScheduleGenerationOrchestrationService {
             this.violatedConstraints = violatedConstraints == null
                     ? Collections.emptyList()
                     : Collections.unmodifiableList(new ArrayList<>(violatedConstraints));
+            this.protocolValidationDetails = protocolValidationDetails == null
+                    ? Collections.emptyList()
+                    : Collections.unmodifiableList(new ArrayList<>(protocolValidationDetails));
         }
 
         private static CandidateValidationData valid() {
-            return new CandidateValidationData(true, false, null, null, Collections.emptyList());
+            return new CandidateValidationData(true,
+                    false,
+                    null,
+                    null,
+                    Collections.emptyList(),
+                    Collections.emptyList());
         }
 
         private static CandidateValidationData validWithWarning(String code, String message) {
-            return new CandidateValidationData(true, false, code, message, Collections.emptyList());
+            return new CandidateValidationData(true,
+                    false,
+                    code,
+                    message,
+                    Collections.emptyList(),
+                    Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code, String message) {
-            return invalid(code, message, Collections.emptyList());
+            return invalid(code, message, Collections.emptyList(), Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
-            return new CandidateValidationData(false, false, code, message, violatedConstraints);
+            return invalid(code, message, violatedConstraints, Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code,
+                                                       String message,
+                                                       List<ConstraintViolationDetail> violatedConstraints,
+                                                       List<ProtocolValidationDetail> protocolValidationDetails) {
+            return new CandidateValidationData(false,
+                    false,
+                    code,
+                    message,
+                    violatedConstraints,
+                    protocolValidationDetails);
         }
 
         private CandidateValidationData withMaxRetriesReached(boolean reached) {
-            return new CandidateValidationData(valid, reached, code, message, violatedConstraints);
+            return new CandidateValidationData(valid,
+                    reached,
+                    code,
+                    message,
+                    violatedConstraints,
+                    protocolValidationDetails);
         }
 
         private CandidateValidationData withWarning(String warningCode, String warningMessage) {
-            return new CandidateValidationData(valid, maxRetriesReached, warningCode, warningMessage, violatedConstraints);
+            return new CandidateValidationData(valid,
+                    maxRetriesReached,
+                    warningCode,
+                    warningMessage,
+                    violatedConstraints,
+                    protocolValidationDetails);
         }
 
         private List<String> violationMessages() {
-            return violatedConstraints.stream()
+            List<String> messages = violatedConstraints.stream()
                     .map(violation -> violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
                     .collect(Collectors.toList());
+            messages.addAll(protocolValidationDetails.stream()
+                    .map(detail -> detail.path + ": " + detail.message)
+                    .collect(Collectors.toList()));
+            return messages;
+        }
+    }
+
+    private static class RoleMismatchDetail {
+        private final String path;
+        private final String expectedSeniority;
+        private final String actualSeniorityOrAssignedRole;
+
+        private RoleMismatchDetail(String path, String expectedSeniority, String actualSeniorityOrAssignedRole) {
+            this.path = path;
+            this.expectedSeniority = expectedSeniority;
+            this.actualSeniorityOrAssignedRole = actualSeniorityOrAssignedRole;
+        }
+
+        @Override
+        public String toString() {
+            return "{path='" + path + "', expected_seniority='" + expectedSeniority
+                    + "', actual='" + actualSeniorityOrAssignedRole + "'}";
+        }
+    }
+
+    private static class ProtocolValidationDetail {
+        private final String path;
+        private final String message;
+
+        private ProtocolValidationDetail(String path, String message) {
+            this.path = path;
+            this.message = message;
         }
     }
 

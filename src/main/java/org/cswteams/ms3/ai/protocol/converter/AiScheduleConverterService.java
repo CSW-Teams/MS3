@@ -5,6 +5,7 @@ import org.cswteams.ms3.ai.protocol.AiScheduleSemanticValidator;
 import org.cswteams.ms3.ai.protocol.ValidationError;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
+import org.cswteams.ms3.ai.protocol.dto.AiRoleValidationScratchpadItemDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.ShiftDAO;
@@ -20,6 +21,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class AiScheduleConverterService {
@@ -59,8 +61,67 @@ public class AiScheduleConverterService {
         // 2. Perform semantic validation on the DTO
         semanticValidator.validate(aiResponseDto);
 
-        // 3. Map AiAssignmentDto to ConcreteShift entities with DoctorAssignments
+        // 3. Validate role scratchpad against known doctors from run context
+        validateRoleValidationScratchpadCandidates(aiResponseDto);
+
+        // 4. Map AiAssignmentDto to ConcreteShift entities with DoctorAssignments
         return mapAssignmentsToConcreteShifts(aiResponseDto.assignments);
+    }
+
+    private void validateRoleValidationScratchpadCandidates(AiScheduleResponseDto aiResponseDto) {
+        if (aiResponseDto == null
+                || aiResponseDto.metadata == null
+                || aiResponseDto.metadata.roleValidationScratchpad == null
+                || aiResponseDto.metadata.roleValidationScratchpad.isEmpty()) {
+            return;
+        }
+
+        Set<Long> candidateIds = aiResponseDto.metadata.roleValidationScratchpad.stream()
+                .filter(Objects::nonNull)
+                .map(item -> item.candidateDoctorIds)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .map(Integer::longValue)
+                .collect(Collectors.toSet());
+
+        if (candidateIds.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Seniority> knownDoctorSeniorityById = doctorDAO.findAllById(candidateIds).stream()
+                .collect(Collectors.toMap(Doctor::getId, Doctor::getSeniority));
+
+        for (int scratchpadIndex = 0; scratchpadIndex < aiResponseDto.metadata.roleValidationScratchpad.size(); scratchpadIndex++) {
+            AiRoleValidationScratchpadItemDto scratchpadItem = aiResponseDto.metadata.roleValidationScratchpad.get(scratchpadIndex);
+            if (scratchpadItem == null || scratchpadItem.candidateDoctorIds == null) {
+                continue;
+            }
+            Seniority roleRequired = Seniority.valueOf(scratchpadItem.roleRequired);
+            for (int candidateIndex = 0; candidateIndex < scratchpadItem.candidateDoctorIds.size(); candidateIndex++) {
+                Integer candidateId = scratchpadItem.candidateDoctorIds.get(candidateIndex);
+                if (candidateId == null) {
+                    continue;
+                }
+                Seniority knownSeniority = knownDoctorSeniorityById.get(candidateId.longValue());
+                String path = "$.metadata.role_validation_scratchpad[" + scratchpadIndex + "].candidate_doctor_ids[" + candidateIndex + "]";
+                if (knownSeniority == null) {
+                    throw AiProtocolException.schemaMismatch(
+                            "AI response violates the backend-provided role_validation_scratchpad contract: candidate_doctor_ids contain unknown doctor IDs",
+                            List.of(new ValidationError(path, "doctor_id=" + candidateId + " is not available in current run context")),
+                            null
+                    );
+                }
+                if (knownSeniority != roleRequired) {
+                    throw AiProtocolException.schemaMismatch(
+                            "AI response violates the backend-provided role_validation_scratchpad contract: candidate_doctor_ids do not match role_required",
+                            List.of(new ValidationError(path,
+                                    "doctor_id=" + candidateId + " has seniority=" + knownSeniority + " but role_required=" + roleRequired)),
+                            null
+                    );
+                }
+            }
+        }
     }
 
     /**
@@ -92,7 +153,7 @@ public class AiScheduleConverterService {
             if (!doctor.getSeniority().equals(aiAssignment.roleCovered)) {
                 validationErrors.add(new ValidationError(
                         "$.assignments[" + index + "].role_covered",
-                        "must match doctor's seniority " + doctor.getSeniority()
+                        "expected seniority=" + doctor.getSeniority() + " but assigned role=" + aiAssignment.roleCovered
                 ));
             }
 

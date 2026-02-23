@@ -117,6 +117,39 @@ I failure devono essere **espliciti e tracciabili** (audit/log).
 
 ---
 
+### 3.1) Runbook triage rapido — wrong-role / prompt integrity
+
+Quando il confronto AI produce candidati invalidi, classificare rapidamente il failure con i seguenti segnali:
+
+1. **Prompt integrity check (pre-broker)**
+   - Cercare `event=ai_prompt_user_content_prepared`.
+   - Verificare:
+     - `toon_input_hash` (stabilità del payload tra retry)
+     - `toon_input_size` (anomalie grossolane: payload vuoto/troncato)
+     - `role_counts` (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`) coerenti con il periodo richiesto.
+
+2. **Candidate validation check (orchestrator)**
+   - Cercare `event=ai_candidate_role_mismatch_validation_failed`.
+   - Campi chiave:
+     - `variant_id` / `candidate_id`
+     - `role_mismatch_count`
+     - `mismatch_sample` con prime N occorrenze (`path`, `expected_seniority`, `actual`).
+
+3. **Response payload check (API consumer/UI)**
+   - Nel candidato invalidato leggere:
+     - `metadata.validationCode` (tipicamente `CONVERSION_FAILED`)
+     - `metadata.validationMessage`
+     - `metadata.validationViolations` con dettagli path-based (es. `$.metadata.role_validation_scratchpad[...]`).
+
+4. **Classificazione incident**
+   - **Prompt/Context drift**: hash/size/role distribution inattesi già prima della chiamata al provider.
+   - **Model semantic mismatch**: prompt integro ma mismatch su `role_validation_scratchpad` o `assignments[].role_covered`.
+   - **Non-role protocol failure**: errore di conversione senza indicatori role-mismatch (seguire runbook protocollo generale).
+
+5. **Escalation rapida**
+   - Allegare in ticket: `correlation_id`, `variant_id`, `candidate_id`, `role_mismatch_count`, prima entry di `mismatch_sample`, `validationCode`.
+   - Non allegare dati personali dei medici: usare solo identificativi tecnici e path di validazione.
+
 ### 4) Test minimi attesi
 
 ```
@@ -239,6 +272,39 @@ Se una delle validazioni fallisce, **bloccare la chiamata AI** e ritornare un er
 Nota: l’uso del comment testuale è permesso, ma deve rimanere confinato a contenuti rilevanti per la schedulazione.
 
 ---
+
+### 3.1) Runbook triage rapido — wrong-role / prompt integrity
+
+Quando il confronto AI produce candidati invalidi, classificare rapidamente il failure con i seguenti segnali:
+
+1. **Prompt integrity check (pre-broker)**
+   - Cercare `event=ai_prompt_user_content_prepared`.
+   - Verificare:
+     - `toon_input_hash` (stabilità del payload tra retry)
+     - `toon_input_size` (anomalie grossolane: payload vuoto/troncato)
+     - `role_counts` (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`) coerenti con il periodo richiesto.
+
+2. **Candidate validation check (orchestrator)**
+   - Cercare `event=ai_candidate_role_mismatch_validation_failed`.
+   - Campi chiave:
+     - `variant_id` / `candidate_id`
+     - `role_mismatch_count`
+     - `mismatch_sample` con prime N occorrenze (`path`, `expected_seniority`, `actual`).
+
+3. **Response payload check (API consumer/UI)**
+   - Nel candidato invalidato leggere:
+     - `metadata.validationCode` (tipicamente `CONVERSION_FAILED`)
+     - `metadata.validationMessage`
+     - `metadata.validationViolations` con dettagli path-based (es. `$.metadata.role_validation_scratchpad[...]`).
+
+4. **Classificazione incident**
+   - **Prompt/Context drift**: hash/size/role distribution inattesi già prima della chiamata al provider.
+   - **Model semantic mismatch**: prompt integro ma mismatch su `role_validation_scratchpad` o `assignments[].role_covered`.
+   - **Non-role protocol failure**: errore di conversione senza indicatori role-mismatch (seguire runbook protocollo generale).
+
+5. **Escalation rapida**
+   - Allegare in ticket: `correlation_id`, `variant_id`, `candidate_id`, `role_mismatch_count`, prima entry di `mismatch_sample`, `validationCode`.
+   - Non allegare dati personali dei medici: usare solo identificativi tecnici e path di validazione.
 
 ### 4) Test minimi attesi
 
@@ -423,6 +489,39 @@ Le UI devono usare `retryable=true` per chiedere al planner se vuole ritentare (
 * Nessun dato personale nel log (GDPR).
 
 ***
+
+### 3.1) Runbook triage rapido — wrong-role / prompt integrity
+
+Quando il confronto AI produce candidati invalidi, classificare rapidamente il failure con i seguenti segnali:
+
+1. **Prompt integrity check (pre-broker)**
+   - Cercare `event=ai_prompt_user_content_prepared`.
+   - Verificare:
+     - `toon_input_hash` (stabilità del payload tra retry)
+     - `toon_input_size` (anomalie grossolane: payload vuoto/troncato)
+     - `role_counts` (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`) coerenti con il periodo richiesto.
+
+2. **Candidate validation check (orchestrator)**
+   - Cercare `event=ai_candidate_role_mismatch_validation_failed`.
+   - Campi chiave:
+     - `variant_id` / `candidate_id`
+     - `role_mismatch_count`
+     - `mismatch_sample` con prime N occorrenze (`path`, `expected_seniority`, `actual`).
+
+3. **Response payload check (API consumer/UI)**
+   - Nel candidato invalidato leggere:
+     - `metadata.validationCode` (tipicamente `CONVERSION_FAILED`)
+     - `metadata.validationMessage`
+     - `metadata.validationViolations` con dettagli path-based (es. `$.metadata.role_validation_scratchpad[...]`).
+
+4. **Classificazione incident**
+   - **Prompt/Context drift**: hash/size/role distribution inattesi già prima della chiamata al provider.
+   - **Model semantic mismatch**: prompt integro ma mismatch su `role_validation_scratchpad` o `assignments[].role_covered`.
+   - **Non-role protocol failure**: errore di conversione senza indicatori role-mismatch (seguire runbook protocollo generale).
+
+5. **Escalation rapida**
+   - Allegare in ticket: `correlation_id`, `variant_id`, `candidate_id`, `role_mismatch_count`, prima entry di `mismatch_sample`, `validationCode`.
+   - Non allegare dati personali dei medici: usare solo identificativi tecnici e path di validazione.
 
 ### 4) Test minimi attesi
 

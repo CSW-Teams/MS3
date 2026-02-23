@@ -3,6 +3,7 @@ package org.cswteams.ms3.ai.protocol;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetadataDto;
 import org.cswteams.ms3.ai.protocol.dto.AiMetricsDto;
+import org.cswteams.ms3.ai.protocol.dto.AiRoleValidationScratchpadItemDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 
@@ -54,7 +55,7 @@ public class AiScheduleSemanticValidator {
         }
         if (metadata.optimalityScore == null) {
             errors.add(new ValidationError("$.metadata.optimality_score", "must not be null"));
-        } else if (!inRange(metadata.optimalityScore, 0.0, 1.0)) {
+        } else if (!inRange(metadata.optimalityScore, 0.0, 100.0)) {
             errors.add(new ValidationError("$.metadata.optimality_score", "must be between 0 and 1"));
         }
         if (metadata.metrics == null) {
@@ -62,6 +63,45 @@ public class AiScheduleSemanticValidator {
             return;
         }
         validateMetrics(metadata.metrics, errors);
+        validateRoleValidationScratchpad(metadata.roleValidationScratchpad, errors);
+    }
+
+    private void validateRoleValidationScratchpad(List<AiRoleValidationScratchpadItemDto> scratchpad,
+                                                  List<ValidationError> errors) {
+        if (scratchpad == null) {
+            return;
+        }
+        for (int i = 0; i < scratchpad.size(); i++) {
+            AiRoleValidationScratchpadItemDto item = scratchpad.get(i);
+            if (item == null) {
+                errors.add(new ValidationError("$.metadata.role_validation_scratchpad[" + i + "]", "must not be null"));
+                continue;
+            }
+            if (!nonBlank(item.shiftId)) {
+                errors.add(new ValidationError("$.metadata.role_validation_scratchpad[" + i + "].shift_id", "must not be blank"));
+            }
+            if (!nonBlank(item.roleRequired)) {
+                errors.add(new ValidationError("$.metadata.role_validation_scratchpad[" + i + "].role_required", "must not be blank"));
+            } else if (!isAllowedRole(item.roleRequired)) {
+                errors.add(new ValidationError("$.metadata.role_validation_scratchpad[" + i + "].role_required", "must be a valid Seniority enum name"));
+            }
+            if (item.candidateDoctorIds == null) {
+                errors.add(new ValidationError("$.metadata.role_validation_scratchpad[" + i + "].candidate_doctor_ids", "must not be null"));
+                continue;
+            }
+            Set<Integer> seenIds = new HashSet<>();
+            for (int j = 0; j < item.candidateDoctorIds.size(); j++) {
+                Integer candidateId = item.candidateDoctorIds.get(j);
+                String path = "$.metadata.role_validation_scratchpad[" + i + "].candidate_doctor_ids[" + j + "]";
+                if (!positiveInt(candidateId)) {
+                    errors.add(new ValidationError(path, "must be > 0"));
+                    continue;
+                }
+                if (!seenIds.add(candidateId)) {
+                    errors.add(new ValidationError(path, "must not contain duplicates"));
+                }
+            }
+        }
     }
 
     private void validateMetrics(AiMetricsDto metrics, List<ValidationError> errors) {
@@ -128,6 +168,15 @@ public class AiScheduleSemanticValidator {
 
     private static boolean positiveInt(Integer value) {
         return value != null && value > 0;
+    }
+
+    private static boolean isAllowedRole(String roleRequired) {
+        try {
+            Seniority.valueOf(roleRequired);
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 
     private static boolean isValidShiftId(String shiftId) {

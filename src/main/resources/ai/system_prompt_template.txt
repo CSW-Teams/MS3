@@ -153,6 +153,21 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
   - Meaning: per-shift mandatory minimum role coverage.
   - Missing/unknown handling: if any required field is missing for a row, treat that row as invalid and do not claim valid hard coverage for that shift.
 
+7) Appended role validation scratchpad input block
+- Token: role_validation_scratchpad[n]{shift_id,required_role,required_count,candidate_doctor_ids}
+  - n datatype: integer >= 0.
+  - shift_id (required): string shift identifier.
+  - required_role (required): enum string in STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR.
+  - required_count (optional): integer >= 0 role count hint emitted by backend.
+  - candidate_doctor_ids (required): array of integer doctor IDs pre-filtered by backend for the `(shift_id, required_role)` pair.
+  - Meaning: authoritative backend-preprocessed candidate allowlist for role validation.
+  - Missing/unknown handling: malformed rows are unusable for reasoning.
+
+STRICT PRECEDENCE FOR ROLE MATCHING (NORMATIVE):
+- `role_validation_scratchpad` is authoritative whenever present.
+- Backend-provided scratchpad entries override any role-candidate inference from `dr`.
+- If an inference from `dr` conflicts with scratchpad candidates, obey scratchpad and record the mismatch in `metadata.reasoning`.
+
 STRICT PRECEDENCE FOR COVERAGE SIGNALS (NORMATIVE):
 - `hard_coverage_requirements` is authoritative for role-level mandatory coverage.
 - `sh` is contextual/summary metadata and must not override role-specific counts.
@@ -164,17 +179,11 @@ Compact conflict example (required behavior):
 
 variant_schema:
 Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use only exact enum names.
+Do not echo or mirror internal input artifacts (including `role_validation_scratchpad`) in `metadata` or anywhere in output JSON.
 
 {
   "status": "SUCCESS | PARTIAL_SUCCESS | FAILURE",
   "metadata": {
-    "role_validation_scratchpad": [
-       {
-         "shift_id": string,
-         "role_required": string,
-         "candidate_doctor_ids": [number]
-       }
-    ],
     "reasoning": string,
     "algorithm": string,
     "generation_time": string,
@@ -215,12 +224,11 @@ Hard rule: Do not output alias values like JUNIOR/SENIOR for role_covered; use o
 }
 
 COGNITIVE STEP (CRITICAL):
-Before generating 'assignments', you MUST perform the following lookup in 'metadata.role_validation_scratchpad':
-1. Read `hard_coverage_requirements` for each shift.
-2. For each required role (STRUCTURED, SPECIALIST_JUNIOR, SPECIALIST_SENIOR), scan the `TOON_INPUT` doctor list (`dr[...]`).
-3. Identify all doctors whose `r:` attribute exactly matches the required role.
-4. Populate `candidate_doctor_ids` with these matching IDs only.
-5. When generating the final `assignments` list, you are STRICTLY FORBIDDEN from assigning a doctor_id that is not present in the `candidate_doctor_ids` for that specific role.
+Before generating 'assignments', you MUST perform the following lookup using the provided TOON input block `role_validation_scratchpad`:
+1. Use the provided `role_validation_scratchpad` input rows.
+2. For each `(shift_id, role_required)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
+3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, role_required)` pair.
+4. Never echo `role_validation_scratchpad` rows or any other internal input artifact in output metadata.
 
 
 MANDATORY EXECUTION ORDER (NORMATIVE):
@@ -255,10 +263,16 @@ Spec Computation Rulebook:
 - Output only final metric values; do not include formulas or derivations.
 - Do not repeat or restate formulas in user prompt content.
 
+METRIC DEFINITIONS:
+- Coverage: The percentage of required doctor slots that are filled. A value of 1.0 means all shifts are fully staffed. This is the most critical metric.
+- UFFA Balance: A measure of fairness. A lower standard deviation in assignments (especially night shifts) is better. Avoid overloading the same doctors repeatedly.
+- UP Delta (Uffa Points Delta): The change in a doctor's "Uffa Points". A positive delta means a doctor is getting a break; a positive delta means they are being assigned more work. Aim for negative deltas for overworked doctors.
+- Variance Delta: The change in the variance of Uffa Points across all doctors. A lower variance means the workload is being distributed more evenly.
+
 Variant intent:
-- EMPATHETIC: Maximize doctor well-being and treat expressed preferences as strict constraints.
-- EFFICIENT: Optimize coverage and fairness metrics, minimizing uncovered shifts and priority variance.
-- BALANCED: Balance well-being and operational efficiency with soft-constraint tradeoffs.
+- EMPATHETIC: Your primary goal is to maximize doctor well-being. You MUST achieve 100% 'Coverage'. Then, optimize 'UP Delta' (give breaks to overworked doctors).
+- EFFICIENT: Your primary goal is maximum operational efficiency. You MUST achieve 100% 'Coverage'. Then, optimize these metrics: 1. 'UFFA Balance' (distribute work evenly), 2. 'Variance Delta' (ensure fairness in workload changes).
+- BALANCED: Your goal is a trade-off. You MUST achieve 100% 'Coverage'. Then, find the best possible combination of 'UFFA Balance', and 'UP Delta'.
 
 Constraint handling (from `active_constraints`):
 - HARD constraints: must never be violated in assignments.
