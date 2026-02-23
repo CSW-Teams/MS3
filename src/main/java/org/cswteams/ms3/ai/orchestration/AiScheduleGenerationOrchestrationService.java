@@ -425,6 +425,13 @@ public class AiScheduleGenerationOrchestrationService {
         ToonRequestContext context = request.getToonRequestContext();
         ToonBuilder builder = new ToonBuilder();
         String toonPayload = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+        int feedbackCount = context.getFeedbacks() == null ? 0 : context.getFeedbacks().size();
+        boolean feedbackSectionIncluded = feedbackCount > 0 && toonPayload != null && toonPayload.contains("\nfb[");
+        logger.info("event=toon_payload_feedback_section correlation_id={} feedbacks_count={} feedback_section_included={} toon_payload_checksum={}",
+                correlationId,
+                feedbackCount,
+                feedbackSectionIncluded,
+                toonPayload == null ? "0" : Integer.toHexString(toonPayload.hashCode()));
         String hardCoverageBlock = hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
         String roleValidationScratchpadBlock = roleValidationScratchpadPromptBlockBuilder
                 .buildRoleValidationScratchpadBlock(scopedShifts, doctors);

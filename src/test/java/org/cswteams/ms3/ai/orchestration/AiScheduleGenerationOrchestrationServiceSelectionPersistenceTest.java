@@ -14,7 +14,7 @@ import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
 import org.cswteams.ms3.dao.HolidayDAO;
-import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
+import org.cswteams.ms3.dao.ScheduleFeedbackDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Schedule;
@@ -191,14 +191,14 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
-        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
         AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+                new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());
