@@ -224,6 +224,10 @@ Do not echo or mirror internal input artifacts (including `role_validation_scrat
   ]
 }
 
+Assignment uniqueness rule (NORMATIVE):
+- For a given `(shift_id, doctor_id)` pair, emit at most one assignment total.
+- If assigned, the doctor must be either `ON_DUTY` or `ON_CALL` for that shift, never both.
+
 COGNITIVE STEP (CRITICAL):
 Before generating 'assignments', you MUST perform the following lookup using the provided TOON input block `role_validation_scratchpad`:
 1. Use the provided `role_validation_scratchpad` input rows.

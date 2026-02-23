@@ -136,6 +136,7 @@ public class AiScheduleConverterService {
         // This allows grouping assignments for the same concrete shift
         Map<String, ConcreteShift> concreteShiftsMap = new HashMap<>();
         Map<String, ShiftCoverageAccumulator> coverageByConcreteShift = new HashMap<>();
+        Map<String, ConcreteShiftDoctorStatus> statusByShiftDoctor = new HashMap<>();
         List<ValidationError> validationErrors = new ArrayList<>();
 
         for (int index = 0; index < aiAssignments.size(); index++) {
@@ -180,6 +181,20 @@ public class AiScheduleConverterService {
 
             // f. Create DoctorAssignment
             AssignmentStatusResolution statusResolution = resolveAssignmentStatus(aiAssignment);
+
+            String shiftDoctorKey = aiAssignment.shiftId + "||" + aiAssignment.doctorId;
+            ConcreteShiftDoctorStatus existingStatus = statusByShiftDoctor.putIfAbsent(
+                    shiftDoctorKey,
+                    statusResolution.persistenceStatus
+            );
+            if (existingStatus != null && existingStatus != statusResolution.persistenceStatus) {
+                validationErrors.add(new ValidationError(
+                        "$.assignments[" + index + "]",
+                        "same doctor cannot be assigned both ON_DUTY and ON_CALL for shift_id="
+                                + aiAssignment.shiftId + " doctor_id=" + aiAssignment.doctorId
+                ));
+                continue;
+            }
 
             DoctorAssignment doctorAssignment = new DoctorAssignment(doctor, statusResolution.persistenceStatus, concreteShift, task);
             concreteShift.getDoctorAssignmentList().add(doctorAssignment);
