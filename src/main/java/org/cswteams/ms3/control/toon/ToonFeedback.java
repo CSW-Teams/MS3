@@ -25,9 +25,12 @@ public class ToonFeedback {
     public enum Category {
         TOO_MANY_NIGHTS,
         TOO_LONG,
-        REMOVAL_PENDING,
-        REMOVAL_ACCEPTED,
-        REMOVAL_REJECTED;
+        REPEATED_WEEKDAY,
+        REPEATED_TIME_SLOT,
+        CONSECUTIVE_SHIFTS,
+        WORKLOAD_IMBALANCE,
+        PREFERENCE_VIOLATION,
+        OTHER;
 
         public static boolean isKnown(String code) {
             if (code == null) {

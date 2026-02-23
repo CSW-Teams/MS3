@@ -27,7 +27,7 @@ import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
 import org.cswteams.ms3.dao.HolidayDAO;
-import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
+import org.cswteams.ms3.dao.ScheduleFeedbackDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.constraint.ConstraintUbiquita;
@@ -100,16 +100,16 @@ class AiScheduleGenerationOrchestrationServiceTest {
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
-        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+                new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
-        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());
@@ -282,16 +282,16 @@ class AiScheduleGenerationOrchestrationServiceTest {
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
-        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+                new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
-        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());
@@ -393,16 +393,16 @@ class AiScheduleGenerationOrchestrationServiceTest {
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
-        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+                new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
-        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());
@@ -528,10 +528,10 @@ class AiScheduleGenerationOrchestrationServiceTest {
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
-        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+                new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         when(constraintDAO.findAll()).thenReturn(List.of(new ConstraintUbiquita()));
         when(doctorUffaPriorityDAO.findAll()).thenReturn(List.of(new DoctorUffaPriority(doctor)));
@@ -617,16 +617,16 @@ class AiScheduleGenerationOrchestrationServiceTest {
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
-        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
 
         AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+                new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
         when(doctorDAO.findBySeniorities(any())).thenReturn(effectiveDoctors);
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(primaryDoctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(primaryDoctor.getId()))).thenReturn(List.of());
-        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());
