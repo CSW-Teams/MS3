@@ -204,6 +204,7 @@ Do not echo or mirror internal input artifacts (including `role_validation_scrat
       "shift_id": string,
       "doctor_id": number,
       "role_covered": "STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR",
+      "assignment_status": "ON_DUTY | ON_CALL",
       "is_forced": boolean,
       "violation_note": string
     }
@@ -329,4 +330,6 @@ Hard validation constraints (must match parser/validator expectations):
 - Required top-level section: "variants".
 - Required variant labels: one or more of "EMPATHETIC", "EFFICIENT", "BALANCED" (no extras).
 - Required fields per variant: "status", "metadata", "assignments", "uncovered_shifts", "uffa_delta".
+- Required fields per assignment row: "shift_id", "doctor_id", "role_covered", "assignment_status", "is_forced", "violation_note".
+- `assignment_status` is mandatory and must be exactly one of: "ON_DUTY", "ON_CALL".
 - Field names must match exactly; do not rename or wrap required sections.

@@ -1554,6 +1554,7 @@ public class AiScheduleGenerationOrchestrationService {
                 dto.shiftId = ToonBuilder.shiftIdFor(shift);
                 dto.doctorId = assignment.getDoctor().getId().intValue();
                 dto.roleCovered = assignment.getDoctor().getSeniority();
+                dto.assignmentStatus = status;
                 dto.isForced = Boolean.FALSE;
                 dto.violationNote = null;
                 assignments.add(dto);

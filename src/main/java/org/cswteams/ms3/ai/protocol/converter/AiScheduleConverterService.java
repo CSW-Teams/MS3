@@ -268,7 +268,9 @@ public class AiScheduleConverterService {
 
     private AssignmentStatusResolution resolveAssignmentStatus(AiAssignmentDto aiAssignment) {
         if (aiAssignment.assignmentStatus == null) {
-            return AssignmentStatusResolution.legacyDefault();
+            throw AiProtocolException.invalidFormat(
+                    "Missing assignment_status in AI response assignment. Expected ON_DUTY or ON_CALL."
+            );
         }
         if (aiAssignment.assignmentStatus == ConcreteShiftDoctorStatus.ON_DUTY
                 || aiAssignment.assignmentStatus == ConcreteShiftDoctorStatus.ON_CALL) {
@@ -294,12 +296,6 @@ public class AiScheduleConverterService {
             return new AssignmentStatusResolution(assignmentStatus, EnumSet.of(assignmentStatus));
         }
 
-        private static AssignmentStatusResolution legacyDefault() {
-            return new AssignmentStatusResolution(
-                    ConcreteShiftDoctorStatus.ON_DUTY,
-                    EnumSet.of(ConcreteShiftDoctorStatus.ON_DUTY, ConcreteShiftDoctorStatus.ON_CALL)
-            );
-        }
     }
 
     private static class ShiftCoverageAccumulator {

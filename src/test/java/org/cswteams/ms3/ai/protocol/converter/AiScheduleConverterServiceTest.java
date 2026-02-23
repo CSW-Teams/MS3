@@ -170,7 +170,7 @@ public class AiScheduleConverterServiceTest {
     }
 
     @Test
-    public void convert_missingAssignmentStatus_shouldRemainBackwardCompatible() {
+    public void convert_missingAssignmentStatus_shouldFailFast() {
         AiScheduleJsonParser jsonParser = mock(AiScheduleJsonParser.class);
         AiScheduleSemanticValidator semanticValidator = mock(AiScheduleSemanticValidator.class);
         DoctorDAO doctorDAO = mock(DoctorDAO.class);
@@ -178,7 +178,9 @@ public class AiScheduleConverterServiceTest {
 
         AiScheduleResponseDto dto = validDto();
         dto.assignments = new ArrayList<>();
-        dto.assignments.add(assignment("S_101_20260520", 1, Seniority.STRUCTURED));
+        AiAssignmentDto assignment = assignment("S_101_20260520", 1, Seniority.STRUCTURED);
+        assignment.assignmentStatus = null;
+        dto.assignments.add(assignment);
 
         Doctor structuredDoctor = new Doctor(
                 "Mario",
@@ -202,7 +204,13 @@ public class AiScheduleConverterServiceTest {
 
         AiScheduleConverterService service = new AiScheduleConverterService(jsonParser, semanticValidator, doctorDAO, shiftDAO);
 
-        assertEquals(1, service.convert("payload").size());
+        try {
+            service.convert("payload");
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCode.INVALID_FORMAT, ex.getCode());
+            assertTrue(ex.getMessage().contains("Missing assignment_status"));
+        }
     }
 
     @Test
@@ -263,6 +271,7 @@ public class AiScheduleConverterServiceTest {
         dto.roleCovered = roleCovered;
         dto.isForced = false;
         dto.violationNote = null;
+        dto.assignmentStatus = ConcreteShiftDoctorStatus.ON_DUTY;
         return dto;
     }
 }
