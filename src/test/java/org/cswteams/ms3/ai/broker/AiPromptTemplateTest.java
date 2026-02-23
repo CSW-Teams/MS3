@@ -28,6 +28,8 @@ class AiPromptTemplateTest {
         assertTrue(systemPrompt.contains("role_validation_scratchpad[n]{shift_id,required_role,required_count,candidate_doctor_ids}"));
         assertTrue(systemPrompt.contains("Backend-provided scratchpad entries override any role-candidate inference from `dr`"));
         assertTrue(systemPrompt.contains("Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory"));
+        assertTrue(systemPrompt.contains("required ON_CALL role coverage is exactly equal to the same per-role minima declared in `hard_coverage_requirements`"));
+        assertTrue(systemPrompt.contains("valid solution must satisfy both assignment layers for each `shift_id` and role — ON_DUTY meets minima and ON_CALL meets the same minima"));
         assertTrue(systemPrompt.contains("Read the provided preprocessed `role_validation_scratchpad` rows."));
         assertTrue(systemPrompt.contains("only source of truth of allowed doctor IDs"));
         assertTrue(systemPrompt.contains("STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids`"));

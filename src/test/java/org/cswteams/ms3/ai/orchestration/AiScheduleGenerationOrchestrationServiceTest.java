@@ -206,6 +206,8 @@ class AiScheduleGenerationOrchestrationServiceTest {
 
         assertTrue(toonPayload.contains("hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:"));
         assertTrue(toonPayload.contains("S_2001_20260914,1,0,2,3"));
+        assertEquals(1, countOccurrences(toonPayload, "hard_coverage_requirements["));
+        assertEquals(0, countOccurrences(toonPayload, "on_call_coverage_requirements["));
     }
 
     @Test
@@ -738,5 +740,15 @@ class AiScheduleGenerationOrchestrationServiceTest {
         } catch (Exception ex) {
             throw new IllegalStateException("Unable to set field " + fieldName, ex);
         }
+    }
+
+    private int countOccurrences(String source, String token) {
+        int count = 0;
+        int fromIndex = 0;
+        while ((fromIndex = source.indexOf(token, fromIndex)) >= 0) {
+            count++;
+            fromIndex += token.length();
+        }
+        return count;
     }
 }
