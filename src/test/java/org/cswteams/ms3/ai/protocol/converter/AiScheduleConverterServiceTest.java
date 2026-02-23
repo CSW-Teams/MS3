@@ -288,6 +288,40 @@ public class AiScheduleConverterServiceTest {
 
 
     @Test
+    public void convert_sameShiftSameDoctorWithDifferentStatuses_shouldFailWithSchemaMismatch() {
+        AiScheduleJsonParser jsonParser = mock(AiScheduleJsonParser.class);
+        AiScheduleSemanticValidator semanticValidator = mock(AiScheduleSemanticValidator.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        ShiftDAO shiftDAO = mock(ShiftDAO.class);
+
+        AiScheduleResponseDto dto = validDto();
+        dto.assignments = new ArrayList<>();
+        dto.assignments.add(assignmentWithStatus("S_101_20260520", 1, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_DUTY));
+        dto.assignments.add(assignmentWithStatus("S_101_20260520", 1, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_CALL));
+
+        when(jsonParser.parse("payload")).thenReturn(dto);
+        doNothing().when(semanticValidator).validate(dto);
+        when(doctorDAO.findById(1L)).thenReturn(doctor(1L, Seniority.STRUCTURED));
+
+        Shift shiftTemplate = mock(Shift.class);
+        QuantityShiftSeniority qss = new QuantityShiftSeniority(Map.of(Seniority.STRUCTURED, 1), new Task(TaskEnum.WARD));
+        when(shiftTemplate.getQuantityShiftSeniority()).thenReturn(List.of(qss));
+        when(shiftDAO.findById(101L)).thenReturn(Optional.of(shiftTemplate));
+
+        AiScheduleConverterService service = new AiScheduleConverterService(jsonParser, semanticValidator, doctorDAO, shiftDAO);
+
+        try {
+            service.convert("payload");
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
+            assertTrue(ex.getDetails().stream().anyMatch(d -> d.getPath().equals("$.assignments[1]")));
+            assertTrue(ex.getDetails().stream().anyMatch(d -> d.getMessage().contains("same doctor cannot be assigned both ON_DUTY and ON_CALL")));
+        }
+    }
+
+
+    @Test
     public void convert_missingAssignmentStatus_shouldFailFast() {
         AiScheduleJsonParser jsonParser = mock(AiScheduleJsonParser.class);
         AiScheduleSemanticValidator semanticValidator = mock(AiScheduleSemanticValidator.class);
