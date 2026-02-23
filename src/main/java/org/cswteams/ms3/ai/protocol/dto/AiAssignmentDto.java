@@ -2,6 +2,7 @@ package org.cswteams.ms3.ai.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 
 public class AiAssignmentDto {
@@ -16,4 +17,6 @@ public class AiAssignmentDto {
     public Boolean isForced;
     @JsonProperty("violation_note")
     public String violationNote;
+    @JsonProperty("assignment_status")
+    public ConcreteShiftDoctorStatus assignmentStatus;
 }
