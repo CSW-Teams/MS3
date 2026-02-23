@@ -72,7 +72,7 @@ const resolveSelectionKey = (candidate) =>
   candidate?.metadata?.candidateId ?? candidate?.metadata?.type ?? '';
 
 const resolveMetrics = (candidate) =>
-  candidate?.metrics?.normalized || candidate?.metrics?.raw || {};
+  candidate?.metrics?.raw || candidate?.metrics?.normalized || {};
 
 const resolveSentimentTransitionCounts = (candidate) =>
   candidate?.metrics?.raw?.sentimentTransitionCounts ||
