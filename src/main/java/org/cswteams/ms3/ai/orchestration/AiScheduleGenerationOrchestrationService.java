@@ -1670,6 +1670,7 @@ public class AiScheduleGenerationOrchestrationService {
             dto.shiftId = assignment.getShiftId();
             dto.doctorId = assignment.getDoctorId();
             dto.roleCovered = assignment.getRoleCovered();
+            dto.assignmentStatus = assignment.getAssignmentStatus();
             dto.isForced = assignment.isForced();
             dto.violationNote = assignment.getViolationNote();
             result.add(dto);
