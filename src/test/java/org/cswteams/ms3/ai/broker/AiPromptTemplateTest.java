@@ -30,6 +30,12 @@ class AiPromptTemplateTest {
         assertTrue(systemPrompt.contains("Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory"));
         assertTrue(systemPrompt.contains("required ON_CALL role coverage is exactly equal to the same per-role minima declared in `hard_coverage_requirements`"));
         assertTrue(systemPrompt.contains("valid solution must satisfy both assignment layers for each `shift_id` and role — ON_DUTY meets minima and ON_CALL meets the same minima"));
+        assertTrue(systemPrompt.contains("for every `shift_id`, generate assignments for both `assignment_status` layers: `ON_DUTY` and `ON_CALL`"));
+        assertTrue(systemPrompt.contains("per-role minima apply independently to each `assignment_status` layer"));
+        assertTrue(systemPrompt.contains("the same `doctor_id` cannot appear twice for the same `shift_id` across different `assignment_status` values"));
+        assertTrue(systemPrompt.contains("Concrete coverage-layer example for `S_73_20260223`"));
+        assertTrue(systemPrompt.contains("{\"shift_id\":\"S_73_20260223\",\"doctor_id\":101,\"role_covered\":\"STRUCTURED\",\"assignment_status\":\"ON_DUTY\"}"));
+        assertTrue(systemPrompt.contains("{\"shift_id\":\"S_73_20260223\",\"doctor_id\":202,\"role_covered\":\"STRUCTURED\",\"assignment_status\":\"ON_CALL\"}"));
         assertTrue(systemPrompt.contains("Read the provided preprocessed `role_validation_scratchpad` rows."));
         assertTrue(systemPrompt.contains("only source of truth of allowed doctor IDs"));
         assertTrue(systemPrompt.contains("STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids`"));
