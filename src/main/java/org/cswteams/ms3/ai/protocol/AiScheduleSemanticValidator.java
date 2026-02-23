@@ -150,17 +150,21 @@ public class AiScheduleSemanticValidator {
                 errors.add(new ValidationError("$.assignments[" + i + "].violation_note", "must not be blank when is_forced is true"));
             }
 
-            if (assignment.assignmentStatus != null
-                    && assignment.assignmentStatus != ConcreteShiftDoctorStatus.ON_DUTY
+            if (assignment.assignmentStatus == null) {
+                errors.add(new ValidationError(
+                        "$.assignments[" + i + "].assignment_status",
+                        "must not be null"
+                ));
+            } else if (assignment.assignmentStatus != ConcreteShiftDoctorStatus.ON_DUTY
                     && assignment.assignmentStatus != ConcreteShiftDoctorStatus.ON_CALL) {
                 errors.add(new ValidationError(
                         "$.assignments[" + i + "].assignment_status",
-                        "must be ON_DUTY or ON_CALL when provided"
+                        "must be ON_DUTY or ON_CALL"
                 ));
             }
 
-            if (nonBlank(assignment.shiftId) && assignment.doctorId != null) {
-                String statusKey = assignment.assignmentStatus == null ? "LEGACY" : assignment.assignmentStatus.name();
+            if (nonBlank(assignment.shiftId) && assignment.doctorId != null && assignment.assignmentStatus != null) {
+                String statusKey = assignment.assignmentStatus.name();
                 String key = assignment.shiftId + "||" + assignment.doctorId + "||" + statusKey;
                 if (!keys.add(key)) {
                     errors.add(new ValidationError(
