@@ -179,13 +179,11 @@ public class AiScheduleConverterService {
             );
 
             // f. Create DoctorAssignment
-            ConcreteShiftDoctorStatus status = ConcreteShiftDoctorStatus.ON_DUTY; // Default status
-            // The AI provides isForced and violationNote. If needed, this could influence the status
-            // or be stored in a separate log/entity. For now, we assume ON_DUTY.
+            AssignmentStatusResolution statusResolution = resolveAssignmentStatus(aiAssignment);
 
-            DoctorAssignment doctorAssignment = new DoctorAssignment(doctor, status, concreteShift, task);
+            DoctorAssignment doctorAssignment = new DoctorAssignment(doctor, statusResolution.persistenceStatus, concreteShift, task);
             concreteShift.getDoctorAssignmentList().add(doctorAssignment);
-            coverageAccumulator.registerAssignment(doctor.getSeniority());
+            coverageAccumulator.registerAssignment(statusResolution.coverageStatuses, doctor.getSeniority());
         }
 
         for (ShiftCoverageAccumulator coverageAccumulator : coverageByConcreteShift.values()) {
@@ -268,17 +266,53 @@ public class AiScheduleConverterService {
 
     }
 
+    private AssignmentStatusResolution resolveAssignmentStatus(AiAssignmentDto aiAssignment) {
+        if (aiAssignment.assignmentStatus == null) {
+            return AssignmentStatusResolution.legacyDefault();
+        }
+        if (aiAssignment.assignmentStatus == ConcreteShiftDoctorStatus.ON_DUTY
+                || aiAssignment.assignmentStatus == ConcreteShiftDoctorStatus.ON_CALL) {
+            return AssignmentStatusResolution.explicit(aiAssignment.assignmentStatus);
+        }
+        throw AiProtocolException.invalidFormat(
+                "Unsupported assignment_status in AI response: " + aiAssignment.assignmentStatus
+                        + ". Expected ON_DUTY or ON_CALL."
+        );
+    }
+
+    private static class AssignmentStatusResolution {
+        private final ConcreteShiftDoctorStatus persistenceStatus;
+        private final EnumSet<ConcreteShiftDoctorStatus> coverageStatuses;
+
+        private AssignmentStatusResolution(ConcreteShiftDoctorStatus persistenceStatus,
+                                           EnumSet<ConcreteShiftDoctorStatus> coverageStatuses) {
+            this.persistenceStatus = persistenceStatus;
+            this.coverageStatuses = coverageStatuses;
+        }
+
+        private static AssignmentStatusResolution explicit(ConcreteShiftDoctorStatus assignmentStatus) {
+            return new AssignmentStatusResolution(assignmentStatus, EnumSet.of(assignmentStatus));
+        }
+
+        private static AssignmentStatusResolution legacyDefault() {
+            return new AssignmentStatusResolution(
+                    ConcreteShiftDoctorStatus.ON_DUTY,
+                    EnumSet.of(ConcreteShiftDoctorStatus.ON_DUTY, ConcreteShiftDoctorStatus.ON_CALL)
+            );
+        }
+    }
+
     private static class ShiftCoverageAccumulator {
         private final String shiftId;
         private final Map<Seniority, Integer> requiredBySeniority;
-        private final Map<Seniority, Integer> assignedBySeniority;
+        private final Map<ConcreteShiftDoctorStatus, Map<Seniority, Integer>> assignedByStatusAndSeniority;
 
         private ShiftCoverageAccumulator(String shiftId,
                                          Map<Seniority, Integer> requiredBySeniority,
-                                         Map<Seniority, Integer> assignedBySeniority) {
+                                         Map<ConcreteShiftDoctorStatus, Map<Seniority, Integer>> assignedByStatusAndSeniority) {
             this.shiftId = shiftId;
             this.requiredBySeniority = requiredBySeniority;
-            this.assignedBySeniority = assignedBySeniority;
+            this.assignedByStatusAndSeniority = assignedByStatusAndSeniority;
         }
 
         private static ShiftCoverageAccumulator fromShiftTemplate(Shift shiftTemplate, String shiftId) {
@@ -296,23 +330,39 @@ public class AiScheduleConverterService {
                     }
                 }
             }
-            return new ShiftCoverageAccumulator(shiftId, requiredBySeniority, new EnumMap<>(Seniority.class));
+            Map<ConcreteShiftDoctorStatus, Map<Seniority, Integer>> assignedByStatusAndSeniority = new EnumMap<>(ConcreteShiftDoctorStatus.class);
+            assignedByStatusAndSeniority.put(ConcreteShiftDoctorStatus.ON_DUTY, new EnumMap<>(Seniority.class));
+            assignedByStatusAndSeniority.put(ConcreteShiftDoctorStatus.ON_CALL, new EnumMap<>(Seniority.class));
+            return new ShiftCoverageAccumulator(shiftId, requiredBySeniority, assignedByStatusAndSeniority);
         }
 
-        private void registerAssignment(Seniority seniority) {
-            if (seniority == null) {
+        private void registerAssignment(EnumSet<ConcreteShiftDoctorStatus> statuses, Seniority seniority) {
+            if (seniority == null || statuses == null || statuses.isEmpty()) {
                 return;
             }
-            assignedBySeniority.merge(seniority, 1, Integer::sum);
+            for (ConcreteShiftDoctorStatus status : statuses) {
+                Map<Seniority, Integer> assignedBySeniority = assignedByStatusAndSeniority.get(status);
+                if (assignedBySeniority == null) {
+                    continue;
+                }
+                assignedBySeniority.merge(seniority, 1, Integer::sum);
+            }
         }
 
         private void addCoverageErrors(List<ValidationError> errors) {
+            addCoverageErrorsForStatus(errors, ConcreteShiftDoctorStatus.ON_DUTY);
+            addCoverageErrorsForStatus(errors, ConcreteShiftDoctorStatus.ON_CALL);
+        }
+
+        private void addCoverageErrorsForStatus(List<ValidationError> errors, ConcreteShiftDoctorStatus status) {
+            Map<Seniority, Integer> assignedBySeniority = assignedByStatusAndSeniority.getOrDefault(status, Collections.emptyMap());
             for (Map.Entry<Seniority, Integer> requiredEntry : requiredBySeniority.entrySet()) {
                 int assigned = assignedBySeniority.getOrDefault(requiredEntry.getKey(), 0);
                 if (assigned < requiredEntry.getValue()) {
                     errors.add(new ValidationError(
                             "$.assignments",
-                            "shift_id=" + shiftId + " requires at least " + requiredEntry.getValue()
+                            "shift_id=" + shiftId + " assignment_status=" + status
+                                    + " requires at least " + requiredEntry.getValue()
                                     + " doctors with seniority=" + requiredEntry.getKey()
                                     + " but got " + assigned
                     ));

@@ -15,6 +15,7 @@ import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.QuantityShiftSeniority;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.Task;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TaskEnum;
@@ -120,6 +121,88 @@ public class AiScheduleConverterServiceTest {
             assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
             assertTrue(ex.getDetails().stream().anyMatch(d -> "$.assignments[0].role_covered".equals(d.getPath())));
         }
+    }
+
+
+    @Test
+    public void convert_missingOnCallLayer_shouldFailWithStatusSpecificCoverageError() {
+        AiScheduleJsonParser jsonParser = mock(AiScheduleJsonParser.class);
+        AiScheduleSemanticValidator semanticValidator = mock(AiScheduleSemanticValidator.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        ShiftDAO shiftDAO = mock(ShiftDAO.class);
+
+        AiScheduleResponseDto dto = validDto();
+        dto.assignments = new ArrayList<>();
+        AiAssignmentDto onDuty = assignment("S_101_20260520", 1, Seniority.STRUCTURED);
+        onDuty.assignmentStatus = ConcreteShiftDoctorStatus.ON_DUTY;
+        dto.assignments.add(onDuty);
+
+        Doctor structuredDoctor = new Doctor(
+                "Mario",
+                "Rossi",
+                "RSSMRA80A01H501U",
+                LocalDate.of(1980, 1, 1),
+                "mario.rossi@example.com",
+                "pwd",
+                Seniority.STRUCTURED,
+                Set.of(SystemActor.DOCTOR)
+        );
+
+        Shift shiftTemplate = mock(Shift.class);
+        QuantityShiftSeniority qss = new QuantityShiftSeniority(Map.of(Seniority.STRUCTURED, 1), new Task(TaskEnum.WARD));
+        when(shiftTemplate.getQuantityShiftSeniority()).thenReturn(List.of(qss));
+
+        when(jsonParser.parse("payload")).thenReturn(dto);
+        doNothing().when(semanticValidator).validate(dto);
+        when(doctorDAO.findById(anyLong())).thenReturn(structuredDoctor);
+        when(shiftDAO.findById(101L)).thenReturn(Optional.of(shiftTemplate));
+
+        AiScheduleConverterService service = new AiScheduleConverterService(jsonParser, semanticValidator, doctorDAO, shiftDAO);
+
+        try {
+            service.convert("payload");
+            fail("Expected AiProtocolException");
+        } catch (AiProtocolException ex) {
+            assertEquals(AiProtocolException.ErrorCode.SCHEMA_MISMATCH, ex.getCode());
+            assertTrue(ex.getDetails().stream().anyMatch(d -> d.getMessage().contains("assignment_status=ON_CALL")));
+            assertTrue(ex.getDetails().stream().anyMatch(d -> d.getMessage().contains("seniority=STRUCTURED")));
+        }
+    }
+
+    @Test
+    public void convert_missingAssignmentStatus_shouldRemainBackwardCompatible() {
+        AiScheduleJsonParser jsonParser = mock(AiScheduleJsonParser.class);
+        AiScheduleSemanticValidator semanticValidator = mock(AiScheduleSemanticValidator.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        ShiftDAO shiftDAO = mock(ShiftDAO.class);
+
+        AiScheduleResponseDto dto = validDto();
+        dto.assignments = new ArrayList<>();
+        dto.assignments.add(assignment("S_101_20260520", 1, Seniority.STRUCTURED));
+
+        Doctor structuredDoctor = new Doctor(
+                "Mario",
+                "Rossi",
+                "RSSMRA80A01H501U",
+                LocalDate.of(1980, 1, 1),
+                "mario.rossi@example.com",
+                "pwd",
+                Seniority.STRUCTURED,
+                Set.of(SystemActor.DOCTOR)
+        );
+
+        Shift shiftTemplate = mock(Shift.class);
+        QuantityShiftSeniority qss = new QuantityShiftSeniority(Map.of(Seniority.STRUCTURED, 1), new Task(TaskEnum.WARD));
+        when(shiftTemplate.getQuantityShiftSeniority()).thenReturn(List.of(qss));
+
+        when(jsonParser.parse("payload")).thenReturn(dto);
+        doNothing().when(semanticValidator).validate(dto);
+        when(doctorDAO.findById(anyLong())).thenReturn(structuredDoctor);
+        when(shiftDAO.findById(101L)).thenReturn(Optional.of(shiftTemplate));
+
+        AiScheduleConverterService service = new AiScheduleConverterService(jsonParser, semanticValidator, doctorDAO, shiftDAO);
+
+        assertEquals(1, service.convert("payload").size());
     }
 
     @Test

@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -149,10 +150,25 @@ public class AiScheduleSemanticValidator {
                 errors.add(new ValidationError("$.assignments[" + i + "].violation_note", "must not be blank when is_forced is true"));
             }
 
+            if (assignment.assignmentStatus != null
+                    && assignment.assignmentStatus != ConcreteShiftDoctorStatus.ON_DUTY
+                    && assignment.assignmentStatus != ConcreteShiftDoctorStatus.ON_CALL) {
+                errors.add(new ValidationError(
+                        "$.assignments[" + i + "].assignment_status",
+                        "must be ON_DUTY or ON_CALL when provided"
+                ));
+            }
+
             if (nonBlank(assignment.shiftId) && assignment.doctorId != null) {
-                String key = assignment.shiftId + "||" + assignment.doctorId;
+                String statusKey = assignment.assignmentStatus == null ? "LEGACY" : assignment.assignmentStatus.name();
+                String key = assignment.shiftId + "||" + assignment.doctorId + "||" + statusKey;
                 if (!keys.add(key)) {
-                    errors.add(new ValidationError("$.assignments", "duplicate key shift_id=" + assignment.shiftId + " doctor_id=" + assignment.doctorId));
+                    errors.add(new ValidationError(
+                            "$.assignments",
+                            "duplicate key shift_id=" + assignment.shiftId
+                                    + " doctor_id=" + assignment.doctorId
+                                    + " assignment_status=" + statusKey
+                    ));
                 }
             }
         }
