@@ -62,7 +62,7 @@ public class ToonValidator {
         validatePriorities(context.getDoctorUffaPriorities(), context.getDoctors());
         validateDoctorHolidays(context.getDoctorHolidays(), context.getDoctors());
         validateConstraints(context.getActiveConstraints(), context.getConcreteShifts(), context.getDoctors());
-        validateFeedbacks(context.getFeedbacks(), context.getConcreteShifts(), context.getDoctors());
+        validateFeedbacks(context.getFeedbacks(), context.getConcreteShifts(), context.getDoctors(), context.isAllowHistoricalFeedbackShiftIds());
     }
 
     public void postValidate(String toonPayload, ToonBuilder.SerializationMode mode) {
@@ -216,7 +216,8 @@ public class ToonValidator {
 
     private void validateFeedbacks(List<ToonFeedback> feedbacks,
                                    List<ConcreteShift> shifts,
-                                   List<Doctor> doctors) {
+                                   List<Doctor> doctors,
+                                   boolean allowHistoricalFeedbackShiftIds) {
         Set<String> shiftIds = new HashSet<>();
         for (ConcreteShift shift : shifts) {
             shiftIds.add(ToonBuilder.shiftIdFor(shift));
@@ -229,7 +230,7 @@ public class ToonValidator {
             if (feedback.getShiftId() == null || feedback.getShiftId().trim().isEmpty()) {
                 throw new ToonValidationException("Feedback shift id is required");
             }
-            if (!shiftIds.contains(feedback.getShiftId())) {
+            if (!allowHistoricalFeedbackShiftIds && !shiftIds.contains(feedback.getShiftId())) {
                 throw new ToonValidationException("Feedback shift id not found: " + feedback.getShiftId());
             }
             if (feedback.getDoctorId() == null || !doctorIds.contains(feedback.getDoctorId())) {
