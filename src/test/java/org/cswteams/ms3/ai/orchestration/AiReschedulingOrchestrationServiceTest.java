@@ -101,6 +101,7 @@ class AiReschedulingOrchestrationServiceTest {
         ToonRequestContext context = toonRequest.getToonRequestContext();
         assertEquals(1, context.getDoctors().size());
         assertEquals(1L, context.getDoctors().get(0).getId());
+        assertTrue(context.isAllowHistoricalFeedbackShiftIds());
 
         Map<Long, Long> reverseMapping = toonRequest.getPseudonymToDoctorId();
         assertEquals(10L, reverseMapping.get(1L));
@@ -165,6 +166,7 @@ class AiReschedulingOrchestrationServiceTest {
         assertEquals(1, context.getDoctors().size());
         assertEquals(1, context.getDoctorUffaPriorities().size());
         assertEquals(1, context.getDoctorHolidays().size());
+        assertFalse(context.isAllowHistoricalFeedbackShiftIds());
 
         ToonBuilder builder = new ToonBuilder();
         String payload = builder.build(context);
@@ -218,7 +220,10 @@ class AiReschedulingOrchestrationServiceTest {
         );
 
         ToonBuilder builder = new ToonBuilder();
-        String payload = builder.build(toonRequest.getToonRequestContext());
+        ToonRequestContext context = toonRequest.getToonRequestContext();
+        assertTrue(context.isAllowHistoricalFeedbackShiftIds());
+
+        String payload = builder.build(context);
         assertTrue(payload.contains(shiftId + ", 1, REPEATED_WEEKDAY, 4, \"Free text reason\"\n"));
     }
 
@@ -276,6 +281,8 @@ class AiReschedulingOrchestrationServiceTest {
         assertEquals(1, regenerateRequest.getToonRequestContext().getActiveConstraints().size());
         assertEquals("MAX_CONSECUTIVE_DAYS", generateRequest.getToonRequestContext().getActiveConstraints().get(0).getReason());
         assertEquals("MAX_CONSECUTIVE_DAYS", regenerateRequest.getToonRequestContext().getActiveConstraints().get(0).getReason());
+        assertFalse(generateRequest.getToonRequestContext().isAllowHistoricalFeedbackShiftIds());
+        assertFalse(regenerateRequest.getToonRequestContext().isAllowHistoricalFeedbackShiftIds());
     }
 
 
