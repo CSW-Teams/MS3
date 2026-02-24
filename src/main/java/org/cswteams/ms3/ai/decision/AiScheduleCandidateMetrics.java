@@ -14,20 +14,17 @@ public class AiScheduleCandidateMetrics {
     private final String candidateId;
     private final double coverage;
     private final double uffaBalance;
-    private final double sentimentTransitions;
     private final double upDelta;
     private final double varianceDelta;
 
     public AiScheduleCandidateMetrics(String candidateId,
                                       double coverage,
                                       double uffaBalance,
-                                      double sentimentTransitions,
                                       double upDelta,
                                       double varianceDelta) {
         this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
         this.coverage = coverage;
         this.uffaBalance = uffaBalance;
-        this.sentimentTransitions = sentimentTransitions;
         this.upDelta = upDelta;
         this.varianceDelta = varianceDelta;
     }
@@ -44,10 +41,6 @@ public class AiScheduleCandidateMetrics {
         return uffaBalance;
     }
 
-    public double getSentimentTransitions() {
-        return sentimentTransitions;
-    }
-
     public double getUpDelta() {
         return upDelta;
     }
@@ -60,7 +53,6 @@ public class AiScheduleCandidateMetrics {
         Map<PriorityDimension, Double> values = new EnumMap<>(PriorityDimension.class);
         values.put(PriorityDimension.COVERAGE, coverage);
         values.put(PriorityDimension.UFFA_BALANCE, uffaBalance);
-        values.put(PriorityDimension.SENTIMENT_TRANSITIONS, sentimentTransitions);
         values.put(PriorityDimension.UP_DELTA, upDelta);
         values.put(PriorityDimension.VARIANCE_DELTA, varianceDelta);
         return values;

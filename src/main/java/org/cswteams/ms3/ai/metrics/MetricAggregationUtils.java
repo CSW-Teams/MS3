@@ -81,46 +81,6 @@ public final class MetricAggregationUtils {
         return Math.abs(Math.sqrt(variance) / mean);
     }
 
-    public static SentimentTransitionCounts countSentimentTransitions(Map<Long, Integer> previous,
-                                                                     Map<Long, Integer> current) {
-        validateSeries(previous, current);
-        int negativeToNeutral = 0;
-        int negativeToPositive = 0;
-        int neutralToPositive = 0;
-        int neutralToNegative = 0;
-        int positiveToNegative = 0;
-        int positiveToNeutral = 0;
-
-        for (Long key : current.keySet()) {
-            Integer previousValue = requireNonNull(previous.get(key), "previous");
-            Integer currentValue = requireNonNull(current.get(key), "current");
-            validateSentiment(previousValue);
-            validateSentiment(currentValue);
-            if (previousValue == -1 && currentValue == 0) {
-                negativeToNeutral++;
-            } else if (previousValue == -1 && currentValue == 1) {
-                negativeToPositive++;
-            } else if (previousValue == 0 && currentValue == 1) {
-                neutralToPositive++;
-            } else if (previousValue == 0 && currentValue == -1) {
-                neutralToNegative++;
-            } else if (previousValue == 1 && currentValue == -1) {
-                positiveToNegative++;
-            } else if (previousValue == 1 && currentValue == 0) {
-                positiveToNeutral++;
-            }
-        }
-
-        return new SentimentTransitionCounts(negativeToNeutral, negativeToPositive, neutralToPositive,
-                neutralToNegative, positiveToNegative, positiveToNeutral);
-    }
-
-    private static void validateSentiment(int value) {
-        if (value < -1 || value > 1) {
-            throw new IllegalArgumentException("Sentiment must be -1, 0, or 1");
-        }
-    }
-
     private static void validateValues(List<Double> values, String name) {
         if (values == null || values.isEmpty()) {
             throw new IllegalArgumentException(name + " cannot be null or empty");
