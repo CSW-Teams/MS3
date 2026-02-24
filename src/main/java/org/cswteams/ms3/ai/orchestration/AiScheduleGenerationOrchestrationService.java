@@ -1414,10 +1414,19 @@ public class AiScheduleGenerationOrchestrationService {
         int totalRequired = 0;
         int totalAssigned = 0;
         for (ConcreteShift shift : concreteShifts) {
-            int required = computeShiftRequirement(shift.getShift());
-            int assigned = countAssignedDoctors(shift);
+            int requiredPerRoleMinima = computeShiftRequirementPerRoleMinima(shift.getShift());
+            int requiredOnDuty = requiredPerRoleMinima;
+            int requiredOnCall = requiredPerRoleMinima;
+            int required = requiredOnDuty + requiredOnCall;
+
+            int assignedOnDuty = countAssignedDoctors(shift, ConcreteShiftDoctorStatus.ON_DUTY);
+            int assignedOnCall = countAssignedDoctors(shift, ConcreteShiftDoctorStatus.ON_CALL);
+
+            int coveredOnDuty = Math.min(requiredOnDuty, assignedOnDuty);
+            int coveredOnCall = Math.min(requiredOnCall, assignedOnCall);
+
             totalRequired += required;
-            totalAssigned += Math.min(required, assigned);
+            totalAssigned += coveredOnDuty + coveredOnCall;
         }
         if (totalRequired == 0) {
             logger.info("event=coverage_computed total_required=0 total_assigned={} coverage=1.0", totalAssigned);
@@ -1432,6 +1441,13 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private int computeShiftRequirement(Shift shift) {
+        int requiredPerRoleMinima = computeShiftRequirementPerRoleMinima(shift);
+        int requiredOnDuty = requiredPerRoleMinima;
+        int requiredOnCall = requiredPerRoleMinima;
+        return requiredOnDuty + requiredOnCall;
+    }
+
+    private int computeShiftRequirementPerRoleMinima(Shift shift) {
         if (shift == null || shift.getQuantityShiftSeniority() == null) {
             return 0;
         }
@@ -1450,6 +1466,11 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private int countAssignedDoctors(ConcreteShift shift) {
+        return countAssignedDoctors(shift, ConcreteShiftDoctorStatus.ON_DUTY)
+                + countAssignedDoctors(shift, ConcreteShiftDoctorStatus.ON_CALL);
+    }
+
+    private int countAssignedDoctors(ConcreteShift shift, ConcreteShiftDoctorStatus statusToCount) {
         if (shift == null || shift.getDoctorAssignmentList() == null) {
             return 0;
         }
@@ -1459,7 +1480,7 @@ public class AiScheduleGenerationOrchestrationService {
                 continue;
             }
             ConcreteShiftDoctorStatus status = assignment.getConcreteShiftDoctorStatus();
-            if (status == ConcreteShiftDoctorStatus.ON_CALL || status == ConcreteShiftDoctorStatus.ON_DUTY) {
+            if (status == statusToCount) {
                 count++;
             }
         }

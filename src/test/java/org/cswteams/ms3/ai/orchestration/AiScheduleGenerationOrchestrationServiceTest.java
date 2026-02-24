@@ -592,6 +592,55 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 .anyMatch(payload -> payload.contains("\"assignment_status\":\"ON_DUTY\"")));
     }
 
+
+    @Test
+    void computeCoverageTreatsMissingOnCallLayerAsIncompleteCoverage() throws Exception {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift shift = makeShift(9101L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1))
+        ));
+        ConcreteShift concreteShift = new ConcreteShift(date.toEpochDay(), shift);
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(1L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)));
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(2L, Seniority.SPECIALIST_JUNIOR), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)));
+
+        double coverage = invokeComputeCoverage(coverageService(), List.of(concreteShift));
+
+        assertEquals(0.5, coverage, 0.0001);
+    }
+
+    @Test
+    void computeCoverageReturns100PercentWhenBothLayersMeetMinima() throws Exception {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift shift = makeShift(9102L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1))
+        ));
+        ConcreteShift concreteShift = new ConcreteShift(date.toEpochDay(), shift);
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(1L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)));
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(2L, Seniority.SPECIALIST_JUNIOR), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)));
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(3L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_CALL, concreteShift, new Task(TaskEnum.CLINIC)));
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(4L, Seniority.SPECIALIST_JUNIOR), ConcreteShiftDoctorStatus.ON_CALL, concreteShift, new Task(TaskEnum.CLINIC)));
+
+        double coverage = invokeComputeCoverage(coverageService(), List.of(concreteShift));
+
+        assertEquals(1.0, coverage, 0.0001);
+    }
+
+    @Test
+    void computeCoverageDegradesProportionallyWhenOneLayerIsPartiallyCovered() throws Exception {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift shift = makeShift(9103L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1))
+        ));
+        ConcreteShift concreteShift = new ConcreteShift(date.toEpochDay(), shift);
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(1L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)));
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(2L, Seniority.SPECIALIST_JUNIOR), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)));
+        concreteShift.getDoctorAssignmentList().add(new DoctorAssignment(newDoctor(3L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_CALL, concreteShift, new Task(TaskEnum.CLINIC)));
+
+        double coverage = invokeComputeCoverage(coverageService(), List.of(concreteShift));
+
+        assertEquals(0.75, coverage, 0.0001);
+    }
+
     private AiScheduleResponse aiVariantResponse(String reasoning) {
         return new AiScheduleResponse(
                 AiStatus.SUCCESS,
@@ -779,6 +828,35 @@ class AiScheduleGenerationOrchestrationServiceTest {
         }
         fail("No captured toon payload containing hard_coverage_requirements");
         return null;
+    }
+
+
+    private AiScheduleGenerationOrchestrationService coverageService() {
+        return new AiScheduleGenerationOrchestrationService(
+                mock(ISchedulerController.class),
+                mock(DoctorDAO.class),
+                mock(DoctorUffaPriorityDAO.class),
+                mock(DoctorHolidaysDAO.class),
+                mock(ConstraintDAO.class),
+                mock(HolidayDAO.class),
+                mock(ScheduleDAO.class),
+                mock(AgentBroker.class),
+                new AiBrokerProperties(),
+                new AiReschedulingOrchestrationService(mock(RequestRemovalFromConcreteShiftDAO.class), mock(AiActiveConstraintResolver.class)),
+                mock(DecisionAlgorithmService.class),
+                mock(AiScheduleConverterService.class),
+                new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
+                new ObjectMapper()
+        );
+    }
+
+    private double invokeComputeCoverage(AiScheduleGenerationOrchestrationService service,
+                                         List<ConcreteShift> concreteShifts) throws Exception {
+        Method computeCoverage = AiScheduleGenerationOrchestrationService.class
+                .getDeclaredMethod("computeCoverage", List.class);
+        computeCoverage.setAccessible(true);
+        return (double) computeCoverage.invoke(service, concreteShifts);
     }
 
     private Doctor newDoctor(Long id, Seniority seniority) {
