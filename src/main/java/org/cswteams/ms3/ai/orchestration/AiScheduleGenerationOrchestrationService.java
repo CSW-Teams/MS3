@@ -735,6 +735,7 @@ public class AiScheduleGenerationOrchestrationService {
                 + " Previous attempt " + failedAttempt
                 + " was invalid (" + validation.code + ": " + validation.message + ")."
                 + " Treat role_validation_scratchpad semantics as a backend-authoritative contract: each candidate_doctor_ids entry must reference an in-context doctor whose seniority exactly matches role_required."
+                + " Strict dual-layer quota: for each (shift_id, required_role), count(ON_DUTY)=count(ON_CALL)=required_count (or hard_minimum_required_count when required_count is absent)."
                 + buildValidationFailurePromptBlock(validation)
                 + " Regenerate the same variant label only, fix all domain/syntax issues, and return strict JSON.";
     }
