@@ -109,7 +109,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.minusDays(2).toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());
@@ -291,7 +291,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.minusDays(2).toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());
@@ -402,7 +402,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.minusDays(2).toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());
@@ -626,7 +626,7 @@ class AiScheduleGenerationOrchestrationServiceTest {
         when(doctorDAO.findBySeniorities(any())).thenReturn(effectiveDoctors);
         when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(primaryDoctor.getId()))).thenReturn(List.of(doctorPriority));
         when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(primaryDoctor.getId()))).thenReturn(List.of());
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.minusDays(2).toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());

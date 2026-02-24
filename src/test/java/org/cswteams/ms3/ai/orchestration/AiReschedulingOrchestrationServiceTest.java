@@ -82,7 +82,7 @@ class AiReschedulingOrchestrationServiceTest {
         );
 
         ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.minusDays(2).toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
@@ -142,7 +142,7 @@ class AiReschedulingOrchestrationServiceTest {
         ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
 
         ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.minusDays(2).toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
@@ -198,7 +198,7 @@ class AiReschedulingOrchestrationServiceTest {
         );
 
         ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.minusDays(2).toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of(scheduleFeedback));
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
@@ -240,7 +240,7 @@ class AiReschedulingOrchestrationServiceTest {
         );
 
         ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.minusDays(2).toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
