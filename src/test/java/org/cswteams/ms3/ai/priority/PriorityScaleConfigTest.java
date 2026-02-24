@@ -16,15 +16,13 @@ public class PriorityScaleConfigTest {
         Map<String, Double> defaults = new HashMap<>();
         defaults.put("COVERAGE", 0.4);
         defaults.put("UFFA_BALANCE", 0.2);
-        defaults.put("SENTIMENT_TRANSITIONS", 0.2);
         defaults.put("UP_DELTA", 0.1);
-        defaults.put("VARIANCE_DELTA", 0.1);
+        defaults.put("VARIANCE_DELTA", 0.3);
         properties.setDefaults(defaults);
         Map<String, Double> overrides = new HashMap<>();
         overrides.put("UFFA_BALANCE", 0.25);
         overrides.put("UP_DELTA", 0.05);
-        overrides.put("VARIANCE_DELTA", 0.1);
-        overrides.put("SENTIMENT_TRANSITIONS", 0.2);
+        overrides.put("VARIANCE_DELTA", 0.3);
         overrides.put("COVERAGE", 0.4);
         properties.setOverrides(overrides);
 
@@ -33,9 +31,8 @@ public class PriorityScaleConfigTest {
         Map<PriorityDimension, Double> expected = new EnumMap<>(PriorityDimension.class);
         expected.put(PriorityDimension.COVERAGE, 0.4);
         expected.put(PriorityDimension.UFFA_BALANCE, 0.25);
-        expected.put(PriorityDimension.SENTIMENT_TRANSITIONS, 0.2);
         expected.put(PriorityDimension.UP_DELTA, 0.05);
-        expected.put(PriorityDimension.VARIANCE_DELTA, 0.1);
+        expected.put(PriorityDimension.VARIANCE_DELTA, 0.3);
 
         assertEquals(expected, config.getPriorityScale());
     }
@@ -57,7 +54,6 @@ public class PriorityScaleConfigTest {
         Map<String, Double> defaults = new HashMap<>();
         defaults.put("COVERAGE", 0.5);
         defaults.put("UFFA_BALANCE", 0.2);
-        defaults.put("SENTIMENT_TRANSITIONS", 0.2);
         defaults.put("UP_DELTA", 0.1);
         defaults.put("VARIANCE_DELTA", 0.2);
         properties.setDefaults(defaults);
@@ -71,7 +67,6 @@ public class PriorityScaleConfigTest {
         Map<String, Double> defaults = new HashMap<>();
         defaults.put("COVERAGE", 0.4);
         defaults.put("UFFA_BALANCE", 0.2);
-        defaults.put("SENTIMENT_TRANSITIONS", 0.2);
         defaults.put("UP_DELTA", 0.1);
         defaults.put("UNKNOWN", 0.1);
         properties.setDefaults(defaults);
@@ -85,9 +80,8 @@ public class PriorityScaleConfigTest {
         Map<String, Double> defaults = new HashMap<>();
         defaults.put("COVERAGE", 0.4);
         defaults.put("UFFA_BALANCE", -0.2);
-        defaults.put("SENTIMENT_TRANSITIONS", 0.2);
         defaults.put("UP_DELTA", 0.1);
-        defaults.put("VARIANCE_DELTA", 0.5);
+        defaults.put("VARIANCE_DELTA", 0.7);
         properties.setDefaults(defaults);
 
         new PriorityScaleConfig(properties).getPriorityScale();
