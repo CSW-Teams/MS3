@@ -641,11 +641,221 @@ class AiScheduleGenerationOrchestrationServiceTest {
         assertEquals(0.75, coverage, 0.0001);
     }
 
+    @Test
+    void generateScheduleComparisonRejectsHalfOutputsWithOnlyOnDutyLayer() {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift shift = makeShift(9201L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1))
+        ));
+        ConcreteShift concreteShift = new ConcreteShift(date.toEpochDay(), shift);
+        concreteShift.setDoctorAssignmentList(List.of(
+                new DoctorAssignment(newDoctor(1L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)),
+                new DoctorAssignment(newDoctor(2L, Seniority.SPECIALIST_JUNIOR), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)),
+                new DoctorAssignment(newDoctor(3L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_CALL, concreteShift, new Task(TaskEnum.CLINIC)),
+                new DoctorAssignment(newDoctor(4L, Seniority.SPECIALIST_JUNIOR), ConcreteShiftDoctorStatus.ON_CALL, concreteShift, new Task(TaskEnum.CLINIC))
+        ));
+
+        Schedule transientSchedule = new Schedule(date.toEpochDay(), date.toEpochDay(), List.of(concreteShift));
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        doctorPriority.setGeneralPriority(3);
+        doctorPriority.setNightPriority(4);
+        doctorPriority.setLongShiftPriority(5);
+
+        when(schedulerController.createScheduleTransient(date, date)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(date.toEpochDay(), date.toEpochDay())).thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
+        when(agentBroker.previewTokenBudget(any())).thenReturn(new AiTokenBudgetGuardResult(true, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
+        when(aiScheduleConverterService.convert(any())).thenReturn(List.of(concreteShift));
+        when(agentBroker.requestSchedule(any())).thenReturn(new AiScheduleVariantsResponse(Map.of(
+                "EMPATHETIC", aiVariantResponseWithAssignments(List.of(
+                        new AiAssignment("S_9201_20260914", 1, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9201_20260914", 2, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_DUTY, false, null)
+                )),
+                "EFFICIENT", aiVariantResponseWithAssignments(List.of(
+                        new AiAssignment("S_9201_20260914", 11, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9201_20260914", 12, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9201_20260914", 13, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_CALL, false, null),
+                        new AiAssignment("S_9201_20260914", 14, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_CALL, false, null)
+                )),
+                "BALANCED", aiVariantResponseWithAssignments(List.of(
+                        new AiAssignment("S_9201_20260914", 21, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9201_20260914", 22, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9201_20260914", 23, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_CALL, false, null),
+                        new AiAssignment("S_9201_20260914", 24, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_CALL, false, null)
+                ))
+        )));
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("standard", List.of()));
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                new AiBrokerProperties(),
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        var result = service.generateScheduleComparison(date, date);
+
+        assertNotNull(result);
+        assertTrue(result.getCandidates().stream()
+                .anyMatch(candidate -> "ai-empathetic".equals(candidate.getMetadata().getCandidateId())
+                        && !candidate.isValid()
+                        && candidate.getValidationErrors().stream().anyMatch(error -> error.contains("assignment_status=ON_CALL"))));
+
+        ArgumentCaptor<List> metricsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(decisionAlgorithmService).selectPreferredWithAudit(metricsCaptor.capture());
+        List<?> passedToRanker = metricsCaptor.getValue();
+        assertEquals(3, passedToRanker.size());
+    }
+
+    @Test
+    void generateScheduleComparisonKeepsFullyLayeredOutputsRankable() {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift shift = makeShift(9202L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1))
+        ));
+        ConcreteShift concreteShift = new ConcreteShift(date.toEpochDay(), shift);
+        concreteShift.setDoctorAssignmentList(List.of(
+                new DoctorAssignment(newDoctor(1L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)),
+                new DoctorAssignment(newDoctor(2L, Seniority.SPECIALIST_JUNIOR), ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC)),
+                new DoctorAssignment(newDoctor(3L, Seniority.STRUCTURED), ConcreteShiftDoctorStatus.ON_CALL, concreteShift, new Task(TaskEnum.CLINIC)),
+                new DoctorAssignment(newDoctor(4L, Seniority.SPECIALIST_JUNIOR), ConcreteShiftDoctorStatus.ON_CALL, concreteShift, new Task(TaskEnum.CLINIC))
+        ));
+
+        Schedule transientSchedule = new Schedule(date.toEpochDay(), date.toEpochDay(), List.of(concreteShift));
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        doctorPriority.setGeneralPriority(3);
+        doctorPriority.setNightPriority(4);
+        doctorPriority.setLongShiftPriority(5);
+
+        when(schedulerController.createScheduleTransient(date, date)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(date.toEpochDay(), date.toEpochDay())).thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
+        when(agentBroker.previewTokenBudget(any())).thenReturn(new AiTokenBudgetGuardResult(true, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
+        when(aiScheduleConverterService.convert(any())).thenReturn(List.of(concreteShift));
+        when(agentBroker.requestSchedule(any())).thenReturn(new AiScheduleVariantsResponse(Map.of(
+                "EMPATHETIC", aiVariantResponseWithAssignments(List.of(
+                        new AiAssignment("S_9202_20260914", 1, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9202_20260914", 2, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9202_20260914", 3, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_CALL, false, null),
+                        new AiAssignment("S_9202_20260914", 4, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_CALL, false, null)
+                )),
+                "EFFICIENT", aiVariantResponseWithAssignments(List.of(
+                        new AiAssignment("S_9202_20260914", 11, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9202_20260914", 12, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9202_20260914", 13, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_CALL, false, null),
+                        new AiAssignment("S_9202_20260914", 14, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_CALL, false, null)
+                )),
+                "BALANCED", aiVariantResponseWithAssignments(List.of(
+                        new AiAssignment("S_9202_20260914", 21, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9202_20260914", 22, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_DUTY, false, null),
+                        new AiAssignment("S_9202_20260914", 23, Seniority.STRUCTURED, ConcreteShiftDoctorStatus.ON_CALL, false, null),
+                        new AiAssignment("S_9202_20260914", 24, Seniority.SPECIALIST_JUNIOR, ConcreteShiftDoctorStatus.ON_CALL, false, null)
+                ))
+        )));
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("ai-balanced", List.of()));
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                new AiBrokerProperties(),
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        var result = service.generateScheduleComparison(date, date);
+
+        assertNotNull(result);
+        assertTrue(result.getCandidates().stream().filter(c -> !"standard".equals(c.getMetadata().getCandidateId())).allMatch(c -> c.isValid()));
+        ArgumentCaptor<List> metricsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(decisionAlgorithmService).selectPreferredWithAudit(metricsCaptor.capture());
+        assertEquals(4, metricsCaptor.getValue().size());
+    }
+
+
     private AiScheduleResponse aiVariantResponse(String reasoning) {
         return new AiScheduleResponse(
                 AiStatus.SUCCESS,
                 new AiMetadata(reasoning, 0.9, new AiMetrics(100.0, null, 0)),
                 List.of(),
+                List.of(),
+                List.of()
+        );
+    }
+
+    private AiScheduleResponse aiVariantResponseWithAssignments(List<AiAssignment> assignments) {
+        return new AiScheduleResponse(
+                AiStatus.SUCCESS,
+                new AiMetadata("layered", 0.9, new AiMetrics(100.0, null, 0)),
+                assignments,
                 List.of(),
                 List.of()
         );
