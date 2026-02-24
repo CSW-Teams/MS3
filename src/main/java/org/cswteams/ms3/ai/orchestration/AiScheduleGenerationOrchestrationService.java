@@ -26,7 +26,6 @@ import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.metrics.MetricAggregationUtils;
 import org.cswteams.ms3.ai.metrics.MetricNormalizationUtils;
-import org.cswteams.ms3.ai.metrics.SentimentTransitionCounts;
 import org.cswteams.ms3.ai.priority.PriorityScaleValidationException;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
@@ -998,10 +997,6 @@ public class AiScheduleGenerationOrchestrationService {
                 schedule.getDoctorUffaPrioritiesSnapshot(),
                 schedule.getDoctorUffaPriorityList()
         );
-        SentimentTransitionCounts sentimentTransitionCounts = computeSentimentTransitionsFromPriorities(
-                schedule.getDoctorUffaPrioritiesSnapshot(),
-                schedule.getDoctorUffaPriorityList()
-        );
         double uffaBalance = computeUffaBalanceImprovement(
                 schedule.getDoctorUffaPrioritiesSnapshot(),
                 schedule.getDoctorUffaPriorityList()
@@ -1014,8 +1009,6 @@ public class AiScheduleGenerationOrchestrationService {
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
-                0.0,
-                sentimentTransitionCounts,
                 deltaStats.mean,
                 deltaStats.variance
         );
@@ -1048,14 +1041,9 @@ public class AiScheduleGenerationOrchestrationService {
         if (response == null || response.getUffaDelta() == null || response.getUffaDelta().isEmpty()) {
             deltaStats = computeLoadDeltaStatsFromConcreteShifts(concreteShifts);
         }
-        SentimentTransitionCounts sentimentTransitionCounts = computeSentimentTransitionsFromUffaDelta(
-                response == null ? null : response.getUffaDelta()
-        );
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
-                0.0,
-                sentimentTransitionCounts,
                 deltaStats.mean,
                 deltaStats.variance
         );
@@ -1076,88 +1064,12 @@ public class AiScheduleGenerationOrchestrationService {
         if (response.getUffaDelta() == null || response.getUffaDelta().isEmpty()) {
             deltaStats = new PriorityDeltaStats(0.0, 0.0);
         }
-        SentimentTransitionCounts sentimentTransitionCounts = computeSentimentTransitionsFromUffaDelta(response.getUffaDelta());
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
-                0.0,
-                sentimentTransitionCounts,
                 deltaStats.mean,
                 deltaStats.variance
         );
-    }
-
-    private SentimentTransitionCounts computeSentimentTransitionsFromPriorities(List<DoctorUffaPrioritySnapshot> snapshots,
-                                                                                List<DoctorUffaPriority> current) {
-        if (snapshots == null || current == null || snapshots.isEmpty() || current.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        Map<Long, Integer> previousSentiment = new HashMap<>();
-        for (DoctorUffaPrioritySnapshot snapshot : snapshots) {
-            if (snapshot.getDoctor() == null || snapshot.getDoctor().getId() == null) {
-                continue;
-            }
-            previousSentiment.put(snapshot.getDoctor().getId(), signSentiment(snapshot.getGeneralPriority()));
-        }
-        Map<Long, Integer> currentSentiment = new HashMap<>();
-        for (DoctorUffaPriority priority : current) {
-            if (priority.getDoctor() == null || priority.getDoctor().getId() == null) {
-                continue;
-            }
-            currentSentiment.put(priority.getDoctor().getId(), signSentiment(priority.getGeneralPriority()));
-        }
-        if (previousSentiment.isEmpty() || currentSentiment.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        try {
-            return MetricAggregationUtils.countSentimentTransitions(previousSentiment, currentSentiment);
-        } catch (IllegalArgumentException ex) {
-            logger.info("event=metrics_sentiment_transitions_fallback reason={}", ex.getMessage());
-            return zeroSentimentTransitionCounts();
-        }
-    }
-
-    private SentimentTransitionCounts computeSentimentTransitionsFromUffaDelta(List<AiUffaDelta> deltas) {
-        if (deltas == null || deltas.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        Map<Long, Integer> previousSentiment = new HashMap<>();
-        Map<Long, Integer> currentSentiment = new HashMap<>();
-        for (AiUffaDelta delta : deltas) {
-            if (delta == null || delta.getDoctorId() == null || delta.getPoints() == null) {
-                continue;
-            }
-            long doctorId = delta.getDoctorId().longValue();
-            previousSentiment.put(doctorId, 0);
-            currentSentiment.put(doctorId, signSentiment(delta.getPoints()));
-        }
-        if (currentSentiment.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        try {
-            return MetricAggregationUtils.countSentimentTransitions(previousSentiment, currentSentiment);
-        } catch (IllegalArgumentException ex) {
-            logger.info("event=metrics_sentiment_transitions_fallback reason={}", ex.getMessage());
-            return zeroSentimentTransitionCounts();
-        }
-    }
-
-    private int signSentiment(Number value) {
-        if (value == null) {
-            return 0;
-        }
-        double numeric = value.doubleValue();
-        if (numeric > 0) {
-            return 1;
-        }
-        if (numeric < 0) {
-            return -1;
-        }
-        return 0;
-    }
-
-    private SentimentTransitionCounts zeroSentimentTransitionCounts() {
-        return new SentimentTransitionCounts(0, 0, 0, 0, 0, 0);
     }
 
     private boolean hasUffaBalanceMetric(AiMetrics metrics) {
@@ -1764,8 +1676,6 @@ public class AiScheduleGenerationOrchestrationService {
         double maxCoverage = Double.NEGATIVE_INFINITY;
         double minUffaBalance = Double.POSITIVE_INFINITY;
         double maxUffaBalance = Double.NEGATIVE_INFINITY;
-        double minSentiment = Double.POSITIVE_INFINITY;
-        double maxSentiment = Double.NEGATIVE_INFINITY;
         double minUpDelta = Double.POSITIVE_INFINITY;
         double maxUpDelta = Double.NEGATIVE_INFINITY;
         double minVariance = Double.POSITIVE_INFINITY;
@@ -1777,8 +1687,6 @@ public class AiScheduleGenerationOrchestrationService {
             maxCoverage = Math.max(maxCoverage, metrics.getCoverage());
             minUffaBalance = Math.min(minUffaBalance, metrics.getUffaBalance());
             maxUffaBalance = Math.max(maxUffaBalance, metrics.getUffaBalance());
-            minSentiment = Math.min(minSentiment, metrics.getSentimentTransitions());
-            maxSentiment = Math.max(maxSentiment, metrics.getSentimentTransitions());
             minUpDelta = Math.min(minUpDelta, metrics.getUpDelta());
             maxUpDelta = Math.max(maxUpDelta, metrics.getUpDelta());
             minVariance = Math.min(minVariance, metrics.getVarianceDelta());
@@ -1791,8 +1699,6 @@ public class AiScheduleGenerationOrchestrationService {
             double coverage = clampUnit(metrics.getCoverage());
             double uffaBalance = MetricNormalizationUtils.normalizeRange(metrics.getUffaBalance(), minUffaBalance,
                     maxUffaBalance, true);
-            double sentiment = MetricNormalizationUtils.normalizeRange(metrics.getSentimentTransitions(), minSentiment,
-                    maxSentiment, false);
             double upDelta = MetricNormalizationUtils.normalizeRange(metrics.getUpDelta(), minUpDelta, maxUpDelta,
                     true);
             double variance = MetricNormalizationUtils.normalizeRange(metrics.getVarianceDelta(), minVariance,
@@ -1801,20 +1707,17 @@ public class AiScheduleGenerationOrchestrationService {
                     candidate.candidateId,
                     coverage,
                     uffaBalance,
-                    sentiment,
                     upDelta,
                     variance
             );
             normalized.put(candidate.candidateId, normalizedCandidate);
         }
-        logger.info("event=metrics_normalization_completed candidates_count={} coverage_min={} coverage_max={} uffa_min={} uffa_max={} sentiment_min={} sentiment_max={} up_delta_min={} up_delta_max={} variance_min={} variance_max={}",
+        logger.info("event=metrics_normalization_completed candidates_count={} coverage_min={} coverage_max={} uffa_min={} uffa_max={} up_delta_min={} up_delta_max={} variance_min={} variance_max={}",
                 candidates.size(),
                 minCoverage,
                 maxCoverage,
                 minUffaBalance,
                 maxUffaBalance,
-                minSentiment,
-                maxSentiment,
                 minUpDelta,
                 maxUpDelta,
                 minVariance,
@@ -1859,7 +1762,7 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private DecisionMetricValues fallbackMetrics() {
-        return new DecisionMetricValues(0.0, 0.0, 0.0, zeroSentimentTransitionCounts(), 0.0, 0.0);
+        return new DecisionMetricValues(0.0, 0.0, 0.0, 0.0);
     }
 
     private static class VariantDefinition {

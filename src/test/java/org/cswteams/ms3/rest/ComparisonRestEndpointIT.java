@@ -44,8 +44,8 @@ class ComparisonRestEndpointIT {
     @Test
     @WithMockUser(roles = "PLANNER")
     void getComparison_returnsComparisonPayload() throws Exception {
-        AiScheduleDecisionMetricValuesDto raw = new AiScheduleDecisionMetricValuesDto(1.0, 2.0, 3.0, 4.0, 5.0);
-        AiScheduleDecisionMetricValuesDto normalized = new AiScheduleDecisionMetricValuesDto(0.5, 0.6, 0.7, 0.8, 0.9);
+        AiScheduleDecisionMetricValuesDto raw = new AiScheduleDecisionMetricValuesDto(1.0, 2.0, 4.0, 5.0);
+        AiScheduleDecisionMetricValuesDto normalized = new AiScheduleDecisionMetricValuesDto(0.5, 0.6, 0.8, 0.9);
         AiScheduleDecisionMetricsDto metrics = new AiScheduleDecisionMetricsDto(raw, normalized);
         AiScheduleCandidateMetadataDto metadata = new AiScheduleCandidateMetadataDto("standard", null, "STANDARD");
         AiScheduleComparisonCandidateDto candidate = new AiScheduleComparisonCandidateDto(metadata, "{}", metrics);

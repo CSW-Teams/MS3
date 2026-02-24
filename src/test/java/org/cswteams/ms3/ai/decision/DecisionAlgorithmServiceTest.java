@@ -19,9 +19,9 @@ public class DecisionAlgorithmServiceTest {
         DecisionAlgorithmService service = new DecisionAlgorithmServiceImpl(defaultConfig());
 
         AiScheduleCandidateMetrics candidateA = new AiScheduleCandidateMetrics("A",
-                0.9, 0.5, 0.4, 0.3, 0.2);
+                0.9, 0.5, 0.3, 0.2);
         AiScheduleCandidateMetrics candidateB = new AiScheduleCandidateMetrics("B",
-                0.8, 0.9, 0.6, 0.4, 0.3);
+                0.8, 0.9, 0.4, 0.3);
 
         AiScheduleCandidateMetrics preferred = service.selectPreferred(Arrays.asList(candidateA, candidateB));
 
@@ -34,24 +34,22 @@ public class DecisionAlgorithmServiceTest {
         Map<String, Double> defaults = new HashMap<>();
         defaults.put("COVERAGE", 0.35);
         defaults.put("UFFA_BALANCE", 0.25);
-        defaults.put("SENTIMENT_TRANSITIONS", 0.15);
         defaults.put("UP_DELTA", 0.15);
-        defaults.put("VARIANCE_DELTA", 0.10);
+        defaults.put("VARIANCE_DELTA", 0.25);
         Map<String, Double> overrides = new HashMap<>();
         overrides.put("COVERAGE", 0.10);
-        overrides.put("UFFA_BALANCE", 0.50);
-        overrides.put("SENTIMENT_TRANSITIONS", 0.20);
+        overrides.put("UFFA_BALANCE", 0.55);
         overrides.put("UP_DELTA", 0.10);
-        overrides.put("VARIANCE_DELTA", 0.10);
+        overrides.put("VARIANCE_DELTA", 0.25);
         properties.setDefaults(defaults);
         properties.setOverrides(overrides);
 
         DecisionAlgorithmService service = new DecisionAlgorithmServiceImpl(new PriorityScaleConfig(properties));
 
         AiScheduleCandidateMetrics candidateA = new AiScheduleCandidateMetrics("A",
-                0.9, 0.4, 0.8, 0.6, 0.4);
+                0.9, 0.4, 0.6, 0.4);
         AiScheduleCandidateMetrics candidateB = new AiScheduleCandidateMetrics("B",
-                0.7, 0.9, 0.4, 0.5, 0.5);
+                0.7, 0.9, 0.5, 0.5);
 
         AiScheduleCandidateMetrics preferred = service.selectPreferred(Arrays.asList(candidateA, candidateB));
 
@@ -63,9 +61,9 @@ public class DecisionAlgorithmServiceTest {
         DecisionAlgorithmService service = new DecisionAlgorithmServiceImpl(defaultConfig());
 
         AiScheduleCandidateMetrics candidateA = new AiScheduleCandidateMetrics("A",
-                0.8, 0.6, 0.5, 0.55, 0.575);
+                0.8, 0.6, 0.55, 0.575);
         AiScheduleCandidateMetrics candidateB = new AiScheduleCandidateMetrics("B",
-                0.8, 0.5, 0.6, 0.6, 0.6);
+                0.8, 0.5, 0.6, 0.6);
 
         AiScheduleCandidateMetrics preferred = service.selectPreferred(Arrays.asList(candidateA, candidateB));
 
@@ -84,7 +82,7 @@ public class DecisionAlgorithmServiceTest {
         DecisionAlgorithmService service = new DecisionAlgorithmServiceImpl(defaultConfig());
 
         AiScheduleCandidateMetrics candidate = new AiScheduleCandidateMetrics("A",
-                1.2, 0.5, 0.5, 0.5, 0.5);
+                1.2, 0.5, 0.5, 0.5);
 
         service.selectPreferred(Collections.singletonList(candidate));
     }
@@ -95,7 +93,7 @@ public class DecisionAlgorithmServiceTest {
         properties.setDefaults(Collections.emptyMap());
         DecisionAlgorithmService service = new DecisionAlgorithmServiceImpl(new PriorityScaleConfig(properties));
         AiScheduleCandidateMetrics candidate = new AiScheduleCandidateMetrics("A",
-                0.8, 0.8, 0.8, 0.8, 0.8);
+                0.8, 0.8, 0.8, 0.8);
 
         service.selectPreferred(Collections.singletonList(candidate));
     }
@@ -105,11 +103,11 @@ public class DecisionAlgorithmServiceTest {
         DecisionAlgorithmService service = new DecisionAlgorithmServiceImpl(defaultConfig());
 
         AiScheduleCandidateMetrics baseline = new AiScheduleCandidateMetrics("STANDARD",
-                0.95, 0.55, 0.45, 0.40, 0.35);
+                0.95, 0.55, 0.40, 0.35);
         AiScheduleCandidateMetrics empathic = new AiScheduleCandidateMetrics("EMPATHIC",
-                0.90, 0.70, 0.80, 0.60, 0.50);
+                0.90, 0.70, 0.60, 0.50);
         AiScheduleCandidateMetrics efficient = new AiScheduleCandidateMetrics("EFFICIENT",
-                0.98, 0.60, 0.30, 0.35, 0.40);
+                0.98, 0.60, 0.35, 0.40);
 
         AiScheduleCandidateMetrics preferred = service.selectPreferred(Arrays.asList(baseline, empathic, efficient));
 
@@ -121,9 +119,8 @@ public class DecisionAlgorithmServiceTest {
         Map<String, Double> defaults = new HashMap<>();
         defaults.put("COVERAGE", 0.35);
         defaults.put("UFFA_BALANCE", 0.25);
-        defaults.put("SENTIMENT_TRANSITIONS", 0.15);
         defaults.put("UP_DELTA", 0.15);
-        defaults.put("VARIANCE_DELTA", 0.10);
+        defaults.put("VARIANCE_DELTA", 0.25);
         properties.setDefaults(defaults);
         return new PriorityScaleConfig(properties);
     }
