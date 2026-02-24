@@ -158,7 +158,7 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
   - n datatype: integer >= 0.
   - shift_id (required): string shift identifier.
   - required_role (required): enum string in STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR.
-  - required_count (optional): integer >= 0 role count hint emitted by backend.
+  - required_count (optional): integer >= 0 mandatory quota when present.
   - candidate_doctor_ids (required): array of integer doctor IDs pre-filtered by backend for the `(shift_id, required_role)` pair.
   - Meaning: authoritative backend-preprocessed candidate allowlist for role validation.
 - Naming consistency (strict): within this scratchpad block, only `(shift_id, required_role, required_count, candidate_doctor_ids)` are valid field names; aliases are invalid.
@@ -235,6 +235,9 @@ Before generating 'assignments', you MUST perform the following lookup using the
 2. For each `(shift_id, required_role)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
 3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, required_role)` pair.
 4. Never echo `role_validation_scratchpad` rows or any other internal input artifact in output metadata.
+5. For each `(shift_id, required_role)` row with `required_count` present, generate exactly `required_count` assignments with `assignment_status="ON_DUTY"` and exactly `required_count` assignments with `assignment_status="ON_CALL"`.
+6. For each `(shift_id, required_role)` row, ON_DUTY assignees and ON_CALL assignees must be distinct doctor sets; no doctor_id overlap is allowed across the two layers for the same row.
+7. If either ON_DUTY or ON_CALL is short for any `(shift_id, required_role)` row where `required_count` is present, the output status cannot be `SUCCESS`.
 
 
 MANDATORY EXECUTION ORDER (NORMATIVE):
