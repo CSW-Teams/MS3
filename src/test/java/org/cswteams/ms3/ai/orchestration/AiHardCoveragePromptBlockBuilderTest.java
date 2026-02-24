@@ -44,7 +44,11 @@ class AiHardCoveragePromptBlockBuilderTest {
                 "hard_coverage_requirements[3]{shift_id,structured,specialist_junior,specialist_senior,total}:\n"
                         + "S_1001_20260914,1,0,2,3\n"
                         + "S_1003_20260914,0,0,1,1\n"
-                        + "S_1002_20260915,1,2,0,3\n",
+                        + "S_1002_20260915,1,2,0,3\n"
+                        + "hard_coverage_checklist[3]:\n"
+                        + "- ON_DUTY and ON_CALL each must satisfy every per-shift/per-role minimum.\n"
+                        + "- ON_CALL minimums are identical to ON_DUTY minimums.\n"
+                        + "- For a given shift_id, one doctor_id cannot appear in both ON_DUTY and ON_CALL.\n",
                 block
         );
     }
@@ -68,7 +72,11 @@ class AiHardCoveragePromptBlockBuilderTest {
 
         assertEquals(
                 "hard_coverage_requirements[1]{shift_id,structured,specialist_junior,specialist_senior,total}:\n"
-                        + "S_1001_20260914,0,0,0,0\n",
+                        + "S_1001_20260914,0,0,0,0\n"
+                        + "hard_coverage_checklist[3]:\n"
+                        + "- ON_DUTY and ON_CALL each must satisfy every per-shift/per-role minimum.\n"
+                        + "- ON_CALL minimums are identical to ON_DUTY minimums.\n"
+                        + "- For a given shift_id, one doctor_id cannot appear in both ON_DUTY and ON_CALL.\n",
                 block
         );
     }
@@ -90,6 +98,8 @@ class AiHardCoveragePromptBlockBuilderTest {
         assertTrue(systemPrompt.contains("Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory"));
         assertTrue(block.startsWith(expectedHeader));
         assertTrue(block.contains("S_2001_20260916,1,1,1,3\n"));
+        assertTrue(block.contains("hard_coverage_checklist[3]:"));
+        assertTrue(block.contains("ON_DUTY and ON_CALL each must satisfy every per-shift/per-role minimum."));
     }
 
     @Test
@@ -97,7 +107,11 @@ class AiHardCoveragePromptBlockBuilderTest {
         String block = builder.buildHardCoverageRequirementsBlock(List.of());
 
         assertEquals(
-                "hard_coverage_requirements[0]{shift_id,structured,specialist_junior,specialist_senior,total}:\n",
+                "hard_coverage_requirements[0]{shift_id,structured,specialist_junior,specialist_senior,total}:\n"
+                        + "hard_coverage_checklist[3]:\n"
+                        + "- ON_DUTY and ON_CALL each must satisfy every per-shift/per-role minimum.\n"
+                        + "- ON_CALL minimums are identical to ON_DUTY minimums.\n"
+                        + "- For a given shift_id, one doctor_id cannot appear in both ON_DUTY and ON_CALL.\n",
                 block
         );
     }

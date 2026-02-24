@@ -56,6 +56,7 @@ class AiPromptTemplateTest {
                 + "Vocabulary rule: TOON_INPUT doctors[*].role uses the same enum naming as assignments[*].role_covered (STRUCTURED, SPECIALIST_JUNIOR, SPECIALIST_SENIOR).\n\n"
                 + "Holiday rule: in COMPACT mode doctor holidays use `h[n]{id,s,e,tz?}` rows (id optional, s/e inclusive dates, tz optional quoted metadata).\n\n"
                 + "Scratchpad authority rule: if TOON_INPUT includes `role_validation_scratchpad[...]`, treat backend-provided `candidate_doctor_ids` as authoritative for each `(shift_id, role_required)` pair.\n\n"
+                + "Coverage checklist rule: if TOON_INPUT includes `hard_coverage_checklist[...]`, treat every checklist item as mandatory and machine-checkable.\n\n"
                 + "TOON_INPUT:\n"
                 + "ctx:{p:\"2026-05-20/2026-05-22\",m:\"generate\",hv:2}";
 
@@ -71,6 +72,7 @@ class AiPromptTemplateTest {
         String userContent = AiPromptTemplate.buildUserContent("Prefer BALANCED variant", toonPayload);
 
         assertTrue(userContent.contains("Scratchpad authority rule: if TOON_INPUT includes `role_validation_scratchpad[...]`"));
+        assertTrue(userContent.contains("Coverage checklist rule: if TOON_INPUT includes `hard_coverage_checklist[...]`"));
         assertTrue(userContent.contains("role_validation_scratchpad[1]{shift_id,required_role,required_count,candidate_doctor_ids}"));
         assertTrue(!userContent.contains("scan the `TOON_INPUT` doctor list (`dr[...]`)"));
     }
