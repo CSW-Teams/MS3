@@ -198,7 +198,7 @@ class AiScheduleGenerationOrchestrationServiceSelectionPersistenceTest {
                 new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.minusDays(2).toEpochDay(), endDate.toEpochDay()))
                 .thenReturn(List.of());
         when(constraintDAO.findAll()).thenReturn(List.of());
         when(holidayDAO.findAll()).thenReturn(List.of());

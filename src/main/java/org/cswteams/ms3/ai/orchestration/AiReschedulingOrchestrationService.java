@@ -24,6 +24,7 @@ import java.util.Set;
 
 @Service
 public class AiReschedulingOrchestrationService {
+    private static final long FEEDBACK_LOOKBACK_DAYS = 2L;
     private final ToonPseudonymizationMapper pseudonymizationMapper = new ToonPseudonymizationMapper();
     private final ScheduleFeedbackDAO scheduleFeedbackDAO;
     private final AiActiveConstraintResolver aiActiveConstraintResolver;
@@ -131,7 +132,7 @@ public class AiReschedulingOrchestrationService {
         if (scheduleFeedbackDAO == null || periodStart == null || periodEnd == null) {
             return List.of();
         }
-        long startEpoch = periodStart.toEpochDay();
+        long startEpoch = periodStart.minusDays(FEEDBACK_LOOKBACK_DAYS).toEpochDay();
         long endEpoch = periodEnd.toEpochDay();
         List<ScheduleFeedback> scheduleFeedbacks = scheduleFeedbackDAO
                 .findAllByConcreteShiftDateBetween(startEpoch, endEpoch);
