@@ -81,6 +81,7 @@ public class AiReschedulingOrchestrationService {
             resolvedFeedbacks.addAll(feedbacks);
         }
         resolvedFeedbacks.addAll(loadToonFeedbacksFromScheduleFeedback(periodStart, periodEnd));
+        boolean allowHistoricalFeedbackShiftIds = !resolvedFeedbacks.isEmpty();
         List<Doctor> scopedDoctors = doctors == null ? List.of() : doctors;
         Set<Long> scopedDoctorIds = new HashSet<>();
         for (Doctor doctor : scopedDoctors) {
@@ -122,7 +123,8 @@ public class AiReschedulingOrchestrationService {
                 pseudonymized.getDoctorUffaPriorities(),
                 pseudonymized.getDoctorHolidays(),
                 pseudonymized.getActiveConstraints(),
-                pseudonymized.getFeedbacks()
+                pseudonymized.getFeedbacks(),
+                allowHistoricalFeedbackShiftIds
         );
 
         return new AiReschedulingToonRequest(context, pseudonymized.getPseudonymToDoctorId());
