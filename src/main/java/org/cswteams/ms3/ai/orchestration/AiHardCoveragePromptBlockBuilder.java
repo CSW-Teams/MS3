@@ -16,6 +16,11 @@ import java.util.Map;
 @Component
 public class AiHardCoveragePromptBlockBuilder {
 
+    private static final String COVERAGE_CHECKLIST = "hard_coverage_checklist[3]:\n"
+            + "- ON_DUTY and ON_CALL each must satisfy every per-shift/per-role minimum.\n"
+            + "- ON_CALL minimums are identical to ON_DUTY minimums.\n"
+            + "- For a given shift_id, one doctor_id cannot appear in both ON_DUTY and ON_CALL.\n";
+
     public String buildHardCoverageRequirementsBlock(List<ConcreteShift> concreteShifts) {
         List<ConcreteShift> ordered = new ArrayList<>(concreteShifts == null ? List.of() : concreteShifts);
         ordered.sort(Comparator
@@ -41,6 +46,7 @@ public class AiHardCoveragePromptBlockBuilder {
                     .append(counts.specialistSenior).append(",")
                     .append(counts.total).append("\n");
         }
+        block.append(COVERAGE_CHECKLIST);
         return block.toString();
     }
 
