@@ -161,6 +161,7 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
   - required_count (optional): integer >= 0 role count hint emitted by backend.
   - candidate_doctor_ids (required): array of integer doctor IDs pre-filtered by backend for the `(shift_id, required_role)` pair.
   - Meaning: authoritative backend-preprocessed candidate allowlist for role validation.
+- Naming consistency (strict): within this scratchpad block, only `(shift_id, required_role, required_count, candidate_doctor_ids)` are valid field names; aliases are invalid.
   - Missing/unknown handling: malformed rows are unusable for reasoning.
 
 STRICT PRECEDENCE FOR ROLE MATCHING (NORMATIVE):
@@ -231,8 +232,8 @@ Assignment uniqueness rule (NORMATIVE):
 COGNITIVE STEP (CRITICAL):
 Before generating 'assignments', you MUST perform the following lookup using the provided TOON input block `role_validation_scratchpad`:
 1. Use the provided `role_validation_scratchpad` input rows.
-2. For each `(shift_id, role_required)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
-3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, role_required)` pair.
+2. For each `(shift_id, required_role)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
+3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, required_role)` pair.
 4. Never echo `role_validation_scratchpad` rows or any other internal input artifact in output metadata.
 
 
