@@ -105,6 +105,7 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
     private static final int ROLE_MISMATCH_LOG_LIMIT = 5;
+    private static final int VALIDATION_MISMATCH_SAMPLE_LIMIT = 5;
     private static final Pattern SCRATCHPAD_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority=([A-Z_]+)\\s+but\\s+role_required=([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
     private static final Pattern ASSIGNMENT_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority\\s+([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
     private static final String BASE_VARIANT_INSTRUCTION = "Return strict JSON only with top-level object {'variants': ...}. "
@@ -640,6 +641,7 @@ public class AiScheduleGenerationOrchestrationService {
                     validation = validation.withWarning(partialSuccessWarning.code, partialSuccessWarning.message);
                 }
                 lastValidation = validation;
+                logDualLayerCoverageDiagnostics(batchCorrelationId, definition.label, definition.candidateId, validation);
                 if (validation.valid) {
                     break;
                 }
@@ -698,6 +700,7 @@ public class AiScheduleGenerationOrchestrationService {
                         startDate,
                         endDate);
             }
+            logDualLayerCoverageDiagnostics(batchCorrelationId, definition.label, definition.candidateId, validation);
             if (!validation.valid) {
                 errorMetadata = buildMetricsError(errorMetadata,
                         batchCorrelationId,
@@ -892,6 +895,10 @@ public class AiScheduleGenerationOrchestrationService {
             return CandidateValidationData.valid();
         } catch (AiProtocolException ex) {
             List<ProtocolValidationDetail> protocolValidationDetails = extractProtocolValidationDetails(ex.getDetails());
+            List<RoleMismatchDetail> mismatchExamples = extractRoleMismatchDetailsFromProtocolValidation(protocolValidationDetails)
+                    .stream()
+                    .limit(VALIDATION_MISMATCH_SAMPLE_LIMIT)
+                    .collect(Collectors.toList());
             logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} message={}",
                     correlationId,
                     candidateId,
@@ -900,8 +907,33 @@ public class AiScheduleGenerationOrchestrationService {
             return CandidateValidationData.invalid("CONVERSION_FAILED",
                     ex.getMessage(),
                     Collections.emptyList(),
-                    protocolValidationDetails);
+                    protocolValidationDetails,
+                    Collections.emptyList(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    mismatchExamples);
         }
+    }
+
+    private List<RoleMismatchDetail> extractRoleMismatchDetailsFromProtocolValidation(List<ProtocolValidationDetail> protocolValidationDetails) {
+        if (protocolValidationDetails == null || protocolValidationDetails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<RoleMismatchDetail> mismatches = new ArrayList<>();
+        for (ProtocolValidationDetail detail : protocolValidationDetails) {
+            if (detail == null) {
+                continue;
+            }
+            if (detail.path != null && detail.path.contains("role_covered")
+                    || detail.message != null && detail.message.toLowerCase().contains("seniority")) {
+                mismatches.add(new RoleMismatchDetail(
+                        safeText(detail.path),
+                        "role_covered must match required seniority",
+                        safeText(detail.message)
+                ));
+            }
+        }
+        return mismatches;
     }
 
     private CandidateValidationData validateRoleLayerMinima(AiScheduleResponse variant,
@@ -911,6 +943,7 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         Map<String, Integer> assignmentCounts = new HashMap<>();
+        Map<String, Integer> requiredSlotsByKey = new LinkedHashMap<>();
         List<AiAssignment> assignments = variant.getAssignments() == null ? Collections.emptyList() : variant.getAssignments();
         for (AiAssignment assignment : assignments) {
             if (assignment == null
@@ -943,6 +976,7 @@ public class AiScheduleGenerationOrchestrationService {
                 }
                 for (ConcreteShiftDoctorStatus status : List.of(ConcreteShiftDoctorStatus.ON_DUTY, ConcreteShiftDoctorStatus.ON_CALL)) {
                     String key = toRoleStatusCountKey(shiftId, status, role);
+                    requiredSlotsByKey.put(key, requiredMin);
                     int assigned = assignmentCounts.getOrDefault(key, 0);
                     if (assigned < requiredMin) {
                         violations.add(new RoleCoverageViolationDetail(shiftId, status.name(), role.name(), requiredMin, assigned));
@@ -951,8 +985,16 @@ public class AiScheduleGenerationOrchestrationService {
             }
         }
 
+        List<RoleMismatchDetail> mismatchSamples = extractRoleMismatchDetailsFromCoverageViolations(violations)
+                .stream()
+                .limit(VALIDATION_MISMATCH_SAMPLE_LIMIT)
+                .collect(Collectors.toList());
+
         if (violations.isEmpty()) {
-            return CandidateValidationData.valid();
+            return CandidateValidationData.valid(requiredSlotsByKey,
+                    buildAssignedCoverageByKey(requiredSlotsByKey.keySet(), assignmentCounts),
+                    Collections.emptyList(),
+                    mismatchSamples);
         }
 
         String message = violations.stream()
@@ -962,7 +1004,72 @@ public class AiScheduleGenerationOrchestrationService {
                 message,
                 Collections.emptyList(),
                 Collections.emptyList(),
-                violations);
+                violations,
+                requiredSlotsByKey,
+                buildAssignedCoverageByKey(requiredSlotsByKey.keySet(), assignmentCounts),
+                mismatchSamples);
+    }
+
+    private Map<String, Integer> buildAssignedCoverageByKey(Set<String> keys, Map<String, Integer> assignmentCounts) {
+        Map<String, Integer> assignedByKey = new LinkedHashMap<>();
+        if (keys == null || keys.isEmpty()) {
+            return assignedByKey;
+        }
+        for (String key : keys) {
+            assignedByKey.put(key, assignmentCounts.getOrDefault(key, 0));
+        }
+        return assignedByKey;
+    }
+
+    private List<RoleMismatchDetail> extractRoleMismatchDetailsFromCoverageViolations(List<RoleCoverageViolationDetail> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<RoleMismatchDetail> mismatchDetails = new ArrayList<>();
+        for (RoleCoverageViolationDetail violation : violations) {
+            mismatchDetails.add(new RoleMismatchDetail(
+                    "$.assignments",
+                    "required>= " + violation.requiredMin + " for " + violation.assignmentStatus + "/" + violation.roleCovered,
+                    "assigned=" + violation.actualCount + " for shift_id=" + violation.shiftId
+            ));
+        }
+        return mismatchDetails;
+    }
+
+    private void logDualLayerCoverageDiagnostics(String correlationId,
+                                                 String variantId,
+                                                 String candidateId,
+                                                 CandidateValidationData validation) {
+        if (validation == null) {
+            return;
+        }
+        logger.info("event=ai_candidate_dual_layer_coverage_validation correlation_id={} variant_id={} candidate_id={} dual_layer_coverage_valid={} required_slots_count={} assigned_slots_count={} missing_slots_count={} metadata={}",
+                correlationId,
+                variantId,
+                candidateId,
+                validation.dualLayerCoverageValid,
+                validation.requiredSlotsByShiftRoleLayer.size(),
+                validation.assignedSlotsByShiftRoleLayer.size(),
+                validation.roleCoverageViolations.size(),
+                serializeValidationMetadata(validation));
+    }
+
+    private String serializeValidationMetadata(CandidateValidationData validation) {
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("dual_layer_coverage_valid", validation.dualLayerCoverageValid);
+        metadata.put("required_slots_per_shift_role_layer", validation.requiredSlotsByShiftRoleLayer);
+        metadata.put("assigned_slots_per_shift_role_layer", validation.assignedSlotsByShiftRoleLayer);
+        metadata.put("missing_slots_summary", validation.roleCoverageViolations.stream()
+                .map(RoleCoverageViolationDetail::toCompactMessage)
+                .collect(Collectors.toList()));
+        metadata.put("mismatch_examples", validation.mismatchExamples.stream()
+                .map(RoleMismatchDetail::toString)
+                .collect(Collectors.toList()));
+        try {
+            return objectMapper.writeValueAsString(metadata);
+        } catch (JsonProcessingException e) {
+            return metadata.toString();
+        }
     }
 
     private String toRoleStatusCountKey(String shiftId, ConcreteShiftDoctorStatus status, Seniority roleCovered) {
@@ -2107,6 +2214,10 @@ public class AiScheduleGenerationOrchestrationService {
         private final List<ConstraintViolationDetail> violatedConstraints;
         private final List<ProtocolValidationDetail> protocolValidationDetails;
         private final List<RoleCoverageViolationDetail> roleCoverageViolations;
+        private final Map<String, Integer> requiredSlotsByShiftRoleLayer;
+        private final Map<String, Integer> assignedSlotsByShiftRoleLayer;
+        private final boolean dualLayerCoverageValid;
+        private final List<RoleMismatchDetail> mismatchExamples;
 
         private CandidateValidationData(boolean valid,
                                         boolean maxRetriesReached,
@@ -2114,7 +2225,10 @@ public class AiScheduleGenerationOrchestrationService {
                                         String message,
                                         List<ConstraintViolationDetail> violatedConstraints,
                                         List<ProtocolValidationDetail> protocolValidationDetails,
-                                        List<RoleCoverageViolationDetail> roleCoverageViolations) {
+                                        List<RoleCoverageViolationDetail> roleCoverageViolations,
+                                        Map<String, Integer> requiredSlotsByShiftRoleLayer,
+                                        Map<String, Integer> assignedSlotsByShiftRoleLayer,
+                                        List<RoleMismatchDetail> mismatchExamples) {
             this.valid = valid;
             this.maxRetriesReached = maxRetriesReached;
             this.code = code;
@@ -2128,6 +2242,16 @@ public class AiScheduleGenerationOrchestrationService {
             this.roleCoverageViolations = roleCoverageViolations == null
                     ? Collections.emptyList()
                     : Collections.unmodifiableList(new ArrayList<>(roleCoverageViolations));
+            this.requiredSlotsByShiftRoleLayer = requiredSlotsByShiftRoleLayer == null
+                    ? Collections.emptyMap()
+                    : Collections.unmodifiableMap(new LinkedHashMap<>(requiredSlotsByShiftRoleLayer));
+            this.assignedSlotsByShiftRoleLayer = assignedSlotsByShiftRoleLayer == null
+                    ? Collections.emptyMap()
+                    : Collections.unmodifiableMap(new LinkedHashMap<>(assignedSlotsByShiftRoleLayer));
+            this.dualLayerCoverageValid = this.roleCoverageViolations.isEmpty();
+            this.mismatchExamples = mismatchExamples == null
+                    ? Collections.emptyList()
+                    : Collections.unmodifiableList(new ArrayList<>(mismatchExamples));
         }
 
         private static CandidateValidationData valid() {
@@ -2137,7 +2261,26 @@ public class AiScheduleGenerationOrchestrationService {
                     null,
                     Collections.emptyList(),
                     Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
                     Collections.emptyList());
+        }
+
+        private static CandidateValidationData valid(Map<String, Integer> requiredSlotsByShiftRoleLayer,
+                                                     Map<String, Integer> assignedSlotsByShiftRoleLayer,
+                                                     List<RoleCoverageViolationDetail> roleCoverageViolations,
+                                                     List<RoleMismatchDetail> mismatchExamples) {
+            return new CandidateValidationData(true,
+                    false,
+                    null,
+                    null,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    roleCoverageViolations,
+                    requiredSlotsByShiftRoleLayer,
+                    assignedSlotsByShiftRoleLayer,
+                    mismatchExamples);
         }
 
         private static CandidateValidationData validWithWarning(String code, String message) {
@@ -2147,6 +2290,9 @@ public class AiScheduleGenerationOrchestrationService {
                     message,
                     Collections.emptyList(),
                     Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
                     Collections.emptyList());
         }
 
@@ -2170,13 +2316,34 @@ public class AiScheduleGenerationOrchestrationService {
                                                        List<ConstraintViolationDetail> violatedConstraints,
                                                        List<ProtocolValidationDetail> protocolValidationDetails,
                                                        List<RoleCoverageViolationDetail> roleCoverageViolations) {
+            return invalid(code,
+                    message,
+                    violatedConstraints,
+                    protocolValidationDetails,
+                    roleCoverageViolations,
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code,
+                                                       String message,
+                                                       List<ConstraintViolationDetail> violatedConstraints,
+                                                       List<ProtocolValidationDetail> protocolValidationDetails,
+                                                       List<RoleCoverageViolationDetail> roleCoverageViolations,
+                                                       Map<String, Integer> requiredSlotsByShiftRoleLayer,
+                                                       Map<String, Integer> assignedSlotsByShiftRoleLayer,
+                                                       List<RoleMismatchDetail> mismatchExamples) {
             return new CandidateValidationData(false,
                     false,
                     code,
                     message,
                     violatedConstraints,
                     protocolValidationDetails,
-                    roleCoverageViolations);
+                    roleCoverageViolations,
+                    requiredSlotsByShiftRoleLayer,
+                    assignedSlotsByShiftRoleLayer,
+                    mismatchExamples);
         }
 
         private CandidateValidationData withMaxRetriesReached(boolean reached) {
@@ -2186,7 +2353,10 @@ public class AiScheduleGenerationOrchestrationService {
                     message,
                     violatedConstraints,
                     protocolValidationDetails,
-                    roleCoverageViolations);
+                    roleCoverageViolations,
+                    requiredSlotsByShiftRoleLayer,
+                    assignedSlotsByShiftRoleLayer,
+                    mismatchExamples);
         }
 
         private CandidateValidationData withWarning(String warningCode, String warningMessage) {
@@ -2196,7 +2366,10 @@ public class AiScheduleGenerationOrchestrationService {
                     warningMessage,
                     violatedConstraints,
                     protocolValidationDetails,
-                    roleCoverageViolations);
+                    roleCoverageViolations,
+                    requiredSlotsByShiftRoleLayer,
+                    assignedSlotsByShiftRoleLayer,
+                    mismatchExamples);
         }
 
         private List<String> violationMessages() {
