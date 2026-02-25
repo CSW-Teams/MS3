@@ -68,6 +68,15 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
                 || context.getDoctorUffaPriority().getSchedule() == null) {
             throw new IllegalStateException("Missing schedule in ContextConstraint for ConstraintMaxOrePeriodo");
         }
+        if (context.getConcreteShift() == null) {
+            throw new IllegalStateException("Missing concreteShift in ContextConstraint for ConstraintMaxOrePeriodo");
+        }
+        if (context.getConcreteShift().getShift() == null) {
+            throw new IllegalStateException("Missing shift in current concreteShift for ConstraintMaxOrePeriodo");
+        }
+        if (context.getConcreteShift().getShift().getDuration() == null) {
+            throw new IllegalStateException("Missing duration in current concreteShift shift for ConstraintMaxOrePeriodo");
+        }
 
         List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
         if(concreteShiftList != null && !concreteShiftList.isEmpty()) {
@@ -85,6 +94,11 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
             //We count the number of minutes composing the existent concrete shift assigned to our doctor in the considered period + the number of minutes composing the new concrete shift.
             long totalMinutes = context.getConcreteShift().getShift().getDuration().toMinutes();
             for(ConcreteShift concreteShift: concreteShiftList){
+                if(concreteShift == null
+                        || concreteShift.getShift() == null
+                        || concreteShift.getShift().getDuration() == null) {
+                    continue;
+                }
                 if(concreteShift.getDate() < endPeriodDate && (concreteShift.getDate() > startPeriodDate || concreteShift.getDate() == startPeriodDate)){
                     totalMinutes += concreteShift.getShift().getDuration().toMinutes();
                     if(totalMinutes > periodMaxTime){
