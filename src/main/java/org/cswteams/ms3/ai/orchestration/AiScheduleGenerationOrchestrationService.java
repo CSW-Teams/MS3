@@ -1128,6 +1128,8 @@ public class AiScheduleGenerationOrchestrationService {
             // every assignment for that doctor and make turni-turno constraints (e.g. ubiquity)
             // compare each assignment against itself, producing false positives.
             DoctorUffaPriority validationPriority = new DoctorUffaPriority(priority.getDoctor());
+            validationPriority.setSchedule(candidateSchedule);
+            validationPriority.setAssegnazioniTurnoCache(new ArrayList<>());
             validationPriority.setGeneralPriority(priority.getGeneralPriority());
             validationPriority.setPartialGeneralPriority(priority.getPartialGeneralPriority());
             validationPriority.setLongShiftPriority(priority.getLongShiftPriority());
@@ -1154,6 +1156,8 @@ public class AiScheduleGenerationOrchestrationService {
                 DoctorUffaPriority doctorPriority = prioritiesByDoctorId.get(doctorId);
                 if (doctorPriority == null) {
                     doctorPriority = new DoctorUffaPriority(assignment.getDoctor());
+                    doctorPriority.setSchedule(candidateSchedule);
+                    doctorPriority.setAssegnazioniTurnoCache(new ArrayList<>());
                     prioritiesByDoctorId.put(doctorId, doctorPriority);
                 }
 
