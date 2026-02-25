@@ -8,43 +8,29 @@ import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.TimeSlot;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 public class AiHardCoveragePromptBlockBuilder {
 
-    private static final String COVERAGE_CHECKLIST = "hard_coverage_checklist[3]:\n"
-            + "- ON_DUTY and ON_CALL each must satisfy every per-shift/per-role minimum.\n"
-            + "- ON_CALL minimums are identical to ON_DUTY minimums.\n"
-            + "- For a given shift_id, one doctor_id cannot appear in both ON_DUTY and ON_CALL.\n";
+    private static final String COVERAGE_CHECKLIST = "hard_coverage_checklist[3]:\n" + "- ON_DUTY and ON_CALL each must satisfy every per-shift/per-role minimum.\n" + "- ON_CALL minimums are identical to ON_DUTY minimums.\n" + "- For a given shift_id, one doctor_id cannot appear in both ON_DUTY and ON_CALL.\n";
 
     public String buildHardCoverageRequirementsBlock(List<ConcreteShift> concreteShifts) {
-        List<ConcreteShift> ordered = new ArrayList<>(concreteShifts == null ? List.of() : concreteShifts);
-        ordered.sort(Comparator
-                .comparingLong(ConcreteShift::getDate)
-                .thenComparing(shift -> {
-                    Shift concreteShift = shift.getShift();
-                    return concreteShift == null || concreteShift.getTimeSlot() == null
-                            ? TimeSlot.MORNING
-                            : concreteShift.getTimeSlot();
-                })
-                .thenComparing(shift -> shift.getShift().getId() == null ? 0L : shift.getShift().getId()));
+        List<ConcreteShift> ordered = concreteShifts.stream().filter(Objects::nonNull).sorted(Comparator.comparingLong(ConcreteShift::getDate).thenComparing(shift -> {
+            Shift concreteShift = shift.getShift();
+            return concreteShift == null || concreteShift.getTimeSlot() == null ? TimeSlot.MORNING : concreteShift.getTimeSlot();
+        }).thenComparing(shift -> shift.getShift().getId() == null ? 0L : shift.getShift().getId())).collect(Collectors.toList());
 
         StringBuilder block = new StringBuilder();
-        block.append("hard_coverage_requirements[")
-                .append(ordered.size())
-                .append("]{shift_id,structured,specialist_junior,specialist_senior,total}:\n");
+        block.append("hard_coverage_requirements[").append(ordered.size()).append("]{shift_id,structured,specialist_junior,specialist_senior,total}:\n");
 
         for (ConcreteShift concreteShift : ordered) {
             CoverageCounts counts = calculateCoverageCounts(concreteShift == null ? null : concreteShift.getShift());
-            block.append(ToonBuilder.shiftIdFor(concreteShift)).append(",")
-                    .append(counts.structured).append(",")
-                    .append(counts.specialistJunior).append(",")
-                    .append(counts.specialistSenior).append(",")
-                    .append(counts.total).append("\n");
+            block.append(ToonBuilder.shiftIdFor(concreteShift)).append(",").append(counts.structured).append(",").append(counts.specialistJunior).append(",").append(counts.specialistSenior).append(",").append(counts.total * 2).append("\n");
         }
         block.append(COVERAGE_CHECKLIST);
         return block.toString();
@@ -57,9 +43,7 @@ public class AiHardCoveragePromptBlockBuilder {
 
         if (shift != null && shift.getQuantityShiftSeniority() != null) {
             for (QuantityShiftSeniority quantityShiftSeniority : shift.getQuantityShiftSeniority()) {
-                Map<Seniority, Integer> seniorityMap = quantityShiftSeniority == null
-                        ? null
-                        : quantityShiftSeniority.getSeniorityMap();
+                Map<Seniority, Integer> seniorityMap = quantityShiftSeniority == null ? null : quantityShiftSeniority.getSeniorityMap();
                 if (seniorityMap == null) {
                     continue;
                 }
