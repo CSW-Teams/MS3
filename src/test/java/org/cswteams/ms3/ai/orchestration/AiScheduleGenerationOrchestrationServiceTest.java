@@ -861,6 +861,112 @@ class AiScheduleGenerationOrchestrationServiceTest {
         );
     }
 
+
+    @Test
+    void generateScheduleComparisonMarksCandidateInvalidWhenConvertedShiftIsStructurallyMalformed() {
+        LocalDate startDate = LocalDate.of(2026, 9, 14);
+        LocalDate endDate = LocalDate.of(2026, 9, 14);
+
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        doctorPriority.setGeneralPriority(3);
+        doctorPriority.setNightPriority(4);
+        doctorPriority.setLongShiftPriority(5);
+
+        Shift validShift = makeShift(1001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360));
+        ConcreteShift transientConcreteShift = new ConcreteShift(startDate.toEpochDay(), validShift);
+        Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), List.of(transientConcreteShift));
+
+        ConcreteShift missingShiftReference = new ConcreteShift(startDate.toEpochDay(), null);
+        missingShiftReference.setDoctorAssignmentList(List.of());
+
+        Shift shiftWithMissingDuration = makeShift(1002L, TimeSlot.AFTERNOON, LocalTime.of(14, 0), Duration.ofMinutes(240));
+        shiftWithMissingDuration.setDuration(null);
+        ConcreteShift missingDurationShift = new ConcreteShift(startDate.toEpochDay(), shiftWithMissingDuration);
+        missingDurationShift.setDoctorAssignmentList(List.of());
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+                .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
+        when(agentBroker.previewTokenBudget(any()))
+                .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("standard", List.of()));
+
+        when(agentBroker.requestSchedule(any())).thenAnswer(invocation -> {
+            AiBrokerRequest request = invocation.getArgument(0);
+            if (request.getInstructions().contains("Use label EMPATHETIC")) {
+                return new AiScheduleVariantsResponse(Map.of("EMPATHETIC", aiVariantResponse("malformed-empathetic")));
+            }
+            if (request.getInstructions().contains("Use label EFFICIENT")) {
+                return new AiScheduleVariantsResponse(Map.of("EFFICIENT", aiVariantResponse("efficient")));
+            }
+            return new AiScheduleVariantsResponse(Map.of("BALANCED", aiVariantResponse("balanced")));
+        });
+
+        when(aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson != null && rawJson.contains("malformed-empathetic")) {
+                return List.of(missingShiftReference, missingDurationShift);
+            }
+            return List.of(transientConcreteShift);
+        });
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                new AiBrokerProperties(),
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        var response = assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+
+        var empatheticCandidate = response.getCandidates().stream()
+                .filter(candidate -> "EMPATHETIC".equalsIgnoreCase(candidate.getMetadata().getType()))
+                .findFirst()
+                .orElseThrow();
+
+        assertFalse(empatheticCandidate.getMetadata().isValid());
+        assertEquals("DOMAIN_CONSTRAINTS_VIOLATED", empatheticCandidate.getMetadata().getValidationCode());
+        assertTrue(empatheticCandidate.getMetadata().getValidationViolations().stream()
+                .anyMatch(message -> message.contains("Missing required field: shift")));
+        assertTrue(empatheticCandidate.getMetadata().getValidationViolations().stream()
+                .anyMatch(message -> message.contains("Missing required field: shift.duration")));
+    }
+
     @Test
     void collectViolatedConstraintsDoesNotReportSelfOverlapForSingleAssignment() throws Exception {
         LocalDate date = LocalDate.of(2026, 9, 14);

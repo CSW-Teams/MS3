@@ -1109,9 +1109,6 @@ public class AiScheduleGenerationOrchestrationService {
             return Collections.emptyList();
         }
         List<Constraint> constraints = constraintDAO.findAll();
-        if (constraints.isEmpty()) {
-            return Collections.emptyList();
-        }
 
         List<ConstraintViolationDetail> violations = new ArrayList<>();
         List<Holiday> holidays = holidayDAO.findAll();
@@ -1146,6 +1143,22 @@ public class AiScheduleGenerationOrchestrationService {
 
         for (ConcreteShift concreteShift : candidateSchedule.getConcreteShifts()) {
             if (concreteShift == null || concreteShift.getDoctorAssignmentList() == null) {
+                continue;
+            }
+            if (concreteShift.getShift() == null) {
+                violations.add(ConstraintViolationDetail.malformedShift(
+                        concreteShift,
+                        "shift",
+                        "Missing required field: shift"
+                ));
+                continue;
+            }
+            if (concreteShift.getShift().getDuration() == null) {
+                violations.add(ConstraintViolationDetail.malformedShift(
+                        concreteShift,
+                        "duration",
+                        "Missing required field: shift.duration"
+                ));
                 continue;
             }
             for (DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
@@ -2517,6 +2530,24 @@ public class AiScheduleGenerationOrchestrationService {
                     date,
                     doctorId,
                     expectedCondition,
+                    actualCondition
+            );
+        }
+
+        private static ConstraintViolationDetail malformedShift(ConcreteShift concreteShift,
+                                                                String missingField,
+                                                                String actualCondition) {
+            String date = concreteShift == null ? null : String.valueOf(LocalDate.ofEpochDay(concreteShift.getDate()));
+            String shiftId = concreteShift == null || concreteShift.getShift() == null || concreteShift.getShift().getId() == null
+                    ? null
+                    : String.valueOf(concreteShift.getShift().getId());
+            return new ConstraintViolationDetail(
+                    "STRUCTURAL_VALIDATION",
+                    "MALFORMED_CANDIDATE_SHIFT",
+                    shiftId,
+                    date,
+                    null,
+                    "ConcreteShift must include non-null " + missingField,
                     actualCondition
             );
         }
