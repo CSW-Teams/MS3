@@ -230,14 +230,14 @@ Assignment uniqueness rule (NORMATIVE):
 - If assigned, the doctor must be either `ON_DUTY` or `ON_CALL` for that shift, never both.
 
 COGNITIVE STEP (CRITICAL):
-Before generating 'assignments', you MUST perform the following lookup using the provided TOON input block `role_validation_scratchpad`:
-1. Use the provided `role_validation_scratchpad` input rows.
-2. For each `(shift_id, required_role)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
-3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, required_role)` pair.
-4. Never echo `role_validation_scratchpad` rows or any other internal input artifact in output metadata.
-5. For each `(shift_id, required_role)` row with `required_count` present, generate exactly `required_count` assignments with `assignment_status="ON_DUTY"` and exactly `required_count` assignments with `assignment_status="ON_CALL"`.
-6. For each `(shift_id, required_role)` row, ON_DUTY assignees and ON_CALL assignees must be distinct doctor sets; no doctor_id overlap is allowed across the two layers for the same row.
-7. If either ON_DUTY or ON_CALL is short for any `(shift_id, required_role)` row where `required_count` is present, the output status cannot be `SUCCESS`.
+Before generating 'assignments', execute a deterministic slot-filling procedure using TOON input block `role_validation_scratchpad`:
+1. Build slot order as `(shift_id, assignment_status, required_role)` using stable shift order, then `ON_DUTY`, `ON_CALL`, then role order.
+2. For each slot, treat that row `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
+3. Try candidates in score order, but skip any doctor that conflicts with already emitted assignments or creates same-row ON_DUTY/ON_CALL overlap.
+4. Prefer variety across shifts/day when another eligible candidate exists; do not use candidate order as a greedy selection strategy.
+5. For each `(shift_id, required_role)` row with `required_count`, emit exactly `required_count` ON_DUTY and exactly `required_count` ON_CALL assignments.
+6. Never echo `role_validation_scratchpad` rows or any internal input artifact in output metadata.
+7. If any required slot remains short after trying eligible candidates, output status cannot be `SUCCESS`.
 
 Example:
 - Input: `role_validation_scratchpad{shift_id:"S_73_20260223",required_role:"STRUCTURED",required_count:1,candidate_doctor_ids:[101,202]}`
@@ -261,21 +261,21 @@ MANDATORY EXECUTION ORDER (NORMATIVE):
 1. Parse input blocks.
 2. Build role candidate sets from `dr`.
 3. Expand hard coverage per shift from `hard_coverage_requirements`.
-4. Apply HARD constraints first (reject violating candidates).
-5. Apply SOFT scoring/tie-breakers.
-6. Run deterministic coverage reconciliation gate before emission.
-7. Emit assignments.
-8. Emit uncovered shifts and failure reasons.
+4. Build deterministic slot list `(shift_id, assignment_status, role)` and fill slot-by-slot.
+5. Apply HARD constraints first; if candidate conflicts, skip and try next eligible candidate.
+6. Apply SOFT scoring/tie-breakers only among remaining feasible candidates for that slot.
+7. Run deterministic coverage reconciliation gate before emission.
+8. Emit assignments, then uncovered shifts and failure reasons.
 
 DETERMINISTIC TIE-BREAKERS (NORMATIVE):
 - When candidate plans have equal primary score, apply the following ordered keys strictly and sequentially:
   1. maximize hard coverage
   2. minimize soft violations
-  3. minimize priority penalty
-  4. stable doctor ordering (ascending `doctor_id`)
+  3. maximize doctor diversity across shifts/day when hard-feasible
+  4. minimize priority penalty
   5. stable shift ordering (`shift_id` lexical)
   6. stable role ordering (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`)
-- If still tied, continue evaluating with the next listed key until a single winner is selected.
+- If still tied, use stable doctor ordering (ascending `doctor_id`) only as final deterministic tie-break, then continue with next listed key if needed.
 - Earlier tie-breakers always have precedence over later ones.
 - Random or nondeterministic choice is forbidden.
 
