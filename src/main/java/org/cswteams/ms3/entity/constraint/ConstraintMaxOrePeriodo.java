@@ -63,6 +63,11 @@ public class ConstraintMaxOrePeriodo extends ConstraintAssegnazioneTurnoTurno {
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {
+        if (context == null
+                || context.getDoctorUffaPriority() == null
+                || context.getDoctorUffaPriority().getSchedule() == null) {
+            throw new IllegalStateException("Missing schedule in ContextConstraint for ConstraintMaxOrePeriodo");
+        }
 
         List<ConcreteShift> concreteShiftList = context.getDoctorUffaPriority().getAssegnazioniTurnoCache();
         if(concreteShiftList != null && !concreteShiftList.isEmpty()) {
