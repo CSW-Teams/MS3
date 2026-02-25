@@ -1197,6 +1197,29 @@ public class AiScheduleGenerationOrchestrationService {
                                 "Constraint must be satisfied",
                                 message
                         ));
+                    } catch (RuntimeException ex) {
+                        String exceptionClass = sanitizeExceptionClass(ex);
+                        String exceptionMessage = sanitizeExceptionMessage(ex);
+                        logger.warn("event=ai_candidate_validation_failed reason=CONSTRAINT_EXECUTION_ERROR "
+                                        + "constraint_type={} constraint_id={} doctor_id={} shift_id={} exception_class={} "
+                                        + "exception_message={}",
+                                constraint == null ? "n/a" : constraint.getClass().getSimpleName(),
+                                constraint == null || constraint.getId() == null ? "n/a" : constraint.getId(),
+                                assignment.getDoctor() == null || assignment.getDoctor().getId() == null
+                                        ? "n/a"
+                                        : assignment.getDoctor().getId(),
+                                concreteShift.getShift() == null || concreteShift.getShift().getId() == null
+                                        ? "n/a"
+                                        : concreteShift.getShift().getId(),
+                                exceptionClass,
+                                exceptionMessage);
+                        violations.add(ConstraintViolationDetail.constraintExecutionFailure(
+                                constraint,
+                                concreteShift,
+                                assignment.getDoctor(),
+                                exceptionClass,
+                                exceptionMessage
+                        ));
                     }
                 }
 
@@ -1204,6 +1227,26 @@ public class AiScheduleGenerationOrchestrationService {
             }
         }
         return violations;
+    }
+
+    private String sanitizeExceptionClass(RuntimeException ex) {
+        if (ex == null || ex.getClass() == null || ex.getClass().getSimpleName() == null
+                || ex.getClass().getSimpleName().trim().isEmpty()) {
+            return "RuntimeException";
+        }
+        return ex.getClass().getSimpleName().trim();
+    }
+
+    private String sanitizeExceptionMessage(RuntimeException ex) {
+        if (ex == null || ex.getMessage() == null || ex.getMessage().trim().isEmpty()) {
+            return "n/a";
+        }
+        String sanitized = ex.getMessage()
+                .replace("\n", " ")
+                .replace("\r", " ")
+                .replace("\t", " ")
+                .trim();
+        return sanitized.length() > 256 ? sanitized.substring(0, 256) : sanitized;
     }
 
     private AiScheduleResponse buildDeferredResponse(String label, AiTokenBudgetGuardResult budgetGuard) {
@@ -2550,6 +2593,24 @@ public class AiScheduleGenerationOrchestrationService {
                     "ConcreteShift must include non-null " + missingField,
                     actualCondition
             );
+        }
+
+        private static ConstraintViolationDetail constraintExecutionFailure(Constraint constraint,
+                                                                            ConcreteShift concreteShift,
+                                                                            Doctor doctor,
+                                                                            String exceptionClass,
+                                                                            String exceptionMessage) {
+            String sanitizedExceptionClass = exceptionClass == null || exceptionClass.trim().isEmpty()
+                    ? "RuntimeException"
+                    : exceptionClass.trim();
+            String sanitizedExceptionMessage = exceptionMessage == null || exceptionMessage.trim().isEmpty()
+                    ? "n/a"
+                    : exceptionMessage.trim();
+            return of(constraint,
+                    concreteShift,
+                    doctor,
+                    "Constraint execution must complete without runtime errors",
+                    "Constraint execution failed: " + sanitizedExceptionClass + ": " + sanitizedExceptionMessage);
         }
     }
 

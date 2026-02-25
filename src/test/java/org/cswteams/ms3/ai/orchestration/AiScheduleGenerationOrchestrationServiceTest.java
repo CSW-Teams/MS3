@@ -31,7 +31,9 @@ import org.cswteams.ms3.dao.HolidayDAO;
 import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
+import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.constraint.ConstraintUbiquita;
+import org.cswteams.ms3.entity.constraint.ContextConstraint;
 import org.cswteams.ms3.entity.DoctorAssignment;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorUffaPriority;
@@ -1023,6 +1025,88 @@ class AiScheduleGenerationOrchestrationServiceTest {
         List<?> violations = (List<?>) collectViolatedConstraints.invoke(service, candidateSchedule);
 
         assertTrue(violations.isEmpty());
+    }
+
+
+    @Test
+    void collectViolatedConstraintsConvertsRuntimeExceptionsIntoViolations() throws Exception {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        Shift shift = makeShift(1001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360));
+        ConcreteShift concreteShift = new ConcreteShift(date.toEpochDay(), shift);
+        DoctorAssignment assignment = new DoctorAssignment(doctor, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC));
+        concreteShift.getDoctorAssignmentList().add(assignment);
+        Schedule candidateSchedule = new Schedule(date.toEpochDay(), date.toEpochDay(), List.of(concreteShift));
+
+        Constraint buggyConstraint = new Constraint() {
+            @Override
+            public void verifyConstraint(ContextConstraint contesto) {
+                throw new IllegalStateException("boom\nwith details");
+            }
+        };
+        buggyConstraint.setId(99L);
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        when(constraintDAO.findAll()).thenReturn(List.of(buggyConstraint));
+        when(doctorUffaPriorityDAO.findAll()).thenReturn(List.of(new DoctorUffaPriority(doctor)));
+        when(doctorHolidaysDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                new AiBrokerProperties(),
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        Method collectViolatedConstraints = AiScheduleGenerationOrchestrationService.class
+                .getDeclaredMethod("collectViolatedConstraints", Schedule.class);
+        collectViolatedConstraints.setAccessible(true);
+
+        List<?> violations = (List<?>) collectViolatedConstraints.invoke(service, candidateSchedule);
+
+        assertEquals(1, violations.size());
+
+        Object violation = violations.get(0);
+        Field constraintId = violation.getClass().getDeclaredField("constraintId");
+        constraintId.setAccessible(true);
+        Field doctorId = violation.getClass().getDeclaredField("doctorId");
+        doctorId.setAccessible(true);
+        Field shiftId = violation.getClass().getDeclaredField("shiftId");
+        shiftId.setAccessible(true);
+        Field actualCondition = violation.getClass().getDeclaredField("actualCondition");
+        actualCondition.setAccessible(true);
+
+        assertEquals("99", constraintId.get(violation));
+        assertEquals("10", doctorId.get(violation));
+        assertEquals("1001", shiftId.get(violation));
+        assertTrue(String.valueOf(actualCondition.get(violation)).contains("IllegalStateException: boom with details"));
     }
 
     private String generateScheduleComparisonAndCaptureToonPayload(LocalDate startDate,
