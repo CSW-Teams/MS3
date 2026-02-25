@@ -8,14 +8,17 @@ import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import org.cswteams.ms3.enums.Seniority;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -122,6 +125,7 @@ public class AiScheduleSemanticValidator {
             return;
         }
         Set<String> keys = new HashSet<>();
+        Map<String, ConcreteShiftDoctorStatus> shiftDoctorStatuses = new HashMap<>();
         for (int i = 0; i < assignments.size(); i++) {
             AiAssignmentDto assignment = assignments.get(i);
             if (assignment == null) {
@@ -149,10 +153,38 @@ public class AiScheduleSemanticValidator {
                 errors.add(new ValidationError("$.assignments[" + i + "].violation_note", "must not be blank when is_forced is true"));
             }
 
-            if (nonBlank(assignment.shiftId) && assignment.doctorId != null) {
-                String key = assignment.shiftId + "||" + assignment.doctorId;
+            if (assignment.assignmentStatus == null) {
+                errors.add(new ValidationError(
+                        "$.assignments[" + i + "].assignment_status",
+                        "must not be null"
+                ));
+            } else if (assignment.assignmentStatus != ConcreteShiftDoctorStatus.ON_DUTY
+                    && assignment.assignmentStatus != ConcreteShiftDoctorStatus.ON_CALL) {
+                errors.add(new ValidationError(
+                        "$.assignments[" + i + "].assignment_status",
+                        "must be ON_DUTY or ON_CALL"
+                ));
+            }
+
+            if (nonBlank(assignment.shiftId) && assignment.doctorId != null && assignment.assignmentStatus != null) {
+                String shiftDoctorKey = assignment.shiftId + "||" + assignment.doctorId;
+                String statusKey = assignment.assignmentStatus.name();
+                String key = shiftDoctorKey + "||" + statusKey;
                 if (!keys.add(key)) {
-                    errors.add(new ValidationError("$.assignments", "duplicate key shift_id=" + assignment.shiftId + " doctor_id=" + assignment.doctorId));
+                    errors.add(new ValidationError(
+                            "$.assignments",
+                            "duplicate key shift_id=" + assignment.shiftId
+                                    + " doctor_id=" + assignment.doctorId
+                                    + " assignment_status=" + statusKey
+                    ));
+                }
+                ConcreteShiftDoctorStatus existingStatus = shiftDoctorStatuses.putIfAbsent(shiftDoctorKey, assignment.assignmentStatus);
+                if (existingStatus != null && existingStatus != assignment.assignmentStatus) {
+                    errors.add(new ValidationError(
+                            "$.assignments",
+                            "same doctor cannot be assigned both ON_DUTY and ON_CALL for shift_id=" + assignment.shiftId
+                                    + " doctor_id=" + assignment.doctorId
+                    ));
                 }
             }
         }

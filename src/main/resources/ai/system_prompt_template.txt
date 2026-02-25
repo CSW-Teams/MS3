@@ -158,9 +158,10 @@ TOON_INPUT DSL LEGEND (NORMATIVE):
   - n datatype: integer >= 0.
   - shift_id (required): string shift identifier.
   - required_role (required): enum string in STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR.
-  - required_count (optional): integer >= 0 role count hint emitted by backend.
+  - required_count (optional): integer >= 0 mandatory quota when present.
   - candidate_doctor_ids (required): array of integer doctor IDs pre-filtered by backend for the `(shift_id, required_role)` pair.
   - Meaning: authoritative backend-preprocessed candidate allowlist for role validation.
+- Naming consistency (strict): within this scratchpad block, only `(shift_id, required_role, required_count, candidate_doctor_ids)` are valid field names; aliases are invalid.
   - Missing/unknown handling: malformed rows are unusable for reasoning.
 
 STRICT PRECEDENCE FOR ROLE MATCHING (NORMATIVE):
@@ -204,6 +205,7 @@ Do not echo or mirror internal input artifacts (including `role_validation_scrat
       "shift_id": string,
       "doctor_id": number,
       "role_covered": "STRUCTURED | SPECIALIST_JUNIOR | SPECIALIST_SENIOR",
+      "assignment_status": "ON_DUTY | ON_CALL",
       "is_forced": boolean,
       "violation_note": string
     }
@@ -223,12 +225,36 @@ Do not echo or mirror internal input artifacts (including `role_validation_scrat
   ]
 }
 
+Assignment uniqueness rule (NORMATIVE):
+- For a given `(shift_id, doctor_id)` pair, emit at most one assignment total.
+- If assigned, the doctor must be either `ON_DUTY` or `ON_CALL` for that shift, never both.
+
 COGNITIVE STEP (CRITICAL):
 Before generating 'assignments', you MUST perform the following lookup using the provided TOON input block `role_validation_scratchpad`:
 1. Use the provided `role_validation_scratchpad` input rows.
-2. For each `(shift_id, role_required)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
-3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, role_required)` pair.
+2. For each `(shift_id, required_role)` pair, treat `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
+3. When generating `assignments`, you are STRICTLY FORBIDDEN from assigning a doctor_id outside the listed `candidate_doctor_ids` for that exact `(shift_id, required_role)` pair.
 4. Never echo `role_validation_scratchpad` rows or any other internal input artifact in output metadata.
+5. For each `(shift_id, required_role)` row with `required_count` present, generate exactly `required_count` assignments with `assignment_status="ON_DUTY"` and exactly `required_count` assignments with `assignment_status="ON_CALL"`.
+6. For each `(shift_id, required_role)` row, ON_DUTY assignees and ON_CALL assignees must be distinct doctor sets; no doctor_id overlap is allowed across the two layers for the same row.
+7. If either ON_DUTY or ON_CALL is short for any `(shift_id, required_role)` row where `required_count` is present, the output status cannot be `SUCCESS`.
+
+Example:
+- Input: `role_validation_scratchpad{shift_id:"S_73_20260223",required_role:"STRUCTURED",required_count:1,candidate_doctor_ids:[101,202]}`
+- Output: `assignments: [{"shift_id":"S_73_20260223","doctor_id":101,"role_covered":"STRUCTURED","assignment_status":"ON_DUTY"}, {"shift_id":"S_73_20260223","doctor_id":202,"role_covered":"STRUCTURED","assignment_status":"ON_CALL"}]`
+
+COVERAGE RECONCILIATION GATE (NORMATIVE):
+- Execute this gate after scoring and before final JSON emission.
+- Build a deterministic reconciliation matrix keyed by `(shift_id, required_role, assignment_status)`.
+- For each matrix key, count emitted assignments and compare against required minima from `role_validation_scratchpad.required_count` (when present) and `hard_coverage_requirements`.
+- Enforce minima for both `assignment_status="ON_DUTY"` and `assignment_status="ON_CALL"`; both layers must satisfy required counts independently.
+- If any matrix key is below required minima, do not finalize JSON until regeneration/repair is attempted.
+- Never silently drop or truncate assignments to pass validation; unresolved reconciliation mismatches must remain explicit.
+
+OUTPUT-STATE MAPPING FOR RECONCILIATION (NORMATIVE):
+- If all reconciliation checks pass, `status` may be `SUCCESS` (subject to other rules).
+- If one or more reconciliation mismatches remain unresolved after regeneration/repair, set `status="PARTIAL_SUCCESS"` and add explicit uncovered reasons per affected shift/role in `uncovered_shifts`.
+- It is forbidden to return `SUCCESS` when reconciliation mismatches exist.
 
 
 MANDATORY EXECUTION ORDER (NORMATIVE):
@@ -237,8 +263,9 @@ MANDATORY EXECUTION ORDER (NORMATIVE):
 3. Expand hard coverage per shift from `hard_coverage_requirements`.
 4. Apply HARD constraints first (reject violating candidates).
 5. Apply SOFT scoring/tie-breakers.
-6. Emit assignments.
-7. Emit uncovered shifts and failure reasons.
+6. Run deterministic coverage reconciliation gate before emission.
+7. Emit assignments.
+8. Emit uncovered shifts and failure reasons.
 
 DETERMINISTIC TIE-BREAKERS (NORMATIVE):
 - When candidate plans have equal primary score, apply the following ordered keys strictly and sequentially:
@@ -277,10 +304,23 @@ Variant intent:
 Constraint handling (from `active_constraints`):
 - HARD constraints: must never be violated in assignments.
 - HARD coverage constraints: each row in `hard_coverage_requirements` applies independently to its own `shift_id` and must be satisfied per shift_id (never globally across multiple shifts).
-- Interpret every numeric value in `hard_coverage_requirements` as a required headcount (number of doctors) for that exact role in that exact shift.
-- Every minimum value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) is mandatory, non-optional, and must be met for that exact `shift_id`.
+
+DUAL-LAYER GENERATION RULE (MANDATORY):
+- For every single required role in a shift (as specified in `hard_coverage_requirements` or `role_validation_scratchpad`), you MUST generate exactly TWO sets of JSON assignment objects:
+  1. One set with `"assignment_status": "ON_DUTY"` meeting the required count.
+  2. One set with `"assignment_status": "ON_CALL"` meeting the exact same required count.
+- Interpret every numeric value in `hard_coverage_requirements` (`structured`, `specialist_junior`, `specialist_senior`, and `total`) as the mandatory headcount PER LAYER.
+- Therefore, a `total` of 3 requires exactly 3 ON_DUTY assignments AND exactly 3 ON_CALL assignments (6 absolute assignments for that shift).
+- ON_DUTY assignees and ON_CALL assignees for the same shift must be strictly distinct. The same `doctor_id` cannot appear twice for the same `shift_id` across different `assignment_status` values.
+- Layered minima rule (hard constraint): meeting minima in one layer does not satisfy minima in the other layer. Both layers must independently meet the exact same required minimums.
+- Invalid-solution rule: if ON_CALL role coverage is missing or below required minima for any `shift_id`, the solution is invalid even when ON_DUTY coverage is complete.
+- Input-schema rule: user payload schema remains unchanged; do not expect or require a second dedicated coverage block for ON_CALL.
 - Canonical role mapping: `sh[].rs` maps only to STRUCTURED, `sh[].rj` maps only to SPECIALIST_JUNIOR; SPECIALIST_SENIOR requirements are represented exclusively by `hard_coverage_requirements[].specialist_senior`.
-- Any generated assignment set that is below any required minimum for a listed `shift_id` is invalid and must not be returned as a valid solution.
+- Concrete coverage-layer example for `S_73_20260223`:
+  - `{"shift_id":"S_73_20260223","doctor_id":101,"role_covered":"STRUCTURED","assignment_status":"ON_DUTY"}`
+  - `{"shift_id":"S_73_20260223","doctor_id":202,"role_covered":"STRUCTURED","assignment_status":"ON_CALL"}`
+  - These rows are valid only because `doctor_id` differs across the two `assignment_status` values.
+
 - SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
 - Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).
 
@@ -325,4 +365,6 @@ Hard validation constraints (must match parser/validator expectations):
 - Required top-level section: "variants".
 - Required variant labels: one or more of "EMPATHETIC", "EFFICIENT", "BALANCED" (no extras).
 - Required fields per variant: "status", "metadata", "assignments", "uncovered_shifts", "uffa_delta".
+- Required fields per assignment row: "shift_id", "doctor_id", "role_covered", "assignment_status", "is_forced", "violation_note".
+- `assignment_status` is mandatory and must be exactly one of: "ON_DUTY", "ON_CALL".
 - Field names must match exactly; do not rename or wrap required sections.

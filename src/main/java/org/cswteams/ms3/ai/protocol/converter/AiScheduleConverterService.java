@@ -12,8 +12,13 @@ import org.cswteams.ms3.dao.ShiftDAO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +30,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class AiScheduleConverterService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AiScheduleConverterService.class);
+    private static final int COVERAGE_MISMATCH_SAMPLE_LIMIT = 5;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final AiScheduleJsonParser jsonParser;
     private final AiScheduleSemanticValidator semanticValidator;
@@ -136,6 +145,7 @@ public class AiScheduleConverterService {
         // This allows grouping assignments for the same concrete shift
         Map<String, ConcreteShift> concreteShiftsMap = new HashMap<>();
         Map<String, ShiftCoverageAccumulator> coverageByConcreteShift = new HashMap<>();
+        Map<String, ConcreteShiftDoctorStatus> statusByShiftDoctor = new HashMap<>();
         List<ValidationError> validationErrors = new ArrayList<>();
 
         for (int index = 0; index < aiAssignments.size(); index++) {
@@ -179,20 +189,35 @@ public class AiScheduleConverterService {
             );
 
             // f. Create DoctorAssignment
-            ConcreteShiftDoctorStatus status = ConcreteShiftDoctorStatus.ON_DUTY; // Default status
-            // The AI provides isForced and violationNote. If needed, this could influence the status
-            // or be stored in a separate log/entity. For now, we assume ON_DUTY.
+            AssignmentStatusResolution statusResolution = resolveAssignmentStatus(aiAssignment);
 
-            DoctorAssignment doctorAssignment = new DoctorAssignment(doctor, status, concreteShift, task);
+            String shiftDoctorKey = aiAssignment.shiftId + "||" + aiAssignment.doctorId;
+            ConcreteShiftDoctorStatus existingStatus = statusByShiftDoctor.putIfAbsent(
+                    shiftDoctorKey,
+                    statusResolution.persistenceStatus
+            );
+            if (existingStatus != null && existingStatus != statusResolution.persistenceStatus) {
+                validationErrors.add(new ValidationError(
+                        "$.assignments[" + index + "]",
+                        "same doctor cannot be assigned both ON_DUTY and ON_CALL for shift_id="
+                                + aiAssignment.shiftId + " doctor_id=" + aiAssignment.doctorId
+                ));
+                continue;
+            }
+
+            DoctorAssignment doctorAssignment = new DoctorAssignment(doctor, statusResolution.persistenceStatus, concreteShift, task);
             concreteShift.getDoctorAssignmentList().add(doctorAssignment);
-            coverageAccumulator.registerAssignment(doctor.getSeniority());
+            coverageAccumulator.registerAssignment(statusResolution.coverageStatuses, doctor.getSeniority());
         }
 
+        List<ShiftCoverageValidationSnapshot> coverageSnapshots = new ArrayList<>();
         for (ShiftCoverageAccumulator coverageAccumulator : coverageByConcreteShift.values()) {
             coverageAccumulator.addCoverageErrors(validationErrors);
+            coverageSnapshots.add(coverageAccumulator.toValidationSnapshot());
         }
 
         if (!validationErrors.isEmpty()) {
+            logCoverageValidationMetadata(coverageSnapshots, validationErrors);
             throw AiProtocolException.schemaMismatch(
                     "AI response violates minimum doctors/seniority shift constraints",
                     validationErrors,
@@ -201,6 +226,47 @@ public class AiScheduleConverterService {
         }
 
         return new ArrayList<>(concreteShiftsMap.values());
+    }
+
+    private void logCoverageValidationMetadata(List<ShiftCoverageValidationSnapshot> coverageSnapshots,
+                                               List<ValidationError> validationErrors) {
+        Map<String, Integer> required = new LinkedHashMap<>();
+        Map<String, Integer> assigned = new LinkedHashMap<>();
+        List<String> missing = new ArrayList<>();
+        if (coverageSnapshots != null) {
+            for (ShiftCoverageValidationSnapshot snapshot : coverageSnapshots) {
+                required.putAll(snapshot.requiredSlotsByLayer);
+                assigned.putAll(snapshot.assignedSlotsByLayer);
+                missing.addAll(snapshot.missingSlotsSummary);
+            }
+        }
+        List<String> mismatchSamples = validationErrors == null ? Collections.emptyList() : validationErrors.stream()
+                .filter(Objects::nonNull)
+                .map(error -> "{path=" + error.getPath() + ",message=" + error.getMessage() + "}")
+                .limit(COVERAGE_MISMATCH_SAMPLE_LIMIT)
+                .collect(Collectors.toList());
+
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("dual_layer_coverage_valid", missing.isEmpty());
+        metadata.put("required_slots_per_shift_role_layer", required);
+        metadata.put("assigned_slots_per_shift_role_layer", assigned);
+        metadata.put("missing_slots_summary", missing);
+        metadata.put("mismatch_examples", mismatchSamples);
+
+        logger.warn("event=ai_converter_dual_layer_coverage_validation dual_layer_coverage_valid={} required_slots_count={} assigned_slots_count={} missing_slots_count={} metadata={}",
+                missing.isEmpty(),
+                required.size(),
+                assigned.size(),
+                missing.size(),
+                toJson(metadata));
+    }
+
+    private String toJson(Map<String, Object> metadata) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(metadata);
+        } catch (JsonProcessingException ex) {
+            return String.valueOf(metadata);
+        }
     }
 
     /**
@@ -268,17 +334,49 @@ public class AiScheduleConverterService {
 
     }
 
+    private AssignmentStatusResolution resolveAssignmentStatus(AiAssignmentDto aiAssignment) {
+        if (aiAssignment.assignmentStatus == null) {
+            throw AiProtocolException.invalidFormat(
+                    "Missing assignment_status in AI response assignment. Expected ON_DUTY or ON_CALL."
+            );
+        }
+        if (aiAssignment.assignmentStatus == ConcreteShiftDoctorStatus.ON_DUTY
+                || aiAssignment.assignmentStatus == ConcreteShiftDoctorStatus.ON_CALL) {
+            return AssignmentStatusResolution.explicit(aiAssignment.assignmentStatus);
+        }
+        throw AiProtocolException.invalidFormat(
+                "Unsupported assignment_status in AI response: " + aiAssignment.assignmentStatus
+                        + ". Expected ON_DUTY or ON_CALL."
+        );
+    }
+
+    private static class AssignmentStatusResolution {
+        private final ConcreteShiftDoctorStatus persistenceStatus;
+        private final EnumSet<ConcreteShiftDoctorStatus> coverageStatuses;
+
+        private AssignmentStatusResolution(ConcreteShiftDoctorStatus persistenceStatus,
+                                           EnumSet<ConcreteShiftDoctorStatus> coverageStatuses) {
+            this.persistenceStatus = persistenceStatus;
+            this.coverageStatuses = coverageStatuses;
+        }
+
+        private static AssignmentStatusResolution explicit(ConcreteShiftDoctorStatus assignmentStatus) {
+            return new AssignmentStatusResolution(assignmentStatus, EnumSet.of(assignmentStatus));
+        }
+
+    }
+
     private static class ShiftCoverageAccumulator {
         private final String shiftId;
         private final Map<Seniority, Integer> requiredBySeniority;
-        private final Map<Seniority, Integer> assignedBySeniority;
+        private final Map<ConcreteShiftDoctorStatus, Map<Seniority, Integer>> assignedByStatusAndSeniority;
 
         private ShiftCoverageAccumulator(String shiftId,
                                          Map<Seniority, Integer> requiredBySeniority,
-                                         Map<Seniority, Integer> assignedBySeniority) {
+                                         Map<ConcreteShiftDoctorStatus, Map<Seniority, Integer>> assignedByStatusAndSeniority) {
             this.shiftId = shiftId;
             this.requiredBySeniority = requiredBySeniority;
-            this.assignedBySeniority = assignedBySeniority;
+            this.assignedByStatusAndSeniority = assignedByStatusAndSeniority;
         }
 
         private static ShiftCoverageAccumulator fromShiftTemplate(Shift shiftTemplate, String shiftId) {
@@ -296,28 +394,83 @@ public class AiScheduleConverterService {
                     }
                 }
             }
-            return new ShiftCoverageAccumulator(shiftId, requiredBySeniority, new EnumMap<>(Seniority.class));
+            Map<ConcreteShiftDoctorStatus, Map<Seniority, Integer>> assignedByStatusAndSeniority = new EnumMap<>(ConcreteShiftDoctorStatus.class);
+            assignedByStatusAndSeniority.put(ConcreteShiftDoctorStatus.ON_DUTY, new EnumMap<>(Seniority.class));
+            assignedByStatusAndSeniority.put(ConcreteShiftDoctorStatus.ON_CALL, new EnumMap<>(Seniority.class));
+            return new ShiftCoverageAccumulator(shiftId, requiredBySeniority, assignedByStatusAndSeniority);
         }
 
-        private void registerAssignment(Seniority seniority) {
-            if (seniority == null) {
+        private void registerAssignment(EnumSet<ConcreteShiftDoctorStatus> statuses, Seniority seniority) {
+            if (seniority == null || statuses == null || statuses.isEmpty()) {
                 return;
             }
-            assignedBySeniority.merge(seniority, 1, Integer::sum);
+            for (ConcreteShiftDoctorStatus status : statuses) {
+                Map<Seniority, Integer> assignedBySeniority = assignedByStatusAndSeniority.get(status);
+                if (assignedBySeniority == null) {
+                    continue;
+                }
+                assignedBySeniority.merge(seniority, 1, Integer::sum);
+            }
         }
 
         private void addCoverageErrors(List<ValidationError> errors) {
+            addCoverageErrorsForStatus(errors, ConcreteShiftDoctorStatus.ON_DUTY);
+            addCoverageErrorsForStatus(errors, ConcreteShiftDoctorStatus.ON_CALL);
+        }
+
+        private void addCoverageErrorsForStatus(List<ValidationError> errors, ConcreteShiftDoctorStatus status) {
+            Map<Seniority, Integer> assignedBySeniority = assignedByStatusAndSeniority.getOrDefault(status, Collections.emptyMap());
             for (Map.Entry<Seniority, Integer> requiredEntry : requiredBySeniority.entrySet()) {
                 int assigned = assignedBySeniority.getOrDefault(requiredEntry.getKey(), 0);
                 if (assigned < requiredEntry.getValue()) {
                     errors.add(new ValidationError(
                             "$.assignments",
-                            "shift_id=" + shiftId + " requires at least " + requiredEntry.getValue()
+                            "shift_id=" + shiftId + " assignment_status=" + status
+                                    + " requires at least " + requiredEntry.getValue()
                                     + " doctors with seniority=" + requiredEntry.getKey()
                                     + " but got " + assigned
                     ));
                 }
             }
+        }
+
+        private ShiftCoverageValidationSnapshot toValidationSnapshot() {
+            Map<String, Integer> requiredSlotsByLayer = new LinkedHashMap<>();
+            Map<String, Integer> assignedSlotsByLayer = new LinkedHashMap<>();
+            List<String> missingSlotsSummary = new ArrayList<>();
+
+            for (Map.Entry<Seniority, Integer> requiredEntry : requiredBySeniority.entrySet()) {
+                if (requiredEntry.getValue() == null || requiredEntry.getValue() <= 0) {
+                    continue;
+                }
+                for (ConcreteShiftDoctorStatus status : List.of(ConcreteShiftDoctorStatus.ON_DUTY, ConcreteShiftDoctorStatus.ON_CALL)) {
+                    String key = shiftId + "|" + status + "|" + requiredEntry.getKey();
+                    int assigned = assignedByStatusAndSeniority.getOrDefault(status, Collections.emptyMap())
+                            .getOrDefault(requiredEntry.getKey(), 0);
+                    requiredSlotsByLayer.put(key, requiredEntry.getValue());
+                    assignedSlotsByLayer.put(key, assigned);
+                    if (assigned < requiredEntry.getValue()) {
+                        missingSlotsSummary.add("shift_id=" + shiftId + " assignment_status=" + status
+                                + " role=" + requiredEntry.getKey() + " actual=" + assigned
+                                + " required=" + requiredEntry.getValue());
+                    }
+                }
+            }
+            return new ShiftCoverageValidationSnapshot(requiredSlotsByLayer, assignedSlotsByLayer, missingSlotsSummary);
+        }
+    }
+
+    private static class ShiftCoverageValidationSnapshot {
+        private final Map<String, Integer> requiredSlotsByLayer;
+        private final Map<String, Integer> assignedSlotsByLayer;
+        private final List<String> missingSlotsSummary;
+
+        private ShiftCoverageValidationSnapshot(Map<String, Integer> requiredSlotsByLayer,
+                                                Map<String, Integer> assignedSlotsByLayer,
+                                                List<String> missingSlotsSummary) {
+            this.requiredSlotsByLayer = requiredSlotsByLayer;
+            this.assignedSlotsByLayer = assignedSlotsByLayer;
+            this.missingSlotsSummary = missingSlotsSummary;
         }
     }
 }

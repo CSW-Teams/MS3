@@ -7,6 +7,7 @@ import org.cswteams.ms3.ai.protocol.dto.AiRoleValidationScratchpadItemDto;
 import org.cswteams.ms3.ai.protocol.dto.AiScheduleResponseDto;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
+import org.cswteams.ms3.enums.ConcreteShiftDoctorStatus;
 import org.cswteams.ms3.enums.Seniority;
 import org.junit.Test;
 
@@ -71,6 +72,50 @@ public class AiScheduleSemanticValidatorTest {
     }
 
     @Test
+    public void validate_missingAssignmentStatus_shouldReportError() {
+        AiScheduleResponseDto dto = validDto();
+        dto.assignments.get(0).assignmentStatus = null;
+
+        AiProtocolException ex = expectSchemaMismatch(dto);
+        assertHasPath(ex, "$.assignments[0].assignment_status");
+    }
+
+
+    @Test
+    public void validate_sameShiftDifferentDoctorsWithDifferentStatuses_shouldNotThrow() {
+        AiScheduleResponseDto dto = validDto();
+
+        AiAssignmentDto onCallAssignment = new AiAssignmentDto();
+        onCallAssignment.shiftId = dto.assignments.get(0).shiftId;
+        onCallAssignment.doctorId = 101;
+        onCallAssignment.roleCovered = Seniority.STRUCTURED;
+        onCallAssignment.isForced = false;
+        onCallAssignment.violationNote = null;
+        onCallAssignment.assignmentStatus = ConcreteShiftDoctorStatus.ON_CALL;
+        dto.assignments.add(onCallAssignment);
+
+        validator.validate(dto);
+    }
+
+    @Test
+    public void validate_sameShiftSameDoctorWithDifferentStatuses_shouldReportError() {
+        AiScheduleResponseDto dto = validDto();
+
+        AiAssignmentDto onCallAssignment = new AiAssignmentDto();
+        onCallAssignment.shiftId = dto.assignments.get(0).shiftId;
+        onCallAssignment.doctorId = dto.assignments.get(0).doctorId;
+        onCallAssignment.roleCovered = dto.assignments.get(0).roleCovered;
+        onCallAssignment.isForced = false;
+        onCallAssignment.violationNote = null;
+        onCallAssignment.assignmentStatus = ConcreteShiftDoctorStatus.ON_CALL;
+        dto.assignments.add(onCallAssignment);
+
+        AiProtocolException ex = expectSchemaMismatch(dto);
+        assertHasPath(ex, "$.assignments");
+        assertTrue(ex.getDetails().stream().anyMatch(d -> d.getMessage().contains("same doctor cannot be assigned both ON_DUTY and ON_CALL")));
+    }
+
+    @Test
     public void validate_duplicateAssignment_shouldReportError() {
         AiScheduleResponseDto dto = validDto();
         AiAssignmentDto dup = new AiAssignmentDto();
@@ -78,6 +123,7 @@ public class AiScheduleSemanticValidatorTest {
         dup.doctorId = dto.assignments.get(0).doctorId;
         dup.roleCovered = dto.assignments.get(0).roleCovered;
         dup.isForced = dto.assignments.get(0).isForced;
+        dup.assignmentStatus = dto.assignments.get(0).assignmentStatus;
         dto.assignments.add(dup);
 
         AiProtocolException ex = expectSchemaMismatch(dto);
@@ -162,6 +208,7 @@ public class AiScheduleSemanticValidatorTest {
         assignment.roleCovered = Seniority.STRUCTURED;
         assignment.isForced = false;
         assignment.violationNote = null;
+        assignment.assignmentStatus = ConcreteShiftDoctorStatus.ON_DUTY;
         dto.assignments.add(assignment);
         return dto;
     }

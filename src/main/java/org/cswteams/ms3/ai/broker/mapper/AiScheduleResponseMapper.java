@@ -72,6 +72,7 @@ public class AiScheduleResponseMapper {
                         item.shiftId,
                         item.doctorId,
                         item.roleCovered,
+                        item.assignmentStatus,
                         Boolean.TRUE.equals(item.isForced),
                         item.violationNote
                 ))

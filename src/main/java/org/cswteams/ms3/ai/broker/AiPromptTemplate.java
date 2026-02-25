@@ -47,7 +47,10 @@ public final class AiPromptTemplate {
         }
         builder.append("Vocabulary rule: TOON_INPUT doctors[*].role uses the same enum naming as assignments[*].role_covered (STRUCTURED, SPECIALIST_JUNIOR, SPECIALIST_SENIOR).\n\n");
         builder.append("Holiday rule: in COMPACT mode doctor holidays use `h[n]{id,s,e,tz?}` rows (id optional, s/e inclusive dates, tz optional quoted metadata).\n\n");
-        builder.append("Scratchpad authority rule: if TOON_INPUT includes `role_validation_scratchpad[...]`, treat backend-provided `candidate_doctor_ids` as authoritative for each `(shift_id, role_required)` pair.\n\n");
+        builder.append("Scratchpad authority rule: if TOON_INPUT includes `role_validation_scratchpad[...]`, treat backend-provided `candidate_doctor_ids` as authoritative for each `(shift_id, required_role)` pair.\n\n");
+        builder.append("Doctor reuse rule: reusing the same doctor across shifts is allowed only when every active hard constraint remains satisfied (max hours in period, required rest, contiguous-shift constraints, holidays).\n\n");
+        builder.append("Coverage checklist rule: if TOON_INPUT includes `hard_coverage_checklist[...]`, treat every checklist item as mandatory and machine-checkable.\n\n");
+        builder.append("Coverage outcome rule: if complete coverage is not feasible without violating active hard constraints, explicitly return status `PARTIAL_SUCCESS` and clearly state uncovered shifts/roles.\n\n");
         builder.append("TOON_INPUT:\n").append(toonPayload == null ? "" : toonPayload);
         return builder.toString();
     }
