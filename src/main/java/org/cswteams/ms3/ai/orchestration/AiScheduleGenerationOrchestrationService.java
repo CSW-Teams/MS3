@@ -246,7 +246,7 @@ public class AiScheduleGenerationOrchestrationService {
                     metrics,
                     candidate.validation.valid,
                     candidate.validation.code,
-                    candidate.validation.message,
+                    candidate.validation.apiMessage,
                     candidate.validation.maxRetriesReached,
                     candidate.validation.violationMessages()
             ));
@@ -881,7 +881,10 @@ public class AiScheduleGenerationOrchestrationService {
                         "DOMAIN_CONSTRAINTS_VIOLATED",
                         violatedConstraints.size(),
                         violationMessage);
-                return CandidateValidationData.invalid("DOMAIN_CONSTRAINTS_VIOLATED", violationMessage, violatedConstraints);
+                return CandidateValidationData.invalid("DOMAIN_CONSTRAINTS_VIOLATED",
+                        violationMessage,
+                        "Copertura non completa entro i vincoli attivi: medici insufficienti per coprire tutti i turni rispettando ore periodo, riposi, turni contigui e ferie.",
+                        violatedConstraints);
             }
             CandidateValidationData roleLayerValidation = validateRoleLayerMinima(variant, shiftRoleMinima);
             if (!roleLayerValidation.valid) {
@@ -907,6 +910,7 @@ public class AiScheduleGenerationOrchestrationService {
                     ex.getMessage());
             return CandidateValidationData.invalid("CONVERSION_FAILED",
                     ex.getMessage(),
+                    "Errore tecnico durante la validazione del candidato AI. Riprovare la generazione.",
                     Collections.emptyList(),
                     protocolValidationDetails,
                     Collections.emptyList(),
@@ -1003,6 +1007,7 @@ public class AiScheduleGenerationOrchestrationService {
                 .collect(Collectors.joining(" | "));
         return CandidateValidationData.invalid(ERROR_ROLE_LAYER_MINIMA,
                 message,
+                "Copertura non completa entro i vincoli attivi: medici insufficienti sui livelli ruolo/stato richiesti.",
                 Collections.emptyList(),
                 Collections.emptyList(),
                 violations,
@@ -2216,6 +2221,7 @@ public class AiScheduleGenerationOrchestrationService {
         private final boolean maxRetriesReached;
         private final String code;
         private final String message;
+        private final String apiMessage;
         private final List<ConstraintViolationDetail> violatedConstraints;
         private final List<ProtocolValidationDetail> protocolValidationDetails;
         private final List<RoleCoverageViolationDetail> roleCoverageViolations;
@@ -2228,6 +2234,7 @@ public class AiScheduleGenerationOrchestrationService {
                                         boolean maxRetriesReached,
                                         String code,
                                         String message,
+                                        String apiMessage,
                                         List<ConstraintViolationDetail> violatedConstraints,
                                         List<ProtocolValidationDetail> protocolValidationDetails,
                                         List<RoleCoverageViolationDetail> roleCoverageViolations,
@@ -2238,6 +2245,7 @@ public class AiScheduleGenerationOrchestrationService {
             this.maxRetriesReached = maxRetriesReached;
             this.code = code;
             this.message = message;
+            this.apiMessage = apiMessage;
             this.violatedConstraints = violatedConstraints == null
                     ? Collections.emptyList()
                     : Collections.unmodifiableList(new ArrayList<>(violatedConstraints));
@@ -2264,6 +2272,7 @@ public class AiScheduleGenerationOrchestrationService {
                     false,
                     null,
                     null,
+                    null,
                     Collections.emptyList(),
                     Collections.emptyList(),
                     Collections.emptyList(),
@@ -2280,6 +2289,7 @@ public class AiScheduleGenerationOrchestrationService {
                     false,
                     null,
                     null,
+                    null,
                     Collections.emptyList(),
                     Collections.emptyList(),
                     roleCoverageViolations,
@@ -2293,6 +2303,7 @@ public class AiScheduleGenerationOrchestrationService {
                     false,
                     code,
                     message,
+                    message,
                     Collections.emptyList(),
                     Collections.emptyList(),
                     Collections.emptyList(),
@@ -2302,27 +2313,37 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         private static CandidateValidationData invalid(String code, String message) {
-            return invalid(code, message, Collections.emptyList(), Collections.emptyList());
+            return invalid(code, message, message, Collections.emptyList(), Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
-            return invalid(code, message, violatedConstraints, Collections.emptyList());
+            return invalid(code, message, message, violatedConstraints, Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code,
                                                        String message,
+                                                       String apiMessage,
+                                                       List<ConstraintViolationDetail> violatedConstraints) {
+            return invalid(code, message, apiMessage, violatedConstraints, Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code,
+                                                       String message,
+                                                       String apiMessage,
                                                        List<ConstraintViolationDetail> violatedConstraints,
                                                        List<ProtocolValidationDetail> protocolValidationDetails) {
-            return invalid(code, message, violatedConstraints, protocolValidationDetails, Collections.emptyList());
+            return invalid(code, message, apiMessage, violatedConstraints, protocolValidationDetails, Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code,
                                                        String message,
+                                                       String apiMessage,
                                                        List<ConstraintViolationDetail> violatedConstraints,
                                                        List<ProtocolValidationDetail> protocolValidationDetails,
                                                        List<RoleCoverageViolationDetail> roleCoverageViolations) {
             return invalid(code,
                     message,
+                    apiMessage,
                     violatedConstraints,
                     protocolValidationDetails,
                     roleCoverageViolations,
@@ -2333,6 +2354,7 @@ public class AiScheduleGenerationOrchestrationService {
 
         private static CandidateValidationData invalid(String code,
                                                        String message,
+                                                       String apiMessage,
                                                        List<ConstraintViolationDetail> violatedConstraints,
                                                        List<ProtocolValidationDetail> protocolValidationDetails,
                                                        List<RoleCoverageViolationDetail> roleCoverageViolations,
@@ -2343,6 +2365,7 @@ public class AiScheduleGenerationOrchestrationService {
                     false,
                     code,
                     message,
+                    apiMessage,
                     violatedConstraints,
                     protocolValidationDetails,
                     roleCoverageViolations,
@@ -2356,6 +2379,7 @@ public class AiScheduleGenerationOrchestrationService {
                     reached,
                     code,
                     message,
+                    apiMessage,
                     violatedConstraints,
                     protocolValidationDetails,
                     roleCoverageViolations,
@@ -2368,6 +2392,7 @@ public class AiScheduleGenerationOrchestrationService {
             return new CandidateValidationData(valid,
                     maxRetriesReached,
                     warningCode,
+                    warningMessage,
                     warningMessage,
                     violatedConstraints,
                     protocolValidationDetails,
