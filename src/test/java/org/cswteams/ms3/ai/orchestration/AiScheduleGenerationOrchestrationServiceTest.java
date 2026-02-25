@@ -15,6 +15,7 @@ import org.cswteams.ms3.ai.broker.domain.AiMetrics;
 import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
 import org.cswteams.ms3.ai.broker.domain.AiScheduleVariantsResponse;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
+import org.cswteams.ms3.ai.protocol.ValidationError;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
@@ -54,6 +55,7 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -151,8 +153,20 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 new ObjectMapper()
         );
 
-        assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+        var response = assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
         verify(schedulerController, never()).persistSchedule(any(Schedule.class));
+
+        assertNotNull(response);
+        assertTrue(response.getCandidates().stream()
+                .filter(candidate -> !"standard".equals(candidate.getMetadata().getCandidateId()))
+                .noneMatch(AiScheduleComparisonCandidate::isValid));
+        assertTrue(response.getCandidates().stream()
+                .filter(candidate -> !"standard".equals(candidate.getMetadata().getCandidateId()))
+                .allMatch(candidate -> "TOKEN_BUDGET_GUARD_DEFERRED".equals(candidate.getMetadata().getValidationCode())));
+
+        ArgumentCaptor<List> metricsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(decisionAlgorithmService).selectPreferredWithAudit(metricsCaptor.capture());
+        assertEquals(1, metricsCaptor.getValue().size());
 
         ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
         verify(agentBroker, atLeastOnce()).previewTokenBudget(requestCaptor.capture());
@@ -368,6 +382,104 @@ class AiScheduleGenerationOrchestrationServiceTest {
         assertTrue(empatheticCandidate.getMetadata().getValidationCode().contains("CONVERSION_FAILED"));
         assertTrue(empatheticCandidate.getMetadata().getValidationViolations().isEmpty());
         assertTrue(empatheticCandidate.getRawScheduleText().contains("retry-empathetic"));
+    }
+
+    @Test
+    void generateScheduleComparisonCapsCorrectivePromptSizeForRetry() {
+        LocalDate startDate = LocalDate.of(2026, 9, 14);
+        LocalDate endDate = LocalDate.of(2026, 9, 14);
+
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        doctorPriority.setGeneralPriority(3);
+        doctorPriority.setNightPriority(4);
+        doctorPriority.setLongShiftPriority(5);
+
+        Shift shift = makeShift(9301L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360));
+        ConcreteShift concreteShift = new ConcreteShift(startDate.toEpochDay(), shift);
+        Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), List.of(concreteShift));
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
+
+        when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.minusDays(2).toEpochDay(), endDate.toEpochDay()))
+                .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
+        when(agentBroker.previewTokenBudget(any())).thenReturn(new AiTokenBudgetGuardResult(true, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolveWithReport(any(), any(), anyBoolean())).thenReturn(
+                new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0)
+        );
+
+        List<ValidationError> oversizedDetails = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            oversizedDetails.add(new ValidationError(
+                    "$.assignments[" + i + "].role_covered",
+                    "shift_id=S_9301_20260914 assignment_status=ON_DUTY requires at least 1 doctors with seniority=SPECIALIST_JUNIOR but got 0; detail_index=" + i
+            ));
+        }
+
+        when(aiScheduleConverterService.convert(any())).thenThrow(
+                AiProtocolException.schemaMismatch("oversized validation details", oversizedDetails, null)
+        );
+
+        when(agentBroker.requestSchedule(any())).thenReturn(new AiScheduleVariantsResponse(Map.of(
+                "EMPATHETIC", aiVariantResponse("retry-me"),
+                "EFFICIENT", aiVariantResponse("efficient"),
+                "BALANCED", aiVariantResponse("balanced")
+        )));
+
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
+        aiBrokerProperties.setScheduleValidationMaxRetries(1);
+
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("standard", List.of()));
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                aiBrokerProperties,
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+
+        ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
+        verify(agentBroker, times(4)).requestSchedule(requestCaptor.capture());
+        List<AiBrokerRequest> requests = requestCaptor.getAllValues();
+
+        String retryInstructions = requests.get(1).getInstructions();
+        assertTrue(retryInstructions.contains("Previous attempt 1 was invalid"));
+        assertTrue(retryInstructions.contains("truncated_for_token_budget"));
+        assertTrue(retryInstructions.length() < 2200);
     }
 
     @Test
