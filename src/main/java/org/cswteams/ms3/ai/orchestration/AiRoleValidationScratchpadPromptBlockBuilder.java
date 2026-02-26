@@ -9,11 +9,7 @@ import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.TimeSlot;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class AiRoleValidationScratchpadPromptBlockBuilder {
@@ -38,9 +34,12 @@ public class AiRoleValidationScratchpadPromptBlockBuilder {
 
         Map<Seniority, List<Long>> candidatesByRole = mapCandidateDoctorIdsByRole(doctors);
         List<String> rows = new ArrayList<>();
+        List<Long> doctorIds;
         for (ConcreteShift concreteShift : orderedShifts) {
             Map<Seniority, Integer> requiredByRole = calculateRequiredByRole(concreteShift == null ? null : concreteShift.getShift());
             for (Seniority role : ROLE_ORDER) {
+                doctorIds = candidatesByRole.getOrDefault(role, List.of());
+                Collections.shuffle(doctorIds);
                 int required = requiredByRole.getOrDefault(role, 0);
                 if (required <= 0) {
                     continue;
@@ -48,7 +47,7 @@ public class AiRoleValidationScratchpadPromptBlockBuilder {
                 rows.add(ToonBuilder.shiftIdFor(concreteShift)
                         + "," + role.name()
                         + "," + required*2
-                        + "," + serializeLongList(candidatesByRole.getOrDefault(role, List.of())));
+                        + "," + serializeLongList(doctorIds));
             }
         }
 
