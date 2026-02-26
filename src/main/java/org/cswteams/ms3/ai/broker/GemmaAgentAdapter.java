@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 
+@Slf4j
 public class GemmaAgentAdapter implements AgentProviderAdapter {
 
     private final RestTemplate restTemplate;
@@ -47,6 +49,8 @@ public class GemmaAgentAdapter implements AgentProviderAdapter {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("x-goog-api-key", apiKey);
         HttpEntity<String> entity = new HttpEntity<>(payloadJson, headers);
+
+        log.info("Gemma request: {}", payloadJson);
 
         String response = restTemplate.postForObject(url, entity, String.class);
         if (response == null || response.isBlank()) {

@@ -293,6 +293,9 @@ Baseline parity examples (required behavior):
 CONTROLLED TIE VARIABILITY (NORMATIVE):
 - Keep rule precedence deterministic, but introduce controlled variability when multiple doctors are exactly tied after hard-feasibility and scoring checks.
 - Tie-resolution order:
+CONTROLLED TIE VARIABILITY (NORMATIVE):
+- Keep rule precedence deterministic, but introduce controlled variability when multiple doctors are exactly tied after hard-feasibility and scoring checks.
+- Tie-resolution order:
   1. maximize hard coverage
   2. minimize soft violations
   3. maximize doctor diversity across shifts/day when hard-feasible

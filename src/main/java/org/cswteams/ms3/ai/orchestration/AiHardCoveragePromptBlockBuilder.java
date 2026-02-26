@@ -30,7 +30,7 @@ public class AiHardCoveragePromptBlockBuilder {
 
         for (ConcreteShift concreteShift : ordered) {
             CoverageCounts counts = calculateCoverageCounts(concreteShift == null ? null : concreteShift.getShift());
-            block.append(ToonBuilder.shiftIdFor(concreteShift)).append(",").append(counts.structured).append(",").append(counts.specialistJunior).append(",").append(counts.specialistSenior).append(",").append(counts.total * 2).append("\n");
+            block.append(ToonBuilder.shiftIdFor(concreteShift)).append(",").append(counts.structured * 2).append(",").append(counts.specialistJunior * 2).append(",").append(counts.specialistSenior * 2).append(",").append(counts.total * 2).append("\n");
         }
         block.append(COVERAGE_CHECKLIST);
         return block.toString();

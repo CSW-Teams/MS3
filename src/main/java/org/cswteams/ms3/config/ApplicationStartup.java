@@ -1126,7 +1126,7 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 ambulatorioCardiologia,
                 TimeSlot.MORNING,
                 quantityShiftSeniorityList2,
-                mondayAndTuesday,
+                allDaysOfWeek,
                 Collections.emptyList());
         shiftDAO.saveAndFlush(shift2);
 
