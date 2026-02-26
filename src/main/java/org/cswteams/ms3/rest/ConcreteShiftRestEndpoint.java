@@ -10,7 +10,6 @@ import org.cswteams.ms3.dto.RegisterConcreteShiftDTO;
 import org.cswteams.ms3.dto.concreteshift.GetAvailableUsersForReplacementDTO;
 import org.cswteams.ms3.dto.medicalDoctor.MedicalDoctorInfoDTO;
 import org.cswteams.ms3.entity.Schedule;
-import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.enums.ShiftState;
 import org.cswteams.ms3.exception.ConcreteShiftException;
 import org.cswteams.ms3.exception.IllegalScheduleException;
@@ -61,12 +60,12 @@ public class ConcreteShiftRestEndpoint {
                 // Se un vincolo è violato è comunicato all'utente.
 
                 if (schedule.getCauseIllegal()!=null) {
-                    RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
-                    risposta.getMessagges().add(schedule.getCauseIllegal().getMessage());
-                    for (Constraint vclEntry : schedule.getViolatedConstraints()) {
-                        risposta.getMessagges().add(vclEntry.getDescription());
-                    }
+                    RispostaViolazioneVincoli risposta = buildViolationResponse(schedule.getCauseIllegal().getMessage());
                     return new ResponseEntity<>(risposta, HttpStatus.NOT_ACCEPTABLE);
+                }
+
+                if (!controllerScheduler.getLastConstraintCheckResults().isEmpty()) {
+                    return new ResponseEntity<>(buildViolationResponse("Solo violazioni soft (advisory): assegnazione accettata."), HttpStatus.ACCEPTED);
                 }
 
                 return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -132,16 +131,13 @@ public class ConcreteShiftRestEndpoint {
 
         // Se la modifica dell'assegnazione turno comporta una violazione dei vincoli, la modifica non va a buon fine
         assert schedule != null;
-        if (!schedule.getViolatedConstraints().isEmpty()) {
-
-            RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
-
-            risposta.getMessagges().add(schedule.getViolatedConstraints().get(schedule.getViolatedConstraints().size() - 1).getDescription());
-            for (Constraint vclEntry : schedule.getViolatedConstraints()) {
-                risposta.getMessagges().add(vclEntry.getDescription());
-            }
-
+        if (schedule.getCauseIllegal() != null) {
+            RispostaViolazioneVincoli risposta = buildViolationResponse(schedule.getCauseIllegal().getMessage());
             return new ResponseEntity<>(risposta, HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        if (!controllerScheduler.getLastConstraintCheckResults().isEmpty()) {
+            return new ResponseEntity<>(buildViolationResponse("Solo violazioni soft (advisory): modifica accettata."), HttpStatus.ACCEPTED);
         }
 
 
@@ -164,6 +160,19 @@ public class ConcreteShiftRestEndpoint {
     public ResponseEntity<?> getAvailableUsersForReplacement(@RequestBody GetAvailableUsersForReplacementDTO dto) {
         List<MedicalDoctorInfoDTO> returnList = controllerScambioTurno.getAvailableUsersForReplacement(dto);
         return new ResponseEntity<>(returnList, HttpStatus.FOUND);
+    }
+
+    private RispostaViolazioneVincoli buildViolationResponse(String headerMessage) {
+        RispostaViolazioneVincoli risposta = new RispostaViolazioneVincoli();
+        risposta.getMessagges().add(headerMessage);
+        risposta.setViolations(controllerScheduler.getLastConstraintCheckResults());
+        risposta.getMessagges().addAll(risposta.getViolations().stream()
+                .map(v -> String.format("Violazione %s (%s): %s",
+                        v.getSeverity().name().toLowerCase(),
+                        v.isBlocking() ? "hard/blocking" : "soft/advisory",
+                        v.getDescription()))
+                .collect(Collectors.toList()));
+        return risposta;
     }
 
 
