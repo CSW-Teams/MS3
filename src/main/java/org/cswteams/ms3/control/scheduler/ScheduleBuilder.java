@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cswteams.ms3.control.scocciatura.ControllerScocciatura;
 import org.cswteams.ms3.control.utils.DoctorAssignmentUtil;
-import org.cswteams.ms3.dao.DoctorUffaPrioritySnapshotDAO;
 import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.constraint.Constraint;
 import org.cswteams.ms3.entity.constraint.ContextConstraint;
@@ -52,6 +51,9 @@ public class ScheduleBuilder {
     private ControllerScocciatura controllerScocciatura;
 
     private List<DoctorUffaPrioritySnapshot> snapshot;
+
+    /** Validation mode used by AI schedule generation. */
+    private ConstraintEnforcementMode generationConstraintEnforcementMode = ConstraintEnforcementMode.HARD_ONLY;
 
 
     /**
@@ -106,7 +108,9 @@ public class ScheduleBuilder {
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
     public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors,
-                           List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> allDoctorUffaPriority, List<DoctorUffaPrioritySnapshot> snapshot) throws IllegalScheduleException {
+                           List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> allDoctorUffaPriority,
+                           List<DoctorUffaPrioritySnapshot> snapshot,
+                           ConstraintEnforcementMode generationConstraintEnforcementMode) throws IllegalScheduleException {
 
         // Checks on the parameters state
         validateDates(startDate,endDate);
@@ -118,6 +122,7 @@ public class ScheduleBuilder {
         this.schedule.setConcreteShifts(allAssignedShifts);
         this.allConstraints = allConstraints;
         this.snapshot = snapshot;
+        this.generationConstraintEnforcementMode = generationConstraintEnforcementMode;
 
         this.holidays = holidays;
         this.doctorHolidaysList = doctorHolidaysList;
@@ -301,8 +306,7 @@ public class ScheduleBuilder {
             DoctorHolidays dh = findDhByDoctor(dup.getDoctor());
 
             ContextConstraint context = new ContextConstraint(dup, concreteShift, dh, holidays);
-            // AI schedule generation should not stop on soft violations, but they must stay in the violation list.
-            if(verifyAllConstraints(context, false)){
+            if(verifyAllConstraints(context, generationConstraintEnforcementMode)){
                 doctorList.add(dup.getDoctor());
                 dup.addConcreteShift(context.getConcreteShift());
                 //Doctor Assignment creation
@@ -436,10 +440,10 @@ public class ScheduleBuilder {
      * Hard constraints are always blocking.
      * Soft constraints are blocking only when strict mode is enabled.
      * @param context Context in which all the constraints are applied and verified
-     * @param enforceSoftConstraintsAsHard If true, soft constraints are treated as hard constraints
+     * @param constraintEnforcementMode Validation mode used to determine blocking constraints
      * @return True if there are no blocking violations; false otherwise
      */
-    private boolean verifyAllConstraints(ContextConstraint context, boolean enforceSoftConstraintsAsHard){
+    private boolean verifyAllConstraints(ContextConstraint context, ConstraintEnforcementMode constraintEnforcementMode){
 
         //This flag indicates if there has been a violation in the constraints.
         boolean isOk = true;
@@ -456,11 +460,7 @@ public class ScheduleBuilder {
                     schedule.getViolatedConstraints().add(constraint);
                 }
 
-                boolean isHardConstraint = !constraint.isViolable();
-                boolean isSoftConstraintBlocking = constraint.isViolable() && enforceSoftConstraintsAsHard;
-
-                // Hard constraints are always blocking. Soft constraints block only in strict mode.
-                if (isHardConstraint || isSoftConstraintBlocking){
+                if (constraintEnforcementMode.isBlocking(constraint)){
                     isOk = false;
                 }
 
@@ -474,10 +474,10 @@ public class ScheduleBuilder {
      * This method add a concrete shift to the schedule manually. The concrete shift shall be already defined with
      * date and doctors.
      * @param concreteShift The concrete shift to be added to the schedule
-     * @param isForced if true, the manual assignment can force soft constraints as non-blocking
+     * @param constraintEnforcementMode Validation mode used for manual assignment checks
      * @return An instance of the updated shift schedule
      */
-    public Schedule addConcreteShift(ConcreteShift concreteShift, boolean isForced){
+    public Schedule addConcreteShift(ConcreteShift concreteShift, ConstraintEnforcementMode constraintEnforcementMode){
 
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
@@ -488,9 +488,7 @@ public class ScheduleBuilder {
             DoctorHolidays dh = findDhByDoctor(doctor);
             DoctorUffaPriority dup = this.findDupByDoctor(doctor);
 
-            // In manual assignment flow, strict mode is enabled only when the caller does not force the assignment.
-            boolean enforceSoftConstraintsAsHard = !isForced;
-            if (!verifyAllConstraints(new ContextConstraint(dup, concreteShift, dh, holidays), enforceSoftConstraintsAsHard)){
+            if (!verifyAllConstraints(new ContextConstraint(dup, concreteShift, dh, holidays), constraintEnforcementMode)){
                 schedule.setCauseIllegal(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
             }
         }
@@ -532,5 +530,13 @@ public class ScheduleBuilder {
 
         return this.schedule;
 
+    }
+
+    /**
+     * Backward-compatible adapter for callers still providing the legacy boolean flag.
+     */
+    public Schedule addConcreteShift(ConcreteShift concreteShift, boolean isForced) {
+        ConstraintEnforcementMode mode = isForced ? ConstraintEnforcementMode.HARD_ONLY : ConstraintEnforcementMode.HARD_AND_SOFT;
+        return addConcreteShift(concreteShift, mode);
     }
 }
