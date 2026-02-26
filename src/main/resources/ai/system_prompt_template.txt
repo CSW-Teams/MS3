@@ -267,17 +267,44 @@ MANDATORY EXECUTION ORDER (NORMATIVE):
 7. Run deterministic coverage reconciliation gate before emission.
 8. Emit assignments, then uncovered shifts and failure reasons.
 
-DETERMINISTIC TIE-BREAKERS (NORMATIVE):
-- When candidate plans have equal primary score, apply the following ordered keys strictly and sequentially:
+STANDARD-BASELINE PARITY (NORMATIVE):
+- This section mirrors backend baseline intent and is mandatory for every variant.
+- Fill layers in this strict order for each `(shift_id, required_role)` pair:
+  1) complete `ON_DUTY` up to required minima;
+  2) then complete `ON_CALL` up to the same minima.
+- While filling `ON_DUTY`, do not defer an eligible doctor only to "save" them for `ON_CALL` if the current `ON_DUTY` slot is hard-feasible.
+- Constraint evaluation is authoritative per assignment attempt: if a candidate is hard-feasible now, they are selectable now; if hard-infeasible now, skip now.
+- Enforce per-shift uniqueness: the same `(shift_id, doctor_id)` may appear at most once across all emitted assignments.
+- Cross-layer duplication is forbidden: a doctor assigned as `ON_DUTY` for a shift cannot also be emitted as `ON_CALL` for that same shift.
+- Role fidelity is mandatory: emitted `role_covered` must match the slot required role exactly.
+- Keep deterministic processing order aligned with execution-order rules and never use random fallback.
+- If `ON_DUTY` reaches minima but `ON_CALL` does not, output cannot be `SUCCESS`.
+- If either layer is short after exhausting feasible candidates, preserve already-valid assignments and report explicit uncovered reasons for affected shift/role/layer.
+- Recompute feasibility after each accepted assignment so subsequent slots observe updated uniqueness, role occupancy, and hard-constraint state.
+- Baseline parity mode forbids forced hard-constraint violations to satisfy minima; when no hard-feasible candidate exists, leave the slot uncovered and continue deterministic filling.
+- Baseline parity coverage is per `(shift_id, required_role, assignment_status)`; never offset missing `ON_CALL` coverage with extra `ON_DUTY` rows (or vice versa).
+- Emit uncovered reasons at role/layer granularity so reconciliation can trace exactly which `(shift_id, required_role, assignment_status)` keys are short.
+
+Baseline parity examples (required behavior):
+- Example A (layering): if required_count=1 and two eligible doctors exist, first emit one `ON_DUTY`, then one distinct `ON_CALL`.
+- Example B (no reservation): if doctor 101 is hard-feasible for the current `ON_DUTY` slot, selecting doctor 202 only to reserve 101 for `ON_CALL` is forbidden.
+- Example C (partial coverage): if only one hard-feasible doctor exists for a required role, emit one valid assignment and mark uncovered for the missing counterpart layer.
+
+CONTROLLED TIE VARIABILITY (NORMATIVE):
+- Keep rule precedence deterministic, but introduce controlled variability when multiple doctors are exactly tied after hard-feasibility and scoring checks.
+- Tie-resolution order:
   1. maximize hard coverage
   2. minimize soft violations
   3. maximize doctor diversity across shifts/day when hard-feasible
   4. minimize priority penalty
   5. stable shift ordering (`shift_id` lexical)
   6. stable role ordering (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`)
-- If still tied, use stable doctor ordering (ascending `doctor_id`) only as final deterministic tie-break, then continue with next listed key if needed.
-- Earlier tie-breakers always have precedence over later ones.
-- Random or nondeterministic choice is forbidden.
+- If candidates are still tied after steps 1..6, do not always pick the same `doctor_id` ordering.
+- Instead, rotate or shuffle only the final tie-group using a run-scoped seed (for example derived from planning period + variant label + generation timestamp/correlation id).
+- Seeded tie-group variability must never violate hard constraints, minima, uniqueness, or layer-order rules.
+- Outside exact tie-groups, keep selection deterministic and rule-driven.
+- Earlier tie-breakers always have precedence over variability.
+- Use seeded variability only (no unseeded randomness) so the same run input+seed is reproducible while different runs can still diversify ties.
 
 Invalid-input policy (NORMATIVE):
 - malformed required block => status=FAILURE.
@@ -323,6 +350,10 @@ DUAL-LAYER GENERATION RULE (MANDATORY):
 
 - SOFT constraints: may be violated only when unavoidable to produce the best feasible plan.
 - Every SOFT-constraint violation must be explicitly reported using existing fields only: set `is_forced=true`, provide `violation_note`, and reflect the impact in `metadata.metrics.soft_violations_count` (and related metrics).
+- Constraint severity must be read from `ac[*].t` as authoritative (`HARD` or `SOFT`). Do not upgrade a `SOFT` constraint to hard.
+- Coverage blocking rule: uncovered roles/layers may be justified only by HARD infeasibility after exhausting candidates; SOFT-only violations (e.g., `ConstraintTurniContigui` when marked `SOFT`) must not be used as the sole reason to leave a required slot uncovered.
+- If a candidate is hard-feasible but soft-infeasible for a mandatory slot, assign them with `is_forced=true` and a clear `violation_note` naming the SOFT constraint, rather than reporting uncovered coverage.
+- In `uncovered_shifts.reason`, distinguish HARD blockers from SOFT penalties; never state a SOFT constraint as the exclusive root cause of missing mandatory coverage.
 
 HOLIDAY SEMANTICS (NORMATIVE):
 - Meaning of holiday attachment:
