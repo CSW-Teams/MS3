@@ -47,7 +47,7 @@ public class AiRoleValidationScratchpadPromptBlockBuilder {
                 }
                 rows.add(ToonBuilder.shiftIdFor(concreteShift)
                         + "," + role.name()
-                        + "," + required
+                        + "," + required*2
                         + "," + serializeLongList(candidatesByRole.getOrDefault(role, List.of())));
             }
         }
