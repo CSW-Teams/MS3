@@ -58,7 +58,6 @@ public interface ISchedulerController {
      * @param concreteShift The new concrete shift to be added to the schedule
      * @param forced        If true, the concrete shift will be added if it respects all the non-violable constraints;
      *                      if false, the concrete shift will be added only if it respects all the existing constraints.
-     *                      Mapping to validation modes: forced=true -> HARD_ONLY, forced=false -> HARD_AND_SOFT.
      * @return An instance of the updated shift schedule
      * @throws IllegalScheduleException Rised if the new concrete shift makes the schedule illegal
      */
@@ -120,7 +119,6 @@ public interface ISchedulerController {
      * @param registerConcreteShiftDTO DTO class that describes the new concrete shift
      * @param forced                   If true, the concrete shift will be added if it respects all the non-violable constraints;
      *                                 if false, the concrete shift will be added only if it respects all the existing constraints.
-     *                                 Mapping to validation modes: forced=true -> HARD_ONLY, forced=false -> HARD_AND_SOFT.
      * @return An instance of the updated shift schedule
      * @throws ConcreteShiftException   Rised if the DTO parameter describes a non-existing concrete shift
      * @throws IllegalScheduleException Rised if the new concrete shift makes the schedule illegal
