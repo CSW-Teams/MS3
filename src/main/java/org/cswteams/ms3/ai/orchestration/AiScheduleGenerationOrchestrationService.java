@@ -754,6 +754,8 @@ public class AiScheduleGenerationOrchestrationService {
                     .append(promptSafeText(violation.constraintId))
                     .append("', constraint_type='")
                     .append(promptSafeText(violation.constraintType))
+                    .append("', severity='")
+                    .append(promptSafeText(violation.severity.name()))
                     .append("', shift_id='")
                     .append(promptSafeText(violation.shiftId))
                     .append("', date='")
@@ -873,7 +875,7 @@ public class AiScheduleGenerationOrchestrationService {
             List<ConcreteShift> concreteShifts = aiScheduleConverterService.convert(rawJson);
             Schedule candidateSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
             List<ConstraintViolationDetail> violatedConstraints = collectViolatedConstraints(candidateSchedule);
-            if (!violatedConstraints.isEmpty()) {
+            if (hasHardConstraintViolation(violatedConstraints)) {
                 String violationMessage = String.join(" | ", formatViolationMessages(violatedConstraints));
                 logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} violations_count={} message={}",
                         correlationId,
@@ -884,6 +886,18 @@ public class AiScheduleGenerationOrchestrationService {
                 return CandidateValidationData.invalid("DOMAIN_CONSTRAINTS_VIOLATED",
                         violationMessage,
                         "Copertura non completa entro i vincoli attivi: medici insufficienti per coprire tutti i turni rispettando ore periodo, riposi, turni contigui e ferie.",
+                        violatedConstraints);
+            }
+            if (!violatedConstraints.isEmpty()) {
+                String softViolationMessage = String.join(" | ", formatViolationMessages(violatedConstraints));
+                logger.info("event=ai_candidate_validation_soft_constraints correlation_id={} candidate_id={} violations_count={} message={}",
+                        correlationId,
+                        candidateId,
+                        violatedConstraints.size(),
+                        softViolationMessage);
+                return CandidateValidationData.validWithWarning(
+                        "SOFT_DOMAIN_CONSTRAINTS_VIOLATED",
+                        "Sono state rilevate violazioni di vincoli violabili; il candidato resta valido.",
                         violatedConstraints);
             }
             CandidateValidationData roleLayerValidation = validateRoleLayerMinima(variant, shiftRoleMinima);
@@ -1099,9 +1113,21 @@ public class AiScheduleGenerationOrchestrationService {
     private List<String> formatViolationMessages(List<ConstraintViolationDetail> violations) {
         List<String> messages = new ArrayList<>();
         for (ConstraintViolationDetail violation : violations) {
-            messages.add(violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition);
+            messages.add(violation.severity + " " + violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition);
         }
         return messages;
+    }
+
+    private boolean hasHardConstraintViolation(List<ConstraintViolationDetail> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return false;
+        }
+        for (ConstraintViolationDetail violation : violations) {
+            if (violation != null && violation.severity == ConstraintViolationSeverity.HARD) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<ConstraintViolationDetail> collectViolatedConstraints(Schedule candidateSchedule) {
@@ -1194,6 +1220,9 @@ public class AiScheduleGenerationOrchestrationService {
                                 constraint,
                                 concreteShift,
                                 assignment.getDoctor(),
+                                constraint != null && constraint.isViolable()
+                                        ? ConstraintViolationSeverity.SOFT
+                                        : ConstraintViolationSeverity.HARD,
                                 "Constraint must be satisfied",
                                 message
                         ));
@@ -2355,12 +2384,18 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         private static CandidateValidationData validWithWarning(String code, String message) {
+            return validWithWarning(code, message, Collections.emptyList());
+        }
+
+        private static CandidateValidationData validWithWarning(String code,
+                                                                String message,
+                                                                List<ConstraintViolationDetail> violatedConstraints) {
             return new CandidateValidationData(true,
                     false,
                     code,
                     message,
                     message,
-                    Collections.emptyList(),
+                    violatedConstraints,
                     Collections.emptyList(),
                     Collections.emptyList(),
                     Collections.emptyMap(),
@@ -2460,7 +2495,7 @@ public class AiScheduleGenerationOrchestrationService {
 
         private List<String> violationMessages() {
             List<String> messages = violatedConstraints.stream()
-                    .map(violation -> violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
+                    .map(violation -> violation.severity + " " + violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
                     .collect(Collectors.toList());
             messages.addAll(protocolValidationDetails.stream()
                     .map(detail -> detail.path + ": " + detail.message)
@@ -2533,6 +2568,7 @@ public class AiScheduleGenerationOrchestrationService {
         private final String shiftId;
         private final String date;
         private final String doctorId;
+        private final ConstraintViolationSeverity severity;
         private final String expectedCondition;
         private final String actualCondition;
 
@@ -2541,6 +2577,7 @@ public class AiScheduleGenerationOrchestrationService {
                                           String shiftId,
                                           String date,
                                           String doctorId,
+                                          ConstraintViolationSeverity severity,
                                           String expectedCondition,
                                           String actualCondition) {
             this.constraintId = constraintId;
@@ -2548,6 +2585,7 @@ public class AiScheduleGenerationOrchestrationService {
             this.shiftId = shiftId;
             this.date = date;
             this.doctorId = doctorId;
+            this.severity = severity == null ? ConstraintViolationSeverity.HARD : severity;
             this.expectedCondition = expectedCondition;
             this.actualCondition = actualCondition;
         }
@@ -2555,6 +2593,7 @@ public class AiScheduleGenerationOrchestrationService {
         private static ConstraintViolationDetail of(Constraint constraint,
                                                     ConcreteShift concreteShift,
                                                     Doctor doctor,
+                                                    ConstraintViolationSeverity severity,
                                                     String expectedCondition,
                                                     String actualCondition) {
             String date = concreteShift == null ? null : String.valueOf(LocalDate.ofEpochDay(concreteShift.getDate()));
@@ -2572,6 +2611,7 @@ public class AiScheduleGenerationOrchestrationService {
                     shiftId,
                     date,
                     doctorId,
+                    severity,
                     expectedCondition,
                     actualCondition
             );
@@ -2590,6 +2630,7 @@ public class AiScheduleGenerationOrchestrationService {
                     shiftId,
                     date,
                     null,
+                    ConstraintViolationSeverity.HARD,
                     "ConcreteShift must include non-null " + missingField,
                     actualCondition
             );
@@ -2609,9 +2650,15 @@ public class AiScheduleGenerationOrchestrationService {
             return of(constraint,
                     concreteShift,
                     doctor,
+                    ConstraintViolationSeverity.HARD,
                     "Constraint execution must complete without runtime errors",
                     "Constraint execution failed: " + sanitizedExceptionClass + ": " + sanitizedExceptionMessage);
         }
+    }
+
+    private enum ConstraintViolationSeverity {
+        HARD,
+        SOFT
     }
 
     private static class PriorityDeltaStats {
