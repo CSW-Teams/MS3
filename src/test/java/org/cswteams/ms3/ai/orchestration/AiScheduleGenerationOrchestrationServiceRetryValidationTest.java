@@ -21,7 +21,7 @@ import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
 import org.cswteams.ms3.dao.HolidayDAO;
-import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
+import org.cswteams.ms3.dao.ScheduleFeedbackDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
@@ -426,7 +426,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
         private final AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         private final DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         private final AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
-        private final RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        private final ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
         private final AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
         private final Map<String, Integer> attemptsByLabel = new HashMap<>();
 
@@ -434,7 +434,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
 
         private RetryFixture() {
             AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                    new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+                    new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
             Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
             DoctorUffaPriority priority = new DoctorUffaPriority(doctor);
@@ -443,7 +443,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
             priority.setLongShiftPriority(1);
 
             when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-            when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+            when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.minusDays(2).toEpochDay(), endDate.toEpochDay()))
                     .thenReturn(List.of());
             when(constraintDAO.findAll()).thenReturn(List.of());
             when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));

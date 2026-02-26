@@ -105,6 +105,8 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String BALANCED_LABEL = "BALANCED";
     private static final int ROLE_MISMATCH_LOG_LIMIT = 5;
     private static final int VALIDATION_MISMATCH_SAMPLE_LIMIT = 5;
+    private static final int VALIDATION_FAILURE_PROMPT_MAX_DETAILS = 5;
+    private static final int VALIDATION_FAILURE_PROMPT_MAX_CHARS = 1200;
     private static final Pattern SCRATCHPAD_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority=([A-Z_]+)\\s+but\\s+role_required=([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
     private static final Pattern ASSIGNMENT_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority\\s+([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
     private static final String BASE_VARIANT_INSTRUCTION = "Return strict JSON only with top-level object {'variants': ...}. "
@@ -426,6 +428,13 @@ public class AiScheduleGenerationOrchestrationService {
         ToonRequestContext context = request.getToonRequestContext();
         ToonBuilder builder = new ToonBuilder();
         String toonPayload = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+        int feedbackCount = context.getFeedbacks() == null ? 0 : context.getFeedbacks().size();
+        boolean feedbackSectionIncluded = feedbackCount > 0 && toonPayload != null && toonPayload.contains("\nfb[");
+        logger.info("event=toon_payload_feedback_section correlation_id={} feedbacks_count={} feedback_section_included={} toon_payload_checksum={}",
+                correlationId,
+                feedbackCount,
+                feedbackSectionIncluded,
+                toonPayload == null ? "0" : Integer.toHexString(toonPayload.hashCode()));
         String hardCoverageBlock = hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
         String roleValidationScratchpadBlock = roleValidationScratchpadPromptBlockBuilder
                 .buildRoleValidationScratchpadBlock(scopedShifts, doctors);
@@ -631,6 +640,17 @@ public class AiScheduleGenerationOrchestrationService {
                             budgetGuard.getProjectedTpm(),
                             budgetGuard.getBudgetLimit());
                     selectedVariant = buildDeferredResponse(definition.label, budgetGuard);
+                    lastValidation = CandidateValidationData.invalid(
+                            "TOKEN_BUDGET_GUARD_DEFERRED",
+                            "Variant deferred by token budget guard.",
+                            "La variante AI è stata rimandata dal controllo budget token. Ridurre il payload o riprovare più tardi.",
+                            Collections.emptyList(),
+                            Collections.emptyList(),
+                            Collections.emptyList(),
+                            Collections.emptyMap(),
+                            Collections.emptyMap(),
+                            Collections.emptyList()
+                    );
                     break;
                 }
 
@@ -774,7 +794,22 @@ public class AiScheduleGenerationOrchestrationService {
         builder.append(", actual='").append(promptSafeText(validation.message)).append("'");
         builder.append("}");
 
-        for (ConstraintViolationDetail violation : validation.violatedConstraints) {
+        appendConstraintViolationPromptDetails(builder, validation.violatedConstraints);
+        appendProtocolValidationPromptDetails(builder, validation.protocolValidationDetails);
+        appendRoleCoveragePromptDetails(builder, validation.roleCoverageViolations);
+
+        builder.append("]");
+        return truncateValidationFailurePrompt(builder.toString());
+    }
+
+    private void appendConstraintViolationPromptDetails(StringBuilder builder,
+                                                        List<ConstraintViolationDetail> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return;
+        }
+        int limit = Math.min(VALIDATION_FAILURE_PROMPT_MAX_DETAILS, violations.size());
+        for (int i = 0; i < limit; i++) {
+            ConstraintViolationDetail violation = violations.get(i);
             builder.append(", {constraint_id='")
                     .append(promptSafeText(violation.constraintId))
                     .append("', constraint_type='")
@@ -793,16 +828,44 @@ public class AiScheduleGenerationOrchestrationService {
                     .append(promptSafeText(violation.actualCondition))
                     .append("'}");
         }
+        int omitted = violations.size() - limit;
+        if (omitted > 0) {
+            builder.append(", {omitted_constraint_violations='")
+                    .append(omitted)
+                    .append("'}");
+        }
+    }
 
-        for (ProtocolValidationDetail detail : validation.protocolValidationDetails) {
+    private void appendProtocolValidationPromptDetails(StringBuilder builder,
+                                                       List<ProtocolValidationDetail> details) {
+        if (details == null || details.isEmpty()) {
+            return;
+        }
+        int limit = Math.min(VALIDATION_FAILURE_PROMPT_MAX_DETAILS, details.size());
+        for (int i = 0; i < limit; i++) {
+            ProtocolValidationDetail detail = details.get(i);
             builder.append(", {path='")
                     .append(promptSafeText(detail.path))
                     .append("', message='")
                     .append(promptSafeText(detail.message))
                     .append("'}");
         }
+        int omitted = details.size() - limit;
+        if (omitted > 0) {
+            builder.append(", {omitted_protocol_details='")
+                    .append(omitted)
+                    .append("'}");
+        }
+    }
 
-        for (RoleCoverageViolationDetail violation : validation.roleCoverageViolations) {
+    private void appendRoleCoveragePromptDetails(StringBuilder builder,
+                                                 List<RoleCoverageViolationDetail> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return;
+        }
+        int limit = Math.min(VALIDATION_FAILURE_PROMPT_MAX_DETAILS, violations.size());
+        for (int i = 0; i < limit; i++) {
+            RoleCoverageViolationDetail violation = violations.get(i);
             builder.append(", {shift_id='")
                     .append(promptSafeText(violation.shiftId))
                     .append("', assignment_status='")
@@ -815,9 +878,20 @@ public class AiScheduleGenerationOrchestrationService {
                     .append(violation.actualCount)
                     .append("'}");
         }
+        int omitted = violations.size() - limit;
+        if (omitted > 0) {
+            builder.append(", {omitted_role_coverage_violations='")
+                    .append(omitted)
+                    .append("'}");
+        }
+    }
 
-        builder.append("]");
-        return builder.toString();
+    private String truncateValidationFailurePrompt(String promptBlock) {
+        if (promptBlock == null || promptBlock.length() <= VALIDATION_FAILURE_PROMPT_MAX_CHARS) {
+            return promptBlock;
+        }
+        String truncated = promptBlock.substring(0, VALIDATION_FAILURE_PROMPT_MAX_CHARS);
+        return truncated + " ... [truncated_for_token_budget]";
     }
 
     private String promptSafeText(String value) {

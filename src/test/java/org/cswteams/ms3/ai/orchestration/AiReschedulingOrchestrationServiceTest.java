@@ -6,7 +6,7 @@ import org.cswteams.ms3.control.toon.ToonConstraintEntityType;
 import org.cswteams.ms3.control.toon.ToonConstraintType;
 import org.cswteams.ms3.control.toon.ToonFeedback;
 import org.cswteams.ms3.control.toon.ToonRequestContext;
-import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
+import org.cswteams.ms3.dao.ScheduleFeedbackDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.DoctorHolidays;
@@ -15,7 +15,8 @@ import org.cswteams.ms3.entity.Holiday;
 import org.cswteams.ms3.entity.MedicalService;
 import org.cswteams.ms3.entity.Preference;
 import org.cswteams.ms3.entity.QuantityShiftSeniority;
-import org.cswteams.ms3.entity.RequestRemovalFromConcreteShift;
+import org.cswteams.ms3.entity.ScheduleFeedback;
+import org.cswteams.ms3.entity.enums.FeedbackCategory;
 import org.cswteams.ms3.entity.Shift;
 import org.cswteams.ms3.entity.Task;
 import org.cswteams.ms3.enums.Seniority;
@@ -80,11 +81,11 @@ class AiReschedulingOrchestrationServiceTest {
                 Map.of("until", "2026-05-21T08:00:00Z")
         );
 
-        RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
-        when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.minusDays(2).toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
-        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
                 periodStart,
                 periodEnd,
@@ -100,6 +101,7 @@ class AiReschedulingOrchestrationServiceTest {
         ToonRequestContext context = toonRequest.getToonRequestContext();
         assertEquals(1, context.getDoctors().size());
         assertEquals(1L, context.getDoctors().get(0).getId());
+        assertTrue(context.isAllowHistoricalFeedbackShiftIds());
 
         Map<Long, Long> reverseMapping = toonRequest.getPseudonymToDoctorId();
         assertEquals(10L, reverseMapping.get(1L));
@@ -140,13 +142,13 @@ class AiReschedulingOrchestrationServiceTest {
         );
         ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
 
-        RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
-        when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.minusDays(2).toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
                 .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0));
-        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
                 periodStart,
@@ -164,6 +166,7 @@ class AiReschedulingOrchestrationServiceTest {
         assertEquals(1, context.getDoctors().size());
         assertEquals(1, context.getDoctorUffaPriorities().size());
         assertEquals(1, context.getDoctorHolidays().size());
+        assertFalse(context.isAllowHistoricalFeedbackShiftIds());
 
         ToonBuilder builder = new ToonBuilder();
         String payload = builder.build(context);
@@ -187,17 +190,22 @@ class AiReschedulingOrchestrationServiceTest {
         ConcreteShift concreteShift = new ConcreteShift(periodStart.toEpochDay(), shift);
         String shiftId = ToonBuilder.shiftIdFor(concreteShift);
 
-        RequestRemovalFromConcreteShift request = new RequestRemovalFromConcreteShift(concreteShift, doctor, "Free text reason");
-        request.setReviewed(true);
-        request.setAccepted(false);
+        ScheduleFeedback scheduleFeedback = new ScheduleFeedback(
+                doctor,
+                List.of(concreteShift),
+                "Free text reason",
+                4,
+                periodStart.atStartOfDay().toInstant(java.time.ZoneOffset.UTC).toEpochMilli(),
+                FeedbackCategory.REPEATED_WEEKDAY
+        );
 
-        RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
-        when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
-                .thenReturn(List.of(request));
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.minusDays(2).toEpochDay(), periodEnd.toEpochDay()))
+                .thenReturn(List.of(scheduleFeedback));
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
                 .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(), 0, 0, 0));
-        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         AiReschedulingToonRequest toonRequest = service.buildToonRequestContext(
                 periodStart,
@@ -212,8 +220,11 @@ class AiReschedulingOrchestrationServiceTest {
         );
 
         ToonBuilder builder = new ToonBuilder();
-        String payload = builder.build(toonRequest.getToonRequestContext());
-        assertTrue(payload.contains(shiftId + ", 1, REMOVAL_REJECTED, 4, \"Free text reason\"\n"));
+        ToonRequestContext context = toonRequest.getToonRequestContext();
+        assertTrue(context.isAllowHistoricalFeedbackShiftIds());
+
+        String payload = builder.build(context);
+        assertTrue(payload.contains(shiftId + ", 1, REPEATED_WEEKDAY, 4, \"Free text reason\"\n"));
     }
 
 
@@ -233,14 +244,14 @@ class AiReschedulingOrchestrationServiceTest {
                 Map.of("maxDays", "5")
         );
 
-        RequestRemovalFromConcreteShiftDAO requestRemovalDao = mock(RequestRemovalFromConcreteShiftDAO.class);
-        when(requestRemovalDao.findAllByConcreteShiftDateBetween(periodStart.toEpochDay(), periodEnd.toEpochDay()))
+        ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
+        when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(periodStart.minusDays(2).toEpochDay(), periodEnd.toEpochDay()))
                 .thenReturn(List.of());
         AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         when(aiActiveConstraintResolver.resolveWithReport(anyList(), anyList(), eq(false)))
                 .thenReturn(new AiActiveConstraintResolver.ResolveResult(List.of(resolvedConstraint), 0, 0, 1));
 
-        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(requestRemovalDao, aiActiveConstraintResolver);
+        AiReschedulingOrchestrationService service = new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
         AiReschedulingToonRequest generateRequest = service.buildToonRequestContext(
                 periodStart,
@@ -270,6 +281,8 @@ class AiReschedulingOrchestrationServiceTest {
         assertEquals(1, regenerateRequest.getToonRequestContext().getActiveConstraints().size());
         assertEquals("MAX_CONSECUTIVE_DAYS", generateRequest.getToonRequestContext().getActiveConstraints().get(0).getReason());
         assertEquals("MAX_CONSECUTIVE_DAYS", regenerateRequest.getToonRequestContext().getActiveConstraints().get(0).getReason());
+        assertFalse(generateRequest.getToonRequestContext().isAllowHistoricalFeedbackShiftIds());
+        assertFalse(regenerateRequest.getToonRequestContext().isAllowHistoricalFeedbackShiftIds());
     }
 
 
