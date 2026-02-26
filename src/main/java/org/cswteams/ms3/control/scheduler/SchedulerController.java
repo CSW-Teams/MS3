@@ -65,8 +65,6 @@ public class SchedulerController implements ISchedulerController {
 
     private ScheduleBuilder scheduleBuilder;
 
-    private List<ConstraintCheckResult> lastConstraintCheckResults = new ArrayList<>();
-
     @Override
     public Set<ShowScheduleToPlannerDTO> getAllSchedulesWithDates(){
         Set<ShowScheduleToPlannerDTO> showScheduleToPlannerDTOSet = new HashSet<>();
@@ -98,7 +96,6 @@ public class SchedulerController implements ISchedulerController {
     @Override
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot)  {
-        this.lastConstraintCheckResults = new ArrayList<>();
 
         boolean hasExistingSchedules = !scheduleDAO.findAll().isEmpty();
         if (!hasExistingSchedules && startDate.isBefore(LocalDate.now())) {
@@ -151,7 +148,6 @@ public class SchedulerController implements ISchedulerController {
             this.scheduleBuilder.setControllerScocciatura(controllerScocciatura);
 
             Schedule schedule = this.scheduleBuilder.build();
-            this.lastConstraintCheckResults = new ArrayList<>(this.scheduleBuilder.getLastConstraintCheckResults());
 
             scheduleDAO.save(schedule);
             for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
@@ -206,8 +202,6 @@ public class SchedulerController implements ISchedulerController {
     @Override
     public Schedule addConcreteShift(ConcreteShift concreteShift, boolean forced) throws IllegalScheduleException {
 
-        this.lastConstraintCheckResults = new ArrayList<>();
-
         Schedule schedule;
 
         //We create a new builder passing him as parameter an existing shift schedule.
@@ -220,7 +214,6 @@ public class SchedulerController implements ISchedulerController {
         );
 
         schedule = this.scheduleBuilder.addConcreteShift(concreteShift, mapManualValidationMode(forced));
-        this.lastConstraintCheckResults = new ArrayList<>(this.scheduleBuilder.getLastConstraintCheckResults());
 
         //We commit changes to schedule only if they do not taint it
         if (schedule.getCauseIllegal() == null){
@@ -467,11 +460,6 @@ public class SchedulerController implements ISchedulerController {
         return true;
 
     }
-
-    @Override
-    public List<ConstraintCheckResult> getLastConstraintCheckResults() {
-        return new ArrayList<>(lastConstraintCheckResults);
-    }
     /**
      * This private method converts an instance of Schedule into a DTO. It supports the work of scheduleEntitytoDTO() method.
      * @param schedule Schedule instance to be converted into DTO
@@ -542,3 +530,4 @@ public class SchedulerController implements ISchedulerController {
     }
 
 }
+
