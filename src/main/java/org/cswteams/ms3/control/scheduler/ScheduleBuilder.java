@@ -301,6 +301,7 @@ public class ScheduleBuilder {
             DoctorHolidays dh = findDhByDoctor(dup.getDoctor());
 
             ContextConstraint context = new ContextConstraint(dup, concreteShift, dh, holidays);
+            // AI schedule generation should not stop on soft violations, but they must stay in the violation list.
             if(verifyAllConstraints(context, false)){
                 doctorList.add(dup.getDoctor());
                 dup.addConcreteShift(context.getConcreteShift());
@@ -431,14 +432,14 @@ public class ScheduleBuilder {
 
 
     /**
-     * This method applies all the constraints to the specified context. If a constraint is violated, then it is added
-     * to the log. Moreover, if the violated constraint is hard, then the shift schedule is marked as illegal and the
-     * cause of the violation is initialized.
+     * This method applies all the constraints to the specified context.
+     * Hard constraints are always blocking.
+     * Soft constraints are blocking only when strict mode is enabled.
      * @param context Context in which all the constraints are applied and verified
-     * @param isForced Boolean that represents if it is possible to violate the soft constraints
-     * @return True if there are no violations or the only verified violations are soft with isForced==true; false otherwise
+     * @param enforceSoftConstraintsAsHard If true, soft constraints are treated as hard constraints
+     * @return True if there are no blocking violations; false otherwise
      */
-    private boolean verifyAllConstraints(ContextConstraint context, boolean isForced){
+    private boolean verifyAllConstraints(ContextConstraint context, boolean enforceSoftConstraintsAsHard){
 
         //This flag indicates if there has been a violation in the constraints.
         boolean isOk = true;
@@ -451,8 +452,15 @@ public class ScheduleBuilder {
                 //schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
                 System.out.println(constraint.getDescription());
 
-                // If the violated constraint is hard, then the shift schedule is illegal.
-                if (!constraint.isViolable() || !isForced){
+                if (!schedule.getViolatedConstraints().contains(constraint)) {
+                    schedule.getViolatedConstraints().add(constraint);
+                }
+
+                boolean isHardConstraint = !constraint.isViolable();
+                boolean isSoftConstraintBlocking = constraint.isViolable() && enforceSoftConstraintsAsHard;
+
+                // Hard constraints are always blocking. Soft constraints block only in strict mode.
+                if (isHardConstraint || isSoftConstraintBlocking){
                     isOk = false;
                 }
 
@@ -466,7 +474,7 @@ public class ScheduleBuilder {
      * This method add a concrete shift to the schedule manually. The concrete shift shall be already defined with
      * date and doctors.
      * @param concreteShift The concrete shift to be added to the schedule
-     * @param isForced Boolean that represents if it is possible to violate the soft constraints with the new concrete shift
+     * @param isForced if true, the manual assignment can force soft constraints as non-blocking
      * @return An instance of the updated shift schedule
      */
     public Schedule addConcreteShift(ConcreteShift concreteShift, boolean isForced){
@@ -480,7 +488,9 @@ public class ScheduleBuilder {
             DoctorHolidays dh = findDhByDoctor(doctor);
             DoctorUffaPriority dup = this.findDupByDoctor(doctor);
 
-            if (!verifyAllConstraints(new ContextConstraint(dup, concreteShift, dh, holidays), isForced)){
+            // In manual assignment flow, strict mode is enabled only when the caller does not force the assignment.
+            boolean enforceSoftConstraintsAsHard = !isForced;
+            if (!verifyAllConstraints(new ContextConstraint(dup, concreteShift, dh, holidays), enforceSoftConstraintsAsHard)){
                 schedule.setCauseIllegal(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
             }
         }
