@@ -57,9 +57,16 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -501,6 +508,141 @@ class AiScheduleGenerationOrchestrationServiceTest {
             assertTrue(logMessage.contains("actual='STRUCTURED'"));
         } finally {
             serviceLogger.detachAppender(appender);
+        }
+    }
+
+    @Test
+    void generateScheduleComparisonRetryAfterDomainConstraintViolationKeepsToonSectionsStable() {
+        LocalDate date = LocalDate.of(2026, 9, 14);
+        Shift shift = makeShift(1201L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360), List.of(
+                quantity(Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1))
+        ));
+        ConcreteShift concreteShift = new ConcreteShift(date.toEpochDay(), shift);
+        Schedule transientSchedule = new Schedule(date.toEpochDay(), date.toEpochDay(), List.of(concreteShift));
+
+        Doctor structuredDoctor = newDoctor(10L, Seniority.STRUCTURED);
+        Doctor specialistJuniorDoctor = newDoctor(20L, Seniority.SPECIALIST_JUNIOR);
+        List<Doctor> doctors = List.of(structuredDoctor, specialistJuniorDoctor);
+        DoctorUffaPriority structuredPriority = new DoctorUffaPriority(structuredDoctor);
+        structuredPriority.setGeneralPriority(3);
+        structuredPriority.setNightPriority(4);
+        structuredPriority.setLongShiftPriority(5);
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        when(schedulerController.createScheduleTransient(date, date)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(doctors);
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(structuredDoctor.getId()))).thenReturn(List.of(structuredPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(structuredDoctor.getId()))).thenReturn(List.of());
+        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(date.toEpochDay(), date.toEpochDay()))
+                .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of());
+        when(holidayDAO.findAll()).thenReturn(List.of());
+        when(agentBroker.previewTokenBudget(any()))
+                .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("standard", List.of()));
+
+        AtomicInteger empatheticRequests = new AtomicInteger();
+        when(agentBroker.requestSchedule(any())).thenAnswer(invocation -> {
+            AiBrokerRequest request = invocation.getArgument(0);
+            if (request.getInstructions().contains("Use label EMPATHETIC")) {
+                int attempt = empatheticRequests.incrementAndGet();
+                String token = attempt == 1 ? "malformed-empathetic" : "recovered-empathetic";
+                return new AiScheduleVariantsResponse(Map.of("EMPATHETIC", aiVariantResponse(token)));
+            }
+            if (request.getInstructions().contains("Use label EFFICIENT")) {
+                return new AiScheduleVariantsResponse(Map.of("EFFICIENT", aiVariantResponse("efficient")));
+            }
+            return new AiScheduleVariantsResponse(Map.of("BALANCED", aiVariantResponse("balanced")));
+        });
+
+        ConcreteShift malformedShift = new ConcreteShift(date.toEpochDay(), null);
+        malformedShift.setDoctorAssignmentList(List.of());
+        when(aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson != null && rawJson.contains("malformed-empathetic")) {
+                return List.of(malformedShift);
+            }
+            return List.of(concreteShift);
+        });
+
+        AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
+        aiBrokerProperties.setScheduleValidationMaxRetries(1);
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                aiBrokerProperties,
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        assertDoesNotThrow(() -> service.generateScheduleComparison(date, date));
+
+        ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
+        verify(agentBroker, times(4)).requestSchedule(requestCaptor.capture());
+        List<AiBrokerRequest> requests = requestCaptor.getAllValues();
+        AiBrokerRequest firstEmpatheticAttempt = requests.get(0);
+        AiBrokerRequest secondEmpatheticAttempt = requests.get(1);
+        assertTrue(firstEmpatheticAttempt.getInstructions().contains("Use label EMPATHETIC"));
+        assertTrue(secondEmpatheticAttempt.getInstructions().contains("Use label EMPATHETIC"));
+        assertTrue(secondEmpatheticAttempt.getInstructions().contains("DOMAIN_CONSTRAINTS_VIOLATED"));
+
+        String firstPayload = firstEmpatheticAttempt.getToonPayload();
+        String secondPayload = secondEmpatheticAttempt.getToonPayload();
+        assertNotNull(firstPayload);
+        assertNotNull(secondPayload);
+
+        List<RoleValidationScratchpadRow> firstRows = parseRoleValidationScratchpadRows(firstPayload);
+        List<RoleValidationScratchpadRow> secondRows = parseRoleValidationScratchpadRows(secondPayload);
+        assertEquals(firstRows.size(), secondRows.size());
+
+        Map<String, RoleValidationScratchpadRow> firstRowsByKey = indexScratchpadRows(firstRows);
+        Map<String, RoleValidationScratchpadRow> secondRowsByKey = indexScratchpadRows(secondRows);
+        assertEquals(firstRowsByKey.keySet(), secondRowsByKey.keySet());
+
+        for (Map.Entry<String, RoleValidationScratchpadRow> entry : firstRowsByKey.entrySet()) {
+            RoleValidationScratchpadRow firstRow = entry.getValue();
+            RoleValidationScratchpadRow secondRow = secondRowsByKey.get(entry.getKey());
+            assertNotNull(secondRow);
+            assertEquals(firstRow.requiredCount, secondRow.requiredCount);
+            assertEquals(new HashSet<>(firstRow.candidateDoctorIds), new HashSet<>(secondRow.candidateDoctorIds));
+        }
+
+        Map<String, String> firstSections = parseToonSections(firstPayload);
+        Map<String, String> secondSections = parseToonSections(secondPayload);
+        assertEquals(firstSections.keySet(), secondSections.keySet());
+        for (String section : firstSections.keySet()) {
+            if ("role_validation_scratchpad".equals(section)) {
+                continue;
+            }
+            assertEquals(firstSections.get(section), secondSections.get(section));
         }
     }
 
@@ -1426,5 +1568,81 @@ class AiScheduleGenerationOrchestrationServiceTest {
             fromIndex += token.length();
         }
         return count;
+    }
+
+    private Map<String, String> parseToonSections(String toonPayload) {
+        Map<String, String> sections = new LinkedHashMap<>();
+        String[] lines = toonPayload.split("\\R");
+        Pattern headerPattern = Pattern.compile("^([a-z_]+)\\[\\d+].*");
+        String currentSection = "ctx";
+        StringBuilder buffer = new StringBuilder();
+
+        for (String line : lines) {
+            Matcher matcher = headerPattern.matcher(line);
+            if (matcher.matches()) {
+                sections.put(currentSection, buffer.toString());
+                currentSection = matcher.group(1);
+                buffer = new StringBuilder();
+            }
+            buffer.append(line).append("\n");
+        }
+        sections.put(currentSection, buffer.toString());
+        return sections;
+    }
+
+    private List<RoleValidationScratchpadRow> parseRoleValidationScratchpadRows(String toonPayload) {
+        List<RoleValidationScratchpadRow> rows = new ArrayList<>();
+        Map<String, String> sections = parseToonSections(toonPayload);
+        String scratchpadSection = sections.get("role_validation_scratchpad");
+        assertNotNull(scratchpadSection);
+
+        String[] lines = scratchpadSection.split("\\R");
+        for (int i = 1; i < lines.length; i++) {
+            String row = lines[i].trim();
+            if (row.isBlank()) {
+                continue;
+            }
+            Matcher matcher = Pattern.compile("^([^,]+),([^,]+),(\\d+),\\[(.*)]$").matcher(row);
+            assertTrue(matcher.matches());
+            List<Long> candidateDoctorIds = matcher.group(4).isBlank()
+                    ? List.of()
+                    : Arrays.stream(matcher.group(4).split(","))
+                    .map(String::trim)
+                    .filter(token -> !token.isBlank())
+                    .map(Long::valueOf)
+                    .toList();
+            rows.add(new RoleValidationScratchpadRow(
+                    matcher.group(1),
+                    matcher.group(2),
+                    Integer.parseInt(matcher.group(3)),
+                    candidateDoctorIds
+            ));
+        }
+        return rows;
+    }
+
+    private Map<String, RoleValidationScratchpadRow> indexScratchpadRows(List<RoleValidationScratchpadRow> rows) {
+        Map<String, RoleValidationScratchpadRow> indexedRows = new LinkedHashMap<>();
+        for (RoleValidationScratchpadRow row : rows) {
+            indexedRows.put(row.shiftId + "|" + row.requiredRole, row);
+        }
+        return indexedRows;
+    }
+
+    private static class RoleValidationScratchpadRow {
+        private final String shiftId;
+        private final String requiredRole;
+        private final int requiredCount;
+        private final List<Long> candidateDoctorIds;
+
+        private RoleValidationScratchpadRow(String shiftId,
+                                            String requiredRole,
+                                            int requiredCount,
+                                            List<Long> candidateDoctorIds) {
+            this.shiftId = shiftId;
+            this.requiredRole = requiredRole;
+            this.requiredCount = requiredCount;
+            this.candidateDoctorIds = candidateDoctorIds;
+        }
     }
 }
