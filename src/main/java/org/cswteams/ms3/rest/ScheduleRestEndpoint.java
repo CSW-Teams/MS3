@@ -1,6 +1,7 @@
 package org.cswteams.ms3.rest;
 
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
+import org.cswteams.ms3.control.utils.RispostaViolazioneVincoli;
 import org.cswteams.ms3.dto.ScheduleGenerationDTO;
 import org.cswteams.ms3.dto.ScheduleDTO;
 import org.cswteams.ms3.dto.showscheduletoplanner.ShowScheduleToPlannerDTO;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/schedule/")
@@ -37,9 +39,13 @@ public class ScheduleRestEndpoint {
                 Schedule schedule = schedulerController.createSchedule(gs.getStartDate(),gs.getEndDate());
                 if(schedule == null)
                     return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-                if(!schedule.getViolatedConstraints().isEmpty())
-                    return new ResponseEntity<>(HttpStatus.PARTIAL_CONTENT);
-                else
+                if(!schedule.getViolatedConstraints().isEmpty()) {
+                    RispostaViolazioneVincoli response = buildViolationResponse();
+                    if (response.getViolations().isEmpty()) {
+                        return new ResponseEntity<>(HttpStatus.PARTIAL_CONTENT);
+                    }
+                    return new ResponseEntity<>(response, HttpStatus.PARTIAL_CONTENT);
+                } else
                     return new ResponseEntity<>(HttpStatus.ACCEPTED);
             }
         }
@@ -133,6 +139,18 @@ public class ScheduleRestEndpoint {
 
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    private RispostaViolazioneVincoli buildViolationResponse() {
+        RispostaViolazioneVincoli response = new RispostaViolazioneVincoli();
+        response.setViolations(schedulerController.getLastConstraintCheckResults());
+        response.getMessagges().addAll(response.getViolations().stream()
+                .map(v -> String.format("Violazione %s (%s): %s",
+                        v.getSeverity() == null ? "UNKNOWN" : v.getSeverity().name().toLowerCase(),
+                        v.getSeverity() == null ? "unknown" : (v.isBlocking() ? "blocking" : "advisory"),
+                        v.getDescription()))
+                .collect(Collectors.toList()));
+        return response;
     }
 
 

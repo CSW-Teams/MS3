@@ -55,6 +55,9 @@ public class ScheduleBuilder {
     /** Validation mode used by AI schedule generation. */
     private ConstraintEnforcementMode generationConstraintEnforcementMode = ConstraintEnforcementMode.HARD_ONLY;
 
+    /** Latest set of detected violations during the most recent operation. */
+    private List<ConstraintCheckResult> lastConstraintCheckResults = new ArrayList<>();
+
 
     /**
      * This method validates date parameters passed to the schedule builder.
@@ -186,6 +189,7 @@ public class ScheduleBuilder {
         // At this point there are no concrete shifts in the schedule yet
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
+        this.lastConstraintCheckResults = new ArrayList<>();
 
         /* update snapshot of all priorities, the following loop is needed to perform a copy by value */
         for (DoctorUffaPriority dup : this.allDoctorUffaPriority) {
@@ -444,6 +448,7 @@ public class ScheduleBuilder {
      * @return True if there are no blocking violations; false otherwise
      */
     private boolean verifyAllConstraints(ContextConstraint context, ConstraintEnforcementMode constraintEnforcementMode){
+        List<ConstraintCheckResult> currentConstraintCheckResults = new ArrayList<>();
 
         //This flag indicates if there has been a violation in the constraints.
         boolean isOk = true;
@@ -460,12 +465,24 @@ public class ScheduleBuilder {
                     schedule.getViolatedConstraints().add(constraint);
                 }
 
+                ConstraintViolationSeverity severity = constraint.isViolable()
+                        ? ConstraintViolationSeverity.SOFT
+                        : ConstraintViolationSeverity.HARD;
+                currentConstraintCheckResults.add(new ConstraintCheckResult(
+                        constraint.getId(),
+                        constraint.getClass().getSimpleName(),
+                        constraint.getDescription(),
+                        constraint.isViolable(),
+                        severity
+                ));
+
                 if (constraintEnforcementMode.isBlocking(constraint)){
                     isOk = false;
                 }
 
             }
         }
+        this.lastConstraintCheckResults = currentConstraintCheckResults;
         return isOk;
 
     }
@@ -481,6 +498,7 @@ public class ScheduleBuilder {
 
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
+        this.lastConstraintCheckResults = new ArrayList<>();
 
         for (DoctorAssignment da : concreteShift.getDoctorAssignmentList()){
             Doctor doctor = da.getDoctor();
@@ -489,7 +507,7 @@ public class ScheduleBuilder {
             DoctorUffaPriority dup = this.findDupByDoctor(doctor);
 
             if (!verifyAllConstraints(new ContextConstraint(dup, concreteShift, dh, holidays), constraintEnforcementMode)){
-                schedule.setCauseIllegal(new IllegalAssegnazioneTurnoException("Un vincolo stringente è stato violato, oppure un vincolo non stringente è stato violato e non è stato richiesto di forzare l'assegnazione. Consultare il log delle violazioni della pianificazione può aiutare a investigare la causa."));
+                schedule.setCauseIllegal(new IllegalAssegnazioneTurnoException("Violazione hard (bloccante): l'assegnazione non può essere salvata. Le violazioni soft sono solo advisory."));
             }
         }
         if(schedule.getCauseIllegal() == null){
