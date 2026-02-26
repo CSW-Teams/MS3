@@ -885,7 +885,7 @@ public class AiScheduleGenerationOrchestrationService {
                         violationMessage);
                 return CandidateValidationData.invalid("DOMAIN_CONSTRAINTS_VIOLATED",
                         violationMessage,
-                        "Copertura non completa entro i vincoli attivi: medici insufficienti per coprire tutti i turni rispettando ore periodo, riposi, turni contigui e ferie.",
+                        "Copertura non completa entro i vincoli HARD attivi: medici insufficienti per coprire tutti i turni rispettando ore periodo, riposi, turni contigui e ferie.",
                         violatedConstraints);
             }
             if (!violatedConstraints.isEmpty()) {
@@ -1021,7 +1021,7 @@ public class AiScheduleGenerationOrchestrationService {
                 .collect(Collectors.joining(" | "));
         return CandidateValidationData.invalid(ERROR_ROLE_LAYER_MINIMA,
                 message,
-                "Copertura non completa entro i vincoli attivi: medici insufficienti sui livelli ruolo/stato richiesti.",
+                "Copertura non completa sui requisiti ruolo/stato richiesti: medici insufficienti sui livelli minimi richiesti.",
                 Collections.emptyList(),
                 Collections.emptyList(),
                 violations,
@@ -1220,10 +1220,7 @@ public class AiScheduleGenerationOrchestrationService {
                                 constraint,
                                 concreteShift,
                                 assignment.getDoctor(),
-                                constraint != null && constraint.isViolable()
-                                        ? ConstraintViolationSeverity.SOFT
-                                        : ConstraintViolationSeverity.HARD,
-                                "Constraint must be satisfied",
+                                "Constraint validation failed for the current assignment",
                                 message
                         ));
                     } catch (RuntimeException ex) {
@@ -2593,7 +2590,6 @@ public class AiScheduleGenerationOrchestrationService {
         private static ConstraintViolationDetail of(Constraint constraint,
                                                     ConcreteShift concreteShift,
                                                     Doctor doctor,
-                                                    ConstraintViolationSeverity severity,
                                                     String expectedCondition,
                                                     String actualCondition) {
             String date = concreteShift == null ? null : String.valueOf(LocalDate.ofEpochDay(concreteShift.getDate()));
@@ -2611,10 +2607,17 @@ public class AiScheduleGenerationOrchestrationService {
                     shiftId,
                     date,
                     doctorId,
-                    severity,
+                    fromConstraint(constraint),
                     expectedCondition,
                     actualCondition
             );
+        }
+
+        private static ConstraintViolationSeverity fromConstraint(Constraint constraint) {
+            if (constraint != null && constraint.isViolable()) {
+                return ConstraintViolationSeverity.SOFT;
+            }
+            return ConstraintViolationSeverity.HARD;
         }
 
         private static ConstraintViolationDetail malformedShift(ConcreteShift concreteShift,
@@ -2650,7 +2653,6 @@ public class AiScheduleGenerationOrchestrationService {
             return of(constraint,
                     concreteShift,
                     doctor,
-                    ConstraintViolationSeverity.HARD,
                     "Constraint execution must complete without runtime errors",
                     "Constraint execution failed: " + sanitizedExceptionClass + ": " + sanitizedExceptionMessage);
         }
