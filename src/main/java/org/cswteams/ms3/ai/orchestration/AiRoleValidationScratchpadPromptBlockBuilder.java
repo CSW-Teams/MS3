@@ -10,6 +10,7 @@ import org.cswteams.ms3.enums.TimeSlot;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 @Component
 public class AiRoleValidationScratchpadPromptBlockBuilder {
@@ -19,6 +20,16 @@ public class AiRoleValidationScratchpadPromptBlockBuilder {
             Seniority.SPECIALIST_JUNIOR,
             Seniority.SPECIALIST_SENIOR
     );
+
+    private final Supplier<Random> shuffleRandomSupplier;
+
+    public AiRoleValidationScratchpadPromptBlockBuilder() {
+        this(Random::new);
+    }
+
+    AiRoleValidationScratchpadPromptBlockBuilder(Supplier<Random> shuffleRandomSupplier) {
+        this.shuffleRandomSupplier = Objects.requireNonNull(shuffleRandomSupplier, "shuffleRandomSupplier cannot be null");
+    }
 
     public String buildRoleValidationScratchpadBlock(List<ConcreteShift> concreteShifts, List<Doctor> doctors) {
         List<ConcreteShift> orderedShifts = new ArrayList<>(concreteShifts == null ? List.of() : concreteShifts);
@@ -39,14 +50,14 @@ public class AiRoleValidationScratchpadPromptBlockBuilder {
             Map<Seniority, Integer> requiredByRole = calculateRequiredByRole(concreteShift == null ? null : concreteShift.getShift());
             for (Seniority role : ROLE_ORDER) {
                 doctorIds = candidatesByRole.getOrDefault(role, List.of());
-                Collections.shuffle(doctorIds);
+                Collections.shuffle(doctorIds, shuffleRandomSupplier.get());
                 int required = requiredByRole.getOrDefault(role, 0);
                 if (required <= 0) {
                     continue;
                 }
                 rows.add(ToonBuilder.shiftIdFor(concreteShift)
                         + "," + role.name()
-                        + "," + required*2
+                        + "," + required * 2
                         + "," + serializeLongList(doctorIds));
             }
         }

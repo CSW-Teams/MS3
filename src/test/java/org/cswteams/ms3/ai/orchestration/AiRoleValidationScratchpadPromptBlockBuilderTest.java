@@ -17,89 +17,110 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class AiRoleValidationScratchpadPromptBlockBuilderTest {
 
-    private final AiRoleValidationScratchpadPromptBlockBuilder builder = new AiRoleValidationScratchpadPromptBlockBuilder();
-
     @Test
-    void buildRoleValidationScratchpadBlockFiltersCandidatesByExactRoleOnly() {
+    void buildRoleValidationScratchpadBlockKeepsDoctorMembershipAfterShuffle() {
+        AiRoleValidationScratchpadPromptBlockBuilder builder = new AiRoleValidationScratchpadPromptBlockBuilder();
         LocalDate day = LocalDate.of(2026, 9, 14);
         ConcreteShift shift = new ConcreteShift(day.toEpochDay(), makeShift(1001L, TimeSlot.MORNING,
-                Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_JUNIOR, 1)));
+                Map.of(Seniority.SPECIALIST_SENIOR, 1)));
 
         List<Doctor> doctors = List.of(
-                newDoctor(20L, Seniority.SPECIALIST_JUNIOR),
-                newDoctor(10L, Seniority.STRUCTURED),
-                newDoctor(30L, Seniority.SPECIALIST_SENIOR)
+                newDoctor(30L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(10L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(20L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(40L, Seniority.SPECIALIST_SENIOR)
         );
 
         String block = builder.buildRoleValidationScratchpadBlock(List.of(shift), doctors);
 
-        assertEquals(
-                "role_validation_scratchpad[2]{shift_id,required_role,required_count,candidate_doctor_ids}:\n"
-                        + "S_1001_20260914,STRUCTURED,1,[10]\n"
-                        + "S_1001_20260914,SPECIALIST_JUNIOR,1,[20]\n",
-                block
-        );
+        assertEquals(Set.of(10L, 20L, 30L, 40L), parseDoctorIds(block, "SPECIALIST_SENIOR"));
     }
 
     @Test
-    void buildRoleValidationScratchpadBlockUsesDeterministicShiftRoleAndCandidateOrdering() {
-        LocalDate firstDay = LocalDate.of(2026, 9, 14);
-        LocalDate secondDay = LocalDate.of(2026, 9, 15);
-
-        ConcreteShift laterShift = new ConcreteShift(secondDay.toEpochDay(), makeShift(2002L, TimeSlot.MORNING,
+    void buildRoleValidationScratchpadBlockCanProduceDifferentOrderingAcrossRetries() {
+        AtomicLong seed = new AtomicLong(1L);
+        Supplier<Random> varyingRandomSupplier = () -> new Random(seed.getAndIncrement());
+        AiRoleValidationScratchpadPromptBlockBuilder builder =
+                new AiRoleValidationScratchpadPromptBlockBuilder(varyingRandomSupplier);
+        LocalDate day = LocalDate.of(2026, 9, 14);
+        ConcreteShift shift = new ConcreteShift(day.toEpochDay(), makeShift(1002L, TimeSlot.MORNING,
                 Map.of(Seniority.SPECIALIST_SENIOR, 1)));
-        ConcreteShift firstDayAfternoon = new ConcreteShift(firstDay.toEpochDay(), makeShift(2003L, TimeSlot.AFTERNOON,
-                Map.of(Seniority.SPECIALIST_JUNIOR, 1)));
-        ConcreteShift firstDayMorning = new ConcreteShift(firstDay.toEpochDay(), makeShift(2001L, TimeSlot.MORNING,
-                Map.of(Seniority.STRUCTURED, 1, Seniority.SPECIALIST_SENIOR, 1, Seniority.SPECIALIST_JUNIOR, 1)));
 
         List<Doctor> doctors = List.of(
-                newDoctor(7L, Seniority.SPECIALIST_SENIOR),
-                newDoctor(3L, Seniority.STRUCTURED),
-                newDoctor(9L, Seniority.SPECIALIST_SENIOR),
-                newDoctor(2L, Seniority.SPECIALIST_JUNIOR)
+                newDoctor(10L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(20L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(30L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(40L, Seniority.SPECIALIST_SENIOR)
         );
 
-        String block = builder.buildRoleValidationScratchpadBlock(
-                List.of(laterShift, firstDayAfternoon, firstDayMorning),
-                doctors
-        );
+        String firstBlock = builder.buildRoleValidationScratchpadBlock(List.of(shift), doctors);
+        String secondBlock = builder.buildRoleValidationScratchpadBlock(List.of(shift), doctors);
 
-        assertEquals(
-                "role_validation_scratchpad[5]{shift_id,required_role,required_count,candidate_doctor_ids}:\n"
-                        + "S_2001_20260914,STRUCTURED,1,[3]\n"
-                        + "S_2001_20260914,SPECIALIST_JUNIOR,1,[2]\n"
-                        + "S_2001_20260914,SPECIALIST_SENIOR,1,[7,9]\n"
-                        + "S_2003_20260914,SPECIALIST_JUNIOR,1,[2]\n"
-                        + "S_2002_20260915,SPECIALIST_SENIOR,1,[7,9]\n",
-                block
-        );
+        assertNotEquals(parseDoctorIdOrder(firstBlock, "SPECIALIST_SENIOR"),
+                parseDoctorIdOrder(secondBlock, "SPECIALIST_SENIOR"));
     }
 
     @Test
-    void buildRoleValidationScratchpadBlockKeepsRolesWithNoCandidatesAsExplicitEmptyLists() {
+    void buildRoleValidationScratchpadBlockUsesDeterministicOrderingWithSeededRandom() {
+        AiRoleValidationScratchpadPromptBlockBuilder builder =
+                new AiRoleValidationScratchpadPromptBlockBuilder(() -> new Random(42L));
         LocalDate day = LocalDate.of(2026, 9, 14);
-        ConcreteShift shift = new ConcreteShift(day.toEpochDay(), makeShift(3001L, TimeSlot.NIGHT,
-                Map.of(Seniority.SPECIALIST_SENIOR, 2)));
+        ConcreteShift shift = new ConcreteShift(day.toEpochDay(), makeShift(1003L, TimeSlot.MORNING,
+                Map.of(Seniority.SPECIALIST_SENIOR, 1)));
 
-        String block = builder.buildRoleValidationScratchpadBlock(
-                List.of(shift),
-                List.of(newDoctor(11L, Seniority.STRUCTURED))
+        List<Doctor> doctors = List.of(
+                newDoctor(10L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(20L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(30L, Seniority.SPECIALIST_SENIOR),
+                newDoctor(40L, Seniority.SPECIALIST_SENIOR)
         );
 
-        assertEquals(
-                "role_validation_scratchpad[1]{shift_id,required_role,required_count,candidate_doctor_ids}:\n"
-                        + "S_3001_20260914,SPECIALIST_SENIOR,2,[]\n",
-                block
-        );
+        String firstBlock = builder.buildRoleValidationScratchpadBlock(List.of(shift), doctors);
+        String secondBlock = builder.buildRoleValidationScratchpadBlock(List.of(shift), doctors);
+
+        assertEquals(parseDoctorIdOrder(firstBlock, "SPECIALIST_SENIOR"),
+                parseDoctorIdOrder(secondBlock, "SPECIALIST_SENIOR"));
+        assertEquals(List.of(40L, 20L, 10L, 30L), parseDoctorIdOrder(firstBlock, "SPECIALIST_SENIOR"));
+    }
+
+    private List<Long> parseDoctorIdOrder(String block, String role) {
+        String[] lines = block.split("\\n");
+        for (String line : lines) {
+            if (!line.contains("," + role + ",")) {
+                continue;
+            }
+            int openBracket = line.lastIndexOf('[');
+            int closeBracket = line.lastIndexOf(']');
+            if (openBracket < 0 || closeBracket < openBracket + 1) {
+                return List.of();
+            }
+            String content = line.substring(openBracket + 1, closeBracket);
+            if (content.isBlank()) {
+                return List.of();
+            }
+            return Arrays.stream(content.split(","))
+                    .map(String::trim)
+                    .map(Long::parseLong)
+                    .toList();
+        }
+        throw new IllegalStateException("Role not found in block: " + role);
+    }
+
+    private Set<Long> parseDoctorIds(String block, String role) {
+        return Set.copyOf(parseDoctorIdOrder(block, role));
     }
 
     private Shift makeShift(Long id, TimeSlot timeSlot, Map<Seniority, Integer> seniorityMap) {
