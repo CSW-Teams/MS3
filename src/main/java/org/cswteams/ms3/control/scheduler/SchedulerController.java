@@ -139,7 +139,8 @@ public class SchedulerController implements ISchedulerController {
                 holidayDAO.findAll(),           //All the holidays saved in the db
                 doctorHolidaysDAO.findAll(),    //All the associations between doctors and holidays
                 doctorUffaPriorityList,         //All the information about priority levels on all the queues of the doctors
-                snapshot                        //Snapshot to update to save actual priorities
+                snapshot,                       //Snapshot to update to save actual priorities
+                ConstraintEnforcementMode.HARD_ONLY // AI generation must block only on hard constraints
                 );
 
             ControllerScocciatura controllerScocciatura = new ControllerScocciatura(scocciaturaList);
@@ -212,7 +213,7 @@ public class SchedulerController implements ISchedulerController {
                 holidayDAO.findAll()
         );
 
-        schedule = this.scheduleBuilder.addConcreteShift(concreteShift,forced);
+        schedule = this.scheduleBuilder.addConcreteShift(concreteShift, mapManualValidationMode(forced));
 
         //We commit changes to schedule only if they do not taint it
         if (schedule.getCauseIllegal() == null){
@@ -319,6 +320,10 @@ public class SchedulerController implements ISchedulerController {
             }
         }
         return true;
+    }
+
+    private ConstraintEnforcementMode mapManualValidationMode(boolean forced) {
+        return forced ? ConstraintEnforcementMode.HARD_ONLY : ConstraintEnforcementMode.HARD_AND_SOFT;
     }
 
     @Override
@@ -525,5 +530,4 @@ public class SchedulerController implements ISchedulerController {
     }
 
 }
-
 
