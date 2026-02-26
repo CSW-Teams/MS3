@@ -244,6 +244,105 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
         assertTrue(retryInstructions.contains("message='must match shift requested role'"));
     }
 
+    @Test
+    void softConstraintViolationKeepsCandidateValidAndPublishesWarningPayload() throws ViolatedConstraintException {
+        RetryFixture fixture = new RetryFixture();
+        fixture.mockBrokerByReasoning(Map.of(
+                "EMPATHETIC", List.of("soft-violating-empathetic"),
+                "EFFICIENT", List.of("ok-efficient"),
+                "BALANCED", List.of("ok-balanced")
+        ));
+
+        Constraint softConstraint = mock(Constraint.class);
+        softConstraint.setViolable(true);
+        when(softConstraint.isViolable()).thenReturn(true);
+        when(softConstraint.getId()).thenReturn(88L);
+        doThrow(new ViolatedConstraintException("soft rest window violated"))
+                .when(softConstraint)
+                .verifyConstraint(any());
+        when(fixture.constraintDAO.findAll()).thenReturn(List.of(softConstraint));
+
+        Doctor assignedDoctor = fixture.newDoctor(42L, Seniority.STRUCTURED);
+        ConcreteShift violatingShift = new ConcreteShift(fixture.startDate.toEpochDay(), fixture.shift);
+        violatingShift.setDoctorAssignmentList(List.of(new DoctorAssignment(
+                assignedDoctor,
+                ConcreteShiftDoctorStatus.ON_DUTY,
+                violatingShift,
+                new Task(TaskEnum.CLINIC)
+        )));
+
+        when(fixture.aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson.contains("soft-violating-empathetic")) {
+                return List.of(violatingShift);
+            }
+            return List.of(fixture.convertedShift);
+        });
+
+        var response = fixture.service.generateScheduleComparison(fixture.startDate, fixture.endDate);
+
+        var empathetic = response.getCandidates().stream()
+                .filter(candidate -> "empathetic".equals(candidate.getMetadata().getType()))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(empathetic.getMetadata().isValid());
+        assertEquals("SOFT_DOMAIN_CONSTRAINTS_VIOLATED", empathetic.getMetadata().getValidationCode());
+        assertTrue(empathetic.getMetadata().getValidationViolations().stream()
+                .anyMatch(message -> message.contains("SOFT") && message.contains("soft rest window violated")));
+        verify(fixture.agentBroker, times(3)).requestSchedule(any());
+    }
+
+    @Test
+    void hardConstraintViolationStillInvalidatesCandidate() throws ViolatedConstraintException {
+        RetryFixture fixture = new RetryFixture();
+        fixture.aiBrokerProperties.setScheduleValidationMaxRetries(0);
+        fixture.mockBrokerByReasoning(Map.of(
+                "EMPATHETIC", List.of("hard-violating-empathetic"),
+                "EFFICIENT", List.of("ok-efficient"),
+                "BALANCED", List.of("ok-balanced")
+        ));
+
+        Constraint hardConstraint = mock(Constraint.class);
+        hardConstraint.setViolable(false);
+        when(hardConstraint.isViolable()).thenReturn(false);
+        when(hardConstraint.getId()).thenReturn(99L);
+        doThrow(new ViolatedConstraintException("hard rest window violated"))
+                .when(hardConstraint)
+                .verifyConstraint(any());
+        when(fixture.constraintDAO.findAll()).thenReturn(List.of(hardConstraint));
+
+        Doctor assignedDoctor = fixture.newDoctor(52L, Seniority.STRUCTURED);
+        ConcreteShift violatingShift = new ConcreteShift(fixture.startDate.toEpochDay(), fixture.shift);
+        violatingShift.setDoctorAssignmentList(List.of(new DoctorAssignment(
+                assignedDoctor,
+                ConcreteShiftDoctorStatus.ON_DUTY,
+                violatingShift,
+                new Task(TaskEnum.CLINIC)
+        )));
+
+        when(fixture.aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson.contains("hard-violating-empathetic")) {
+                return List.of(violatingShift);
+            }
+            return List.of(fixture.convertedShift);
+        });
+
+        var response = fixture.service.generateScheduleComparison(fixture.startDate, fixture.endDate);
+
+        var empathetic = response.getCandidates().stream()
+                .filter(candidate -> "empathetic".equals(candidate.getMetadata().getType()))
+                .findFirst()
+                .orElseThrow();
+
+        assertFalse(empathetic.getMetadata().isValid());
+        assertEquals("DOMAIN_CONSTRAINTS_VIOLATED", empathetic.getMetadata().getValidationCode());
+        assertTrue(empathetic.getMetadata().getValidationViolations().stream()
+                .anyMatch(message -> message.contains("HARD") && message.contains("hard rest window violated")));
+        verify(fixture.agentBroker, times(3)).requestSchedule(any());
+    }
+
 
     @Test
     void invalidCandidateIsRejectedOnSelectionPersist() {
