@@ -194,7 +194,7 @@ public class AiScheduleGenerationOrchestrationService {
                 startDate, endDate, standardShiftCount);
 
         String aiRequestCorrelationId = UUID.randomUUID().toString();
-        String toonPayload = buildToonPayload(startDate,
+        ToonPayloadContext toonPayloadContext = buildToonPayload(startDate,
                 endDate,
                 standardSchedule.getConcreteShifts(),
                 aiRequestCorrelationId);
@@ -211,7 +211,7 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         CandidateData standardCandidate = buildStandardCandidate(standardSchedule, standardMetrics);
-        CandidateBatch aiBatch = requestAiCandidates(toonPayload,
+        CandidateBatch aiBatch = requestAiCandidates(toonPayloadContext,
                 aiRequestCorrelationId,
                 startDate,
                 endDate,
@@ -373,10 +373,10 @@ public class AiScheduleGenerationOrchestrationService {
         transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates, response));
     }
 
-    private String buildToonPayload(LocalDate startDate,
-                                    LocalDate endDate,
-                                    List<ConcreteShift> concreteShifts,
-                                    String correlationId) {
+    private ToonPayloadContext buildToonPayload(LocalDate startDate,
+                                                LocalDate endDate,
+                                                List<ConcreteShift> concreteShifts,
+                                                String correlationId) {
         List<ConcreteShift> scopedShifts = filterShiftsInTargetPeriod(startDate, endDate, concreteShifts);
         List<Doctor> doctors = resolveEligibleDoctors(scopedShifts);
         List<Long> eligibleDoctorIds = new ArrayList<>();
@@ -455,7 +455,14 @@ public class AiScheduleGenerationOrchestrationService {
         String safeToonPayload = toonPayload == null ? "" : toonPayload;
         String safeHardCoverageBlock = hardCoverageBlock == null ? "" : hardCoverageBlock;
         String safeRoleValidationScratchpadBlock = roleValidationScratchpadBlock == null ? "" : roleValidationScratchpadBlock;
-        return safeToonPayload + "\n" + safeHardCoverageBlock + safeRoleValidationScratchpadBlock;
+        String stablePayloadWithoutScratchpad = safeToonPayload + "\n" + safeHardCoverageBlock;
+        return new ToonPayloadContext(
+                stablePayloadWithoutScratchpad + safeRoleValidationScratchpadBlock,
+                stablePayloadWithoutScratchpad,
+                safeRoleValidationScratchpadBlock,
+                Collections.unmodifiableList(new ArrayList<>(scopedShifts)),
+                Collections.unmodifiableList(new ArrayList<>(doctors))
+        );
     }
 
     private int countHardCoverageRows(String hardCoverageBlock) {
@@ -571,7 +578,7 @@ public class AiScheduleGenerationOrchestrationService {
         );
     }
 
-    private CandidateBatch requestAiCandidates(String toonPayload,
+    private CandidateBatch requestAiCandidates(ToonPayloadContext toonPayloadContext,
                                                String batchCorrelationId,
                                                LocalDate startDate,
                                                LocalDate endDate,
@@ -586,17 +593,34 @@ public class AiScheduleGenerationOrchestrationService {
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
             String baseInstructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
             String attemptInstructions = baseInstructions;
+            String attemptToonPayload = toonPayloadContext.fullPayload;
+            String attemptScratchpadBlock = toonPayloadContext.initialScratchpadBlock;
             AiScheduleResponse selectedVariant = null;
             CandidateValidationData lastValidation = CandidateValidationData.valid();
 
             for (int attempt = 1; attempt <= variantMaxAttempts; attempt++) {
+                if (attempt > 1 && !lastValidation.valid) {
+                    attemptScratchpadBlock = roleValidationScratchpadPromptBlockBuilder
+                            .buildRoleValidationScratchpadBlock(toonPayloadContext.scopedShifts, toonPayloadContext.eligibleDoctors);
+                    attemptToonPayload = toonPayloadContext.payloadWithoutScratchpad
+                            + (attemptScratchpadBlock == null ? "" : attemptScratchpadBlock);
+                    logger.info("event=ai_variant_retry_scratchpad_refreshed correlation_id={} label={} attempt={} previous_validation_code={} scoped_shifts_count={} role_validation_scratchpad_rows_count={} role_validation_scratchpad_block_checksum={} role_validation_scratchpad_sample_row={}",
+                            batchCorrelationId,
+                            definition.label,
+                            attempt,
+                            lastValidation.code,
+                            toonPayloadContext.scopedShifts.size(),
+                            countBlockRows(attemptScratchpadBlock),
+                            attemptScratchpadBlock == null ? "0" : Integer.toHexString(attemptScratchpadBlock.hashCode()),
+                            extractFirstDataRow(attemptScratchpadBlock) == null ? "none" : extractFirstDataRow(attemptScratchpadBlock));
+                }
                 String correlationId = UUID.randomUUID().toString();
-                AiBrokerRequest request = new AiBrokerRequest(toonPayload, attemptInstructions, correlationId);
+                AiBrokerRequest request = new AiBrokerRequest(attemptToonPayload, attemptInstructions, correlationId);
                 logger.info("event=ai_broker_request_prepared correlation_id={} label={} attempt={} payload_length={} instructions_length={}",
                         correlationId,
                         definition.label,
                         attempt,
-                        toonPayload == null ? 0 : toonPayload.length(),
+                        attemptToonPayload == null ? 0 : attemptToonPayload.length(),
                         attemptInstructions.length());
 
                 AiTokenBudgetGuardResult budgetGuard = agentBroker.previewTokenBudget(request);
@@ -650,13 +674,15 @@ public class AiScheduleGenerationOrchestrationService {
 
                 if (attempt < variantMaxAttempts) {
                     attemptInstructions = buildCorrectiveVariantInstruction(baseInstructions, attempt, validation);
-                    logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={}",
+                    logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={} role_validation_scratchpad_block_checksum={} role_validation_scratchpad_sample_row={}",
                             correlationId,
                             definition.label,
                             attempt,
                             attempt + 1,
                             validation.code,
-                            validation.message);
+                            validation.message,
+                            attemptScratchpadBlock == null || attemptScratchpadBlock.isBlank() ? "0" : Integer.toHexString(attemptScratchpadBlock.hashCode()),
+                            extractFirstDataRow(attemptScratchpadBlock) == null ? "none" : extractFirstDataRow(attemptScratchpadBlock));
                 }
             }
 
@@ -2229,6 +2255,26 @@ public class AiScheduleGenerationOrchestrationService {
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.type = Objects.requireNonNull(type, "type");
             this.variantInstruction = Objects.requireNonNull(variantInstruction, "variantInstruction");
+        }
+    }
+
+    private static class ToonPayloadContext {
+        private final String fullPayload;
+        private final String payloadWithoutScratchpad;
+        private final String initialScratchpadBlock;
+        private final List<ConcreteShift> scopedShifts;
+        private final List<Doctor> eligibleDoctors;
+
+        private ToonPayloadContext(String fullPayload,
+                                   String payloadWithoutScratchpad,
+                                   String initialScratchpadBlock,
+                                   List<ConcreteShift> scopedShifts,
+                                   List<Doctor> eligibleDoctors) {
+            this.fullPayload = fullPayload;
+            this.payloadWithoutScratchpad = payloadWithoutScratchpad;
+            this.initialScratchpadBlock = initialScratchpadBlock;
+            this.scopedShifts = scopedShifts;
+            this.eligibleDoctors = eligibleDoctors;
         }
     }
 
