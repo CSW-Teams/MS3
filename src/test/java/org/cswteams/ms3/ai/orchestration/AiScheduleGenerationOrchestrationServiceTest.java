@@ -47,6 +47,7 @@ import org.cswteams.ms3.enums.Seniority;
 import org.cswteams.ms3.enums.SystemActor;
 import org.cswteams.ms3.enums.TaskEnum;
 import org.cswteams.ms3.enums.TimeSlot;
+import org.cswteams.ms3.exception.ViolatedConstraintException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -69,6 +70,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -969,6 +971,106 @@ class AiScheduleGenerationOrchestrationServiceTest {
                 .anyMatch(message -> message.contains("Missing required field: shift.duration")));
     }
 
+
+    @Test
+    void softDomainConstraintViolationsKeepCandidateValidAndExposedForDiagnostics() throws ViolatedConstraintException {
+        LocalDate startDate = LocalDate.of(2026, 9, 14);
+        LocalDate endDate = LocalDate.of(2026, 9, 14);
+
+        Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
+        DoctorUffaPriority doctorPriority = new DoctorUffaPriority(doctor);
+        doctorPriority.setGeneralPriority(3);
+        doctorPriority.setNightPriority(4);
+        doctorPriority.setLongShiftPriority(5);
+
+        Shift shift = makeShift(1001L, TimeSlot.MORNING, LocalTime.of(8, 0), Duration.ofMinutes(360));
+        ConcreteShift concreteShift = new ConcreteShift(startDate.toEpochDay(), shift);
+        DoctorAssignment assignment = new DoctorAssignment(doctor, ConcreteShiftDoctorStatus.ON_DUTY, concreteShift, new Task(TaskEnum.CLINIC));
+        concreteShift.setDoctorAssignmentList(List.of(assignment));
+        Schedule transientSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), List.of(concreteShift));
+
+        Constraint softConstraint = mock(Constraint.class);
+        when(softConstraint.isViolable()).thenReturn(true);
+        when(softConstraint.getId()).thenReturn(77L);
+        doThrow(new ViolatedConstraintException("soft rest window violated")).when(softConstraint).verifyConstraint(any());
+
+        ISchedulerController schedulerController = mock(ISchedulerController.class);
+        ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
+        DoctorDAO doctorDAO = mock(DoctorDAO.class);
+        DoctorUffaPriorityDAO doctorUffaPriorityDAO = mock(DoctorUffaPriorityDAO.class);
+        DoctorHolidaysDAO doctorHolidaysDAO = mock(DoctorHolidaysDAO.class);
+        HolidayDAO holidayDAO = mock(HolidayDAO.class);
+        ScheduleDAO scheduleDAO = mock(ScheduleDAO.class);
+        AgentBroker agentBroker = mock(AgentBroker.class);
+        AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
+        DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
+        AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
+        RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+
+        AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
+                new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+
+        when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
+        when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
+        when(doctorUffaPriorityDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of(doctorPriority));
+        when(doctorUffaPriorityDAO.findAll()).thenReturn(List.of(doctorPriority));
+        when(doctorHolidaysDAO.findByDoctor_IdIn(List.of(doctor.getId()))).thenReturn(List.of());
+        when(doctorHolidaysDAO.findAll()).thenReturn(List.of());
+        when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+                .thenReturn(List.of());
+        when(constraintDAO.findAll()).thenReturn(List.of(softConstraint));
+        when(holidayDAO.findAll()).thenReturn(List.of());
+
+        when(agentBroker.previewTokenBudget(any()))
+                .thenReturn(new AiTokenBudgetGuardResult(false, 0, 0, 1000, 10));
+        when(aiActiveConstraintResolver.resolve(any(), any())).thenReturn(List.of());
+        when(decisionAlgorithmService.selectPreferredWithAudit(any()))
+                .thenReturn(new AuditedSelectionResult("standard", List.of()));
+
+        when(agentBroker.requestSchedule(any())).thenAnswer(invocation -> {
+            AiBrokerRequest request = invocation.getArgument(0);
+            if (request.getInstructions().contains("Use label EMPATHETIC")) {
+                return new AiScheduleVariantsResponse(Map.of("EMPATHETIC", aiVariantResponse("empathetic")));
+            }
+            if (request.getInstructions().contains("Use label EFFICIENT")) {
+                return new AiScheduleVariantsResponse(Map.of("EFFICIENT", aiVariantResponse("efficient")));
+            }
+            return new AiScheduleVariantsResponse(Map.of("BALANCED", aiVariantResponse("balanced")));
+        });
+
+        when(aiScheduleConverterService.convert(any())).thenReturn(List.of(concreteShift));
+
+        AiScheduleGenerationOrchestrationService service = new AiScheduleGenerationOrchestrationService(
+                schedulerController,
+                doctorDAO,
+                doctorUffaPriorityDAO,
+                doctorHolidaysDAO,
+                constraintDAO,
+                holidayDAO,
+                scheduleDAO,
+                agentBroker,
+                new AiBrokerProperties(),
+                aiReschedulingOrchestrationService,
+                decisionAlgorithmService,
+                aiScheduleConverterService,
+                new AiHardCoveragePromptBlockBuilder(),
+                new AiRoleValidationScratchpadPromptBlockBuilder(),
+                new ObjectMapper()
+        );
+
+        var response = assertDoesNotThrow(() -> service.generateScheduleComparison(startDate, endDate));
+
+        var empatheticCandidate = response.getCandidates().stream()
+                .filter(candidate -> "EMPATHETIC".equalsIgnoreCase(candidate.getMetadata().getType()))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(empatheticCandidate.getMetadata().isValid());
+        assertEquals("SOFT_DOMAIN_CONSTRAINTS_VIOLATED", empatheticCandidate.getMetadata().getValidationCode());
+        assertTrue(empatheticCandidate.getMetadata().getValidationViolations().stream()
+                .anyMatch(message -> message.contains("SOFT") && message.contains("soft rest window violated")));
+    }
+
     @Test
     void collectViolatedConstraintsDoesNotReportSelfOverlapForSingleAssignment() throws Exception {
         LocalDate date = LocalDate.of(2026, 9, 14);
@@ -1102,10 +1204,13 @@ class AiScheduleGenerationOrchestrationServiceTest {
         shiftId.setAccessible(true);
         Field actualCondition = violation.getClass().getDeclaredField("actualCondition");
         actualCondition.setAccessible(true);
+        Field severity = violation.getClass().getDeclaredField("severity");
+        severity.setAccessible(true);
 
         assertEquals("99", constraintId.get(violation));
         assertEquals("10", doctorId.get(violation));
         assertEquals("1001", shiftId.get(violation));
+        assertEquals("HARD", String.valueOf(severity.get(violation)));
         assertTrue(String.valueOf(actualCondition.get(violation)).contains("IllegalStateException: boom with details"));
     }
 
