@@ -280,23 +280,39 @@ STANDARD-BASELINE PARITY (NORMATIVE):
 - Keep deterministic processing order aligned with execution-order rules and never use random fallback.
 - If `ON_DUTY` reaches minima but `ON_CALL` does not, output cannot be `SUCCESS`.
 - If either layer is short after exhausting feasible candidates, preserve already-valid assignments and report explicit uncovered reasons for affected shift/role/layer.
+<<<<<<< codex/explain-scheduling-algorithm-in-repo-fk0saw
+- Recompute feasibility after each accepted assignment so subsequent slots observe updated uniqueness, role occupancy, and hard-constraint state.
+- Baseline parity mode forbids forced hard-constraint violations to satisfy minima; when no hard-feasible candidate exists, leave the slot uncovered and continue deterministic filling.
+- Baseline parity coverage is per `(shift_id, required_role, assignment_status)`; never offset missing `ON_CALL` coverage with extra `ON_DUTY` rows (or vice versa).
+- Emit uncovered reasons at role/layer granularity so reconciliation can trace exactly which `(shift_id, required_role, assignment_status)` keys are short.
+=======
+>>>>>>> issue665-iterative-correction
 
 Baseline parity examples (required behavior):
 - Example A (layering): if required_count=1 and two eligible doctors exist, first emit one `ON_DUTY`, then one distinct `ON_CALL`.
 - Example B (no reservation): if doctor 101 is hard-feasible for the current `ON_DUTY` slot, selecting doctor 202 only to reserve 101 for `ON_CALL` is forbidden.
 - Example C (partial coverage): if only one hard-feasible doctor exists for a required role, emit one valid assignment and mark uncovered for the missing counterpart layer.
 
+<<<<<<< codex/explain-scheduling-algorithm-in-repo-fk0saw
+CONTROLLED TIE VARIABILITY (NORMATIVE):
+- Keep rule precedence deterministic, but introduce controlled variability when multiple doctors are exactly tied after hard-feasibility and scoring checks.
+- Tie-resolution order:
+=======
 DETERMINISTIC TIE-BREAKERS (NORMATIVE):
 - When candidate plans have equal primary score, apply the following ordered keys strictly and sequentially:
+>>>>>>> issue665-iterative-correction
   1. maximize hard coverage
   2. minimize soft violations
   3. maximize doctor diversity across shifts/day when hard-feasible
   4. minimize priority penalty
   5. stable shift ordering (`shift_id` lexical)
   6. stable role ordering (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`)
-- If still tied, use stable doctor ordering (ascending `doctor_id`) only as final deterministic tie-break, then continue with next listed key if needed.
-- Earlier tie-breakers always have precedence over later ones.
-- Random or nondeterministic choice is forbidden.
+- If candidates are still tied after steps 1..6, do not always pick the same `doctor_id` ordering.
+- Instead, rotate or shuffle only the final tie-group using a run-scoped seed (for example derived from planning period + variant label + generation timestamp/correlation id).
+- Seeded tie-group variability must never violate hard constraints, minima, uniqueness, or layer-order rules.
+- Outside exact tie-groups, keep selection deterministic and rule-driven.
+- Earlier tie-breakers always have precedence over variability.
+- Use seeded variability only (no unseeded randomness) so the same run input+seed is reproducible while different runs can still diversify ties.
 
 Invalid-input policy (NORMATIVE):
 - malformed required block => status=FAILURE.
