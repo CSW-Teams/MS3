@@ -97,6 +97,7 @@ public class SchedulerController implements ISchedulerController {
     @Transactional
     public Schedule createSchedule(LocalDate startDate, LocalDate endDate, List<DoctorUffaPriority> doctorUffaPriorityList, List<DoctorUffaPrioritySnapshot> snapshot)  {
 
+        // Input gate for first-time planning: the initial baseline schedule cannot start in the past.
         boolean hasExistingSchedules = !scheduleDAO.findAll().isEmpty();
         if (!hasExistingSchedules && startDate.isBefore(LocalDate.now())) {
             return null; // non consentire schedulazioni iniziali nel passato
@@ -106,7 +107,8 @@ public class SchedulerController implements ISchedulerController {
         if(!alreadyExistsAnotherSchedule(startDate,endDate))
             return null;
 
-        //currentDay = date used to iterate on the dates interval (start date -> end date)
+        // Orchestration step 1 (input expansion): transform [startDate, endDate] into dated concrete shifts.
+        // currentDay = date used to iterate on the dates interval (start date -> end date)
         LocalDate currentDay = startDate;
         List<ConcreteShift> allConcreteShifts = new ArrayList<>();
 
@@ -146,8 +148,10 @@ public class SchedulerController implements ISchedulerController {
             //We set the controller that manages doctors priorities.
             this.scheduleBuilder.setControllerScocciatura(controllerScocciatura);
 
+            // Orchestration step 2 (validation + allocation): ScheduleBuilder applies constraints while assigning doctors.
             Schedule schedule = this.scheduleBuilder.build();
 
+            // Orchestration step 3 (output generation): persist schedule and resulting doctor priority state.
             scheduleDAO.save(schedule);
             for(DoctorUffaPriority dup: schedule.getDoctorUffaPriorityList()) {
                 dup.setSchedule(schedule);
@@ -175,7 +179,7 @@ public class SchedulerController implements ISchedulerController {
         List<DoctorUffaPrioritySnapshot> doctorUffaPrioritySnapshot = doctorUffaPrioritySnapshotDAO.findAll();
         List<DoctorUffaPriority> doctorUffaPriorityList = doctorUffaPriorityDAO.findAll();
 
-        /* Restore priorities to snapshot */
+        /* Restore priorities to snapshot before regenerating, so a rebuild starts from the same queue baseline. */
         for (DoctorUffaPrioritySnapshot dupSnapshot : doctorUffaPrioritySnapshot) {
             for (DoctorUffaPriority dup : doctorUffaPriorityList) {
                 if (dupSnapshot.getDoctor().equals(dup.getDoctor())) {
@@ -314,6 +318,7 @@ public class SchedulerController implements ISchedulerController {
         for(Doctor doctor1 : doctorsOnDuty){
             for(Doctor doctor2 : doctorsOnCall){
                 if (doctor1.getId().longValue() == doctor2.getId().longValue()){
+                    // Legality check: the same doctor cannot be simultaneously ON_DUTY and ON_CALL in one shift.
                     return false;
                 }
             }
@@ -447,7 +452,9 @@ public class SchedulerController implements ISchedulerController {
             LocalDate existingStart = LocalDate.ofEpochDay(schedule.getStartDate());
             LocalDate existingEnd = LocalDate.ofEpochDay(schedule.getEndDate());
 
-            // block only exact duplicate interval; allow overlaps/adjacent ranges
+            // Behavior intentionally retained after revert cycles:
+            // we currently block only exact duplicate intervals and allow overlaps/adjacent ranges.
+            // This matches the effective business rule used in the current release branch.
             if (existingStart.equals(startNewSchedule) && existingEnd.equals(endNewSchedule)) {
                 return false;
             }
@@ -525,5 +532,4 @@ public class SchedulerController implements ISchedulerController {
     }
 
 }
-
 

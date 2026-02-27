@@ -178,11 +178,16 @@ public class ScheduleBuilder {
 
 
     public Schedule build() throws IllegalScheduleException {
+        // Start of orchestration flow: reset previous legality outcome before a fresh generation run.
         // At this point there are no concrete shifts in the schedule yet
         schedule.getViolatedConstraints().clear();
         schedule.setCauseIllegal(null);
 
-        /* update snapshot of all priorities, the following loop is needed to perform a copy by value */
+        /*
+         * Update snapshot of all priorities with a copy-by-value.
+         * Retained behavior after previous revert cycles: snapshot is refreshed at build-time so recreateSchedule
+         * can replay exactly the pre-generation priority state.
+         */
         for (DoctorUffaPriority dup : this.allDoctorUffaPriority) {
             for (DoctorUffaPrioritySnapshot dupSnapshot : snapshot) {
                 if (dup.getDoctor() == dupSnapshot.getDoctor()) {
@@ -209,7 +214,7 @@ public class ScheduleBuilder {
                         try {
                             this.addDoctors(concreteShift, entry, doctorsOnDuty, ConcreteShiftDoctorStatus.ON_DUTY, qss.getTask());
                         } catch (NotEnoughFeasibleUsersException e) {
-                            // There are not enough doctors on duty available: we define the violation of constraints and stop the schedule generation.
+                            // Hard failure for ON_DUTY coverage: we record illegality and keep traceability of violated constraints.
                             logger.log(Level.SEVERE, e.getMessage(), e);
                             schedule.setCauseIllegal(e);
                             if(schedule.getCauseIllegal() != null) logger.log(Level.SEVERE, schedule.getCauseIllegal().toString());
@@ -228,7 +233,7 @@ public class ScheduleBuilder {
                     try {
                         this.addDoctors(concreteShift, entry, doctorsOnCall, ConcreteShiftDoctorStatus.ON_CALL, qss.getTask());
                     } catch (NotEnoughFeasibleUsersException e){
-                        // Here we define the violation of constraints but do not stop the schedule generation.
+                        // Softer failure mode for ON_CALL: generation continues so planners still receive a usable draft.
                         logger.log(Level.SEVERE, e.getMessage(), e);
                     }
                 }
@@ -236,6 +241,7 @@ public class ScheduleBuilder {
 
 
         }
+        // Output generation step: expose final priority values so caller can persist the full scheduling outcome.
         this.schedule.setDoctorUffaPriorityList(allDoctorUffaPriority); //set of all the DoctorUffaPriority instances so that they can be saved in persistence
         return this.schedule;
 
@@ -301,6 +307,7 @@ public class ScheduleBuilder {
             DoctorHolidays dh = findDhByDoctor(dup.getDoctor());
 
             ContextConstraint context = new ContextConstraint(dup, concreteShift, dh, holidays);
+            // Candidate is accepted only if no hard rule is violated; soft rules are not force-overridden here.
             if(verifyAllConstraints(context, false)){
                 doctorList.add(dup.getDoctor());
                 dup.addConcreteShift(context.getConcreteShift());
@@ -319,6 +326,8 @@ public class ScheduleBuilder {
                 /* here we need to modify only the appropriate queues */
                 //if(contextDoctorsOnDuty.size() < qss.getValue()) {
                     dup.updatePriority(PriorityQueueEnum.GENERAL);
+                    // Priority rationale: long-shift queue is updated only for doctors already present in same-day morning shift;
+                    // otherwise night queue is touched only for night slots.
                     if (prevConcreteShiftDup != null && prevConcreteShiftDup.contains(dup))
                         dup.updatePriority(PriorityQueueEnum.LONG_SHIFT);
                     else if (concreteShift.getShift().getTimeSlot() == TimeSlot.NIGHT)
@@ -451,7 +460,7 @@ public class ScheduleBuilder {
                 //schedule.getViolatedConstraintLog().add(new ViolatedConstraintLogEntry(e));
                 System.out.println(constraint.getDescription());
 
-                // If the violated constraint is hard, then the shift schedule is illegal.
+                // Hard constraint: never violable. Soft constraint: violable only when caller explicitly forces assignment.
                 if (!constraint.isViolable() || !isForced){
                     isOk = false;
                 }
