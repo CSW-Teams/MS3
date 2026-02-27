@@ -24,7 +24,7 @@ import java.util.Set;
 
 @Service
 public class AiReschedulingOrchestrationService {
-    private static final long FEEDBACK_LOOKBACK_DAYS = 2L;
+    private static final long FEEDBACK_LOOKBACK_DAYS = 7L;
     private final ToonPseudonymizationMapper pseudonymizationMapper = new ToonPseudonymizationMapper();
     private final ScheduleFeedbackDAO scheduleFeedbackDAO;
     private final AiActiveConstraintResolver aiActiveConstraintResolver;
