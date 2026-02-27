@@ -143,6 +143,8 @@ public class TwoFactorAuthenticationService {
      * Applies the final recovery-code rule: disable 2FA and force full re-enrollment.
      */
     private void applyFinalRecoveryCode(SystemUser user) {
+        // Final recovery code intentionally invalidates current enrollment so a stolen backup-code
+        // list cannot be reused indefinitely without a fresh secret provisioning cycle.
         user.setTwoFactorEnabled(false);
         user.setTwoFaVersionOrSalt(UUID.randomUUID().toString());
         user.setEnrollmentConfirmedAt(null);

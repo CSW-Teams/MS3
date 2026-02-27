@@ -69,6 +69,7 @@ const resolveCandidateLabel = (metadata) => {
 };
 
 const resolveSelectionKey = (candidate) =>
+  // candidateId is preferred because it is immutable across label/localization changes.
   candidate?.metadata?.candidateId ?? candidate?.metadata?.type ?? '';
 
 const resolveMetrics = (candidate) =>
@@ -96,6 +97,8 @@ function AiScheduleComparisonModal({
   selectionLocked,
 }) {
   const placeholder = placeholderText || t('N/A');
+  // Force four slots so the modal layout is stable across different backend outcomes
+  // (full comparison, partial response, or only standard fallback).
   const cards = Array.from({ length: 4 }, (_, index) => candidates[index] ?? null);
   const downloadableCandidates = cards.filter(Boolean);
   const downloadDisabled = downloadableCandidates.length === 0;
