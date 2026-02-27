@@ -16,6 +16,7 @@ import {panic} from "../../components/common/Panic";
 import {t} from "i18next";
 import { ScheduleFeedbackAPI } from "../../API/ScheduleFeedbackAPI";
 
+// Planner-facing view used after login to audit doctors' feedback and drill into comment details.
 export default class FeedbackManagementView extends React.Component{
 
   constructor(props){
@@ -34,8 +35,10 @@ export default class FeedbackManagementView extends React.Component{
   async componentDidMount() {
     try {
       let api = new ScheduleFeedbackAPI();
-      const rawData = await api.getFeedbacks(); // Chiamata al Backend
+      // Pull full feedback list for the planner tenant; errors route to global panic fallback.
+      const rawData = await api.getFeedbacks();
 
+      // Normalize backend field names to table keys used by sorting and modal preview.
       const formattedFeedbacks = rawData.map(item => ({
         name: item.doctorName,
         lastname: item.doctorLastname,
@@ -82,6 +85,7 @@ export default class FeedbackManagementView extends React.Component{
   }
 
   render(){
+    // Client-side sorting keeps interaction immediate without refetching from API.
     const sortedData = [...this.state.feedbacks].sort((a, b) => {
       const {orderBy, orderDirection} = this.state;
       const left = a?.[orderBy];
