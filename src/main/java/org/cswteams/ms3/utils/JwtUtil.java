@@ -18,18 +18,30 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+/**
+ * Utility responsible for issuing JWTs and reading claims needed by auth filters and login flow.
+ */
 public class JwtUtil {
     // TODO move secret key to system environment!
     private final String SECRET_KEY = Base64.getEncoder().encodeToString("your-secure-key-with-min-32-characters".getBytes());
 
+    /**
+     * Reads subject claim, which is the user email/username used across authentication services.
+     */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    /**
+     * Reads token expiration claim used for token lifetime and blacklist comparisons.
+     */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    /**
+     * Creates a login JWT including role, tenant, and MFA-enabled claims consumed by downstream filters.
+     */
     public String generateToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", userDetails.getAuthorities().stream()
@@ -41,11 +53,17 @@ public class JwtUtil {
         return createToken(claims, userDetails.getUsername());
     }
 
+    /**
+     * Performs basic validation: subject must match loaded user and expiration must still be in the future.
+     */
     public Boolean validateToken(String token, CustomUserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
+    /**
+     * Generic claim extractor used by specialized accessors in this class.
+     */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -64,6 +82,9 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
+    /**
+     * Technical workaround: token lifetime is hard-coded to 1 hour until configurable expiration is introduced.
+     */
     private String createToken(Map<String, Object> claims, String subject) {
         long expirationTime = 1000 * 60 * 60; // 1 hour in milliseconds
         Date expirationDate = new Date(System.currentTimeMillis() + expirationTime);
@@ -77,6 +98,9 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * Parses custom claim "current_tenant" used to set schema context for multi-tenant requests.
+     */
     public String parseTenantFromJwt(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(getSigningKey())
@@ -87,6 +111,9 @@ public class JwtUtil {
         return claims.get("current_tenant", String.class);
     }
 
+    /**
+     * Parses custom claim "is_multi_factor_authentication_enabled" consumed by post-login clients.
+     */
     public Boolean parseMFAInfoFromJwt(String token){
         Claims claims = Jwts.parser()
                 .setSigningKey(getSigningKey())

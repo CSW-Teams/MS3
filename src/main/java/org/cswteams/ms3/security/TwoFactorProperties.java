@@ -10,6 +10,9 @@ import java.util.List;
 
 @Data
 @ConfigurationProperties(prefix = "security.2fa")
+/**
+ * Centralized 2FA policy configuration shared by login checks and enrollment endpoints.
+ */
 public class TwoFactorProperties {
     /**
      * Roles that must complete two-factor authentication before JWT issuance.

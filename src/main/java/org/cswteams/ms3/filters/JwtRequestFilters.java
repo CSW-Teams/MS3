@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.util.Date;
 
 @Component
+/**
+ * Per-request JWT gatekeeper for authentication context setup, tenant selection, and logout invalidation checks.
+ */
 public class JwtRequestFilters extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilters.class);
 
@@ -43,6 +46,9 @@ public class JwtRequestFilters extends OncePerRequestFilter {
         this.jwtBlacklistService = jwtBlacklistService;
     }
 
+    /**
+     * Validates Bearer token, enforces blacklist rules, and populates SecurityContext for authorized requests.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authorizationHeader = request.getHeader("Authorization");
@@ -57,12 +63,14 @@ public class JwtRequestFilters extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(jwt);
             } catch (ExpiredJwtException e) {
+                // HTTP mapping: expired token is an authentication failure, so respond with 401.
                 logger.warn("Expired JWT in request to {}", request.getRequestURI());
                 handleUnauthorized(response, "Token expired");
                 TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
                 SecurityContextHolder.clearContext();
                 return;
             } catch (JwtException | IllegalArgumentException e) {
+                // HTTP mapping: malformed/signature-invalid token is also 401.
                 logger.warn("Invalid JWT in request to {}", request.getRequestURI());
                 handleUnauthorized(response, "Invalid token");
                 TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
@@ -73,8 +81,10 @@ public class JwtRequestFilters extends OncePerRequestFilter {
             // Even if the token is still structurally valid and not expired,
             // a blacklisted token must not be accepted to guarantee a proper logout
             // in a stateless JWT-based authentication system.
+            // Business rule: explicit logout invalidates token immediately, independent of JWT expiry time.
             if (jwtBlacklistService.isBlacklisted(jwt)) {
                 logger.debug("JWT token is blacklisted");
+                // HTTP mapping: revoked token is unauthorized.
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Token is invalidated (logged out)");
                 return;
@@ -83,6 +93,7 @@ public class JwtRequestFilters extends OncePerRequestFilter {
 
             // Checks whether the user has had all its tokens blacklisted
             Date expirationDate = jwtUtil.extractExpiration(jwt);
+            // Business rule: wildcard invalidation revokes all user tokens issued before forced logout reset window.
             if (jwtBlacklistService.doesUserHaveTokensBlacklistedAfterDate(username, expirationDate)) {
                 logger.debug("JWT tokens is blacklisted for user {}", username);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -125,17 +136,20 @@ public class JwtRequestFilters extends OncePerRequestFilter {
                     String tenantId = jwtUtil.parseTenantFromJwt(jwt);
                     TenantContext.setCurrentTenant(tenantId);
                 } else {
+                    // HTTP mapping: validation mismatch between token and loaded user details.
                     handleUnauthorized(response, "Invalid token");
                     SecurityContextHolder.clearContext();
                     return;
                 }
             } catch (ExpiredJwtException e) {
+                // HTTP mapping: expired token is an authentication failure, so respond with 401.
                 logger.warn("Expired JWT during validation for request to {}", request.getRequestURI());
                 handleUnauthorized(response, "Token expired");
                 SecurityContextHolder.clearContext();
                 TenantContext.setCurrentTenant(DEFAULT_SCHEMA);
                 return;
             } catch (JwtException | IllegalArgumentException e) {
+                // HTTP mapping: malformed/signature-invalid token is also 401.
                 logger.warn("Invalid JWT during validation for request to {}", request.getRequestURI());
                 handleUnauthorized(response, "Invalid token");
                 SecurityContextHolder.clearContext();
@@ -147,6 +161,9 @@ public class JwtRequestFilters extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * Writes a consistent 401 response body when authentication cannot continue.
+     */
     private void handleUnauthorized(HttpServletResponse response, String message) throws IOException {
         if (!response.isCommitted()) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

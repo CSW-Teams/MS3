@@ -9,6 +9,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+/**
+ * Orchestrates logout by resolving the authenticated user and delegating JWT invalidation.
+ *
+ * <p>Business rule: logout blacklists the presented token so it cannot be reused.</p>
+ */
 public class LogoutController implements ILogoutController {
 
     private final JwtBlacklistService blacklistService;
@@ -34,6 +39,8 @@ public class LogoutController implements ILogoutController {
      */
     @Override
     public void logout(String token, String userEmail) throws UsernameNotFoundException {
+        // Technical guard: skip processing for malformed inputs instead of throwing,
+        // because logout is best-effort for missing client headers.
         if (token != null && !token.isEmpty() && userEmail != null && !userEmail.isEmpty()) {
             SystemUser systemUser = userDAO.findByEmail(userEmail);
             if (systemUser == null) {
@@ -44,4 +51,3 @@ public class LogoutController implements ILogoutController {
         }
     }
 }
-
