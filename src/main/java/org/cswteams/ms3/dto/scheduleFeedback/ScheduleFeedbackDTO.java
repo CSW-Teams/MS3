@@ -8,6 +8,18 @@ import javax.validation.constraints.*;
 
 import java.util.List;
 
+/**
+ * API payload and response projection for schedule feedback.
+ *
+ * Endpoint payload shape for create/update:
+ * - id required only for update
+ * - concreteShiftIds required and non-empty
+ * - comment optional (max 255 chars)
+ * - score required in [1,6]
+ *
+ * Mapping note: doctorName/doctorLastname are response-only storytelling fields populated from entity relations,
+ * while persistence is keyed by doctorId and linked ConcreteShift entities.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
