@@ -8,6 +8,11 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Persisted schedule feedback entity.
+ * Stores who submitted feedback (doctor), which concrete shifts it refers to,
+ * qualitative comment, numeric score and creation timestamp for audit/storytelling.
+ */
 @Entity
 @Getter
 @Setter
@@ -34,6 +39,9 @@ public class ScheduleFeedback {
 
     private int score;
 
+    /**
+     * Persisted epoch millis generated server-side when feedback is created.
+     */
     private long timestamp;
 
     public ScheduleFeedback() {

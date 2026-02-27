@@ -7,9 +7,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Persistence access layer for schedule feedback entities.
+ * Queries eagerly fetch doctor and concrete shifts so planner-facing reads can be served
+ * without additional lazy-loading lookups during DTO conversion.
+ */
 @Repository
 public interface ScheduleFeedbackDAO extends JpaRepository<ScheduleFeedback, Long> {
-    
+
     @Query("SELECT DISTINCT f FROM ScheduleFeedback f JOIN FETCH f.concreteShifts LEFT JOIN FETCH f.doctor")
     List<ScheduleFeedback> findAll();
 
