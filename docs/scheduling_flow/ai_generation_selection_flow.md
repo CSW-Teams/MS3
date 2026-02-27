@@ -18,6 +18,23 @@ This note clarifies the split between **candidate generation** and **schedule pe
 3. Confirm exactly one candidate.
 4. Persist only the confirmed candidate (`POST /schedule/selection`).
 
+## Feature timeline (merge-derived)
+
+### Baseline generation/selection flow
+- `6c2c720` → `0a6f84d`: Orchestration was wired to feedback data and the persistence rule was locked to **selected candidate only**, establishing the baseline preview-then-select behavior.
+
+### Broker integration
+- `757a66c` → `f16903f`: The provider-agnostic broker package, retry/timeout controls, and total-timeout guard were introduced, stabilizing external AI call handling.
+
+### Validation hardening
+- `a1a381f` → `b7f9f53`: Candidate/assignment validation, schema rules, scoring gates, and constraint-focused tests were layered in to tighten acceptance checks before comparison/persistence.
+
+### UI comparison and selection
+- `1bf596b` → `cc12d05`: Comparison modal integration, confirmation UX, backend selection endpoints, and UX refinements completed the planner-facing choose-and-confirm loop.
+
+### Rollback/rework points
+- `d71d1ad` / `e4ca33c` / `568b429` → `bf51cf1`: Validation refactors were rolled back, then reintroduced with split hard/soft outcomes to recover behavior safely after rework.
+
 ## Sequence diagram
 
 ```mermaid
