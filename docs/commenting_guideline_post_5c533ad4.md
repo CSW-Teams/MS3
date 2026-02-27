@@ -115,3 +115,6 @@ class ShiftSearchControllerTest {
 - English only, short sentences, limited jargon.
 - Comment explains intent and business relevance for presentation audiences.
 - No forbidden anti-patterns.
+
+## Final Quality Gate
+- Use `docs/commenting_quality_gate_post_5c533ad4.md` as the mandatory closure checklist and reporting template for post-`5c533ad4` comment hardening reviews.
