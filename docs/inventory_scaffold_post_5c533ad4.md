@@ -250,3 +250,128 @@ Source filters applied: `git diff --name-only 5c533ad4..HEAD` intersected with `
 | `frontend/src/views/utente/LoginView.js` | `views.utente` | `ui` |
 | `frontend/src/views/utente/LoginView.test.js` | `views.utente` | `ui` |
 
+## Update Procedure (repeat every sprint)
+
+Use this checklist to refresh the scaffold from the same baseline commit (`5c533ad4`) while keeping the section layout stable.
+
+1. **Refresh file inventory from baseline hash**
+
+   Command:
+   ```bash
+   git diff --name-only 5c533ad4..HEAD \
+     | sort \
+     > /tmp/ms3_changed_files.txt
+   wc -l /tmp/ms3_changed_files.txt
+   ```
+   Expected output:
+   - A positive integer line count (for example `153 /tmp/ms3_changed_files.txt`).
+   - `/tmp/ms3_changed_files.txt` contains one repository-relative path per line.
+
+2. **Detect new feature buckets**
+
+   Command:
+   ```bash
+   python3 - <<'PY'
+from pathlib import Path
+
+changed = [p.strip() for p in Path('/tmp/ms3_changed_files.txt').read_text().splitlines() if p.strip()]
+buckets = {
+    'AI scheduling': ('src/main/java/org/cswteams/ms3/ai/', 'docs/AI_powered_rescheduling/', 'docs/scheduling/', 'docs/scheduling_flow/'),
+    '2FA': ('TwoFactor', '2fa', 'totp'),
+    'Captcha/logout': ('logout', 'Turnstile', 'BlacklistedToken'),
+    'DB/bootstrap': ('db/migration/', 'db/create_schemas.sql', 'doctors_seed'),
+    'Frontend UX': ('frontend/src/', 'frontend/package.json', 'frontend/.env'),
+}
+
+hits = {k: [] for k in buckets}
+for path in changed:
+    for name, patterns in buckets.items():
+        if any(pattern in path for pattern in patterns):
+            hits[name].append(path)
+
+for name, files in hits.items():
+    print(f"{name}: {len(files)}")
+
+unknown = [p for p in changed if not any(any(pattern in p for pattern in patterns) for patterns in buckets.values())]
+print(f"UNMAPPED: {len(unknown)}")
+for path in unknown[:20]:
+    print(f"  - {path}")
+PY
+   ```
+   Expected output:
+   - One count line per existing bucket (for example `AI scheduling: 42`).
+   - `UNMAPPED: <n>` where `n > 0` indicates candidates for a **new feature bucket** section.
+
+3. **Add object responsibility rows**
+
+   Command:
+   ```bash
+   python3 - <<'PY'
+from pathlib import Path
+
+changed = [p.strip() for p in Path('/tmp/ms3_changed_files.txt').read_text().splitlines() if p.strip()]
+for path in changed:
+    if path.startswith('src/main/java/'):
+        package = path.replace('src/main/java/', '').rsplit('/', 1)[0].replace('/', '.')
+        if '/rest/' in path or '/control/' in path:
+            object_type = 'controller'
+        elif '/entity/' in path:
+            object_type = 'entity'
+        else:
+            object_type = 'service'
+    elif path.startswith('frontend/src/API/'):
+        package, object_type = 'API', 'api'
+    elif path.startswith('frontend/src/'):
+        package, object_type = 'frontend', 'ui'
+    else:
+        package, object_type = '(root)', 'doc'
+    print(f"| `{path}` | `{package}` | `{object_type}` |")
+PY
+   ```
+   Expected output:
+   - Markdown-ready table rows in the format `| \`file\` | \`package\` | \`object type\` |`.
+   - Copy each generated row into the correct feature bucket table and adjust labels manually where needed.
+
+4. **Update timeline**
+
+   Command:
+   ```bash
+   git log --date=short --pretty=format:'- %ad %h %s' 5c533ad4..HEAD | head -n 20
+   ```
+   Expected output:
+   - A reverse-chronological list of recent commits since baseline.
+   - Use this list to verify whether new sprint workstreams deserve dedicated bucket headers or checklist updates.
+
+5. **Run quick readability pass (brevity + completeness)**
+
+   Command:
+   ```bash
+   python3 - <<'PY'
+from pathlib import Path
+
+doc = Path('docs/inventory_scaffold_post_5c533ad4.md').read_text()
+required_sections = [
+    '## Cross-feature shared-module matrix',
+    '## Change-impact checklist',
+    '## AI scheduling',
+    '## 2FA',
+    '## Captcha/logout',
+    '## DB/bootstrap',
+    '## Frontend UX',
+    '## Update Procedure (repeat every sprint)',
+]
+
+missing = [s for s in required_sections if s not in doc]
+long_lines = [idx for idx, line in enumerate(doc.splitlines(), start=1) if len(line) > 140]
+
+print(f"MISSING_SECTIONS={len(missing)}")
+for s in missing:
+    print(f"  - {s}")
+print(f"LONG_LINES_OVER_140={len(long_lines)}")
+print("READABILITY_PASS=OK" if not missing else "READABILITY_PASS=ACTION_REQUIRED")
+PY
+   ```
+   Expected output:
+   - `MISSING_SECTIONS=0`
+   - `LONG_LINES_OVER_140=<n>` (review any large value for brevity improvements).
+   - `READABILITY_PASS=OK` before merging sprint updates.
