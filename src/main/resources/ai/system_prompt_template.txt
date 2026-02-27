@@ -231,17 +231,29 @@ Assignment uniqueness rule (NORMATIVE):
 
 COGNITIVE STEP (CRITICAL):
 Before generating 'assignments', execute a deterministic slot-filling procedure using TOON input block `role_validation_scratchpad`:
+0. Mandatory pre-step: parse `fb[]` comments (`c`) and reason codes (`r`) into per-doctor preference signals keyed by `(day_of_week, slot)` where slot is exactly one of `MORNING`, `AFTERNOON`, `NIGHT`.
 1. Build slot order as `(shift_id, assignment_status, required_role)` using stable shift order, then `ON_DUTY`, `ON_CALL`, then role order.
 2. For each slot, treat that row `candidate_doctor_ids` as the only source of truth of allowed doctor IDs.
-3. Try candidates in score order, but skip any doctor that conflicts with already emitted assignments or creates same-row ON_DUTY/ON_CALL overlap.
-4. Prefer variety across shifts/day when another eligible candidate exists; do not use candidate order as a greedy selection strategy.
-5. For each `(shift_id, required_role)` row with `required_count`, emit exactly `required_count` ON_DUTY and exactly `required_count` ON_CALL assignments.
-6. Never echo `role_validation_scratchpad` rows or any internal input artifact in output metadata.
-7. If any required slot remains short after trying eligible candidates, output status cannot be `SUCCESS`.
+3. For each candidate in score order, first apply hard-feasibility checks (including uniqueness and same-shift ON_DUTY/ON_CALL overlap exclusion).
+4. Hard preference decision order per slot assignment:
+   - Exclude candidates with a matching negative `(day_of_week, slot)` preference when at least one other eligible candidate exists.
+   - Prioritize candidates with a matching positive `(day_of_week, slot)` preference among remaining eligible candidates.
+   - A negative preference may be overridden only if no other eligible doctor can fill the slot.
+5. Prefer variety across shifts/day when another eligible candidate exists; do not use candidate order as a greedy selection strategy.
+6. For each `(shift_id, required_role)` row with `required_count`, emit exactly `required_count` ON_DUTY and exactly `required_count` ON_CALL assignments.
+7. Never echo `role_validation_scratchpad` rows or any internal input artifact in output metadata.
+8. If a negative preference is overridden due to candidate exhaustion, `metadata.reasoning` must explicitly state that exhaustion forced the override and identify shift/slot/candidate context.
+9. If any required slot remains short after trying eligible candidates, output status cannot be `SUCCESS`.
 
 Example:
 - Input: `role_validation_scratchpad{shift_id:"S_73_20260223",required_role:"STRUCTURED",required_count:1,candidate_doctor_ids:[101,202]}`
 - Output: `assignments: [{"shift_id":"S_73_20260223","doctor_id":101,"role_covered":"STRUCTURED","assignment_status":"ON_DUTY"}, {"shift_id":"S_73_20260223","doctor_id":202,"role_covered":"STRUCTURED","assignment_status":"ON_CALL"}]`
+
+Preference override worked example (required behavior):
+- Shift context: `S_73_20260227`, slot `NIGHT`, candidate set `[101,202]`.
+- Parsed preference signals from `fb[]`: doctor `101` has a negative signal for `(FRIDAY, NIGHT)`; doctor `202` has positive (or neutral/non-negative) signal for `(FRIDAY, NIGHT)`.
+- Required outcome: choose `202` for the NIGHT slot because a non-negative eligible alternative exists.
+- Override rule illustration: choosing `101` is permitted only if `202` (and all other eligible alternatives) become hard-infeasible; when this happens, `metadata.reasoning` must explicitly explain the negative-preference override caused by candidate exhaustion.
 
 COVERAGE RECONCILIATION GATE (NORMATIVE):
 - Execute this gate after scoring and before final JSON emission.
@@ -259,13 +271,15 @@ OUTPUT-STATE MAPPING FOR RECONCILIATION (NORMATIVE):
 
 MANDATORY EXECUTION ORDER (NORMATIVE):
 1. Parse input blocks.
-2. Build role candidate sets from `dr`.
-3. Expand hard coverage per shift from `hard_coverage_requirements`.
-4. Build deterministic slot list `(shift_id, assignment_status, role)` and fill slot-by-slot.
-5. Apply HARD constraints first; if candidate conflicts, skip and try next eligible candidate.
-6. Apply SOFT scoring/tie-breakers only among remaining feasible candidates for that slot.
-7. Run deterministic coverage reconciliation gate before emission.
-8. Emit assignments, then uncovered shifts and failure reasons.
+2. Build per-doctor preference signals by parsing `fb[]` reason codes/comments into `(day_of_week, slot)` positive/negative markers (`MORNING`, `AFTERNOON`, `NIGHT`).
+3. Build role candidate sets from `dr`.
+4. Expand hard coverage per shift from `hard_coverage_requirements`.
+5. Build deterministic slot list `(shift_id, assignment_status, role)` and fill slot-by-slot.
+6. Apply HARD constraints first; if candidate conflicts, skip and try next eligible candidate.
+7. Apply hard preference decision order for the slot: exclude negative matches when alternatives exist; prioritize positive matches; allow negative override only under candidate exhaustion.
+8. Apply SOFT scoring/tie-breakers only among remaining feasible candidates for that slot.
+9. Run deterministic coverage reconciliation gate before emission.
+10. Emit assignments, then uncovered shifts and failure reasons.
 
 STANDARD-BASELINE PARITY (NORMATIVE):
 - This section mirrors backend baseline intent and is mandatory for every variant.
@@ -293,12 +307,9 @@ Baseline parity examples (required behavior):
 CONTROLLED TIE VARIABILITY (NORMATIVE):
 - Keep rule precedence deterministic, but introduce controlled variability when multiple doctors are exactly tied after hard-feasibility and scoring checks.
 - Tie-resolution order:
-CONTROLLED TIE VARIABILITY (NORMATIVE):
-- Keep rule precedence deterministic, but introduce controlled variability when multiple doctors are exactly tied after hard-feasibility and scoring checks.
-- Tie-resolution order:
   1. maximize hard coverage
   2. minimize soft violations
-  3. maximize doctor diversity across shifts/day when hard-feasible
+  3. enforce preference precedence for matching `(day_of_week, slot)` signals (non-negative over negative; positive over neutral)
   4. minimize priority penalty
   5. stable shift ordering (`shift_id` lexical)
   6. stable role ordering (`STRUCTURED`, `SPECIALIST_JUNIOR`, `SPECIALIST_SENIOR`)
