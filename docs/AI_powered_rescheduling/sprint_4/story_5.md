@@ -485,7 +485,11 @@ Le UI devono usare `retryable=true` per chiedere al planner se vuole ritentare (
 ### 3) Logging & Audit
 
 * Logging strutturato: `event=ai_broker_attempt_failed`, `event=metrics_computation_failed`.
-* Campi minimi: `correlation_id`, `error_code`, `stage`, `retry_attempt`.
+* Per i retry broker mantenere sempre i campi strutturati: `provider`, `attempt`, `correlation_id`, `error_code`, `backoff_ms`.
+* Distinguere chiaramente i due casi operativi:
+  * `event=ai_broker_retry_backoff` con `wait_reason=normal_retry_backoff` o `wait_reason=rate_limit_backoff` per retry standard.
+  * `event=ai_broker_rate_limit_fixed_wait` con `wait_reason=rate_limit_window_reset_429` quando si applica la finestra forzata di 60s su 429.
+* In incident handling, usare `ai_broker_rate_limit_fixed_wait` per identificare rapidamente blocchi dovuti al reset finestra quota (non confonderli con i retry con backoff normale).
 * Nessun dato personale nel log (GDPR).
 
 ***
