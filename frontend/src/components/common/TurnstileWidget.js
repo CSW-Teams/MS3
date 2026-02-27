@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import {t} from "i18next";
 
+// Shared captcha bridge for login: mounts Cloudflare Turnstile and bubbles token lifecycle to parent views.
 const TurnstileWidget = forwardRef(({siteKey, onVerify}, ref) => {
   const containerRef = useRef(null);
   const widgetIdRef = useRef(null);
@@ -73,6 +74,7 @@ const TurnstileWidget = forwardRef(({siteKey, onVerify}, ref) => {
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey: siteKey,
         callback: (token) => onVerify(token),
+        // Token expiry reopens the security gate until user solves challenge again.
         'expired-callback': () => {
           onVerify(null); // Clear token in parent
         }

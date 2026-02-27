@@ -165,6 +165,7 @@ public class SchedulerController implements ISchedulerController {
         String mode = resolvePlanMode();
         long flowStart = System.currentTimeMillis();
 
+        // Input gate for first-time planning: the initial baseline schedule cannot start in the past.
         boolean hasExistingSchedules = !scheduleDAO.findAll().isEmpty();
         if (!hasExistingSchedules && startDate.isBefore(LocalDate.now())) {
             logEvent(eventName(mode, "start_rejected"), mode, Map.of(
@@ -183,7 +184,8 @@ public class SchedulerController implements ISchedulerController {
             return null;
         }
 
-        //currentDay = date used to iterate on the dates interval (start date -> end date)
+        // Orchestration step 1 (input expansion): transform [startDate, endDate] into dated concrete shifts.
+        // currentDay = date used to iterate on the dates interval (start date -> end date)
         LocalDate currentDay = startDate;
         List<ConcreteShift> allConcreteShifts = new ArrayList<>();
         long dataLoadStart = System.currentTimeMillis();
@@ -573,6 +575,7 @@ public class SchedulerController implements ISchedulerController {
         for(Doctor doctor1 : doctorsOnDuty){
             for(Doctor doctor2 : doctorsOnCall){
                 if (doctor1.getId().longValue() == doctor2.getId().longValue()){
+                    // Legality check: the same doctor cannot be simultaneously ON_DUTY and ON_CALL in one shift.
                     return false;
                 }
             }
@@ -706,7 +709,9 @@ public class SchedulerController implements ISchedulerController {
             LocalDate existingStart = LocalDate.ofEpochDay(schedule.getStartDate());
             LocalDate existingEnd = LocalDate.ofEpochDay(schedule.getEndDate());
 
-            // block only exact duplicate interval; allow overlaps/adjacent ranges
+            // Behavior intentionally retained after revert cycles:
+            // we currently block only exact duplicate intervals and allow overlaps/adjacent ranges.
+            // This matches the effective business rule used in the current release branch.
             if (existingStart.equals(startNewSchedule) && existingEnd.equals(endNewSchedule)) {
                 return true;
             }
@@ -829,3 +834,4 @@ public class SchedulerController implements ISchedulerController {
     }
 
 }
+

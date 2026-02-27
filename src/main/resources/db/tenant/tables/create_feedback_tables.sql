@@ -18,7 +18,7 @@ create table schedule_feedback (
                                    constraint fk_feedback_author foreign key (doctor_id) references doctor (ms3_tenant_user_id)
 );
 
--- Tabella di join per la relazione many-to-many
+-- Join table keeps many-to-many relation between feedback entry and evaluated shifts.
 create table schedule_feedback_concrete_shifts (
                                                    schedule_feedback_id bigint not null,
                                                    concrete_shift_id bigint not null,

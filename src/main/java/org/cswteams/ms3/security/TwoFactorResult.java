@@ -4,6 +4,11 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
+/**
+ * Represents the 2FA decision returned by the authentication service and consumed by login handlers.
+ *
+ * <p>Business rule: each factory method maps a security outcome to the HTTP status used by REST endpoints.</p>
+ */
 public class TwoFactorResult {
     private final boolean requiresTwoFactor;
     private final boolean successful;

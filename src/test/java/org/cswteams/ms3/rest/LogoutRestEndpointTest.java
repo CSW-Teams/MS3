@@ -51,30 +51,36 @@ public class LogoutRestEndpointTest {
 
     @Test
     void logout_whenUserIsLoggedAndTokenIsValid_shouldExecuteLogout() throws Exception {
+        // Given an authenticated user with a Bearer token, when /logout is called, then controller revocation must execute.
+        // Regression guard: catches logout paths that return 200 but never revoke the JWT.
         mockMvc.perform(post("/logout/").header(HttpHeaders.AUTHORIZATION, authHeaderPrefix + token).with(user(customUserDetails))).andExpect(status().isOk());
         verify(logoutController, times(1)).logout(token, userEmail);
     }
 
     @Test
     void logout_whenMissingAuthorizationHeader_shouldBlockTheRequest() throws Exception {
+        // Given no Authorization header, when /logout is called, then request must be rejected before controller logic.
         mockMvc.perform(post("/logout/").with(user(customUserDetails))).andExpect(status().isUnauthorized());
         verify(logoutController, times(0)).logout(anyString(), anyString());
     }
 
     @Test
     void logout_whenAuthorizationHeaderHasWrongFormat_shouldBlockTheRequest() throws Exception {
+        // Given a malformed Authorization header, when /logout is called, then it must not be treated as a valid session token.
         mockMvc.perform(post("/logout/").header(HttpHeaders.AUTHORIZATION, token).with(user(customUserDetails))).andExpect(status().isUnauthorized());
         verify(logoutController, times(0)).logout(anyString(), anyString());
     }
 
     @Test
     void logout_whenUserNotLoggedIn_shouldBlockTheRequest() throws Exception {
+        // Given no authenticated principal, when /logout is called, then endpoint must refuse logout attempts.
         mockMvc.perform(post("/logout/").header(HttpHeaders.AUTHORIZATION, authHeaderPrefix + token)).andExpect(status().isUnauthorized());
         verify(logoutController, times(0)).logout(anyString(), anyString());
     }
 
     @Test
     void logout_whenAuthorizationHeaderIsEmpty_shouldBlockTheRequest() throws Exception {
+        // Given an empty Authorization header, when /logout is called, then token parsing must fail closed.
         mockMvc.perform(post("/logout/").header(HttpHeaders.AUTHORIZATION, "").with(user(customUserDetails))).andExpect(status().isUnauthorized());
         verify(logoutController, times(0)).logout(anyString(), anyString());
     }

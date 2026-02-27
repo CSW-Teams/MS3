@@ -40,7 +40,11 @@ public class Schedule {
     )
     private List<ConcreteShift> concreteShifts;
 
-    /** List of constraints violated by the shift schedule. */
+    /**
+     * Constraints violated during generation.
+     * Soft-constraint violations can be logged here even when a schedule remains usable;
+     * hard-constraint violations should also be reflected by a non-null causeIllegal.
+     */
     @ManyToMany
     @NotNull
     @JoinTable(
@@ -50,7 +54,10 @@ public class Schedule {
     )
     private List<Constraint> violatedConstraints;
 
-    /** Reason for which the shift schedule results illegal */
+    /**
+     * Reason why the schedule is marked illegal.
+     * Kept separate from violatedConstraints so callers can distinguish an advisory warning set from a blocking outcome.
+     */
     @Column(name = "cause_illegal")
     private Exception causeIllegal;
 

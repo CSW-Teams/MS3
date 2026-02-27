@@ -30,6 +30,8 @@ class JwtRequestFiltersTest {
 
     @BeforeEach
     void setUp() {
+        // Non-trivial fixture: wire real JwtUtil into the filter so generated tokens match runtime signature validation.
+        jwtRequestFilters = new JwtRequestFilters();
         jwtUtil = new JwtUtil();
         loginController = mock(LoginController.class);
         jwtBlacklistService = mock(JwtBlacklistService.class);
@@ -47,6 +49,8 @@ class JwtRequestFiltersTest {
 
     @Test
     void expiredJwtReturnsUnauthorized() throws Exception {
+        // Given an expired JWT, when the request hits the filter, then it must be blocked as unauthorized.
+        // Regression guard: prevents expired tokens from being accepted after auth/logout/2FA transitions.
         String expiredJwt = buildTokenWithExpirationOffset(-1000);
 
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -66,6 +70,8 @@ class JwtRequestFiltersTest {
 
     @Test
     void malformedJwtReturnsUnauthorized() throws Exception {
+        // Given a malformed JWT, when the filter parses it, then request processing must stop with 401.
+        // Regression guard: avoids malformed token bypass that could skip normal authentication checks.
         String malformedJwt = "not-a-valid-token";
 
         MockHttpServletRequest request = new MockHttpServletRequest();

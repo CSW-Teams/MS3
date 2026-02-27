@@ -32,6 +32,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/2fa")
+/**
+ * REST API for 2FA status, enrollment, confirmation, and disable operations after primary login.
+ */
 public class TwoFactorRestEndpoint {
 
     private final TwoFactorCodeService codeService;
@@ -52,6 +55,9 @@ public class TwoFactorRestEndpoint {
         this.clock = clock;
     }
 
+    /**
+     * Returns whether 2FA is enabled and whether role policy requires enrollment.
+     */
     @GetMapping("/status")
     public ResponseEntity<TwoFactorStatusResponse> getStatus() {
         SystemUser user = getCurrentUser();
@@ -67,6 +73,9 @@ public class TwoFactorRestEndpoint {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Starts (or restarts) enrollment and returns app secret + recovery codes payload.
+     */
     @PostMapping("/enroll")
     public ResponseEntity<TwoFactorEnrollmentResponse> enroll() {
         SystemUser user = getCurrentUser();
@@ -92,8 +101,12 @@ public class TwoFactorRestEndpoint {
         }
     }
 
+    /**
+     * Confirms enrollment using a code generated from the secret issued by /2fa/enroll.
+     */
     @PostMapping("/confirm")
     public ResponseEntity<TwoFactorStatusResponse> confirm(@RequestBody TwoFactorCodeRequest request) {
+        // HTTP mapping: malformed payload gets 400 because client omitted required request field "code".
         if (request == null || request.getCode() == null || request.getCode().isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new TwoFactorStatusResponse(false, false, "A code is required to confirm enrollment."));
@@ -101,6 +114,7 @@ public class TwoFactorRestEndpoint {
 
         SystemUser user = getCurrentUser();
         TwoFactorVerificationOutcome outcome = codeService.verify(user, request.getCode());
+        // HTTP mapping: wrong code is an authentication failure, returned as 401.
         if (!outcome.isValid()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new TwoFactorStatusResponse(false, true, "Invalid code. Please try again."));
@@ -110,8 +124,12 @@ public class TwoFactorRestEndpoint {
         return ResponseEntity.ok(new TwoFactorStatusResponse(true, false, "Two-factor authentication enabled."));
     }
 
+    /**
+     * Disables 2FA after verifying a valid TOTP/recovery code from the currently enrolled user.
+     */
     @PostMapping("/disable")
     public ResponseEntity<TwoFactorStatusResponse> disable(@RequestBody TwoFactorDisableRequest request) {
+        // HTTP mapping: disabling requires request field "code", so missing field returns 400.
         if (request == null || request.getCode() == null || request.getCode().isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new TwoFactorStatusResponse(true, false, "A code is required to disable two-factor authentication."));
@@ -119,6 +137,7 @@ public class TwoFactorRestEndpoint {
 
         SystemUser user = getCurrentUser();
         TwoFactorVerificationOutcome outcome = codeService.verify(user, request.getCode());
+        // HTTP mapping: invalid code keeps feature state unchanged and returns 401.
         if (!outcome.isValid()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new TwoFactorStatusResponse(user.isTwoFactorEnabled(), false, "Invalid code. Please try again."));
@@ -136,6 +155,9 @@ public class TwoFactorRestEndpoint {
         return ResponseEntity.ok(new TwoFactorStatusResponse(false, false, message));
     }
 
+    /**
+     * Resets enrollment-related fields before issuing a new enrollment secret set.
+     */
     private void initializeEnrollmentState(SystemUser user) {
         user.setTwoFactorEnabled(false);
         user.setEnrollmentConfirmedAt(null);
@@ -149,6 +171,9 @@ public class TwoFactorRestEndpoint {
         systemUserDAO.save(user);
     }
 
+    /**
+     * Builds response field "recoveryCodes" using deterministic derivation from current enrollment salt.
+     */
     private List<String> buildRecoveryCodes(SystemUser user) {
         int count = properties.getRecoveryCodeCount();
         if (count <= 0) {
@@ -161,6 +186,9 @@ public class TwoFactorRestEndpoint {
         return codes;
     }
 
+    /**
+     * Checks whether any role from authentication principal falls under mandatory 2FA policy.
+     */
     private boolean isEnforcedForUser(Set<?> roles) {
         if (roles == null || roles.isEmpty()) {
             return false;
@@ -168,6 +196,9 @@ public class TwoFactorRestEndpoint {
         return roles.stream().anyMatch(properties.getRequiredRoles()::contains);
     }
 
+    /**
+     * Resolves the current authenticated user from Spring Security principal into persistent user entity.
+     */
     private SystemUser getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getPrincipal() == null) {
@@ -193,12 +224,18 @@ public class TwoFactorRestEndpoint {
         return user;
     }
 
+    /**
+     * Builds otpauth URI returned in response field "otpauthUrl" for authenticator apps.
+     */
     private String buildOtpAuthUrl(String email, String secret) {
         String label = URLEncoder.encode("MS3:" + email, StandardCharsets.UTF_8);
         String issuer = URLEncoder.encode("MS3", StandardCharsets.UTF_8);
         return String.format("otpauth://totp/%s?secret=%s&issuer=%s", label, secret, issuer);
     }
 
+    /**
+     * Encodes binary secret bytes into Base32 for the response field "manualKey".
+     */
     private String base32Encode(byte[] data) {
         if (data == null || data.length == 0) {
             return "";
@@ -253,6 +290,9 @@ public class TwoFactorRestEndpoint {
         return result.toString();
     }
 
+    /**
+     * Response DTO for /2fa/status, /2fa/confirm, and /2fa/disable.
+     */
     private static class TwoFactorStatusResponse {
         private final boolean enabled;
         private final boolean enrollmentRequired;
@@ -277,6 +317,10 @@ public class TwoFactorRestEndpoint {
         }
     }
 
+    /**
+     * Response DTO for /2fa/enroll.
+     * "manualKey", "otpauthUrl", and "recoveryCodes" are the fields clients use to complete setup.
+     */
     private static class TwoFactorEnrollmentResponse extends TwoFactorStatusResponse {
         private final String qrImage;
         private final String manualKey;
@@ -308,6 +352,9 @@ public class TwoFactorRestEndpoint {
         }
     }
 
+    /**
+     * Request DTO where "code" carries either current TOTP or next recovery code.
+     */
     private static class TwoFactorCodeRequest {
         @NotBlank
         private String code;
@@ -321,6 +368,10 @@ public class TwoFactorRestEndpoint {
         }
     }
 
+    /**
+     * Request DTO for /2fa/disable.
+     * "isRecoveryCode" is currently informational and does not alter verification logic.
+     */
     private static class TwoFactorDisableRequest extends TwoFactorCodeRequest {
         private boolean isRecoveryCode;
 

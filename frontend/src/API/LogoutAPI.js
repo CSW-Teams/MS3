@@ -1,3 +1,4 @@
+// Small API wrapper used by navbar logout to invalidate session server-side before local cleanup.
 export class LogoutAPI {
 
   /**
@@ -14,6 +15,7 @@ export class LogoutAPI {
       }
     };
 
+    // Logout errors are non-blocking in UI: frontend still clears local session data.
     return await fetch('/api/logout/', requestOptions);
   }
 }

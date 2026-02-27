@@ -20,6 +20,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+/**
+ * Spring Security wiring for stateless JWT authentication and login/logout endpoint access rules.
+ */
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Autowired
     private LoginController loginController;
@@ -33,11 +36,17 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
+    /**
+     * Connects authentication manager to the custom user-details loader used during login.
+     */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(loginController);
     }
 
+    /**
+     * Declares which endpoints are public and ensures JWT filter runs before username/password filter.
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // Disable CSRF protection as the application relies on token-based authentication (e.g., JWT).

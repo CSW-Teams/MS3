@@ -3,6 +3,9 @@ package org.cswteams.ms3.security;
 import lombok.Getter;
 
 @Getter
+/**
+ * Immutable verification result that tells callers whether validation succeeded and which code type was used.
+ */
 public class TwoFactorVerificationOutcome {
     private final boolean valid;
     private final boolean usedRecoveryCode;

@@ -14,6 +14,11 @@ import java.util.Date;
 
 @Service
 @Slf4j
+/**
+ * Persists JWT invalidation markers used by logout and forced sign-out flows.
+ *
+ * <p>Business rule: a token that appears in this store must be rejected by request filters.</p>
+ */
 public class JwtBlacklistService {
 
     private final static String WILDCARD_TOKEN = "*";
@@ -84,6 +89,9 @@ public class JwtBlacklistService {
         return blacklistedTokenDAO.existsBySystemUser_EmailAndTokenAndBlacklistedAtAfter(userEmail, WILDCARD_TOKEN, tokenIssueDate);
     }
 
+    /**
+     * Overload that accepts {@link Date} for callers that already work with JWT claims API.
+     */
     public boolean doesUserHaveTokensBlacklistedAfterDate(String userEmail, Date tokenIssueDate) throws IllegalArgumentException {
         if (tokenIssueDate == null) throw new IllegalArgumentException("Token issue date cannot be null");
         return doesUserHaveTokensBlacklistedAfterDate(userEmail, dateToLocalDateTime(tokenIssueDate));
@@ -100,7 +108,8 @@ public class JwtBlacklistService {
     public void blacklistAllUserTokens(SystemUser systemUser) {
         if (systemUser == null) throw new IllegalArgumentException("User cannot be null");
         LocalDateTime now = LocalDateTime.now(clock);
-        // Set the expiration date to 1 hour after the current time
+        // Technical workaround: we cannot list all issued JWTs, so wildcard invalidation
+        // keeps a synthetic marker valid for one token lifetime (currently 1 hour).
         LocalDateTime maxExpirationDate = now.plusHours(1);
         BlacklistedToken wildcardToken = new BlacklistedToken();
         wildcardToken.setToken("*");

@@ -51,8 +51,10 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
         LocalDateTime cShift2End = cShift2Start.plus(cShift2.getShift().getDuration());
 
         if (cShift1Start.isBefore(cShift2Start)) {
+            // Non-overlap legality check: contiguous is acceptable, and a positive gap is tolerated only within delta.
             return Math.abs(cShift1End.until(cShift2Start, tu)) <= delta;
         } else {
+            // Symmetric branch retained to keep ordering-independent behavior for callers passing unsorted shifts.
             return Math.abs(cShift2End.until(cShift1Start, tu)) <= delta;
         }
 
@@ -74,6 +76,7 @@ public abstract class ConstraintAssegnazioneTurnoTurno extends Constraint {
 
             if (cShiftDate.isAfter(cShiftDateToBeAssignedDate) || cShiftDate.isEqual(cShiftDateToBeAssignedDate)) {
                 if (concreteShifts.get(i).getShift().getStartTime().isAfter(concreteShiftToBeAssigned.getShift().getStartTime()) || concreteShifts.get(i).getShift().getStartTime().equals(concreteShiftToBeAssigned.getShift().getStartTime())) {
+                    // Priority to immediate predecessor: constraints compare against the latest shift before insertion point.
                     return i - 1;
                 }
             }

@@ -70,6 +70,8 @@ class TestJwtBlacklistService {
 
     @Test
     void blacklist_whenArgumentsAreValid_shouldCallBlacklist() {
+        // Given a valid token and user, when blacklisting is requested, then token metadata must be saved consistently.
+        // Regression guard: avoids partial token revocation records that could let invalid sessions slip through checks.
         when(blacklistedTokenDAO.existsByToken(validToken)).thenReturn(false);
         when(jwtUtil.extractExpiration(validToken)).thenReturn(Date.from(fixedDateTime.atZone(ZoneId.systemDefault()).toInstant()));
 
@@ -88,6 +90,8 @@ class TestJwtBlacklistService {
     @ParameterizedTest
     @MethodSource("provideInvalidBlacklistParams")
     void blacklist_whenTokenArgumentIsInvalid_shouldNotBlacklistToken(String token, SystemUser user) {
+        // Given invalid token inputs, when blacklisting is attempted, then no persistence should occur.
+        // Regression guard: prevents accepting malformed logout data as if it were revocation evidence.
         //when(blacklistedTokenDAO.existsByToken(token)).thenReturn(true);
         jwtBlacklistService.blacklist(token, user);
         verify(blacklistedTokenDAO, never()).save(any(BlacklistedToken.class));
@@ -95,18 +99,21 @@ class TestJwtBlacklistService {
 
     @Test
     void blacklist_whenSystemUserArgumentIsNull_shouldNotBlacklistToken() {
+        // Given a missing user context, when blacklisting is requested, then token must not be stored.
         jwtBlacklistService.blacklist(validToken, null);
         verify(blacklistedTokenDAO, never()).save(any(BlacklistedToken.class));
     }
 
     @Test
     void isBlacklisted_whenTokenIsAlreadyBlacklisted_shouldReturnTrue() {
+        // Given a token already in blacklist storage, when checked, then access should be denied.
         when(blacklistedTokenDAO.existsByToken(blacklistedToken)).thenReturn(true);
         assertTrue(jwtBlacklistService.isBlacklisted(blacklistedToken));
     }
 
     @Test
     void isBlacklisted_whenTokenIsNotAlreadyBlacklisted_shouldReturnTrue() {
+        // Given a token absent from blacklist storage, when checked, then it should not be treated as revoked.
         when(blacklistedTokenDAO.existsByToken(unblacklistedToken)).thenReturn(false);
         assertFalse(jwtBlacklistService.isBlacklisted(unblacklistedToken));
     }
@@ -114,12 +121,15 @@ class TestJwtBlacklistService {
     @ParameterizedTest
     @MethodSource("provideInvalidIsBlacklistedParams")
     void isBlacklisted_whenTokenIsInvalid_shouldReturnTrue(String token) {
+        // Given null/blank token input, when blacklist status is requested, then validation must fail fast.
+        // Regression guard: blocks edge cases where empty tokens might bypass auth checks.
         IllegalArgumentException exc = assertThrows(IllegalArgumentException.class, () -> jwtBlacklistService.isBlacklisted(token));
         assertEquals("Token cannot be null or empty", exc.getMessage());
     }
 
     @Test
     void doesUserHaveTokensBlacklistedAfterDate_withLocalDateTime_whenUserHasWildcardTokenAfterDate_shouldReturnTrue() {
+        // Given a user-wide wildcard revocation after issue date, when queried, then the user must be considered revoked.
         String email = "test@example.com";
         LocalDateTime issueDate = fixedDateTime.minusHours(1);
         when(blacklistedTokenDAO.existsBySystemUser_EmailAndTokenAndBlacklistedAtAfter(email, "*", issueDate)).thenReturn(true);
@@ -129,6 +139,7 @@ class TestJwtBlacklistService {
 
     @Test
     void doesUserHaveTokensBlacklistedAfterDate_withLocalDateTime_whenUserDoesNotHaveWildcardTokenAfterDate_shouldReturnFalse() {
+        // Given no wildcard revocation after issue date, when queried, then user-wide revocation must be false.
         String email = "test@example.com";
         LocalDateTime issueDate = fixedDateTime.minusHours(1);
         when(blacklistedTokenDAO.existsBySystemUser_EmailAndTokenAndBlacklistedAtAfter(email, "*", issueDate)).thenReturn(false);
@@ -138,6 +149,7 @@ class TestJwtBlacklistService {
 
     @Test
     void doesUserHaveTokensBlacklistedAfterDate_withLocalDateTime_whenEmailIsInvalid_shouldThrowException() {
+        // Given invalid email identity, when revocation scope is checked, then the service must reject the request.
         LocalDateTime issueDate = fixedDateTime;
         assertThrows(IllegalArgumentException.class, () -> jwtBlacklistService.doesUserHaveTokensBlacklistedAfterDate(null, issueDate));
         assertThrows(IllegalArgumentException.class, () -> jwtBlacklistService.doesUserHaveTokensBlacklistedAfterDate("", issueDate));
@@ -145,12 +157,14 @@ class TestJwtBlacklistService {
 
     @Test
     void doesUserHaveTokensBlacklistedAfterDate_withDate_whenDateIsNull_shouldThrowException() {
+        // Given missing issue date, when revocation is evaluated, then argument validation must protect the query contract.
         String email = "test@example.com";
         assertThrows(IllegalArgumentException.class, () -> jwtBlacklistService.doesUserHaveTokensBlacklistedAfterDate(email, (Date) null));
     }
 
     @Test
     void doesUserHaveTokensBlacklistedAfterDate_withDate_shouldCallLocalDateTimeVersion() {
+        // Given Date-based API usage, when called, then conversion path must preserve wildcard revocation semantics.
         String email = "test@example.com";
         Date date = Date.from(fixedDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
@@ -163,6 +177,8 @@ class TestJwtBlacklistService {
 
     @Test
     void blacklistAllUserTokens_whenUserIsValid_shouldSaveWildcardToken() {
+        // Given a valid user, when global logout is triggered, then a wildcard token must revoke all active sessions.
+        // Regression guard: prevents user-level logout from leaving old tokens valid (2FA/session bypass risk).
         jwtBlacklistService.blacklistAllUserTokens(validUserMock);
 
         ArgumentCaptor<BlacklistedToken> captor = ArgumentCaptor.forClass(BlacklistedToken.class);
@@ -177,6 +193,7 @@ class TestJwtBlacklistService {
 
     @Test
     void blacklistAllUserTokens_whenUserIsNull_shouldThrowException() {
+        // Given missing user context, when wildcard revocation is requested, then validation must fail.
         assertThrows(IllegalArgumentException.class, () -> jwtBlacklistService.blacklistAllUserTokens(null));
     }
 }

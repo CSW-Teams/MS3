@@ -19,6 +19,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Application/service layer for request-to-persistence orchestration.
+ * <p>
+ * Responsibilities:
+ * - validate domain-level assumptions beyond bean validation (doctor existence, shift existence, ownership)
+ * - map endpoint DTO payloads to JPA entities and persist through DAO
+ * - expose planner-facing and doctor-facing DTO projections for read/update flows
+ */
 @Service
 public class ScheduleFeedbackController implements IScheduleFeedbackController {
 
@@ -34,6 +42,12 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
     @Autowired
     private Clock clock;
 
+    /**
+     * Controller boundary assumptions:
+     * payload has already passed basic bean validation at REST boundary.
+     * This layer still verifies domain consistency (doctor authenticated and existing, shift ids existing).
+     * Persisted record contains doctor reference, shift relations, comment, score and server-side timestamp.
+     */
     @Override
     @Transactional
     public ScheduleFeedbackDTO addFeedback(ScheduleFeedbackDTO feedbackDTO, String email) {
@@ -44,7 +58,7 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
                         "Dottore con email " + email + " non trovato nel database."
                 );
         }
-        
+
         feedbackDTO.setDoctorId(doctor.getId());
 
         if (feedbackDTO.getConcreteShiftIds() == null || feedbackDTO.getConcreteShiftIds().isEmpty()) {
@@ -117,7 +131,10 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
                 .collect(Collectors.toList());
     }
 
-    // update di un feedback lasciato dall'utente, non integrato. Valutarne integrazione futura con agenti AI?
+    /**
+     * Update semantics: does not replace linked shift ids or doctor ownership; only content fields are updated.
+     * Planner-facing behavior: planner list endpoints expose this new persisted state after save.
+     */
     @Override
     @Transactional
     public ScheduleFeedbackDTO updateFeedback(ScheduleFeedbackDTO feedbackDTO, String email) {
@@ -144,7 +161,10 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
         return convertToDTO(updatedFeedback);
     }
 
-    // delete di un feedback lasciato dall'utente, non integrato. Valutarne integrazione futura con agenti AI?
+    /**
+     * Delete semantics: hard delete for owner doctor only.
+     * Planner-facing behavior: deleted records are no longer returned by aggregate read queries.
+     */
     @Override
     @Transactional
     public void deleteFeedback(Long feedbackId, String email) {
@@ -166,6 +186,11 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
         scheduleFeedbackDAO.delete(feedback);
     }
 
+    /**
+     * Non-obvious mapping notes:
+     * - entity keeps full Doctor and ConcreteShift relations, DTO exposes doctor names and shift ids only
+     * - DTO timestamp mirrors persisted epoch millis generated server-side at creation time
+     */
     private ScheduleFeedbackDTO convertToDTO(ScheduleFeedback feedback) {
         return new ScheduleFeedbackDTO(
                 feedback.getId(),

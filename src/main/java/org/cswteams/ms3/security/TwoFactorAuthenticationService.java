@@ -13,6 +13,9 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+/**
+ * Applies 2FA business rules during login: enrollment, challenge, lockout, and success paths.
+ */
 public class TwoFactorAuthenticationService {
     private static final Logger logger = LoggerFactory.getLogger(TwoFactorAuthenticationService.class);
 
@@ -31,24 +34,31 @@ public class TwoFactorAuthenticationService {
         this.clock = clock;
     }
 
+    /**
+     * Evaluates whether 2FA is required and validates the provided code when needed.
+     */
     public TwoFactorResult processTwoFactor(SystemUser user, String providedCode) {
         boolean enforcedByRole = isEnforcedForUser(user);
         boolean enabled = user.isTwoFactorEnabled();
 
+        // Business rule: if role policy does not enforce 2FA and user never enabled it, login proceeds with password only.
         if (!enforcedByRole && !enabled) {
             return TwoFactorResult.notRequired();
         }
 
+        // Business rule: role requires 2FA, but enrollment has not been completed yet.
         if (!enabled) {
             logger.info("2FA enrollment required for user {} due to enforced role", user.getEmail());
             return TwoFactorResult.enrollmentRequired("Two-factor enrollment is required before login.");
         }
 
+        // Business rule: repeated failures trigger temporary lockout.
         if (isLockedOut(user)) {
             logger.warn("2FA lockout active for user {} until {}", user.getEmail(), user.getOtpLockoutEndsAt());
             return TwoFactorResult.locked("Too many failed attempts. Please wait before retrying.");
         }
 
+        // Business rule: once 2FA is active, code is mandatory to finish login.
         if (providedCode == null || providedCode.isBlank()) {
             return TwoFactorResult.challenge("Two-factor code required.");
         }
@@ -69,6 +79,9 @@ public class TwoFactorAuthenticationService {
         return TwoFactorResult.successWithTwoFactor();
     }
 
+    /**
+     * Marks enrollment as completed after successful confirmation code submission.
+     */
     public void markEnrollmentConfirmed(SystemUser user) {
         user.setTwoFactorEnabled(true);
         user.setEnrollmentConfirmedAt(LocalDateTime.now(clock));
@@ -76,6 +89,9 @@ public class TwoFactorAuthenticationService {
         logger.info("2FA enrollment confirmed for user {}", user.getEmail());
     }
 
+    /**
+     * Disables 2FA and clears enrollment metadata for the authenticated user.
+     */
     public void disableTwoFactor(SystemUser user) {
         user.setTwoFactorEnabled(false);
         user.setTwoFaVersionOrSalt(null);
@@ -85,6 +101,9 @@ public class TwoFactorAuthenticationService {
         logger.info("2FA disabled for user {}", user.getEmail());
     }
 
+    /**
+     * Tracks failed code attempts and starts lockout when the configured threshold is reached.
+     */
     private void registerFailure(SystemUser user) {
         user.setOtpFailedAttempts(user.getOtpFailedAttempts() + 1);
         user.setOtpLastAttemptAt(LocalDateTime.now(clock));
@@ -102,10 +121,16 @@ public class TwoFactorAuthenticationService {
         systemUserDAO.save(user);
     }
 
+    /**
+     * Returns true while lockout expiration is still in the future.
+     */
     private boolean isLockedOut(SystemUser user) {
         return user.getOtpLockoutEndsAt() != null && user.getOtpLockoutEndsAt().isAfter(LocalDateTime.now(clock));
     }
 
+    /**
+     * Returns true when at least one of the user roles is listed in required 2FA roles.
+     */
     private boolean isEnforcedForUser(SystemUser user) {
         Set<SystemActor> roles = user.getSystemActors();
         if (roles == null || roles.isEmpty()) {
@@ -114,6 +139,9 @@ public class TwoFactorAuthenticationService {
         return roles.stream().anyMatch(properties.getRequiredRoles()::contains);
     }
 
+    /**
+     * Applies the final recovery-code rule: disable 2FA and force full re-enrollment.
+     */
     private void applyFinalRecoveryCode(SystemUser user) {
         user.setTwoFactorEnabled(false);
         user.setTwoFaVersionOrSalt(UUID.randomUUID().toString());

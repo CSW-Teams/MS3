@@ -1,5 +1,11 @@
 package org.cswteams.ms3.control.logout;
 
+/**
+ * Defines the logout contract for the authentication lifecycle.
+ *
+ * <p>Business rule: once a user logs out, the current JWT must no longer be accepted,
+ * even if its signature and expiration are still valid.</p>
+ */
 public interface ILogoutController {
 
     /**

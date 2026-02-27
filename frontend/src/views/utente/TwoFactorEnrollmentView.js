@@ -18,6 +18,7 @@ import {t} from "i18next";
 import {panic} from "../../components/common/Panic";
 import {QRCodeCanvas} from "qrcode.react";
 
+// Post-login security page where users enroll, confirm, or disable 2FA according to role requirements.
 export default class TwoFactorEnrollmentView extends React.Component {
   constructor(props) {
     super(props);
@@ -78,6 +79,7 @@ export default class TwoFactorEnrollmentView extends React.Component {
   loadStatus = async () => {
     this.setState({loadingStatus: true});
     try {
+      // Fetches current enrollment/enforcement flags to decide which journey branch to render.
       const response = await this.twoFactorApi.getStatus();
       let data = {};
       try {
@@ -104,6 +106,7 @@ export default class TwoFactorEnrollmentView extends React.Component {
   }
 
   handleStartEnrollment = async () => {
+    // Starting a new enrollment always clears previous secret material from state first.
     this.setState({
       enrollmentStarted: true,
       qrImage: null,
@@ -115,6 +118,7 @@ export default class TwoFactorEnrollmentView extends React.Component {
     });
 
     try {
+      // Backend returns QR/manual secret and one-time recovery codes; UI should show them immediately.
       const response = await this.twoFactorApi.startEnrollment();
       let data = {};
       try {
@@ -154,6 +158,7 @@ export default class TwoFactorEnrollmentView extends React.Component {
     this.setState({confirmationInFlight: true});
 
     try {
+      // Confirms enrollment with a live authenticator OTP; success turns protection on for next logins.
       const response = await this.twoFactorApi.confirmEnrollment(this.state.otpInput);
       let data = {};
       try {
@@ -192,6 +197,7 @@ export default class TwoFactorEnrollmentView extends React.Component {
     }
     this.setState({disableInFlight: true});
     try {
+      // Contract: backend expects `recoveryCode` flag to interpret `code` as recovery vs authenticator token.
       const response = await this.twoFactorApi.disableTwoFactor(
         this.state.disableCode,
         this.state.disableWithRecovery
@@ -355,6 +361,7 @@ export default class TwoFactorEnrollmentView extends React.Component {
             onChange={(event) => this.setState({disableCode: event.target.value})}
           />
           <Button onClick={() => this.setState({disableWithRecovery: !this.state.disableWithRecovery, disableCode: ""})}>
+            {/* Reset input when switching source so users do not submit a code in the wrong mode. */}
             {this.state.disableWithRecovery ? t('Use authenticator code instead') : t('Use a recovery code')}
           </Button>
         </CardContent>

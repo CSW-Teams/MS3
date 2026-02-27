@@ -12,6 +12,7 @@ import {
 import {useTranslation} from 'react-i18next';
 import {LogoutAPI} from "../../../../API/LogoutAPI";
 
+// Authenticated user menu: profile/preferences links plus logout step in the post-login journey.
 export default function UserActions() {
   const {t} = useTranslation();
 
@@ -41,6 +42,7 @@ export default function UserActions() {
     if (token) {
       const logoutApi = new LogoutAPI();
       try {
+        // Fire-and-forget server logout; UI still proceeds with local session teardown on failure.
         await logoutApi.postLogout(token);
       } catch (e) {
         console.error("Logout failed", e);
