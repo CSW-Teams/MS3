@@ -53,7 +53,7 @@ const TWO_FACTOR_MESSAGE_MAP = {
   }
 };
 
-// Define a LoginView component using React class-based component
+// Entry point of the authentication journey: credentials, adaptive captcha, and 2FA challenge.
 export default class LoginView extends React.Component {
   constructor(props) {
     super(props);
@@ -159,11 +159,13 @@ export default class LoginView extends React.Component {
     localStorage.setItem("tenant", user.tenant);
     localStorage.setItem("jwt", user.jwt);
 
+    // Single-role users go straight to workspace selection completion.
     if (user.systemActors && user.systemActors.length === 1) {
       this.handleDialogClose(user.systemActors[0]);
       return;
     }
 
+    // Multi-role users must explicitly pick a role before entering planning pages.
     this.setState({systemActorsAvailable: user.systemActors || []});
     this.handleDialogOpen();
   }
@@ -209,6 +211,7 @@ export default class LoginView extends React.Component {
       retryAfterSeconds: data?.retryAfterSeconds
     } : null;
 
+    // Backend contract: `requiresTwoFactor` keeps primary login pending until OTP/recovery verification succeeds.
     this.setState({
       twoFactorDialogOpen: true,
       twoFactorMessage: t(dialog),
@@ -242,6 +245,7 @@ export default class LoginView extends React.Component {
   }
 
   handleOtpToggleMode = () => {
+    // Switching mode resets the typed code to avoid mixing OTP and recovery semantics.
     this.setState((prevState) => ({
       isRecoveryCode: !prevState.isRecoveryCode,
       otpInput: ""
@@ -258,6 +262,7 @@ export default class LoginView extends React.Component {
 
     try {
       const loginAPI = new LoginAPI();
+      // Reuse `/api/login` with OTP fields so backend can finalize the suspended login attempt.
       const response = await loginAPI.postLogin({
         email: this.state.email,
         password: this.state.password,
@@ -273,6 +278,7 @@ export default class LoginView extends React.Component {
         data = {};
       }
 
+      // Success path: challenge is solved and API returns the same JWT payload as normal login.
       if (response.ok && data?.jwt) {
         this.setState({twoFactorDialogOpen: false, lockoutInfo: null});
         await this.handleCompleteLogin(data);
@@ -354,6 +360,7 @@ export default class LoginView extends React.Component {
       return;
     }
 
+    // Non-2xx with `requiresTwoFactor` means credentials are valid but second factor is mandatory.
     if (responseData?.requiresTwoFactor) {
       this.handleTwoFactorChallenge(responseData, httpResponse.status);
       return;

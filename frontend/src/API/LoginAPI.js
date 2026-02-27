@@ -8,6 +8,7 @@ export  class LoginAPI {
    */
   async postLogin(credenziali) {
 
+    // Contract with /api/login: backend accepts optional captcha and 2FA fields in same payload.
     const userDetails = {
       email: credenziali.email,
       password: credenziali.password,
@@ -22,6 +23,7 @@ export  class LoginAPI {
       body: JSON.stringify(userDetails)
     };
 
+    // Caller handles 200 login success, 4xx challenge states, and toast messaging decisions.
     return await fetch('/api/login/', requestOptions);
   }
 
