@@ -32,7 +32,7 @@ http://localhost:3000
 Prima di avviare i container, verificare eventuali modifiche locali in base al sistema operativo:
 
 - **Linux**: nessuna modifica necessaria.
-- **WINDOWS:** Convertire tramite il comando `dos2unix` ([vedi qui](https://dos2unix.sourceforge.io/)) i file di testo `mvnw` e `src/main/resources/db/init-scripts/init-users.sh`.
+- **Windows:** Convertire tramite il comando `dos2unix` ([vedi qui](https://dos2unix.sourceforge.io/)) i file di testo `mvnw` e `src/main/resources/db/init-scripts/init-users.sh`.
 - **macOS Apple Silicon**: modifica locale in `src/main/resources/Dockerfile.backend` da `FROM eclipse-temurin:11-jdk-alpine` a `FROM eclipse-temurin:11-jdk`.
 
 ⚠️ Queste modifiche sono solo per esecuzione locale e non devono essere committate.
