@@ -49,7 +49,7 @@ class ScheduleFeedbackControllerTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        // Mocks for entities
+        // Non-trivial fixture: shared doctor/shift/feedback mocks emulate realistic ownership and DTO mapping paths.
         doctor = mock(Doctor.class);
         when(doctor.getId()).thenReturn(1L);
         when(doctor.getName()).thenReturn("Stanis");
@@ -76,6 +76,8 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void addFeedback_success() {
+        // Given an existing doctor and shift, when feedback is submitted, then it must be persisted and mapped in response.
+        // Regression guard: ensures schedule feedback writes are not silently dropped after API/controller changes.
         when(doctorDAO.findByEmail("stanis.larochelle@example.com")).thenReturn(doctor);
         when(concreteShiftDAO.findAllById(any())).thenReturn(Collections.singletonList(shift));
         when(clock.millis()).thenReturn(1000L);
@@ -96,6 +98,7 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void addFeedback_doctorNotFound() {
+        // Given an unknown doctor identity, when feedback is submitted, then request must fail and avoid persistence.
         when(doctorDAO.findByEmail("unknown@example.com")).thenReturn(null);
 
         assertThrows(ResponseStatusException.class, () -> 
@@ -106,6 +109,7 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void addFeedback_shiftNotFound() {
+        // Given feedback referencing missing shifts, when submitted, then controller must reject inconsistent domain data.
         when(doctorDAO.findByEmail("stanis.larochelle@example.com")).thenReturn(doctor);
         when(concreteShiftDAO.findAllById(any())).thenReturn(Collections.emptyList());
 
@@ -117,6 +121,7 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void getAllFeedbacks() {
+        // Given stored feedback entries, when querying all feedbacks, then response must expose persisted domain content.
         when(scheduleFeedbackDAO.findAll()).thenReturn(Collections.singletonList(feedback));
 
         List<ScheduleFeedbackDTO> results = controller.getAllFeedbacks();
@@ -127,6 +132,7 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void getFeedbacksByDoctor() {
+        // Given a doctor with feedback, when querying by doctor, then only that doctor's feedback mapping should be returned.
         when(doctorDAO.findByEmail("stanis.larochelle@example.com")).thenReturn(doctor);
         when(scheduleFeedbackDAO.findByDoctorId(1L)).thenReturn(Collections.singletonList(feedback));
 
@@ -138,6 +144,7 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void updateFeedback_success() {
+        // Given feedback owned by the requesting doctor, when updated, then mutable fields must be changed and saved.
         feedbackDTO.setId(100L);
         feedbackDTO.setComment("Updated comment");
         feedbackDTO.setScore(4);
@@ -155,6 +162,8 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void updateFeedback_forbidden() {
+        // Given feedback owned by another doctor, when update is attempted, then access must be denied.
+        // Regression guard: blocks privilege escalation that would let users edit others' feedback.
         feedbackDTO.setId(100L);
         Doctor otherDoctor = mock(Doctor.class);
         when(otherDoctor.getId()).thenReturn(2L);
@@ -169,6 +178,7 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void deleteFeedback_success() {
+        // Given feedback owned by the requester, when delete is invoked, then the record must be removed.
         when(doctorDAO.findByEmail("stanis.larochelle@example.com")).thenReturn(doctor);
         when(scheduleFeedbackDAO.findById(100L)).thenReturn(Optional.of(feedback));
 

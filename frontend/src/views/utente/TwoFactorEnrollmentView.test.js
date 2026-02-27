@@ -32,6 +32,7 @@ const makeResponse = (body, ok = true, status = 200) => ({
 
 describe("TwoFactorEnrollmentView", () => {
   beforeEach(() => {
+    // Non-trivial fixture: mock full 2FA API lifecycle to isolate enrollment state transitions and sensitive-data handling.
     TwoFactorAPI.mockClear();
     TwoFactorAPI.mockImplementation(() => ({
       getStatus: jest.fn().mockResolvedValue(makeResponse({enabled: false, enrollmentRequired: false})),
@@ -49,6 +50,7 @@ describe("TwoFactorEnrollmentView", () => {
   });
 
   test("stores and clears recovery codes after hiding", async () => {
+    // Given enrollment returns recovery codes, when user hides them, then sensitive codes must be cleared from state.
     const view = new TwoFactorEnrollmentView({});
     await view.componentDidMount();
     await view.handleStartEnrollment();
@@ -60,6 +62,8 @@ describe("TwoFactorEnrollmentView", () => {
   });
 
   test("successful confirmation enables two-factor and clears sensitive state", async () => {
+    // Given valid OTP confirmation, when enrollment is completed, then 2FA must be enabled and temporary secrets erased.
+    // Regression guard: avoids leaking setup secrets after enabling second factor.
     const view = new TwoFactorEnrollmentView({});
     await view.componentDidMount();
 
@@ -79,6 +83,7 @@ describe("TwoFactorEnrollmentView", () => {
   });
 
   test("renders QR component when otpauthUrl is provided", async () => {
+    // Given backend supplies otpauth URL, when enrollment card renders, then QR code should be available for authenticator apps.
     const view = new TwoFactorEnrollmentView({});
     await view.componentDidMount();
     await view.handleStartEnrollment();
@@ -90,6 +95,7 @@ describe("TwoFactorEnrollmentView", () => {
   });
 
   test("shows fallback message and manual key when no otpauthUrl is returned", async () => {
+    // Given QR provisioning is unavailable, when enrollment renders, then fallback instructions/manual key must guide setup.
     TwoFactorAPI.mockImplementation(() => ({
       getStatus: jest.fn().mockResolvedValue(makeResponse({enabled: false, enrollmentRequired: false})),
       startEnrollment: jest.fn().mockResolvedValue(
