@@ -44,6 +44,24 @@ public interface ISchedulerController {
     Schedule createSchedule(LocalDate startDate, LocalDate endDate);
 
     /**
+     * Creates a schedule valid for the specified period without persisting it.
+     * This is used to compare candidate schedules before a final selection is committed.
+     *
+     * @param startDate starting day of the schedule validity
+     * @param endDate   end day (inclusive) of the validity of the schedule
+     * @return the created schedule (not persisted)
+     */
+    Schedule createScheduleTransient(LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Persists a previously built schedule and its priorities (if present).
+     *
+     * @param schedule the schedule to persist
+     * @return the persisted schedule
+     */
+    Schedule persistSchedule(Schedule schedule);
+
+    /**
      * This method recreates an existing shift scheduling. It is not possible to recreate a schedule in the past.
      *
      * @param id An existing schedule ID
@@ -124,4 +142,13 @@ public interface ISchedulerController {
      * @throws IllegalScheduleException Rised if the new concrete shift makes the schedule illegal
      */
     Schedule addConcreteShift(RegisterConcreteShiftDTO registerConcreteShiftDTO, boolean forced) throws ConcreteShiftException, IllegalScheduleException;
+
+    /**
+     * Verifies whether a schedule already exists for the specified date range.
+     *
+     * @param startNewSchedule First date to be planned for a shift schedule
+     * @param endNewSchedule Last date to be planned for a shift schedule
+     * @return False if there already exists a shift schedule for the dates we want to plan, true otherwise
+     */
+    boolean alreadyExistsAnotherSchedule(LocalDate startNewSchedule, LocalDate endNewSchedule);
 }

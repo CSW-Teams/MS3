@@ -25,6 +25,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * {@code ScheduleBuilder} è il motore centrale (core engine) del sistema di scheduling.
+ * Prende in ingresso tutti i dati di dominio (medici, vincoli, turni, priorità) e costruisce uno {@link Schedule} valido.
+ *
+ * Le sue principali responsabilità includono:
+ *  - Espandere i turni astratti in {@link ConcreteShift ConcreteShift} per il periodo dato.</li>
+ *  - Iterare sui medici e verificarne l'idoneità per ogni turno applicando tutti i {@link Constraint vincoli}.</li>
+ *  - Ordinare i medici idonei in base al sistema di priorità "scocciatura" (UFFA).</li>
+ *  - Assemblare lo schedule finale e identificare eventuali {@link ViolatedConstraintException violazioni di vincoli}.</li>
+ *
+ * È un componente chiave nel {@link SchedulerController#createSchedule(LocalDate, LocalDate, List, List) flusso di generazione}
+ * dello schedule, in particolare nello "Step D - Init ScheduleBuilder (core engine)".
+ *
+ * Per maggiori dettagli sul flusso di schedulazione e sulla pipeline dei vincoli e delle priorità, si vedano:
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-11--backend
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_33-createschedulestart-end-priorities-snapshot-full-pipeline
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+ */
 @Getter
 @Setter
 public class ScheduleBuilder {
@@ -105,8 +123,29 @@ public class ScheduleBuilder {
      * @param doctors Set of doctors that can be added in the schedule
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
+    /**
+     * Costruttore principale per l'inizializzazione di un nuovo {@code ScheduleBuilder}.
+     * Ha la responsabilità di preparare una nuova istanza di {@link Schedule} e configurare
+     * tutti i parametri di dominio necessari per la sua costruzione.
+     *
+     * Questo costruttore è utilizzato nello "Step D - Init ScheduleBuilder (core engine)"
+     * del flusso di generazione dello schedule (Microtask 1.1).
+     *
+     * @param startDate Data di inizio del nuovo schedule.
+     * @param endDate Data di fine del nuovo schedule.
+     * @param allConstraints Lista di {@link Constraint vincoli} da applicare durante la schedulazione.
+     * @param allAssignedShifts Lista di {@link ConcreteShift turni concreti} (senza medici assegnati) generati.
+     * @param doctors Lista di tutti i {@link Doctor medici} che possono essere assegnati ai turni.
+     * @param holidays Lista di tutte le {@link Holiday festività} salvate nel sistema.
+     * @param doctorHolidaysList Lista di associazioni {@link DoctorHolidays} tra medici e festività.
+     * @param allDoctorUffaPriority Lista di tutte le informazioni sulle {@link DoctorUffaPriority priorità UFFA} dei medici.
+     * @param snapshot Snapshot delle priorità UFFA, utilizzato per aggiornamenti e salvataggi.
+     * @throws IllegalScheduleException Eccezione lanciata in caso di parametri di configurazione inconsistenti.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_33-createschedulestart-end-priorities-snapshot-full-pipeline
+     */
     public ScheduleBuilder(LocalDate startDate, LocalDate endDate, List<Constraint> allConstraints, List<ConcreteShift> allAssignedShifts, List<Doctor> doctors,
                            List<Holiday> holidays, List<DoctorHolidays> doctorHolidaysList, List<DoctorUffaPriority> allDoctorUffaPriority, List<DoctorUffaPrioritySnapshot> snapshot) throws IllegalScheduleException {
+
 
         // Checks on the parameters state
         validateDates(startDate,endDate);
@@ -144,11 +183,24 @@ public class ScheduleBuilder {
      * @param schedule An existing schedule from which to start a new one
      * @throws IllegalScheduleException Exception thrown when there are some problems in the configuration parameters of the schedule
      */
+    /**
+     * Costruttore per inizializzare un {@code ScheduleBuilder} a partire da uno {@link Schedule} esistente.
+     * Questo costruttore è tipicamente utilizzato per operazioni di modifica manuale o di rielaborazione
+     * di uno schedule già generato.
+     *
+     * @param allConstraints Lista di {@link Constraint vincoli} da applicare.
+     * @param allDoctorUffaPriority Lista di {@link DoctorUffaPriority priorità UFFA} dei medici.
+     * @param schedule Uno {@link Schedule} esistente da cui partire per la costruzione o la modifica.
+     * @param doctorHolidaysList Lista di associazioni {@link DoctorHolidays} tra medici e festività.
+     * @param holidays Lista di tutte le {@link Holiday festività} salvate nel sistema.
+     * @throws IllegalScheduleException Eccezione lanciata in caso di parametri di configurazione inconsistenti.
+     */
     public ScheduleBuilder(List<Constraint> allConstraints,
                            List<DoctorUffaPriority> allDoctorUffaPriority,
                            Schedule schedule,
                            List<DoctorHolidays> doctorHolidaysList,
                            List<Holiday> holidays) throws IllegalScheduleException {
+
         // Checks on the parameters state
         validateConstraints(allConstraints);
         validateSchedule(schedule);
@@ -177,6 +229,18 @@ public class ScheduleBuilder {
     }
 
 
+    /**
+     * Costruisce lo {@link Schedule} finale assegnando i medici ai {@link ConcreteShift}.
+     * Questo metodo è il cuore del motore di generazione dello schedule.
+     *
+     * Corrisponde allo "Step F - Build schedule" del flusso di generazione (Microtask 1.1).
+     *
+     * @return Lo {@link Schedule} completamente costruito con i medici assegnati.
+     * @throws IllegalScheduleException se la generazione dello schedule non riesce a causa di vincoli non rispettati.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_33-createschedulestart-end-priorities-snapshot-full-pipeline
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#_5-implicazioni-baseline-utili-per-ai-rescheduling-sprint-45
+     */
     public Schedule build() throws IllegalScheduleException {
         // Start of orchestration flow: reset previous legality outcome before a fresh generation run.
         // At this point there are no concrete shifts in the schedule yet
@@ -256,8 +320,23 @@ public class ScheduleBuilder {
      * @throws NotEnoughFeasibleUsersException Exception thrown if the number of doctors having the possibility to be
      * added to the concrete shift is less than numDoctors
      */
+    /**
+     * Aggiunge i medici necessari a una lista di medici assegnati per un {@link ConcreteShift} specifico,
+     * rispettando i vincoli e le priorità.
+     *
+     * Questo metodo è cruciale per la pipeline di assegnazione e gestione delle priorità UFFA (Microtask 1.2).
+     *
+     * @param concreteShift Il {@link ConcreteShift} al quale i nuovi medici devono essere assegnati.
+     * @param qss Una {@link Map.Entry} che rappresenta la {@link Seniority} e il numero di medici da aggiungere.
+     * @param doctorList La lista di {@link Doctor medici} già assegnati al turno.
+     * @param status Lo {@link ConcreteShiftDoctorStatus stato} di assegnazione (e.g., ON_DUTY, ON_CALL).
+     * @param task Il {@link Task} associato al turno per l'assegnazione.
+     * @throws NotEnoughFeasibleUsersException Se il numero di medici idonei disponibili è inferiore a quelli richiesti.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
+     */
     private void addDoctors(ConcreteShift concreteShift, Map.Entry<Seniority, Integer> qss, List<Doctor> doctorList,
                             ConcreteShiftDoctorStatus status, Task task) throws NotEnoughFeasibleUsersException{
+
 
         int selectedUsers=0;
 
@@ -355,6 +434,10 @@ public class ScheduleBuilder {
         }
         // Case in which the algorithm ends without having found enough doctors to place into the concrete shift
         if (selectedUsers != qss.getValue()){
+            // [BASELINE-FLOW] GESTIONE BUCHI:
+            // Attualmente il sistema crasha se non trova candidati.
+            // L'AI dovrà intercettare questo punto per restituire uno schedule parziale (con buchi)
+            // invece di lanciare NotEnoughFeasibleUsersException.
             throw new NotEnoughFeasibleUsersException(qss.getValue(), selectedUsers);
         }
 
@@ -446,6 +529,22 @@ public class ScheduleBuilder {
      * @param context Context in which all the constraints are applied and verified
      * @param isForced Boolean that represents if it is possible to violate the soft constraints
      * @return True if there are no violations or the only verified violations are soft with isForced==true; false otherwise
+     */
+    /**
+     * Applica tutti i {@link Constraint vincoli} al {@link ContextConstraint contesto} specificato.
+     * Se un vincolo viene violato, la violazione viene loggata. Inoltre, se il vincolo violato è "hard"
+     * (non violabile o {@code isForced} è {@code false}), allora l'assegnazione è considerata non valida.
+     *
+     * Corrisponde alla logica di verifica dei vincoli della "Pipeline dei vincoli" (Microtask 1.2).
+     * Durante {@link #addDoctors(ConcreteShift, Map.Entry, List, ConcreteShiftDoctorStatus, Task)},
+     * questo metodo viene invocato con {@code isForced=false}, trattando quindi anche i vincoli "violabili"
+     * come hard constraint in un build standard.
+     *
+     * @param context Il {@link ContextConstraint contesto} in cui tutti i vincoli sono applicati e verificati.
+     * @param isForced Un booleano che indica se è consentito violare i vincoli "soft" (violabili).
+     * @return {@code true} se non ci sono violazioni "hard" o le uniche violazioni sono "soft" e {@code isForced} è {@code true};
+     *         {@code false} altrimenti.
+     * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
      */
     private boolean verifyAllConstraints(ContextConstraint context, boolean isForced){
 

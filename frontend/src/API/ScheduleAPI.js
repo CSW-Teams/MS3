@@ -1,5 +1,11 @@
 import {fetchWithAuth} from "../utils/fetchWithAuth";
 
+/**
+ * @see docs/scheduling_flow/README.md
+ * This class is an API wrapper for managing Schedule entities.
+ * It handles fetching, deleting (DELETE /api/schedule/id=...), and regenerating (POST /api/schedule/regeneration/id=...) schedules.
+ * These methods are primarily used by the SchedulerGeneratorView to manage the lifecycle of schedules.
+ */
 export class ScheduleAPI {
 
 
@@ -37,6 +43,23 @@ export class ScheduleAPI {
     const response = await fetchWithAuth('/api/schedule/regeneration/id=' + id, requestOptions);
     return response.status;
 
+  }
+
+  async selectScheduleCandidate(candidateId) {
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ candidateId: candidateId }),
+    };
+
+    const response = await fetchWithAuth('/api/schedule/selection', requestOptions);
+    let body = null;
+    try {
+      body = await response.json();
+    } catch (error) {
+      body = null;
+    }
+    return { status: response.status, body: body };
   }
 
 

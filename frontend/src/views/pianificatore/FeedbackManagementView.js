@@ -35,16 +35,21 @@ export default class FeedbackManagementView extends React.Component{
   async componentDidMount() {
     try {
       let api = new ScheduleFeedbackAPI();
-      // Pull full feedback list for the planner tenant; errors route to global panic fallback.
-      const rawData = await api.getFeedbacks();
+      const rawData = await api.getFeedbacks(); // Chiamata al Backend
 
-      // Normalize backend field names to table keys used by sorting and modal preview.
-      const formattedFeedbacks = rawData.map(item => ({
-        name: item.doctorName,
-        lastname: item.doctorLastname,
-        feedback_rating: item.score,
-        feedback_text: item.comment
-      }));
+      const formattedFeedbacks = rawData.map(item => {
+        const doctorName = item.doctorName ?? item.name ?? item.doctor?.name ?? null;
+        const doctorLastname = item.doctorLastname ?? item.lastname ?? item.doctor?.lastname ?? null;
+        const authorFallback = item.doctorId != null ? `#${item.doctorId}` : t("Unknown");
+
+        return {
+          name: doctorName || authorFallback,
+          lastname: doctorLastname || "",
+          feedback_rating: item.score,
+          feedback_text: item.comment,
+          category: item.category,
+        };
+      });
 
       this.setState({ feedbacks: formattedFeedbacks });
 
@@ -126,7 +131,9 @@ export default class FeedbackManagementView extends React.Component{
                       <th scope='col'
                           onClick={() => this.setOrderBy("lastname")}>{t("Surname")} {this.getSortIcon("lastname")}</th>
                       <th scope='col'
-                          onClick={() => this.setOrderBy("feedback rating")}>{t("Feedback rating")} {this.getSortIcon("Feedback rating")}</th>
+                          onClick={() => this.setOrderBy("feedback rating")}>{t("Feedback rating")} {this.getSortIcon("feedback rating")}</th>
+                      <th scope='col'
+                          onClick={() => this.setOrderBy("category")}>{t("Category")} {this.getSortIcon("category")}</th>
                       <th scope='col'
                           onClick={() => this.setOrderBy("feedback text")}>{t("Text")} {this.getSortIcon("Text")}</th>
                     </tr>
@@ -137,6 +144,7 @@ export default class FeedbackManagementView extends React.Component{
                         <td>{data.name}</td>
                         <td>{data.lastname}</td>
                         <td>{data.feedback_rating}</td>
+                        <td>{t(data.category)}</td>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <Button

@@ -81,4 +81,19 @@ evitare schemi obsoleti:
 1. Fermare i container: `docker-compose down -v` (oppure rimuovere il volume `ms3_db_data`).
 2. Rieseguire `docker-compose up -d` per rieseguire gli script di bootstrap e l'initializer sugli schemi puliti.
 
+## Debug del backend su Docker
+La presente guida descrive come eseguire il debug sul backend direttamente all'interno di Docker su Intellij.
+1. Avviare Docker Compose tramite il file `docker-compose-debug.yml`
+2. Da Intellij, andare su `Run > Edit Configurations...`
+3. Creare una nuova configurazione:
+    1. Cliccare sul pulsante `+` in alto a sinistra
+    2. Selezionare `Remote JVM Debug`
+    3. Impostare i seguenti parametri:
+        - Host: `localhost`
+        - Port: `5005`
+        - `JKD 9 or later` sulla destra
+        - Command line arguments for remote JVM:
+          `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005`
+        - Use module classpath: `ms3`
+
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/90c0c1712b2141c2a3bfd8e243cd598a)](https://app.codacy.com/gh/CSW-Teams/MS3/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)

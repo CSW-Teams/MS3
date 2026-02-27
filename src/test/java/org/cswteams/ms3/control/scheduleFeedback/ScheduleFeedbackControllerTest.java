@@ -7,6 +7,7 @@ import org.cswteams.ms3.dto.scheduleFeedback.ScheduleFeedbackDTO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
 import org.cswteams.ms3.entity.ScheduleFeedback;
+import org.cswteams.ms3.entity.enums.FeedbackCategory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -63,6 +64,7 @@ class ScheduleFeedbackControllerTest {
         feedbackDTO.setComment("Great shift!");
         feedbackDTO.setScore(5);
         feedbackDTO.setConcreteShiftIds(Collections.singletonList(10L));
+        feedbackDTO.setCategory(FeedbackCategory.OTHER);
         
         // For the tests where we need a return value from DAO
         feedback = mock(ScheduleFeedback.class);
@@ -72,6 +74,7 @@ class ScheduleFeedbackControllerTest {
         when(feedback.getComment()).thenReturn("Great shift!");
         when(feedback.getScore()).thenReturn(5);
         when(feedback.getTimestamp()).thenReturn(1000L);
+        when(feedback.getCategory()).thenReturn(FeedbackCategory.OTHER);
     }
 
     @Test
@@ -144,10 +147,10 @@ class ScheduleFeedbackControllerTest {
 
     @Test
     void updateFeedback_success() {
-        // Given feedback owned by the requesting doctor, when updated, then mutable fields must be changed and saved.
         feedbackDTO.setId(100L);
         feedbackDTO.setComment("Updated comment");
         feedbackDTO.setScore(4);
+        feedbackDTO.setCategory(FeedbackCategory.PREFERENCE_VIOLATION);
 
         when(doctorDAO.findByEmail("stanis.larochelle@example.com")).thenReturn(doctor);
         when(scheduleFeedbackDAO.findById(100L)).thenReturn(Optional.of(feedback));

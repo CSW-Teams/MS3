@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface ConcreteShiftDAO extends JpaRepository<ConcreteShift,Long> {
     List<ConcreteShift> findByDoctorAssignmentList_Doctor_Id(@Param("idName") Long doctorId);
+    List<ConcreteShift> findByDateAndShift_IdAndDoctorAssignmentList_Doctor_Id(long date, Long shiftId, Long doctorId);
 
 }
 

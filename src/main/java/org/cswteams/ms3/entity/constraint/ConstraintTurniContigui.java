@@ -18,9 +18,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * This class implements the idea for which shift tipologies (i.e. time slots) may impose some constraints on the
- * presence of other shifts which are contiguous to it.
- * For instance, a nocturne shift brings to a period in which the involved doctor should not be allocated in any other shift.
+ * Implementa il vincolo {@code ConstraintTurniContigui}, che vieta turni troppo ravvicinati
+ * in base a un "time slot trigger" e a un orizzonte temporale specificato (es. blocco dopo un turno notturno).
+ *
+ * Fa parte del "Catalogo vincoli attivi" (Microtask 1.2).
+ *
+ * @see docs/AI_powered_rescheduling/sprint_4/story_1.md#microtask-12--vincoli-e-pipeline-priorità-baseline
  */
 @Getter
 @Setter
@@ -29,25 +32,25 @@ import lombok.Setter;
 public class ConstraintTurniContigui extends ConstraintAssegnazioneTurnoTurno {
 
     /**
-     * Round of temporal units in which it is prohibited to assign the same doctor to another shift whose category
-     * is part of the forbidden ones
+     * Orizzonte temporale, in {@link ChronoUnit unità di tempo}, entro il quale è proibito assegnare
+     * lo stesso medico a un altro turno la cui categoria rientra in quelle proibite.
      */
     @NotNull
     private int horizon;
 
-    /** Horizon temporal unit */
+    /** Unità temporale dell'orizzonte (es. ORE, GIORNI). */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "t_unit")
     private ChronoUnit tUnit;
     
-    /** Time slot which causes the constraint */
+    /** {@link TimeSlot Time slot} che scatena il vincolo (es. NOTTURNO). */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "time_slot")
     private TimeSlot timeSlot;
 
-    /** Time slots forbidden by the constraint */
+    /** {@link TimeSlot Time slots} proibiti dal vincolo. */
     @ElementCollection
     @Enumerated(EnumType.STRING)
     @CollectionTable(
@@ -66,9 +69,15 @@ public class ConstraintTurniContigui extends ConstraintAssegnazioneTurnoTurno {
     }
 
     /**
-     * This method checks if TipologieTurniContigue constraint is respected while inserting a new concrete shift into a schedule.
-     * @param context Object comprehending the new concrete shift to be assigned and the information about doctor's state in the corresponding schedule
-     * @throws ViolatedConstraintException Exception thrown if the constraint is violated
+     * Verifica se il vincolo {@code ConstraintTurniContigui} è rispettato quando si tenta di assegnare
+     * un nuovo {@link ConcreteShift turno concreto} a un medico. Il vincolo è violato se il turno
+     * proposto si trova all'interno dell'orizzonte temporale proibito da un turno "trigger"
+     * (specificato da {@code timeSlot}) o se il turno proposto è esso stesso un turno "trigger"
+     * e si trova troppo vicino a un altro turno proibito.
+     *
+     * @param context Oggetto {@link ContextConstraint} che comprende il nuovo turno concreto da assegnare
+     *                e le informazioni sullo stato del medico nello schedule corrispondente.
+     * @throws ViolatedConstraintException Eccezione lanciata se il vincolo è violato.
      */
     @Override
     public void verifyConstraint(ContextConstraint context) throws ViolatedConstraintException {

@@ -95,7 +95,8 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
                 foundShifts,
                 feedbackDTO.getComment(),
                 feedbackDTO.getScore(),
-                clock.millis()
+                clock.millis(),
+                feedbackDTO.getCategory()
         );
 
         ScheduleFeedback savedFeedback = scheduleFeedbackDAO.save(feedback);
@@ -154,6 +155,7 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
 
         feedback.setComment(feedbackDTO.getComment());
         feedback.setScore(feedbackDTO.getScore());
+        feedback.setCategory(feedbackDTO.getCategory());
 
         ScheduleFeedback updatedFeedback = scheduleFeedbackDAO.save(feedback);
         return convertToDTO(updatedFeedback);
@@ -198,7 +200,8 @@ public class ScheduleFeedbackController implements IScheduleFeedbackController {
                 feedback.getConcreteShifts().stream().map(ConcreteShift::getId).collect(Collectors.toList()),
                 feedback.getComment(),
                 feedback.getScore(),
-                feedback.getTimestamp()
+                feedback.getTimestamp(),
+                feedback.getCategory()
         );
     }
 }

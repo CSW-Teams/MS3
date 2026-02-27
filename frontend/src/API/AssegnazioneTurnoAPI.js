@@ -4,6 +4,14 @@ import {Doctor} from "../entity/Doctor";
 import {t} from "i18next";
 import {fetchWithAuth} from "../utils/fetchWithAuth";
 
+/**
+ * @see docs/scheduling_flow/README.md
+ * This class is an API wrapper for operations related to concrete shifts and schedule generation.
+ * - `postGenerationSchedule`: Triggers the backend schedule generation process (POST /api/schedule/generation).
+ * - `getGlobalShift`: Fetches all concrete shifts for display in the calendar view.
+ * - `aggiornaAssegnazioneTurno`: Handles manual modifications of a shift.
+ * It encapsulates the logic for communicating with the backend for shift-specific actions.
+ */
 export class AssegnazioneTurnoAPI {
   /**
    * Parses content of query response body to extract a list of shifts
@@ -302,6 +310,10 @@ export class AssegnazioneTurnoAPI {
     };
 
     console.log(JSON.stringify(requestGeneration))
+    // [BASELINE-UI] BLIND RESPONSE:
+    // L'API ritorna solo status (202/406), non il payload dello schedulo.
+    // Questo costringe la UI a fare un fetch separato dopo.
+    // Per la "Comparison Mode" dell'AI, servirà ricevere subito i dati.
     const requestOptions = {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -310,6 +322,37 @@ export class AssegnazioneTurnoAPI {
 
     const response = await fetchWithAuth('/api/schedule/generation', requestOptions);
     return response.status;
+
+  }
+
+  async postGenerationScheduleAi(dataStart, dataEnd) {
+
+    const initialDay = dataStart.$d.getDate();
+    const initialMonth = dataStart.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
+    const initialYear = dataStart.$d.getFullYear();
+    const finalDay = dataEnd.$d.getDate();
+    const finalMonth = dataEnd.$d.getMonth() + 1; // January is 0, so we add 1 to get 1-12 range
+    const finalYear = dataEnd.$d.getFullYear();
+
+    let requestGeneration = {
+      initialDay: initialDay,
+      initialMonth: initialMonth,
+      initialYear: initialYear,
+      finalDay: finalDay,
+      finalMonth: finalMonth,
+      finalYear: finalYear
+    };
+
+    console.log(JSON.stringify(requestGeneration))
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(requestGeneration)
+    };
+
+    const response = await fetchWithAuth('/api/schedule/generation/ai', requestOptions);
+    const body = await response.json();
+    return {status: response.status, body: body};
 
   }
 

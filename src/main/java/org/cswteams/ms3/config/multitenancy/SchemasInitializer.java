@@ -37,9 +37,6 @@ public class SchemasInitializer {
 
     @PostConstruct
     public void init() throws IOException, SQLException {
-        // Carica lo script di pulizia dello schema di default dal file .sql
-        ClassPathResource schemaScript1 = new ClassPathResource("db/clean_default_schema.sql");
-
         // Carica lo script di creazione degli schemi dal file .sql
         ClassPathResource schemaScript2 = new ClassPathResource("db/create_schemas.sql");
 
@@ -48,8 +45,7 @@ public class SchemasInitializer {
 
         // Usa la connessione dal DataSource
         try (Connection connection = dataSource.getConnection()) {
-            // Esegui gli script SQL
-            ScriptUtils.executeSqlScript(connection, schemaScript1);
+            // Esegui gli script SQL (non distruttivi, preservano i dati esistenti)
             ScriptUtils.executeSqlScript(connection, schemaScript2);
 
             // Crea le tabelle nei vari schemi
@@ -71,18 +67,27 @@ public class SchemasInitializer {
     private void createTables() {
         try (Connection connection = dataSource.getConnection()) {
             // Step 1: Crea la tabella comune nello schema 'public'
-            // Sempre riportiamo lo schema corrente a 'public' per eseguire anche gli script incrementali
             changeSchemaToTenant(connection, DEFAULT_SCHEMA);
-            createTablesInPublicSchema(connection);
+            if (!tableExists(connection, DEFAULT_SCHEMA, "ms3_system_user")) {
+                createTablesInPublicSchema(connection);
+            } else {
+                System.out.println("Schema '" + DEFAULT_SCHEMA + "' gia' inizializzato: skip createTablesInPublicSchema");
+            }
             apply2FaColumns(connection, DEFAULT_SCHEMA);
             logSystemUserTablePresence(connection, DEFAULT_SCHEMA);
 
             // Step 2: Crea le varie tabelle in ciascun schema dei tenant
             for (String schema : tenantSchemas) {
-                changeSchemaToTenant(connection, schema.toLowerCase());
-                createTablesForTenant(connection, schema.toLowerCase());
-                apply2FaColumns(connection, schema.toLowerCase());
-                logSystemUserTablePresence(connection, schema.toLowerCase());
+                String normalizedSchema = schema.toLowerCase();
+                ensureSchemaExists(connection, normalizedSchema);
+                changeSchemaToTenant(connection, normalizedSchema);
+                if (!tableExists(connection, normalizedSchema, "schedule")) {
+                    createTablesForTenant(connection, normalizedSchema);
+                } else {
+                    System.out.println("Schema '" + normalizedSchema + "' gia' inizializzato: skip createTablesForTenant");
+                }
+                apply2FaColumns(connection, normalizedSchema);
+                logSystemUserTablePresence(connection, normalizedSchema);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -213,6 +218,23 @@ public class SchemasInitializer {
 
         // Passa allo schema del tenant
         statement.execute("SET search_path TO " + tenantName + ", public");
+    }
+
+    private void ensureSchemaExists(Connection connection, String schemaName) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("CREATE SCHEMA IF NOT EXISTS " + schemaName);
+        }
+    }
+
+    private boolean tableExists(Connection connection, String schemaName, String tableName) throws SQLException {
+        final String query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = ? AND table_name = ?)";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, schemaName);
+            statement.setString(2, tableName);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() && resultSet.getBoolean(1);
+            }
+        }
     }
 
     private void logSystemUserTablePresence(Connection connection, String schemaName) {

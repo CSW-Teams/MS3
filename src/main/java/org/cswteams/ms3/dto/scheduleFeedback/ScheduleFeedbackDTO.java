@@ -44,4 +44,7 @@ public class ScheduleFeedbackDTO {
     private int score;
 
     private long timestamp;
+
+    @NotNull(message = "È richiesta una categoria per il feedback")
+    private org.cswteams.ms3.entity.enums.FeedbackCategory category;
 }

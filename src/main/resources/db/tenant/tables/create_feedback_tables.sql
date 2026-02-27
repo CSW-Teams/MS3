@@ -1,12 +1,18 @@
--- Purpose: store doctor feedback attached to generated schedules and assigned shifts.
--- Context: executed inside each tenant schema during tenant table bootstrap.
--- Order: run after doctor/concrete_shift tables and before tenant sequence ownership grants.
+create type feedback_category_enum as enum (
+    'REPEATED_WEEKDAY',
+    'REPEATED_TIME_SLOT',
+    'CONSECUTIVE_SHIFTS',
+    'WORKLOAD_IMBALANCE',
+    'PREFERENCE_VIOLATION',
+    'OTHER'
+);
+
 create table schedule_feedback (
                                    id bigint not null,
                                    comment varchar(255),
                                    score integer not null,
+                                   category feedback_category_enum not null,
                                    timestamp bigint not null,
-                                   -- Feedback author is tenant-scoped doctor identity.
                                    doctor_id bigint not null,
                                    primary key (id),
                                    constraint fk_feedback_author foreign key (doctor_id) references doctor (ms3_tenant_user_id)

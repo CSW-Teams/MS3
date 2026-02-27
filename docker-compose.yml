@@ -34,6 +34,11 @@ services:
       - DB_TENANT_A_PASSWORD=${DB_TENANT_A_PASSWORD}
       - DB_TENANT_B_USER=${DB_TENANT_B_USER}
       - DB_TENANT_B_PASSWORD=${DB_TENANT_B_PASSWORD}
+      - MS3_SEED_DOCTORS_ENABLED=true # TODO: Rimuovi per il run senza popolazione di 100 utenti
+      - GEMMA_API_KEY=${GEMMA_API_KEY}
+      - LLAMA_API_KEY=${LLAMA_API_KEY}
+    volumes:
+      - ./doctors_seed.json:/app/doctors_seed.json:ro
     expose:
       - 8080
     
