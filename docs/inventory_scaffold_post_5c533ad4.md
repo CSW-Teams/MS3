@@ -2,6 +2,27 @@
 
 Source filters applied: `git diff --name-only 5c533ad4..HEAD` intersected with `commenting_scope_post_5c533ad4.csv`, excluding rows where `reverted_only=yes`.
 
+## Cross-feature shared-module matrix
+
+| Feature section | `LoginRestEndpoint` | `ScheduleBuilder` | `SchedulerController` | `Toon*` classes | DB migration scripts | Frontend API clients |
+|---|---|---|---|---|---|---|
+| AI scheduling |  | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 2FA | ✅ |  |  |  | ✅ | ✅ |
+| Captcha/logout | ✅ |  |  |  |  | ✅ |
+| DB/bootstrap |  |  |  |  | ✅ |  |
+| Frontend UX | ✅ |  |  |  |  | ✅ |
+
+> ✅ = high-impact shared dependency for that feature section.
+
+## Change-impact checklist (re-read before editing shared objects)
+
+- [ ] If touching `LoginRestEndpoint`, re-read: **2FA**, **Captcha/logout**, **Frontend UX**.
+- [ ] If touching `ScheduleBuilder`, re-read: **AI scheduling**.
+- [ ] If touching `SchedulerController`, re-read: **AI scheduling**.
+- [ ] If touching any `Toon*` class, re-read: **AI scheduling**.
+- [ ] If touching DB migration scripts (`src/main/resources/db/migration/*.sql`), re-read: **AI scheduling**, **2FA**, **DB/bootstrap**.
+- [ ] If touching frontend API clients (`frontend/src/API/*.js`), re-read: **AI scheduling**, **2FA**, **Captcha/logout**, **Frontend UX**.
+
 ## AI scheduling
 
 | File | Package | Object type |
