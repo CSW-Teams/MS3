@@ -10,6 +10,10 @@ It is reusable for future comment hardening cycles by changing only the baseline
 - **Scope inventory**: list of post-baseline files included in the review.
 - **Intentional exclusions list**: files that are not part of the cycle, with rationale.
 
+### Baseline refresh references
+- For baseline `c72ee7a7`, use inventory: `commenting_scope_post_c72ee7a7.csv`.
+- Deterministic snapshot metadata: `docs/commenting_scope_post_c72ee7a7_snapshot.md`.
+
 ---
 
 ## Pass/Fail Checklist (File-Level)
