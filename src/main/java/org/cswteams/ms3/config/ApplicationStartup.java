@@ -16,6 +16,7 @@ import org.cswteams.ms3.entity.*;
 import org.cswteams.ms3.entity.condition.PermanentCondition;
 import org.cswteams.ms3.entity.condition.TemporaryCondition;
 import org.cswteams.ms3.entity.constraint.*;
+import org.cswteams.ms3.entity.enums.FeedbackCategory;
 import org.cswteams.ms3.entity.scocciature.Scocciatura;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaAssegnazioneUtente;
 import org.cswteams.ms3.entity.scocciature.ScocciaturaDesiderata;
@@ -491,7 +492,8 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
                 Collections.singletonList(feedbackShift),
                 "Turno equilibrato ma molto ravvicinato al precedente; preferirei maggiore alternanza serale/notturna.",
                 3,
-                1771690337651L
+                1771690337651L,
+                FeedbackCategory.REPEATED_TIME_SLOT
         );
         scheduleFeedbackDAO.saveAndFlush(scheduleFeedback);
     }
