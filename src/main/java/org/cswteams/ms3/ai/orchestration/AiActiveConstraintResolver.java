@@ -61,6 +61,8 @@ public class AiActiveConstraintResolver {
                 }
             } else {
                 skippedConstraints++;
+                // In strict orchestration flows (e.g. debugging or gated rollout),
+                // fail fast to surface the first incompatible rule instead of silently degrading.
                 if (failFastPolicy) {
                     throw new IllegalStateException("Fail-fast policy enabled: unusable active constraint detected.");
                 }
@@ -137,6 +139,7 @@ public class AiActiveConstraintResolver {
                                    List<Doctor> doctors,
                                    List<ConcreteShift> concreteShifts) {
         if (entityType == ToonConstraintEntityType.DOCTOR) {
+            // Pick the smallest doctor id deterministically so prompts stay stable across runs.
             return doctors == null
                     ? null
                     : doctors.stream()
@@ -151,6 +154,8 @@ public class AiActiveConstraintResolver {
             if (concreteShifts == null) {
                 return null;
             }
+            // Use a deterministic ordering (date -> slot -> shift id) to avoid non-repeatable
+            // SHIFT entity references when the upstream DAO does not guarantee iteration order.
             return concreteShifts.stream()
                                         .filter(shift -> shift != null
                             && shift.getShift() != null
