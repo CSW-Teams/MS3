@@ -72,12 +72,7 @@ const resolveSelectionKey = (candidate) =>
   candidate?.metadata?.candidateId ?? candidate?.metadata?.type ?? '';
 
 const resolveMetrics = (candidate) =>
-  candidate?.metrics?.normalized || candidate?.metrics?.raw || {};
-
-const resolveSentimentTransitionCounts = (candidate) =>
-  candidate?.metrics?.raw?.sentimentTransitionCounts ||
-  candidate?.metrics?.normalized?.sentimentTransitionCounts ||
-  {};
+  candidate?.metrics?.raw || candidate?.metrics?.normalized || {};
 
 const downloadJson = (data, filename) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -134,7 +129,6 @@ function AiScheduleComparisonModal({
               {cards.map((candidate, cardIndex) => {
                 const metadata = candidate?.metadata;
                 const metrics = resolveMetrics(candidate);
-                const sentimentTransitionCounts = resolveSentimentTransitionCounts(candidate);
                 const scheduleId = metadata?.scheduleId ?? placeholder;
                 const selectionKey = resolveSelectionKey(candidate);
                 const isSelected = selectionKey && selectionKey === selectedCandidateKey;
@@ -146,14 +140,6 @@ function AiScheduleComparisonModal({
                   label: t(metric.labelKey),
                   value: metrics?.[metric.key],
                 }));
-                const sentimentTransitions = [
-                    { label: 'N → 0', key: 'negativeToNeutral' },
-                    { label: 'N → P', key: 'negativeToPositive' },
-                    { label: '0 → P', key: 'neutralToPositive' },
-                    { label: '0 → N', key: 'neutralToNegative' },
-                    { label: 'P → N', key: 'positiveToNegative' },
-                    { label: 'P → 0', key: 'positiveToNeutral' },
-                ];
 
                 return (
                   <Grid item xs={12} sm={6} key={`ai-comparison-card-${cardIndex}`}>
@@ -179,19 +165,6 @@ function AiScheduleComparisonModal({
                             {`${metric.label}: ${formatMetric(metric.value, placeholder)}`}
                           </Typography>
                         ))}
-                                                <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                    <Typography variant="subtitle1" component="div" gutterBottom>
-                                                        {t("Sentiment Transition")}
-                                                    </Typography>
-                                                    {sentimentTransitions.map((transition) => (
-                                                        <Box key={transition.key} sx={{ display: 'flex', gap: 1 }}>
-                                                            <Typography variant="body2">{transition.label}:</Typography>
-                                                            <Typography variant="body2">
-                                                                {formatMetric(sentimentTransitionCounts?.[transition.key], placeholder)}
-                                                            </Typography>
-                                                        </Box>
-                                                    ))}
-                                                </Box>
                         <Button
                           variant={isSelected ? 'contained' : 'outlined'}
                           disabled={!isSelectable || (selectionLocked && !isSelected)}
@@ -213,3 +186,5 @@ function AiScheduleComparisonModal({
 }
 
 export default AiScheduleComparisonModal;
+
+

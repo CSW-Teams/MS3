@@ -1,7 +1,17 @@
+create type feedback_category_enum as enum (
+    'REPEATED_WEEKDAY',
+    'REPEATED_TIME_SLOT',
+    'CONSECUTIVE_SHIFTS',
+    'WORKLOAD_IMBALANCE',
+    'PREFERENCE_VIOLATION',
+    'OTHER'
+);
+
 create table schedule_feedback (
                                    id bigint not null,
                                    comment varchar(255),
                                    score integer not null,
+                                   category feedback_category_enum not null,
                                    timestamp bigint not null,
                                    doctor_id bigint not null,
                                    primary key (id),

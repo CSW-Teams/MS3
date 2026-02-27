@@ -10,6 +10,7 @@ import org.cswteams.ms3.ai.broker.domain.AiMetrics;
 import org.cswteams.ms3.ai.broker.domain.AiScheduleResponse;
 import org.cswteams.ms3.ai.broker.domain.AiScheduleVariantsResponse;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
+import org.cswteams.ms3.ai.protocol.ValidationError;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
@@ -20,7 +21,7 @@ import org.cswteams.ms3.dao.DoctorDAO;
 import org.cswteams.ms3.dao.DoctorHolidaysDAO;
 import org.cswteams.ms3.dao.DoctorUffaPriorityDAO;
 import org.cswteams.ms3.dao.HolidayDAO;
-import org.cswteams.ms3.dao.RequestRemovalFromConcreteShiftDAO;
+import org.cswteams.ms3.dao.ScheduleFeedbackDAO;
 import org.cswteams.ms3.dao.ScheduleDAO;
 import org.cswteams.ms3.entity.ConcreteShift;
 import org.cswteams.ms3.entity.Doctor;
@@ -211,6 +212,137 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
         assertTrue(retryInstructions.contains("actual='rest window violated'"));
     }
 
+    @Test
+    void conversionValidationDetailsAreEmbeddedInRetryPromptPayload() {
+        RetryFixture fixture = new RetryFixture();
+        fixture.aiBrokerProperties.setScheduleValidationMaxRetries(1);
+        fixture.mockBrokerByReasoning(Map.of(
+                "EMPATHETIC", List.of("role-mismatch-empathetic", "fixed-empathetic"),
+                "EFFICIENT", List.of("ok-efficient"),
+                "BALANCED", List.of("ok-balanced")
+        ));
+        when(fixture.aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson.contains("role-mismatch-empathetic")) {
+                throw AiProtocolException.schemaMismatch(
+                        "Schema mismatch during conversion",
+                        List.of(new ValidationError("$.assignments[0].role_covered", "must match shift requested role")),
+                        null
+                );
+            }
+            return List.of(fixture.convertedShift);
+        });
+
+        fixture.service.generateScheduleComparison(fixture.startDate, fixture.endDate);
+
+        ArgumentCaptor<AiBrokerRequest> requestCaptor = ArgumentCaptor.forClass(AiBrokerRequest.class);
+        verify(fixture.agentBroker, times(4)).requestSchedule(requestCaptor.capture());
+        String retryInstructions = requestCaptor.getAllValues().get(1).getInstructions();
+
+        assertTrue(retryInstructions.contains("Validation failures (prompt-safe):"));
+        assertTrue(retryInstructions.contains("path='$.assignments[0].role_covered'"));
+        assertTrue(retryInstructions.contains("message='must match shift requested role'"));
+    }
+
+    @Test
+    void softConstraintViolationKeepsCandidateValidAndPublishesWarningPayload() throws ViolatedConstraintException {
+        RetryFixture fixture = new RetryFixture();
+        fixture.mockBrokerByReasoning(Map.of(
+                "EMPATHETIC", List.of("soft-violating-empathetic"),
+                "EFFICIENT", List.of("ok-efficient"),
+                "BALANCED", List.of("ok-balanced")
+        ));
+
+        Constraint softConstraint = mock(Constraint.class);
+        softConstraint.setViolable(true);
+        when(softConstraint.isViolable()).thenReturn(true);
+        when(softConstraint.getId()).thenReturn(88L);
+        doThrow(new ViolatedConstraintException("soft rest window violated"))
+                .when(softConstraint)
+                .verifyConstraint(any());
+        when(fixture.constraintDAO.findAll()).thenReturn(List.of(softConstraint));
+
+        Doctor assignedDoctor = fixture.newDoctor(42L, Seniority.STRUCTURED);
+        ConcreteShift violatingShift = new ConcreteShift(fixture.startDate.toEpochDay(), fixture.shift);
+        violatingShift.setDoctorAssignmentList(List.of(new DoctorAssignment(
+                assignedDoctor,
+                ConcreteShiftDoctorStatus.ON_DUTY,
+                violatingShift,
+                new Task(TaskEnum.CLINIC)
+        )));
+
+        when(fixture.aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson.contains("soft-violating-empathetic")) {
+                return List.of(violatingShift);
+            }
+            return List.of(fixture.convertedShift);
+        });
+
+        var response = fixture.service.generateScheduleComparison(fixture.startDate, fixture.endDate);
+
+        var empathetic = response.getCandidates().stream()
+                .filter(candidate -> "empathetic".equals(candidate.getMetadata().getType()))
+                .findFirst()
+                .orElseThrow();
+
+        assertTrue(empathetic.getMetadata().isValid());
+        assertEquals("SOFT_DOMAIN_CONSTRAINTS_VIOLATED", empathetic.getMetadata().getValidationCode());
+        assertTrue(empathetic.getMetadata().getValidationViolations().stream()
+                .anyMatch(message -> message.contains("SOFT") && message.contains("soft rest window violated")));
+        verify(fixture.agentBroker, times(3)).requestSchedule(any());
+    }
+
+    @Test
+    void hardConstraintViolationStillInvalidatesCandidate() throws ViolatedConstraintException {
+        RetryFixture fixture = new RetryFixture();
+        fixture.aiBrokerProperties.setScheduleValidationMaxRetries(0);
+        fixture.mockBrokerByReasoning(Map.of(
+                "EMPATHETIC", List.of("hard-violating-empathetic"),
+                "EFFICIENT", List.of("ok-efficient"),
+                "BALANCED", List.of("ok-balanced")
+        ));
+
+        Constraint hardConstraint = mock(Constraint.class);
+        hardConstraint.setViolable(false);
+        when(hardConstraint.isViolable()).thenReturn(false);
+        when(hardConstraint.getId()).thenReturn(99L);
+        doThrow(new ViolatedConstraintException("hard rest window violated"))
+                .when(hardConstraint)
+                .verifyConstraint(any());
+        when(fixture.constraintDAO.findAll()).thenReturn(List.of(hardConstraint));
+
+        Doctor assignedDoctor = fixture.newDoctor(52L, Seniority.STRUCTURED);
+        ConcreteShift violatingShift = new ConcreteShift(fixture.startDate.toEpochDay(), fixture.shift);
+        violatingShift.setDoctorAssignmentList(List.of(new DoctorAssignment(
+                assignedDoctor,
+                ConcreteShiftDoctorStatus.ON_DUTY,
+                violatingShift,
+                new Task(TaskEnum.CLINIC)
+        )));
+
+        when(fixture.aiScheduleConverterService.convert(any())).thenAnswer(invocation -> {
+            String rawJson = invocation.getArgument(0);
+            if (rawJson.contains("hard-violating-empathetic")) {
+                return List.of(violatingShift);
+            }
+            return List.of(fixture.convertedShift);
+        });
+
+        var response = fixture.service.generateScheduleComparison(fixture.startDate, fixture.endDate);
+
+        var empathetic = response.getCandidates().stream()
+                .filter(candidate -> "empathetic".equals(candidate.getMetadata().getType()))
+                .findFirst()
+                .orElseThrow();
+
+        assertFalse(empathetic.getMetadata().isValid());
+        assertEquals("DOMAIN_CONSTRAINTS_VIOLATED", empathetic.getMetadata().getValidationCode());
+        assertTrue(empathetic.getMetadata().getValidationViolations().stream()
+                .anyMatch(message -> message.contains("HARD") && message.contains("hard rest window violated")));
+        verify(fixture.agentBroker, times(3)).requestSchedule(any());
+    }
+
 
     @Test
     void invalidCandidateIsRejectedOnSelectionPersist() {
@@ -294,7 +426,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
         private final AiActiveConstraintResolver aiActiveConstraintResolver = mock(AiActiveConstraintResolver.class);
         private final DecisionAlgorithmService decisionAlgorithmService = mock(DecisionAlgorithmService.class);
         private final AiScheduleConverterService aiScheduleConverterService = mock(AiScheduleConverterService.class);
-        private final RequestRemovalFromConcreteShiftDAO requestRemovalFromConcreteShiftDAO = mock(RequestRemovalFromConcreteShiftDAO.class);
+        private final ScheduleFeedbackDAO scheduleFeedbackDAO = mock(ScheduleFeedbackDAO.class);
         private final AiBrokerProperties aiBrokerProperties = new AiBrokerProperties();
         private final Map<String, Integer> attemptsByLabel = new HashMap<>();
 
@@ -302,7 +434,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
 
         private RetryFixture() {
             AiReschedulingOrchestrationService aiReschedulingOrchestrationService =
-                    new AiReschedulingOrchestrationService(requestRemovalFromConcreteShiftDAO, aiActiveConstraintResolver);
+                    new AiReschedulingOrchestrationService(scheduleFeedbackDAO, aiActiveConstraintResolver);
 
             Doctor doctor = newDoctor(10L, Seniority.STRUCTURED);
             DoctorUffaPriority priority = new DoctorUffaPriority(doctor);
@@ -311,7 +443,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
             priority.setLongShiftPriority(1);
 
             when(schedulerController.createScheduleTransient(startDate, endDate)).thenReturn(transientSchedule);
-            when(requestRemovalFromConcreteShiftDAO.findAllByConcreteShiftDateBetween(startDate.toEpochDay(), endDate.toEpochDay()))
+            when(scheduleFeedbackDAO.findAllByConcreteShiftDateBetween(startDate.minusDays(2).toEpochDay(), endDate.toEpochDay()))
                     .thenReturn(List.of());
             when(constraintDAO.findAll()).thenReturn(List.of());
             when(doctorDAO.findBySeniorities(any())).thenReturn(List.of(doctor));
@@ -340,6 +472,7 @@ class AiScheduleGenerationOrchestrationServiceRetryValidationTest {
                     decisionAlgorithmService,
                     aiScheduleConverterService,
                     new AiHardCoveragePromptBlockBuilder(),
+                    new AiRoleValidationScratchpadPromptBlockBuilder(),
                     new ObjectMapper()
             );
         }

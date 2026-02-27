@@ -448,8 +448,6 @@
   "Add shift": "Aggiungi turno",
 
   "No time slot selected": "Nessuna fascia oraria selezionata",
-  "No day of the week selected": "Nessuna giorno della settimana selezionato",
-
   "Select schedule": "Seleziona schedulazione",
   "Selected": "Selezionato",
   "Coverage": "Copertura",
@@ -457,5 +455,20 @@
   "Sentiment transitions": "Transizioni sentimento",
   "UP delta": "Delta UFFA",
   "Variance delta": "Delta varianza",
-  "N/A": "N/D"
+  "N/A": "N/D",
+  "Download": "Scarica",
+  "No day of the week selected": "Nessuna giorno della settimana selezionato",
+  "Feedback successfully inserted": "Feedback inserito con successo",
+  "An error occurred while inserting a feedback": "Qualcosa è andato storto nell'inserimento del feedback",
+  "Please provide a score for your feedback": "Per inserire un feedback è necessario un punteggio",
+  "Please provide a text for your feedback": "Per inserire un feedback è necessario inserire un testo",
+  "REPEATED_WEEKDAY": "Giorno della settimana ripetuto",
+  "REPEATED_TIME_SLOT": "Fascia oraria ripetuta",
+  "CONSECUTIVE_SHIFTS": "Turni consecutivi",
+  "WORKLOAD_IMBALANCE": "Carico di lavoro non bilanciato",
+  "PREFERENCE_VIOLATION": "Preferenza non rispettata",
+  "OTHER": "altro",
+  "Feedbacks provided": "Feedbacks ricevuti",
+  "Feedback rating": "Voto Feedback",
+  "Text": "Commento"
 }

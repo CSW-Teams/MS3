@@ -30,5 +30,4 @@ EXPOSE 8080
 EXPOSE 5005
 
 # Comando per avviare l'app
-#ENTRYPOINT ["java","-jar","./target/ms3-0.0.1-SNAPSHOT.jar"]
 ENTRYPOINT ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "./target/ms3-0.0.1-SNAPSHOT.jar"]

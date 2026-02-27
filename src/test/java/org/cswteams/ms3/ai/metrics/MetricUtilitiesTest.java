@@ -70,34 +70,6 @@ public class MetricUtilitiesTest {
         assertEquals(2.0, stats.getCoefficientOfVariation(), 0.0001);
     }
 
-    @Test
-    public void countSentimentTransitions_shouldTrackAllTransitions() {
-        Map<Long, Integer> previous = new HashMap<>();
-        previous.put(1L, -1);
-        previous.put(2L, -1);
-        previous.put(3L, 0);
-        previous.put(4L, 0);
-        previous.put(5L, 1);
-        previous.put(6L, 1);
-
-        Map<Long, Integer> current = new HashMap<>();
-        current.put(1L, 0);
-        current.put(2L, 1);
-        current.put(3L, 1);
-        current.put(4L, -1);
-        current.put(5L, -1);
-        current.put(6L, 0);
-
-        SentimentTransitionCounts counts = MetricAggregationUtils.countSentimentTransitions(previous, current);
-
-        assertEquals(1, counts.getNegativeToNeutral());
-        assertEquals(1, counts.getNegativeToPositive());
-        assertEquals(1, counts.getNeutralToPositive());
-        assertEquals(1, counts.getNeutralToNegative());
-        assertEquals(1, counts.getPositiveToNegative());
-        assertEquals(1, counts.getPositiveToNeutral());
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void deltas_mismatchedSeries_shouldThrow() {
         Map<Long, Double> current = new HashMap<>();

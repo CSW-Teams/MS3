@@ -443,14 +443,11 @@
   "Create new shift": "Create new shift",
   "Shift start time": "Shift start time",
 
-  "Cancel": "Cancel",
   "Add shift": "Add shift",
 
   "No time slot selected": "No time slot selected",
   "No day of the week selected": "No day of the week selected",
 
-  "Schedule": "Schedule",
-  "Schedule ID": "Schedule ID",
   "Select schedule": "Select schedule",
   "Selected": "Selected",
   "Coverage": "Coverage",
@@ -458,10 +455,16 @@
   "Sentiment transitions": "Sentiment transitions",
   "UP delta": "UP delta",
   "Variance delta": "Variance delta",
-  "Standard": "Standard",
-  "Empathetic": "Empathetic",
-  "Efficient": "Efficient",
-  "Balanced": "Balanced",
   "N/A": "N/A",
-  "Download": "Download"
+  "Download": "Download",
+
+  "REPEATED_WEEKDAY": "Repeated day of the week",
+  "REPEATED_TIME_SLOT": "Repeated time slot",
+  "CONSECUTIVE_SHIFTS": "Consecutive shifts",
+  "WORKLOAD_IMBALANCE": "Unbalanced workload",
+  "PREFERENCE_VIOLATION": "Preference not respected",
+  "OTHER": "other",
+  "Feedbacks provided": "Feedbacks provided",
+  "Feedback rating": "Feedback Rating",
+  "Text": "Text"
 }

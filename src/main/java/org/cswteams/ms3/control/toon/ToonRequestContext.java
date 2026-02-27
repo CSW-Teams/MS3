@@ -22,6 +22,7 @@ public class ToonRequestContext {
     private final List<DoctorHolidays> doctorHolidays;
     private final List<ToonActiveConstraint> activeConstraints;
     private final List<ToonFeedback> feedbacks;
+    private final boolean allowHistoricalFeedbackShiftIds;
 
     public ToonRequestContext(LocalDate periodStart,
                               LocalDate periodEnd,
@@ -32,6 +33,28 @@ public class ToonRequestContext {
                               List<DoctorHolidays> doctorHolidays,
                               List<ToonActiveConstraint> activeConstraints,
                               List<ToonFeedback> feedbacks) {
+        this(periodStart,
+                periodEnd,
+                mode,
+                concreteShifts,
+                doctors,
+                doctorUffaPriorities,
+                doctorHolidays,
+                activeConstraints,
+                feedbacks,
+                false);
+    }
+
+    public ToonRequestContext(LocalDate periodStart,
+                              LocalDate periodEnd,
+                              String mode,
+                              List<ConcreteShift> concreteShifts,
+                              List<Doctor> doctors,
+                              List<DoctorUffaPriority> doctorUffaPriorities,
+                              List<DoctorHolidays> doctorHolidays,
+                              List<ToonActiveConstraint> activeConstraints,
+                              List<ToonFeedback> feedbacks,
+                              boolean allowHistoricalFeedbackShiftIds) {
         this.periodStart = periodStart;
         this.periodEnd = periodEnd;
         this.mode = mode;
@@ -41,5 +64,6 @@ public class ToonRequestContext {
         this.doctorHolidays = doctorHolidays == null ? Collections.emptyList() : new ArrayList<>(doctorHolidays);
         this.activeConstraints = activeConstraints == null ? Collections.emptyList() : new ArrayList<>(activeConstraints);
         this.feedbacks = feedbacks == null ? Collections.emptyList() : new ArrayList<>(feedbacks);
+        this.allowHistoricalFeedbackShiftIds = allowHistoricalFeedbackShiftIds;
     }
 }

@@ -26,7 +26,6 @@ import org.cswteams.ms3.ai.decision.AiScheduleCandidateMetrics;
 import org.cswteams.ms3.ai.decision.DecisionAlgorithmService;
 import org.cswteams.ms3.ai.metrics.MetricAggregationUtils;
 import org.cswteams.ms3.ai.metrics.MetricNormalizationUtils;
-import org.cswteams.ms3.ai.metrics.SentimentTransitionCounts;
 import org.cswteams.ms3.ai.priority.PriorityScaleValidationException;
 import org.cswteams.ms3.ai.protocol.converter.AiScheduleConverterService;
 import org.cswteams.ms3.ai.protocol.dto.AiAssignmentDto;
@@ -38,6 +37,7 @@ import org.cswteams.ms3.ai.protocol.dto.AiUffaBalanceDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUffaDeltaDto;
 import org.cswteams.ms3.ai.protocol.dto.AiUncoveredShiftDto;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
+import org.cswteams.ms3.ai.protocol.ValidationError;
 import org.cswteams.ms3.ai.protocol.utils.AiStatus;
 import org.cswteams.ms3.ai.protocol.utils.AiUffaQueue;
 import org.cswteams.ms3.control.scheduler.ISchedulerController;
@@ -83,6 +83,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AiScheduleGenerationOrchestrationService {
@@ -92,6 +94,7 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String ERROR_STANDARD_METRICS = "STANDARD_METRICS_FAILED";
     private static final String ERROR_AI_METRICS = "AI_METRICS_FAILED";
     private static final String ERROR_AI_CANDIDATE_VALIDATION = "AI_CANDIDATE_VALIDATION_FAILED";
+    private static final String ERROR_ROLE_LAYER_MINIMA = "ROLE_LAYER_MINIMA_VIOLATED";
     private static final String ERROR_NORMALIZATION = "METRICS_NORMALIZATION_FAILED";
     private static final String ERROR_DECISION = "METRICS_DECISION_FAILED";
     private static final String INVALID_CANDIDATE_SELECTION_ERROR_CODE = "INVALID_CANDIDATE_SELECTION";
@@ -100,6 +103,12 @@ public class AiScheduleGenerationOrchestrationService {
     private static final String EMPATHETIC_LABEL = "EMPATHETIC";
     private static final String EFFICIENT_LABEL = "EFFICIENT";
     private static final String BALANCED_LABEL = "BALANCED";
+    private static final int ROLE_MISMATCH_LOG_LIMIT = 5;
+    private static final int VALIDATION_MISMATCH_SAMPLE_LIMIT = 5;
+    private static final int VALIDATION_FAILURE_PROMPT_MAX_DETAILS = 5;
+    private static final int VALIDATION_FAILURE_PROMPT_MAX_CHARS = 1200;
+    private static final Pattern SCRATCHPAD_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority=([A-Z_]+)\\s+but\\s+role_required=([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ASSIGNMENT_ROLE_MISMATCH_PATTERN = Pattern.compile(".*seniority\\s+([A-Z_]+).*", Pattern.CASE_INSENSITIVE);
     private static final String BASE_VARIANT_INSTRUCTION = "Return strict JSON only with top-level object {'variants': ...}. "
             + "For object form, put the variant label as the key under variants. "
             + "If variants is an array, each item must include a non-empty 'label' field and a 'variant' object payload. "
@@ -132,6 +141,7 @@ public class AiScheduleGenerationOrchestrationService {
     private final DecisionAlgorithmService decisionAlgorithmService;
     private final AiScheduleConverterService aiScheduleConverterService;
     private final AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder;
+    private final AiRoleValidationScratchpadPromptBlockBuilder roleValidationScratchpadPromptBlockBuilder;
     private final ObjectMapper objectMapper;
     private final AiScheduleComparisonMapper comparisonMapper = new AiScheduleComparisonMapper();
     private final AtomicReference<TransientComparisonState> transientComparisonState = new AtomicReference<>();
@@ -150,6 +160,7 @@ public class AiScheduleGenerationOrchestrationService {
                                                     DecisionAlgorithmService decisionAlgorithmService,
                                                     AiScheduleConverterService aiScheduleConverterService,
                                                     AiHardCoveragePromptBlockBuilder hardCoveragePromptBlockBuilder,
+                                                    AiRoleValidationScratchpadPromptBlockBuilder roleValidationScratchpadPromptBlockBuilder,
                                                     ObjectMapper objectMapper) {
         this.schedulerController = schedulerController;
         this.doctorDAO = doctorDAO;
@@ -164,6 +175,7 @@ public class AiScheduleGenerationOrchestrationService {
         this.decisionAlgorithmService = decisionAlgorithmService;
         this.aiScheduleConverterService = aiScheduleConverterService;
         this.hardCoveragePromptBlockBuilder = hardCoveragePromptBlockBuilder;
+        this.roleValidationScratchpadPromptBlockBuilder = roleValidationScratchpadPromptBlockBuilder;
         this.objectMapper = objectMapper;
     }
 
@@ -183,7 +195,7 @@ public class AiScheduleGenerationOrchestrationService {
                 startDate, endDate, standardShiftCount);
 
         String aiRequestCorrelationId = UUID.randomUUID().toString();
-        String toonPayload = buildToonPayload(startDate,
+        ToonPayloadContext toonPayloadContext = buildToonPayload(startDate,
                 endDate,
                 standardSchedule.getConcreteShifts(),
                 aiRequestCorrelationId);
@@ -200,7 +212,7 @@ public class AiScheduleGenerationOrchestrationService {
         }
 
         CandidateData standardCandidate = buildStandardCandidate(standardSchedule, standardMetrics);
-        CandidateBatch aiBatch = requestAiCandidates(toonPayload,
+        CandidateBatch aiBatch = requestAiCandidates(toonPayloadContext,
                 aiRequestCorrelationId,
                 startDate,
                 endDate,
@@ -235,7 +247,7 @@ public class AiScheduleGenerationOrchestrationService {
                     metrics,
                     candidate.validation.valid,
                     candidate.validation.code,
-                    candidate.validation.message,
+                    candidate.validation.apiMessage,
                     candidate.validation.maxRetriesReached,
                     candidate.validation.violationMessages()
             ));
@@ -370,10 +382,10 @@ public class AiScheduleGenerationOrchestrationService {
         transientComparisonState.set(new TransientComparisonState(startDate, endDate, mappedCandidates, response));
     }
 
-    private String buildToonPayload(LocalDate startDate,
-                                    LocalDate endDate,
-                                    List<ConcreteShift> concreteShifts,
-                                    String correlationId) {
+    private ToonPayloadContext buildToonPayload(LocalDate startDate,
+                                                LocalDate endDate,
+                                                List<ConcreteShift> concreteShifts,
+                                                String correlationId) {
         List<ConcreteShift> scopedShifts = filterShiftsInTargetPeriod(startDate, endDate, concreteShifts);
         List<Doctor> doctors = resolveEligibleDoctors(scopedShifts);
         List<Long> eligibleDoctorIds = new ArrayList<>();
@@ -424,33 +436,69 @@ public class AiScheduleGenerationOrchestrationService {
         ToonRequestContext context = request.getToonRequestContext();
         ToonBuilder builder = new ToonBuilder();
         String toonPayload = builder.build(context, ToonBuilder.SerializationMode.COMPACT);
+        int feedbackCount = context.getFeedbacks() == null ? 0 : context.getFeedbacks().size();
+        boolean feedbackSectionIncluded = feedbackCount > 0 && toonPayload != null && toonPayload.contains("\nfb[");
+        logger.info("event=toon_payload_feedback_section correlation_id={} feedbacks_count={} feedback_section_included={} toon_payload_checksum={}",
+                correlationId,
+                feedbackCount,
+                feedbackSectionIncluded,
+                toonPayload == null ? "0" : Integer.toHexString(toonPayload.hashCode()));
         String hardCoverageBlock = hardCoveragePromptBlockBuilder.buildHardCoverageRequirementsBlock(scopedShifts);
+        String roleValidationScratchpadBlock = roleValidationScratchpadPromptBlockBuilder
+                .buildRoleValidationScratchpadBlock(scopedShifts, doctors);
         int generatedHardCoverageRows = countHardCoverageRows(hardCoverageBlock);
+        int generatedRoleValidationScratchpadRows = countBlockRows(roleValidationScratchpadBlock);
+        String roleValidationScratchpadSampleRow = extractFirstDataRow(roleValidationScratchpadBlock);
         logger.info("event=hard_coverage_block_built correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={} hard_coverage_block_length={} hard_coverage_block_checksum={}",
                 correlationId,
                 scopedShifts.size(),
                 generatedHardCoverageRows,
                 hardCoverageBlock == null ? 0 : hardCoverageBlock.length(),
                 hardCoverageBlock == null ? "0" : Integer.toHexString(hardCoverageBlock.hashCode()));
+        logger.info("event=role_validation_scratchpad_block_built correlation_id={} scoped_shifts_count={} role_validation_scratchpad_rows_count={} role_validation_scratchpad_block_length={} role_validation_scratchpad_block_checksum={} role_validation_scratchpad_sample_row={}",
+                correlationId,
+                scopedShifts.size(),
+                generatedRoleValidationScratchpadRows,
+                roleValidationScratchpadBlock == null ? 0 : roleValidationScratchpadBlock.length(),
+                roleValidationScratchpadBlock == null ? "0" : Integer.toHexString(roleValidationScratchpadBlock.hashCode()),
+                roleValidationScratchpadSampleRow == null ? "none" : roleValidationScratchpadSampleRow);
         if (!scopedShifts.isEmpty() && generatedHardCoverageRows == 0) {
             logger.error("event=hard_coverage_block_empty_with_scoped_shifts correlation_id={} scoped_shifts_count={} hard_coverage_rows_count={}",
                     correlationId,
                     scopedShifts.size(),
                     generatedHardCoverageRows);
         }
-        return toonPayload + "\n" + hardCoverageBlock;
+        String safeToonPayload = toonPayload == null ? "" : toonPayload;
+        String safeHardCoverageBlock = hardCoverageBlock == null ? "" : hardCoverageBlock;
+        String safeRoleValidationScratchpadBlock = roleValidationScratchpadBlock == null ? "" : roleValidationScratchpadBlock;
+        String stablePayloadWithoutScratchpad = safeToonPayload + "\n" + safeHardCoverageBlock;
+        return new ToonPayloadContext(
+                stablePayloadWithoutScratchpad + safeRoleValidationScratchpadBlock,
+                stablePayloadWithoutScratchpad,
+                safeRoleValidationScratchpadBlock,
+                Collections.unmodifiableList(new ArrayList<>(scopedShifts)),
+                Collections.unmodifiableList(new ArrayList<>(doctors))
+        );
     }
 
     private int countHardCoverageRows(String hardCoverageBlock) {
-        if (hardCoverageBlock == null || hardCoverageBlock.isBlank()) {
+        return countBlockRows(hardCoverageBlock);
+    }
+
+    private int countBlockRows(String block) {
+        if (block == null || block.isBlank()) {
             return 0;
         }
-        String normalized = hardCoverageBlock.trim();
-        String[] lines = normalized.split("\\R");
-        if (lines.length <= 1) {
-            return 0;
+        String[] lines = block.trim().split("\\R");
+        return lines.length <= 1 ? 0 : lines.length - 1;
+    }
+
+    private String extractFirstDataRow(String block) {
+        if (block == null || block.isBlank()) {
+            return null;
         }
-        return lines.length - 1;
+        String[] lines = block.trim().split("\\R");
+        return lines.length <= 1 ? null : lines[1];
     }
 
 
@@ -546,7 +594,7 @@ public class AiScheduleGenerationOrchestrationService {
         );
     }
 
-    private CandidateBatch requestAiCandidates(String toonPayload,
+    private CandidateBatch requestAiCandidates(ToonPayloadContext toonPayloadContext,
                                                String batchCorrelationId,
                                                LocalDate startDate,
                                                LocalDate endDate,
@@ -554,23 +602,41 @@ public class AiScheduleGenerationOrchestrationService {
         Map<String, AiScheduleResponse> aggregatedVariants = new LinkedHashMap<>();
         Map<String, CandidateValidationData> validationByLabel = new LinkedHashMap<>();
         Map<String, Integer> shiftRequirements = buildShiftRequirementsByShiftId(referenceShifts);
+        Map<String, Map<Seniority, Integer>> shiftRoleMinima = buildShiftRoleMinimaByShiftId(referenceShifts);
 
         int variantMaxAttempts = aiBrokerProperties.getScheduleValidationMaxRetries() + 1;
 
         for (VariantDefinition definition : VARIANT_DEFINITIONS) {
             String baseInstructions = BASE_VARIANT_INSTRUCTION + " " + definition.variantInstruction;
             String attemptInstructions = baseInstructions;
+            String attemptToonPayload = toonPayloadContext.fullPayload;
+            String attemptScratchpadBlock = toonPayloadContext.initialScratchpadBlock;
             AiScheduleResponse selectedVariant = null;
             CandidateValidationData lastValidation = CandidateValidationData.valid();
 
             for (int attempt = 1; attempt <= variantMaxAttempts; attempt++) {
+                if (attempt > 1 && !lastValidation.valid) {
+                    attemptScratchpadBlock = roleValidationScratchpadPromptBlockBuilder
+                            .buildRoleValidationScratchpadBlock(toonPayloadContext.scopedShifts, toonPayloadContext.eligibleDoctors);
+                    attemptToonPayload = toonPayloadContext.payloadWithoutScratchpad
+                            + (attemptScratchpadBlock == null ? "" : attemptScratchpadBlock);
+                    logger.info("event=ai_variant_retry_scratchpad_refreshed correlation_id={} label={} attempt={} previous_validation_code={} scoped_shifts_count={} role_validation_scratchpad_rows_count={} role_validation_scratchpad_block_checksum={} role_validation_scratchpad_sample_row={}",
+                            batchCorrelationId,
+                            definition.label,
+                            attempt,
+                            lastValidation.code,
+                            toonPayloadContext.scopedShifts.size(),
+                            countBlockRows(attemptScratchpadBlock),
+                            attemptScratchpadBlock == null ? "0" : Integer.toHexString(attemptScratchpadBlock.hashCode()),
+                            extractFirstDataRow(attemptScratchpadBlock) == null ? "none" : extractFirstDataRow(attemptScratchpadBlock));
+                }
                 String correlationId = UUID.randomUUID().toString();
-                AiBrokerRequest request = new AiBrokerRequest(toonPayload, attemptInstructions, correlationId);
+                AiBrokerRequest request = new AiBrokerRequest(attemptToonPayload, attemptInstructions, correlationId);
                 logger.info("event=ai_broker_request_prepared correlation_id={} label={} attempt={} payload_length={} instructions_length={}",
                         correlationId,
                         definition.label,
                         attempt,
-                        toonPayload == null ? 0 : toonPayload.length(),
+                        attemptToonPayload == null ? 0 : attemptToonPayload.length(),
                         attemptInstructions.length());
 
                 AiTokenBudgetGuardResult budgetGuard = agentBroker.previewTokenBudget(request);
@@ -582,6 +648,17 @@ public class AiScheduleGenerationOrchestrationService {
                             budgetGuard.getProjectedTpm(),
                             budgetGuard.getBudgetLimit());
                     selectedVariant = buildDeferredResponse(definition.label, budgetGuard);
+                    lastValidation = CandidateValidationData.invalid(
+                            "TOKEN_BUDGET_GUARD_DEFERRED",
+                            "Variant deferred by token budget guard.",
+                            "La variante AI è stata rimandata dal controllo budget token. Ridurre il payload o riprovare più tardi.",
+                            Collections.emptyList(),
+                            Collections.emptyList(),
+                            Collections.emptyList(),
+                            Collections.emptyMap(),
+                            Collections.emptyMap(),
+                            Collections.emptyList()
+                    );
                     break;
                 }
 
@@ -605,6 +682,8 @@ public class AiScheduleGenerationOrchestrationService {
 
                 String rawJson = serializeResponse(buildAiResponseDto(variant));
                 CandidateValidationData validation = validateAiCandidate(rawJson,
+                        variant,
+                        shiftRoleMinima,
                         definition.candidateId,
                         batchCorrelationId,
                         startDate,
@@ -613,19 +692,24 @@ public class AiScheduleGenerationOrchestrationService {
                     validation = validation.withWarning(partialSuccessWarning.code, partialSuccessWarning.message);
                 }
                 lastValidation = validation;
+                logDualLayerCoverageDiagnostics(batchCorrelationId, definition.label, definition.candidateId, validation);
                 if (validation.valid) {
                     break;
                 }
 
+                logRoleMismatchDiagnostics(batchCorrelationId, definition.label, definition.candidateId, validation);
+
                 if (attempt < variantMaxAttempts) {
                     attemptInstructions = buildCorrectiveVariantInstruction(baseInstructions, attempt, validation);
-                    logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={}",
+                    logger.warn("event=ai_variant_retry_scheduled correlation_id={} label={} attempt={} next_attempt={} reason={} message={} role_validation_scratchpad_block_checksum={} role_validation_scratchpad_sample_row={}",
                             correlationId,
                             definition.label,
                             attempt,
                             attempt + 1,
                             validation.code,
-                            validation.message);
+                            validation.message,
+                            attemptScratchpadBlock == null || attemptScratchpadBlock.isBlank() ? "0" : Integer.toHexString(attemptScratchpadBlock.hashCode()),
+                            extractFirstDataRow(attemptScratchpadBlock) == null ? "none" : extractFirstDataRow(attemptScratchpadBlock));
                 }
             }
 
@@ -662,11 +746,14 @@ public class AiScheduleGenerationOrchestrationService {
             CandidateValidationData validation = validationByLabel.get(definition.label);
             if (validation == null) {
                 validation = validateAiCandidate(rawJson,
+                        variant,
+                        shiftRoleMinima,
                         definition.candidateId,
                         batchCorrelationId,
                         startDate,
                         endDate);
             }
+            logDualLayerCoverageDiagnostics(batchCorrelationId, definition.label, definition.candidateId, validation);
             if (!validation.valid) {
                 errorMetadata = buildMetricsError(errorMetadata,
                         batchCorrelationId,
@@ -700,6 +787,8 @@ public class AiScheduleGenerationOrchestrationService {
         return baseInstructions
                 + " Previous attempt " + failedAttempt
                 + " was invalid (" + validation.code + ": " + validation.message + ")."
+                + " Treat role_validation_scratchpad semantics as a backend-authoritative contract: each candidate_doctor_ids entry must reference an in-context doctor whose seniority exactly matches role_required."
+                + " Strict dual-layer quota: for each (shift_id, required_role), count(ON_DUTY)=count(ON_CALL)=required_count (or hard_minimum_required_count when required_count is absent)."
                 + buildValidationFailurePromptBlock(validation)
                 + " Regenerate the same variant label only, fix all domain/syntax issues, and return strict JSON.";
     }
@@ -713,11 +802,28 @@ public class AiScheduleGenerationOrchestrationService {
         builder.append(", actual='").append(promptSafeText(validation.message)).append("'");
         builder.append("}");
 
-        for (ConstraintViolationDetail violation : validation.violatedConstraints) {
+        appendConstraintViolationPromptDetails(builder, validation.violatedConstraints);
+        appendProtocolValidationPromptDetails(builder, validation.protocolValidationDetails);
+        appendRoleCoveragePromptDetails(builder, validation.roleCoverageViolations);
+
+        builder.append("]");
+        return truncateValidationFailurePrompt(builder.toString());
+    }
+
+    private void appendConstraintViolationPromptDetails(StringBuilder builder,
+                                                        List<ConstraintViolationDetail> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return;
+        }
+        int limit = Math.min(VALIDATION_FAILURE_PROMPT_MAX_DETAILS, violations.size());
+        for (int i = 0; i < limit; i++) {
+            ConstraintViolationDetail violation = violations.get(i);
             builder.append(", {constraint_id='")
                     .append(promptSafeText(violation.constraintId))
                     .append("', constraint_type='")
                     .append(promptSafeText(violation.constraintType))
+                    .append("', severity='")
+                    .append(promptSafeText(violation.severity.name()))
                     .append("', shift_id='")
                     .append(promptSafeText(violation.shiftId))
                     .append("', date='")
@@ -730,9 +836,70 @@ public class AiScheduleGenerationOrchestrationService {
                     .append(promptSafeText(violation.actualCondition))
                     .append("'}");
         }
+        int omitted = violations.size() - limit;
+        if (omitted > 0) {
+            builder.append(", {omitted_constraint_violations='")
+                    .append(omitted)
+                    .append("'}");
+        }
+    }
 
-        builder.append("]");
-        return builder.toString();
+    private void appendProtocolValidationPromptDetails(StringBuilder builder,
+                                                       List<ProtocolValidationDetail> details) {
+        if (details == null || details.isEmpty()) {
+            return;
+        }
+        int limit = Math.min(VALIDATION_FAILURE_PROMPT_MAX_DETAILS, details.size());
+        for (int i = 0; i < limit; i++) {
+            ProtocolValidationDetail detail = details.get(i);
+            builder.append(", {path='")
+                    .append(promptSafeText(detail.path))
+                    .append("', message='")
+                    .append(promptSafeText(detail.message))
+                    .append("'}");
+        }
+        int omitted = details.size() - limit;
+        if (omitted > 0) {
+            builder.append(", {omitted_protocol_details='")
+                    .append(omitted)
+                    .append("'}");
+        }
+    }
+
+    private void appendRoleCoveragePromptDetails(StringBuilder builder,
+                                                 List<RoleCoverageViolationDetail> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return;
+        }
+        int limit = Math.min(VALIDATION_FAILURE_PROMPT_MAX_DETAILS, violations.size());
+        for (int i = 0; i < limit; i++) {
+            RoleCoverageViolationDetail violation = violations.get(i);
+            builder.append(", {shift_id='")
+                    .append(promptSafeText(violation.shiftId))
+                    .append("', assignment_status='")
+                    .append(promptSafeText(violation.assignmentStatus))
+                    .append("', role_covered='")
+                    .append(promptSafeText(violation.roleCovered))
+                    .append("', required_min='")
+                    .append(violation.requiredMin)
+                    .append("', actual='")
+                    .append(violation.actualCount)
+                    .append("'}");
+        }
+        int omitted = violations.size() - limit;
+        if (omitted > 0) {
+            builder.append(", {omitted_role_coverage_violations='")
+                    .append(omitted)
+                    .append("'}");
+        }
+    }
+
+    private String truncateValidationFailurePrompt(String promptBlock) {
+        if (promptBlock == null || promptBlock.length() <= VALIDATION_FAILURE_PROMPT_MAX_CHARS) {
+            return promptBlock;
+        }
+        String truncated = promptBlock.substring(0, VALIDATION_FAILURE_PROMPT_MAX_CHARS);
+        return truncated + " ... [truncated_for_token_budget]";
     }
 
     private String promptSafeText(String value) {
@@ -746,7 +913,61 @@ public class AiScheduleGenerationOrchestrationService {
                 .trim();
     }
 
+    private void logRoleMismatchDiagnostics(String correlationId,
+                                            String variantId,
+                                            String candidateId,
+                                            CandidateValidationData validation) {
+        List<RoleMismatchDetail> mismatches = extractRoleMismatchDetails(validation);
+        if (mismatches.isEmpty()) {
+            return;
+        }
+        List<RoleMismatchDetail> sampled = mismatches.subList(0, Math.min(ROLE_MISMATCH_LOG_LIMIT, mismatches.size()));
+        logger.warn("event=ai_candidate_role_mismatch_validation_failed correlation_id={} variant_id={} candidate_id={} role_mismatch_count={} mismatch_sample={}",
+                correlationId,
+                variantId,
+                candidateId,
+                mismatches.size(),
+                sampled);
+    }
+
+    private List<RoleMismatchDetail> extractRoleMismatchDetails(CandidateValidationData validation) {
+        if (validation == null || validation.protocolValidationDetails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<RoleMismatchDetail> mismatches = new ArrayList<>();
+        for (ProtocolValidationDetail detail : validation.protocolValidationDetails) {
+            if (detail == null || detail.path == null || detail.message == null) {
+                continue;
+            }
+            String expected = null;
+            String actual = null;
+
+            Matcher scratchpadMatcher = SCRATCHPAD_ROLE_MISMATCH_PATTERN.matcher(detail.message);
+            if (scratchpadMatcher.matches()) {
+                actual = scratchpadMatcher.group(1);
+                expected = scratchpadMatcher.group(2);
+            } else if (detail.path.contains("$.assignments[") && detail.path.endsWith(".role_covered")) {
+                Matcher assignmentMatcher = ASSIGNMENT_ROLE_MISMATCH_PATTERN.matcher(detail.message);
+                if (assignmentMatcher.matches()) {
+                    expected = assignmentMatcher.group(1);
+                    actual = "assigned role mismatch";
+                }
+            }
+
+            if (expected != null || actual != null) {
+                mismatches.add(new RoleMismatchDetail(detail.path, safeText(expected), safeText(actual)));
+            }
+        }
+        return mismatches;
+    }
+
+    private String safeText(String value) {
+        return value == null || value.trim().isEmpty() ? "n/a" : value;
+    }
+
     private CandidateValidationData validateAiCandidate(String rawJson,
+                                                        AiScheduleResponse variant,
+                                                        Map<String, Map<Seniority, Integer>> shiftRoleMinima,
                                                         String candidateId,
                                                         String correlationId,
                                                         LocalDate startDate,
@@ -761,7 +982,7 @@ public class AiScheduleGenerationOrchestrationService {
             List<ConcreteShift> concreteShifts = aiScheduleConverterService.convert(rawJson);
             Schedule candidateSchedule = new Schedule(startDate.toEpochDay(), endDate.toEpochDay(), concreteShifts);
             List<ConstraintViolationDetail> violatedConstraints = collectViolatedConstraints(candidateSchedule);
-            if (!violatedConstraints.isEmpty()) {
+            if (hasHardConstraintViolation(violatedConstraints)) {
                 String violationMessage = String.join(" | ", formatViolationMessages(violatedConstraints));
                 logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} violations_count={} message={}",
                         correlationId,
@@ -769,25 +990,251 @@ public class AiScheduleGenerationOrchestrationService {
                         "DOMAIN_CONSTRAINTS_VIOLATED",
                         violatedConstraints.size(),
                         violationMessage);
-                return CandidateValidationData.invalid("DOMAIN_CONSTRAINTS_VIOLATED", violationMessage, violatedConstraints);
+                return CandidateValidationData.invalid("DOMAIN_CONSTRAINTS_VIOLATED",
+                        violationMessage,
+                        "Copertura non completa entro i vincoli HARD attivi: medici insufficienti per coprire tutti i turni rispettando ore periodo, riposi, turni contigui e ferie.",
+                        violatedConstraints);
+            }
+            if (!violatedConstraints.isEmpty()) {
+                String softViolationMessage = String.join(" | ", formatViolationMessages(violatedConstraints));
+                logger.info("event=ai_candidate_validation_soft_constraints correlation_id={} candidate_id={} violations_count={} message={}",
+                        correlationId,
+                        candidateId,
+                        violatedConstraints.size(),
+                        softViolationMessage);
+                return CandidateValidationData.validWithWarning(
+                        "SOFT_DOMAIN_CONSTRAINTS_VIOLATED",
+                        "Sono state rilevate violazioni di vincoli violabili; il candidato resta valido.",
+                        violatedConstraints);
+            }
+            CandidateValidationData roleLayerValidation = validateRoleLayerMinima(variant, shiftRoleMinima);
+            if (!roleLayerValidation.valid) {
+                logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} violations_count={} message={}",
+                        correlationId,
+                        candidateId,
+                        ERROR_ROLE_LAYER_MINIMA,
+                        roleLayerValidation.roleCoverageViolations.size(),
+                        roleLayerValidation.message);
+                return roleLayerValidation;
             }
             return CandidateValidationData.valid();
         } catch (AiProtocolException ex) {
+            List<ProtocolValidationDetail> protocolValidationDetails = extractProtocolValidationDetails(ex.getDetails());
+            List<RoleMismatchDetail> mismatchExamples = extractRoleMismatchDetailsFromProtocolValidation(protocolValidationDetails)
+                    .stream()
+                    .limit(VALIDATION_MISMATCH_SAMPLE_LIMIT)
+                    .collect(Collectors.toList());
             logger.warn("event=ai_candidate_validation_failed correlation_id={} candidate_id={} reason={} message={}",
                     correlationId,
                     candidateId,
                     "CONVERSION_FAILED",
                     ex.getMessage());
-            return CandidateValidationData.invalid("CONVERSION_FAILED", ex.getMessage());
+            return CandidateValidationData.invalid("CONVERSION_FAILED",
+                    ex.getMessage(),
+                    "Errore tecnico durante la validazione del candidato AI. Riprovare la generazione.",
+                    Collections.emptyList(),
+                    protocolValidationDetails,
+                    Collections.emptyList(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    mismatchExamples);
         }
+    }
+
+    private List<RoleMismatchDetail> extractRoleMismatchDetailsFromProtocolValidation(List<ProtocolValidationDetail> protocolValidationDetails) {
+        if (protocolValidationDetails == null || protocolValidationDetails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<RoleMismatchDetail> mismatches = new ArrayList<>();
+        for (ProtocolValidationDetail detail : protocolValidationDetails) {
+            if (detail == null) {
+                continue;
+            }
+            if (detail.path != null && detail.path.contains("role_covered")
+                    || detail.message != null && detail.message.toLowerCase().contains("seniority")) {
+                mismatches.add(new RoleMismatchDetail(
+                        safeText(detail.path),
+                        "role_covered must match required seniority",
+                        safeText(detail.message)
+                ));
+            }
+        }
+        return mismatches;
+    }
+
+    private CandidateValidationData validateRoleLayerMinima(AiScheduleResponse variant,
+                                                            Map<String, Map<Seniority, Integer>> shiftRoleMinima) {
+        if (variant == null || shiftRoleMinima == null || shiftRoleMinima.isEmpty()) {
+            return CandidateValidationData.valid();
+        }
+
+        Map<String, Integer> assignmentCounts = new HashMap<>();
+        Map<String, Integer> requiredSlotsByKey = new LinkedHashMap<>();
+        List<AiAssignment> assignments = variant.getAssignments() == null ? Collections.emptyList() : variant.getAssignments();
+        for (AiAssignment assignment : assignments) {
+            if (assignment == null
+                    || assignment.getShiftId() == null
+                    || assignment.getShiftId().trim().isEmpty()
+                    || assignment.getAssignmentStatus() == null
+                    || assignment.getRoleCovered() == null) {
+                continue;
+            }
+            if (assignment.getAssignmentStatus() != ConcreteShiftDoctorStatus.ON_DUTY
+                    && assignment.getAssignmentStatus() != ConcreteShiftDoctorStatus.ON_CALL) {
+                continue;
+            }
+            String key = toRoleStatusCountKey(assignment.getShiftId().trim(), assignment.getAssignmentStatus(), assignment.getRoleCovered());
+            assignmentCounts.merge(key, 1, Integer::sum);
+        }
+
+        List<RoleCoverageViolationDetail> violations = new ArrayList<>();
+        for (Map.Entry<String, Map<Seniority, Integer>> shiftEntry : shiftRoleMinima.entrySet()) {
+            String shiftId = shiftEntry.getKey();
+            Map<Seniority, Integer> minimaByRole = shiftEntry.getValue();
+            if (minimaByRole == null) {
+                continue;
+            }
+            for (Map.Entry<Seniority, Integer> roleEntry : minimaByRole.entrySet()) {
+                Seniority role = roleEntry.getKey();
+                int requiredMin = Math.max(roleEntry.getValue() == null ? 0 : roleEntry.getValue(), 0);
+                if (requiredMin == 0) {
+                    continue;
+                }
+                for (ConcreteShiftDoctorStatus status : List.of(ConcreteShiftDoctorStatus.ON_DUTY, ConcreteShiftDoctorStatus.ON_CALL)) {
+                    String key = toRoleStatusCountKey(shiftId, status, role);
+                    requiredSlotsByKey.put(key, requiredMin);
+                    int assigned = assignmentCounts.getOrDefault(key, 0);
+                    if (assigned < requiredMin) {
+                        violations.add(new RoleCoverageViolationDetail(shiftId, status.name(), role.name(), requiredMin, assigned));
+                    }
+                }
+            }
+        }
+
+        List<RoleMismatchDetail> mismatchSamples = extractRoleMismatchDetailsFromCoverageViolations(violations)
+                .stream()
+                .limit(VALIDATION_MISMATCH_SAMPLE_LIMIT)
+                .collect(Collectors.toList());
+
+        if (violations.isEmpty()) {
+            return CandidateValidationData.valid(requiredSlotsByKey,
+                    buildAssignedCoverageByKey(requiredSlotsByKey.keySet(), assignmentCounts),
+                    Collections.emptyList(),
+                    mismatchSamples);
+        }
+
+        String message = violations.stream()
+                .map(RoleCoverageViolationDetail::toCompactMessage)
+                .collect(Collectors.joining(" | "));
+        return CandidateValidationData.invalid(ERROR_ROLE_LAYER_MINIMA,
+                message,
+                "Copertura non completa sui requisiti ruolo/stato richiesti: medici insufficienti sui livelli minimi richiesti.",
+                Collections.emptyList(),
+                Collections.emptyList(),
+                violations,
+                requiredSlotsByKey,
+                buildAssignedCoverageByKey(requiredSlotsByKey.keySet(), assignmentCounts),
+                mismatchSamples);
+    }
+
+    private Map<String, Integer> buildAssignedCoverageByKey(Set<String> keys, Map<String, Integer> assignmentCounts) {
+        Map<String, Integer> assignedByKey = new LinkedHashMap<>();
+        if (keys == null || keys.isEmpty()) {
+            return assignedByKey;
+        }
+        for (String key : keys) {
+            assignedByKey.put(key, assignmentCounts.getOrDefault(key, 0));
+        }
+        return assignedByKey;
+    }
+
+    private List<RoleMismatchDetail> extractRoleMismatchDetailsFromCoverageViolations(List<RoleCoverageViolationDetail> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<RoleMismatchDetail> mismatchDetails = new ArrayList<>();
+        for (RoleCoverageViolationDetail violation : violations) {
+            mismatchDetails.add(new RoleMismatchDetail(
+                    "$.assignments",
+                    "required>= " + violation.requiredMin + " for " + violation.assignmentStatus + "/" + violation.roleCovered,
+                    "assigned=" + violation.actualCount + " for shift_id=" + violation.shiftId
+            ));
+        }
+        return mismatchDetails;
+    }
+
+    private void logDualLayerCoverageDiagnostics(String correlationId,
+                                                 String variantId,
+                                                 String candidateId,
+                                                 CandidateValidationData validation) {
+        if (validation == null) {
+            return;
+        }
+        logger.info("event=ai_candidate_dual_layer_coverage_validation correlation_id={} variant_id={} candidate_id={} dual_layer_coverage_valid={} required_slots_count={} assigned_slots_count={} missing_slots_count={} metadata={}",
+                correlationId,
+                variantId,
+                candidateId,
+                validation.dualLayerCoverageValid,
+                validation.requiredSlotsByShiftRoleLayer.size(),
+                validation.assignedSlotsByShiftRoleLayer.size(),
+                validation.roleCoverageViolations.size(),
+                serializeValidationMetadata(validation));
+    }
+
+    private String serializeValidationMetadata(CandidateValidationData validation) {
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("dual_layer_coverage_valid", validation.dualLayerCoverageValid);
+        metadata.put("required_slots_per_shift_role_layer", validation.requiredSlotsByShiftRoleLayer);
+        metadata.put("assigned_slots_per_shift_role_layer", validation.assignedSlotsByShiftRoleLayer);
+        metadata.put("missing_slots_summary", validation.roleCoverageViolations.stream()
+                .map(RoleCoverageViolationDetail::toCompactMessage)
+                .collect(Collectors.toList()));
+        metadata.put("mismatch_examples", validation.mismatchExamples.stream()
+                .map(RoleMismatchDetail::toString)
+                .collect(Collectors.toList()));
+        try {
+            return objectMapper.writeValueAsString(metadata);
+        } catch (JsonProcessingException e) {
+            return metadata.toString();
+        }
+    }
+
+    private String toRoleStatusCountKey(String shiftId, ConcreteShiftDoctorStatus status, Seniority roleCovered) {
+        return shiftId + "|" + status.name() + "|" + roleCovered.name();
+    }
+
+    private List<ProtocolValidationDetail> extractProtocolValidationDetails(List<ValidationError> details) {
+        if (details == null || details.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ProtocolValidationDetail> protocolValidationDetails = new ArrayList<>();
+        for (ValidationError detail : details) {
+            if (detail == null) {
+                continue;
+            }
+            protocolValidationDetails.add(new ProtocolValidationDetail(detail.getPath(), detail.getMessage()));
+        }
+        return protocolValidationDetails;
     }
 
     private List<String> formatViolationMessages(List<ConstraintViolationDetail> violations) {
         List<String> messages = new ArrayList<>();
         for (ConstraintViolationDetail violation : violations) {
-            messages.add(violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition);
+            messages.add(violation.severity + " " + violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition);
         }
         return messages;
+    }
+
+    private boolean hasHardConstraintViolation(List<ConstraintViolationDetail> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return false;
+        }
+        for (ConstraintViolationDetail violation : violations) {
+            if (violation != null && violation.severity == ConstraintViolationSeverity.HARD) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<ConstraintViolationDetail> collectViolatedConstraints(Schedule candidateSchedule) {
@@ -795,9 +1242,6 @@ public class AiScheduleGenerationOrchestrationService {
             return Collections.emptyList();
         }
         List<Constraint> constraints = constraintDAO.findAll();
-        if (constraints.isEmpty()) {
-            return Collections.emptyList();
-        }
 
         List<ConstraintViolationDetail> violations = new ArrayList<>();
         List<Holiday> holidays = holidayDAO.findAll();
@@ -814,11 +1258,40 @@ public class AiScheduleGenerationOrchestrationService {
             if (priority == null || priority.getDoctor() == null || priority.getDoctor().getId() == null) {
                 continue;
             }
-            prioritiesByDoctorId.put(priority.getDoctor().getId(), priority);
+            // Use an empty per-doctor assignment cache for validation and fill it incrementally
+            // while iterating assignments. Binding this object to candidateSchedule would preload
+            // every assignment for that doctor and make turni-turno constraints (e.g. ubiquity)
+            // compare each assignment against itself, producing false positives.
+            DoctorUffaPriority validationPriority = new DoctorUffaPriority(priority.getDoctor());
+            validationPriority.setSchedule(candidateSchedule);
+            validationPriority.setAssegnazioniTurnoCache(new ArrayList<>());
+            validationPriority.setGeneralPriority(priority.getGeneralPriority());
+            validationPriority.setPartialGeneralPriority(priority.getPartialGeneralPriority());
+            validationPriority.setLongShiftPriority(priority.getLongShiftPriority());
+            validationPriority.setPartialLongShiftPriority(priority.getPartialLongShiftPriority());
+            validationPriority.setNightPriority(priority.getNightPriority());
+            validationPriority.setPartialNightPriority(priority.getPartialNightPriority());
+            prioritiesByDoctorId.put(priority.getDoctor().getId(), validationPriority);
         }
 
         for (ConcreteShift concreteShift : candidateSchedule.getConcreteShifts()) {
             if (concreteShift == null || concreteShift.getDoctorAssignmentList() == null) {
+                continue;
+            }
+            if (concreteShift.getShift() == null) {
+                violations.add(ConstraintViolationDetail.malformedShift(
+                        concreteShift,
+                        "shift",
+                        "Missing required field: shift"
+                ));
+                continue;
+            }
+            if (concreteShift.getShift().getDuration() == null) {
+                violations.add(ConstraintViolationDetail.malformedShift(
+                        concreteShift,
+                        "duration",
+                        "Missing required field: shift.duration"
+                ));
                 continue;
             }
             for (DoctorAssignment assignment : concreteShift.getDoctorAssignmentList()) {
@@ -833,10 +1306,10 @@ public class AiScheduleGenerationOrchestrationService {
                 Long doctorId = assignment.getDoctor().getId();
                 DoctorUffaPriority doctorPriority = prioritiesByDoctorId.get(doctorId);
                 if (doctorPriority == null) {
-                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor(), candidateSchedule);
-                    prioritiesByDoctorId.put(doctorId, doctorPriority);
-                } else if (doctorPriority.getSchedule() == null) {
+                    doctorPriority = new DoctorUffaPriority(assignment.getDoctor());
                     doctorPriority.setSchedule(candidateSchedule);
+                    doctorPriority.setAssegnazioniTurnoCache(new ArrayList<>());
+                    prioritiesByDoctorId.put(doctorId, doctorPriority);
                 }
 
                 ContextConstraint context = new ContextConstraint(
@@ -854,8 +1327,31 @@ public class AiScheduleGenerationOrchestrationService {
                                 constraint,
                                 concreteShift,
                                 assignment.getDoctor(),
-                                "Constraint must be satisfied",
+                                "Constraint validation failed for the current assignment",
                                 message
+                        ));
+                    } catch (RuntimeException ex) {
+                        String exceptionClass = sanitizeExceptionClass(ex);
+                        String exceptionMessage = sanitizeExceptionMessage(ex);
+                        logger.warn("event=ai_candidate_validation_failed reason=CONSTRAINT_EXECUTION_ERROR "
+                                        + "constraint_type={} constraint_id={} doctor_id={} shift_id={} exception_class={} "
+                                        + "exception_message={}",
+                                constraint == null ? "n/a" : constraint.getClass().getSimpleName(),
+                                constraint == null || constraint.getId() == null ? "n/a" : constraint.getId(),
+                                assignment.getDoctor() == null || assignment.getDoctor().getId() == null
+                                        ? "n/a"
+                                        : assignment.getDoctor().getId(),
+                                concreteShift.getShift() == null || concreteShift.getShift().getId() == null
+                                        ? "n/a"
+                                        : concreteShift.getShift().getId(),
+                                exceptionClass,
+                                exceptionMessage);
+                        violations.add(ConstraintViolationDetail.constraintExecutionFailure(
+                                constraint,
+                                concreteShift,
+                                assignment.getDoctor(),
+                                exceptionClass,
+                                exceptionMessage
                         ));
                     }
                 }
@@ -864,6 +1360,26 @@ public class AiScheduleGenerationOrchestrationService {
             }
         }
         return violations;
+    }
+
+    private String sanitizeExceptionClass(RuntimeException ex) {
+        if (ex == null || ex.getClass() == null || ex.getClass().getSimpleName() == null
+                || ex.getClass().getSimpleName().trim().isEmpty()) {
+            return "RuntimeException";
+        }
+        return ex.getClass().getSimpleName().trim();
+    }
+
+    private String sanitizeExceptionMessage(RuntimeException ex) {
+        if (ex == null || ex.getMessage() == null || ex.getMessage().trim().isEmpty()) {
+            return "n/a";
+        }
+        String sanitized = ex.getMessage()
+                .replace("\n", " ")
+                .replace("\r", " ")
+                .replace("\t", " ")
+                .trim();
+        return sanitized.length() > 256 ? sanitized.substring(0, 256) : sanitized;
     }
 
     private AiScheduleResponse buildDeferredResponse(String label, AiTokenBudgetGuardResult budgetGuard) {
@@ -885,10 +1401,6 @@ public class AiScheduleGenerationOrchestrationService {
                 schedule.getDoctorUffaPrioritiesSnapshot(),
                 schedule.getDoctorUffaPriorityList()
         );
-        SentimentTransitionCounts sentimentTransitionCounts = computeSentimentTransitionsFromPriorities(
-                schedule.getDoctorUffaPrioritiesSnapshot(),
-                schedule.getDoctorUffaPriorityList()
-        );
         double uffaBalance = computeUffaBalanceImprovement(
                 schedule.getDoctorUffaPrioritiesSnapshot(),
                 schedule.getDoctorUffaPriorityList()
@@ -901,8 +1413,6 @@ public class AiScheduleGenerationOrchestrationService {
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
-                0.0,
-                sentimentTransitionCounts,
                 deltaStats.mean,
                 deltaStats.variance
         );
@@ -935,14 +1445,9 @@ public class AiScheduleGenerationOrchestrationService {
         if (response == null || response.getUffaDelta() == null || response.getUffaDelta().isEmpty()) {
             deltaStats = computeLoadDeltaStatsFromConcreteShifts(concreteShifts);
         }
-        SentimentTransitionCounts sentimentTransitionCounts = computeSentimentTransitionsFromUffaDelta(
-                response == null ? null : response.getUffaDelta()
-        );
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
-                0.0,
-                sentimentTransitionCounts,
                 deltaStats.mean,
                 deltaStats.variance
         );
@@ -963,88 +1468,12 @@ public class AiScheduleGenerationOrchestrationService {
         if (response.getUffaDelta() == null || response.getUffaDelta().isEmpty()) {
             deltaStats = new PriorityDeltaStats(0.0, 0.0);
         }
-        SentimentTransitionCounts sentimentTransitionCounts = computeSentimentTransitionsFromUffaDelta(response.getUffaDelta());
         return new DecisionMetricValues(
                 coverage,
                 uffaBalance,
-                0.0,
-                sentimentTransitionCounts,
                 deltaStats.mean,
                 deltaStats.variance
         );
-    }
-
-    private SentimentTransitionCounts computeSentimentTransitionsFromPriorities(List<DoctorUffaPrioritySnapshot> snapshots,
-                                                                                List<DoctorUffaPriority> current) {
-        if (snapshots == null || current == null || snapshots.isEmpty() || current.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        Map<Long, Integer> previousSentiment = new HashMap<>();
-        for (DoctorUffaPrioritySnapshot snapshot : snapshots) {
-            if (snapshot.getDoctor() == null || snapshot.getDoctor().getId() == null) {
-                continue;
-            }
-            previousSentiment.put(snapshot.getDoctor().getId(), signSentiment(snapshot.getGeneralPriority()));
-        }
-        Map<Long, Integer> currentSentiment = new HashMap<>();
-        for (DoctorUffaPriority priority : current) {
-            if (priority.getDoctor() == null || priority.getDoctor().getId() == null) {
-                continue;
-            }
-            currentSentiment.put(priority.getDoctor().getId(), signSentiment(priority.getGeneralPriority()));
-        }
-        if (previousSentiment.isEmpty() || currentSentiment.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        try {
-            return MetricAggregationUtils.countSentimentTransitions(previousSentiment, currentSentiment);
-        } catch (IllegalArgumentException ex) {
-            logger.info("event=metrics_sentiment_transitions_fallback reason={}", ex.getMessage());
-            return zeroSentimentTransitionCounts();
-        }
-    }
-
-    private SentimentTransitionCounts computeSentimentTransitionsFromUffaDelta(List<AiUffaDelta> deltas) {
-        if (deltas == null || deltas.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        Map<Long, Integer> previousSentiment = new HashMap<>();
-        Map<Long, Integer> currentSentiment = new HashMap<>();
-        for (AiUffaDelta delta : deltas) {
-            if (delta == null || delta.getDoctorId() == null || delta.getPoints() == null) {
-                continue;
-            }
-            long doctorId = delta.getDoctorId().longValue();
-            previousSentiment.put(doctorId, 0);
-            currentSentiment.put(doctorId, signSentiment(delta.getPoints()));
-        }
-        if (currentSentiment.isEmpty()) {
-            return zeroSentimentTransitionCounts();
-        }
-        try {
-            return MetricAggregationUtils.countSentimentTransitions(previousSentiment, currentSentiment);
-        } catch (IllegalArgumentException ex) {
-            logger.info("event=metrics_sentiment_transitions_fallback reason={}", ex.getMessage());
-            return zeroSentimentTransitionCounts();
-        }
-    }
-
-    private int signSentiment(Number value) {
-        if (value == null) {
-            return 0;
-        }
-        double numeric = value.doubleValue();
-        if (numeric > 0) {
-            return 1;
-        }
-        if (numeric < 0) {
-            return -1;
-        }
-        return 0;
-    }
-
-    private SentimentTransitionCounts zeroSentimentTransitionCounts() {
-        return new SentimentTransitionCounts(0, 0, 0, 0, 0, 0);
     }
 
     private boolean hasUffaBalanceMetric(AiMetrics metrics) {
@@ -1213,6 +1642,37 @@ public class AiScheduleGenerationOrchestrationService {
         return requirements;
     }
 
+    private Map<String, Map<Seniority, Integer>> buildShiftRoleMinimaByShiftId(List<ConcreteShift> referenceShifts) {
+        Map<String, Map<Seniority, Integer>> minimaByShift = new HashMap<>();
+        if (referenceShifts == null) {
+            return minimaByShift;
+        }
+        for (ConcreteShift concreteShift : referenceShifts) {
+            if (concreteShift == null) {
+                continue;
+            }
+            String shiftId = ToonBuilder.shiftIdFor(concreteShift);
+            Map<Seniority, Integer> minima = minimaByShift.computeIfAbsent(shiftId, ignored -> new HashMap<>());
+            Shift shift = concreteShift.getShift();
+            if (shift == null || shift.getQuantityShiftSeniority() == null) {
+                continue;
+            }
+            for (QuantityShiftSeniority qss : shift.getQuantityShiftSeniority()) {
+                if (qss == null || qss.getSeniorityMap() == null) {
+                    continue;
+                }
+                for (Map.Entry<Seniority, Integer> entry : qss.getSeniorityMap().entrySet()) {
+                    if (entry.getKey() == null) {
+                        continue;
+                    }
+                    int value = entry.getValue() == null ? 0 : Math.max(entry.getValue(), 0);
+                    minima.merge(entry.getKey(), value, Integer::sum);
+                }
+            }
+        }
+        return minimaByShift;
+    }
+
     private PriorityDeltaStats computeLoadDeltaStatsFromConcreteShifts(List<ConcreteShift> concreteShifts) {
         if (concreteShifts == null || concreteShifts.isEmpty()) {
             return new PriorityDeltaStats(0.0, 0.0);
@@ -1301,10 +1761,19 @@ public class AiScheduleGenerationOrchestrationService {
         int totalRequired = 0;
         int totalAssigned = 0;
         for (ConcreteShift shift : concreteShifts) {
-            int required = computeShiftRequirement(shift.getShift());
-            int assigned = countAssignedDoctors(shift);
+            int requiredPerRoleMinima = computeShiftRequirementPerRoleMinima(shift.getShift());
+            int requiredOnDuty = requiredPerRoleMinima;
+            int requiredOnCall = requiredPerRoleMinima;
+            int required = requiredOnDuty + requiredOnCall;
+
+            int assignedOnDuty = countAssignedDoctors(shift, ConcreteShiftDoctorStatus.ON_DUTY);
+            int assignedOnCall = countAssignedDoctors(shift, ConcreteShiftDoctorStatus.ON_CALL);
+
+            int coveredOnDuty = Math.min(requiredOnDuty, assignedOnDuty);
+            int coveredOnCall = Math.min(requiredOnCall, assignedOnCall);
+
             totalRequired += required;
-            totalAssigned += Math.min(required, assigned);
+            totalAssigned += coveredOnDuty + coveredOnCall;
         }
         if (totalRequired == 0) {
             logger.info("event=coverage_computed total_required=0 total_assigned={} coverage=1.0", totalAssigned);
@@ -1319,6 +1788,13 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private int computeShiftRequirement(Shift shift) {
+        int requiredPerRoleMinima = computeShiftRequirementPerRoleMinima(shift);
+        int requiredOnDuty = requiredPerRoleMinima;
+        int requiredOnCall = requiredPerRoleMinima;
+        return requiredOnDuty + requiredOnCall;
+    }
+
+    private int computeShiftRequirementPerRoleMinima(Shift shift) {
         if (shift == null || shift.getQuantityShiftSeniority() == null) {
             return 0;
         }
@@ -1337,6 +1813,11 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private int countAssignedDoctors(ConcreteShift shift) {
+        return countAssignedDoctors(shift, ConcreteShiftDoctorStatus.ON_DUTY)
+                + countAssignedDoctors(shift, ConcreteShiftDoctorStatus.ON_CALL);
+    }
+
+    private int countAssignedDoctors(ConcreteShift shift, ConcreteShiftDoctorStatus statusToCount) {
         if (shift == null || shift.getDoctorAssignmentList() == null) {
             return 0;
         }
@@ -1346,7 +1827,7 @@ public class AiScheduleGenerationOrchestrationService {
                 continue;
             }
             ConcreteShiftDoctorStatus status = assignment.getConcreteShiftDoctorStatus();
-            if (status == ConcreteShiftDoctorStatus.ON_CALL || status == ConcreteShiftDoctorStatus.ON_DUTY) {
+            if (status == statusToCount) {
                 count++;
             }
         }
@@ -1441,6 +1922,7 @@ public class AiScheduleGenerationOrchestrationService {
                 dto.shiftId = ToonBuilder.shiftIdFor(shift);
                 dto.doctorId = assignment.getDoctor().getId().intValue();
                 dto.roleCovered = assignment.getDoctor().getSeniority();
+                dto.assignmentStatus = status;
                 dto.isForced = Boolean.FALSE;
                 dto.violationNote = null;
                 assignments.add(dto);
@@ -1556,6 +2038,7 @@ public class AiScheduleGenerationOrchestrationService {
             dto.shiftId = assignment.getShiftId();
             dto.doctorId = assignment.getDoctorId();
             dto.roleCovered = assignment.getRoleCovered();
+            dto.assignmentStatus = assignment.getAssignmentStatus();
             dto.isForced = assignment.isForced();
             dto.violationNote = assignment.getViolationNote();
             result.add(dto);
@@ -1604,6 +2087,9 @@ public class AiScheduleGenerationOrchestrationService {
                                                            Map<String, AiScheduleCandidateMetrics> normalizedMetrics) {
         List<AiScheduleCandidateMetrics> metrics = new ArrayList<>();
         for (CandidateData candidate : candidates) {
+            if (!candidate.validation.valid) {
+                continue;
+            }
             AiScheduleCandidateMetrics candidateMetrics = normalizedMetrics.get(candidate.candidateId);
             if (candidateMetrics != null) {
                 metrics.add(candidateMetrics);
@@ -1651,8 +2137,6 @@ public class AiScheduleGenerationOrchestrationService {
         double maxCoverage = Double.NEGATIVE_INFINITY;
         double minUffaBalance = Double.POSITIVE_INFINITY;
         double maxUffaBalance = Double.NEGATIVE_INFINITY;
-        double minSentiment = Double.POSITIVE_INFINITY;
-        double maxSentiment = Double.NEGATIVE_INFINITY;
         double minUpDelta = Double.POSITIVE_INFINITY;
         double maxUpDelta = Double.NEGATIVE_INFINITY;
         double minVariance = Double.POSITIVE_INFINITY;
@@ -1664,8 +2148,6 @@ public class AiScheduleGenerationOrchestrationService {
             maxCoverage = Math.max(maxCoverage, metrics.getCoverage());
             minUffaBalance = Math.min(minUffaBalance, metrics.getUffaBalance());
             maxUffaBalance = Math.max(maxUffaBalance, metrics.getUffaBalance());
-            minSentiment = Math.min(minSentiment, metrics.getSentimentTransitions());
-            maxSentiment = Math.max(maxSentiment, metrics.getSentimentTransitions());
             minUpDelta = Math.min(minUpDelta, metrics.getUpDelta());
             maxUpDelta = Math.max(maxUpDelta, metrics.getUpDelta());
             minVariance = Math.min(minVariance, metrics.getVarianceDelta());
@@ -1678,8 +2160,6 @@ public class AiScheduleGenerationOrchestrationService {
             double coverage = clampUnit(metrics.getCoverage());
             double uffaBalance = MetricNormalizationUtils.normalizeRange(metrics.getUffaBalance(), minUffaBalance,
                     maxUffaBalance, true);
-            double sentiment = MetricNormalizationUtils.normalizeRange(metrics.getSentimentTransitions(), minSentiment,
-                    maxSentiment, false);
             double upDelta = MetricNormalizationUtils.normalizeRange(metrics.getUpDelta(), minUpDelta, maxUpDelta,
                     true);
             double variance = MetricNormalizationUtils.normalizeRange(metrics.getVarianceDelta(), minVariance,
@@ -1688,20 +2168,17 @@ public class AiScheduleGenerationOrchestrationService {
                     candidate.candidateId,
                     coverage,
                     uffaBalance,
-                    sentiment,
                     upDelta,
                     variance
             );
             normalized.put(candidate.candidateId, normalizedCandidate);
         }
-        logger.info("event=metrics_normalization_completed candidates_count={} coverage_min={} coverage_max={} uffa_min={} uffa_max={} sentiment_min={} sentiment_max={} up_delta_min={} up_delta_max={} variance_min={} variance_max={}",
+        logger.info("event=metrics_normalization_completed candidates_count={} coverage_min={} coverage_max={} uffa_min={} uffa_max={} up_delta_min={} up_delta_max={} variance_min={} variance_max={}",
                 candidates.size(),
                 minCoverage,
                 maxCoverage,
                 minUffaBalance,
                 maxUffaBalance,
-                minSentiment,
-                maxSentiment,
                 minUpDelta,
                 maxUpDelta,
                 minVariance,
@@ -1746,7 +2223,7 @@ public class AiScheduleGenerationOrchestrationService {
     }
 
     private DecisionMetricValues fallbackMetrics() {
-        return new DecisionMetricValues(0.0, 0.0, 0.0, zeroSentimentTransitionCounts(), 0.0, 0.0);
+        return new DecisionMetricValues(0.0, 0.0, 0.0, 0.0);
     }
 
     private static class VariantDefinition {
@@ -1763,6 +2240,26 @@ public class AiScheduleGenerationOrchestrationService {
             this.candidateId = Objects.requireNonNull(candidateId, "candidateId");
             this.type = Objects.requireNonNull(type, "type");
             this.variantInstruction = Objects.requireNonNull(variantInstruction, "variantInstruction");
+        }
+    }
+
+    private static class ToonPayloadContext {
+        private final String fullPayload;
+        private final String payloadWithoutScratchpad;
+        private final String initialScratchpadBlock;
+        private final List<ConcreteShift> scopedShifts;
+        private final List<Doctor> eligibleDoctors;
+
+        private ToonPayloadContext(String fullPayload,
+                                   String payloadWithoutScratchpad,
+                                   String initialScratchpadBlock,
+                                   List<ConcreteShift> scopedShifts,
+                                   List<Doctor> eligibleDoctors) {
+            this.fullPayload = fullPayload;
+            this.payloadWithoutScratchpad = payloadWithoutScratchpad;
+            this.initialScratchpadBlock = initialScratchpadBlock;
+            this.scopedShifts = scopedShifts;
+            this.eligibleDoctors = eligibleDoctors;
         }
     }
 
@@ -1837,50 +2334,259 @@ public class AiScheduleGenerationOrchestrationService {
         private final boolean maxRetriesReached;
         private final String code;
         private final String message;
+        private final String apiMessage;
         private final List<ConstraintViolationDetail> violatedConstraints;
+        private final List<ProtocolValidationDetail> protocolValidationDetails;
+        private final List<RoleCoverageViolationDetail> roleCoverageViolations;
+        private final Map<String, Integer> requiredSlotsByShiftRoleLayer;
+        private final Map<String, Integer> assignedSlotsByShiftRoleLayer;
+        private final boolean dualLayerCoverageValid;
+        private final List<RoleMismatchDetail> mismatchExamples;
 
         private CandidateValidationData(boolean valid,
                                         boolean maxRetriesReached,
                                         String code,
                                         String message,
-                                        List<ConstraintViolationDetail> violatedConstraints) {
+                                        String apiMessage,
+                                        List<ConstraintViolationDetail> violatedConstraints,
+                                        List<ProtocolValidationDetail> protocolValidationDetails,
+                                        List<RoleCoverageViolationDetail> roleCoverageViolations,
+                                        Map<String, Integer> requiredSlotsByShiftRoleLayer,
+                                        Map<String, Integer> assignedSlotsByShiftRoleLayer,
+                                        List<RoleMismatchDetail> mismatchExamples) {
             this.valid = valid;
             this.maxRetriesReached = maxRetriesReached;
             this.code = code;
             this.message = message;
+            this.apiMessage = apiMessage;
             this.violatedConstraints = violatedConstraints == null
                     ? Collections.emptyList()
                     : Collections.unmodifiableList(new ArrayList<>(violatedConstraints));
+            this.protocolValidationDetails = protocolValidationDetails == null
+                    ? Collections.emptyList()
+                    : Collections.unmodifiableList(new ArrayList<>(protocolValidationDetails));
+            this.roleCoverageViolations = roleCoverageViolations == null
+                    ? Collections.emptyList()
+                    : Collections.unmodifiableList(new ArrayList<>(roleCoverageViolations));
+            this.requiredSlotsByShiftRoleLayer = requiredSlotsByShiftRoleLayer == null
+                    ? Collections.emptyMap()
+                    : Collections.unmodifiableMap(new LinkedHashMap<>(requiredSlotsByShiftRoleLayer));
+            this.assignedSlotsByShiftRoleLayer = assignedSlotsByShiftRoleLayer == null
+                    ? Collections.emptyMap()
+                    : Collections.unmodifiableMap(new LinkedHashMap<>(assignedSlotsByShiftRoleLayer));
+            this.dualLayerCoverageValid = this.roleCoverageViolations.isEmpty();
+            this.mismatchExamples = mismatchExamples == null
+                    ? Collections.emptyList()
+                    : Collections.unmodifiableList(new ArrayList<>(mismatchExamples));
         }
 
         private static CandidateValidationData valid() {
-            return new CandidateValidationData(true, false, null, null, Collections.emptyList());
+            return new CandidateValidationData(true,
+                    false,
+                    null,
+                    null,
+                    null,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    Collections.emptyList());
+        }
+
+        private static CandidateValidationData valid(Map<String, Integer> requiredSlotsByShiftRoleLayer,
+                                                     Map<String, Integer> assignedSlotsByShiftRoleLayer,
+                                                     List<RoleCoverageViolationDetail> roleCoverageViolations,
+                                                     List<RoleMismatchDetail> mismatchExamples) {
+            return new CandidateValidationData(true,
+                    false,
+                    null,
+                    null,
+                    null,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    roleCoverageViolations,
+                    requiredSlotsByShiftRoleLayer,
+                    assignedSlotsByShiftRoleLayer,
+                    mismatchExamples);
         }
 
         private static CandidateValidationData validWithWarning(String code, String message) {
-            return new CandidateValidationData(true, false, code, message, Collections.emptyList());
+            return validWithWarning(code, message, Collections.emptyList());
+        }
+
+        private static CandidateValidationData validWithWarning(String code,
+                                                                String message,
+                                                                List<ConstraintViolationDetail> violatedConstraints) {
+            return new CandidateValidationData(true,
+                    false,
+                    code,
+                    message,
+                    message,
+                    violatedConstraints,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code, String message) {
-            return invalid(code, message, Collections.emptyList());
+            return invalid(code, message, message, Collections.emptyList(), Collections.emptyList());
         }
 
         private static CandidateValidationData invalid(String code, String message, List<ConstraintViolationDetail> violatedConstraints) {
-            return new CandidateValidationData(false, false, code, message, violatedConstraints);
+            return invalid(code, message, message, violatedConstraints, Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code,
+                                                       String message,
+                                                       String apiMessage,
+                                                       List<ConstraintViolationDetail> violatedConstraints) {
+            return invalid(code, message, apiMessage, violatedConstraints, Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code,
+                                                       String message,
+                                                       String apiMessage,
+                                                       List<ConstraintViolationDetail> violatedConstraints,
+                                                       List<ProtocolValidationDetail> protocolValidationDetails) {
+            return invalid(code, message, apiMessage, violatedConstraints, protocolValidationDetails, Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code,
+                                                       String message,
+                                                       String apiMessage,
+                                                       List<ConstraintViolationDetail> violatedConstraints,
+                                                       List<ProtocolValidationDetail> protocolValidationDetails,
+                                                       List<RoleCoverageViolationDetail> roleCoverageViolations) {
+            return invalid(code,
+                    message,
+                    apiMessage,
+                    violatedConstraints,
+                    protocolValidationDetails,
+                    roleCoverageViolations,
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    Collections.emptyList());
+        }
+
+        private static CandidateValidationData invalid(String code,
+                                                       String message,
+                                                       String apiMessage,
+                                                       List<ConstraintViolationDetail> violatedConstraints,
+                                                       List<ProtocolValidationDetail> protocolValidationDetails,
+                                                       List<RoleCoverageViolationDetail> roleCoverageViolations,
+                                                       Map<String, Integer> requiredSlotsByShiftRoleLayer,
+                                                       Map<String, Integer> assignedSlotsByShiftRoleLayer,
+                                                       List<RoleMismatchDetail> mismatchExamples) {
+            return new CandidateValidationData(false,
+                    false,
+                    code,
+                    message,
+                    apiMessage,
+                    violatedConstraints,
+                    protocolValidationDetails,
+                    roleCoverageViolations,
+                    requiredSlotsByShiftRoleLayer,
+                    assignedSlotsByShiftRoleLayer,
+                    mismatchExamples);
         }
 
         private CandidateValidationData withMaxRetriesReached(boolean reached) {
-            return new CandidateValidationData(valid, reached, code, message, violatedConstraints);
+            return new CandidateValidationData(valid,
+                    reached,
+                    code,
+                    message,
+                    apiMessage,
+                    violatedConstraints,
+                    protocolValidationDetails,
+                    roleCoverageViolations,
+                    requiredSlotsByShiftRoleLayer,
+                    assignedSlotsByShiftRoleLayer,
+                    mismatchExamples);
         }
 
         private CandidateValidationData withWarning(String warningCode, String warningMessage) {
-            return new CandidateValidationData(valid, maxRetriesReached, warningCode, warningMessage, violatedConstraints);
+            return new CandidateValidationData(valid,
+                    maxRetriesReached,
+                    warningCode,
+                    warningMessage,
+                    warningMessage,
+                    violatedConstraints,
+                    protocolValidationDetails,
+                    roleCoverageViolations,
+                    requiredSlotsByShiftRoleLayer,
+                    assignedSlotsByShiftRoleLayer,
+                    mismatchExamples);
         }
 
         private List<String> violationMessages() {
-            return violatedConstraints.stream()
-                    .map(violation -> violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
+            List<String> messages = violatedConstraints.stream()
+                    .map(violation -> violation.severity + " " + violation.constraintType + "[" + violation.constraintId + "]: " + violation.actualCondition)
                     .collect(Collectors.toList());
+            messages.addAll(protocolValidationDetails.stream()
+                    .map(detail -> detail.path + ": " + detail.message)
+                    .collect(Collectors.toList()));
+            messages.addAll(roleCoverageViolations.stream()
+                    .map(RoleCoverageViolationDetail::toCompactMessage)
+                    .collect(Collectors.toList()));
+            return messages;
+        }
+    }
+
+    private static class RoleCoverageViolationDetail {
+        private final String shiftId;
+        private final String assignmentStatus;
+        private final String roleCovered;
+        private final int requiredMin;
+        private final int actualCount;
+
+        private RoleCoverageViolationDetail(String shiftId,
+                                            String assignmentStatus,
+                                            String roleCovered,
+                                            int requiredMin,
+                                            int actualCount) {
+            this.shiftId = shiftId;
+            this.assignmentStatus = assignmentStatus;
+            this.roleCovered = roleCovered;
+            this.requiredMin = requiredMin;
+            this.actualCount = actualCount;
+        }
+
+        private String toCompactMessage() {
+            return "role_layer_minima[shift_id=" + shiftId
+                    + ",assignment_status=" + assignmentStatus
+                    + ",role_covered=" + roleCovered
+                    + "]: actual=" + actualCount + " < required=" + requiredMin;
+        }
+    }
+
+    private static class RoleMismatchDetail {
+        private final String path;
+        private final String expectedSeniority;
+        private final String actualSeniorityOrAssignedRole;
+
+        private RoleMismatchDetail(String path, String expectedSeniority, String actualSeniorityOrAssignedRole) {
+            this.path = path;
+            this.expectedSeniority = expectedSeniority;
+            this.actualSeniorityOrAssignedRole = actualSeniorityOrAssignedRole;
+        }
+
+        @Override
+        public String toString() {
+            return "{path='" + path + "', expected_seniority='" + expectedSeniority
+                    + "', actual='" + actualSeniorityOrAssignedRole + "'}";
+        }
+    }
+
+    private static class ProtocolValidationDetail {
+        private final String path;
+        private final String message;
+
+        private ProtocolValidationDetail(String path, String message) {
+            this.path = path;
+            this.message = message;
         }
     }
 
@@ -1890,6 +2596,7 @@ public class AiScheduleGenerationOrchestrationService {
         private final String shiftId;
         private final String date;
         private final String doctorId;
+        private final ConstraintViolationSeverity severity;
         private final String expectedCondition;
         private final String actualCondition;
 
@@ -1898,6 +2605,7 @@ public class AiScheduleGenerationOrchestrationService {
                                           String shiftId,
                                           String date,
                                           String doctorId,
+                                          ConstraintViolationSeverity severity,
                                           String expectedCondition,
                                           String actualCondition) {
             this.constraintId = constraintId;
@@ -1905,6 +2613,7 @@ public class AiScheduleGenerationOrchestrationService {
             this.shiftId = shiftId;
             this.date = date;
             this.doctorId = doctorId;
+            this.severity = severity == null ? ConstraintViolationSeverity.HARD : severity;
             this.expectedCondition = expectedCondition;
             this.actualCondition = actualCondition;
         }
@@ -1929,10 +2638,60 @@ public class AiScheduleGenerationOrchestrationService {
                     shiftId,
                     date,
                     doctorId,
+                    fromConstraint(constraint),
                     expectedCondition,
                     actualCondition
             );
         }
+
+        private static ConstraintViolationSeverity fromConstraint(Constraint constraint) {
+            if (constraint != null && constraint.isViolable()) {
+                return ConstraintViolationSeverity.SOFT;
+            }
+            return ConstraintViolationSeverity.HARD;
+        }
+
+        private static ConstraintViolationDetail malformedShift(ConcreteShift concreteShift,
+                                                                String missingField,
+                                                                String actualCondition) {
+            String date = concreteShift == null ? null : String.valueOf(LocalDate.ofEpochDay(concreteShift.getDate()));
+            String shiftId = concreteShift == null || concreteShift.getShift() == null || concreteShift.getShift().getId() == null
+                    ? null
+                    : String.valueOf(concreteShift.getShift().getId());
+            return new ConstraintViolationDetail(
+                    "STRUCTURAL_VALIDATION",
+                    "MALFORMED_CANDIDATE_SHIFT",
+                    shiftId,
+                    date,
+                    null,
+                    ConstraintViolationSeverity.HARD,
+                    "ConcreteShift must include non-null " + missingField,
+                    actualCondition
+            );
+        }
+
+        private static ConstraintViolationDetail constraintExecutionFailure(Constraint constraint,
+                                                                            ConcreteShift concreteShift,
+                                                                            Doctor doctor,
+                                                                            String exceptionClass,
+                                                                            String exceptionMessage) {
+            String sanitizedExceptionClass = exceptionClass == null || exceptionClass.trim().isEmpty()
+                    ? "RuntimeException"
+                    : exceptionClass.trim();
+            String sanitizedExceptionMessage = exceptionMessage == null || exceptionMessage.trim().isEmpty()
+                    ? "n/a"
+                    : exceptionMessage.trim();
+            return of(constraint,
+                    concreteShift,
+                    doctor,
+                    "Constraint execution must complete without runtime errors",
+                    "Constraint execution failed: " + sanitizedExceptionClass + ": " + sanitizedExceptionMessage);
+        }
+    }
+
+    private enum ConstraintViolationSeverity {
+        HARD,
+        SOFT
     }
 
     private static class PriorityDeltaStats {

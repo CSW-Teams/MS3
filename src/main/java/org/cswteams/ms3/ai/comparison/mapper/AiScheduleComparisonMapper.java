@@ -102,8 +102,6 @@ public class AiScheduleComparisonMapper {
         return new AiScheduleDecisionMetricValuesDto(
                 values.getCoverage(),
                 values.getUffaBalance(),
-                values.getSentimentTransitions(),
-                values.getSentimentTransitionCounts(),
                 values.getUpDelta(),
                 values.getVarianceDelta()
         );
@@ -116,8 +114,6 @@ public class AiScheduleComparisonMapper {
         return new AiScheduleDecisionMetricValuesDto(
                 values.getCoverage(),
                 values.getUffaBalance(),
-                values.getSentimentTransitions(),
-                null,
                 values.getUpDelta(),
                 values.getVarianceDelta()
         );

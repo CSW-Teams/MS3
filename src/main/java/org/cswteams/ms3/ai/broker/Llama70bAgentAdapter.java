@@ -2,6 +2,8 @@ package org.cswteams.ms3.ai.broker;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cswteams.ms3.ai.protocol.exceptions.AiProtocolException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -9,9 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 public class Llama70bAgentAdapter implements AgentProviderAdapter {
 
     private final RestTemplate restTemplate;
@@ -45,25 +44,38 @@ public class Llama70bAgentAdapter implements AgentProviderAdapter {
 
         String systemPrompt = AiPromptTemplate.systemPrompt();
         String userPrompt = AiPromptTemplate.buildUserContent(request.getInstructions(), request.getToonPayload());
-        Map<String, Object> payload = Map.of(
-                "model", model,
-                "messages", List.of(
-                        Map.of("role", "system", "content", systemPrompt),
-                        Map.of("role", "user", "content", userPrompt)
-                ),
-                "response_format", Map.of("type", "json_object")
-        );
+        String payloadJson = buildPayloadJson(model, systemPrompt, userPrompt);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        HttpEntity<String> entity = new HttpEntity<>(payloadJson, headers);
 
         String response = restTemplate.postForObject(url, entity, String.class);
         if (response == null || response.isBlank()) {
             throw AiProtocolException.invalidJson("Empty response from Llama-70B API", null);
         }
         return extractJsonPayload(response);
+    }
+
+    private String buildPayloadJson(String model, String systemPrompt, String userPrompt) {
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("model", model);
+        ArrayNode messages = payload.putArray("messages");
+
+        ObjectNode userMessage = messages.addObject();
+        userMessage.put("role", "user");
+        userMessage.put("content", userPrompt);
+
+        ObjectNode systemMessage = messages.addObject();
+        systemMessage.put("role", "system");
+        systemMessage.put("content", systemPrompt);
+
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (IOException e) {
+            throw AiProtocolException.invalidJson("Llama-70B request payload is not valid JSON", e);
+        }
     }
 
     private String extractJsonPayload(String response) {

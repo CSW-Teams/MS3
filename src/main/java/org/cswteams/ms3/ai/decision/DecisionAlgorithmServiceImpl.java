@@ -21,7 +21,6 @@ public class DecisionAlgorithmServiceImpl implements DecisionAlgorithmService {
     private static final List<PriorityDimension> TIE_BREAK_ORDER = Arrays.asList(
             PriorityDimension.COVERAGE,
             PriorityDimension.UFFA_BALANCE,
-            PriorityDimension.SENTIMENT_TRANSITIONS,
             PriorityDimension.UP_DELTA,
             PriorityDimension.VARIANCE_DELTA
     );
