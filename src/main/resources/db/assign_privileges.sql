@@ -1,3 +1,6 @@
+-- Purpose: harden schema access and assign runtime ownership/grants for public and tenant roles.
+-- Context: executed once after all schema/table creation scripts by SchemasInitializer.
+-- Order: revoke defaults first, then grant runtime access, then align object ownership/default privileges.
 revoke all on schema public from public;
 revoke all on all tables in schema public from public;
 revoke all on all sequences in schema public from public;
@@ -25,13 +28,13 @@ grant all on all tables in schema b to tenant_b_user;
 grant all on all sequences in schema b to tenant_b_user;
 alter schema b owner to tenant_b_user;
 
--- Grants to the tenant users for the 'blacklisted_tokens' table in the public schema
+-- Tenants blacklist tokens in public because auth checks revoked JWTs across all schemas.
 grant usage on schema public to tenant_a_user;
 grant usage on schema public to tenant_b_user;
 grant select, insert on public.blacklisted_tokens to tenant_a_user;
 grant select, insert on public.blacklisted_tokens to tenant_b_user;
 
--- Allow tenant users to read and manage system users stored in the shared 'public' schema
+-- Cross-schema auth assumption: tenant requests resolve principals via shared public identity tables.
 grant select, insert, update, delete on public.ms3_system_user to tenant_a_user;
 grant select, insert, update, delete on public.ms3_system_user to tenant_b_user;
 grant select, insert, update, delete on public.systemuser_systemactors to tenant_a_user;
@@ -39,7 +42,7 @@ grant select, insert, update, delete on public.systemuser_systemactors to tenant
 grant select, insert, update, delete on public.user_system_actors to tenant_a_user;
 grant select, insert, update, delete on public.user_system_actors to tenant_b_user;
 
--- Grants privileges for tenant users to generate new ids in 'blacklisted_tokens' when a banned token is inserted
+-- Sequence usage is explicit because insert on blacklisted_tokens requires nextval() permissions.
 grant usage, select on sequence public.blacklisted_tokens_id_seq to tenant_a_user;
 grant usage, select on sequence public.blacklisted_tokens_id_seq to tenant_b_user;
 grant usage, select on sequence public.blacklisted_tokens_id_seq to public_scheme_user;
@@ -59,6 +62,7 @@ alter default privileges in schema b grant all on tables to tenant_b_user;
 alter default privileges in schema b revoke all on sequences from public;
 alter default privileges in schema b grant all on sequences to tenant_b_user;
 
+-- Keep table ownership aligned with role-per-schema model required by startup migrations.
 DO $$
     DECLARE
         tbl RECORD;
@@ -72,6 +76,7 @@ DO $$
             END LOOP;
     END $$;;
 
+-- Keep sequence ownership aligned with role-per-schema model required by startup migrations.
 DO $$
     DECLARE
         tbl RECORD;
