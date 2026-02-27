@@ -11,6 +11,7 @@ import java.util.Map;
 @Service
 public class TurnstileService {
 
+    // see the application.properties
     @Value("${cloudflare.turnstile.secret}")
     private String secretKey;
 
