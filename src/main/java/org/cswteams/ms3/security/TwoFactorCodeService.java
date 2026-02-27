@@ -15,6 +15,9 @@ import java.time.Instant;
 import java.util.Base64;
 
 @Component
+/**
+ * Generates and verifies deterministic TOTP and recovery codes for the 2FA flow.
+ */
 public class TwoFactorCodeService {
 
     private static final Logger logger = LoggerFactory.getLogger(TwoFactorCodeService.class);
@@ -29,6 +32,9 @@ public class TwoFactorCodeService {
         this.clock = clock;
     }
 
+    /**
+     * Verifies a user-provided code against TOTP windows and fallback recovery codes.
+     */
     public TwoFactorVerificationOutcome verify(SystemUser user, String providedCode) {
         if (providedCode == null) {
             return TwoFactorVerificationOutcome.invalid();
@@ -48,11 +54,17 @@ public class TwoFactorCodeService {
         return TwoFactorVerificationOutcome.invalid();
     }
 
+    /**
+     * Helper used by tests/support tooling to inspect the code valid for the current time window.
+     */
     public String currentCodeForUser(SystemUser user) {
         long currentWindow = Instant.now(clock).getEpochSecond() / 30L;
         return generateTotp(user, currentWindow);
     }
 
+    /**
+     * Derives a deterministic recovery code by ordinal id (1..configured count).
+     */
     public String recoveryCodeForUser(SystemUser user, int codeId) {
         try {
             byte[] secret = deriveSecret(user, "recovery:" + codeId);
@@ -66,6 +78,9 @@ public class TwoFactorCodeService {
         }
     }
 
+    /**
+     * Accepts codes from a small time drift window to tolerate minor client clock differences.
+     */
     private boolean verifyTotp(SystemUser user, String sanitizedCode) {
         long currentWindow = Instant.now(clock).getEpochSecond() / 30L;
         for (int offset = -properties.getAllowedDriftWindows(); offset <= properties.getAllowedDriftWindows(); offset++) {
@@ -77,6 +92,9 @@ public class TwoFactorCodeService {
         return false;
     }
 
+    /**
+     * Business rule: recovery codes are one-way and must be consumed in strict order.
+     */
     private RecoveryVerificationResult verifyRecoveryCode(SystemUser user, String sanitizedCode) {
         int nextExpectedId = user.getLastRecoveryCodeIdUsed() + 1;
         for (int i = nextExpectedId; i <= properties.getRecoveryCodeCount(); i++) {
@@ -88,10 +106,16 @@ public class TwoFactorCodeService {
         return RecoveryVerificationResult.invalid();
     }
 
+    /**
+     * Derives the raw TOTP secret from master key + user identity + enrollment salt/version.
+     */
     public byte[] deriveTotpSecret(SystemUser user) throws GeneralSecurityException {
         return deriveSecret(user, "totp");
     }
 
+    /**
+     * Implements RFC-style HOTP truncation over the selected time window.
+     */
     private String generateTotp(SystemUser user, long timeWindow) {
         try {
             byte[] secret = deriveTotpSecret(user);
@@ -113,6 +137,9 @@ public class TwoFactorCodeService {
         }
     }
 
+    /**
+     * Technical design: derive per-purpose secrets instead of storing clear secrets in DB.
+     */
     private byte[] deriveSecret(SystemUser user, String purpose) throws GeneralSecurityException {
         Mac mac = Mac.getInstance(HMAC_SHA_256);
         mac.init(new SecretKeySpec(properties.getMasterKey().getBytes(StandardCharsets.UTF_8), HMAC_SHA_256));

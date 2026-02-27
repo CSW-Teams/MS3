@@ -10,6 +10,12 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 
 @Service
+/**
+ * Scheduled cleanup for persisted JWT blacklist entries.
+ *
+ * <p>Technical workaround: tokens are stored to support stateless logout,
+ * so this job periodically removes entries whose JWT expiration already passed.</p>
+ */
 public class ExpiredTokensRemovalService {
 
     private final BlacklistedTokenDAO dao;
@@ -22,6 +28,9 @@ public class ExpiredTokensRemovalService {
         this.clock = clock;
     }
 
+    /**
+     * Deletes all blacklisted rows whose expiry is older than the current clock time.
+     */
     @Transactional
     @Scheduled(cron = "0 0 0/1 * * ?")
     public void deleteExpiredTokens() {
