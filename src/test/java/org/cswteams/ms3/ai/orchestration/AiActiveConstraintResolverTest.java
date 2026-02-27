@@ -68,6 +68,8 @@ class AiActiveConstraintResolverTest {
 
     @Test
     void resolveMapsSupportedConstraintsWithDeterministicFields() {
+        // Scenario intent: deterministic mapping keeps AI prompts reproducible and auditable
+        // even when DAO ordering differs across databases/environments.
         ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
         ConstraintMaxOrePeriodo hardConstraint = new ConstraintMaxOrePeriodo(7, 480);
         hardConstraint.setId(10L);
@@ -164,6 +166,8 @@ class AiActiveConstraintResolverTest {
 
     @Test
     void resolveWithReportFailsFastWhenPolicyRequiresIt() {
+        // Business-risk guard: in strict rollout modes, silently skipping unusable constraints
+        // could produce legally invalid schedules; fail-fast must surface the defect immediately.
         ConstraintDAO constraintDAO = mock(ConstraintDAO.class);
 
         ConstraintMaxOrePeriodo skippedConstraint = new ConstraintMaxOrePeriodo(7, 480);

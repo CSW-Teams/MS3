@@ -247,6 +247,8 @@ export class SchedulerGeneratorView extends React.Component{
           case 200:
           case 202: {
             const comparisonCandidates = response.body?.candidates ?? [];
+            // Only open the comparison modal when alternatives are present;
+            // plain successful generations still use the same feedback channel without extra UI noise.
             this.setState({
               generationStatus: 'success',
               generationMessage: t("Schedule successfully created."),

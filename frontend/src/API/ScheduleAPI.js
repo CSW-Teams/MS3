@@ -55,6 +55,8 @@ export class ScheduleAPI {
     const response = await fetchWithAuth('/api/schedule/selection', requestOptions);
     let body = null;
     try {
+      // Some failure paths intentionally return an empty body; keep the client resilient
+      // so the caller can still branch on HTTP status without crashing on JSON parsing.
       body = await response.json();
     } catch (error) {
       body = null;
