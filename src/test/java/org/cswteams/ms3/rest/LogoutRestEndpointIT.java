@@ -28,7 +28,9 @@ public class LogoutRestEndpointIT {
 
     @Test
     public void testLogoutFlow_FullIntegration() throws Exception {
-        // LOGIN: otteniamo un token valido reale usando un utente esistente nel DB
+        // Given a real login token, when the same token is used after logout, then protected resources must reject it.
+        // Regression guard: detects critical auth bug where logged-out tokens are still accepted by filters.
+        // Non-trivial fixture: obtain a real JWT from the login flow to validate filter + persistence interaction.
         LoginRequestDTO loginRequest = new LoginRequestDTO("federicavillani.tenanta@gmail.com","passw");
 
         MvcResult loginResult = mockMvc.perform(post("/login/")
@@ -44,18 +46,17 @@ public class LogoutRestEndpointIT {
         String authHeader = "Bearer " + token;
         System.out.println("TEST INTEGRATION - Token ottenuto: " + token);
 
-        // VERIFICA TOKEN ATTIVO: L'accesso ad una risorsa protetta deve funzionare (200 OK).
+        // Sanity check: token is valid before logout, so the protected endpoint must return 200.
         mockMvc.perform(get("/users/")
                         .header(HttpHeaders.AUTHORIZATION, authHeader))
                 .andExpect(status().isOk());
 
-        // LOGOUT
+        // When logout is invoked with that same token, revocation should be persisted.
         mockMvc.perform(post("/logout/")
                         .header(HttpHeaders.AUTHORIZATION, authHeader))
                 .andExpect(status().isOk());
 
-        // VERIFICA TOKEN INVALIDATO: si esegue la stessa chiamata precedente alla risorsa protetta.
-        // ora deve fallire (401 o 403), ci si aspetta che il JwtRequestFilters blocchi la richiesta
+        // Then reusing the same token must fail with Unauthorized, proving the filter enforces logout revocation.
         mockMvc.perform(get("/users/")
                         .header(HttpHeaders.AUTHORIZATION, authHeader))
                 .andExpect(status().isUnauthorized());

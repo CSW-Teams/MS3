@@ -48,12 +48,16 @@ class TestLogoutController {
     @ParameterizedTest
     @MethodSource("provideInvalidLogoutParams")
     void testLogout_WithInvalidParams_NoCalls(String token, String userEmail) {
+        // Given invalid token/email inputs, when logout is requested, then no blacklist write must happen.
+        // Regression guard: prevents accepting malformed logout requests that could mask auth/token handling bugs.
         logoutController.logout(token, userEmail);
         verify(blacklistService, never()).blacklist(anyString(), any());
     }
 
     @Test
     void testLogout_WithValidParams_TokenBlacklisted() {
+        // Given a valid authenticated user and token, when logout runs, then the token is blacklisted once.
+        // Regression guard: ensures logout actually revokes the JWT and does not leave it reusable.
         when(systemUserDAO.findByEmail(validUserEmail)).thenReturn(validSystemUser);
         doNothing().when(blacklistService).blacklist(validToken, validSystemUser);
         logoutController.logout(validToken, validUserEmail);
